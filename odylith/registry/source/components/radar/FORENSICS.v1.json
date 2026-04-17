@@ -33,10 +33,10 @@
     "empty_reasons": [],
     "explicit_event_count": 65,
     "mapped_workstream_evidence_count": 32,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 66
+    "timeline_event_count": 65
   },
   "name": "Radar",
   "path_prefixes": [
@@ -49,7 +49,7 @@
     {
       "artifacts": [],
       "confidence": "low",
-      "event_index": 684,
+      "event_index": 250,
       "explicit_components": [],
       "kind": "assist_closeout",
       "mapped_components": [
@@ -64,7 +64,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 683,
+      "event_index": 249,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -168,40 +168,9 @@
       ]
     },
     {
-      "artifacts": [
-        "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-context-engine-and-execution-engine-seamless-alignment-program.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
-        "odylith/radar/source/programs/B-099.execution-waves.v1.json",
-        "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
-        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-host-visibility-integration-and-ruler-canonicalization.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-intervention-adjudication-corpus-and-advisory-benchmark.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-v0-1-11-visible-intervention-release-proof.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-proposition-engine.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-value-engine-governance-binding.md",
-        "odylith/radar/source/programs/B-096.execution-waves.v1.json"
-      ],
-      "confidence": "high",
-      "event_index": 992,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "radar"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md, odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md +14 more",
-      "ts_iso": "2026-04-17T01:33:31-07:00",
-      "workstreams": []
-    },
-    {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 659,
+      "event_index": 247,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -309,7 +278,7 @@
         "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
       ],
       "confidence": "high",
-      "event_index": 534,
+      "event_index": 238,
       "explicit_components": [],
       "kind": "ambient_signal",
       "mapped_components": [
@@ -328,7 +297,7 @@
         "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
       ],
       "confidence": "high",
-      "event_index": 533,
+      "event_index": 237,
       "explicit_components": [],
       "kind": "ambient_signal",
       "mapped_components": [
@@ -347,7 +316,7 @@
         "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
       ],
       "confidence": "high",
-      "event_index": 532,
+      "event_index": 236,
       "explicit_components": [],
       "kind": "ambient_signal",
       "mapped_components": [
@@ -366,7 +335,7 @@
         "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
       ],
       "confidence": "high",
-      "event_index": 509,
+      "event_index": 234,
       "explicit_components": [],
       "kind": "ambient_signal",
       "mapped_components": [
@@ -388,7 +357,7 @@
         "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
       ],
       "confidence": "high",
-      "event_index": 542,
+      "event_index": 239,
       "explicit_components": [
         "atlas",
         "benchmark",
@@ -421,7 +390,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 313,
+      "event_index": 215,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -445,7 +414,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 312,
+      "event_index": 214,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -469,7 +438,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 309,
+      "event_index": 211,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -495,7 +464,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 308,
+      "event_index": 210,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -519,7 +488,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 300,
+      "event_index": 207,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -545,7 +514,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 299,
+      "event_index": 206,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -569,7 +538,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 297,
+      "event_index": 204,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -595,7 +564,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 296,
+      "event_index": 203,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -619,7 +588,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 285,
+      "event_index": 201,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -645,7 +614,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 284,
+      "event_index": 200,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -669,7 +638,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 278,
+      "event_index": 197,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -695,7 +664,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 277,
+      "event_index": 196,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -719,7 +688,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 276,
+      "event_index": 195,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -745,7 +714,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 275,
+      "event_index": 194,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -769,7 +738,7 @@
         "README.md"
       ],
       "confidence": "high",
-      "event_index": 233,
+      "event_index": 185,
       "explicit_components": [
         "odylith"
       ],
@@ -802,7 +771,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 177,
+      "event_index": 175,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -818,30 +787,6 @@
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
-      "ts_iso": "2026-04-15T06:58:39Z",
-      "workstreams": [
-        "B-096"
-      ]
-    },
-    {
-      "artifacts": [
-        "src/odylith/runtime/intervention_engine/voice.py"
-      ],
-      "confidence": "high",
-      "event_index": 176,
-      "explicit_components": [
-        "governance-intervention-engine"
-      ],
-      "kind": "intervention_card",
-      "mapped_components": [
-        "compass",
-        "governance-intervention-engine",
-        "odylith-chatter",
-        "odylith-context-engine",
-        "radar"
-      ],
-      "meaningful": true,
-      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:58:39Z",
       "workstreams": [
         "B-096"
@@ -856,6 +801,30 @@
       "explicit_components": [
         "governance-intervention-engine"
       ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "compass",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-096.",
+      "ts_iso": "2026-04-15T06:58:39Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/voice.py"
+      ],
+      "confidence": "high",
+      "event_index": 172,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
@@ -878,7 +847,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 173,
+      "event_index": 171,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -902,7 +871,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 169,
+      "event_index": 167,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -928,7 +897,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 168,
+      "event_index": 166,
       "explicit_components": [
         "governance-intervention-engine"
       ],

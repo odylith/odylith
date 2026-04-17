@@ -25,7 +25,45 @@ from typing import Mapping
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
+from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import claude_host_shared
+
+
+_LIVE_BLOCK_LABELS: tuple[str, ...] = (
+    "Odylith Observation:",
+    "Odylith Proposal:",
+    "Odylith Insight:",
+    "Odylith History:",
+    "Odylith Risks:",
+)
+
+
+def _looks_like_teaser_live_text(value: str) -> bool:
+    text = str(value or "").strip()
+    if not text:
+        return False
+    if any(label in text for label in _LIVE_BLOCK_LABELS):
+        return False
+    return "Odylith" in text
+
+
+def _parts(*values: str) -> str:
+    rows: list[str] = []
+    for value in values:
+        token = str(value or "").strip()
+        if token and token not in rows:
+            rows.append(token)
+    return "\n\n".join(rows).strip()
+
+
+def _merge_replay_with_closeout(*, replay: str, closeout_text: str) -> str:
+    visible_replay = str(replay or "").strip()
+    closeout = str(closeout_text or "").strip()
+    if not visible_replay:
+        return closeout
+    if not closeout or "Odylith Assist:" in visible_replay or "**Odylith Assist:**" in visible_replay:
+        return visible_replay
+    return _parts(visible_replay, closeout)
 
 
 def _stop_intervention_bundle(
@@ -92,11 +130,16 @@ def render_stop_summary(
         markdown=True,
         include_proposal=False,
     )
-    recovered_live_text = intervention_surface_runtime.recent_session_live_markdown(
+    recovered_live_text = visibility_replay.replayable_chat_markdown(
         repo_root=repo_root,
+        host_family="claude",
         session_id=str(payload.get("session_id", "")).strip() or claude_host_shared.hook_session_id(payload),
+        max_live_blocks=4,
+        ambient_cap=3,
+        include_assist=False,
+        include_teaser=True,
     )
-    if recovered_live_text and (not live_text or "Odylith can already" in live_text):
+    if recovered_live_text and (not live_text or _looks_like_teaser_live_text(live_text)):
         live_text = recovered_live_text
     closeout_text = conversation_surface.render_closeout_text(
         bundle,
@@ -158,8 +201,24 @@ def main(argv: list[str] | None = None) -> int:
         if bundle
         else None
     )
+    replay = visibility_replay.replayable_chat_markdown(
+        repo_root=repo_root,
+        host_family="claude",
+        session_id=session_id,
+        max_live_blocks=4,
+        ambient_cap=3,
+        include_assist=True,
+        include_teaser=False,
+    )
+    closeout_text = (
+        conversation_surface.render_closeout_text(bundle, markdown=True)
+        if bundle
+        else ""
+    )
     rendered = (
-        decision.visible_markdown
+        _merge_replay_with_closeout(replay=replay, closeout_text=closeout_text)
+        if replay
+        else decision.visible_markdown
         if decision is not None
         else render_stop_summary(
             repo_root=repo_root,

@@ -5,6 +5,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import claude_host_post_edit_checkpoint
 
 
@@ -105,6 +106,45 @@ def test_main_skips_non_governed_edits_silently(monkeypatch, tmp_path: Path, cap
     assert "Odylith Assist:" in payload["additionalContext"]
 
 
+def test_main_prioritizes_pending_chat_replay(monkeypatch, tmp_path: Path, capsys) -> None:
+    project = tmp_path / "repo"
+    (project / "src").mkdir(parents=True)
+    target = project / "src" / "main.py"
+    target.write_text("# stub\n", encoding="utf-8")
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=project,
+        kind="intervention_card",
+        summary="Pending edit replay.",
+        session_id="claude-edit-replay",
+        host_family="claude",
+        intervention_key="claude-edit-replay-key",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Observation:** Edit checkpoint must carry this pending block.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "tool_input": {"file_path": str(target)},
+                    "session_id": "claude-edit-replay",
+                }
+            )
+        ),
+    )
+
+    exit_code = claude_host_post_edit_checkpoint.main(["--repo-root", str(project)])
+
+    payload = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert payload["systemMessage"] == (
+        "---\n\n**Odylith Observation:** Edit checkpoint must carry this pending block.\n\n---"
+    )
+    assert "Odylith visible delivery fallback:" in payload["additionalContext"]
+
+
 def test_main_emits_observation_and_proposal_for_correlated_edit(monkeypatch, tmp_path: Path, capsys) -> None:
     project = tmp_path / "repo"
     (project / "src").mkdir(parents=True)
@@ -128,7 +168,7 @@ def test_main_emits_observation_and_proposal_for_correlated_edit(monkeypatch, tm
                     "key": "iv-demo",
                     "eligible": True,
                     "suppressed_reason": "",
-                    "markdown_text": 'Odylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\nTo apply, say "apply this proposal".',
+                    "markdown_text": 'Odylith Proposal: Preserve the chat-visible UX contract.\n\nTo apply, say "apply this proposal".',
                     "plain_text": "Odylith Proposal",
                     "confirmation_text": "apply this proposal",
                     "action_surfaces": ["radar", "registry"],

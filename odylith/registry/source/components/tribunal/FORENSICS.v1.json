@@ -30,10 +30,10 @@
     "empty_reasons": [],
     "explicit_event_count": 8,
     "mapped_workstream_evidence_count": 8,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 9
+    "timeline_event_count": 8
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -45,7 +45,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 683,
+      "event_index": 249,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -149,25 +149,9 @@
       ]
     },
     {
-      "artifacts": [
-        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 997,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "tribunal"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-17T01:33:31-07:00",
-      "workstreams": []
-    },
-    {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 659,
+      "event_index": 247,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -275,7 +259,7 @@
         "README.md"
       ],
       "confidence": "high",
-      "event_index": 233,
+      "event_index": 185,
       "explicit_components": [
         "odylith"
       ],

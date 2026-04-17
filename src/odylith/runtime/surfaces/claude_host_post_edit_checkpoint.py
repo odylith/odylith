@@ -27,6 +27,7 @@ from typing import Mapping
 
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
+from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import claude_host_shared
 
 
@@ -120,6 +121,15 @@ def _normalize_string(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
 
 
+def _parts(*values: str) -> str:
+    rows: list[str] = []
+    for value in values:
+        token = str(value or "").strip()
+        if token and token not in rows:
+            rows.append(token)
+    return "\n\n".join(rows).strip()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude post-edit-checkpoint",
@@ -159,6 +169,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     developer_context = decision.developer_context if decision is not None else ""
     live_intervention = decision.visible_markdown if decision is not None else ""
+    replay = visibility_replay.replayable_chat_markdown(
+        repo_root=repo_root,
+        host_family="claude",
+        session_id=session_id,
+        max_live_blocks=4,
+        ambient_cap=3,
+        include_assist=False,
+        include_teaser=False,
+    )
+    developer_context = _parts(replay, developer_context) if replay else developer_context
+    live_intervention = replay or live_intervention
     if bundle and decision is not None and developer_context:
         host_surface_runtime.append_visible_intervention_events(
             repo_root=repo_root,

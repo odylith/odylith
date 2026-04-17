@@ -72,6 +72,29 @@ def test_claude_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pa
     assert observation["tribunal_summary"]["source"] == "intervention_alignment_context"
 
 
+def test_claude_prompt_system_message_replays_pending_chat_block(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending prompt replay.",
+        session_id="claude-prompt-replay",
+        host_family="claude",
+        intervention_key="claude-prompt-replay-key",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Observation:** Claude prompt must carry this pending block.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    rendered = claude_host_prompt_context.render_prompt_system_message(
+        repo_root=tmp_path,
+        prompt="Do we still have a visible block pending?",
+        session_id="claude-prompt-replay",
+    )
+
+    assert rendered == "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---"
+
+
 def test_render_prompt_context_falls_back_to_relevant_docs_when_no_targets() -> None:
     payload = {"relevant_docs": ["odylith/CLAUDE.md"]}
     rendered = claude_host_prompt_context.render_prompt_context(
@@ -146,8 +169,7 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith can already see governed truth starting to crystallize here. "
-                        "One more corroborating signal and it can turn that into a proposal."
+                        "Odylith is tracking this signal: This conversation is ready to become governed truth."
                     ),
                 }
             }
@@ -160,7 +182,7 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
-    assert "Odylith can already" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith is tracking this signal:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "systemMessage" not in payload
 
 
@@ -184,8 +206,7 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith can already see governed truth starting to crystallize here. "
-                        "One more corroborating signal and it can turn that into a proposal."
+                        "Odylith is tracking this signal: This conversation is ready to become governed truth."
                     ),
                 }
             }
@@ -196,6 +217,6 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
 
     assert exit_code == 0
     output = capsys.readouterr().out
-    assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith can already")
+    assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith is tracking this signal:")
     assert output.rstrip().endswith(surface_runtime.LIVE_BOUNDARY)
     assert not output.lstrip().startswith("{")

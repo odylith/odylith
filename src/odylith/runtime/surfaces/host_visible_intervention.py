@@ -9,6 +9,7 @@ from typing import Sequence
 
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visibility_replay
 
 
 def _normalize_text(value: object) -> str:
@@ -37,11 +38,21 @@ def render_visible_intervention(
     closeout = normalized_phase == "stop_summary"
     if include_closeout is not None:
         closeout = bool(include_closeout)
+    resolved_session = host_surface_runtime.normalized_session_id(session_id, host_family=host_family)
+    replay = visibility_replay.replayable_chat_markdown(
+        repo_root=repo_root,
+        host_family=host_family,
+        session_id=resolved_session,
+        include_assist=closeout,
+        include_teaser=False,
+    )
+    if replay:
+        return replay
     bundle = host_surface_runtime.compose_host_conversation_bundle(
         repo_root=repo_root,
         host_family=host_family,
         turn_phase=normalized_phase,
-        session_id=session_id,
+        session_id=resolved_session,
         prompt_excerpt=prompt,
         assistant_summary=summary,
         changed_paths=changed_paths,

@@ -10,6 +10,7 @@ from odylith.runtime.intervention_engine import engine
 from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.intervention_engine import value_engine
 from odylith.runtime.intervention_engine import value_engine_event_metadata
+from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import voice
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
 
@@ -21,22 +22,6 @@ _AMBIENT_MAX_CANDIDATE_PAYLOADS = 24
 _AMBIENT_DUPLICATE_OVERLAP_FLOOR = 0.72
 _AMBIENT_SIGNAL_ORDER: tuple[str, ...] = ("risks", "history", "insight")
 _AMBIENT_DUPLICATE_SUPPRESSION_REASONS = frozenset({"duplicate_teaser", "duplicate_card"})
-_AMBIENT_PROVEN_VISIBLE_CHANNELS = frozenset(
-    {
-        "assistant_chat_transcript",
-        "manual_visible_command",
-        "stdout_teaser",
-        "stop_one_shot_guard",
-    }
-)
-_AMBIENT_PROVEN_VISIBLE_STATUSES = frozenset(
-    {
-        "assistant_chat_confirmed",
-        "best_effort_visible",
-        "manual_visible",
-        "stop_continuation_ready",
-    }
-)
 _MEANINGFUL_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{2,}")
 _AMBIENT_TOKEN_STOPWORDS = frozenset(
     {
@@ -316,9 +301,10 @@ def _continuity_payload(candidate: Mapping[str, Any]) -> dict[str, Any]:
 def _has_proven_visible_delivery(continuity: Mapping[str, Any]) -> bool:
     if bool(continuity.get("latest_proven_visible_delivery")):
         return True
-    channel = _normalize_token(continuity.get("latest_delivery_channel"))
-    status = _normalize_token(continuity.get("latest_delivery_status"))
-    return channel in _AMBIENT_PROVEN_VISIBLE_CHANNELS or status in _AMBIENT_PROVEN_VISIBLE_STATUSES
+    return visibility_contract.delivery_is_visible(
+        channel=continuity.get("latest_delivery_channel"),
+        status=continuity.get("latest_delivery_status"),
+    )
 
 
 def _hidden_duplicate_suppression(*, suppressed_reason: str, continuity: Mapping[str, Any]) -> bool:

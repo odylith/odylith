@@ -26,7 +26,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 683,
+      "event_index": 249,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -132,7 +132,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 659,
+      "event_index": 247,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",

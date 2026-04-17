@@ -7,17 +7,11 @@ from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visibility_contract
+from odylith.runtime.intervention_engine import visibility_replay
 
 
-LIVE_BOUNDARY = "---"
-_STOP_RECOVERABLE_LIVE_KINDS: tuple[str, ...] = (
-    "capture_proposed",
-    "intervention_card",
-    "ambient_signal",
-    "intervention_teaser",
-)
-_STOP_RECOVERY_SKIP_STATUSES: frozenset[str] = frozenset({"assistant_chat_confirmed", "manual_visible"})
-_STOP_RECOVERY_SKIP_CHANNELS: frozenset[str] = frozenset({"assistant_chat_transcript", "manual_visible_command", "stop_one_shot_guard"})
+LIVE_BOUNDARY = visibility_contract.LIVE_BOUNDARY
 
 
 def _normalize_string(value: Any) -> str:
@@ -42,12 +36,7 @@ def _normalize_block_string(value: Any) -> str:
 
 
 def wrap_live_text(value: Any) -> str:
-    text = _normalize_block_string(value)
-    if not text:
-        return ""
-    if text.startswith(f"{LIVE_BOUNDARY}\n") and text.endswith(f"\n{LIVE_BOUNDARY}"):
-        text = _normalize_block_string(text[len(LIVE_BOUNDARY) + 1 : -(len(LIVE_BOUNDARY) + 1)])
-    return f"{LIVE_BOUNDARY}\n\n{text}\n\n{LIVE_BOUNDARY}"
+    return visibility_contract.wrap_live_boundary(value)
 
 
 def _normalize_string_list(value: Any) -> list[str]:
@@ -171,29 +160,15 @@ def recent_session_live_markdown(*, repo_root: Path, session_id: str, limit: int
     normalized_session = _normalize_string(session_id)
     if not normalized_session:
         return ""
-    for event in reversed(
-        stream_state.load_recent_intervention_events(
-            repo_root=repo_root,
-            limit=max(1, int(limit)),
-            session_id=normalized_session,
-        )
-    ):
-        kind = _normalize_string(event.get("kind")).lower()
-        if kind not in _STOP_RECOVERABLE_LIVE_KINDS:
-            continue
-        if _normalize_string(event.get("turn_phase")).lower() == "stop_summary":
-            continue
-        if _normalize_string(event.get("delivery_status")).lower() in _STOP_RECOVERY_SKIP_STATUSES:
-            continue
-        if _normalize_string(event.get("delivery_channel")).lower() in _STOP_RECOVERY_SKIP_CHANNELS:
-            continue
-        display = _normalize_block_string(event.get("display_markdown")) or _normalize_block_string(event.get("display_plain"))
-        if display:
-            return wrap_live_text(display)
-        summary = _normalize_string(event.get("summary"))
-        if summary:
-            return wrap_live_text(summary)
-    return ""
+    return visibility_replay.replayable_chat_markdown(
+        repo_root=repo_root,
+        session_id=normalized_session,
+        limit=limit,
+        max_live_blocks=4,
+        ambient_cap=3,
+        include_assist=False,
+        include_teaser=True,
+    )
 
 
 def observation_envelope(

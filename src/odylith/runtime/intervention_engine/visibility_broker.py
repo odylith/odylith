@@ -19,33 +19,13 @@ from typing import Mapping
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visibility_contract
 
-VISIBLE_DELIVERY_STATUSES: frozenset[str] = frozenset(
-    {
-        "assistant_chat_confirmed",
-        "best_effort_visible",
-        "manual_visible",
-        "stop_continuation_ready",
-    }
-)
-VISIBLE_DELIVERY_CHANNELS: frozenset[str] = frozenset(
-    {
-        "assistant_chat_transcript",
-        "manual_visible_command",
-        "stdout_teaser",
-        "stop_one_shot_guard",
-    }
-)
-ASSISTANT_RENDER_REQUIRED_STATUS = "assistant_render_required"
-ASSISTANT_RENDER_REQUIRED_CHANNEL = "assistant_visible_fallback"
-LIVE_BOUNDARY_REQUIRED_KINDS: frozenset[str] = frozenset(
-    {
-        "ambient_signal",
-        "capture_proposed",
-        "intervention_card",
-        "intervention_teaser",
-    }
-)
+VISIBLE_DELIVERY_STATUSES = visibility_contract.VISIBLE_DELIVERY_STATUSES
+VISIBLE_DELIVERY_CHANNELS = visibility_contract.VISIBLE_DELIVERY_CHANNELS
+ASSISTANT_RENDER_REQUIRED_STATUS = visibility_contract.ASSISTANT_RENDER_REQUIRED_STATUS
+ASSISTANT_RENDER_REQUIRED_CHANNEL = visibility_contract.ASSISTANT_RENDER_REQUIRED_CHANNEL
+LIVE_BOUNDARY_REQUIRED_KINDS = visibility_contract.LIVE_BOUNDARY_REQUIRED_KINDS
 
 
 @dataclass(frozen=True)
@@ -79,28 +59,15 @@ class VisibleInterventionDecision:
 
 
 def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
+    return visibility_contract.normalize_string(value)
 
 
 def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
+    return visibility_contract.normalize_token(value)
 
 
 def _normalize_block_string(value: Any) -> str:
-    text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
-    rows: list[str] = []
-    blank_run = 0
-    for raw_line in text.split("\n"):
-        line = str(raw_line).rstrip()
-        if not line.strip():
-            blank_run += 1
-            if blank_run > 1:
-                continue
-            rows.append("")
-            continue
-        blank_run = 0
-        rows.append(line)
-    return "\n".join(rows).strip()
+    return visibility_contract.normalize_block_string(value)
 
 
 def _mapping(value: Any) -> dict[str, Any]:
@@ -239,12 +206,7 @@ def reports_visibility_failure(*, prompt: str = "", summary: str = "") -> bool:
 
 
 def _wrap_live_text(value: str) -> str:
-    text = _normalize_block_string(value)
-    if not text:
-        return ""
-    if text.startswith("---\n") and text.endswith("\n---"):
-        text = _normalize_block_string(text[4:-4])
-    return f"---\n\n{text}\n\n---"
+    return visibility_contract.wrap_live_boundary(value)
 
 
 def _visibility_failure_observation(*, host_family: str) -> str:
@@ -290,7 +252,7 @@ def _render_developer_context(
 
 
 def _delivery_is_visible(*, channel: str, status: str) -> bool:
-    return _normalize_token(status) in VISIBLE_DELIVERY_STATUSES or _normalize_token(channel) in VISIBLE_DELIVERY_CHANNELS
+    return visibility_contract.delivery_is_visible(channel=channel, status=status)
 
 
 def _default_delivery(
@@ -506,14 +468,11 @@ def append_manual_visible_text(
 
 
 def _strip_live_boundary(value: str) -> str:
-    text = _normalize_block_string(value)
-    if text.startswith("---\n") and text.endswith("\n---"):
-        return _normalize_block_string(text[4:-4])
-    return text
+    return visibility_contract.strip_live_boundary(value)
 
 
 def _requires_live_boundary(row: Mapping[str, Any]) -> bool:
-    return _normalize_token(row.get("kind")) in LIVE_BOUNDARY_REQUIRED_KINDS
+    return visibility_contract.event_requires_live_boundary(row)
 
 
 def _live_boundary_blocks(value: str) -> list[str]:
@@ -588,23 +547,31 @@ def confirm_assistant_chat_delivery(
     normalized_host = _normalize_token(host_family)
     confirmed: list[dict[str, Any]] = []
     seen_keys: set[str] = set()
+    already_chat_confirmed_keys: set[str] = set()
+    for row in rows:
+        if normalized_host and visibility_contract.event_host_family(row) != normalized_host:
+            continue
+        display = visibility_contract.event_display_text(row)
+        event_key = visibility_contract.event_confirmation_key(row) if display else ""
+        if event_key and visibility_contract.event_chat_confirmed(row):
+            already_chat_confirmed_keys.add(event_key)
     for row in reversed(rows):
-        if normalized_host and _normalize_token(row.get("host_family")) != normalized_host:
+        if normalized_host and visibility_contract.event_host_family(row) != normalized_host:
             continue
-        if _delivery_is_visible(
-            channel=_normalize_string(row.get("delivery_channel")),
-            status=_normalize_string(row.get("delivery_status")),
-        ):
+        if visibility_contract.event_chat_confirmed(row):
             continue
-        display = _normalize_block_string(row.get("display_markdown")) or _normalize_block_string(row.get("display_plain"))
+        display = visibility_contract.event_display_text(row)
         if not display:
             continue
         if not _confirmed_display_present(row=row, display=display, message=message):
             continue
-        event_key = _normalize_string(row.get("intervention_key")) or _hash_payload(_strip_live_boundary(display))
-        if event_key in seen_keys:
+        confirmation_key = visibility_contract.event_confirmation_key(row)
+        if confirmation_key in already_chat_confirmed_keys:
             continue
-        seen_keys.add(event_key)
+        if confirmation_key in seen_keys:
+            continue
+        seen_keys.add(confirmation_key)
+        intervention_key = _normalize_string(row.get("intervention_key")) or _hash_payload(_strip_live_boundary(display))
         display_markdown = _confirmed_display_markdown(row=row, display=display)
         confirmed.append(
             stream_state.append_intervention_event(
@@ -613,7 +580,7 @@ def confirm_assistant_chat_delivery(
                 summary=_normalize_string(row.get("summary")) or "Odylith chat-visible delivery confirmed.",
                 session_id=normalized_session,
                 host_family=host_family,
-                intervention_key=event_key,
+                intervention_key=intervention_key,
                 turn_phase=_normalize_string(row.get("turn_phase")) or "stop_summary",
                 workstreams=row.get("workstreams") if isinstance(row.get("workstreams"), list) else (),
                 artifacts=row.get("artifacts") if isinstance(row.get("artifacts"), list) else (),
@@ -628,7 +595,10 @@ def confirm_assistant_chat_delivery(
                 delivery_channel="assistant_chat_transcript",
                 delivery_status="assistant_chat_confirmed",
                 render_surface=render_surface,
-                metadata=row.get("metadata") if isinstance(row.get("metadata"), Mapping) else {},
+                metadata={
+                    **(dict(row.get("metadata")) if isinstance(row.get("metadata"), Mapping) else {}),
+                    "chat_confirmation_key": confirmation_key,
+                },
             )
         )
     return confirmed

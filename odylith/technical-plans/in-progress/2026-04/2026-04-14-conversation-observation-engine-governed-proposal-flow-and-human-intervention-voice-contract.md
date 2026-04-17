@@ -193,6 +193,11 @@ Related Bugs:
 - [ ] More than one ambient block can be useful when the propositions are
       genuinely distinct and high value; the cap should be adaptive and
       noise-aware, not effectively hard-coded to one.
+- [ ] Structural templating is necessary for labels, rulers, proof, and
+      confirmation, but the intervention body must be proposition-native. Fact
+      headlines/details and action rationales should drive claim,
+      consequence, and next-step copy; moment kind should not choose a canned
+      sentence family.
 
 ## Must-Ship
 - [x] Add `src/odylith/runtime/intervention_engine/` as a first-class shared
@@ -317,6 +322,27 @@ Related Bugs:
       block kind, and a concrete Proposal still suppresses as duplicate when
       it repeats the exact Observation proposition instead of adding distinct
       next-step content.
+- [x] Replace moment-kind phrase-bank voice rendering with proposition-native
+      composition. Teaser, Ambient, Observation, and Proposal keep deterministic
+      labels/rulers/confirmation structure, but their body text now comes from
+      supported fact claim/detail content and proposal action rationales.
+- [x] Split fallback-visible delivery accounting from strict assistant transcript
+      proof. `intervention-status` now reports manual/best-effort/Stop
+      continuation events as ledger-visible but unconfirmed until exact
+      Odylith Markdown appears in the assistant message, and status renders
+      Teaser diagnostic, Ambient, Observation/Proposal, and Assist visibility
+      ratios instead of hiding family gaps behind one aggregate count.
+- [x] Add a shared transcript-replay read model for true chat visibility.
+      Pending hidden, manual-visible, best-effort, and Stop-continuation
+      blocks now remain replayable until exact assistant transcript
+      confirmation, with missing live rulers repaired, Assist kept outside the
+      live ruler, and prompt/checkpoint fallback, `visible-intervention`,
+      `intervention-status`, and Stop all consuming the same replay primitive.
+- [x] Harden v0.1.10 to v0.1.11 ledger migration behavior: future visible
+      fallback events carry explicit host/session envelope fields, legacy
+      visible rows infer host family from `render_surface`, and exact assistant
+      transcript probes can promote fallback-visible events once without
+      duplicating confirmations.
 
 ## Defer
 - [ ] User-selectable voice packs or per-repo voice overrides.
@@ -341,9 +367,10 @@ Related Bugs:
       concrete readiness instead of being assembled eagerly on every signal.
 - [x] Observation and proposal markdown reads as warm, clear, precise, and
       human rather than mechanical or bureaucratic.
-- [x] Voice variation is now deterministic by selected moment type, so
-      continuation, boundary, guardrail, recovery, and capture moments do not
-      all sound like the same branded template.
+- [x] Voice composition is now deterministic and proposition-native: selected
+      facts and action rationales drive the claim, implication, teaser body,
+      proposal lead, and proposal bullets while fixed structural wrappers stay
+      centralized.
 - [x] The engine now uses session-aware escalation and repeat suppression, so
       a forming beat, a corroborated return beat, and a stale repeated beat no
       longer travel through the same selector path.
@@ -526,9 +553,10 @@ Related Bugs:
       instead of suppressing a closeout just because any prior Odylith label
       appeared.
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_conversation_surface.py tests/unit/runtime/test_intervention_host_surface_runtime.py tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_stop_summary.py tests/unit/runtime/test_intervention_delivery_status.py` (`71 passed`)
-- [x] Stop now replays the latest unseen Ambient Highlight, Observation, or
-      Proposal from the session event stream before Assist, using the same
-      one-shot continuation path that made Assist visible.
+- [x] Stop now replays the bounded distinct set of unseen Ambient Highlight,
+      Observation, and Proposal blocks from the session event stream before
+      Assist, using the same one-shot continuation path that made Assist
+      visible.
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_host_surface_runtime.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_stop_summary.py` (`39 passed`)
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_value_engine.py tests/unit/runtime/test_intervention_value_engine_benchmark.py tests/unit/install/test_value_engine_migration.py` (`12 passed`)
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_conversation_surface.py tests/unit/runtime/test_host_visible_intervention.py tests/unit/runtime/test_intervention_visibility_broker.py tests/unit/runtime/test_intervention_host_surface_runtime.py` (`58 passed`)
@@ -563,3 +591,86 @@ Related Bugs:
 - [x] `odylith sync --repo-root . --force --runtime-mode standalone
       --proceed-with-overlap` passed, followed by `odylith sync --repo-root .
       --check-only --runtime-mode standalone` and `git diff --check`.
+- [x] Proposition-native voice hardening validation:
+      `python -m py_compile src/odylith/runtime/intervention_engine/voice.py
+      src/odylith/runtime/surfaces/codex_host_stop_summary.py
+      src/odylith/runtime/surfaces/claude_host_stop_summary.py
+      tests/unit/runtime/test_intervention_voice.py` passed.
+- [x] Proposition-native voice focused regression:
+      `pytest -q tests/unit/runtime/test_intervention_voice.py
+      tests/unit/runtime/test_intervention_engine.py
+      tests/unit/runtime/test_intervention_conversation_surface.py
+      tests/unit/runtime/test_codex_host_prompt_context.py
+      tests/unit/runtime/test_claude_host_prompt_context.py
+      tests/unit/runtime/test_codex_host_stop_summary.py
+      tests/unit/runtime/test_claude_host_stop_summary.py
+      tests/unit/runtime/test_intervention_cross_host_parity.py
+      tests/unit/runtime/test_intervention_engine_performance.py
+      tests/unit/runtime/test_intervention_host_surface_runtime.py
+      tests/unit/runtime/test_host_visible_intervention.py
+      tests/unit/runtime/test_host_hook_cli_dispatch.py
+      tests/unit/runtime/test_codex_host_post_bash_checkpoint.py
+      tests/unit/runtime/test_claude_host_post_bash_checkpoint.py
+      tests/unit/runtime/test_claude_host_post_edit_checkpoint.py`
+      (`163 passed`).
+- [x] Full runtime unit regression after voice hardening:
+      `pytest -q tests/unit/runtime` (`1987 passed`).
+- [x] Browser-visible and install/guidance regression after voice hardening:
+      `pytest -q tests/integration/runtime/test_intervention_visibility_browser.py
+      tests/integration/install/test_manager.py tests/unit/install/test_agents.py`
+      (`88 passed`).
+- [x] Visibility accounting regression after ledger-proof tightening:
+      `python3 -m py_compile
+      src/odylith/runtime/intervention_engine/delivery_ledger.py
+      src/odylith/runtime/surfaces/host_intervention_status.py
+      src/odylith/runtime/intervention_engine/alignment_context.py
+      src/odylith/runtime/intervention_engine/visibility_broker.py
+      src/odylith/runtime/intervention_engine/host_surface_runtime.py`
+      passed, and `PYTHONPATH=src python3 -m pytest -q
+      tests/unit/runtime/test_intervention_delivery_status.py
+      tests/unit/runtime/test_host_visible_intervention.py
+      tests/unit/runtime/test_intervention_visibility_broker.py
+      tests/unit/runtime/test_intervention_host_surface_runtime.py`
+      (`57 passed`).
+- [x] Governance/browser proof after strict transcript-vs-ledger split:
+      `PYTHONPATH=src python3 -m odylith.cli sync --repo-root .
+      --check-only --runtime-mode standalone --proceed-with-overlap ...`
+      passed after refreshing Registry forensics, Atlas freshness, and delivery
+      intelligence; `PYTHONPATH=src python3 -m pytest -q
+      tests/integration/runtime/test_intervention_visibility_browser.py`
+      (`4 passed`); `git diff --check` passed.
+- [x] Reuse hardening: extracted shared visibility semantics into
+      `src/odylith/runtime/intervention_engine/visibility_contract.py` and
+      rewired the delivery ledger, visibility broker, alignment context,
+      `intervention-status`, and ambient dedupe to use the same host-family,
+      visible-family, ledger-visible, chat-confirmed, pending-confirmation,
+      and proof-status contract. Focused regression:
+      `PYTHONPATH=src python3 -m pytest -q
+      tests/unit/runtime/test_visibility_contract.py
+      tests/unit/runtime/test_intervention_delivery_status.py
+      tests/unit/runtime/test_host_visible_intervention.py
+      tests/unit/runtime/test_intervention_visibility_broker.py
+      tests/unit/runtime/test_intervention_host_surface_runtime.py
+      tests/unit/runtime/test_intervention_conversation_surface.py`
+      (`80 passed`).
+- [x] Transcript-replay hardening: added
+      `src/odylith/runtime/intervention_engine/visibility_replay.py` and
+      rewired prompt submit, post-tool checkpoints, manual visible fallback,
+      status, and Stop recovery so unconfirmed branded blocks replay as exact
+      assistant-visible Markdown until `assistant_chat_confirmed` is recorded.
+      Focused regression:
+      `PYTHONPATH=src python3 -m pytest -q
+      tests/unit/runtime/test_visibility_contract.py
+      tests/unit/runtime/test_visibility_replay.py
+      tests/unit/runtime/test_intervention_delivery_status.py
+      tests/unit/runtime/test_intervention_host_surface_runtime.py
+      tests/unit/runtime/test_host_visible_intervention.py
+      tests/unit/runtime/test_codex_host_prompt_context.py
+      tests/unit/runtime/test_claude_host_prompt_context.py
+      tests/unit/runtime/test_codex_host_post_bash_checkpoint.py
+      tests/unit/runtime/test_claude_host_post_bash_checkpoint.py
+      tests/unit/runtime/test_claude_host_post_edit_checkpoint.py
+      tests/unit/runtime/test_codex_host_stop_summary.py
+      tests/unit/runtime/test_claude_host_stop_summary.py
+      tests/unit/runtime/test_intervention_visibility_broker.py`
+      (`141 passed`).

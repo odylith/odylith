@@ -36,14 +36,14 @@ def _shared_checkpoint_bundle() -> dict[str, object]:
                 "suppressed_reason": "",
                 "markdown_text": (
                     "-----\n"
-                    "Odylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\n"
+                    "Odylith Proposal: Preserve the chat-visible UX contract.\n\n"
                     "- Radar: extend B-096.\n"
                     "- Registry: refresh governance-intervention-engine.\n\n"
                     "To apply, say \"apply this proposal\".\n"
                     "-----"
                 ),
                 "plain_text": (
-                    "Odylith Proposal: Odylith is proposing one clean governed bundle for this moment."
+                    "Odylith Proposal: Preserve the chat-visible UX contract."
                 ),
             },
         },
@@ -60,8 +60,7 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
         "candidate": {
             "stage": "teaser",
             "teaser_text": (
-                "Odylith can already see governed truth starting to crystallize here. "
-                "One more corroborating signal and it can turn that into a proposal."
+                "Odylith is tracking this signal: This conversation is ready to become governed truth."
             ),
         }
     }
@@ -78,13 +77,16 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
     assert codex_text == claude_text
 
 
-def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(monkeypatch, capsys) -> None:
+def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
     intervention = {
         "candidate": {
             "stage": "teaser",
             "teaser_text": (
-                "Odylith can already see governed truth starting to crystallize here. "
-                "One more corroborating signal and it can turn that into a proposal."
+                "Odylith is tracking this signal: This conversation is ready to become governed truth."
             ),
         }
     }
@@ -117,7 +119,7 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(monkeypa
             )
         ),
     )
-    assert cli.main(["codex", "prompt-context", "--repo-root", "."]) == 0
+    assert cli.main(["codex", "prompt-context", "--repo-root", str(tmp_path)]) == 0
     codex_payload = json.loads(capsys.readouterr().out)
     monkeypatch.setattr(
         "sys.stdin",
@@ -130,7 +132,7 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(monkeypa
             )
         ),
     )
-    assert cli.main(["claude", "prompt-teaser", "--repo-root", "."]) == 0
+    assert cli.main(["claude", "prompt-teaser", "--repo-root", str(tmp_path)]) == 0
     claude_visible_text = capsys.readouterr().out
 
     assert codex_payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")

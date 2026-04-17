@@ -40,10 +40,10 @@
     "empty_reasons": [],
     "explicit_event_count": 85,
     "mapped_workstream_evidence_count": 55,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 86
+    "timeline_event_count": 85
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -55,7 +55,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 683,
+      "event_index": 249,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -159,36 +159,9 @@
       ]
     },
     {
-      "artifacts": [
-        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "src/odylith/runtime/context_engine/odylith_context_engine_grounding_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_packet_bootstrap_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_packet_finalize_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
-        "src/odylith/runtime/context_engine/odylith_runtime_surface_summary.py",
-        "src/odylith/runtime/context_engine/session_bootstrap_payload_compactor.py",
-        "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json",
-        "src/odylith/runtime/context_engine/execution_engine_handshake.py"
-      ],
-      "confidence": "high",
-      "event_index": 991,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith-context-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md, odylith/runtime/source/optimization-evaluation-corpus.v1.json +10 more",
-      "ts_iso": "2026-04-17T01:33:31-07:00",
-      "workstreams": []
-    },
-    {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 659,
+      "event_index": 247,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -294,7 +267,7 @@
     {
       "artifacts": [],
       "confidence": "medium",
-      "event_index": 510,
+      "event_index": 235,
       "explicit_components": [],
       "kind": "intervention_teaser",
       "mapped_components": [
@@ -318,7 +291,7 @@
         "tests/unit/runtime/test_intervention_visibility_broker.py"
       ],
       "confidence": "high",
-      "event_index": 650,
+      "event_index": 246,
       "explicit_components": [
         "compass",
         "governance-intervention-engine",
@@ -346,7 +319,7 @@
         "tests/unit/runtime/test_component_registry_candidate_policy.py"
       ],
       "confidence": "high",
-      "event_index": 596,
+      "event_index": 244,
       "explicit_components": [
         "compass",
         "execution-engine",
@@ -376,7 +349,7 @@
         "tests/unit/runtime/test_execution_engine_handshake.py"
       ],
       "confidence": "high",
-      "event_index": 588,
+      "event_index": 243,
       "explicit_components": [
         "atlas",
         "benchmark",
@@ -411,7 +384,7 @@
         "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
       ],
       "confidence": "high",
-      "event_index": 545,
+      "event_index": 242,
       "explicit_components": [
         "benchmark",
         "execution-engine",
@@ -437,7 +410,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 544,
+      "event_index": 241,
       "explicit_components": [
         "benchmark",
         "execution-engine",
@@ -468,7 +441,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 543,
+      "event_index": 240,
       "explicit_components": [
         "atlas",
         "benchmark",
@@ -504,7 +477,7 @@
         "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
       ],
       "confidence": "high",
-      "event_index": 542,
+      "event_index": 239,
       "explicit_components": [
         "atlas",
         "benchmark",
@@ -537,7 +510,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 313,
+      "event_index": 215,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -561,7 +534,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 312,
+      "event_index": 214,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -585,7 +558,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 309,
+      "event_index": 211,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -611,7 +584,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 308,
+      "event_index": 210,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -635,7 +608,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 300,
+      "event_index": 207,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -661,7 +634,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 299,
+      "event_index": 206,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -685,7 +658,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 297,
+      "event_index": 204,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -711,7 +684,7 @@
         "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
-      "event_index": 296,
+      "event_index": 203,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -735,7 +708,7 @@
         "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
       ],
       "confidence": "high",
-      "event_index": 294,
+      "event_index": 202,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -759,7 +732,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 285,
+      "event_index": 201,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -785,7 +758,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 284,
+      "event_index": 200,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -809,7 +782,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 282,
+      "event_index": 198,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -833,7 +806,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 278,
+      "event_index": 197,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -859,7 +832,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 277,
+      "event_index": 196,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -883,7 +856,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 276,
+      "event_index": 195,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -909,7 +882,7 @@
         "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 275,
+      "event_index": 194,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -933,7 +906,7 @@
         "README.md"
       ],
       "confidence": "high",
-      "event_index": 233,
+      "event_index": 185,
       "explicit_components": [
         "odylith"
       ],
@@ -968,7 +941,7 @@
         "src/odylith/runtime/surfaces/host_visible_intervention.py"
       ],
       "confidence": "high",
-      "event_index": 333,
+      "event_index": 217,
       "explicit_components": [
         "compass",
         "execution-governance",
@@ -996,7 +969,7 @@
         "src/odylith/runtime/surfaces/host_visible_intervention.py"
       ],
       "confidence": "high",
-      "event_index": 323,
+      "event_index": 216,
       "explicit_components": [
         "casebook",
         "compass",
@@ -1024,7 +997,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 179,
+      "event_index": 177,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1048,7 +1021,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 178,
+      "event_index": 176,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1072,7 +1045,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 177,
+      "event_index": 175,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1098,7 +1071,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 176,
+      "event_index": 174,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1122,7 +1095,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 175,
+      "event_index": 173,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1146,7 +1119,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 174,
+      "event_index": 172,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1172,7 +1145,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 173,
+      "event_index": 171,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1196,7 +1169,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 172,
+      "event_index": 170,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1220,7 +1193,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 171,
+      "event_index": 169,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1244,7 +1217,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 170,
+      "event_index": 168,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1268,7 +1241,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 169,
+      "event_index": 167,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1294,7 +1267,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 168,
+      "event_index": 166,
       "explicit_components": [
         "governance-intervention-engine"
       ],
@@ -1318,7 +1291,7 @@
         "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
-      "event_index": 167,
+      "event_index": 165,
       "explicit_components": [
         "governance-intervention-engine"
       ],

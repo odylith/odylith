@@ -477,7 +477,7 @@ def test_broker_does_not_downgrade_to_ready_when_prior_hidden_beat_is_unconfirme
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True
     assert decision.visibility_summary["visible_event_count"] == 1
-    assert decision.visibility_summary["unconfirmed_event_count"] == 1
+    assert decision.visibility_summary["unconfirmed_event_count"] == 2
 
 
 def test_broker_decision_fingerprints_context_execution_memory_tribunal_and_visibility(

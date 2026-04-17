@@ -4,6 +4,7 @@ import io
 import json
 from pathlib import Path
 
+from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import claude_host_stop_summary
 
 
@@ -193,7 +194,7 @@ def test_stop_intervention_bundle_can_recover_prompt_when_last_message_is_short(
             "I still do not see any Odylith ambient highlights or interventions "
             "visible in chat."
         ),
-        display_plain="Odylith can already see governed truth taking shape here.",
+        display_plain="Odylith is tracking this signal: governed truth is taking shape here.",
     )
     seen: dict[str, object] = {}
 
@@ -299,6 +300,46 @@ def test_render_stop_summary_replays_unseen_live_beat_through_stop_lane(tmp_path
     )
 
 
+def test_render_stop_summary_replaces_teaser_with_unseen_live_beat(tmp_path: Path) -> None:
+    claude_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Observation rendered.",
+        session_id="claude-stop-replay-teaser",
+        host_family="claude",
+        intervention_key="iv-claude-stop-replay-teaser",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Observation:** The earlier card still needs chat visibility.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    rendered = claude_host_stop_summary.render_stop_summary(
+        repo_root=tmp_path,
+        payload={
+            "last_assistant_message": "Implemented the engine slice.",
+            "session_id": "claude-stop-replay-teaser",
+        },
+        conversation_bundle_override={
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "teaser",
+                    "suppressed_reason": "",
+                    "teaser_text": "Odylith is tracking this signal: governed visibility is still unproven.",
+                },
+                "proposal": {"eligible": False, "suppressed_reason": ""},
+            },
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept this grounded.",
+                "plain_text": "Odylith Assist: kept this grounded.",
+            },
+        },
+    )
+
+    assert "**Odylith Observation:** The earlier card still needs chat visibility." in rendered
+    assert "Odylith is tracking this signal" not in rendered
+
+
 def test_main_emits_system_message_for_visible_stop_surface(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         claude_host_stop_summary.claude_host_shared,
@@ -339,6 +380,74 @@ def test_main_emits_system_message_for_visible_stop_surface(monkeypatch, tmp_pat
     assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."
     assert payload["decision"] == "block"
     assert "**Odylith Assist:** kept this grounded." in payload["reason"]
+
+
+def test_main_replays_pending_chat_blocks_before_stop_assist(monkeypatch, tmp_path: Path) -> None:
+    claude_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending stop replay.",
+        session_id="claude-stop-main-replay",
+        host_family="claude",
+        intervention_key="claude-stop-main-replay-key",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Observation:** Claude Stop must replay this before Assist.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+    monkeypatch.setattr(
+        claude_host_stop_summary.claude_host_shared,
+        "run_compass_log",
+        lambda **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "session_id": "claude-stop-main-replay",
+                    "last_assistant_message": (
+                        "Implemented the stop-summary visible surface fix for B-096 and "
+                        "validated the focused runtime hook tests."
+                    ),
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        claude_host_stop_summary,
+        "_stop_intervention_bundle",
+        lambda **kwargs: {
+            "observation": surface_runtime.observation_envelope(
+                host_family="claude",
+                turn_phase="stop_summary",
+                session_id="claude-stop-main-replay",
+                assistant_summary="Implemented the stop-summary visible surface fix.",
+            ),
+            "intervention_bundle": {
+                "candidate": {"stage": "silent", "suppressed_reason": ""},
+                "proposal": {"eligible": False, "suppressed_reason": ""},
+            },
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** kept this grounded.",
+                "plain_text": "Odylith Assist: kept this grounded.",
+            },
+        },
+    )
+    buffer = io.StringIO()
+    monkeypatch.setattr("sys.stdout", buffer)
+
+    exit_code = claude_host_stop_summary.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(buffer.getvalue())
+    assert payload["systemMessage"] == (
+        "---\n\n"
+        "**Odylith Observation:** Claude Stop must replay this before Assist.\n"
+        "\n---\n\n"
+        "**Odylith Assist:** kept this grounded."
+    )
+    assert payload["decision"] == "block"
 
 
 def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(

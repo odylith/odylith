@@ -67,7 +67,30 @@ def test_codex_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pat
     assert observation["tribunal_summary"]["source"] == "intervention_alignment_context"
 
 
-def test_main_writes_user_prompt_hook_json(monkeypatch, capsys) -> None:
+def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending prompt replay.",
+        session_id="codex-prompt-replay",
+        host_family="codex",
+        intervention_key="codex-prompt-replay-key",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** Prompt must carry this pending block.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    rendered = codex_host_prompt_context.render_codex_prompt_system_message(
+        repo_root=str(tmp_path),
+        prompt="Do we still have a visible block pending?",
+        session_id="codex-prompt-replay",
+    )
+
+    assert rendered == "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---"
+
+
+def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
         "sys.stdin",
         io.StringIO(json.dumps({"prompt": "Please inspect B-088 next."})),
@@ -83,7 +106,7 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, capsys) -> None:
         lambda **_: {},
     )
 
-    exit_code = codex_host_prompt_context.main(["--repo-root", "."])
+    exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
@@ -92,7 +115,7 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, capsys) -> None:
     assert "systemMessage" not in payload
 
 
-def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, capsys) -> None:
+def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
         "sys.stdin",
         io.StringIO(json.dumps({"prompt": "Design a conversation observation engine with governed proposal flow."})),
@@ -105,20 +128,19 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, capsys) -> 
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith can already see governed truth starting to crystallize here. "
-                        "One more corroborating signal and it can turn that into a proposal."
+                        "Odylith is tracking this signal: This conversation is ready to become governed truth."
                     ),
                 }
             }
         },
     )
 
-    exit_code = codex_host_prompt_context.main(["--repo-root", "."])
+    exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
-    assert "Odylith can already" in payload["hookSpecificOutput"]["additionalContext"]
-    assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith can already")
+    assert "Odylith is tracking this signal:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith is tracking this signal:")
     assert payload["systemMessage"].endswith(f"\n{surface_runtime.LIVE_BOUNDARY}")

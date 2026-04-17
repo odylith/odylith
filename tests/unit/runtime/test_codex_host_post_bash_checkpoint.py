@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
+from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 
@@ -274,6 +275,52 @@ def test_post_bash_checkpoint_emits_skipped_message_when_launcher_unavailable(
     assert "skipped" in payload["systemMessage"]
 
 
+def test_post_bash_checkpoint_prioritizes_pending_chat_replay(monkeypatch, capsys, tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending checkpoint replay.",
+        session_id="codex-post-replay",
+        host_family="codex",
+        intervention_key="codex-post-replay-key",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** Checkpoint must carry this pending block.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "tool_input": {"command": "apply_patch <<'PATCH'"},
+                    "session_id": "codex-post-replay",
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint.codex_host_shared,
+        "run_odylith",
+        lambda **kwargs: None,
+    )
+    _patch_no_governed_changes(monkeypatch)
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "_post_bash_bundle",
+        lambda **kwargs: {},
+    )
+
+    exit_code = codex_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["systemMessage"] == (
+        "---\n\n**Odylith Observation:** Checkpoint must carry this pending block.\n\n---"
+    )
+    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
+
+
 def test_governed_changed_paths_parses_porcelain_z_output(monkeypatch, tmp_path: Path) -> None:
     # Simulate git status --porcelain -z output with a mix of:
     # - modified governed bug markdown (should match)
@@ -463,8 +510,8 @@ def test_main_routes_checkpoint_context_through_additional_context(
                 "proposal": {
                     "eligible": True,
                     "suppressed_reason": "",
-                    "markdown_text": 'Odylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\nTo apply, say "apply this proposal".',
-                    "plain_text": "Odylith Proposal: one clean governed bundle.",
+                    "markdown_text": 'Odylith Proposal: Preserve the chat-visible UX contract.\n\nTo apply, say "apply this proposal".',
+                    "plain_text": "Odylith Proposal: preserve the chat-visible UX contract.",
                 },
             },
             "closeout_bundle": {

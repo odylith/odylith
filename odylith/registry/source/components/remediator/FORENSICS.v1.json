@@ -29,10 +29,10 @@
     "empty_reasons": [],
     "explicit_event_count": 5,
     "mapped_workstream_evidence_count": 5,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 6
+    "timeline_event_count": 5
   },
   "name": "Remediator",
   "path_prefixes": [
@@ -44,7 +44,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 683,
+      "event_index": 249,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -150,7 +150,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 659,
+      "event_index": 247,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -255,23 +255,6 @@
     },
     {
       "artifacts": [
-        "odylith/registry/source/components/remediator/CURRENT_SPEC.md",
-        "src/odylith/runtime/reasoning/remediator.py"
-      ],
-      "confidence": "high",
-      "event_index": 995,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "remediator"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/remediator/CURRENT_SPEC.md, src/odylith/runtime/reasoning/remediator.py",
-      "ts_iso": "2026-04-16T16:45:29-07:00",
-      "workstreams": []
-    },
-    {
-      "artifacts": [
         "src/odylith/runtime/context_engine/execution_engine_handshake.py",
         "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
         "src/odylith/runtime/orchestration/subagent_router_execution_engine_runtime.py",
@@ -279,7 +262,7 @@
         "tests/unit/runtime/test_execution_engine_handshake.py"
       ],
       "confidence": "high",
-      "event_index": 588,
+      "event_index": 243,
       "explicit_components": [
         "atlas",
         "benchmark",
@@ -311,7 +294,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 544,
+      "event_index": 241,
       "explicit_components": [
         "benchmark",
         "execution-engine",

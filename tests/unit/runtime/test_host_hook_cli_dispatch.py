@@ -52,8 +52,8 @@ def test_codex_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
                 "proposal": {
                     "eligible": True,
                     "suppressed_reason": "",
-                    "markdown_text": '-----\nOdylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\n- Radar: extend B-096.\n\nTo apply, say "apply this proposal".\n-----',
-                    "plain_text": 'Odylith Proposal: Odylith is proposing one clean governed bundle for this moment.',
+                    "markdown_text": '-----\nOdylith Proposal: Preserve the chat-visible UX contract.\n\n- Radar: extend B-096.\n\nTo apply, say "apply this proposal".\n-----',
+                    "plain_text": 'Odylith Proposal: Preserve the chat-visible UX contract.',
                 },
             },
             "closeout_bundle": {
@@ -114,8 +114,8 @@ def test_claude_post_edit_checkpoint_cli_dispatch_emits_visible_intervention(
                 "proposal": {
                     "eligible": True,
                     "suppressed_reason": "",
-                    "markdown_text": '-----\nOdylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\n- Registry: refresh the owned dossier.\n\nTo apply, say "apply this proposal".\n-----',
-                    "plain_text": 'Odylith Proposal: Odylith is proposing one clean governed bundle for this moment.',
+                    "markdown_text": '-----\nOdylith Proposal: Preserve the chat-visible UX contract.\n\n- Registry: refresh the owned dossier.\n\nTo apply, say "apply this proposal".\n-----',
+                    "plain_text": 'Odylith Proposal: Preserve the chat-visible UX contract.',
                 },
             },
             "closeout_bundle": {
@@ -180,8 +180,8 @@ def test_claude_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
                 "proposal": {
                     "eligible": True,
                     "suppressed_reason": "",
-                    "markdown_text": '-----\nOdylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\n- Radar: extend B-096.\n\nTo apply, say "apply this proposal".\n-----',
-                    "plain_text": 'Odylith Proposal: Odylith is proposing one clean governed bundle for this moment.',
+                    "markdown_text": '-----\nOdylith Proposal: Preserve the chat-visible UX contract.\n\n- Radar: extend B-096.\n\nTo apply, say "apply this proposal".\n-----',
+                    "plain_text": 'Odylith Proposal: Preserve the chat-visible UX contract.',
                 },
             },
             "closeout_bundle": {

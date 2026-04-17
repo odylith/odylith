@@ -130,7 +130,7 @@ def test_intervention_status_text_is_browser_visible_for_unproven_and_chat_confi
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_intervention_status_browser_distinguishes_proven_session_with_pending_hidden_beat(
+def test_intervention_status_browser_distinguishes_ledger_visible_session_with_pending_hidden_beat(
     browser_context,
     tmp_path: Path,
 ) -> None:  # noqa: ANN001
@@ -178,14 +178,17 @@ def test_intervention_status_browser_distinguishes_proven_session_with_pending_h
         wait_until="domcontentloaded",
     )
 
-    page.locator("#pending", has_text="Chat-visible proof: proven_with_pending_confirmation").wait_for(
+    page.locator("#pending", has_text="Chat-visible proof: ledger_visible_with_pending_confirmation").wait_for(
         timeout=15000
     )
     page.locator("#pending", has_text="pending chat-confirmation event(s)").wait_for(timeout=15000)
     page.locator("#pending", has_text="assistant_fallback_ready").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Ledger: 2 recent event(s), 1 proven-visible event(s), 1 pending").wait_for(
+    page.locator("#pending", has_text="Ledger: 2 recent event(s), 1 ledger-visible event(s), 0 chat-confirmed event(s), 2 pending").wait_for(
         timeout=15000
     )
+    page.locator("#pending", has_text="Assistant-visible replay:").wait_for(timeout=15000)
+    page.locator("#pending", has_text="Earlier browser-visible proof.").wait_for(timeout=15000)
+    page.locator("#pending", has_text="Later hidden proof still needs chat.").wait_for(timeout=15000)
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 

@@ -184,6 +184,20 @@ claiming ML calibration.
   recent Observation/Proposal/Ambient/Assist delivery, and pending proposal
   context from the Compass intervention stream without creating a second
   host-local truth store.
+- `src/odylith/runtime/intervention_engine/visibility_contract.py`
+  Shared delivery vocabulary and proof semantics for the intervention hot
+  path. It owns host-family inference, visible-family classification,
+  ledger-visible versus chat-confirmed detection, assistant-confirmation
+  eligibility, and proof-status classification so status, broker, alignment,
+  ledger, and ambient dedupe code cannot drift into separate interpretations
+  of the same event.
+- `src/odylith/runtime/intervention_engine/visibility_replay.py`
+  Shared transcript-replay read model for branded blocks that have been
+  generated, fallback-visible, or Stop-continuation-ready but have not yet
+  been confirmed in the assistant transcript. It dedupes by display-aware
+  confirmation key, repairs missing live rulers, keeps Assist outside live
+  rulers, applies the live ambient/intervention budget, and feeds prompt,
+  checkpoint, manual visible-intervention, status, and Stop surfaces.
 - `src/odylith/runtime/intervention_engine/visibility_broker.py`
   Shared chat-visible decision broker consumed by Codex, Claude, manual
   fallback, Stop recovery, status probes, and tests. It is the only runtime
@@ -400,21 +414,34 @@ claiming ML calibration.
 - `odylith codex intervention-status` and `odylith claude
   intervention-status` report static host readiness, a separate
   `chat_visible_proof` status for the active session, active UX lanes, recent
-  proven-visible delivery-ledger events, pending proposal count, and a fast
-  smoke command.
+  ledger-visible delivery events, strict chat-confirmed event count, family
+  visibility ratios for Teaser diagnostics, Ambient, Observation/Proposal,
+  and Assist, pending proposal count, an exact assistant-visible replay block
+  for unconfirmed branded events, and a fast smoke command.
   These commands are the cheap operator proof before claiming a session has
   live Observation/Proposal/Ambient/Assist delivery; `Activation: ready` alone
   is static wiring, not session-visible proof.
 - `assistant_fallback_ready`, `assistant_render_required`, and structured
   `systemMessage` generation are hidden-ready or assistant-required states,
   not session-visible proof. The delivery ledger may retain those events for
-  Stop replay and continuity, but chat-visible proof requires a proven visible
-  channel such as manual visible Markdown, best-effort stdout teaser, Stop
-  one-shot continuation, or `assistant_chat_confirmed`.
+  Stop replay and continuity, but they stay pending until a visible delivery
+  path or strict transcript confirmation exists.
+- `manual_visible`, `best_effort_visible`, and `stop_continuation_ready` are
+  ledger-visible fallback states. They prove Odylith produced assistant-facing
+  visible Markdown through a fallback path, but they do not prove the host chat
+  transcript contains that Markdown. Status surfaces must report these as
+  `ledger_visible_unconfirmed` or `ledger_visible_with_pending_confirmation`
+  until exact assistant transcript confirmation promotes the event.
 - `assistant_chat_confirmed` is recorded only when a status probe or Stop path
-  sees the exact Odylith Markdown from a prior non-visible beat in the latest
-  assistant message. A generated hook payload, `systemMessage`, or
-  `additionalContext` field must never promote itself to chat-visible proof.
+  sees the exact Odylith Markdown from a prior non-visible or fallback-visible
+  beat in the latest assistant message. A generated hook payload,
+  `systemMessage`, or `additionalContext` field must never promote itself to
+  chat-visible proof.
+- Delivery snapshots must infer host family from legacy `render_surface`
+  values such as `codex_visible_intervention` or
+  `claude_visible_intervention` when older events lack an explicit
+  `host_family`, so status does not undercount visible fallback rows during
+  v0.1.10 to v0.1.11 migration.
 - Stop-summary hooks may block once with a continuation reason when a real
   Observation or `Odylith Assist:` closeout was generated but is not already
   visible in the last assistant message. The `stop_hook_active` guard prevents
@@ -422,8 +449,11 @@ claiming ML calibration.
 - Stop-summary is also the hard visibility fallback for earlier live beats.
   If a prompt/checkpoint generated an Ambient Highlight, `Odylith Observation`,
   or `Odylith Proposal` through a host path that may have stayed hidden, Stop
-  may replay that latest non-closeout beat before the Assist line and send the
-  combined text through the same one-shot continuation mechanism.
+  may replay the bounded set of distinct unconfirmed live beats before the
+  Assist line and send the combined text through the same one-shot continuation
+  mechanism. Manual-visible, best-effort, and Stop-continuation rows remain
+  replayable until exact transcript confirmation proves the assistant message
+  actually carried the Markdown.
 - Stop-summary Assist may use concrete validation/pass signals from the
   assistant summary when changed paths are unavailable. This recovery path is
   proof-only: it may say the proof stayed tight, but it must not claim
@@ -547,11 +577,14 @@ claiming ML calibration.
   one clear implication in one breath.
 - That single line must make the interjection explicit. The user should be
   able to tell immediately why Odylith is stepping in now.
-- The default voice renderer must vary by selected moment kind such as
-  continuation, boundary, guardrail, recovery, or capture. Different governed
-  moments must not collapse into the same stock sentence stem.
+- The default voice renderer must keep the structural frame deterministic while
+  deriving the body from supported proposition content: fact headline, fact
+  detail, supporting evidence, and proposal action rationale. Moment kind may
+  still steer eligibility and label choice, but it must not be the primary
+  sentence-template selector.
 - Voice variation must stay deterministic across Codex, Claude, and all lanes
-  for the same observation envelope. The product should feel alive, not random.
+  for the same observation envelope. The product should feel evidence-native,
+  not random, and never like a phrase bank with rotating stock stems.
 - `Odylith Proposal` must list flat per-surface actions, the governed delta,
   why each target belongs, and one confirmation affordance for the full
   bundle.
@@ -689,6 +722,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-16: Hardened live UX surfacing so Ambient Highlight is a distinct checkpoint/stop lane, ambient beats no longer lose to stale teasers after evidence matures, Stop can recover meaningful Assist from explicit visibility-feedback turns even when the final answer is short, and visible-delivery dedupe only suppresses exact generated labels. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-16: Routed unseen Ambient Highlight, Observation, and Proposal beats through the same Stop one-shot continuation path as Assist, so host-hidden checkpoint output no longer leaves the user seeing only `Odylith Assist`. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-16: Added explicit Markdown horizontal-rule boundaries around live teaser, ambient, Observation, and Proposal output so Odylith-owned intervention copy is visibly separated from host-agent narration, while `Odylith Assist` remains blended as the final closeout line. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-17: Replaced moment-kind phrase-bank intervention copy with proposition-native voice composition: live text keeps fixed labels/rulers/confirmation structure while deriving the claim, consequence, and proposal bullets from supported facts and action rationales. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-16: Repaired Ambient Highlight reachability by lowering the live ambient floor to the post-tool teaser floor and by allowing hidden-ready duplicate teaser/card moments to recover as ambient lines until a proven visible channel has carried the beat. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-16: Tightened delivery-ledger proof so `assistant_fallback_ready` and structured hook context no longer count as chat-visible delivery; they stay available for Stop replay without letting status or duplicate suppression pretend the user already saw the beat. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-16: Fixed the host-composed live ambient path so checkpoint bundles preserve `live_ambient_signals` and emit concrete Ambient Highlight events instead of falling back to generic teasers. The same change removed duplicate visible Markdown and shortened fallback instruction prose to lower hidden-context token overhead. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
@@ -697,3 +731,6 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-17: Hardened the v0.1.11 Visible Intervention Value Engine against adversarial selector inputs: fabricated high scores now need evidence, weak evidence cannot masquerade as high correctness, same-label ambient blocks can stack only when propositions are distinct, concrete proposal actions are required, and candidate floods are pruned before bounded subset enumeration. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Expanded v0.1.11 QA with counterfactual tests for hidden-confidence inflation, missing confidence defaults, anchor-only governed support, deterministic input order, strict corpus provenance, ambient fact-flood prefiltering, same-label ambient event logging, and D-038 browser contract drift. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Fixed same-label ambient proof identity so two distinct high-value blocks in one assistant message write separate candidate keys and transcript confirmation proves both instead of collapsing them into one visible event. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bugs: `CB-122`, `CB-123`)
+- 2026-04-17: Split fallback-visible delivery from strict assistant transcript proof in `intervention-status`: manual/best-effort/Stop continuation rows now report as ledger-visible but unconfirmed, status renders family visibility ratios for Teaser diagnostics, Ambient, Observation/Proposal, and Assist, exact assistant messages can promote fallback-visible events once, and legacy visible rows infer host family from `render_surface` during v0.1.11 migration. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bugs: `CB-122`, `CB-123`)
+- 2026-04-17: Centralized intervention visibility semantics in `visibility_contract.py` so delivery ledger, visibility broker, status, alignment context, and ambient dedupe share one definition of host inference, visible family, ledger-visible, chat-confirmed, pending confirmation, and proof-status states. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bugs: `CB-122`, `CB-123`)
+- 2026-04-17: Added shared transcript replay for true chat visibility: pending hidden, manual-visible, best-effort, and Stop-continuation blocks now replay as exact ruled Markdown through prompt/checkpoint fallback, `visible-intervention`, `intervention-status`, and Stop until `assistant_chat_confirmed` proves the assistant transcript contains the block. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bugs: `CB-122`, `CB-123`)

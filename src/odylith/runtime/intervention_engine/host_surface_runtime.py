@@ -184,25 +184,34 @@ def compose_host_conversation_bundle(
         turn_phase=normalized_turn_phase,
         assistant_summary=summary,
     )
-    if not isinstance(bundle.get("observation"), Mapping):
-        bundle["observation"] = intervention_surface_runtime.observation_envelope(
-            host_family=normalized_host,
-            turn_phase=normalized_turn_phase,
-            session_id=normalized_session,
-            prompt_excerpt=resolved_prompt,
-            assistant_summary=summary,
-            changed_paths=resolved_changed_paths,
-            workstreams=resolved_workstreams,
-            components=resolved_components,
-            bugs=_normalize_string_list(context_signals.get("bugs")),
-            diagrams=_normalize_string_list(context_signals.get("diagrams")),
-            context_packet_summary=_mapping(context_signals.get("context_packet")),
-            execution_engine_summary=_mapping(context_signals.get("execution_engine_summary")),
-            memory_summary=_mapping(context_signals.get("memory_summary")),
-            tribunal_summary=_mapping(context_signals.get("tribunal_summary")),
-            visibility_summary=_mapping(context_signals.get("visibility_summary")),
-            delivery_snapshot=_mapping(context_signals.get("delivery_snapshot")),
-        )
+    envelope = intervention_surface_runtime.observation_envelope(
+        host_family=normalized_host,
+        turn_phase=normalized_turn_phase,
+        session_id=normalized_session,
+        prompt_excerpt=resolved_prompt,
+        assistant_summary=summary,
+        changed_paths=resolved_changed_paths,
+        workstreams=resolved_workstreams,
+        components=resolved_components,
+        bugs=_normalize_string_list(context_signals.get("bugs")),
+        diagrams=_normalize_string_list(context_signals.get("diagrams")),
+        context_packet_summary=_mapping(context_signals.get("context_packet")),
+        execution_engine_summary=_mapping(context_signals.get("execution_engine_summary")),
+        memory_summary=_mapping(context_signals.get("memory_summary")),
+        tribunal_summary=_mapping(context_signals.get("tribunal_summary")),
+        visibility_summary=_mapping(context_signals.get("visibility_summary")),
+        delivery_snapshot=_mapping(context_signals.get("delivery_snapshot")),
+    )
+    envelope_payload = dict(envelope)
+    existing_observation = _mapping(bundle.get("observation"))
+    if existing_observation:
+        merged_observation = dict(existing_observation)
+        for key, value in envelope_payload.items():
+            if value not in ("", [], {}) and merged_observation.get(key) in (None, "", [], {}):
+                merged_observation[key] = value
+        bundle["observation"] = merged_observation
+    else:
+        bundle["observation"] = envelope_payload
     return bundle
 
 

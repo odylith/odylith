@@ -112,8 +112,8 @@ def test_post_bash_checkpoint_emits_visible_observation_and_proposal(
                 "proposal": {
                     "eligible": True,
                     "suppressed_reason": "",
-                    "markdown_text": 'Odylith Proposal: one clean governed bundle.\n\nTo apply, say "apply this proposal".',
-                    "plain_text": "Odylith Proposal: one clean governed bundle.",
+                    "markdown_text": 'Odylith Proposal: preserve the chat-visible UX contract.\n\nTo apply, say "apply this proposal".',
+                    "plain_text": "Odylith Proposal: preserve the chat-visible UX contract.",
                 },
             },
             "closeout_bundle": {

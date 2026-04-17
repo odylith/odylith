@@ -29,10 +29,10 @@
     "empty_reasons": [],
     "explicit_event_count": 18,
     "mapped_workstream_evidence_count": 9,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 19
+    "timeline_event_count": 18
   },
   "name": "Subagent Router",
   "path_prefixes": [
@@ -44,7 +44,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 683,
+      "event_index": 249,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -150,7 +150,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 659,
+      "event_index": 247,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -262,7 +262,7 @@
         "tests/unit/runtime/test_execution_engine_handshake.py"
       ],
       "confidence": "high",
-      "event_index": 588,
+      "event_index": 243,
       "explicit_components": [
         "atlas",
         "benchmark",
@@ -290,22 +290,6 @@
       "workstreams": [
         "B-099"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 996,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "subagent-router"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-16T15:56:40-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

@@ -8,35 +8,15 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.intervention_engine import stream_state
-
-_VISIBLE_STATUSES: frozenset[str] = frozenset(
-    {
-        "assistant_chat_confirmed",
-        "best_effort_visible",
-        "manual_visible",
-        "stop_continuation_ready",
-    }
-)
-_CHAT_CONFIRMATION_STATUSES: frozenset[str] = frozenset(
-    {
-        "assistant_fallback_ready",
-        "assistant_render_required",
-    }
-)
-_CHAT_CONFIRMATION_CHANNELS: frozenset[str] = frozenset(
-    {
-        "assistant_visible_fallback",
-        "system_message_and_assistant_fallback",
-    }
-)
+from odylith.runtime.intervention_engine import visibility_contract
 
 
 def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
+    return visibility_contract.normalize_string(value)
 
 
 def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace(" ", "_").replace("-", "_")
+    return visibility_contract.normalize_token(value)
 
 
 def _normalize_string_list(value: Any) -> list[str]:
@@ -54,40 +34,52 @@ def _normalize_string_list(value: Any) -> list[str]:
     return rows
 
 
-def _event_visible(row: Mapping[str, Any]) -> bool:
-    status = _normalize_token(row.get("delivery_status"))
-    if status in _VISIBLE_STATUSES:
-        return True
-    channel = _normalize_token(row.get("delivery_channel"))
-    return channel in {"assistant_chat_transcript", "manual_visible_command", "stdout_teaser", "stop_one_shot_guard"}
-
-
-def _event_requires_chat_confirmation(row: Mapping[str, Any]) -> bool:
-    if _event_visible(row):
-        return False
-    status = _normalize_token(row.get("delivery_status"))
-    channel = _normalize_token(row.get("delivery_channel"))
-    if status not in _CHAT_CONFIRMATION_STATUSES and channel not in _CHAT_CONFIRMATION_CHANNELS:
-        return False
-    return bool(_normalize_string(row.get("display_markdown")) or _normalize_string(row.get("display_plain")))
-
-
 def _compact_event(row: Mapping[str, Any]) -> dict[str, Any]:
+    has_display = bool(visibility_contract.event_display_text(row))
     return {
         "kind": _normalize_token(row.get("kind")),
+        "visibility_family": visibility_contract.event_visibility_family(row),
         "summary": _normalize_string(row.get("summary")),
         "ts_iso": _normalize_string(row.get("ts_iso")),
         "session_id": _normalize_string(row.get("session_id")),
-        "host_family": _normalize_token(row.get("host_family")),
+        "host_family": visibility_contract.event_host_family(row),
         "turn_phase": _normalize_token(row.get("turn_phase")),
         "intervention_key": _normalize_string(row.get("intervention_key")),
         "delivery_channel": _normalize_token(row.get("delivery_channel")),
         "delivery_status": _normalize_token(row.get("delivery_status")),
         "render_surface": _normalize_token(row.get("render_surface")),
-        "visible": _event_visible(row),
-        "requires_chat_confirmation": _event_requires_chat_confirmation(row),
+        "visible": visibility_contract.event_visible(row),
+        "chat_confirmed": visibility_contract.event_chat_confirmed(row),
+        "requires_chat_confirmation": visibility_contract.event_requires_chat_confirmation(row),
+        "needs_chat_confirmation": visibility_contract.event_needs_chat_confirmation(row),
+        "has_display": has_display,
+        "chat_confirmation_key": visibility_contract.event_confirmation_key(row) if has_display else "",
         "action_surfaces": _normalize_string_list(row.get("action_surfaces")),
     }
+
+
+def _empty_visibility_ratios() -> dict[str, dict[str, Any]]:
+    return {
+        family: {
+            "total": 0,
+            "ledger_visible": 0,
+            "chat_confirmed": 0,
+            "pending_confirmation": 0,
+            "ledger_visible_ratio": None,
+            "chat_confirmed_ratio": None,
+        }
+        for family in visibility_contract.VISIBILITY_FAMILIES
+    }
+
+
+def _finalize_visibility_ratios(ratios: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    for bucket in ratios.values():
+        total = int(bucket.get("total") or 0)
+        if total <= 0:
+            continue
+        bucket["ledger_visible_ratio"] = round(float(bucket.get("ledger_visible") or 0) / total, 4)
+        bucket["chat_confirmed_ratio"] = round(float(bucket.get("chat_confirmed") or 0) / total, 4)
+    return ratios
 
 
 def delivery_snapshot(
@@ -111,40 +103,59 @@ def delivery_snapshot(
     )
     host = _normalize_token(host_family)
     if host:
-        rows = [row for row in rows if _normalize_token(row.get("host_family")) == host]
+        rows = [row for row in rows if visibility_contract.event_host_family(row) == host]
 
     counts_by_kind: dict[str, int] = {}
     counts_by_status: dict[str, int] = {}
     counts_by_channel: dict[str, int] = {}
     compact_rows: list[dict[str, Any]] = []
     visible_rows: list[dict[str, Any]] = []
+    chat_confirmed_rows: list[dict[str, Any]] = []
+    visibility_ratios = _empty_visibility_ratios()
 
     for row in rows:
         compact = _compact_event(row)
         kind = str(compact.get("kind") or "unknown")
         status = str(compact.get("delivery_status") or "unknown")
         channel = str(compact.get("delivery_channel") or "unknown")
+        family = str(compact.get("visibility_family") or "other")
+        if family not in visibility_ratios:
+            family = "other"
         counts_by_kind[kind] = counts_by_kind.get(kind, 0) + 1
         counts_by_status[status] = counts_by_status.get(status, 0) + 1
         counts_by_channel[channel] = counts_by_channel.get(channel, 0) + 1
+        visibility_ratios[family]["total"] += 1
         compact_rows.append(compact)
         if bool(compact.get("visible")):
             visible_rows.append(compact)
+            visibility_ratios[family]["ledger_visible"] += 1
+        if visibility_contract.event_chat_confirmed(row):
+            chat_confirmed_rows.append(compact)
+            visibility_ratios[family]["chat_confirmed"] += 1
 
-    visible_keys = {
-        _normalize_string(row.get("intervention_key"))
-        for row in visible_rows
-        if _normalize_string(row.get("intervention_key"))
+    chat_confirmed_keys = {
+        _normalize_string(row.get("chat_confirmation_key"))
+        for row in chat_confirmed_rows
+        if _normalize_string(row.get("chat_confirmation_key"))
     }
-    unconfirmed_rows = [
-        row
-        for row in compact_rows
-        if bool(row.get("requires_chat_confirmation"))
-        and (
-            not _normalize_string(row.get("intervention_key"))
-            or _normalize_string(row.get("intervention_key")) not in visible_keys
-        )
-    ]
+    unconfirmed_rows: list[dict[str, Any]] = []
+    unconfirmed_keys: set[str] = set()
+    for row in compact_rows:
+        if not bool(row.get("needs_chat_confirmation")):
+            continue
+        key = _normalize_string(row.get("chat_confirmation_key"))
+        if key and key in chat_confirmed_keys:
+            continue
+        if key and key in unconfirmed_keys:
+            continue
+        if key:
+            unconfirmed_keys.add(key)
+        unconfirmed_rows.append(row)
+    for row in unconfirmed_rows:
+        family = str(row.get("visibility_family") or "other")
+        if family not in visibility_ratios:
+            family = "other"
+        visibility_ratios[family]["pending_confirmation"] += 1
 
     pending_state = dict(stream_state.pending_proposal_state(repo_root=root))
     pending_rows = pending_state.get("pending")
@@ -154,7 +165,7 @@ def delivery_snapshot(
             dict(row)
             for row in pending_rows
             if isinstance(row, Mapping)
-            and (not host or _normalize_token(row.get("host_family")) == host)
+            and (not host or visibility_contract.event_host_family(row) == host)
             and (not wanted_session or _normalize_string(row.get("session_id")) == wanted_session)
         ]
         pending_state["pending"] = filtered_pending
@@ -166,12 +177,15 @@ def delivery_snapshot(
         "session_id": _normalize_string(session_id),
         "event_count": len(compact_rows),
         "visible_event_count": len(visible_rows),
+        "chat_confirmed_event_count": len(chat_confirmed_rows),
         "unconfirmed_event_count": len(unconfirmed_rows),
         "counts_by_kind": counts_by_kind,
         "counts_by_status": counts_by_status,
         "counts_by_channel": counts_by_channel,
+        "visibility_ratios": _finalize_visibility_ratios(visibility_ratios),
         "latest_event": compact_rows[-1] if compact_rows else {},
         "latest_visible_event": visible_rows[-1] if visible_rows else {},
+        "latest_chat_confirmed_event": chat_confirmed_rows[-1] if chat_confirmed_rows else {},
         "latest_unconfirmed_event": unconfirmed_rows[-1] if unconfirmed_rows else {},
         "recent_events": compact_rows[-8:],
         "recent_unconfirmed_events": unconfirmed_rows[-8:],

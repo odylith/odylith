@@ -10,10 +10,10 @@
     "empty_reasons": [],
     "explicit_event_count": 9,
     "mapped_workstream_evidence_count": 8,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 10
+    "timeline_event_count": 9
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -24,7 +24,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 683,
+      "event_index": 249,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -130,7 +130,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 659,
+      "event_index": 247,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -235,29 +235,11 @@
     },
     {
       "artifacts": [
-        "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
-        "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
-        "src/odylith/runtime/execution_engine/runtime_surface_governance.py"
-      ],
-      "confidence": "high",
-      "event_index": 988,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "execution-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/execution-engine/CURRENT_SPEC.md, src/odylith/runtime/execution_engine/runtime_lane_policy.py +1 more",
-      "ts_iso": "2026-04-17T00:31:58-07:00",
-      "workstreams": []
-    },
-    {
-      "artifacts": [
         "tests/integration/runtime/test_context_execution_alignment_browser.py",
         "tests/unit/runtime/test_component_registry_candidate_policy.py"
       ],
       "confidence": "high",
-      "event_index": 596,
+      "event_index": 244,
       "explicit_components": [
         "compass",
         "execution-engine",
@@ -287,7 +269,7 @@
         "tests/unit/runtime/test_execution_engine_handshake.py"
       ],
       "confidence": "high",
-      "event_index": 588,
+      "event_index": 243,
       "explicit_components": [
         "atlas",
         "benchmark",
@@ -322,7 +304,7 @@
         "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
       ],
       "confidence": "high",
-      "event_index": 545,
+      "event_index": 242,
       "explicit_components": [
         "benchmark",
         "execution-engine",
@@ -348,7 +330,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 544,
+      "event_index": 241,
       "explicit_components": [
         "benchmark",
         "execution-engine",
@@ -379,7 +361,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 543,
+      "event_index": 240,
       "explicit_components": [
         "atlas",
         "benchmark",
@@ -415,7 +397,7 @@
         "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
       ],
       "confidence": "high",
-      "event_index": 542,
+      "event_index": 239,
       "explicit_components": [
         "atlas",
         "benchmark",

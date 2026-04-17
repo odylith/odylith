@@ -25,6 +25,7 @@ from odylith.runtime.intervention_engine import alignment_context
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
+from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import claude_host_shared
 
 
@@ -39,6 +40,15 @@ def _alignment_mapping(alignment: Mapping[str, Any], key: str) -> Mapping[str, A
 def _alignment_list(alignment: Mapping[str, Any], key: str) -> list[Any]:
     value = alignment.get(key)
     return value if isinstance(value, list) else []
+
+
+def _parts(*values: str) -> str:
+    rows: list[str] = []
+    for value in values:
+        token = str(value or "").strip()
+        if token and token not in rows:
+            rows.append(token)
+    return "\n\n".join(rows).strip()
 
 
 def _context_summary(output: str, ref: str) -> str:
@@ -182,6 +192,15 @@ def render_prompt_system_message(
         include_proposal=False,
         include_closeout=False,
     )
+    replay = visibility_replay.replayable_chat_markdown(
+        repo_root=repo_root,
+        host_family="claude",
+        session_id=session_id,
+        include_assist=False,
+        include_teaser=False,
+    )
+    if replay:
+        return replay
     return decision.visible_markdown or conversation_surface.render_live_text(
         bundle,
         markdown=False,
@@ -223,6 +242,13 @@ def main(argv: list[str] | None = None) -> int:
         delivery_channel="assistant_visible_fallback",
         delivery_status="assistant_render_required",
     )
+    replay = visibility_replay.replayable_chat_markdown(
+        repo_root=repo_root,
+        host_family="claude",
+        session_id=session_id,
+        include_assist=False,
+        include_teaser=False,
+    )
     summary = render_prompt_context(
         repo_root=repo_root,
         prompt=prompt,
@@ -235,8 +261,8 @@ def main(argv: list[str] | None = None) -> int:
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
-    summary = decision.developer_context or summary
-    system_message = decision.visible_markdown or system_message
+    summary = _parts(replay, summary) if replay else decision.developer_context or summary
+    system_message = replay or decision.visible_markdown or system_message
     if decision.visible_markdown or decision.developer_context:
         host_surface_runtime.append_visible_intervention_events(
             repo_root=repo_root,

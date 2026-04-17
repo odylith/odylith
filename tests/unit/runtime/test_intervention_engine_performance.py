@@ -117,7 +117,7 @@ def test_pending_proposal_state_stays_within_local_latency_budget(tmp_path: Path
             confirmation_text="apply this proposal",
             proposal_status="pending",
             prompt_excerpt=f"Preserve prompt memory for proposal {index}.",
-            display_markdown='-----\nOdylith Proposal: Odylith is proposing one clean governed bundle for this moment. It is staying in preview until every action has a safe apply lane.\n\nTo apply, say "apply this proposal".\n-----',
+            display_markdown='-----\nOdylith Proposal: Preserve the chat-visible UX contract. Some actions still need a safe apply lane before Odylith can apply them automatically.\n\nTo apply, say "apply this proposal".\n-----',
         )
 
     started = time.perf_counter()

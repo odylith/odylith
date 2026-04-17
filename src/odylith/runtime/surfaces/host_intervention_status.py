@@ -13,15 +13,17 @@ from typing import Mapping
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.intervention_engine import delivery_ledger
+from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_broker
+from odylith.runtime.intervention_engine import visibility_replay
 
 
 def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
+    return visibility_contract.normalize_string(value)
 
 
 def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
+    return visibility_contract.normalize_token(value)
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -139,21 +141,31 @@ def _static_readiness(*, repo_root: Path, host_family: str) -> dict[str, Any]:
 
 def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dict[str, Any]:
     visible_count = int(ledger.get("visible_event_count") or 0)
+    chat_confirmed_count = int(ledger.get("chat_confirmed_event_count") or 0)
     unconfirmed_count = int(ledger.get("unconfirmed_event_count") or 0)
+    status = visibility_contract.proof_status_from_counts(
+        visible_count=visible_count,
+        chat_confirmed_count=chat_confirmed_count,
+        unconfirmed_count=unconfirmed_count,
+        static_ready=static_ready,
+    )
     latest = ledger.get("latest_visible_event") if isinstance(ledger.get("latest_visible_event"), Mapping) else {}
     latest_unconfirmed = (
         ledger.get("latest_unconfirmed_event")
         if isinstance(ledger.get("latest_unconfirmed_event"), Mapping)
         else {}
     )
-    if unconfirmed_count > 0:
-        status = "proven_with_pending_confirmation" if visible_count > 0 else "pending_confirmation"
+    if status in {
+        "chat_confirmed_with_pending_confirmation",
+        "ledger_visible_with_pending_confirmation",
+        "pending_confirmation",
+    }:
         latest_status = _normalize_token(latest_unconfirmed.get("delivery_status")) or "unknown"
         latest_channel = _normalize_token(latest_unconfirmed.get("delivery_channel")) or "unknown"
         visible_prefix = (
-            f"{visible_count} proven-visible event(s) exist, but "
+            f"{visible_count} ledger-visible event(s) exist, {chat_confirmed_count} chat-confirmed, but "
             if visible_count
-            else "No proven-visible event is recorded yet, and "
+            else "No ledger-visible or chat-confirmed event is recorded yet, and "
         )
         return {
             "status": status,
@@ -163,26 +175,42 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
             ),
             "latest_delivery_channel": latest_channel,
             "visible_event_count": visible_count,
+            "chat_confirmed_event_count": chat_confirmed_count,
             "unconfirmed_event_count": unconfirmed_count,
         }
-    if visible_count > 0:
+    if status == "proven_this_session":
         channel = _normalize_token(latest.get("delivery_channel")) or "unknown"
         return {
-            "status": "proven_this_session",
-            "summary": f"{visible_count} proven-visible event(s) recorded for this session; latest via {channel}.",
+            "status": status,
+            "summary": f"{chat_confirmed_count} chat-confirmed Odylith event(s) recorded for this session; latest via {channel}.",
             "latest_delivery_channel": channel,
             "visible_event_count": visible_count,
+            "chat_confirmed_event_count": chat_confirmed_count,
             "unconfirmed_event_count": 0,
         }
-    if static_ready:
+    if status == "ledger_visible_unconfirmed":
+        channel = _normalize_token(latest.get("delivery_channel")) or "unknown"
         return {
-            "status": "unproven_this_session",
+            "status": status,
             "summary": (
-                "No proven-visible event is recorded for this session; the assistant must render the "
+                f"{visible_count} ledger-visible event(s) recorded for this session, "
+                f"but 0 chat-confirmed; latest via {channel}."
+            ),
+            "latest_delivery_channel": channel,
+            "visible_event_count": visible_count,
+            "chat_confirmed_event_count": chat_confirmed_count,
+            "unconfirmed_event_count": 0,
+        }
+    if status == "unproven_this_session":
+        return {
+            "status": status,
+            "summary": (
+                "No ledger-visible or chat-confirmed event is recorded for this session; the assistant must render the "
                 "visible-intervention fallback directly before claiming the UX is active."
             ),
             "latest_delivery_channel": "",
             "visible_event_count": 0,
+            "chat_confirmed_event_count": 0,
             "unconfirmed_event_count": 0,
         }
     return {
@@ -190,6 +218,7 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
         "summary": "Static readiness is degraded; do not claim live intervention visibility for this session.",
         "latest_delivery_channel": "",
         "visible_event_count": 0,
+        "chat_confirmed_event_count": 0,
         "unconfirmed_event_count": 0,
     }
 
@@ -224,6 +253,19 @@ def inspect_intervention_status(
         ledger=ledger,
         static_ready=bool(readiness.get("ready")),
     )
+    replay_blocks = visibility_replay.replayable_chat_blocks(
+        repo_root=root,
+        host_family=host,
+        session_id=resolved_session,
+        limit=limit,
+        include_assist=True,
+        include_teaser=False,
+    )
+    replay_markdown = "\n\n".join(
+        visibility_contract.normalize_block_string(row.get("display_markdown"))
+        for row in replay_blocks
+        if visibility_contract.normalize_block_string(row.get("display_markdown"))
+    ).strip()
     pending = ledger.get("pending_proposal_state") if isinstance(ledger.get("pending_proposal_state"), Mapping) else {}
     return {
         "version": "v1",
@@ -236,6 +278,9 @@ def inspect_intervention_status(
             "Use hook output when the host visibly renders it; otherwise the assistant-render fallback must speak the same Markdown directly."
         ),
         "chat_visible_proof": proof,
+        "assistant_visible_replay_markdown": replay_markdown,
+        "assistant_visible_replay_count": len(replay_blocks),
+        "assistant_visible_replay_blocks": replay_blocks,
         "active_lanes": delivery_ledger.active_lane_matrix(host_family=host),
         "delivery_ledger": ledger,
         "chat_confirmed_event_count": len(confirmed_events),
@@ -250,6 +295,15 @@ def inspect_intervention_status(
 
 def _check_label(value: bool) -> str:
     return "yes" if bool(value) else "no"
+
+
+def _format_ratio(value: Any) -> str:
+    if value is None:
+        return "n/a"
+    try:
+        return f"{float(value) * 100:.1f}%"
+    except (TypeError, ValueError):
+        return "n/a"
 
 
 def render_intervention_status(report: Mapping[str, Any]) -> str:
@@ -303,13 +357,40 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
         lines.append("Last visible Odylith beat: none recorded for this session yet.")
     lines.append(
         f"Ledger: {int(ledger.get('event_count') or 0)} recent event(s), "
-        f"{int(ledger.get('visible_event_count') or 0)} proven-visible event(s), "
+        f"{int(ledger.get('visible_event_count') or 0)} ledger-visible event(s), "
+        f"{int(ledger.get('chat_confirmed_event_count') or 0)} chat-confirmed event(s), "
         f"{int(ledger.get('unconfirmed_event_count') or 0)} pending chat-confirmation event(s), "
         f"{pending_count} pending proposal(s)."
     )
+    visibility_ratios = ledger.get("visibility_ratios")
+    if isinstance(visibility_ratios, Mapping):
+        lines.append("Visibility ratios:")
+        for family, label in (
+            ("teaser", "Teaser diagnostic"),
+            ("ambient", "Ambient"),
+            ("intervention", "Observation/Proposal"),
+            ("assist", "Assist"),
+        ):
+            bucket = visibility_ratios.get(family)
+            if not isinstance(bucket, Mapping):
+                continue
+            total = int(bucket.get("total") or 0)
+            ledger_visible = int(bucket.get("ledger_visible") or 0)
+            chat_confirmed = int(bucket.get("chat_confirmed") or 0)
+            pending_confirmation = int(bucket.get("pending_confirmation") or 0)
+            lines.append(
+                f"- {label}: ledger {ledger_visible}/{total} ({_format_ratio(bucket.get('ledger_visible_ratio'))}); "
+                f"chat-confirmed {chat_confirmed}/{total} ({_format_ratio(bucket.get('chat_confirmed_ratio'))}); "
+                f"pending confirmation {pending_confirmation}."
+            )
     confirmed_count = int(report.get("chat_confirmed_event_count") or 0)
     if confirmed_count:
         lines.append(f"Chat transcript confirmations recorded on this probe: {confirmed_count}.")
+    replay = visibility_contract.normalize_block_string(report.get("assistant_visible_replay_markdown"))
+    if replay:
+        lines.append("")
+        lines.append("Assistant-visible replay:")
+        lines.append(replay)
     lines.append(f"Fast smoke: `{_normalize_string(report.get('smoke_command'))}`")
     return "\n".join(lines).strip()
 

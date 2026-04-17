@@ -15,10 +15,10 @@
     "empty_reasons": [],
     "explicit_event_count": 29,
     "mapped_workstream_evidence_count": 14,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 30
+    "timeline_event_count": 29
   },
   "name": "Release",
   "path_prefixes": [
@@ -47,7 +47,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 683,
+      "event_index": 249,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -151,25 +151,9 @@
       ]
     },
     {
-      "artifacts": [
-        "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
-      ],
-      "confidence": "high",
-      "event_index": 994,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "release"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/releases/release-assignment-events.v1.jsonl",
-      "ts_iso": "2026-04-17T01:33:31-07:00",
-      "workstreams": []
-    },
-    {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 659,
+      "event_index": 247,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -278,7 +262,7 @@
         "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
       ],
       "confidence": "high",
-      "event_index": 545,
+      "event_index": 242,
       "explicit_components": [
         "benchmark",
         "execution-engine",
@@ -306,7 +290,7 @@
         "README.md"
       ],
       "confidence": "high",
-      "event_index": 233,
+      "event_index": 185,
       "explicit_components": [
         "odylith"
       ],

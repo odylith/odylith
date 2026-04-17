@@ -19,6 +19,7 @@ from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import delivery_runtime
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_broker
 
 
@@ -36,11 +37,11 @@ _ALIGNMENT_COMPONENTS: tuple[str, ...] = (
 
 
 def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
+    return visibility_contract.normalize_string(value)
 
 
 def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace(" ", "_").replace("-", "_")
+    return visibility_contract.normalize_token(value)
 
 
 def _normalize_string_list(value: Any, *, limit: int = 12) -> list[str]:
@@ -105,22 +106,22 @@ def _runtime_surface_compact(repo_root: Path) -> dict[str, Any]:
 
 def _visibility_summary(delivery_snapshot: Mapping[str, Any]) -> dict[str, Any]:
     visible_count = int(delivery_snapshot.get("visible_event_count") or 0)
+    chat_confirmed_count = int(delivery_snapshot.get("chat_confirmed_event_count") or 0)
     event_count = int(delivery_snapshot.get("event_count") or 0)
     unconfirmed_count = int(delivery_snapshot.get("unconfirmed_event_count") or 0)
     latest = delivery_snapshot.get("latest_event")
     latest_visible = delivery_snapshot.get("latest_visible_event")
     latest_unconfirmed = delivery_snapshot.get("latest_unconfirmed_event")
-    proof_status = "unproven_this_session"
-    if visible_count and unconfirmed_count:
-        proof_status = "proven_with_pending_confirmation"
-    elif unconfirmed_count:
-        proof_status = "pending_confirmation"
-    elif visible_count:
-        proof_status = "proven_this_session"
+    proof_status = visibility_contract.proof_status_from_counts(
+        visible_count=visible_count,
+        chat_confirmed_count=chat_confirmed_count,
+        unconfirmed_count=unconfirmed_count,
+    )
     return {
         "chat_visible_proof": proof_status,
         "event_count": event_count,
         "visible_event_count": visible_count,
+        "chat_confirmed_event_count": chat_confirmed_count,
         "unconfirmed_event_count": unconfirmed_count,
         "latest_delivery_status": (
             _normalize_token(latest.get("delivery_status"))

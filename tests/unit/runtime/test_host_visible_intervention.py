@@ -97,6 +97,33 @@ def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_pa
     assert "show the Odylith Markdown directly" in rendered
 
 
+def test_visible_intervention_replays_pending_chat_block_before_generic_failure(tmp_path) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending observation.",
+        session_id="visible-replay",
+        host_family="codex",
+        intervention_key="visible-replay-key",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** Replay this exact earned block in chat.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="codex_post_tool_use",
+    )
+
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="I cannot see the Odylith block in chat.",
+        session_id="visible-replay",
+    )
+
+    assert rendered == "---\n\n**Odylith Observation:** Replay this exact earned block in chat.\n\n---"
+    assert "This is a visibility failure" not in rendered
+
+
 def test_visible_intervention_detects_only_assist_visibility_feedback(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,
@@ -128,7 +155,73 @@ def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> No
     assert rendered.endswith("\n---")
     assert events[-1]["delivery_status"] == "manual_visible"
     assert events[-1]["delivery_channel"] == "manual_visible_command"
+    assert events[-1]["host_family"] == "codex"
+    assert events[-1]["session_id"] == "visible-session"
     assert events[-1]["metadata"]["manual_visible"] is True
+
+
+def test_chat_confirmation_can_promote_manual_visible_fallback_once(tmp_path) -> None:
+    visible = "---\n\n**Odylith Observation:** Manual fallback is now in the assistant transcript.\n\n---"
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Manual visible fallback.",
+        session_id="manual-confirm",
+        host_family="codex",
+        intervention_key="manual-visible-key",
+        turn_phase="post_bash_checkpoint",
+        display_markdown=visible,
+        delivery_channel="manual_visible_command",
+        delivery_status="manual_visible",
+        render_surface="codex_visible_intervention",
+    )
+
+    first = host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="manual-confirm",
+        last_assistant_message=f"Done.\n\n{visible}",
+        render_surface="codex_intervention_status",
+    )
+    second = host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="manual-confirm",
+        last_assistant_message=f"Done.\n\n{visible}",
+        render_surface="codex_intervention_status",
+    )
+
+    assert [row["delivery_status"] for row in first] == ["assistant_chat_confirmed"]
+    assert second == []
+    events = stream_state.load_recent_intervention_events(repo_root=tmp_path, session_id="manual-confirm")
+    assert [row["delivery_status"] for row in events] == ["manual_visible", "assistant_chat_confirmed"]
+
+
+def test_chat_confirmation_infers_host_family_for_legacy_manual_visible_rows(tmp_path) -> None:
+    visible = "---\n\n**Odylith Observation:** Legacy fallback is visible in chat.\n\n---"
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Legacy manual visible fallback.",
+        session_id="legacy-manual-confirm",
+        intervention_key="legacy-manual-key",
+        turn_phase="post_bash_checkpoint",
+        display_markdown=visible,
+        delivery_channel="manual_visible_command",
+        delivery_status="manual_visible",
+        render_surface="codex_visible_intervention",
+    )
+
+    confirmed = host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="legacy-manual-confirm",
+        last_assistant_message=f"{visible}\n",
+        render_surface="codex_intervention_status",
+    )
+
+    assert [row["delivery_status"] for row in confirmed] == ["assistant_chat_confirmed"]
+    assert confirmed[0]["host_family"] == "codex"
 
 
 def test_chat_confirmation_preserves_value_decision_metadata(tmp_path) -> None:
@@ -179,7 +272,7 @@ def test_visible_intervention_replaces_generic_teaser_for_visibility_failure(tmp
     assert "One more corroborating signal" not in rendered
 
 
-def test_codex_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, capsys) -> None:
+def test_codex_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, tmp_path, capsys) -> None:
     monkeypatch.setattr(
         host_visible_intervention.host_surface_runtime,
         "compose_host_conversation_bundle",
@@ -191,7 +284,7 @@ def test_codex_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, c
             "codex",
             "visible-intervention",
             "--repo-root",
-            ".",
+            str(tmp_path),
             "--phase",
             "post_bash_checkpoint",
             "--changed-path",
@@ -206,7 +299,7 @@ def test_codex_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, c
     assert not output.lstrip().startswith("{")
 
 
-def test_claude_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, capsys) -> None:
+def test_claude_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, tmp_path, capsys) -> None:
     monkeypatch.setattr(
         host_visible_intervention.host_surface_runtime,
         "compose_host_conversation_bundle",
@@ -218,7 +311,7 @@ def test_claude_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, 
             "claude",
             "visible-intervention",
             "--repo-root",
-            ".",
+            str(tmp_path),
             "--phase",
             "stop_summary",
             "--summary",

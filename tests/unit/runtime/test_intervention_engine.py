@@ -125,8 +125,9 @@ def test_prompt_only_bundle_stays_teaser_and_holds_voice_contract(tmp_path: Path
     )
 
     assert bundle["candidate"]["stage"] == "teaser"
-    assert bundle["candidate"]["teaser_text"].startswith("Odylith can already")
-    assert bundle["candidate"]["teaser_text"].endswith("turn that into a proposal.")
+    assert bundle["candidate"]["teaser_text"].startswith("Odylith is tracking this signal:")
+    assert "This conversation is ready to become governed truth." in bundle["candidate"]["teaser_text"]
+    assert "One more corroborating signal" not in bundle["candidate"]["teaser_text"]
     assert bundle["candidate"]["markdown_text"] == ""
     assert bundle["proposal"]["eligible"] is False
     assert bundle["render_policy"]["voice_contract"]["templated_or_mechanical_forbidden"] is True
@@ -658,7 +659,8 @@ def test_preview_only_proposal_keeps_status_centralized_and_drops_inline_boilerp
 
     assert bundle["proposal"]["apply_supported"] is False
     assert proposal_markdown.startswith("-----\nOdylith Proposal: ")
-    assert "It is staying in preview until every action has a safe apply lane." in proposal_markdown
+    assert "Some actions still need a safe apply lane" in proposal_markdown
+    assert "There is a clean way" not in proposal_markdown
     assert "safely appliable today" not in proposal_markdown
     assert proposal_markdown.count("-----") >= 2
     assert "One clean governed bundle is ready to review" not in proposal_markdown

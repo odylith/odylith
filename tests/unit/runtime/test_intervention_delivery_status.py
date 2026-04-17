@@ -122,6 +122,7 @@ def test_delivery_snapshot_reports_proven_visible_events(tmp_path: Path) -> None
 
     assert snapshot["event_count"] == 3
     assert snapshot["visible_event_count"] == 1
+    assert snapshot["chat_confirmed_event_count"] == 0
     assert snapshot["unconfirmed_event_count"] == 1
     assert snapshot["counts_by_kind"]["intervention_card"] == 1
     assert snapshot["counts_by_kind"]["capture_proposed"] == 1
@@ -129,6 +130,130 @@ def test_delivery_snapshot_reports_proven_visible_events(tmp_path: Path) -> None
     assert snapshot["latest_visible_event"]["delivery_channel"] == "stop_one_shot_guard"
     assert snapshot["latest_unconfirmed_event"]["delivery_status"] == "assistant_fallback_ready"
     assert snapshot["pending_proposal_state"]["pending_count"] == 1
+
+
+def test_delivery_snapshot_separates_chat_confirmed_from_manual_visible(tmp_path: Path) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Manual fallback rendered.",
+        session_id="session-chat-ratio",
+        host_family="codex",
+        intervention_key="iv-manual",
+        display_markdown="**Odylith Observation:** Manual fallback rendered.",
+        delivery_channel="manual_visible_command",
+        delivery_status="manual_visible",
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Transcript confirmed.",
+        session_id="session-chat-ratio",
+        host_family="codex",
+        intervention_key="iv-chat",
+        display_markdown="**Odylith Observation:** Transcript confirmed.",
+        delivery_channel="assistant_chat_transcript",
+        delivery_status="assistant_chat_confirmed",
+    )
+
+    snapshot = delivery_ledger.delivery_snapshot(repo_root=tmp_path, host_family="codex", session_id="session-chat-ratio")
+
+    assert snapshot["event_count"] == 2
+    assert snapshot["visible_event_count"] == 2
+    assert snapshot["chat_confirmed_event_count"] == 1
+    assert snapshot["latest_chat_confirmed_event"]["intervention_key"] == "iv-chat"
+
+
+def test_delivery_snapshot_infers_host_family_from_render_surface_for_legacy_visible_rows(tmp_path: Path) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Legacy manual fallback rendered.",
+        session_id="legacy-visible",
+        intervention_key="legacy-visible-key",
+        display_markdown="**Odylith Observation:** Legacy fallback rendered.",
+        delivery_channel="manual_visible_command",
+        delivery_status="manual_visible",
+        render_surface="codex_visible_intervention",
+    )
+
+    snapshot = delivery_ledger.delivery_snapshot(repo_root=tmp_path, host_family="codex", session_id="legacy-visible")
+
+    assert snapshot["event_count"] == 1
+    assert snapshot["visible_event_count"] == 1
+    assert snapshot["latest_visible_event"]["host_family"] == "codex"
+
+
+def test_delivery_snapshot_reports_visibility_ratios_by_family(tmp_path: Path) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Odylith Risks: risky hidden fallback.",
+        session_id="ratio-session",
+        host_family="codex",
+        intervention_key="ambient-hidden",
+        display_markdown="---\n\n**Odylith Risks:** Risk needs chat confirmation.\n\n---",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_post_tool_use",
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Odylith History: visible prior bug.",
+        session_id="ratio-session",
+        host_family="codex",
+        intervention_key="ambient-visible",
+        display_markdown="---\n\n**Odylith History:** Prior bug is visible.\n\n---",
+        delivery_channel="manual_visible_command",
+        delivery_status="manual_visible",
+        render_surface="codex_visible_intervention",
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Odylith Observation",
+        session_id="ratio-session",
+        host_family="codex",
+        intervention_key="observation-confirmed",
+        display_markdown="---\n\n**Odylith Observation:** Confirmed in chat.\n\n---",
+        delivery_channel="assistant_chat_transcript",
+        delivery_status="assistant_chat_confirmed",
+        render_surface="codex_intervention_status",
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="assist_closeout",
+        summary="**Odylith Assist:** visible closeout.",
+        session_id="ratio-session",
+        host_family="codex",
+        intervention_key="assist",
+        display_markdown="**Odylith Assist:** visible closeout.",
+        delivery_channel="manual_visible_command",
+        delivery_status="manual_visible",
+        render_surface="codex_visible_intervention",
+    )
+
+    snapshot = delivery_ledger.delivery_snapshot(repo_root=tmp_path, host_family="codex", session_id="ratio-session")
+    ratios = snapshot["visibility_ratios"]
+
+    assert ratios["ambient"]["total"] == 2
+    assert ratios["ambient"]["ledger_visible"] == 1
+    assert ratios["ambient"]["chat_confirmed"] == 0
+    assert ratios["ambient"]["pending_confirmation"] == 2
+    assert ratios["ambient"]["ledger_visible_ratio"] == 0.5
+    assert ratios["ambient"]["chat_confirmed_ratio"] == 0.0
+    assert ratios["intervention"]["total"] == 1
+    assert ratios["intervention"]["ledger_visible"] == 1
+    assert ratios["intervention"]["chat_confirmed"] == 1
+    assert ratios["intervention"]["ledger_visible_ratio"] == 1.0
+    assert ratios["intervention"]["chat_confirmed_ratio"] == 1.0
+    assert ratios["assist"]["total"] == 1
+    assert ratios["assist"]["ledger_visible"] == 1
+    assert ratios["assist"]["chat_confirmed"] == 0
+    assert ratios["assist"]["pending_confirmation"] == 1
+    assert ratios["assist"]["ledger_visible_ratio"] == 1.0
+    assert ratios["assist"]["chat_confirmed_ratio"] == 0.0
 
 
 def test_codex_intervention_status_is_low_latency_and_human_readable(tmp_path: Path) -> None:
@@ -154,11 +279,15 @@ def test_codex_intervention_status_is_low_latency_and_human_readable(tmp_path: P
     rendered = host_intervention_status.render_intervention_status(report)
 
     assert report["activation"] == "ready"
-    assert report["chat_visible_proof"]["status"] == "proven_this_session"
+    assert report["chat_visible_proof"]["status"] == "ledger_visible_unconfirmed"
     assert report["delivery_ledger"]["visible_event_count"] == 1
+    assert report["delivery_ledger"]["chat_confirmed_event_count"] == 0
     assert "**Odylith Intervention Status**" in rendered
     assert "Activation: ready" in rendered
-    assert "Chat-visible proof: proven_this_session" in rendered
+    assert "Chat-visible proof: ledger_visible_unconfirmed" in rendered
+    assert "1 ledger-visible event(s)" in rendered
+    assert "proven-visible event(s)" not in rendered
+    assert "- Observation/Proposal: ledger 1/1 (100.0%); chat-confirmed 0/1 (0.0%);" in rendered
     assert "Odylith Observation" in rendered
     assert "Fast smoke:" in rendered
     assert any(row["lane"] == "Ambient Highlight" for row in report["active_lanes"])
@@ -203,12 +332,18 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
         host_family="codex",
         session_id="session-hidden-ready",
     )
+    rendered = host_intervention_status.render_intervention_status(report)
 
     assert report["activation"] == "ready"
     assert report["delivery_ledger"]["event_count"] == 1
     assert report["delivery_ledger"]["visible_event_count"] == 0
+    assert report["delivery_ledger"]["chat_confirmed_event_count"] == 0
     assert report["delivery_ledger"]["unconfirmed_event_count"] == 1
     assert report["chat_visible_proof"]["status"] == "pending_confirmation"
+    assert report["assistant_visible_replay_count"] == 1
+    assert "Assistant-visible replay:" in rendered
+    assert rendered.count("**Odylith Observation:** Hidden hook context is not chat-visible proof.") == 1
+    assert "---\n\n**Odylith Observation:** Hidden hook context is not chat-visible proof.\n\n---" in rendered
 
 
 def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is_pending(
@@ -250,10 +385,12 @@ def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is
     rendered = host_intervention_status.render_intervention_status(report)
 
     assert report["delivery_ledger"]["visible_event_count"] == 1
-    assert report["delivery_ledger"]["unconfirmed_event_count"] == 1
-    assert report["chat_visible_proof"]["status"] == "proven_with_pending_confirmation"
+    assert report["delivery_ledger"]["unconfirmed_event_count"] == 2
+    assert report["chat_visible_proof"]["status"] == "ledger_visible_with_pending_confirmation"
     assert "pending chat-confirmation event(s)" in rendered
-    assert "New hidden beat still needs proof" not in rendered
+    assert "Assistant-visible replay:" in rendered
+    assert "**Odylith Observation:** Earlier visible proof." in rendered
+    assert "**Odylith Observation:** New hidden beat still needs proof." in rendered
 
 
 def test_hook_payload_visible_text_without_ledger_proof_stays_unproven(tmp_path: Path) -> None:

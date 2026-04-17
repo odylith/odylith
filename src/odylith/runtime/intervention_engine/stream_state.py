@@ -285,6 +285,12 @@ def pending_proposal_state(*, repo_root: Path, limit: int = 400) -> dict[str, An
     events = load_recent_intervention_events(repo_root=repo_root, limit=limit)
     latest_by_key: dict[str, dict[str, Any]] = {}
     for row in events:
+        if _normalize_string(row.get("kind")).lower() not in {
+            "capture_proposed",
+            "capture_applied",
+            "capture_declined",
+        }:
+            continue
         key = _normalize_string(row.get("intervention_key"))
         if not key:
             continue

@@ -49,8 +49,10 @@ def test_prompt_submit_live_surface_keeps_top_level_observation_and_teaser(tmp_p
         markdown=False,
         include_proposal=False,
     )
-    assert rendered.startswith("---\n\nOdylith can already")
-    assert rendered.endswith("turn that into a proposal.\n\n---")
+    assert rendered.startswith("---\n\nOdylith is tracking this signal:")
+    assert "This conversation is ready to become governed truth." in rendered
+    assert "One more corroborating signal" not in rendered
+    assert rendered.endswith("\n\n---")
 
 
 def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> None:
@@ -68,7 +70,7 @@ def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> No
             "candidate": {
                 "stage": "teaser",
                 "suppressed_reason": "",
-                "teaser_text": "Odylith can already see governed truth taking shape here.",
+                "teaser_text": "Odylith is tracking this signal: governed truth is taking shape here.",
             },
             "proposal": {"eligible": False, "suppressed_reason": ""},
         },
@@ -89,7 +91,7 @@ def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> No
     assert rendered == surface_runtime.wrap_live_text(
         "**Odylith Insight:** this is now grounded enough to keep visible."
     )
-    assert old_order == surface_runtime.wrap_live_text("Odylith can already see governed truth taking shape here.")
+    assert old_order == surface_runtime.wrap_live_text("Odylith is tracking this signal: governed truth is taking shape here.")
 
 
 def test_render_live_text_can_stack_distinct_high_value_ambient_signals() -> None:
@@ -123,7 +125,7 @@ def test_render_live_text_can_stack_distinct_high_value_ambient_signals() -> Non
             "candidate": {
                 "stage": "teaser",
                 "suppressed_reason": "",
-                "teaser_text": "Odylith can already see governed truth taking shape here.",
+                "teaser_text": "Odylith is tracking this signal: governed truth is taking shape here.",
             },
             "proposal": {"eligible": False, "suppressed_reason": ""},
         },
@@ -499,7 +501,7 @@ def test_append_intervention_events_records_each_distinct_ambient_signal(tmp_pat
                 "stage": "teaser",
                 "moment": {"semantic_signature": ["ambient", "events"]},
                 "suppressed_reason": "",
-                "teaser_text": "Odylith can already see governed truth taking shape here.",
+                "teaser_text": "Odylith is tracking this signal: governed truth is taking shape here.",
             },
             "proposal": {"eligible": False, "suppressed_reason": ""},
         },
@@ -682,8 +684,8 @@ def test_render_live_text_accepts_raw_intervention_bundle_for_host_overrides() -
             "proposal": {
                 "eligible": True,
                 "suppressed_reason": "",
-                "markdown_text": '-----\nOdylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\nTo apply, say "apply this proposal".\n-----',
-                "plain_text": '-----\nOdylith Proposal: Odylith is proposing one clean governed bundle for this moment.\n\nTo apply, say "apply this proposal".\n-----',
+                "markdown_text": '-----\nOdylith Proposal: Preserve the chat-visible UX contract.\n\nTo apply, say "apply this proposal".\n-----',
+                "plain_text": '-----\nOdylith Proposal: Preserve the chat-visible UX contract.\n\nTo apply, say "apply this proposal".\n-----',
             },
         },
         markdown=True,
