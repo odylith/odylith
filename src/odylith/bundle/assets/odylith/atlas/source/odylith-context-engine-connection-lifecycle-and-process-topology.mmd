@@ -1,4 +1,4 @@
-%% Created 2026-04-13 for B-094 to show the current stateless connection model, the daemon gap, and the planned caching layer.
+%% Reviewed 2026-04-17 for v0.1.11 to connect the Context Engine hot path to cached packet summaries, Execution Engine snapshots, visible-intervention status, and latency-budgeted benchmark checks.
 flowchart TB
     subgraph Current["Current: stateless open-close per CLI call"]
         CLI["CLI invocation<br/>odylith start / context / query"] --> PythonStart["Python process start<br/>~200ms startup + import"]
@@ -21,8 +21,14 @@ flowchart TB
         Cache["Process-global connection cache<br/>dict keyed by repo root"]
         Fingerprint["Invalidation: backend manifest<br/>input_fingerprint changes<br/>on materialize_local_backend"]
         DaemonWarm["Daemon holds warm cache<br/>across all sessions and requests"]
+        PacketCache["Compact packet summary cache<br/>canonical component id + packet quality<br/>target resolution + route readiness"]
+        ExecutionCache["Execution snapshot cache<br/>mode + next move + closure + validation<br/>host + latency/cost"]
+        VisibilityCache["Visibility status cache<br/>delivery ledger + chat-confirmed proof<br/>no provider calls in status lane"]
         Cache --> Fingerprint
         DaemonWarm --> Cache
+        Cache --> PacketCache
+        PacketCache --> ExecutionCache
+        ExecutionCache --> VisibilityCache
     end
 
     subgraph MultiSafety["Multi-repo and multi-session safety"]
@@ -35,3 +41,4 @@ flowchart TB
     CLI -.->|"planned: route through daemon"| Daemon
     Daemon -.->|"planned: hold warm handles"| Planned
     Planned -.->|"safety contract"| MultiSafety
+    Planned -.->|"benchmark budget checks"| Bench["Latency and token-budget proof<br/>packet build + snapshot time + payload tokens"]

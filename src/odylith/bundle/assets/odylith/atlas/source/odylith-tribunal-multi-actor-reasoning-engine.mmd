@@ -1,0 +1,87 @@
+%% Reviewed 2026-04-17 for v0.1.11 to connect Tribunal reasoning to Context Engine packets, Execution Engine snapshots, memory/session evidence, visible interventions, and benchmark proof without weakening deterministic fallback behavior.
+flowchart TB
+  subgraph Intake["1. Grounded dossier intake"]
+    Scope["Ranked case scope<br/>decision at stake, rank, confidence"]
+    Evidence["Grounded evidence bundle<br/>artifacts, code refs, timestamps,<br/>components, surfaces, approvals, clearance"]
+    ContextPacket["Context Engine packet digest<br/>packet quality + target resolution + route readiness"]
+    ExecutionSignal["Execution Engine snapshot digest<br/>admissibility + next move + validation + closure"]
+    SessionMemory["Memory/session digest<br/>recent corrections + proof events + delivery ledger"]
+    Policies["Reasoning policies<br/>grounding, non-generic output,<br/>self-reference downgrade, disagreement surfacing"]
+    Dossier["Tribunal dossier<br/>odylith/runtime/contracts/tribunal_case.v1"]
+  end
+
+  subgraph Actors["2. Independent actor pass"]
+    Observer["Observer<br/>facts only"]
+    Ownership["Ownership Resolver<br/>who owns the newest change"]
+    Causal["Causal Analyst<br/>best explanation of what happened"]
+    PolicyJudge["Policy Judge<br/>hard rule violations"]
+    Normative["Normative Judge<br/>maintainer-grade norms"]
+    Adversary["Adversary<br/>strongest rival explanation"]
+    Counterfactual["Counterfactual Analyst<br/>what would make the diagnosis disappear"]
+    Gap["Gap Analyst<br/>missing or weak evidence"]
+    Risk["Risk Analyst<br/>bad action if the story is wrong"]
+    Prescriber["Prescriber<br/>single discriminating next check"]
+  end
+
+  subgraph Adjudication["3. Adjudication and editorial merge"]
+    Judge["Adjudicator<br/>leading story, rival story,<br/>confidence, disagreement state"]
+    Provider["Optional provider refinement<br/>focused subset only"]
+    Validate["Evidence validation<br/>named refs only"]
+    Fallback["Deterministic fallback<br/>reason recorded explicitly"]
+    Editor["Editor<br/>decision brief without actor chatter"]
+    Systemic["Systemic synthesis<br/>collapse repeated case noise into shared causes"]
+    PacketHint["Packet recommendation seed<br/>manual, deterministic, AI-engine, hybrid"]
+    InterventionHint["Visible intervention signal<br/>Observation / Proposal evidence and risk"]
+    BenchmarkSignal["Benchmark proof signal<br/>expected posture + false-admit risk"]
+  end
+
+  subgraph Guardrails["4. Guardrails"]
+    Cache["Selective execution + cache reuse<br/>fingerprint-gated actor reruns"]
+    Proof["Proof routing discipline<br/>named artifacts and real evidence routes only"]
+    Breaker["Run-scoped provider breaker<br/>first timeout or transport failure disables<br/>provider enrichment for remaining cases"]
+  end
+
+  Scope --> Dossier
+  Evidence --> Dossier
+  ContextPacket --> Dossier
+  ExecutionSignal --> Dossier
+  SessionMemory --> Dossier
+  Policies --> Dossier
+
+  Dossier --> Observer
+  Dossier --> Ownership
+  Dossier --> Causal
+  Dossier --> PolicyJudge
+  Dossier --> Normative
+  Dossier --> Adversary
+  Dossier --> Counterfactual
+  Dossier --> Gap
+  Dossier --> Risk
+  Dossier --> Prescriber
+
+  Observer --> Judge
+  Ownership --> Judge
+  Causal --> Judge
+  PolicyJudge --> Judge
+  Normative --> Judge
+  Adversary --> Judge
+  Counterfactual --> Judge
+  Gap --> Judge
+  Risk --> Judge
+  Prescriber --> Judge
+
+  Policies -. constrain .-> Judge
+  Cache -. limit reruns .-> Judge
+  Proof -. validate refs .-> Editor
+
+  Judge --> Provider
+  Provider --> Validate
+  Validate -- "valid" --> Editor
+  Validate -- "timeout / transport / invalid" --> Fallback
+  Judge --> Fallback
+  Breaker -. disable remaining provider attempts .-> Provider
+  Fallback --> Editor
+  Judge --> Systemic
+  Judge --> PacketHint
+  Editor --> InterventionHint
+  Judge --> BenchmarkSignal

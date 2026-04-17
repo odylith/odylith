@@ -919,6 +919,7 @@ def test_radar_search_selection_and_cross_surface_detail_links(browser_context) 
 
     radar = page.frame_locator("#frame-radar")
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    radar.locator("button[data-idea-id]").first.wait_for(timeout=15000)
     baseline_count = radar.locator("button[data-idea-id]").count()
     assert baseline_count > 1
 
@@ -3563,6 +3564,7 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    history_day_path = fixture_root / "odylith" / "compass" / "runtime" / "history" / "2026-04-01.v1.json"
     source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
     traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
@@ -3624,6 +3626,8 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
         encoding="utf-8",
     )
+    history_day_path.parent.mkdir(parents=True, exist_ok=True)
+    history_day_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     source_truth_path.unlink(missing_ok=True)
     traceability_payload = json.loads(traceability_path.read_text(encoding="utf-8"))
     traceability_payload["generated_utc"] = "2026-04-01T00:00:00Z"

@@ -1,6 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-16
+Last updated (UTC): 2026-04-17
 ## Active Plans
 
 | Plan | Status | Created | Updated | Backlog |
@@ -8,7 +8,7 @@ Last updated (UTC): 2026-04-16
 | `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md` | In progress | 2026-03-29 | 2026-04-05 | `B-021` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md` | In progress | 2026-03-31 | 2026-04-05 | `B-022` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md` | In progress | 2026-03-31 | 2026-04-05 | `B-038` |
-| `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md` | In progress | 2026-03-29 | 2026-03-29 | `B-025` |
+| `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md` | In progress | 2026-03-29 | 2026-04-17 | `B-025` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md` | In progress | 2026-03-30 | 2026-03-30 | `B-030` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md` | In progress | 2026-03-30 | 2026-03-30 | `B-033` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md` | In progress | 2026-04-01 | 2026-04-01 | `B-040` |
@@ -29,8 +29,18 @@ Last updated (UTC): 2026-04-16
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md` | In progress | 2026-04-12 | 2026-04-12 | `B-092` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md` | In progress | 2026-04-12 | 2026-04-12 | `B-093` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md` | In progress | 2026-04-15 | 2026-04-15 | `B-097` |
-| `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-14 | `B-096` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-17 | `B-096` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-17 | `B-105` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-17 | `B-106` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-17 | `B-107` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-17 | `B-108` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | In progress | 2026-04-14 | 2026-04-17 | `B-109` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md` | In progress | 2026-04-16 | 2026-04-16 | `B-099` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md` | In progress | 2026-04-16 | 2026-04-16 | `B-100` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md` | In progress | 2026-04-16 | 2026-04-16 | `B-101` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md` | In progress | 2026-04-16 | 2026-04-16 | `B-102` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md` | In progress | 2026-04-16 | 2026-04-16 | `B-103` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md` | In progress | 2026-04-16 | 2026-04-16 | `B-104` |
 
 ## Parked Plans
 

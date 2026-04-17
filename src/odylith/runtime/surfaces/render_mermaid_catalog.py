@@ -1228,7 +1228,8 @@ def _render_html(
       display: grid;
       grid-template-columns: 400px minmax(0, 1fr);
       gap: 18px;
-      max-width: 1640px;
+      max-width: 1580px;
+      min-width: 0;
       margin: 0 auto;
       padding: 20px;
     }
@@ -1242,6 +1243,7 @@ def _render_html(
     }
 
     .panel {
+      min-width: 0;
       border: 1px solid var(--border);
       border-radius: 22px;
       background: var(--surface);
@@ -1250,6 +1252,7 @@ def _render_html(
     }
 
     .sidebar {
+      min-width: 0;
       padding: 16px;
       position: sticky;
       top: 12px;
@@ -1266,6 +1269,7 @@ def _render_html(
       justify-content: space-between;
       align-items: flex-start;
       gap: 8px;
+      min-width: 0;
       padding-right: 46px;
     }
 
@@ -1305,6 +1309,8 @@ def _render_html(
 
     .search {
       width: 100%;
+      min-width: 0;
+      max-width: 100%;
       border-radius: 12px;
       border: 1px solid var(--border);
       background: var(--surface-strong);
@@ -1456,6 +1462,7 @@ def _render_html(
       padding: 16px;
       display: grid;
       gap: 13px;
+      grid-template-columns: minmax(0, 1fr);
       grid-template-rows: auto auto auto 1fr;
       min-height: calc(100vh - 40px);
     }
@@ -1544,6 +1551,7 @@ def _render_html(
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
+      justify-content: flex-end;
     }
 
     .source-links-wrap {
@@ -1551,7 +1559,7 @@ def _render_html(
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: flex-end;
       width: 100%;
       min-width: 0;
     }
@@ -1650,9 +1658,12 @@ def _render_html(
       display: grid;
       gap: 12px;
       grid-template-columns: 1.2fr 0.8fr;
+      min-width: 0;
     }
 
     .section {
+      min-width: 0;
+      max-width: 100%;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: rgba(255, 255, 255, 0.88);
@@ -1671,9 +1682,13 @@ def _render_html(
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
       gap: 10px;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .component-card {
+      min-width: 0;
+      max-width: 100%;
       border: 1px solid rgba(3, 105, 161, 0.17);
       border-radius: 10px;
       padding: 9px 10px;
@@ -1714,6 +1729,8 @@ def _render_html(
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .workstream-context-list {
@@ -1789,6 +1806,9 @@ def _render_html(
       text-decoration: none;
       border-bottom: 1px dotted rgba(13, 68, 104, 0.38);
       width: fit-content;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .artifact-list a:hover {
@@ -1829,6 +1849,16 @@ def _render_html(
     }
 
     @media (max-width: 760px) {
+      .layout {
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .sidebar,
+      .main {
+        padding: 12px;
+      }
+
       .filter-pair {
         grid-template-columns: 1fr;
       }

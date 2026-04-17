@@ -1,3 +1,4 @@
+%% Reviewed 2026-04-17 for v0.1.11 to show governed sync reusing compact Context Engine, Execution Engine, memory, Tribunal, visibility, and benchmark read models without re-expanding hot paths.
 flowchart TB
     changed["Changed paths or forced full sync"]
     plan["Sync execution plan"]
@@ -19,12 +20,16 @@ flowchart TB
         ideas["Parsed idea specs"]
         report["Component Registry report"]
         delivery["Delivery intelligence substrate"]
+        execution["Execution snapshot substrate"]
+        visibility["Visibility ledger substrate"]
+        benchmark["Benchmark proof substrate"]
     end
 
     subgraph runtimehot["Low-RAM-aware runtime hot path"]
         budget["CacheBudgetPolicy<br/>normal vs low_ram<br/>shared byte ceilings"]
         read["RuntimeReadSession<br/>command-scoped fingerprints,<br/>warm verdicts, projection handles"]
         hotcache["Shared hot-path process cache<br/>projection rows / path scopes /<br/>optimization snapshots"]
+        snapshotcache["Execution + visibility summary cache<br/>compact, content-addressed, no provider calls"]
         showcache["Incremental show import graph<br/>.odylith/runtime/latency-cache"]
     end
 
@@ -44,6 +49,7 @@ flowchart TB
     subgraph derivation["Derived governed work"]
         validators["Backlog, plan, and Registry validators"]
         renderers["Radar, Registry, Compass, Atlas, Casebook, and shell renderers"]
+        benchmarkChecks["Benchmark and browser checks<br/>accuracy before latency/token budgets"]
     end
 
     subgraph writegate["Output discipline"]
@@ -60,6 +66,8 @@ flowchart TB
     plans --> ideas
     registry --> report
     compass --> delivery
+    compass --> visibility
+    atlas --> benchmark
     root --> budget
     code --> validators
     code --> renderers
@@ -69,8 +77,10 @@ flowchart TB
     root --> paths
     budget --> read
     budget --> hotcache
+    budget --> snapshotcache
     budget --> showcache
     read --> hotcache
+    read --> snapshotcache
     read --> validators
     read --> renderers
     profile --> ideas
@@ -83,6 +93,12 @@ flowchart TB
     report --> validators
     report --> renderers
     delivery --> renderers
+    delivery --> execution
+    execution --> visibility
+    execution --> benchmarkChecks
+    visibility --> renderers
+    visibility --> benchmarkChecks
+    benchmark --> benchmarkChecks
     tuple --> closed
     closed -- yes --> rebuild
     rebuild --> manifest

@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-04-14
 
-Updated: 2026-04-16
+Updated: 2026-04-17
 
 Backlog: B-096
 
@@ -16,6 +16,14 @@ and maintainer guidance. The UX and voice are part of the product contract in
 this slice, not polish: interventions must feel friendly, delightful, soulful,
 insightful, simple, clear, accurate, precise, and above all else human, while
 staying timely, judicious, non-repetitive, and never mechanical.
+
+v0.1.11 now hardens this slice around the Visible Intervention Value Engine:
+Odylith surfaces propositions, not block labels. The runtime decides from a
+supported proposition ledger, deterministic expected value, hard visibility
+proof, duplicate collapse, and a small constrained subset optimizer. This is
+not shipped as ML calibration; it is `deterministic_utility_v1` with governed
+adjudication hooks and bootstrap-quality reporting until real transcript
+density earns anything stronger.
 
 Assumptions:
 - V1 is one shared cross-host core. Codex and Claude adapters may differ only
@@ -36,6 +44,16 @@ Assumptions:
 - The live mid-turn surface should stay intervention-engine-owned. Chatter
   remains the broader narration and final Assist layer instead of becoming the
   hot path for prompt, stop, post-edit, or post-bash intervention rendering.
+- Live Odylith ambient blocks may stack when they are distinct, supported, and
+  high value. The first v0.1.11 live budget is adaptive: up to `3` ambient
+  blocks plus at most one Observation and one Proposal, hard-capped at `4`
+  live blocks; `Odylith Assist` is excluded and remains closeout-owned.
+- The runtime posture for v0.1.11 is `deterministic_utility_v1`. Calibration
+  artifacts may exist only as offline advisory material and cannot be loaded
+  by runtime unless corpus quality gates mark them `publishable=true`.
+- The v0.1.10 signal-ranker direction is cut hard. v0.1.11 ships migration
+  logic that removes stale signal-ranker source artifacts and writes the new
+  value-engine corpus/ledger instead of keeping a compatibility shim.
 - Safe apply in V1 is CLI-first and limited to surfaces where Odylith already
   has deterministic create helpers. Preview may cover richer update or reopen
   paths before apply supports them.
@@ -58,6 +76,21 @@ Constraints:
 - At most one full `Odylith Observation` card may appear per turn, no
   duplicate full cards may recur for the same causal point in the active
   session, and no governed write may happen before explicit confirmation.
+- Duplicate semantic propositions are a hard gate across Risks, History,
+  Insight, Observation, and Proposal. Proposal may coexist only when it adds a
+  concrete next step beyond the Observation, not when it restates it.
+- Caller-provided scores are never enough by themselves. A visible proposition
+  must carry local grounding evidence, non-stale evidence freshness, and enough
+  evidence confidence for the declared correctness to be plausible.
+- Ambient dedupe is proposition-first, not label-first. Two `Odylith Risks`
+  blocks may render in one turn only when they carry distinct high-value
+  propositions, while exact or semantic duplicates collapse before rendering.
+- Candidate floods are bounded before optimization: the selector prunes to the
+  top evidence-qualified candidates, enumerates only a small independent-set
+  space, and logs pruned/eligible counts so latency regressions are visible.
+- Missing live rulers are repaired into canonical ruled Markdown; they are not
+  a reason to drop a good supported signal. Assist is never wrapped in the
+  live ruled block.
 - The same change must update the runtime implementation, tests, governed
   specs, workstream/plan truth, Atlas topology, and maintainer-side guidance so
   the UX contract cannot quietly drift between code and docs.
@@ -83,7 +116,20 @@ Boundary Conditions:
   update automation where no CLI-backed helper exists yet.
 
 Related Bugs:
-- No related bug found.
+- [CB-122](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md)
+- [CB-123](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md)
+
+## v0.1.11 Execution-Wave Program
+- Umbrella: `B-096`.
+- Release target: `release-0-1-11`.
+- Program source:
+  [B-096.execution-waves.v1.json](/Users/freedom/code/odylith/odylith/radar/source/programs/B-096.execution-waves.v1.json)
+- Waves:
+  `B-105` governance binding,
+  `B-106` proposition value engine,
+  `B-107` host visibility and ruler canonicalization,
+  `B-108` adjudication corpus and advisory benchmark,
+  `B-109` release proof.
 
 ## Learnings
 - [ ] Odylith interventions are only compelling if the markdown block changes
@@ -138,6 +184,15 @@ Related Bugs:
       prove computation, not lived UX; operators need a cheap host/session
       status surface that says which lanes are armed, what was recently
       visible-ready, and how to force the fallback Markdown now.
+- [ ] Seed cases are not ML. A bootstrap corpus is valuable regression
+      coverage, but public-quality precision/recall or calibrated-threshold
+      claims require dense, real, non-synthetic transcript adjudication.
+- [ ] The unit of selection is the proposition. Labels such as Risks, History,
+      Insight, Observation, and Proposal are render outputs after value,
+      support, duplicate, visibility, and proposal-dependency checks.
+- [ ] More than one ambient block can be useful when the propositions are
+      genuinely distinct and high value; the cap should be adaptive and
+      noise-aware, not effectively hard-coded to one.
 
 ## Must-Ship
 - [x] Add `src/odylith/runtime/intervention_engine/` as a first-class shared
@@ -207,6 +262,61 @@ Related Bugs:
 - [x] Extend intervention stream events with delivery metadata for
       Teaser/Ambient, Observation, Proposal, and Assist so visibility status is
       derived from Compass rather than a second mutable status file.
+- [x] Replace the partial block-first signal-ranker direction with a
+      proposition-first value-engine package:
+      [value_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/value_engine.py),
+      [value_engine_types.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/value_engine_types.py),
+      [value_engine_selection.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/value_engine_selection.py), and
+      [value_engine_corpus.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/value_engine_corpus.py).
+- [x] Add governed value-engine contracts for `SignalEvidence`,
+      `SignalProposition`, `InterventionValueFeatures`,
+      `VisibleInterventionOption`, and `VisibleSignalSelectionDecision`.
+- [x] Add deterministic utility scoring, hard gates, conflict/duplicate
+      collapse, proposal dependency checks, adaptive live budget, and bounded
+      subset enumeration.
+- [x] Add governed bootstrap corpus source:
+      [intervention-value-adjudication-corpus.v1.json](/Users/freedom/code/odylith/odylith/runtime/source/intervention-value-adjudication-corpus.v1.json).
+- [x] Add advisory benchmark/report code that separates deterministic runtime
+      quality from full `odylith_on` outcome proof and keeps calibration
+      publishability false while density gates fail.
+- [x] Add v0.1.10 to v0.1.11 migration logic that removes stale signal-ranker
+      artifacts, writes the value-engine corpus where applicable, and records
+      `.odylith/state/migrations/v0.1.11-visible-intervention-value-engine.v1.json`.
+- [x] Add adversarial/counterfactual hardening so fabricated high-score
+      candidates without evidence, weak evidence masked as high correctness,
+      same-label ambient collisions, non-concrete proposals, and candidate
+      floods are all tested and logged without provider calls.
+- [x] Run a hard QA pass that adds regression tests for hidden-confidence
+      inflation, missing confidence defaults, governed anchor-only support,
+      same-label duplicate collapse, deterministic input-order handling,
+      strict corpus provenance, ambient fact-flood prefiltering, same-label
+      event logging, and D-038 browser-surface contract drift.
+- [x] Harden the end-to-end value/proof layer so semantic duplicates collapse
+      even when duplicate keys differ, actionable Proposal blocks can still
+      coexist with their Observation when they add concrete work, intervention
+      events carry compact selected/suppressed value-decision metadata, and
+      assistant chat confirmation preserves that proof metadata.
+- [x] Add aggressive visibility-proof regression coverage for multiple
+      same-label ambient blocks in one assistant message: distinct candidate
+      ids must write distinct event keys, transcript confirmation must confirm
+      both blocks independently, and hidden fallback-ready output must never
+      collapse separate supported propositions into one proven-visible event.
+- [x] Cut hot-path drag without lowering signal quality: cache selector labels,
+      duplicate groups, normalized feature vectors, semantic tokens, and
+      proposal-action state before subset enumeration; derive ambient Markdown
+      from one voice-rendered body instead of rendering plain and Markdown
+      separately; move value-decision event metadata into a small focused
+      module so `conversation_surface.py` stays below the 1200 LOC hard line.
+- [x] Tighten adversarial selector edges: fail closed on unknown live labels
+      and block kinds, keep `Odylith Assist` out of the live value path,
+      suppress mixed non-current evidence even when anchor refs are present,
+      and collapse duplicate propositions from normalized claim text when
+      duplicate keys or semantic signatures are missing or misleading.
+- [x] Tighten label/kind and proposal-restatement safety: ambient labels must
+      remain ambient, Observation/Proposal labels must use their matching live
+      block kind, and a concrete Proposal still suppresses as duplicate when
+      it repeats the exact Observation proposition instead of adding distinct
+      next-step content.
 
 ## Defer
 - [ ] User-selectable voice packs or per-repo voice overrides.
@@ -214,6 +324,11 @@ Related Bugs:
 - [ ] Auto-applying update, reopen, or review-refresh actions when no safe
       CLI-backed helper exists yet.
 - [ ] Broad semantic repo search during hot-path intervention reasoning.
+- [ ] Runtime adaptive learning or provider-backed embeddings for signal
+      selection. Those require a later governed visibility-governor layer and
+      real adjudicated data density.
+- [ ] Any public claim that the visible signal selector is ML-calibrated while
+      corpus quality remains `bootstrap`.
 
 ## Success Criteria
 - [x] The shared engine produces the same structured observation/proposal
@@ -262,6 +377,22 @@ Related Bugs:
       or Claude and receive one compact Markdown status with readiness checks,
       active UX lanes, recent visible-ready delivery, pending proposal count,
       and a direct `visible-intervention` smoke command.
+- [x] High-value distinct ambient propositions can render together under the
+      adaptive budget; the cap is not effectively `1`.
+- [x] Duplicate visible proposition rate is `0.0` in value-engine unit and
+      corpus-report tests.
+- [x] Explicit visibility-failure cases have visibility recall `1.0` in the
+      bootstrap advisory report.
+- [x] Runtime does not load or claim calibrated thresholds while corpus quality
+      remains bootstrap.
+- [x] Weak, unsupported, stale, contradictory, hidden-only, generated-only,
+      mixed non-current evidence, unknown labels, and unknown block kinds
+      suppress with precise reasons instead of noisy chat output.
+- [x] Label/block-kind mismatches and Proposal restatements suppress before
+      they can evade live budgets, proposal dependencies, or duplicate
+      accounting.
+- [x] Live blocks are canonicalized with top and bottom rulers; Assist remains
+      closeout-owned and outside the ruled live block.
 - [x] Chatter, Compass, host contracts, Registry specs, Atlas, and maintainer
       guidance all describe the same observation/proposal UX and voice rules.
 - [x] Agent guidance now explicitly forbids demoing Observation or Proposal UX
@@ -307,6 +438,13 @@ Related Bugs:
 - [ ] [2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md](/Users/freedom/code/odylith/odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md)
 - [ ] [src/odylith/runtime/intervention_engine/](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine)
 - [ ] [src/odylith/runtime/intervention_engine/conversation_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/conversation_runtime.py)
+- [ ] [value_engine.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/value_engine.py)
+- [ ] [value_engine_types.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/value_engine_types.py)
+- [ ] [value_engine_selection.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/value_engine_selection.py)
+- [ ] [value_engine_corpus.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/value_engine_corpus.py)
+- [ ] [value_engine_migration.py](/Users/freedom/code/odylith/src/odylith/install/value_engine_migration.py)
+- [ ] [odylith_intervention_value_engine_benchmark.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_intervention_value_engine_benchmark.py)
+- [ ] [intervention-value-adjudication-corpus.v1.json](/Users/freedom/code/odylith/odylith/runtime/source/intervention-value-adjudication-corpus.v1.json)
 - [ ] [src/odylith/runtime/surfaces/](/Users/freedom/code/odylith/src/odylith/runtime/surfaces)
 - [ ] [src/odylith/cli.py](/Users/freedom/code/odylith/src/odylith/cli.py)
 - [ ] [odylith/registry/source/components/](/Users/freedom/code/odylith/odylith/registry/source/components)
@@ -320,8 +458,9 @@ Related Bugs:
 - [ ] [tests/unit/runtime/](/Users/freedom/code/odylith/tests/unit/runtime)
 
 ## Rollout
-1. Bind `B-096` to this active plan and set the workstream into planning.
-2. Land the shared intervention-engine runtime and CLI wrappers.
+1. Bind `B-096` and child waves `B-105` through `B-109` to v0.1.11.
+2. Land the shared intervention-engine runtime, value engine, migration, and
+   CLI wrappers.
 3. Wire host hooks, Chatter bundle carry-through, and Compass pending proposal
    derivation.
 4. Harden apply behavior around deterministic CLI-backed governed creates and
@@ -391,3 +530,36 @@ Related Bugs:
       Proposal from the session event stream before Assist, using the same
       one-shot continuation path that made Assist visible.
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_host_surface_runtime.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_stop_summary.py` (`39 passed`)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_value_engine.py tests/unit/runtime/test_intervention_value_engine_benchmark.py tests/unit/install/test_value_engine_migration.py` (`12 passed`)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_conversation_surface.py tests/unit/runtime/test_host_visible_intervention.py tests/unit/runtime/test_intervention_visibility_broker.py tests/unit/runtime/test_intervention_host_surface_runtime.py` (`58 passed`)
+- [x] After decomposing `value_engine.py`, `PYTHONPATH=src python3 -m
+      py_compile src/odylith/runtime/intervention_engine/value_engine.py
+      src/odylith/runtime/intervention_engine/value_engine_types.py
+      src/odylith/runtime/intervention_engine/value_engine_selection.py
+      src/odylith/runtime/intervention_engine/value_engine_corpus.py
+      src/odylith/runtime/intervention_engine/conversation_surface.py
+      src/odylith/runtime/evaluation/odylith_intervention_value_engine_benchmark.py
+      src/odylith/install/value_engine_migration.py src/odylith/install/manager.py`
+      passed.
+- [x] `PYTHONPATH=src python3 -m pytest -q
+      tests/unit/runtime/test_intervention_value_engine.py
+      tests/unit/runtime/test_intervention_value_engine_benchmark.py
+      tests/unit/install/test_value_engine_migration.py
+      tests/unit/runtime/test_intervention_conversation_surface.py
+      tests/unit/runtime/test_host_visible_intervention.py
+      tests/unit/runtime/test_intervention_visibility_broker.py
+      tests/unit/runtime/test_intervention_host_surface_runtime.py` (`70 passed`)
+- [x] `PYTHONPATH=src python3 -m pytest -q
+      tests/unit/runtime/test_validate_backlog_contract.py
+      tests/unit/runtime/test_validate_component_registry_contract.py
+      tests/unit/runtime/test_component_registry_intelligence.py
+      tests/unit/runtime/test_render_mermaid_catalog.py
+      tests/unit/runtime/test_auto_update_mermaid_diagrams.py` (`84 passed`)
+- [x] `odylith validate backlog-contract --repo-root .`,
+      `odylith validate component-registry --repo-root .`,
+      `odylith validate casebook-source --repo-root .`, and
+      `odylith atlas render --repo-root . --check-only --diagram-id D-038
+      --runtime-mode standalone` passed.
+- [x] `odylith sync --repo-root . --force --runtime-mode standalone
+      --proceed-with-overlap` passed, followed by `odylith sync --repo-root .
+      --check-only --runtime-mode standalone` and `git diff --check`.

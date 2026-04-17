@@ -11,9 +11,22 @@ from odylith.runtime.intervention_engine import stream_state
 
 _VISIBLE_STATUSES: frozenset[str] = frozenset(
     {
+        "assistant_chat_confirmed",
         "best_effort_visible",
         "manual_visible",
         "stop_continuation_ready",
+    }
+)
+_CHAT_CONFIRMATION_STATUSES: frozenset[str] = frozenset(
+    {
+        "assistant_fallback_ready",
+        "assistant_render_required",
+    }
+)
+_CHAT_CONFIRMATION_CHANNELS: frozenset[str] = frozenset(
+    {
+        "assistant_visible_fallback",
+        "system_message_and_assistant_fallback",
     }
 )
 
@@ -46,7 +59,17 @@ def _event_visible(row: Mapping[str, Any]) -> bool:
     if status in _VISIBLE_STATUSES:
         return True
     channel = _normalize_token(row.get("delivery_channel"))
-    return channel in {"manual_visible_command", "stdout_teaser", "stop_one_shot_guard"}
+    return channel in {"assistant_chat_transcript", "manual_visible_command", "stdout_teaser", "stop_one_shot_guard"}
+
+
+def _event_requires_chat_confirmation(row: Mapping[str, Any]) -> bool:
+    if _event_visible(row):
+        return False
+    status = _normalize_token(row.get("delivery_status"))
+    channel = _normalize_token(row.get("delivery_channel"))
+    if status not in _CHAT_CONFIRMATION_STATUSES and channel not in _CHAT_CONFIRMATION_CHANNELS:
+        return False
+    return bool(_normalize_string(row.get("display_markdown")) or _normalize_string(row.get("display_plain")))
 
 
 def _compact_event(row: Mapping[str, Any]) -> dict[str, Any]:
@@ -62,6 +85,7 @@ def _compact_event(row: Mapping[str, Any]) -> dict[str, Any]:
         "delivery_status": _normalize_token(row.get("delivery_status")),
         "render_surface": _normalize_token(row.get("render_surface")),
         "visible": _event_visible(row),
+        "requires_chat_confirmation": _event_requires_chat_confirmation(row),
         "action_surfaces": _normalize_string_list(row.get("action_surfaces")),
     }
 
@@ -107,6 +131,21 @@ def delivery_snapshot(
         if bool(compact.get("visible")):
             visible_rows.append(compact)
 
+    visible_keys = {
+        _normalize_string(row.get("intervention_key"))
+        for row in visible_rows
+        if _normalize_string(row.get("intervention_key"))
+    }
+    unconfirmed_rows = [
+        row
+        for row in compact_rows
+        if bool(row.get("requires_chat_confirmation"))
+        and (
+            not _normalize_string(row.get("intervention_key"))
+            or _normalize_string(row.get("intervention_key")) not in visible_keys
+        )
+    ]
+
     pending_state = dict(stream_state.pending_proposal_state(repo_root=root))
     pending_rows = pending_state.get("pending")
     if isinstance(pending_rows, list) and (host or _normalize_string(session_id)):
@@ -127,12 +166,15 @@ def delivery_snapshot(
         "session_id": _normalize_string(session_id),
         "event_count": len(compact_rows),
         "visible_event_count": len(visible_rows),
+        "unconfirmed_event_count": len(unconfirmed_rows),
         "counts_by_kind": counts_by_kind,
         "counts_by_status": counts_by_status,
         "counts_by_channel": counts_by_channel,
         "latest_event": compact_rows[-1] if compact_rows else {},
         "latest_visible_event": visible_rows[-1] if visible_rows else {},
+        "latest_unconfirmed_event": unconfirmed_rows[-1] if unconfirmed_rows else {},
         "recent_events": compact_rows[-8:],
+        "recent_unconfirmed_events": unconfirmed_rows[-8:],
         "pending_proposal_state": pending_state,
     }
 

@@ -6,7 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.surfaces import claude_host_prompt_context
 from odylith.runtime.surfaces import claude_host_shared
 
@@ -50,19 +50,28 @@ def main(argv: list[str] | None = None) -> int:
         prompt=prompt,
         session_id=session_id,
     )
-    teaser = render_prompt_teaser(
+    decision = host_surface_runtime.visible_intervention_decision(
+        repo_root=repo_root,
+        bundle=bundle,
+        host_family="claude",
+        turn_phase="prompt_submit",
+        session_id=session_id,
+        include_proposal=False,
+        include_closeout=False,
+        delivery_channel="stdout_teaser",
+        delivery_status="best_effort_visible",
+    )
+    teaser = decision.visible_markdown or render_prompt_teaser(
         repo_root=repo_root,
         prompt=prompt,
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
     if teaser:
-        conversation_surface.append_intervention_events(
+        host_surface_runtime.append_visible_intervention_events(
             repo_root=Path(repo_root).expanduser().resolve(),
             bundle=bundle,
-            include_proposal=False,
-            delivery_channel="stdout_teaser",
-            delivery_status="best_effort_visible",
+            decision=decision,
             render_surface="claude_user_prompt_submit",
         )
         sys.stdout.write(teaser)

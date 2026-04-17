@@ -51,9 +51,9 @@ def _event_stage(event: Mapping[str, Any]) -> str:
 def _event_has_proven_visible_delivery(event: Mapping[str, Any]) -> bool:
     status = _normalize_string(event.get("delivery_status")).lower().replace("-", "_").replace(" ", "_")
     channel = _normalize_string(event.get("delivery_channel")).lower().replace("-", "_").replace(" ", "_")
-    if status in {"best_effort_visible", "manual_visible", "stop_continuation_ready"}:
+    if status in {"assistant_chat_confirmed", "best_effort_visible", "manual_visible", "stop_continuation_ready"}:
         return True
-    return channel in {"manual_visible_command", "stdout_teaser", "stop_one_shot_guard"}
+    return channel in {"assistant_chat_transcript", "manual_visible_command", "stdout_teaser", "stop_one_shot_guard"}
 
 
 def moment_continuity_snapshot(

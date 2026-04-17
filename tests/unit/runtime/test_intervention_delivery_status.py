@@ -5,6 +5,7 @@ from pathlib import Path
 
 from odylith import cli
 from odylith.runtime.intervention_engine import delivery_ledger
+from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.surfaces import host_intervention_status
 
@@ -121,10 +122,12 @@ def test_delivery_snapshot_reports_proven_visible_events(tmp_path: Path) -> None
 
     assert snapshot["event_count"] == 3
     assert snapshot["visible_event_count"] == 1
+    assert snapshot["unconfirmed_event_count"] == 1
     assert snapshot["counts_by_kind"]["intervention_card"] == 1
     assert snapshot["counts_by_kind"]["capture_proposed"] == 1
     assert snapshot["counts_by_kind"]["assist_closeout"] == 1
     assert snapshot["latest_visible_event"]["delivery_channel"] == "stop_one_shot_guard"
+    assert snapshot["latest_unconfirmed_event"]["delivery_status"] == "assistant_fallback_ready"
     assert snapshot["pending_proposal_state"]["pending_count"] == 1
 
 
@@ -189,6 +192,7 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
         host_family="codex",
         intervention_key="iv-hidden-ready",
         turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** Hidden hook context is not chat-visible proof.",
         delivery_channel="system_message_and_assistant_fallback",
         delivery_status="assistant_fallback_ready",
         render_surface="codex_post_tool_use",
@@ -202,6 +206,80 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
 
     assert report["activation"] == "ready"
     assert report["delivery_ledger"]["event_count"] == 1
+    assert report["delivery_ledger"]["visible_event_count"] == 0
+    assert report["delivery_ledger"]["unconfirmed_event_count"] == 1
+    assert report["chat_visible_proof"]["status"] == "pending_confirmation"
+
+
+def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is_pending(
+    tmp_path: Path,
+) -> None:
+    _seed_codex_repo(tmp_path)
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Earlier Observation rendered.",
+        session_id="session-proven-pending",
+        host_family="codex",
+        intervention_key="iv-visible",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** Earlier visible proof.",
+        delivery_channel="manual_visible_command",
+        delivery_status="manual_visible",
+        render_surface="codex_visible_intervention",
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="New Observation waiting for chat confirmation.",
+        session_id="session-proven-pending",
+        host_family="codex",
+        intervention_key="iv-hidden-later",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** New hidden beat still needs proof.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_post_tool_use",
+    )
+
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="session-proven-pending",
+    )
+    rendered = host_intervention_status.render_intervention_status(report)
+
+    assert report["delivery_ledger"]["visible_event_count"] == 1
+    assert report["delivery_ledger"]["unconfirmed_event_count"] == 1
+    assert report["chat_visible_proof"]["status"] == "proven_with_pending_confirmation"
+    assert "pending chat-confirmation event(s)" in rendered
+    assert "New hidden beat still needs proof" not in rendered
+
+
+def test_hook_payload_visible_text_without_ledger_proof_stays_unproven(tmp_path: Path) -> None:
+    _seed_codex_repo(tmp_path)
+    payload = host_surface_runtime.codex_post_tool_payload(
+        developer_context=(
+            "**Odylith Observation:** Hidden hook context is not chat proof.\n\n"
+            "**Odylith Assist:** kept the continuity state."
+        ),
+        system_message="**Odylith Observation:** Hidden hook context is not chat proof.",
+    )
+
+    visible_candidate = host_surface_runtime.chat_visible_text(
+        payload,
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+    )
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="payload-only-session",
+    )
+
+    assert visible_candidate == "---\n\n**Odylith Observation:** Hidden hook context is not chat proof.\n\n---"
+    assert report["activation"] == "ready"
+    assert report["delivery_ledger"]["event_count"] == 0
     assert report["delivery_ledger"]["visible_event_count"] == 0
     assert report["chat_visible_proof"]["status"] == "unproven_this_session"
 

@@ -1,0 +1,70 @@
+%% Reviewed 2026-04-17 for v0.1.11 to show Delivery Intelligence handing compact packet, execution, memory, Tribunal, visible intervention, and benchmark proof through one closed loop.
+sequenceDiagram
+  participant Dev as Developer or AI Coding Engine
+  participant Repo as Repo + Plans + Specs
+  participant Gates as Local Gates + CI
+  participant Compass as Compass Timeline
+  participant Odylith as Odylith Observer
+  participant Delivery as Delivery Intelligence
+  participant Context as Context Engine
+  participant Execution as Execution Engine
+  participant Tribunal as Tribunal
+  participant Remediator as Remediator
+  participant Visibility as Visible Intervention Broker
+  participant Benchmark as Benchmark Harness
+  participant Runtime as Runtime v4 Store
+  participant Operator as Maintainer
+  participant Shell as Tooling Shell
+  participant Evidence as Radar / Registry / Atlas / Compass
+
+  Dev->>Repo: Edit code, contracts, plans, generators
+  Repo-->>Odylith: Changed paths and worktree signal
+  Gates->>Odylith: Test, build, policy, release outcomes
+  Compass->>Odylith: Decision, implementation, clearance events
+
+  Odylith->>Odylith: Observe and fingerprint
+  alt No meaningful case delta
+    Odylith->>Odylith: Reuse cached posture and back off toward 300s idle cadence
+  else Case fingerprint changed or leverage rises
+    Odylith->>Delivery: Build or refresh scoped dossiers
+    Delivery-->>Odylith: Ranked candidate cases + evidence bundles
+    Delivery->>Context: Build compact packet digest
+    Context-->>Delivery: Packet quality, target resolution, route readiness
+    Delivery->>Execution: Build compact execution snapshot
+    Execution-->>Delivery: Admissibility, mode, next move, closure, validation
+    alt Persisted reasoning artifact exists
+      Odylith->>Tribunal: Reuse cached cases or run selective actor pass on contested or high-value cases
+      Tribunal-->>Odylith: Briefs, outcomes, systemic themes, confidence
+    else Reasoning artifact missing during refresh
+      Odylith->>Tribunal: Build deterministic-only fallback cases locally
+      Tribunal-->>Odylith: Deterministic case_queue plus systemic context
+    end
+    Odylith->>Remediator: Compile bounded correction packet when prescription is executable
+    Remediator-->>Odylith: Deterministic, AI engine, hybrid, or manual packet
+    Tribunal->>Visibility: Emit compact user-visible risk signal when earned
+    Visibility-->>Shell: Render Observation / Proposal / Assist only when visible proof policy allows
+    Execution->>Benchmark: Record execution posture and false-admit or false-deny evidence
+    Odylith->>Runtime: Persist delivery_intelligence.v4, reasoning.v4, posture.v4
+  end
+
+  Odylith-->>Shell: Refresh compact inbox preview
+  Odylith-->>Operator: Show case brief, proof, and next action
+  Evidence-->>Operator: Provide native workstream, component, diagram, and timeline context
+
+  alt Packet requires approval
+    Operator->>Odylith: Approve packet
+    alt Deterministic packet
+      Odylith->>Remediator: Execute bounded commands
+      Remediator-->>Odylith: Validation, rollback safety, execution result
+      Remediator->>Benchmark: Record closure and validation proof
+    else AI-engine or hybrid packet
+      Odylith->>Remediator: Emit constrained handoff payload
+      Remediator-->>Operator: Send to AI engine
+    end
+    Operator->>Odylith: Record clearance after post-action checks pass
+    Odylith->>Compass: Append approval and clearance evidence
+  else Manual review only
+    Operator->>Evidence: Perform discriminating check and decide
+  end
+
+  Note over Context,Visibility: Hot lanes consume compact packet, execution, memory, Tribunal, and delivery-ledger summaries only.<br/>No provider call or repo-wide scan belongs inside visibility or status checks.

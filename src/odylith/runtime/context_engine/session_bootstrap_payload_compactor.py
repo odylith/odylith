@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import packet_quality_codec
-from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.memory import tooling_memory_contracts
 
 
@@ -528,12 +528,15 @@ def _compact_bootstrap_delivery_payload(payload: Mapping[str, Any]) -> dict[str,
     if recommended_tests:
         compact["recommended_tests"] = recommended_tests[:2]
     if isinstance(compact.get("context_packet"), Mapping):
-        _eg = runtime_surface_governance.compact_execution_engine_snapshot(
-            runtime_surface_governance.build_packet_execution_engine_snapshot(
-                payload=payload,
-                context_packet=compact.get("context_packet"),
-            )
+        context_packet = execution_engine_handshake.attach_execution_engine_handshake(
+            dict(compact.get("context_packet", {})),
+            payload=payload,
         )
+        _eg = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+            payload=payload,
+            context_packet=context_packet,
+        )
+        compact["context_packet"] = context_packet
         if _eg:
             compact["context_packet"]["execution_engine"] = _eg
     return {

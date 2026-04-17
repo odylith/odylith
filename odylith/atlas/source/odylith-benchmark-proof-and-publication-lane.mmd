@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-12 for B-092/B-093 after the full-product benchmark contract, live-lane fairness hardening, and serious-corpus floor landed.
+%% Reviewed 2026-04-17 for v0.1.11 after Context Engine, Execution Engine, visible-intervention, memory, Tribunal, and full-product assistance proof were aligned under accuracy-first benchmark gates.
 flowchart LR
     subgraph Truth["1. Benchmark source truth"]
         Corpus["Benchmark corpus<br/>canonical scenarios + architecture_scenarios<br/>odylith/runtime/source/optimization-evaluation-corpus.v1.json"]
@@ -8,6 +8,7 @@ flowchart LR
         Validators["Public validator contract<br/>documented `odylith ...` entrypoints<br/>stay trustworthy for proof"]
         Taxonomy["Developer-first family taxonomy<br/>README + proof/diagnostic heatmaps<br/>ordered for developer legibility"]
         Seriousness["Seriousness floor<br/>60 implementation scenarios<br/>35 write+validator + 12 correctness-critical<br/>mechanism-heavy share <= 40%"]
+        ExecutionScenarios["Execution + visibility scenarios<br/>route-ready + narrowing + verify-first<br/>recover-first + consumer lane + wait/resume<br/>hard correction + unsafe closure + host parity"]
     end
 
     subgraph Runtime["2. Benchmark execution lanes"]
@@ -23,6 +24,10 @@ flowchart LR
         Cold["Cold cache profile"]
         OdylithOn["odylith_on<br/>full Odylith assistance stack<br/>grounding + execution posture + bounded orchestration"]
         RawAgent["odylith_off / raw_agent_baseline<br/>same host CLI with Odylith assistance disabled"]
+        ContextHandshake["Context Engine handshake<br/>packet quality + route readiness + target resolution"]
+        ExecutionSnapshot["Execution Engine snapshot<br/>admissibility + mode + next move + closure<br/>wait/resume + validation + host carry-through"]
+        InterventionProof["Visible intervention proof<br/>Observation / Proposal / Assist transcript harness<br/>hidden hook payloads do not count"]
+        TribunalMemory["Memory + Tribunal influence<br/>session stream + proof ledger + rival diagnosis"]
     end
 
     subgraph Publication["3. Conservative publication view"]
@@ -34,6 +39,8 @@ flowchart LR
         WeakFamilies["Pass-recovery weak-family loop<br/>component_governance + compass_brief_freshness<br/>consumer_profile + daemon_security + cross_file_feature"]
         ProofPublished["Published proof view<br/>same-profile same-scenario worst-case across warm + cold<br/>published_summary + family_deltas + robustness_summary"]
         DiagnosticPublished["Diagnostic mechanism snapshot<br/>packet/prompt-only report view"]
+        AccuracyMetrics["Accuracy gates first<br/>snapshot presence + admissibility + mode<br/>truthful next move + closure + validation<br/>false-admit / false-deny + re-anchor + delegation guard"]
+        CostMetrics["Efficiency gates second<br/>packet build time + snapshot time<br/>prompt/runtime tokens + total payload tokens"]
         LatestProof["latest-proof.v1.json / latest.v1.json"]
         LatestDiagnostic["latest-diagnostic.v1.json"]
         Graphs["Canonical graph renderer<br/>docs/benchmarks/proof/*.svg + diagnostic/*.svg"]
@@ -54,6 +61,7 @@ flowchart LR
     Taxonomy --> Graphs
     Taxonomy --> README
     Seriousness --> Runner
+    ExecutionScenarios --> Runner
 
     Runner --> Snapshot
     Runner --> GuidanceCatalog
@@ -67,6 +75,10 @@ flowchart LR
     Proof --> Cold
     LocalMemory --> Warm
     LocalMemory --> Cold
+    ContextHandshake --> OdylithOn
+    ExecutionSnapshot --> OdylithOn
+    InterventionProof --> OdylithOn
+    TribunalMemory --> OdylithOn
     Warm --> OdylithOn
     Warm --> RawAgent
     Cold --> OdylithOn
@@ -84,6 +96,12 @@ flowchart LR
     PromptAudit --> Corpus
     WeakFamilies --> Corpus
     Diagnostic --> DiagnosticPublished
+    ContextHandshake --> AccuracyMetrics
+    ExecutionSnapshot --> AccuracyMetrics
+    InterventionProof --> AccuracyMetrics
+    TribunalMemory --> AccuracyMetrics
+    AccuracyMetrics --> ProofPublished
+    CostMetrics --> ProofPublished
     Probe --> ProofPublished
     Breakdown --> ProofPublished
     ProofPublished --> LatestProof

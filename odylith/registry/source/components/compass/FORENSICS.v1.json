@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 101,
-    "mapped_workstream_evidence_count": 42,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 31,
+    "explicit_event_count": 105,
+    "mapped_workstream_evidence_count": 46,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 101
+    "timeline_event_count": 106
   },
   "name": "Compass",
   "path_prefixes": [
@@ -53,6 +53,234 @@
   "timeline": [
     {
       "artifacts": [],
+      "confidence": "high",
+      "event_index": 683,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-001.",
+      "ts_iso": "2026-04-17T03:48:35Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 659,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:47:30Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/compass/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 986,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/compass/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-17T00:31:58-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
       "confidence": "medium",
       "event_index": 510,
       "explicit_components": [],
@@ -61,13 +289,70 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-16T18:24:09Z",
       "workstreams": [
         "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/visibility_broker.py",
+        "tests/integration/runtime/test_intervention_visibility_browser.py",
+        "tests/unit/runtime/test_intervention_visibility_broker.py"
+      ],
+      "confidence": "high",
+      "event_index": 650,
+      "explicit_components": [
+        "compass",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "proof-state"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "proof-state"
+      ],
+      "meaningful": true,
+      "summary": "Hardened intervention chat-visible delivery with a shared broker, assistant-render-required proof states, transcript confirmation, D-038 proposal visibility gating, and focused runtime/browser validation.",
+      "ts_iso": "2026-04-16T17:27:55-07:00",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "tests/integration/runtime/test_context_execution_alignment_browser.py",
+        "tests/unit/runtime/test_component_registry_candidate_policy.py"
+      ],
+      "confidence": "high",
+      "event_index": 596,
+      "explicit_components": [
+        "compass",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Hardened B-099 QA: execution hard-cut regression tests, full runtime unit suite 1918 passed, browser suite 139 passed/1 skipped, and sync check-only passed.",
+      "ts_iso": "2026-04-16T16:47:23-07:00",
+      "workstreams": [
+        "B-099"
       ]
     },
     {
@@ -84,6 +369,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -107,6 +393,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -131,6 +418,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar",
         "registry"
       ],
@@ -155,6 +443,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -179,6 +468,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar",
         "registry"
       ],
@@ -203,6 +493,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -227,6 +518,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar",
         "registry"
       ],
@@ -251,6 +543,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -274,7 +567,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
@@ -298,6 +592,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar",
         "registry"
       ],
@@ -322,6 +617,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -345,7 +641,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -369,6 +666,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar",
         "registry"
       ],
@@ -393,6 +691,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -417,6 +716,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar",
         "registry"
       ],
@@ -441,6 +741,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -501,7 +802,8 @@
       "mapped_components": [
         "compass",
         "governance-intervention-engine",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Completed intervention chat-visibility hardening: Codex and Claude now report assistant-visible readiness, visible-intervention renders Observation/Proposal/Assist Markdown, Stop Assist recovers from validation proof without claiming artifacts, and CB-121 plus B-096 governance records were updated.",
@@ -530,7 +832,8 @@
         "casebook",
         "compass",
         "governance-intervention-engine",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Fixed intervention chat visibility contract: assistant-render fallback, visible-intervention CLI, Codex Bash-only hook truth, Stop one-shot Assist recovery, and CB-121 casebook capture.",
@@ -553,7 +856,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -576,7 +880,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
@@ -600,6 +905,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar",
         "registry"
       ],
@@ -624,6 +930,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -647,7 +954,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
@@ -671,6 +979,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar",
         "registry"
       ],
@@ -695,6 +1004,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -718,7 +1028,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -741,7 +1052,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -764,7 +1076,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
@@ -788,6 +1101,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar",
         "registry"
       ],
@@ -812,6 +1126,7 @@
         "compass",
         "governance-intervention-engine",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": true,
@@ -835,7 +1150,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -857,7 +1173,8 @@
       "mapped_components": [
         "compass",
         "governance-intervention-engine",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Observation rendered.",
@@ -879,7 +1196,8 @@
       "mapped_components": [
         "compass",
         "governance-intervention-engine",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Observation rendered.",
@@ -901,7 +1219,8 @@
       "mapped_components": [
         "compass",
         "governance-intervention-engine",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Observation rendered.",
@@ -964,6 +1283,7 @@
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": false,

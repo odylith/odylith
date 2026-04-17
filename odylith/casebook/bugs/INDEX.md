@@ -1,11 +1,13 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-16
+Last updated (UTC): 2026-04-17
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-122 | 2026-04-17 | Intervention hooks report ready while chat sees zero visible odylith beats | P0 | governance-intervention-engine | Open | [2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md](2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md) |
+| CB-123 | 2026-04-17 | Bootstrap signal corpus can be mistaken for calibrated ml quality | P1 | governance-intervention-engine | Open | [2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md](2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md) |
 | CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Resolved | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
 | CB-120 | 2026-04-16 | Dashboard shell diagnostic cockpit leaked into product render | P1 | dashboard | Resolved | [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md) |
 | CB-119 | 2026-04-16 | Benchmark live proof conflates support paths write targets and read only sandbox | P1 | benchmark | Open | [2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md](2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md) |

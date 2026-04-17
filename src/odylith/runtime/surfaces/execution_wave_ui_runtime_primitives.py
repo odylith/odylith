@@ -36,6 +36,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-board {
   display: grid;
   gap: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-section {
@@ -43,11 +45,15 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   border-radius: 16px;
   background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-program-stack {
   display: grid;
   gap: 24px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-section summary {
@@ -66,6 +72,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .execution-wave-section-summary-compass {
@@ -94,6 +101,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-section-line {
   color: #27445e;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-section-line-muted {
@@ -106,6 +115,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .execution-wave-section-toggle {
@@ -148,6 +158,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   padding: 16px 18px 18px;
   display: grid;
   gap: 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-focus {
@@ -155,6 +167,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   border-radius: 14px;
   background: linear-gradient(135deg, #f9fbff 0%, #ffffff 58%, #f3faf7 100%);
   padding: 16px 18px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-focus-grid {
@@ -162,6 +176,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
   align-items: start;
+  min-width: 0;
 }
 
 .execution-wave-focus-copy {
@@ -182,6 +197,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   color: #27445e;
   line-height: 1.6;
   max-width: 70ch;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-focus-line-muted {
@@ -199,6 +216,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-sequence {
   display: grid;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-card {
@@ -207,6 +226,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   border-radius: 14px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-card summary {
@@ -236,6 +257,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-card-summary {
   cursor: pointer;
   padding: 14px 16px;
+  min-width: 0;
 }
 
 .execution-wave-card-summary:hover {
@@ -265,6 +287,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
   align-items: start;
+  min-width: 0;
 }
 
 .execution-wave-card-shell-full-copy {
@@ -286,6 +309,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .execution-wave-card-shell-full-copy .execution-wave-title-row {
@@ -300,12 +324,16 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   line-height: 1.25;
   letter-spacing: -0.01em;
   min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-sub {
   color: #27445e;
   line-height: 1.6;
   max-width: 72ch;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-card-shell-full-copy .execution-wave-sub {
@@ -319,6 +347,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   flex-wrap: wrap;
   gap: 8px 12px;
   align-items: center;
+  min-width: 0;
 }
 
 .execution-wave-card-shell-full-copy .execution-wave-compact {
@@ -370,11 +399,15 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   padding: 12px 16px 16px;
   display: grid;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-body-grid {
   display: grid;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-body-grid-top {
@@ -424,6 +457,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-highlight-copy {
   color: #27445e;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-highlight-copy-strong {
@@ -438,11 +473,13 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   align-items: flex-start;
   align-content: flex-start;
   min-height: 28px;
+  min-width: 0;
 }
 
 .execution-wave-gates {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .execution-wave-gate {
@@ -450,11 +487,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   border-radius: 11px;
   background: #ffffff;
   padding: 10px 11px;
+  min-width: 0;
 }
 
 .execution-wave-gate-label {
   color: #27445e;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-gate-meta {
@@ -502,7 +542,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   }
 
   .execution-wave-section-summary-compass {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .execution-wave-section-meta-bottom {
@@ -1040,10 +1080,13 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   if (!boardsHtml) return "";
   const openAttr = section.openByDefault ? " open" : "";
   const sectionHeaderVariant = String(options.sectionHeaderVariant || "").trim().toLowerCase();
+  const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]
+    .filter(Boolean)
+    .join(" ");
   if (sectionHeaderVariant === "compass") {
     return `
       <section class="block">
-        <details class="execution-wave-section"${openAttr}>
+        <details class="${escapeHtml(sectionClassName)}"${openAttr}>
           <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
             <div class="execution-wave-section-copy">
               <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>
@@ -1061,7 +1104,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   }
   return `
     <section class="block">
-      <details class="execution-wave-section"${openAttr}>
+      <details class="${escapeHtml(sectionClassName)}"${openAttr}>
         <summary class="execution-wave-section-summary">
           <div class="execution-wave-section-copy">
             <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>

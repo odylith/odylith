@@ -57,7 +57,7 @@ def test_recent_session_live_markdown_recovers_unseen_live_beats_only(tmp_path: 
     assert surface_runtime.recent_session_live_markdown(
         repo_root=tmp_path,
         session_id="known-session",
-    ) == "---\n-----\nOdylith Proposal: keep this visible.\n-----\n---"
+    ) == "---\n\n-----\nOdylith Proposal: keep this visible.\n-----\n\n---"
 
 
 def test_compose_host_conversation_bundle_recovers_recent_checkpoint_context(tmp_path: Path) -> None:
@@ -116,8 +116,56 @@ def test_host_conversation_bundle_uses_live_ambient_payload_for_post_tool_render
     )
 
     assert bundle["live_ambient_signals"]["selected_signal"] == "insight"
-    assert rendered.startswith("---\n**Odylith Insight:**")
+    assert rendered.startswith("---\n\n**Odylith Insight:**")
     assert "ambient_signal" in events
+
+
+def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal_complaint(
+    tmp_path: Path,
+) -> None:
+    prompt = "ZERO signals in my chat; Odylith interventions need to be visible for branding."
+    bundle = host_surface_runtime.compose_host_conversation_bundle(
+        repo_root=tmp_path,
+        host_family="codex",
+        turn_phase="prompt_submit",
+        session_id="zero-signal-host",
+        prompt_excerpt=prompt,
+    )
+    observation = dict(bundle["observation"])
+    context_packet = dict(observation["context_packet_summary"])
+    execution = dict(observation["execution_engine_summary"])
+    memory = dict(observation["memory_summary"])
+    tribunal = dict(observation["tribunal_summary"])
+    visibility = dict(observation["visibility_summary"])
+
+    assert context_packet["packet_state"] == "visibility_recovery"
+    assert context_packet["workstreams"] == ["B-096"]
+    assert "governance-intervention-engine" in context_packet["components"]
+    assert "odylith-context-engine" in context_packet["components"]
+    assert "execution-engine" in context_packet["components"]
+    assert "odylith-memory-backend" in context_packet["components"]
+    assert "tribunal" in context_packet["components"]
+    assert execution["execution_engine_canonical_component_id"] == "execution-engine"
+    assert execution["execution_engine_next_move"] == "recover.current_blocker"
+    assert execution["execution_engine_host_family"] == "codex"
+    assert memory["visibility_complaint"] is True
+    assert visibility["chat_visible_proof"] == "unproven_this_session"
+    assert tribunal["source"] == "intervention_alignment_context"
+    assert tribunal["case_queue"][0]["id"] == "CB-122"
+
+    decision = host_surface_runtime.visible_intervention_decision(
+        repo_root=tmp_path,
+        bundle=bundle,
+        host_family="codex",
+        turn_phase="prompt_submit",
+        session_id="zero-signal-host",
+        include_proposal=False,
+        include_closeout=False,
+    )
+
+    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert decision.delivery_status == "assistant_render_required"
+    assert decision.proof_required is True
 
 
 def test_codex_post_tool_payload_uses_additional_context_and_system_message() -> None:
@@ -206,10 +254,59 @@ def test_visible_delivery_already_present_requires_the_same_visible_labels() -> 
             "**Odylith Assist:** kept this grounded."
         ),
     )
+    assert not host_surface_runtime.visible_delivery_already_present(
+        last_assistant_message="Implemented the fix.\n\n**Odylith Observation:** The signal is real.",
+        visible_text="---\n**Odylith Observation:** The signal is real.\n---",
+    )
+    assert not host_surface_runtime.visible_delivery_already_present(
+        last_assistant_message="Implemented the fix.\n\n---\n**Odylith Observation:** The signal is real.\n---",
+        visible_text="---\n**Odylith Observation:** The signal is real.\n---",
+    )
     assert host_surface_runtime.visible_delivery_already_present(
+        last_assistant_message="Implemented the fix.\n\n---\n\n**Odylith Observation:** The signal is real.\n\n---",
+        visible_text="---\n**Odylith Observation:** The signal is real.\n---",
+    )
+    assert not host_surface_runtime.visible_delivery_already_present(
+        last_assistant_message=(
+            "Implemented the fix.\n\n"
+            "**Odylith Observation:** Older signal.\n\n"
+            "**Odylith Assist:** Older closeout."
+        ),
+        visible_text=(
+            "**Odylith Observation:** New signal.\n\n"
+            "**Odylith Assist:** New closeout."
+        ),
+    )
+    assert not host_surface_runtime.visible_delivery_already_present(
         last_assistant_message=(
             "Implemented the fix.\n\n"
             "**Odylith Observation:** The signal is real.\n\n"
+            "**Odylith Assist:** kept this grounded."
+        ),
+        visible_text=(
+            "**Odylith Observation:** The signal is real.\n\n"
+            "**Odylith Assist:** kept this grounded."
+        ),
+    )
+    assert not host_surface_runtime.visible_delivery_already_present(
+        last_assistant_message=(
+            "Implemented the fix.\n\n"
+            "---\n\n"
+            "**Odylith Observation:** The signal is real.\n\n"
+            "**Odylith Assist:** kept this grounded.\n\n"
+            "---"
+        ),
+        visible_text=(
+            "**Odylith Observation:** The signal is real.\n\n"
+            "**Odylith Assist:** kept this grounded."
+        ),
+    )
+    assert host_surface_runtime.visible_delivery_already_present(
+        last_assistant_message=(
+            "Implemented the fix.\n\n"
+            "---\n\n"
+            "**Odylith Observation:** The signal is real.\n\n"
+            "---\n\n"
             "**Odylith Assist:** kept this grounded."
         ),
         visible_text=(
@@ -369,7 +466,7 @@ def test_ambient_signal_is_visible_when_it_wins_the_live_slot() -> None:
         turn_phase="post_bash_checkpoint",
     )
 
-    assert visible == "**Odylith Insight:** this stayed smaller than it first looked."
+    assert visible == "---\n\n**Odylith Insight:** this stayed smaller than it first looked.\n\n---"
 
 
 def test_compose_checkpoint_system_message_prefers_live_intervention_over_success_status() -> None:
@@ -378,7 +475,7 @@ def test_compose_checkpoint_system_message_prefers_live_intervention_over_succes
         governance_status="Odylith governance refresh completed.",
     )
 
-    assert message == "**Odylith Observation:** The signal is real."
+    assert message == "---\n\n**Odylith Observation:** The signal is real.\n\n---"
 
 
 def test_compose_checkpoint_system_message_keeps_failure_status_with_live_intervention() -> None:
@@ -387,5 +484,5 @@ def test_compose_checkpoint_system_message_keeps_failure_status_with_live_interv
         governance_status="Odylith governance refresh failed after editing foo.md: exit code 2",
     )
 
-    assert message.startswith("**Odylith Observation:** The signal is real.")
+    assert message.startswith("---\n\n**Odylith Observation:** The signal is real.\n\n---")
     assert "failed after editing foo.md" in message

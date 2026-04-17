@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-07 for B-027, B-031, B-058, and B-059 to keep runtime, memory, conversation, and validation boundaries explicit across product execution.
+%% Reviewed 2026-04-17 for v0.1.11 to keep runtime, memory, Context Engine, Execution Engine, visible-intervention, benchmark, conversation, and validation boundaries explicit across product execution.
 flowchart LR
     subgraph Inputs["1. Product truth and contracts"]
         CLI["src/odylith/cli.py + install/*"]
@@ -15,8 +15,10 @@ flowchart LR
         Remote["memory/odylith_remote_retrieval.py"]
         Contracts["memory/tooling_memory_contracts.py"]
         Governance["governance/*<br/>delivery intelligence + sync"]
-        Evaluation["evaluation/*<br/>tribunal + remediator"]
-        Conversation["orchestration/*<br/>router + orchestrator + odylith chatter"]
+        Execution["execution_engine/*<br/>host profile + admissibility + shared snapshot"]
+        Evaluation["evaluation/* + reasoning/*<br/>benchmark + tribunal + remediator"]
+        Intervention["intervention_engine/*<br/>alignment context + visibility broker"]
+        Conversation["orchestration/* + chatter<br/>router + orchestrator + odylith chatter"]
         Surfaces["surfaces/*<br/>Dashboard + Radar + Atlas + Compass + Registry + Casebook"]
     end
 
@@ -24,7 +26,7 @@ flowchart LR
         ProductRoot["odylith/<br/>materialized product files + generated surfaces"]
         CompilerRoot[".odylith/runtime/odylith-compiler<br/>bundle + snapshot artifacts"]
         MemoryRoot[".odylith/runtime/odylith-memory<br/>lance + tantivy + judgment memory + remote sync"]
-        RuntimeRoot[".odylith/<br/>sessions + delivery intelligence + benchmarks + runtime snapshots"]
+        RuntimeRoot[".odylith/<br/>sessions + delivery intelligence + benchmarks<br/>execution snapshots + visibility ledgers"]
     end
 
     subgraph Boundaries["4. Execution boundaries"]
@@ -52,10 +54,20 @@ flowchart LR
     Backend --> Contracts
     Remote --> Contracts
     Contracts --> Governance
+    Contracts --> Execution
     Contracts --> Evaluation
+    Contracts --> Intervention
     Contracts --> Conversation
+    Context --> Execution
     Governance --> Surfaces
+    Governance --> Execution
+    Execution --> Intervention
+    Execution --> Conversation
     Evaluation --> Conversation
+    Evaluation --> Execution
+    Evaluation --> Intervention
+    Intervention --> Conversation
+    Intervention --> Surfaces
     Conversation --> Surfaces
 
     Governance --> ProductRoot
@@ -65,7 +77,9 @@ flowchart LR
     Backend --> MemoryRoot
     Remote --> MemoryRoot
     Governance --> RuntimeRoot
+    Execution --> RuntimeRoot
     Evaluation --> RuntimeRoot
+    Intervention --> RuntimeRoot
     Conversation --> RuntimeRoot
 
     CLI --> RuntimeBoundary

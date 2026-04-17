@@ -100,6 +100,7 @@ def test_render_mermaid_catalog_defaults_to_newest_diagram_sort_filter() -> None
     assert 'id="sortWorkstreamFilters"' in html
     assert "grid-template-columns: 400px minmax(0, 1fr);" in html
     assert "grid-template-columns: minmax(150px, 0.78fr) minmax(190px, 1fr);" in html
+    assert "justify-content: flex-end;" in html
     assert '<option value="newest">Newest Diagram</option>' in html
     assert 'let sortFilter = "newest";' in html
     assert 'const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);' in html
@@ -162,7 +163,7 @@ def test_render_mermaid_catalog_uses_casebook_style_detail_fact_cards() -> None:
     assert 'button.setAttribute("data-diagram", diagram.diagram_id);' in html
     assert ".hero {" in html
     assert "display: grid;" in html
-    assert "justify-content: flex-start;" in html
+    assert "justify-content: flex-end;" in html
     assert "width: 100%;" in html
     assert html.index('data-fact="diagram-id"') < html.index('data-fact="kind"')
     assert html.index('data-fact="diagram-id"') < html.index('data-fact="status"')

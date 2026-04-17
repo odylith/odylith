@@ -7,10 +7,10 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.common.consumer_profile import load_consumer_profile
 from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.context_engine import packet_quality_codec
-from odylith.runtime.common.consumer_profile import load_consumer_profile
-from odylith.runtime.execution_engine import runtime_surface_governance
+from odylith.runtime.orchestration import subagent_router_execution_engine_runtime
 
 
 def _host():
@@ -101,8 +101,13 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
         execution_engine_payload = _mapping_value(root, "execution_engine")
     if not isinstance(execution_engine_payload, Mapping):
         execution_engine_payload = {}
-    execution_engine_summary = runtime_surface_governance.summary_fields_from_execution_engine(
-        execution_engine_payload
+    execution_engine_summary = (
+        subagent_router_execution_engine_runtime.execution_engine_summary_from_context_sources(
+            context_signals=context_signals,
+            root=root,
+            context_packet=context_packet,
+            execution_engine_payload=execution_engine_payload,
+        )
     )
     validation_bundle = _validation_bundle_from_context(context_signals, context_packet=context_packet)
     governance_obligations = _governance_obligations_from_context(context_signals, context_packet=context_packet)
@@ -759,6 +764,69 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
             _context_lookup(context_signals, "latest_execution_engine_host_supports_native_spawn"),
         )
     )
+    execution_engine_component_id = _normalize_string(
+        _preferred_value(
+            execution_engine_summary,
+            "execution_engine_component_id",
+            _context_lookup(root, "execution_engine_component_id"),
+            _context_lookup(context_signals, "execution_engine_component_id"),
+            _context_lookup(context_signals, "latest_execution_engine_component_id"),
+        )
+    )
+    execution_engine_canonical_component_id = _normalize_string(
+        _preferred_value(
+            execution_engine_summary,
+            "execution_engine_canonical_component_id",
+            _context_lookup(root, "execution_engine_canonical_component_id"),
+            _context_lookup(context_signals, "execution_engine_canonical_component_id"),
+            _context_lookup(context_signals, "latest_execution_engine_canonical_component_id"),
+        )
+    )
+    execution_engine_identity_status = _normalize_token(
+        _preferred_value(
+            execution_engine_summary,
+            "execution_engine_identity_status",
+            _context_lookup(root, "execution_engine_identity_status"),
+            _context_lookup(context_signals, "execution_engine_identity_status"),
+            _context_lookup(context_signals, "latest_execution_engine_identity_status"),
+        )
+    )
+    execution_engine_target_component_id = _normalize_string(
+        _preferred_value(
+            execution_engine_summary,
+            "execution_engine_target_component_id",
+            _context_lookup(root, "execution_engine_target_component_id"),
+            _context_lookup(context_signals, "execution_engine_target_component_id"),
+            _context_lookup(context_signals, "latest_execution_engine_target_component_id"),
+        )
+    )
+    execution_engine_target_component_ids = _normalize_list(
+        _preferred_value(
+            execution_engine_summary,
+            "execution_engine_target_component_ids",
+            _context_lookup(root, "execution_engine_target_component_ids"),
+            _context_lookup(context_signals, "execution_engine_target_component_ids"),
+            _context_lookup(context_signals, "latest_execution_engine_target_component_ids"),
+        )
+    )[:4]
+    execution_engine_target_component_status = _normalize_token(
+        _preferred_value(
+            execution_engine_summary,
+            "execution_engine_target_component_status",
+            _context_lookup(root, "execution_engine_target_component_status"),
+            _context_lookup(context_signals, "execution_engine_target_component_status"),
+            _context_lookup(context_signals, "latest_execution_engine_target_component_status"),
+        )
+    )
+    execution_engine_snapshot_reuse_status = _normalize_token(
+        _preferred_value(
+            execution_engine_summary,
+            "execution_engine_snapshot_reuse_status",
+            _context_lookup(root, "execution_engine_snapshot_reuse_status"),
+            _context_lookup(context_signals, "execution_engine_snapshot_reuse_status"),
+            _context_lookup(context_signals, "latest_execution_engine_snapshot_reuse_status"),
+        )
+    )
     execution_engine_target_lane = _normalize_token(
         _preferred_value(
             execution_engine_summary,
@@ -1267,6 +1335,13 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
         "execution_engine_host_family": execution_engine_host_family,
         "execution_engine_model_family": execution_engine_model_family,
         "execution_engine_host_supports_native_spawn": execution_engine_host_supports_native_spawn,
+        "execution_engine_component_id": execution_engine_component_id,
+        "execution_engine_canonical_component_id": execution_engine_canonical_component_id,
+        "execution_engine_identity_status": execution_engine_identity_status,
+        "execution_engine_target_component_id": execution_engine_target_component_id,
+        "execution_engine_target_component_ids": execution_engine_target_component_ids,
+        "execution_engine_target_component_status": execution_engine_target_component_status,
+        "execution_engine_snapshot_reuse_status": execution_engine_snapshot_reuse_status,
         "execution_engine_target_lane": execution_engine_target_lane,
         "execution_engine_has_writable_targets": execution_engine_has_writable_targets,
         "execution_engine_requires_more_consumer_context": execution_engine_requires_more_consumer_context,

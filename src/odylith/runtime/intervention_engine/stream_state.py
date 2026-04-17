@@ -63,6 +63,17 @@ def _normalize_string_list(value: Any) -> list[str]:
     return rows
 
 
+def _json_safe_mapping(value: Any) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        return {}
+    try:
+        encoded = json.dumps(dict(value), sort_keys=True, default=str)
+        decoded = json.loads(encoded)
+    except (TypeError, ValueError):
+        return {}
+    return decoded if isinstance(decoded, dict) else {}
+
+
 def _agent_stream_path(*, repo_root: Path, value: Any = "") -> Path:
     cache_key = (str(repo_root), _normalize_string(value))
     cached = _STREAM_PATH_CACHE.get(cache_key)
@@ -128,6 +139,7 @@ def append_intervention_event(
     delivery_status: str = "",
     render_surface: str = "",
     delivery_latency_ms: float | None = None,
+    metadata: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     normalized_kind = _normalize_string(kind).lower()
     if normalized_kind not in _INTERVENTION_EVENT_KINDS:
@@ -158,6 +170,7 @@ def append_intervention_event(
         "delivery_channel": _normalize_string(delivery_channel).lower(),
         "delivery_status": _normalize_string(delivery_status).lower(),
         "render_surface": _normalize_string(render_surface).lower(),
+        "metadata": _json_safe_mapping(metadata),
     }
     if delivery_latency_ms is not None:
         payload["delivery_latency_ms"] = round(max(0.0, float(delivery_latency_ms)), 3)

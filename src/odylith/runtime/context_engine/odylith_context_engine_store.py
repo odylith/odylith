@@ -33,7 +33,6 @@ import tempfile
 import time
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
-from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import delivery_intelligence_engine
@@ -53,6 +52,7 @@ from odylith.runtime.context_engine import odylith_context_engine_memory_snapsho
 from odylith.runtime.context_engine import odylith_context_engine_projection_query_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
+from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.evaluation import odylith_evaluation_ledger
 from odylith.runtime.memory import odylith_memory_backend
@@ -3632,14 +3632,18 @@ def _compact_context_dossier(
         "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
         "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
     }
-    _eg = runtime_surface_governance.compact_execution_engine_snapshot(
-        runtime_surface_governance.build_packet_execution_engine_snapshot(
-            {
-                "packet_kind": "context_dossier",
-                "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
-                "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
-            }
-        )
+    execution_payload = {
+        "packet_kind": "context_dossier",
+        "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
+        "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
+    }
+    result = execution_engine_handshake.attach_execution_engine_handshake(
+        result,
+        payload=execution_payload,
+    )
+    _eg = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload=execution_payload,
+        context_packet=result,
     )
     if _eg:
         result["execution_engine"] = _eg

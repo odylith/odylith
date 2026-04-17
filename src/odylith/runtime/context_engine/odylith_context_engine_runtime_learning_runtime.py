@@ -2,9 +2,64 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
+
+
+def _safe_float(
+    value: Any,
+    default: float = 0.0,
+    *,
+    minimum: float | None = None,
+    maximum: float | None = None,
+) -> float:
+    try:
+        numeric = float(value or 0.0)
+    except (TypeError, ValueError):
+        numeric = float(default)
+    if math.isnan(numeric):
+        numeric = float(default)
+    elif math.isinf(numeric):
+        if numeric > 0 and maximum is not None:
+            numeric = float(maximum)
+        elif numeric < 0 and minimum is not None:
+            numeric = float(minimum)
+        else:
+            numeric = float(default)
+    if minimum is not None:
+        numeric = max(float(minimum), numeric)
+    if maximum is not None:
+        numeric = min(float(maximum), numeric)
+    return numeric
+
+
+def _safe_int(
+    value: Any,
+    default: int = 0,
+    *,
+    minimum: int | None = None,
+    maximum: int | None = None,
+) -> int:
+    try:
+        numeric_float = float(value or 0)
+        if math.isnan(numeric_float):
+            raise ValueError("non-finite numeric value")
+        if math.isinf(numeric_float):
+            if numeric_float > 0 and maximum is not None:
+                return int(maximum)
+            if numeric_float < 0 and minimum is not None:
+                return int(minimum)
+            raise ValueError("non-finite numeric value")
+        numeric = int(round(numeric_float))
+    except (TypeError, ValueError, OverflowError):
+        numeric = int(default)
+    if minimum is not None:
+        numeric = max(int(minimum), numeric)
+    if maximum is not None:
+        numeric = min(int(maximum), numeric)
+    return numeric
 
 
 def bind(host: Any) -> None:
@@ -1198,6 +1253,11 @@ def _packet_satisfies_evaluation_expectations(
         "execution_engine_target_lane",
         "execution_engine_host_family",
         "execution_engine_model_family",
+        "execution_engine_component_id",
+        "execution_engine_canonical_component_id",
+        "execution_engine_identity_status",
+        "execution_engine_target_component_status",
+        "execution_engine_snapshot_reuse_status",
     ):
         expected = _expected_token_set(expect_spec.get(field_name))
         if not expected:
@@ -2087,6 +2147,40 @@ def load_runtime_optimization_snapshot(
             "execution_engine_model_family": str(
                 latest_packet.get("execution_engine_model_family", "")
             ).strip(),
+            "execution_engine_host_supports_interrupt": bool(
+                latest_packet.get("execution_engine_host_supports_interrupt")
+            ),
+            "execution_engine_host_supports_artifact_paths": bool(
+                latest_packet.get("execution_engine_host_supports_artifact_paths")
+            ),
+            "execution_engine_component_id": str(
+                latest_packet.get("execution_engine_component_id", "")
+            ).strip(),
+            "execution_engine_canonical_component_id": str(
+                latest_packet.get("execution_engine_canonical_component_id", "")
+            ).strip(),
+            "execution_engine_identity_status": str(
+                latest_packet.get("execution_engine_identity_status", "")
+            ).strip(),
+            "execution_engine_target_component_id": str(
+                latest_packet.get("execution_engine_target_component_id", "")
+            ).strip(),
+            "execution_engine_target_component_ids": [
+                str(token).strip()
+                for token in latest_packet.get("execution_engine_target_component_ids", [])
+                if isinstance(
+                    latest_packet.get("execution_engine_target_component_ids"),
+                    Sequence,
+                )
+                and not isinstance(
+                    latest_packet.get("execution_engine_target_component_ids"),
+                    (str, bytes, bytearray),
+                )
+                and str(token).strip()
+            ][:4],
+            "execution_engine_target_component_status": str(
+                latest_packet.get("execution_engine_target_component_status", "")
+            ).strip(),
             "execution_engine_target_lane": str(
                 latest_packet.get("execution_engine_target_lane", "")
             ).strip(),
@@ -2114,6 +2208,24 @@ def load_runtime_optimization_snapshot(
             "execution_engine_surface_fast_lane": bool(
                 latest_packet.get("execution_engine_surface_fast_lane")
             ),
+            "execution_engine_snapshot_duration_ms": _safe_float(
+                latest_packet.get("execution_engine_snapshot_duration_ms")
+            ),
+            "execution_engine_snapshot_estimated_tokens": _safe_int(
+                latest_packet.get("execution_engine_snapshot_estimated_tokens")
+            ),
+            "execution_engine_runtime_contract_estimated_tokens": _safe_int(
+                latest_packet.get("execution_engine_runtime_contract_estimated_tokens")
+            ),
+            "execution_engine_total_payload_estimated_tokens": _safe_int(
+                latest_packet.get("execution_engine_total_payload_estimated_tokens")
+            ),
+            "execution_engine_snapshot_reuse_status": str(
+                latest_packet.get("execution_engine_snapshot_reuse_status", "")
+            ).strip(),
+            "execution_engine_handshake_version": str(
+                latest_packet.get("execution_engine_handshake_version", "")
+            ).strip(),
             "turn_intent": str(latest_packet.get("turn_intent", "")).strip(),
             "turn_surface_count": int(latest_packet.get("turn_surface_count", 0) or 0),
             "turn_visible_text_count": int(latest_packet.get("turn_visible_text_count", 0) or 0),

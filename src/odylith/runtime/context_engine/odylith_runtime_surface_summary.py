@@ -160,6 +160,14 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
             "latest_execution_engine_host_family": "",
             "latest_execution_engine_model_family": "",
             "latest_execution_engine_host_supports_native_spawn": False,
+            "latest_execution_engine_host_supports_interrupt": False,
+            "latest_execution_engine_host_supports_artifact_paths": False,
+            "latest_execution_engine_component_id": "",
+            "latest_execution_engine_canonical_component_id": "",
+            "latest_execution_engine_identity_status": "",
+            "latest_execution_engine_target_component_id": "",
+            "latest_execution_engine_target_component_ids": [],
+            "latest_execution_engine_target_component_status": "",
             "latest_execution_engine_target_lane": "",
             "latest_execution_engine_candidate_target_count": 0,
             "latest_execution_engine_diagnostic_anchor_count": 0,
@@ -170,6 +178,12 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
             "latest_execution_engine_suppress_routing_receipts": False,
             "latest_execution_engine_surface_fast_lane": False,
             "latest_execution_engine_runtime_invalidated_by_step": "",
+            "latest_execution_engine_snapshot_duration_ms": 0.0,
+            "latest_execution_engine_snapshot_estimated_tokens": 0,
+            "latest_execution_engine_runtime_contract_estimated_tokens": 0,
+            "latest_execution_engine_total_payload_estimated_tokens": 0,
+            "latest_execution_engine_snapshot_reuse_status": "",
+            "latest_execution_engine_handshake_version": "",
             "latest_turn_intent": "",
             "latest_turn_surface_count": 0,
             "latest_turn_visible_text_count": 0,
@@ -476,6 +490,30 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
         "latest_execution_engine_host_supports_native_spawn": bool(
             latest_packet.get("execution_engine_host_supports_native_spawn")
         ),
+        "latest_execution_engine_host_supports_interrupt": bool(
+            latest_packet.get("execution_engine_host_supports_interrupt")
+        ),
+        "latest_execution_engine_host_supports_artifact_paths": bool(
+            latest_packet.get("execution_engine_host_supports_artifact_paths")
+        ),
+        "latest_execution_engine_component_id": _string(
+            latest_packet.get("execution_engine_component_id")
+        ),
+        "latest_execution_engine_canonical_component_id": _string(
+            latest_packet.get("execution_engine_canonical_component_id")
+        ),
+        "latest_execution_engine_identity_status": _string(
+            latest_packet.get("execution_engine_identity_status")
+        ),
+        "latest_execution_engine_target_component_id": _string(
+            latest_packet.get("execution_engine_target_component_id")
+        ),
+        "latest_execution_engine_target_component_ids": _strings(
+            latest_packet.get("execution_engine_target_component_ids")
+        ),
+        "latest_execution_engine_target_component_status": _string(
+            latest_packet.get("execution_engine_target_component_status")
+        ),
         "latest_execution_engine_target_lane": _string(
             latest_packet.get("execution_engine_target_lane")
         ),
@@ -505,6 +543,24 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
         ),
         "latest_execution_engine_runtime_invalidated_by_step": _string(
             latest_packet.get("execution_engine_runtime_invalidated_by_step")
+        ),
+        "latest_execution_engine_snapshot_duration_ms": _float(
+            latest_packet.get("execution_engine_snapshot_duration_ms")
+        ),
+        "latest_execution_engine_snapshot_estimated_tokens": _int(
+            latest_packet.get("execution_engine_snapshot_estimated_tokens")
+        ),
+        "latest_execution_engine_runtime_contract_estimated_tokens": _int(
+            latest_packet.get("execution_engine_runtime_contract_estimated_tokens")
+        ),
+        "latest_execution_engine_total_payload_estimated_tokens": _int(
+            latest_packet.get("execution_engine_total_payload_estimated_tokens")
+        ),
+        "latest_execution_engine_snapshot_reuse_status": _string(
+            latest_packet.get("execution_engine_snapshot_reuse_status")
+        ),
+        "latest_execution_engine_handshake_version": _string(
+            latest_packet.get("execution_engine_handshake_version")
         ),
         "latest_turn_intent": _string(latest_packet.get("turn_intent")),
         "latest_turn_surface_count": _int(latest_packet.get("turn_surface_count")),

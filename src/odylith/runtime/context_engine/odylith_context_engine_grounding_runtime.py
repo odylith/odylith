@@ -636,6 +636,7 @@ def build_governance_slice(
         "selection_reason": selection_reason,
         "selection_confidence": selection_confidence,
         "inferred_workstream": str(impact_payload.get("inferred_workstream", "")).strip().upper() or explicit_workstream,
+        "requested_component_id": explicit_component,
         "candidate_workstreams": compact_workstreams[:4],
         "workstream_selection": workstream_selection,
         "components": compact_components[:4],

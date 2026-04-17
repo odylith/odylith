@@ -4129,7 +4129,19 @@
           "B-088",
           "B-092",
           "B-093",
-          "B-097"
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4151,7 +4163,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 20,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4232,7 +4244,19 @@
           "B-088",
           "B-092",
           "B-093",
-          "B-097"
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4254,7 +4278,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 20,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4333,7 +4357,19 @@
           "B-088",
           "B-092",
           "B-093",
-          "B-097"
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4355,7 +4391,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 20,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4472,7 +4508,19 @@
           "B-088",
           "B-092",
           "B-093",
-          "B-097"
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4494,7 +4542,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 20,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4583,7 +4631,19 @@
           "B-088",
           "B-092",
           "B-093",
-          "B-097"
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4605,7 +4665,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 20,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4803,7 +4863,19 @@
           "B-088",
           "B-092",
           "B-093",
-          "B-097"
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4825,7 +4897,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 20,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4906,7 +4978,19 @@
           "B-088",
           "B-092",
           "B-093",
-          "B-097"
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4928,7 +5012,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 20,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5033,9 +5117,15 @@
       "idea_id": "B-096",
       "title": "Conversation observation engine, governed proposal flow, and human intervention voice contract",
       "status": "implementation",
-      "workstream_type": "standalone",
+      "workstream_type": "umbrella",
       "workstream_parent": "",
-      "workstream_children": [],
+      "workstream_children": [
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109"
+      ],
       "workstream_depends_on": [],
       "workstream_blocks": [],
       "workstream_reopens": "",
@@ -5045,6 +5135,7 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [
+        "D-002",
         "D-038"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
@@ -5054,13 +5145,86 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-096",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T06:11:29Z",
+          "note": "Bind the visible intervention value-engine hardening program to the active v0.1.11 release under B-096.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 1,
+        "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -5115,7 +5279,19 @@
           "B-088",
           "B-092",
           "B-093",
-          "B-097"
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
         ],
         "completed_workstreams": [
           "B-061",
@@ -5137,7 +5313,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 8,
+        "active_workstream_count": 20,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5203,7 +5379,7 @@
     {
       "idea_id": "B-099",
       "title": "Context Engine and Execution Engine Seamless Alignment Program",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "umbrella",
       "workstream_parent": "",
       "workstream_children": [
@@ -5233,18 +5409,91 @@
         "D-031"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-context-engine-and-execution-engine-seamless-alignment-program.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-099",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-16T20:59:57Z",
+          "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 4,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -5283,10 +5532,83 @@
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-100",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-16T20:59:57Z",
+          "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 3,
@@ -5299,7 +5621,7 @@
           "umbrella_id": "B-099",
           "wave_id": "W1",
           "wave_label": "Execution Engine Benchmark Proof and Canonical Cutover",
-          "wave_status": "active",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
         }
@@ -5308,7 +5630,7 @@
     {
       "idea_id": "B-101",
       "title": "Context Execution Handshake Snapshot Normalization",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-099",
       "workstream_children": [],
@@ -5327,18 +5649,91 @@
         "D-030"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-101",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-16T20:59:58Z",
+          "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -5349,7 +5744,7 @@
           "umbrella_id": "B-099",
           "wave_id": "W2",
           "wave_label": "Context Execution Handshake Snapshot Normalization",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
         }
@@ -5358,7 +5753,7 @@
     {
       "idea_id": "B-102",
       "title": "Codex Claude Execution Contract Parity",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-099",
       "workstream_children": [],
@@ -5380,18 +5775,91 @@
         "D-031"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-102",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-16T20:59:58Z",
+          "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 3,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -5402,7 +5870,7 @@
           "umbrella_id": "B-099",
           "wave_id": "W3",
           "wave_label": "Codex Claude Execution Contract Parity",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
         }
@@ -5411,7 +5879,7 @@
     {
       "idea_id": "B-103",
       "title": "Execution Snapshot Reuse and Hot Path Cost Reduction",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-099",
       "workstream_children": [],
@@ -5432,18 +5900,91 @@
         "D-030"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-103",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-16T20:59:59Z",
+          "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -5454,7 +5995,7 @@
           "umbrella_id": "B-099",
           "wave_id": "W4",
           "wave_label": "Execution Snapshot Reuse and Hot Path Cost Reduction",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
         }
@@ -5463,7 +6004,7 @@
     {
       "idea_id": "B-104",
       "title": "Execution Alignment Release Proof and Governance Closure",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-099",
       "workstream_children": [],
@@ -5485,18 +6026,91 @@
         "D-031"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-104",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-16T20:59:59Z",
+          "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 4,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -5507,9 +6121,619 @@
           "umbrella_id": "B-099",
           "wave_id": "W5",
           "wave_label": "Execution Alignment Release Proof and Governance Closure",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-105",
+      "title": "Visible Intervention Value Engine Governance Binding",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-096",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-038"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-value-engine-governance-binding.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-105",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T06:14:31Z",
+          "note": "Bind visible intervention value-engine governance binding wave to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-096",
+          "wave_id": "W1",
+          "wave_label": "Visible Intervention Value Engine Governance Binding",
+          "wave_status": "active",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-106",
+      "title": "Visible Intervention Proposition Engine",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-096",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-105"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-038"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-proposition-engine.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-106",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T06:14:35Z",
+          "note": "Bind visible intervention proposition-engine wave to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-096",
+          "wave_id": "W2",
+          "wave_label": "Visible Intervention Proposition Engine",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-107",
+      "title": "Host Visibility Integration And Ruler Canonicalization",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-096",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-106"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-038"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-host-visibility-integration-and-ruler-canonicalization.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-107",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T06:14:40Z",
+          "note": "Bind host visibility and ruler canonicalization wave to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-096",
+          "wave_id": "W3",
+          "wave_label": "Host Visibility Integration And Ruler Canonicalization",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-108",
+      "title": "Intervention Adjudication Corpus And Advisory Benchmark",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-096",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-106"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-038"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-intervention-adjudication-corpus-and-advisory-benchmark.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-108",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T06:14:44Z",
+          "note": "Bind intervention adjudication corpus and advisory benchmark wave to v0.1.11.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-096",
+          "wave_id": "W4",
+          "wave_label": "Intervention Adjudication Corpus And Advisory Benchmark",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-109",
+      "title": "v0.1.11 Visible Intervention Release Proof",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-096",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-107",
+        "B-108"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-002",
+        "D-038"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-v0-1-11-visible-intervention-release-proof.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 20,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-109",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T06:14:49Z",
+          "note": "Bind v0.1.11 visible intervention release-proof wave to the active release.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 2,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-096",
+          "wave_id": "W5",
+          "wave_label": "v0.1.11 Visible Intervention Release Proof",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
         }
       ]
     }
@@ -5539,7 +6763,19 @@
         "B-088",
         "B-092",
         "B-093",
-        "B-097"
+        "B-096",
+        "B-097",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109"
       ],
       "completed_workstreams": [
         "B-061",
@@ -5561,7 +6797,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 8,
+      "active_workstream_count": 20,
       "completed_workstream_count": 16
     },
     {
@@ -5615,7 +6851,19 @@
         "B-088",
         "B-092",
         "B-093",
-        "B-097"
+        "B-096",
+        "B-097",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109"
       ],
       "completed_workstreams": [
         "B-061",
@@ -5637,7 +6885,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 8,
+      "active_workstream_count": 20,
       "completed_workstream_count": 16
     },
     "next": {
@@ -5690,7 +6938,19 @@
       "B-088",
       "B-092",
       "B-093",
-      "B-097"
+      "B-096",
+      "B-097",
+      "B-099",
+      "B-100",
+      "B-101",
+      "B-102",
+      "B-103",
+      "B-104",
+      "B-105",
+      "B-106",
+      "B-107",
+      "B-108",
+      "B-109"
     ],
     "completed_workstreams": [
       "B-061",
@@ -5712,7 +6972,7 @@
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 8,
+    "active_workstream_count": 20,
     "completed_workstream_count": 16
   },
   "next_release": {
@@ -5743,7 +7003,7 @@
   "release_summary": {
     "release_count": 2,
     "alias_count": 2,
-    "active_assignment_count": 9
+    "active_assignment_count": 21
   },
   "execution_programs": [
     {
@@ -5892,6 +7152,116 @@
       ]
     },
     {
+      "umbrella_id": "B-096",
+      "version": "v1",
+      "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json",
+      "waves": [
+        {
+          "wave_id": "W1",
+          "label": "Visible Intervention Value Engine Governance Binding",
+          "status": "active",
+          "summary": "Visible Intervention Value Engine Governance Binding",
+          "depends_on": [],
+          "primary_workstreams": [
+            "B-105"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-105",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+              "label": "Governance binding gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W2",
+          "label": "Visible Intervention Proposition Engine",
+          "status": "planned",
+          "summary": "Visible Intervention Proposition Engine",
+          "depends_on": [
+            "W1"
+          ],
+          "primary_workstreams": [
+            "B-106"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-106",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+              "label": "Proposition engine gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W3",
+          "label": "Host Visibility Integration And Ruler Canonicalization",
+          "status": "planned",
+          "summary": "Host Visibility Integration And Ruler Canonicalization",
+          "depends_on": [
+            "W2"
+          ],
+          "primary_workstreams": [
+            "B-107"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-107",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+              "label": "Host visibility gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W4",
+          "label": "Intervention Adjudication Corpus And Advisory Benchmark",
+          "status": "planned",
+          "summary": "Intervention Adjudication Corpus And Advisory Benchmark",
+          "depends_on": [
+            "W3"
+          ],
+          "primary_workstreams": [
+            "B-108"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-108",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+              "label": "Adjudication benchmark gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W5",
+          "label": "v0.1.11 Visible Intervention Release Proof",
+          "status": "planned",
+          "summary": "v0.1.11 Visible Intervention Release Proof",
+          "depends_on": [
+            "W4"
+          ],
+          "primary_workstreams": [
+            "B-109"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-109",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+              "label": "Release proof gate"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "umbrella_id": "B-099",
       "version": "v1",
       "source_file": "odylith/radar/source/programs/B-099.execution-waves.v1.json",
@@ -5899,7 +7269,7 @@
         {
           "wave_id": "W1",
           "label": "Execution Engine Benchmark Proof and Canonical Cutover",
-          "status": "active",
+          "status": "complete",
           "summary": "Execution Engine Benchmark Proof and Canonical Cutover",
           "depends_on": [],
           "primary_workstreams": [
@@ -5918,7 +7288,7 @@
         {
           "wave_id": "W2",
           "label": "Context Execution Handshake Snapshot Normalization",
-          "status": "planned",
+          "status": "complete",
           "summary": "Context Execution Handshake Snapshot Normalization",
           "depends_on": [
             "W1"
@@ -5928,12 +7298,18 @@
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-101",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
+              "label": "Context Execution Handshake Snapshot Normalization gate"
+            }
+          ]
         },
         {
           "wave_id": "W3",
           "label": "Codex Claude Execution Contract Parity",
-          "status": "planned",
+          "status": "complete",
           "summary": "Codex Claude Execution Contract Parity",
           "depends_on": [
             "W2"
@@ -5943,12 +7319,18 @@
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-102",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
+              "label": "Codex Claude Execution Contract Parity gate"
+            }
+          ]
         },
         {
           "wave_id": "W4",
           "label": "Execution Snapshot Reuse and Hot Path Cost Reduction",
-          "status": "planned",
+          "status": "complete",
           "summary": "Execution Snapshot Reuse and Hot Path Cost Reduction",
           "depends_on": [
             "W3"
@@ -5958,12 +7340,18 @@
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-103",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
+              "label": "Execution Snapshot Reuse and Hot Path Cost Reduction gate"
+            }
+          ]
         },
         {
           "wave_id": "W5",
           "label": "Execution Alignment Release Proof and Governance Closure",
-          "status": "planned",
+          "status": "complete",
           "summary": "Execution Alignment Release Proof and Governance Closure",
           "depends_on": [
             "W4"
@@ -5973,7 +7361,13 @@
           ],
           "carried_workstreams": [],
           "in_band_workstreams": [],
-          "gate_refs": []
+          "gate_refs": [
+            {
+              "workstream_id": "B-104",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
+              "label": "Execution Alignment Release Proof and Governance Closure gate"
+            }
+          ]
         }
       ]
     }
@@ -6669,7 +8063,7 @@
       "id": "B-099",
       "type": "workstream",
       "label": "Context Engine and Execution Engine Seamless Alignment Program",
-      "status": "queued",
+      "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-16-context-engine-and-execution-engine-seamless-alignment-program.md"
     },
     {
@@ -6683,29 +8077,64 @@
       "id": "B-101",
       "type": "workstream",
       "label": "Context Execution Handshake Snapshot Normalization",
-      "status": "queued",
+      "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md"
     },
     {
       "id": "B-102",
       "type": "workstream",
       "label": "Codex Claude Execution Contract Parity",
-      "status": "queued",
+      "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-16-codex-claude-execution-contract-parity.md"
     },
     {
       "id": "B-103",
       "type": "workstream",
       "label": "Execution Snapshot Reuse and Hot Path Cost Reduction",
-      "status": "queued",
+      "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md"
     },
     {
       "id": "B-104",
       "type": "workstream",
       "label": "Execution Alignment Release Proof and Governance Closure",
-      "status": "queued",
+      "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md"
+    },
+    {
+      "id": "B-105",
+      "type": "workstream",
+      "label": "Visible Intervention Value Engine Governance Binding",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-value-engine-governance-binding.md"
+    },
+    {
+      "id": "B-106",
+      "type": "workstream",
+      "label": "Visible Intervention Proposition Engine",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-proposition-engine.md"
+    },
+    {
+      "id": "B-107",
+      "type": "workstream",
+      "label": "Host Visibility Integration And Ruler Canonicalization",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-host-visibility-integration-and-ruler-canonicalization.md"
+    },
+    {
+      "id": "B-108",
+      "type": "workstream",
+      "label": "Intervention Adjudication Corpus And Advisory Benchmark",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-intervention-adjudication-corpus-and-advisory-benchmark.md"
+    },
+    {
+      "id": "B-109",
+      "type": "workstream",
+      "label": "v0.1.11 Visible Intervention Release Proof",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-v0-1-11-visible-intervention-release-proof.md"
     },
     {
       "id": "artifact:.github/workflows/release.yml",
@@ -7616,10 +9045,34 @@
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md"
     },
     {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md"
+    },
+    {
       "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md"
     },
     {
       "id": "release:release-0-1-11",
@@ -10238,6 +11691,36 @@
     },
     {
       "source": "B-096",
+      "target": "B-105",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-096",
+      "target": "B-106",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-096",
+      "target": "B-107",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-096",
+      "target": "B-108",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-096",
+      "target": "B-109",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-096",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-096",
       "target": "diagram:D-038",
       "edge_type": "diagram_linkage"
     },
@@ -10245,6 +11728,11 @@
       "source": "B-096",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-096",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
     },
     {
       "source": "B-097",
@@ -10307,6 +11795,16 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-099",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-099",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-100",
       "target": "B-101",
       "edge_type": "depends_on"
@@ -10337,6 +11835,11 @@
       "edge_type": "promoted_to_plan"
     },
     {
+      "source": "B-100",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-101",
       "target": "B-102",
       "edge_type": "depends_on"
@@ -10357,6 +11860,16 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-101",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-101",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-102",
       "target": "B-103",
       "edge_type": "depends_on"
@@ -10377,6 +11890,16 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-102",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-102",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-103",
       "target": "B-104",
       "edge_type": "depends_on"
@@ -10390,6 +11913,16 @@
       "source": "B-103",
       "target": "diagram:D-030",
       "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-103",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-103",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
     },
     {
       "source": "B-104",
@@ -10410,6 +11943,121 @@
       "source": "B-104",
       "target": "diagram:D-031",
       "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-104",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-104",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-105",
+      "target": "B-106",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-105",
+      "target": "diagram:D-038",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-105",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-105",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-106",
+      "target": "B-107",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-106",
+      "target": "B-108",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-106",
+      "target": "diagram:D-038",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-106",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-106",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-107",
+      "target": "B-109",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-107",
+      "target": "diagram:D-038",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-107",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-107",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-108",
+      "target": "B-109",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-108",
+      "target": "diagram:D-038",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-108",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-108",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-109",
+      "target": "diagram:D-002",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-109",
+      "target": "diagram:D-038",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-109",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-109",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
     }
   ],
   "coverage": {
@@ -11080,7 +12728,7 @@
     },
     "B-096": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 1,
+      "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -11100,7 +12748,7 @@
       "code_reference_count": 0
     },
     "B-099": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 4,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -11114,29 +12762,64 @@
       "code_reference_count": 0
     },
     "B-101": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-102": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 3,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-103": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-104": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 4,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-105": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-106": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-107": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-108": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-109": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -11191,15 +12874,15 @@
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 104,
+    "workstream_count": 109,
     "release_count": 2,
-    "active_release_assignment_count": 9,
-    "execution_program_count": 2,
-    "execution_wave_count": 11,
-    "node_count": 247,
-    "edge_count": 552,
+    "active_release_assignment_count": 21,
+    "execution_program_count": 3,
+    "execution_wave_count": 16,
+    "node_count": 256,
+    "edge_count": 591,
     "warning_count": 4,
     "warning_item_count": 4
   },
-  "generated_utc": "2026-04-16 20:17:39Z"
+  "generated_utc": "2026-04-17 06:34:43Z"
 }

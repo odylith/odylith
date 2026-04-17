@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+from pathlib import Path
 
 from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import codex_host_prompt_context
@@ -42,6 +43,28 @@ def test_render_codex_prompt_context_can_surface_a_teaser_without_anchor() -> No
     )
 
     assert rendered == surface_runtime.wrap_live_text("Odylith is noticing governed truth take shape here.")
+
+
+def test_codex_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_path: Path) -> None:
+    prompt = "ZERO signals in my chat. Odylith interventions NEED to be visible."
+
+    rendered = codex_host_prompt_context.render_codex_prompt_system_message(
+        repo_root=str(tmp_path),
+        prompt=prompt,
+        session_id="codex-zero-signals",
+    )
+    bundle = codex_host_prompt_context._prompt_conversation_bundle(
+        repo_root=str(tmp_path),
+        prompt=prompt,
+        session_id="codex-zero-signals",
+    )
+    observation = dict(bundle["observation"])
+
+    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
+    assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"
+    assert observation["memory_summary"]["visibility_complaint"] is True
+    assert observation["tribunal_summary"]["source"] == "intervention_alignment_context"
 
 
 def test_main_writes_user_prompt_hook_json(monkeypatch, capsys) -> None:
@@ -97,5 +120,5 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, capsys) -> 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
     assert "Odylith can already" in payload["hookSpecificOutput"]["additionalContext"]
-    assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\nOdylith can already")
+    assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith can already")
     assert payload["systemMessage"].endswith(f"\n{surface_runtime.LIVE_BOUNDARY}")

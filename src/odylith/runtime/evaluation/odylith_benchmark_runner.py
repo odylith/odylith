@@ -387,6 +387,8 @@ _ACCEPTANCE_CHECK_LABELS = {
     "context_engine_session_namespaced": "Context Engine runtime-backed benchmark slices are not keeping sessions namespaced",
     "execution_engine_present": "execution-engine benchmark slices are missing the execution-engine snapshot",
     "execution_engine_resume_token_present": "execution-engine benchmark slices are missing resume-token coverage",
+    "execution_engine_false_admit_zero": "execution-engine benchmark slices still falsely admit blocked actions",
+    "execution_engine_false_deny_zero": "execution-engine benchmark slices still falsely deny admissible actions",
     "execution_engine_outcome_accurate": "execution-engine benchmark slices resolved the wrong admissibility outcome",
     "execution_engine_mode_accurate": "execution-engine benchmark slices resolved the wrong execution mode",
     "execution_engine_next_move_accurate": "execution-engine benchmark slices resolved the wrong truthful next move",
@@ -400,7 +402,14 @@ _ACCEPTANCE_CHECK_LABELS = {
     "execution_engine_resume_token_accurate": "execution-engine benchmark slices resolved the wrong resume token",
     "execution_engine_host_family_accurate": "execution-engine benchmark slices resolved the wrong host family",
     "execution_engine_model_family_accurate": "execution-engine benchmark slices resolved the wrong model family",
+    "execution_engine_component_id_accurate": "execution-engine benchmark slices resolved the wrong canonical engine component id",
+    "execution_engine_canonical_component_id_accurate": "execution-engine benchmark slices resolved the wrong canonical component id",
+    "execution_engine_identity_status_accurate": "execution-engine benchmark slices resolved the wrong identity status",
+    "execution_engine_target_component_status_accurate": "execution-engine benchmark slices resolved the wrong target component status",
+    "execution_engine_snapshot_reuse_status_accurate": "execution-engine benchmark slices resolved the wrong snapshot reuse posture",
     "execution_engine_reanchor_accurate": "execution-engine benchmark slices resolved the wrong re-anchor requirement",
+    "execution_engine_delegation_guard_accurate": "execution-engine benchmark slices resolved the wrong delegation guard posture",
+    "execution_engine_parallelism_guard_accurate": "execution-engine benchmark slices resolved the wrong parallelism guard posture",
     "explicit_workstream_expectation_positive": "explicit workstream scenarios lost expectation coverage",
     "critical_metric_coverage_complete": "critical metric coverage is incomplete",
     "selected_cache_profiles_clear_gate": "selected cache profiles do not all clear the hard quality gate",
@@ -2467,6 +2476,8 @@ _PACKET_FIXTURE_ALLOWED_KEYS = frozenset(
         "execution_stream_state",
         "external_dependency",
         "github_actions",
+        "host_candidates",
+        "host_runtime",
         "presentation_policy",
         "proof_state",
         "relevant_docs",
@@ -2502,13 +2513,19 @@ def _apply_packet_fixture(
     if fixture:
         merged = _deep_merge_mapping(merged, fixture)
     if not fixture and "packet_kind" not in merged:
-        return merged
+        return odylith_benchmark_execution_engine.enrich_packet_payload_for_execution_engine_family(
+            payload=merged,
+            scenario=scenario,
+        )
     merged.pop("execution_engine", None)
     context_packet = _mapping(merged.get("context_packet"))
     if context_packet:
         context_packet.pop("execution_engine", None)
         merged["context_packet"] = context_packet
-    return merged
+    return odylith_benchmark_execution_engine.enrich_packet_payload_for_execution_engine_family(
+        payload=merged,
+        scenario=scenario,
+    )
 
 
 def _scenario_priority_rank(priority: str) -> int:
@@ -3988,6 +4005,7 @@ def _packet_result(
         "mode": normalized_mode,
         "packet_source": str(token_breakdown.get("packet_source", packet_source)).strip() or packet_source,
         "latency_ms": duration_ms,
+        "context_engine_packet_build_ms": duration_ms,
         "instrumented_reasoning_duration_ms": float(
             latency_fields.get("instrumented_reasoning_duration_ms", 0.0) or 0.0
         ),
@@ -7904,6 +7922,7 @@ def _acceptance(
             or float(candidate.get("execution_engine_reanchor_accuracy_rate", 0.0) or 0.0)
             >= 1.0
         ),
+        **odylith_benchmark_execution_engine.acceptance_checks(candidate),
         "candidate_expectation_success_positive": (
             candidate_scenario_count == 0 or float(candidate.get("expectation_success_rate", 0.0) or 0.0) > 0.0
         ),
@@ -8178,6 +8197,7 @@ def _acceptance(
                 )
                 < 1.0
             )
+            or odylith_benchmark_execution_engine.quality_gate_failed(candidate_family)
             or (
                 int(candidate_family.get("write_surface_backed_scenario_count", 0) or 0) > 0
                 and float(candidate_family.get("write_surface_precision_rate", 0.0) or 0.0)
@@ -8322,9 +8342,45 @@ def _acceptance(
         notes.append(
             "Execution Engine benchmark slices are resolving the wrong model family on sampled execution rows."
         )
+    if not hard_quality_checks["execution_engine_component_id_accurate"]:
+        notes.append(
+            "Execution Engine benchmark slices are resolving the wrong canonical engine component id on sampled execution rows."
+        )
+    if not hard_quality_checks["execution_engine_canonical_component_id_accurate"]:
+        notes.append(
+            "Execution Engine benchmark slices are resolving the wrong canonical component id on sampled execution rows."
+        )
+    if not hard_quality_checks["execution_engine_identity_status_accurate"]:
+        notes.append(
+            "Execution Engine benchmark slices are resolving the wrong identity status on sampled execution rows."
+        )
+    if not hard_quality_checks["execution_engine_target_component_status_accurate"]:
+        notes.append(
+            "Execution Engine benchmark slices are resolving the wrong target component status on sampled execution rows."
+        )
+    if not hard_quality_checks["execution_engine_snapshot_reuse_status_accurate"]:
+        notes.append(
+            "Execution Engine benchmark slices are resolving the wrong snapshot reuse posture on sampled execution rows."
+        )
     if not hard_quality_checks["execution_engine_reanchor_accurate"]:
         notes.append(
             "Execution Engine benchmark slices are resolving the wrong re-anchor requirement on sampled execution rows."
+        )
+    if not hard_quality_checks["execution_engine_false_admit_zero"]:
+        notes.append(
+            "Execution Engine benchmark slices are still falsely admitting actions that should fail closed."
+        )
+    if not hard_quality_checks["execution_engine_false_deny_zero"]:
+        notes.append(
+            "Execution Engine benchmark slices are still falsely denying actions that should be admissible."
+        )
+    if not hard_quality_checks["execution_engine_delegation_guard_accurate"]:
+        notes.append(
+            "Execution Engine benchmark slices are resolving the wrong delegation guard posture on sampled execution rows."
+        )
+    if not hard_quality_checks["execution_engine_parallelism_guard_accurate"]:
+        notes.append(
+            "Execution Engine benchmark slices are resolving the wrong parallelism guard posture on sampled execution rows."
         )
     if not _live_execution_contract_match(execution_contracts):
         notes.append("`odylith_on` and `odylith_off` did not run on the same Codex CLI model/reasoning contract.")

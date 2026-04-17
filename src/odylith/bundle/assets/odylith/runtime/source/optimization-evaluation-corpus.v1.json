@@ -663,6 +663,21 @@
         ],
         "execution_engine_host_family": [
           "codex"
+        ],
+        "execution_engine_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_canonical_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_identity_status": [
+          "canonical"
+        ],
+        "execution_engine_target_component_status": [
+          "execution_engine"
+        ],
+        "execution_engine_snapshot_reuse_status": [
+          "built"
         ]
       }
     },
@@ -755,6 +770,21 @@
         ],
         "execution_engine_host_family": [
           "codex"
+        ],
+        "execution_engine_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_canonical_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_identity_status": [
+          "canonical"
+        ],
+        "execution_engine_target_component_status": [
+          "execution_engine"
+        ],
+        "execution_engine_snapshot_reuse_status": [
+          "built"
         ]
       }
     },
@@ -857,6 +887,21 @@
         ],
         "execution_engine_host_family": [
           "codex"
+        ],
+        "execution_engine_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_canonical_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_identity_status": [
+          "canonical"
+        ],
+        "execution_engine_target_component_status": [
+          "execution_engine_plus_related"
+        ],
+        "execution_engine_snapshot_reuse_status": [
+          "built"
         ]
       }
     },
@@ -921,6 +966,21 @@
         ],
         "execution_engine_host_family": [
           "codex"
+        ],
+        "execution_engine_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_canonical_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_identity_status": [
+          "canonical"
+        ],
+        "execution_engine_target_component_status": [
+          "execution_engine"
+        ],
+        "execution_engine_snapshot_reuse_status": [
+          "built"
         ]
       }
     },
@@ -988,6 +1048,450 @@
         ],
         "execution_engine_host_family": [
           "codex"
+        ],
+        "execution_engine_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_canonical_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_identity_status": [
+          "canonical"
+        ],
+        "execution_engine_target_component_status": [
+          "execution_engine"
+        ],
+        "execution_engine_snapshot_reuse_status": [
+          "built"
+        ]
+      }
+    },
+    {
+      "case_id": "execution-engine-claude-route-ready-policy-parity",
+      "label": "Execution Engine keeps Claude route-ready semantics aligned with Codex",
+      "family": "execution_engine",
+      "priority": "high",
+      "summary": "Claude Code route-ready Execution Engine packets should keep the same policy semantics as Codex while carrying Claude host capability fields.",
+      "benchmark": {
+        "prompt": "Inspect the execution-engine contract slice from Claude Code posture and keep policy semantics identical to Codex while carrying Claude host capability truth.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_engine.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_engine.py",
+          "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
+        ],
+        "packet_fixture": {
+          "host_candidates": [
+            "claude_code"
+          ]
+        },
+        "intent": "host parity validation",
+        "allow_noop_completion": true,
+        "workstream": "B-102",
+        "component": "execution-engine"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/execution_engine/policy.py",
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_engine.py"
+        ]
+      },
+      "expect": {
+        "packet_kind": [
+          "governance_slice"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "native_spawn_ready": true,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-102"
+        ],
+        "execution_engine_present": true,
+        "execution_engine_outcome": [
+          "admit"
+        ],
+        "execution_engine_requires_reanchor": false,
+        "execution_engine_mode": [
+          "verify"
+        ],
+        "execution_engine_next_move": [
+          "verify.selected_matrix"
+        ],
+        "execution_engine_closure": [
+          "incomplete"
+        ],
+        "execution_engine_resume_token": [
+          "resume:governance_slice"
+        ],
+        "execution_engine_validation_archetype": [
+          "verify"
+        ],
+        "execution_engine_authoritative_lane": [
+          "context_engine.governance_slice.authoritative"
+        ],
+        "execution_engine_host_family": [
+          "claude"
+        ],
+        "execution_engine_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_canonical_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_identity_status": [
+          "canonical"
+        ],
+        "execution_engine_target_component_status": [
+          "execution_engine"
+        ],
+        "execution_engine_snapshot_reuse_status": [
+          "built"
+        ]
+      }
+    },
+    {
+      "case_id": "execution-engine-consumer-diagnostic-no-writable-targets",
+      "label": "Execution Engine blocks consumer diagnostic lanes without writable targets",
+      "family": "execution_engine",
+      "priority": "high",
+      "summary": "Consumer-lane packets with diagnostic anchors but no writable targets should preserve diagnostic truth and block delegation instead of pretending execution can proceed.",
+      "benchmark": {
+        "prompt": "Inspect the consumer diagnostic execution-engine lane and keep the packet truthful that there are diagnostic anchors but no writable targets yet.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_engine.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_engine.py",
+          "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
+        ],
+        "packet_fixture": {
+          "host_candidates": [
+            "claude_code"
+          ],
+          "target_resolution": {
+            "lane": "consumer",
+            "candidate_targets": [
+              {
+                "path": "odylith/compass/compass.html",
+                "source": "diagnostic_anchor",
+                "writable": false
+              }
+            ],
+            "diagnostic_anchors": [
+              {
+                "kind": "workstream",
+                "value": "B-099",
+                "label": "Context Engine and Execution Engine alignment"
+              }
+            ],
+            "has_writable_targets": false,
+            "requires_more_consumer_context": true,
+            "consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing"
+          }
+        },
+        "intent": "consumer diagnostic validation",
+        "allow_noop_completion": true,
+        "workstream": "B-101",
+        "component": "execution-engine"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+          "tests/unit/runtime/test_execution_engine.py"
+        ]
+      },
+      "expect": {
+        "packet_kind": [
+          "governance_slice"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "native_spawn_ready": true,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-101"
+        ],
+        "execution_engine_present": true,
+        "execution_engine_outcome": [
+          "admit"
+        ],
+        "execution_engine_mode": [
+          "verify"
+        ],
+        "execution_engine_next_move": [
+          "verify.selected_matrix"
+        ],
+        "execution_engine_target_lane": [
+          "consumer"
+        ],
+        "execution_engine_closure": [
+          "incomplete"
+        ],
+        "execution_engine_validation_archetype": [
+          "verify"
+        ],
+        "execution_engine_host_family": [
+          "claude"
+        ],
+        "execution_engine_delegation_guard_blocked": true,
+        "execution_engine_parallelism_guard_blocked": true,
+        "execution_engine_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_canonical_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_identity_status": [
+          "canonical"
+        ],
+        "execution_engine_target_component_status": [
+          "execution_engine"
+        ],
+        "execution_engine_snapshot_reuse_status": [
+          "built"
+        ]
+      }
+    },
+    {
+      "case_id": "execution-engine-claude-external-wait-resume",
+      "label": "Execution Engine keeps Claude external waits resumable",
+      "family": "execution_engine",
+      "priority": "high",
+      "summary": "Claude Code packets with an active external dependency should emit resume-first next moves, semantic wait status, and durable resume handles.",
+      "benchmark": {
+        "prompt": "Inspect a Claude Code execution-engine wait lane and keep the packet truthful about the active external dependency, wait status, and resume next move.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "src/odylith/runtime/execution_engine/receipts.py",
+          "src/odylith/runtime/execution_engine/validation.py",
+          "tests/unit/runtime/test_execution_engine.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/execution_engine/receipts.py",
+          "src/odylith/runtime/execution_engine/validation.py",
+          "tests/unit/runtime/test_execution_engine.py",
+          "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
+        ],
+        "packet_fixture": {
+          "host_candidates": [
+            "claude_code"
+          ],
+          "external_dependency": {
+            "source": "github_actions",
+            "status": "building",
+            "external_id": "gha-101",
+            "detail": "benchmark proof workflow running"
+          },
+          "proof_state": {
+            "frontier_phase": "verify",
+            "last_successful_phase": "submit",
+            "proof_status": "diagnosed"
+          }
+        },
+        "intent": "wait resume validation",
+        "allow_noop_completion": true,
+        "workstream": "B-102",
+        "component": "execution-engine"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/execution_engine/receipts.py",
+          "src/odylith/runtime/execution_engine/validation.py",
+          "tests/unit/runtime/test_execution_engine.py"
+        ]
+      },
+      "expect": {
+        "packet_kind": [
+          "governance_slice"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": true,
+        "native_spawn_ready": true,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-102"
+        ],
+        "execution_engine_present": true,
+        "execution_engine_outcome": [
+          "admit"
+        ],
+        "execution_engine_mode": [
+          "verify"
+        ],
+        "execution_engine_next_move": [
+          "resume.external_dependency"
+        ],
+        "execution_engine_wait_status": [
+          "building"
+        ],
+        "execution_engine_current_phase": [
+          "verify"
+        ],
+        "execution_engine_last_successful_phase": [
+          "verify"
+        ],
+        "execution_engine_resume_token": [
+          "resume:governance_slice"
+        ],
+        "execution_engine_validation_archetype": [
+          "verify"
+        ],
+        "execution_engine_host_family": [
+          "claude"
+        ],
+        "execution_engine_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_canonical_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_identity_status": [
+          "canonical"
+        ],
+        "execution_engine_target_component_status": [
+          "execution_engine"
+        ],
+        "execution_engine_snapshot_reuse_status": [
+          "built"
+        ]
+      }
+    },
+    {
+      "case_id": "execution-engine-historical-id-fails-closed",
+      "label": "Execution Engine rejects historical noncanonical component ids",
+      "family": "execution_engine",
+      "priority": "high",
+      "summary": "Historical execution-governance component ids should fail closed after the canonical hard cut instead of being treated as a supported alias.",
+      "benchmark": {
+        "prompt": "Inspect a noncanonical historical execution-engine id and keep the packet fail-closed rather than aliasing it back into route readiness.",
+        "packet_source": "governance_slice",
+        "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_execution_engine.py"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_execution_engine.py",
+          "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+          "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+        ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_execution_engine.py tests/unit/runtime/test_execution_engine.py"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_execution_engine.py tests/unit/runtime/test_execution_engine.py"
+        ],
+        "intent": "canonical hard cut validation",
+        "allow_noop_completion": true,
+        "workstream": "B-100",
+        "component": "execution-governance"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+          "tests/unit/runtime/test_odylith_benchmark_execution_engine.py"
+        ]
+      },
+      "expect": {
+        "packet_kind": [
+          "governance_slice"
+        ],
+        "packet_state": [
+          "compact"
+        ],
+        "within_budget": true,
+        "route_ready": false,
+        "native_spawn_ready": false,
+        "selection_state": [
+          "explicit"
+        ],
+        "workstream": [
+          "B-100"
+        ],
+        "execution_engine_present": true,
+        "execution_engine_outcome": [
+          "deny"
+        ],
+        "execution_engine_requires_reanchor": true,
+        "execution_engine_mode": [
+          "recover"
+        ],
+        "execution_engine_next_move": [
+          "re_anchor.execution_engine_identity"
+        ],
+        "execution_engine_closure": [
+          "incomplete"
+        ],
+        "execution_engine_resume_token": [
+          "resume:execution-engine-identity"
+        ],
+        "execution_engine_validation_archetype": [
+          "identity"
+        ],
+        "execution_engine_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_canonical_component_id": [
+          "execution-engine"
+        ],
+        "execution_engine_identity_status": [
+          "blocked_noncanonical_target"
+        ],
+        "execution_engine_target_component_status": [
+          "blocked_noncanonical_execution_engine"
+        ],
+        "execution_engine_snapshot_reuse_status": [
+          "fail_closed_identity"
+        ],
+        "execution_engine_authoritative_lane": [
+          "context_engine.identity.fail_closed"
         ]
       }
     },

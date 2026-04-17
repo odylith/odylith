@@ -1,4 +1,4 @@
-%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+%% Reviewed 2026-04-17 for v0.1.11 to keep delivery governance aligned with Context Engine packets, Execution Engine snapshots, Tribunal/remediator reasoning, visible interventions, and benchmark closure proof.
 flowchart TB
   subgraph Observe["1. Observe and Triage"]
     Repo["Repo delta sensors<br/>code, specs, plans, manifests, generated artifacts"]
@@ -7,6 +7,8 @@ flowchart TB
     SignalLog["Signal journal<br/>src/odylith/runtime/context_engine/odylith_context_engine.py"]
     Classifier["Meaningful activity classifier<br/>ignore generated-only or global-only churn"]
     Mapper["Scope mapper<br/>component, workstream, diagram, plan resolution"]
+    ContextPacket["Context Engine packet digest<br/>quality, target resolution, route readiness"]
+    ExecutionSnapshot["Execution Engine snapshot<br/>admissibility, next move, closure, validation"]
     Triage["Cheap case triage<br/>30s active / 300s idle backoff<br/>fingerprint short-circuiting"]
   end
 
@@ -24,13 +26,19 @@ flowchart TB
     Clearance["Clearance ledger<br/>post-action validation and stale-packet rejection"]
   end
 
-  subgraph Runtime["4. Runtime v4 Artifacts"]
+  subgraph Visibility["4. Visible intervention and benchmark proof"]
+    Broker["Visible Intervention Broker<br/>Observation / Proposal / Assist decision"]
+    Benchmark["Benchmark acceptance<br/>false-admit / false-deny + truthful closure"]
+  end
+
+  subgraph Runtime["5. Runtime v4 Artifacts"]
     Delivery["delivery_intelligence.v4<br/>case refs, dossier evidence, systemic themes"]
     Reasoning["reasoning.v4<br/>outcomes, briefs, packets, cache metadata"]
     Posture["posture.v4<br/>status, breaches, approvals, clearance state"]
+    VisibilityLedger["visibility ledger<br/>fallback-ready / chat-confirmed"]
   end
 
-  subgraph Surfaces["5. Control Plane and Native Evidence"]
+  subgraph Surfaces["6. Control Plane and Native Evidence"]
     Odylith["Odylith<br/>ranked cases, selected brief, proof, actions"]
     Shell["Tooling shell inbox<br/>compact preview of top interventions"]
     Radar["Radar<br/>native workstream evidence"]
@@ -45,7 +53,10 @@ flowchart TB
   Gates --> SignalLog
   SignalLog --> Classifier
   Classifier --> Mapper
+  Mapper --> ContextPacket
+  ContextPacket --> ExecutionSnapshot
   Mapper --> Triage
+  ExecutionSnapshot --> Triage
   Triage --> Dossier
 
   Dossier --> Actors
@@ -55,6 +66,10 @@ flowchart TB
   Packets --> Approval
   Approval --> Execution
   Execution --> Clearance
+  Editor --> Broker
+  ExecutionSnapshot --> Broker
+  Clearance --> Benchmark
+  Broker --> VisibilityLedger
 
   Dossier --> Delivery
   Editor --> Reasoning
@@ -62,10 +77,13 @@ flowchart TB
   Approval --> Posture
   Clearance --> Posture
   Delivery --> Posture
+  VisibilityLedger --> Posture
 
   Posture --> Odylith
   Reasoning --> Odylith
   Delivery --> Odylith
+  Broker --> Shell
+  Benchmark --> Odylith
   Odylith --> Shell
 
   Radar --> Shell

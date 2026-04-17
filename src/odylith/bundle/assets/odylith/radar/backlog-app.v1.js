@@ -2288,10 +2288,13 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   if (!boardsHtml) return "";
   const openAttr = section.openByDefault ? " open" : "";
   const sectionHeaderVariant = String(options.sectionHeaderVariant || "").trim().toLowerCase();
+  const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]
+    .filter(Boolean)
+    .join(" ");
   if (sectionHeaderVariant === "compass") {
     return `
       <section class="block">
-        <details class="execution-wave-section"${openAttr}>
+        <details class="${escapeHtml(sectionClassName)}"${openAttr}>
           <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
             <div class="execution-wave-section-copy">
               <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>
@@ -2309,7 +2312,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   }
   return `
     <section class="block">
-      <details class="execution-wave-section"${openAttr}>
+      <details class="${escapeHtml(sectionClassName)}"${openAttr}>
         <summary class="execution-wave-section-summary">
           <div class="execution-wave-section-copy">
             <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>

@@ -20,6 +20,10 @@ _ACTIVE_WAIT_STATUSES: frozenset[str] = frozenset(
 )
 _CRITICAL_PATH_MODES: frozenset[str] = frozenset({"verify", "recover"})
 _UNSAFE_CLOSURE_CLASSES: frozenset[str] = frozenset({"incomplete", "destructive"})
+_CANONICAL_EXECUTION_ENGINE_COMPONENT_TOKEN = "execution_engine"
+_NONCANONICAL_EXECUTION_ENGINE_COMPONENT_TOKENS: frozenset[str] = frozenset(
+    {"execution_governance"}
+)
 
 
 @dataclass(frozen=True)
@@ -97,6 +101,12 @@ def _guard_fields(summary: Mapping[str, Any]) -> dict[str, Any]:
         "event_count": _int(summary.get("execution_engine_event_count")),
         "host_family": _token(summary.get("execution_engine_host_family")),
         "model_family": _token(summary.get("execution_engine_model_family")),
+        "component_id": _token(summary.get("execution_engine_component_id")),
+        "canonical_component_id": _token(summary.get("execution_engine_canonical_component_id")),
+        "identity_status": _token(summary.get("execution_engine_identity_status")),
+        "target_component_id": _token(summary.get("execution_engine_target_component_id")),
+        "target_component_status": _token(summary.get("execution_engine_target_component_status")),
+        "snapshot_reuse_status": _token(summary.get("execution_engine_snapshot_reuse_status")),
         "host_supports_native_spawn_present": "execution_engine_host_supports_native_spawn" in summary,
         "host_supports_native_spawn": _bool(summary.get("execution_engine_host_supports_native_spawn")),
         "host_supports_artifact_paths_present": "execution_engine_host_supports_artifact_paths" in summary,
@@ -153,9 +163,35 @@ def _action_guard(summary: Mapping[str, Any], *, action_label: str) -> LaneGover
             bool(history_rule_hits),
             bool(pressure_signals),
             fields["host_family"],
+            fields["component_id"],
+            fields["canonical_component_id"],
+            fields["identity_status"],
+            fields["target_component_id"],
+            fields["target_component_status"],
+            fields["snapshot_reuse_status"],
         )
     ):
         return LaneGovernanceGuard(blocked=False)
+
+    if (
+        fields["identity_status"].startswith("blocked")
+        or fields["target_component_status"] == "blocked_noncanonical_execution_engine"
+        or fields["snapshot_reuse_status"] == "fail_closed_identity"
+        or fields["component_id"] in _NONCANONICAL_EXECUTION_ENGINE_COMPONENT_TOKENS
+        or fields["target_component_id"] in _NONCANONICAL_EXECUTION_ENGINE_COMPONENT_TOKENS
+        or (
+            fields["canonical_component_id"]
+            and fields["canonical_component_id"] != _CANONICAL_EXECUTION_ENGINE_COMPONENT_TOKEN
+        )
+    ):
+        return LaneGovernanceGuard(
+            blocked=True,
+            code="execution-engine-identity",
+            reason=(
+                "the packet references a noncanonical execution-engine identity, "
+                f"so re-anchor locally before any new {action_label}"
+            ),
+        )
 
     if fields["runtime_invalidated_by_step"]:
         return LaneGovernanceGuard(

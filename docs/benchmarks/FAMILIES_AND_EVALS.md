@@ -38,7 +38,7 @@ author sorts by token delta.
 | Docs + Code Closeout | 5 | `docs_code_closeout`, `governed_surface_sync`, `cross_surface_governance_sync` | Keeps code, docs, specs, and generated mirrors aligned. |
 | Governance / Release Integrity | 9 | `component_governance`, `destructive_scope_control`, `live_proof_discipline`, `release_publication` | Now includes destructive-scope and fail-closed benchmark safety, not only publication truth. |
 | Architecture Review | 5 | `architecture` | Keeps grounded design-review quality visible after direct implementation work. |
-| Grounding / Orchestration Control | 18 | `broad_shared_scope`, `context_engine_grounding`, `execution_engine`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains Odylith's mechanism without dominating the public story, while still holding Context Engine and execution-engine quality to exacting standards. |
+| Grounding / Orchestration Control | 22 | `broad_shared_scope`, `context_engine_grounding`, `execution_engine`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains Odylith's mechanism without dominating the public story, while still holding Context Engine and Execution Engine quality to exacting standards. |
 
 ## Current Published Attention Areas
 
@@ -96,7 +96,7 @@ repo context.
 | `docs_code_closeout` | 2 | governed closeout where docs, specs, README, and code all have to agree |
 | `exact_anchor_recall` | 1 | dense grounded packets on exact workstream and path anchors |
 | `exact_path_ambiguity` | 2 | exact-path boundedness even when historical fanout is ambiguous |
-| `execution_engine` | 5 | execution-engine contract posture, truthful next-move carry-through, fail-closed recovery, and resume-token discipline |
+| `execution_engine` | 9 | Execution Engine contract posture, canonical identity hard cut, truthful next-move carry-through, fail-closed recovery, wait/resume behavior, host parity, consumer-lane guard posture, snapshot reuse, and hot-path cost measurement |
 | `explicit_workstream` | 1 | explicit workstream grounding with compact route-ready packet shape |
 | `external_dependency_recovery` | 3 | semantic waits, resumability, and external-state carry-through into public surfaces |
 | `governed_surface_sync` | 1 | lifecycle closeout propagation across governed surfaces |

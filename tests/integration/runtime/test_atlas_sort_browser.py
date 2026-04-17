@@ -132,3 +132,41 @@ def test_atlas_sort_and_workstream_filters_share_sidebar_row(browser_context) ->
     assert layout["sortRight"] < layout["workstreamLeft"]
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_atlas_header_action_buttons_are_right_aligned(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=atlas", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    atlas = page.frame_locator("#frame-atlas")
+    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+    atlas.locator("#sourceLinks .source-link").first.wait_for(timeout=15000)
+
+    layout = atlas.locator(".source-links-wrap").evaluate(
+        """(node) => {
+          const controls = Array.from(node.children).filter((child) => {
+            const box = child.getBoundingClientRect();
+            return box.width > 0 && box.height > 0;
+          });
+          const wrapper = node.getBoundingClientRect();
+          const first = controls[0].getBoundingClientRect();
+          const last = controls[controls.length - 1].getBoundingClientRect();
+          return {
+            controlCount: controls.length,
+            wrapperLeft: Math.round(wrapper.left),
+            wrapperRight: Math.round(wrapper.right),
+            firstLeft: Math.round(first.left),
+            lastRight: Math.round(last.right),
+            scrollDelta: node.scrollWidth - node.clientWidth,
+          };
+        }"""
+    )
+
+    assert layout["controlCount"] >= 2
+    assert layout["scrollDelta"] <= 4
+    assert layout["firstLeft"] - layout["wrapperLeft"] >= 16
+    assert abs(layout["wrapperRight"] - layout["lastRight"]) <= 2
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

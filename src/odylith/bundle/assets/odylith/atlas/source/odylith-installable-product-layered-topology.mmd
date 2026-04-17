@@ -1,0 +1,69 @@
+%% Reviewed 2026-04-17 for v0.1.11 to show Context Engine packets, memory/session streams, Execution Engine snapshots, visible interventions, Tribunal/remediator reasoning, and benchmark proof across the local-first product layers.
+flowchart TD
+    subgraph Repo["Odylith Product Repository"]
+        Truth["Tracked repo truth<br/>Radar | Plans | Casebook | Registry | Atlas"]
+        Contracts["Governed contracts<br/>component specs + Atlas catalog + packet policy"]
+        Docs["docs + runbooks<br/>README | INSTALL | maintainer guidance"]
+        RuntimeState[".odylith/<br/>local mutable runtime state"]
+    end
+
+    subgraph Product["Local-First Odylith Product"]
+        CLI["odylith CLI<br/>install / sync / context-engine / atlas / registry"]
+        Context["context engine<br/>compiler + grounding packets + retained handoff"]
+        Memory["memory substrate<br/>bundle + snapshot + backend + remote<br/>session stream + delivery ledger + contracts"]
+        Governance["governance engine<br/>delivery intelligence + registry + sync"]
+        Execution["execution engine<br/>handshake + admissibility + shared snapshot"]
+        Evaluation["evaluation engine<br/>tribunal + remediator + benchmark/proof"]
+        Intervention["intervention engine<br/>visible broker + Observation / Proposal / Assist"]
+        Conversation["agent control + conversation<br/>router + orchestrator + odylith chatter"]
+        Surfaces["governed surfaces<br/>Dashboard + Radar + Atlas + Compass + Registry + Casebook"]
+    end
+
+    subgraph OptionalRemote["Optional Remote Augmentation"]
+        Recall["shared recall service<br/>optional sparse/hybrid augmentation"]
+        Control["control attach<br/>optional approvals + dispatch + audit"]
+    end
+
+    Truth --> Context
+    Truth --> Governance
+    Contracts --> Context
+    Contracts --> Evaluation
+    Docs --> Surfaces
+    CLI --> Context
+    CLI --> Memory
+    CLI --> Governance
+    CLI --> Execution
+    CLI --> Evaluation
+    CLI --> Intervention
+    CLI --> Conversation
+    CLI --> Surfaces
+
+    Context --> Memory
+    Context --> Execution
+    Memory --> Governance
+    Memory --> Execution
+    Memory --> Evaluation
+    Memory --> Intervention
+    Memory --> Conversation
+    Governance --> Execution
+    Governance --> Conversation
+    Execution --> Intervention
+    Execution --> Conversation
+    Evaluation --> Conversation
+    Evaluation --> Execution
+    Evaluation --> Intervention
+    Governance --> Surfaces
+    Evaluation --> Surfaces
+    Intervention --> Surfaces
+    Conversation --> Surfaces
+
+    Memory --> RuntimeState
+    Governance --> RuntimeState
+    Execution --> RuntimeState
+    Evaluation --> RuntimeState
+    Intervention --> RuntimeState
+    Conversation --> RuntimeState
+
+    Memory -. optional .-> Recall
+    Surfaces -. optional .-> Control
+    Control -. audit / dispatch .-> Execution

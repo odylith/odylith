@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from typing import Any
+from typing import Mapping
 
+from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bootstrap_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import path_bundle_codec
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bindings
-from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.governance import proof_state as proof_state_runtime
 
 _BENCHMARK_RUNNER_REVIEWER_GUIDE = "docs/benchmarks/REVIEWER_GUIDE.md"
@@ -374,14 +375,21 @@ def _compact_hot_path_runtime_packet(
             context_packet_payload["execution_profile"] = compact_execution_profile_payload
         else:
             context_packet_payload.pop("execution_profile", None)
-        execution_engine = runtime_surface_governance.compact_execution_engine_snapshot(
-            runtime_surface_governance.build_packet_execution_engine_snapshot(
-                payload=payload,
-                context_packet=context_packet_payload,
-                routing_handoff=dict(compact.get("routing_handoff", {}))
-                if isinstance(compact.get("routing_handoff"), Mapping)
-                else {},
-            )
+        routing_handoff_for_execution = (
+            dict(compact.get("routing_handoff", {}))
+            if isinstance(compact.get("routing_handoff"), Mapping)
+            else {}
+        )
+        context_packet_payload = execution_engine_handshake.attach_execution_engine_handshake(
+            context_packet_payload,
+            payload=payload,
+            routing_handoff=routing_handoff_for_execution,
+        )
+        execution_engine = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+            payload=payload,
+            context_packet=context_packet_payload,
+            routing_handoff=routing_handoff_for_execution,
+            reuse_existing=False,
         )
         if execution_engine:
             context_packet_payload["execution_engine"] = execution_engine
@@ -614,14 +622,21 @@ def _update_compact_hot_path_runtime_packet(
         context_packet_payload["execution_profile"] = compact_execution_profile_payload
     else:
         context_packet_payload.pop("execution_profile", None)
-    execution_engine = runtime_surface_governance.compact_execution_engine_snapshot(
-        runtime_surface_governance.build_packet_execution_engine_snapshot(
-            payload=merged,
-            context_packet=context_packet_payload,
-            routing_handoff=dict(compact.get("routing_handoff", {}))
-            if isinstance(compact.get("routing_handoff"), Mapping)
-            else {},
-        )
+    routing_handoff_for_execution = (
+        dict(compact.get("routing_handoff", {}))
+        if isinstance(compact.get("routing_handoff"), Mapping)
+        else {}
+    )
+    context_packet_payload = execution_engine_handshake.attach_execution_engine_handshake(
+        context_packet_payload,
+        payload=merged,
+        routing_handoff=routing_handoff_for_execution,
+    )
+    execution_engine = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload=merged,
+        context_packet=context_packet_payload,
+        routing_handoff=routing_handoff_for_execution,
+        reuse_existing=False,
     )
     if execution_engine:
         context_packet_payload["execution_engine"] = execution_engine

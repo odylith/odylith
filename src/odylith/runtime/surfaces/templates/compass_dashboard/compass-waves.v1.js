@@ -169,7 +169,7 @@
       };
 
       if (entries.length > 1) {
-        target.innerHTML = `<div class="execution-wave-program-stack">${entries.map(renderProgramSection).filter(Boolean).join("")}</div>`;
+        target.innerHTML = `<div class="execution-wave-program-stack execution-wave-program-stack-program">${entries.map(renderProgramSection).filter(Boolean).join("")}</div>`;
         bindCompassDisclosurePersistence(target, disclosureGroup, state);
         return;
       }
@@ -226,7 +226,7 @@
           ...renderOptions,
           hideProgramFocusPanel: true,
           boardWrapperClass: "",
-          sectionClassName: "execution-wave-section-flat",
+          sectionClassName: "execution-wave-section-program-card",
         },
       );
       bindCompassDisclosurePersistence(target, disclosureGroup, state);

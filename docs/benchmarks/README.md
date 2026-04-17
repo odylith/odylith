@@ -72,10 +72,10 @@ still benefit from the same grounding and governance surfaces, but that is not
 yet Claude-host benchmark proof.
 
 Tracked source truth now carries a more serious benchmark corpus than the last
-published reports: `60` implementation scenarios plus `5` architecture
-scenarios, including explicit API-evolution, stateful-recovery,
-external-dependency, and destructive-scope families. Publication claims must
-be refreshed from a rerun before they can speak for that expanded corpus.
+published reports: `64` tracked scenarios, including explicit API-evolution,
+stateful-recovery, external-dependency, destructive-scope, Context Engine, and
+Execution Engine families. Publication claims must be refreshed from a rerun
+before they can speak for that expanded corpus.
 
 ## Closeout Framing
 

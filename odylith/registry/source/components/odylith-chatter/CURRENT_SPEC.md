@@ -1,8 +1,8 @@
 # Odylith Chatter
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 
-Last updated (UTC): 2026-04-16
+Last updated (UTC): 2026-04-17
 
 ## Purpose
 Odylith Chatter is Odylith's cross-posture narration contract. It governs how
@@ -22,6 +22,9 @@ end-of-work outcomes instead of canned self-promotion.
   updated governance IDs inline when they were actually changed, name affected
   governance-contract IDs when the slice stayed inside known truth, and keep
   tone guardrails intact.
+- The rule that `Odylith Assist` is closeout-owned and must not be wrapped in
+  the live ruled Ambient/Observation/Proposal block. Assist may follow live
+  recovery, but it is not selected by the value engine's live-block budget.
 - Benchmark-safe consumption of precomputed Tribunal-backed delivery signals
   when those signals sharpen ambient narration without requiring a live
   diagnosis pass.
@@ -38,6 +41,8 @@ end-of-work outcomes instead of canned self-promotion.
 - Fact selection, dedupe, or proposal assembly for observation/proposal
   moments; that belongs to
   [Governance Intervention Engine](../governance-intervention-engine/CURRENT_SPEC.md).
+- Proposition expected-value scoring, duplicate collapse, live-block budget,
+  or visibility proof. Chatter consumes the carried result only at closeout.
 - The live mid-turn teaser, Observation, Proposal, and explicit intervention
   surfacing path inside Codex and Claude hooks; that now belongs to
   [Governance Intervention Engine](../governance-intervention-engine/CURRENT_SPEC.md)

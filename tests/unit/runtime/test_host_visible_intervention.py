@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from odylith import cli
+from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import host_visible_intervention
 
@@ -90,7 +92,7 @@ def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_pa
         prompt="I do not think it is working",
     )
 
-    assert rendered.startswith("---\n**Odylith Observation:** This is a visibility failure")
+    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
     assert rendered.endswith("\n---")
     assert "show the Odylith Markdown directly" in rendered
 
@@ -103,7 +105,7 @@ def test_visible_intervention_detects_only_assist_visibility_feedback(tmp_path) 
         prompt="Dude, I am still not sure about Odylith interventions being visible; only Assit works",
     )
 
-    assert rendered.startswith("---\n**Odylith Observation:** This is a visibility failure")
+    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
     assert rendered.endswith("\n---")
     assert "Codex may be computing intervention payloads" in rendered
 
@@ -122,10 +124,45 @@ def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> No
         repo_root=tmp_path,
         session_id="visible-session",
     )
-    assert rendered.startswith("---\n**Odylith Observation:** This is a visibility failure")
+    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
     assert rendered.endswith("\n---")
     assert events[-1]["delivery_status"] == "manual_visible"
     assert events[-1]["delivery_channel"] == "manual_visible_command"
+    assert events[-1]["metadata"]["manual_visible"] is True
+
+
+def test_chat_confirmation_preserves_value_decision_metadata(tmp_path) -> None:
+    visible = "---\n\n**Odylith Observation:** Preserve exact chat-visible proof.\n\n---"
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending visible proof.",
+        session_id="confirm-meta",
+        host_family="codex",
+        intervention_key="confirm-meta-key",
+        turn_phase="stop_summary",
+        display_markdown=visible,
+        semantic_signature=("visible", "proof"),
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_render_required",
+        metadata={
+            "value_decision": {
+                "selected": [{"candidate_id": "observation:confirm-meta"}],
+                "suppressed": [],
+            }
+        },
+    )
+
+    confirmed = host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="confirm-meta",
+        last_assistant_message=visible,
+        render_surface="codex_stop_summary",
+    )
+
+    assert confirmed[-1]["delivery_status"] == "assistant_chat_confirmed"
+    assert confirmed[-1]["metadata"]["value_decision"]["selected"][0]["candidate_id"] == "observation:confirm-meta"
 
 
 def test_visible_intervention_replaces_generic_teaser_for_visibility_failure(tmp_path) -> None:
@@ -136,7 +173,7 @@ def test_visible_intervention_replaces_generic_teaser_for_visibility_failure(tmp
         prompt="Dude, I still do not see any Odylith Observation, Proposal, Ambient, or Assist in chat.",
     )
 
-    assert rendered.startswith("---\n**Odylith Observation:** This is a visibility failure")
+    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
     assert rendered.endswith("\n---")
     assert "Claude may be computing intervention payloads" in rendered
     assert "One more corroborating signal" not in rendered
@@ -164,7 +201,7 @@ def test_codex_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, c
 
     output = capsys.readouterr().out
     assert exit_code == 0
-    assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n**Odylith Observation:**")
+    assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\n**Odylith Observation:**")
     assert "Odylith Proposal:" in output
     assert not output.lstrip().startswith("{")
 

@@ -6,9 +6,11 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.intervention_engine import alignment_context
 from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
+from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 
 
@@ -126,6 +128,19 @@ def compose_host_conversation_bundle(
     )
     summary = _normalize_string(assistant_summary)
     validation_signals = _summary_validation_signals(summary, turn_phase=normalized_turn_phase)
+    context_signals = alignment_context.build_host_alignment_context(
+        repo_root=resolved_root,
+        host_family=normalized_host,
+        turn_phase=normalized_turn_phase,
+        session_id=normalized_session,
+        prompt_excerpt=resolved_prompt,
+        assistant_summary=summary,
+        changed_paths=resolved_changed_paths,
+        workstreams=resolved_workstreams,
+        components=resolved_components,
+    )
+    resolved_workstreams = _normalize_string_list(context_signals.get("workstreams")) or resolved_workstreams
+    resolved_components = _normalize_string_list(context_signals.get("components")) or resolved_components
     grounded = bool(summary or resolved_prompt or resolved_changed_paths or resolved_workstreams or resolved_components)
     request = orchestrator.OrchestrationRequest(
         prompt=resolved_prompt or summary,
@@ -139,7 +154,7 @@ def compose_host_conversation_bundle(
         task_kind="governance_closeout" if normalized_turn_phase == "stop_summary" else "implementation",
         phase="closeout" if normalized_turn_phase == "stop_summary" else "implementation",
         session_id=normalized_session,
-        context_signals={"host_family": normalized_host},
+        context_signals=context_signals,
     )
     decision = orchestrator.OrchestrationDecision(
         mode="local_only",
@@ -179,6 +194,14 @@ def compose_host_conversation_bundle(
             changed_paths=resolved_changed_paths,
             workstreams=resolved_workstreams,
             components=resolved_components,
+            bugs=_normalize_string_list(context_signals.get("bugs")),
+            diagrams=_normalize_string_list(context_signals.get("diagrams")),
+            context_packet_summary=_mapping(context_signals.get("context_packet")),
+            execution_engine_summary=_mapping(context_signals.get("execution_engine_summary")),
+            memory_summary=_mapping(context_signals.get("memory_summary")),
+            tribunal_summary=_mapping(context_signals.get("tribunal_summary")),
+            visibility_summary=_mapping(context_signals.get("visibility_summary")),
+            delivery_snapshot=_mapping(context_signals.get("delivery_snapshot")),
         )
     return bundle
 
@@ -227,12 +250,73 @@ def render_visible_live_intervention(
     )
 
 
+def visible_intervention_decision(
+    *,
+    repo_root: Path | str,
+    bundle: Mapping[str, Any],
+    host_family: str,
+    turn_phase: str,
+    session_id: str = "",
+    include_proposal: bool,
+    include_closeout: bool,
+    developer_include_closeout: bool | None = None,
+    delivery_channel: str = "",
+    delivery_status: str = "",
+    visible_markdown_override: str = "",
+) -> visibility_broker.VisibleInterventionDecision:
+    return visibility_broker.build_visible_intervention_decision(
+        repo_root=repo_root,
+        bundle=bundle,
+        host_family=host_family,
+        turn_phase=turn_phase,
+        session_id=session_id,
+        include_proposal=include_proposal,
+        include_closeout=include_closeout,
+        developer_include_closeout=developer_include_closeout,
+        delivery_channel=delivery_channel,
+        delivery_status=delivery_status,
+        visible_markdown_override=visible_markdown_override,
+    )
+
+
+def append_visible_intervention_events(
+    *,
+    repo_root: Path | str,
+    bundle: Mapping[str, Any],
+    decision: visibility_broker.VisibleInterventionDecision,
+    render_surface: str,
+) -> list[str]:
+    return visibility_broker.append_decision_events(
+        repo_root=repo_root,
+        bundle=bundle,
+        decision=decision,
+        render_surface=render_surface,
+    )
+
+
+def confirm_assistant_chat_delivery(
+    *,
+    repo_root: Path | str,
+    host_family: str,
+    session_id: str,
+    last_assistant_message: str,
+    render_surface: str,
+) -> list[dict[str, Any]]:
+    return visibility_broker.confirm_assistant_chat_delivery(
+        repo_root=repo_root,
+        host_family=host_family,
+        session_id=session_id,
+        last_assistant_message=last_assistant_message,
+        render_surface=render_surface,
+    )
+
+
 def compose_checkpoint_system_message(
     *,
     live_intervention: str = "",
     governance_status: str = "",
 ) -> str:
-    live = _normalize_block_string(live_intervention)
+    live = _canonical_visible_delivery_text(live_intervention)
     governance = _normalize_block_string(governance_status)
     if live:
         if governance and any(token in governance.lower() for token in ("failed", "skipped")):
@@ -243,14 +327,64 @@ def compose_checkpoint_system_message(
 
 _VISIBLE_DELIVERY_BEGIN = "<odylith-visible-markdown>"
 _VISIBLE_DELIVERY_END = "</odylith-visible-markdown>"
-_VISIBLE_DELIVERY_LABELS: tuple[str, ...] = (
-    "Odylith Observation",
-    "Odylith Proposal",
-    "Odylith Assist",
-    "Odylith Insight",
-    "Odylith History",
-    "Odylith Risks",
+_LIVE_DELIVERY_LABELS: tuple[str, ...] = (
+    "**Odylith Observation:**",
+    "Odylith Observation:",
+    "Odylith Proposal:",
+    "**Odylith Insight:**",
+    "Odylith Insight:",
+    "**Odylith History:**",
+    "Odylith History:",
+    "**Odylith Risks:**",
+    "Odylith Risks:",
 )
+_ASSIST_LABELS: tuple[str, ...] = (
+    "**Odylith Assist:**",
+    "Odylith Assist:",
+)
+
+
+def _strip_visible_delivery_boundary(value: str) -> str:
+    text = _normalize_block_string(value)
+    if text.startswith("---\n") and text.endswith("\n---"):
+        return _normalize_block_string(text[4:-4])
+    return text
+
+
+def _split_assist_suffix(value: str) -> tuple[str, str]:
+    text = _normalize_block_string(value)
+    positions = [
+        index
+        for label in _ASSIST_LABELS
+        if (index := text.find(label)) >= 0
+    ]
+    if not positions:
+        return text, ""
+    first = min(positions)
+    return _normalize_block_string(text[:first]), _normalize_block_string(text[first:])
+
+
+def _canonical_live_delivery_text(value: str) -> str:
+    text = _normalize_block_string(value)
+    if not text:
+        return ""
+    body = _strip_visible_delivery_boundary(text)
+    if text.startswith("---\n") and text.endswith("\n---"):
+        return f"---\n\n{body}\n\n---"
+    if any(label in text for label in _LIVE_DELIVERY_LABELS):
+        return f"---\n\n{text}\n\n---"
+    return text
+
+
+def _canonical_visible_delivery_text(value: str) -> str:
+    text = _normalize_block_string(value)
+    if not text:
+        return ""
+    live_part, assist_suffix = _split_assist_suffix(text)
+    live = _canonical_live_delivery_text(live_part)
+    if live and assist_suffix:
+        return f"{live}\n\n{assist_suffix}"
+    return live or assist_suffix
 
 
 def assistant_visible_fallback_context(visible_text: str) -> str:
@@ -263,13 +397,13 @@ def assistant_visible_fallback_context(visible_text: str) -> str:
     hidden.
     """
 
-    visible = _normalize_block_string(visible_text)
+    visible = _canonical_visible_delivery_text(visible_text)
     if not visible:
         return ""
     return "\n".join(
         [
             "Odylith visible delivery fallback:",
-            "Render this Markdown once if it is not already visible. Do not mention hooks or use a code fence.",
+            "Visible proof is missing or host display is unproven. Render this Markdown once if it is not already visible. Do not mention hooks or use a code fence.",
             "",
             _VISIBLE_DELIVERY_BEGIN,
             visible,
@@ -280,19 +414,19 @@ def assistant_visible_fallback_context(visible_text: str) -> str:
 
 def visible_delivery_already_present(*, last_assistant_message: str, visible_text: str) -> bool:
     last = _normalize_block_string(last_assistant_message)
-    visible = _normalize_block_string(visible_text)
+    visible = _canonical_visible_delivery_text(visible_text)
     if not last or not visible:
         return False
     if visible in last:
         return True
-    visible_labels = [label for label in _VISIBLE_DELIVERY_LABELS if label in visible]
-    if not visible_labels:
+    if visible.startswith("---\n") and visible.endswith("\n---"):
         return False
-    return all(label in last for label in visible_labels)
+    visible_body = _strip_visible_delivery_boundary(visible)
+    return bool(visible_body and visible_body in last)
 
 
 def stop_visible_delivery_reason(visible_text: str) -> str:
-    visible = _normalize_block_string(visible_text)
+    visible = _canonical_visible_delivery_text(visible_text)
     if not visible:
         return ""
     return "\n\n".join(
@@ -312,7 +446,9 @@ def _developer_context_with_visible_fallback(*, developer_context: str, visible_
     fallback = assistant_visible_fallback_context(visible_text)
     if not fallback:
         return context
-    visible = _normalize_block_string(visible_text)
+    visible = _canonical_visible_delivery_text(visible_text)
+    if visible and _canonical_visible_delivery_text(context) == visible:
+        context = ""
     if visible and visible in context:
         context = _normalize_block_string(context.replace(visible, "", 1))
     if not context:
@@ -326,7 +462,7 @@ def codex_post_tool_payload(
     system_message: str = "",
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {}
-    message = _normalize_block_string(system_message)
+    message = _canonical_visible_delivery_text(system_message)
     context = _developer_context_with_visible_fallback(
         developer_context=developer_context,
         visible_text=message,
@@ -347,7 +483,7 @@ def codex_prompt_payload(
     system_message: str = "",
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {}
-    message = _normalize_block_string(system_message)
+    message = _canonical_visible_delivery_text(system_message)
     context = _developer_context_with_visible_fallback(
         developer_context=additional_context,
         visible_text=message,
@@ -363,7 +499,7 @@ def codex_prompt_payload(
 
 
 def stop_payload(*, system_message: str = "", block_for_visible_delivery: bool = False) -> dict[str, Any]:
-    message = _normalize_block_string(system_message)
+    message = _canonical_visible_delivery_text(system_message)
     if not message:
         return {}
     payload: dict[str, Any] = {"systemMessage": message}
@@ -381,7 +517,7 @@ def claude_post_tool_payload(
     system_message: str = "",
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {}
-    message = _normalize_block_string(system_message)
+    message = _canonical_visible_delivery_text(system_message)
     context = _developer_context_with_visible_fallback(
         developer_context=developer_context,
         visible_text=message,

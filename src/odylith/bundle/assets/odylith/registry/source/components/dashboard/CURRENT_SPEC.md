@@ -1,8 +1,8 @@
 # Dashboard
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 
-Last updated (UTC): 2026-04-16
+Last updated (UTC): 2026-04-17
 
 ## Purpose
 Dashboard is the shell host for Odylith. It provides the top-level tabbed,
@@ -62,6 +62,11 @@ surface into the shell renderer.
   Shared shell CSS must not reintroduce side-by-side or auto-fit multi-column
   release boards once the operator has chosen the stacked release format,
   unless that layout change is explicitly authorized.
+- Compass `Programs` grouping chrome has the same operator-owned status:
+  visible program records must render as individual inner cards parallel to
+  `Release Targets`, while the outer `Programs` container keeps its cool
+  execution-family tint. Shared shell or child-surface CSS must not flatten
+  those records back into borderless rows without explicit authorization.
 - When a child surface owns source-generated shell assets, keep one canonical
   generator or loader path and require exact live-versus-bundle mirror
   equality. Operator-owned layout and compact workstream-button contracts need
@@ -308,6 +313,9 @@ artifacts to that header.
 - Brand changes:
   update `brand_assets.py` and template/presenter usage together rather than
   hardcoding assets in individual renderers.
+- Compass Programs or Release Targets card-shape changes:
+  update the child renderer/CSS source, live and bundle shell assets, Dashboard
+  and Compass component specs, and browser/unit layout audits together.
 
 ## Failure And Recovery Posture
 - The shell render fails if any child HTML surface is missing. That is
@@ -344,6 +352,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-17: Remembered the Compass Programs card-shape contract in Dashboard governance so visible program records stay as release-like inner cards rather than borderless rows inside the outer Programs container. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-03-26: Bound the shell host to Odylith's own product-governance records so the public repo can render and audit its own surface boundary. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-03-27: Added self-host posture payload fields so the shell can expose product-repo dogfood and release posture without inventing a second status model. (Plan: [B-004](odylith/radar/radar.html?view=plan&workstream=B-004))
 - 2026-04-07: Clarified the shell freshness contract so Compass owns its normal stale-runtime disclosure in-frame, the shell reserves status cards for failure-only or cross-surface posture, and the recovery dock no longer carries per-surface `Show status` reopen buttons. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

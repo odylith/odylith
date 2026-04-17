@@ -346,6 +346,12 @@ Extend that same model into a balanced live-shell posture:
   removed the backend `12`-row truncation from Compass `Current Workstreams`
   so the board now ranks the full eligible set and lets the visible window and
   scope filters do the narrowing instead of hiding rows ahead of operator focus
+- implemented on 2026-04-17 for Compass Programs card shape:
+  each visible execution-wave program now renders as a release-like inner card
+  inside the outer tinted `Programs` container, the redundant inner focus
+  panel remains suppressed, and Dashboard/Compass governance records plus
+  browser proof remember that Programs must not flatten back into borderless
+  rows
 - implemented on 2026-04-10 for lane-switch and wrapper safety:
   `odylith dashboard refresh --surfaces compass` and the upgrade follow-on now
   wait Compass to a terminal bounded result instead of handing control back

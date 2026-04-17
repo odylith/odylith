@@ -1,0 +1,66 @@
+%% Reviewed 2026-04-17 for v0.1.11 to keep cross-surface scope escalation, Execution Engine posture, visible-intervention proof, and benchmark budget truth explicit in Atlas.
+flowchart TB
+  subgraph Evidence["1. Raw Evidence Inputs"]
+    Timeline["Compass timeline rows<br/>event kind, touched scopes, fanout"]
+    Local["Local changes<br/>path class, generated vs source, governance-only"]
+    Plans["Radar and plan truth<br/>status, execution tasks, verified completion"]
+    Proof["Proof State<br/>warning posture, blocker frontier, unsafe closeout"]
+    Execution["Execution Engine snapshot<br/>verify / recover / wait / closure"]
+    Visibility["Visibility ledger<br/>earned beat + chat-confirmed proof"]
+    Benchmark["Benchmark signal<br/>false-admit / false-deny + validation gap"]
+    Readouts["Delivery and operator readouts<br/>stale authority, conflict, claim guard"]
+  end
+
+  subgraph Ladder["2. Scope Signal Ladder"]
+    Features["Deterministic feature vectors<br/>fanout, generated-only, governance-only,<br/>verified local, active execution, warning, blocker"]
+    Rules["Shared rung rules<br/>R0 suppressed_noise<br/>R1 background_trace<br/>R2 verified_local<br/>R3 active_scope<br/>R4 actionable_priority<br/>R5 blocking_frontier"]
+    Caps["Caps and rollups<br/>governance-only <= R1<br/>broad fanout <= R1<br/>generated-only -> R0<br/>child R5 dominates parent"]
+    Signal["scope_signal payload<br/>rung, token, reasons, caps,<br/>promoted_default, budget_class"]
+  end
+
+  subgraph Budgets["3. Provider-Neutral Budget Classes"]
+    None["none<br/>no fresh expensive work"]
+    Cache["cache_only<br/>reuse and deterministic only"]
+    Fast["fast_simple<br/>cheap local/simple reasoning only"]
+    Escalated["escalated_reasoning<br/>fresh provider or heavier reasoning allowed"]
+  end
+
+  subgraph Consumers["4. Cross-Surface Consumers"]
+    Compass["Compass<br/>scope dropdowns, scoped timelines,<br/>promoted workstreams, narration budgets"]
+    Radar["Radar<br/>default operational ordering and focus chips"]
+    Registry["Registry<br/>component ordering and operator readout priority"]
+    Atlas["Atlas<br/>active-workstream pills and default promotion"]
+    Shell["Dashboard / shell / chatter<br/>compute budget gating and escalation order"]
+    Broker["Visible Intervention Broker<br/>ambient / Observation / Proposal / Assist"]
+    Benchmarks["Benchmark harness<br/>accuracy gates before cost gates"]
+  end
+
+  Timeline --> Features
+  Local --> Features
+  Plans --> Features
+  Proof --> Features
+  Execution --> Features
+  Visibility --> Features
+  Benchmark --> Features
+  Readouts --> Features
+  Features --> Rules
+  Rules --> Caps
+  Caps --> Signal
+
+  Signal --> None
+  Signal --> Cache
+  Signal --> Fast
+  Signal --> Escalated
+
+  Signal --> Compass
+  Signal --> Radar
+  Signal --> Registry
+  Signal --> Atlas
+  Signal --> Shell
+  Signal --> Broker
+  Signal --> Benchmarks
+
+  Note["One additive contract decides visibility, promotion, execution budget, and benchmark priority.<br/>Raw source truth stays exhaustive; default operator focus becomes selective."]:::note
+  Signal --> Note
+
+  classDef note fill:#f5f9ff,stroke:#7aa0d6,color:#1f355f

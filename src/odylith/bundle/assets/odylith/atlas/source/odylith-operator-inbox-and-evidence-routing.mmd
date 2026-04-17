@@ -1,0 +1,43 @@
+%% Reviewed 2026-04-17 for v0.1.11 to show operator evidence routing through Tribunal outcomes, Execution Engine snapshots, visible intervention proof, Remediator packets, and benchmark closure checks.
+flowchart LR
+  Tribunal["Tribunal outcome<br/>case brief, systemic brief, proof refs,<br/>confidence, next discriminating check"]
+  Execution["Execution Engine snapshot<br/>admissibility, next move, validation, closure"]
+  Visible["Visible intervention decision<br/>Odylith Observation / Proposal / Assist<br/>fallback-ready vs chat-confirmed"]
+  Packet["Remediator packet<br/>Approve and apply / Send to AI engine / Review manually"]
+  Benchmark["Benchmark proof route<br/>false-admit / false-deny + closure accuracy"]
+
+  subgraph Inbox["Shell + Odylith"]
+    Shell["Tooling shell<br/>Operator inbox preview<br/>top ranked cases + terse warnings"]
+    Odylith["Odylith workspace<br/>ranked cases, selected brief, proof, action buttons,<br/>approval and clearance state"]
+  end
+
+  subgraph Evidence["Native Evidence Surfaces"]
+    Radar["Radar<br/>workstream evidence,<br/>traceability, and topology"]
+    Registry["Registry<br/>component authority,<br/>forensics, and ownership evidence"]
+    Casebook["Casebook<br/>bug history,<br/>root cause, and prevention evidence"]
+    Atlas["Atlas<br/>diagram freshness,<br/>topology, and linked artifacts"]
+    Compass["Compass<br/>timeline evidence,<br/>recent changes, and checkpoints"]
+  end
+
+  Tribunal --> Shell
+  Tribunal --> Odylith
+  Execution --> Shell
+  Execution --> Odylith
+  Visible --> Shell
+  Visible --> Odylith
+  Packet --> Odylith
+  Benchmark --> Odylith
+
+  Shell -->|Open full case| Odylith
+  Odylith -->|Open proof| Radar
+  Odylith -->|Open proof| Registry
+  Odylith -->|Open proof| Casebook
+  Odylith -->|Open proof| Atlas
+  Odylith -->|Open proof| Compass
+  Odylith -->|Open proof| Benchmark
+
+  Radar -->|Native evidence only| Odylith
+  Registry -->|Native evidence only| Odylith
+  Casebook -->|Native evidence only| Odylith
+  Atlas -->|Native evidence only| Odylith
+  Compass -->|Native evidence only| Odylith

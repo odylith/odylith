@@ -1027,6 +1027,13 @@ def test_orchestrator_adoption_carries_execution_engine_targeting_and_presentati
                 "suppress_routing_receipts": True,
                 "surface_fast_lane": True,
             },
+            "execution_engine_summary": {
+                "execution_engine_component_id": "execution-engine",
+                "execution_engine_canonical_component_id": "execution-engine",
+                "execution_engine_identity_status": "canonical",
+                "execution_engine_target_component_status": "execution_engine",
+                "execution_engine_snapshot_reuse_status": "reused_context_packet_snapshot",
+            },
         },
     )
 
@@ -1037,6 +1044,11 @@ def test_orchestrator_adoption_carries_execution_engine_targeting_and_presentati
     assert adoption["execution_engine_has_writable_targets"] is True
     assert adoption["execution_engine_requires_more_consumer_context"] is False
     assert adoption["execution_engine_consumer_failover"] == ""
+    assert adoption["execution_engine_component_id"] == "execution-engine"
+    assert adoption["execution_engine_canonical_component_id"] == "execution-engine"
+    assert adoption["execution_engine_identity_status"] == "canonical"
+    assert adoption["execution_engine_target_component_status"] == "execution_engine"
+    assert adoption["execution_engine_snapshot_reuse_status"] == "reused_context_packet_snapshot"
     assert adoption["execution_engine_commentary_mode"] == "task_first_minimal"
     assert adoption["execution_engine_suppress_routing_receipts"] is True
     assert adoption["execution_engine_surface_fast_lane"] is True

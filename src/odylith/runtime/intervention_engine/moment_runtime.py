@@ -185,6 +185,30 @@ def _support_score(
     return _clamp(score)
 
 
+def _selection_priority(
+    *,
+    fact: GovernanceFact,
+    signal_profile: Mapping[str, Any],
+    lookup: Mapping[str, Any],
+    evidence_classes: Sequence[str],
+) -> int:
+    kind = _fact_kind(fact)
+    if kind == "invariant" and signal_profile.get("has_invariant_hints"):
+        return 5
+    evidence_tokens = {_normalize_token(item) for item in evidence_classes}
+    if kind == "history" and (
+        lookup.get("bug_ids")
+        or signal_profile.get("has_bug_hints")
+        or "history" in evidence_tokens
+    ):
+        return 4
+    if kind == "topology" and signal_profile.get("has_topology_hints"):
+        return 3
+    if kind == "governance_truth":
+        return 1
+    return 0
+
+
 def _moment_kind(*, primary: GovernanceFact, signal_profile: Mapping[str, Any], lookup: Mapping[str, Any]) -> str:
     kind = _fact_kind(primary)
     if kind == "invariant":
@@ -250,17 +274,23 @@ def select_moment(
                     evidence_classes=evidence_classes,
                     session_memory=memory,
                 ),
+                _selection_priority(
+                    fact=fact,
+                    signal_profile=signal_profile,
+                    lookup=lookup,
+                    evidence_classes=evidence_classes,
+                ),
                 fact,
             )
             for fact in facts
         ),
-        key=lambda row: row[0],
+        key=lambda row: (row[0], row[1]),
         reverse=True,
     )
-    primary_score, primary = scored[0]
+    primary_score, _primary_priority, primary = scored[0]
     supporting_score = -1
     supporting: GovernanceFact | None = None
-    for _score, fact in scored[1:]:
+    for _score, _priority, fact in scored[1:]:
         score = _support_score(
             fact=fact,
             primary=primary,

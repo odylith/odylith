@@ -1,8 +1,8 @@
 # Odylith Context Engine
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 
-Last updated (UTC): 2026-04-16
+Last updated (UTC): 2026-04-17
 
 ## Purpose
 Odylith Context Engine is the deterministic local grounding runtime for the
@@ -22,6 +22,9 @@ claims, and optionally materializes faster local and remote retrieval layers.
 - Structured turn-intake normalization for `turn_context`, lane-fenced
   `target_resolution`, and `presentation_policy` fields carried through packet
   assembly and compaction.
+- Compact packet summaries consumed by the visible intervention value engine.
+  The Context Engine supplies local source evidence and anchors; it does not
+  choose visible Odylith block labels or selector thresholds.
 
 ### The Context Engine does not own
 - Authoritative repo truth. It compiles truth; it does not replace it.
@@ -34,6 +37,9 @@ claims, and optionally materializes faster local and remote retrieval layers.
 - Historical execution component identifiers. Context packets must carry
   `execution-engine` when the packet addresses the Execution Engine boundary;
   stale execution identifiers fail closed rather than being translated.
+- Live intervention rendering policy. The Governance Intervention Engine
+  consumes Context Engine packet summaries as one evidence source inside the
+  proposition value engine.
 
 ## Developer Mental Model
 - `src/odylith/runtime/context_engine/odylith_context_engine.py` is the public
@@ -86,6 +92,22 @@ Public entrypoint: `odylith context-engine`
   component.
   This fail-closed behavior prevents old names from silently producing
   route-ready packets.
+- The stable `execution_engine_handshake` packet shape is versioned as `v1`
+  and contains `component_id`, `canonical_component_id`, `identity_status`,
+  packet kind and state, expanded packet quality, `turn_context`,
+  `target_resolution`, `presentation_policy`, recommended validation, and
+  route readiness.
+- Packet builders call
+  `src/odylith/runtime/context_engine/execution_engine_handshake.py` to attach
+  that shape and build or reuse one compact Execution Engine snapshot. Packet
+  summaries, bootstrap packets, hot-path packets, context dossiers, and
+  runtime surfaces should consume that shared snapshot instead of locally
+  deriving policy posture.
+- Snapshot cost diagnostics are intentionally lightweight and comparative:
+  snapshot duration, snapshot token estimate, runtime-contract token estimate,
+  handshake token estimate, total payload token estimate, reuse status, and
+  handshake version travel with the compact summary for benchmark and
+  latency-budget analysis.
 
 ### Projection and daemon lifecycle
 - `warmup`
@@ -523,6 +545,12 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-16 · Implementation:** Context Engine and Execution Engine alignment hardened stale snapshot handling across packet summaries, router assessment, remediator execution, and benchmark proof with fail-closed canonical execution-engine identity checks; runtime, integration, registry, backlog, atlas, sync, and diff hygiene validation passed.
+  - Scope: B-099
+  - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py +3 more
+- **2026-04-16 · Implementation:** Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.
+  - Scope: B-099
+  - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/execution_engine/runtime_lane_policy.py
 - **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
   - Scope: B-099, B-100
   - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
@@ -543,3 +571,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Clarified the product boundary that Context Engine grounds repo truth and packets, while Execution Engine owns admissibility and next-action control. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-10: Added structured turn-intake carry-through so session packets can preserve `turn_context`, lane-fenced target resolution, and presentation policy across consumer and maintainer lanes. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
 - 2026-04-16: Added the Context Engine and Execution Engine alignment program and hard-cut the handoff to canonical `execution-engine` identity so stale execution identifiers fail closed before packet route readiness. (Plan: [B-099](odylith/radar/radar.html?view=plan&workstream=B-099), [B-100](odylith/radar/radar.html?view=plan&workstream=B-100))
+- 2026-04-16: Added handshake `v1`, shared compact snapshot reuse, Execution Engine cost diagnostics, and Codex/Claude semantic parity proof for the Context Engine to Execution Engine boundary. (Plan: [B-101](odylith/radar/radar.html?view=plan&workstream=B-101), [B-102](odylith/radar/radar.html?view=plan&workstream=B-102), [B-103](odylith/radar/radar.html?view=plan&workstream=B-103))

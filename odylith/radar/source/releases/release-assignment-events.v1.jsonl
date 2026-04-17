@@ -45,3 +45,15 @@
 {"action": "add", "recorded_at": "2026-04-12T23:19:04Z", "release_id": "release-0-1-11", "workstream_id": "B-093"}
 {"action": "add", "recorded_at": "2026-04-12T23:19:04Z", "release_id": "release-0-1-11", "workstream_id": "B-092"}
 {"action": "add", "recorded_at": "2026-04-15T16:48:23Z", "release_id": "release-0-1-11", "workstream_id": "B-097"}
+{"action": "add", "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.", "recorded_at": "2026-04-16T20:59:57Z", "release_id": "release-0-1-11", "workstream_id": "B-099"}
+{"action": "add", "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.", "recorded_at": "2026-04-16T20:59:57Z", "release_id": "release-0-1-11", "workstream_id": "B-100"}
+{"action": "add", "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.", "recorded_at": "2026-04-16T20:59:58Z", "release_id": "release-0-1-11", "workstream_id": "B-101"}
+{"action": "add", "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.", "recorded_at": "2026-04-16T20:59:58Z", "release_id": "release-0-1-11", "workstream_id": "B-102"}
+{"action": "add", "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.", "recorded_at": "2026-04-16T20:59:59Z", "release_id": "release-0-1-11", "workstream_id": "B-103"}
+{"action": "add", "note": "Target Context Engine and Execution Engine alignment program to v0.1.11.", "recorded_at": "2026-04-16T20:59:59Z", "release_id": "release-0-1-11", "workstream_id": "B-104"}
+{"action": "add", "note": "Bind the visible intervention value-engine hardening program to the active v0.1.11 release under B-096.", "recorded_at": "2026-04-17T06:11:29Z", "release_id": "release-0-1-11", "workstream_id": "B-096"}
+{"action": "add", "note": "Bind visible intervention value-engine governance binding wave to v0.1.11.", "recorded_at": "2026-04-17T06:14:31Z", "release_id": "release-0-1-11", "workstream_id": "B-105"}
+{"action": "add", "note": "Bind visible intervention proposition-engine wave to v0.1.11.", "recorded_at": "2026-04-17T06:14:35Z", "release_id": "release-0-1-11", "workstream_id": "B-106"}
+{"action": "add", "note": "Bind host visibility and ruler canonicalization wave to v0.1.11.", "recorded_at": "2026-04-17T06:14:40Z", "release_id": "release-0-1-11", "workstream_id": "B-107"}
+{"action": "add", "note": "Bind intervention adjudication corpus and advisory benchmark wave to v0.1.11.", "recorded_at": "2026-04-17T06:14:44Z", "release_id": "release-0-1-11", "workstream_id": "B-108"}
+{"action": "add", "note": "Bind v0.1.11 visible intervention release-proof wave to the active release.", "recorded_at": "2026-04-17T06:14:49Z", "release_id": "release-0-1-11", "workstream_id": "B-109"}

@@ -33,16 +33,17 @@
     "D-027",
     "D-033",
     "D-034",
-    "D-035"
+    "D-035",
+    "D-038"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 276,
-    "mapped_workstream_evidence_count": 30,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 610,
+    "mapped_workstream_evidence_count": 37,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 23,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 277
+    "timeline_event_count": 610
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -56,6 +57,4797 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 983,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:48:09Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 982,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:48:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 981,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:48:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 980,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:48:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 979,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:48:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 977,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:48:06Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 976,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:46:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 975,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:46:07Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 974,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:46:06Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 973,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:46:06Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 972,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:46:06Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 970,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:46:05Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 969,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:45:44Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 968,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:45:44Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 967,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:45:44Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 965,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:45:43Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 963,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:38:25Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 962,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:38:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 961,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:38:23Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 960,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:38:23Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 959,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:38:23Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 957,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:38:22Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 956,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:33:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 955,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:33:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 954,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:33:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 952,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:33:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 951,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:33:40Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 950,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:31:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 949,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:31:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 948,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:31:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 946,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:31:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 945,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:31:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 944,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:31:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 943,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:31:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 942,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:31:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 940,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:16:29Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 939,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:16:28Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 938,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:16:27Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 937,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:16:27Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 936,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:16:27Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 934,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:16:25Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 933,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:09:23Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 932,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:09:22Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 931,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:09:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 930,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:09:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 929,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:09:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 927,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:09:19Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 926,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:01:05Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 924,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T08:01:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 923,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T08:01:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 922,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T08:01:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 920,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T08:01:02Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 919,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:54:32Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 918,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:54:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 917,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:54:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 916,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:54:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 915,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:54:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 913,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:54:28Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 912,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:48:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 911,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:48:44Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 910,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:48:43Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 909,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:48:43Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 908,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:48:43Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 906,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:48:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 905,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:40:36Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 904,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:40:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 903,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:40:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 902,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:40:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 900,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:40:18Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 899,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:32:22Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 898,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:32:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 897,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:32:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 896,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:32:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 895,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:32:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 893,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:32:19Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 892,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:30:33Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 890,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:30:32Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 889,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:30:32Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 888,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:30:32Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 886,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:30:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 885,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:29:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 884,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:29:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 883,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:29:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 881,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:29:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 880,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:29:53Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 879,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:29:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 878,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:29:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 877,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:29:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 875,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:27:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 874,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:27:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 873,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:27:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 871,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:27:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 869,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:27:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 868,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:27:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 867,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:27:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 865,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:23:58Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 864,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:23:58Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 863,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:23:58Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 861,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:23:58Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 860,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:23:57Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 859,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:22:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 858,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:22:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 857,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:22:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 855,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:22:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 854,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:22:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 853,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:22:14Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 852,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:22:14Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 851,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:22:14Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 849,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:20:39Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 848,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:20:39Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 847,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:20:39Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 845,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:15:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 844,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:15:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 843,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:15:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 841,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:15:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 839,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:14:15Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 838,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:14:15Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 837,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:14:15Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 835,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:14:14Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 833,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:13:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 832,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:13:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 831,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:13:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 829,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:13:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 828,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:13:47Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 827,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:13:18Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 826,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:13:18Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 825,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:13:18Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 823,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:13:17Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 821,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:12:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 820,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:12:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 819,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:12:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 817,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:12:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 815,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:12:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 814,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:12:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 813,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:12:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 811,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:12:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 809,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:11:37Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 808,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:11:37Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 807,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:11:37Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 805,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:10:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 804,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:10:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 803,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:10:08Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 801,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:09:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 800,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:09:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 799,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:09:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 797,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:00:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 796,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T07:00:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 795,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T07:00:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 794,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T07:00:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 792,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T07:00:40Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 790,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T06:58:55Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 789,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T06:58:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 788,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T06:58:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 787,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T06:58:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 785,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T06:58:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 784,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T06:58:53Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 783,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T06:52:15Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 782,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T06:52:15Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 781,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T06:52:15Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 779,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T06:50:55Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 778,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T06:50:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 777,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T06:31:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 776,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T06:31:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 775,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T06:31:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 773,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T06:25:57Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 772,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T06:25:57Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 771,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T06:25:57Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 769,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T06:10:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 768,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T06:10:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 767,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T06:10:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 765,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T06:10:23Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 764,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T06:10:23Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 763,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T06:10:23Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 761,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T05:33:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 760,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T05:33:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 759,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T05:33:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 757,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T05:33:47Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 756,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T05:05:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 755,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T05:05:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 754,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T05:05:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 752,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T05:05:47Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 751,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T05:04:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 750,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T05:04:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 749,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T05:04:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 747,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T05:04:23Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 746,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T05:03:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 745,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T05:03:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 744,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T05:03:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 742,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T05:03:48Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 741,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T04:48:11Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 740,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T04:48:11Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 739,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T04:48:11Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 737,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:48:10Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 736,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T04:47:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 735,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T04:47:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 734,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T04:47:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 732,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:47:47Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 731,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T04:47:11Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 730,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T04:47:11Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 729,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T04:47:11Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 727,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:47:09Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 726,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T04:44:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 725,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T04:44:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 724,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T04:44:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 722,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:44:20Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 721,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:40:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 720,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:39:56Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 719,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:38:18Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 718,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:05:03Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 717,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T04:05:00Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 716,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T04:05:00Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 715,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T04:05:00Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 713,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:04:58Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 712,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T04:04:57Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 711,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T03:54:06Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 710,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T03:54:05Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 709,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T03:54:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 708,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T03:54:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 707,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T03:54:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 706,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T03:54:04Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 704,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T03:53:43Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 703,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T03:53:41Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 701,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T03:53:40Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 700,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T03:53:40Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 699,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T03:53:40Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 697,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T03:53:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 695,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T03:53:20Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 694,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T03:53:20Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 693,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T03:53:20Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 691,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T03:50:02Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 690,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T03:50:01Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 689,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T03:50:00Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 688,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T03:50:00Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 687,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T03:50:00Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 686,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T03:50:00Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 684,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith",
+        "radar"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept this change honest instead of letting the code outrun the governed record by staying inside affected governance contracts [B-096](?tab=radar&workstream=B-096), [B-001](?tab=radar&workstream=B-001), [B-002](?tab=radar&workstream=B-002), and [B-005](?tab=radar&workstream=B-005). **Odylith Insight:** the real pressure here smells more like hidden hook payload counted as product success and surface-local visibility policy forks than raw code spread, which is why [B-096](?tab=radar&workstream=B-096) and [B-001](?tab=radar&workstream=B-001) matter more than one more repo lap.",
+      "ts_iso": "2026-04-17T03:48:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 683,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Radar already has a governed slice for B-001.",
+      "ts_iso": "2026-04-17T03:48:35Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 682,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T01:03:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 681,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T01:03:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 680,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T01:03:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 679,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T01:03:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 677,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T01:03:29Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 675,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:55:37Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 674,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:55:36Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 673,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:55:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 672,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:55:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 671,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:55:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 669,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:55:34Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 668,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:55:18Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 667,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:52:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 666,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:52:29Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 665,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:52:28Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 664,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:52:28Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 663,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:52:28Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 661,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:52:27Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 659,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:47:30Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 658,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:46:38Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 656,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:46:36Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 655,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:46:36Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 654,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:46:36Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 652,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:46:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 651,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:45:53Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 648,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:23:03Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 647,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:23:03Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 646,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:23:03Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 645,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:23:03Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 641,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:18:20Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 640,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:18:20Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 639,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:18:20Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 638,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:18:20Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 634,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:17:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 631,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:17:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 630,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:17:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 629,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:17:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 627,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:17:38Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 626,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:17:38Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 625,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:17:38Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 624,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:17:38Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 622,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:16:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 621,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:16:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 620,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:16:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 619,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:16:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 617,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:13:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 614,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:13:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 613,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:13:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 612,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:13:21Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 610,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-17T00:13:05Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 607,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-17T00:13:05Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 606,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-17T00:13:05Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 605,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-17T00:13:05Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 603,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T23:56:25Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 600,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-16T23:56:25Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 599,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-16T23:56:25Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 598,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-16T23:56:25Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 595,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T23:43:20Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 593,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-16T23:43:19Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 592,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-16T23:43:19Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 591,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-16T23:43:19Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 589,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T23:43:17Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 587,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T23:12:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 585,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-16T23:12:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 584,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-16T23:12:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 583,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-16T23:12:24Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 581,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T23:12:22Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 580,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T23:10:31Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 578,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-16T23:10:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 577,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-16T23:10:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 576,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-16T23:10:30Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 574,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T23:10:29Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 573,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T22:57:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 571,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-16T22:57:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 570,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-16T22:57:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 569,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-16T22:57:35Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 567,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T22:57:33Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 566,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T22:54:47Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 564,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-16T22:54:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 563,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-16T22:54:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 562,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-16T22:54:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 560,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T22:54:44Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 559,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T22:52:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 557,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-16T22:52:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 556,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-16T22:52:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 555,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-16T22:52:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 553,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T22:52:42Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 552,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T22:48:46Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 550,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** kept the visible path alive.",
+      "ts_iso": "2026-04-16T22:48:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 549,
+      "explicit_components": [],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation",
+      "ts_iso": "2026-04-16T22:48:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 548,
+      "explicit_components": [],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Proposal",
+      "ts_iso": "2026-04-16T22:48:45Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 546,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
+      "ts_iso": "2026-04-16T22:48:43Z",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "low",
@@ -347,7 +5139,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -1356,6 +6149,71 @@
       "workstreams": []
     },
     {
+      "artifacts": [
+        "tests/integration/runtime/test_context_execution_alignment_browser.py",
+        "tests/unit/runtime/test_component_registry_candidate_policy.py"
+      ],
+      "confidence": "high",
+      "event_index": 596,
+      "explicit_components": [
+        "compass",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Hardened B-099 QA: execution hard-cut regression tests, full runtime unit suite 1918 passed, browser suite 139 passed/1 skipped, and sync check-only passed.",
+      "ts_iso": "2026-04-16T16:47:23-07:00",
+      "workstreams": [
+        "B-099"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/context_engine/execution_engine_handshake.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+        "src/odylith/runtime/orchestration/subagent_router_execution_engine_runtime.py",
+        "src/odylith/runtime/reasoning/remediator.py",
+        "tests/unit/runtime/test_execution_engine_handshake.py"
+      ],
+      "confidence": "high",
+      "event_index": 588,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "registry",
+        "remediator",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "registry",
+        "remediator",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Context Engine and Execution Engine alignment hardened stale snapshot handling across packet summaries, router assessment, remediator execution, and benchmark proof with fail-closed canonical execution-engine identity checks; runtime, integration, registry, backlog, atlas, sync, and diff hygiene validation passed.",
+      "ts_iso": "2026-04-16T16:13:46-07:00",
+      "workstreams": [
+        "B-099"
+      ]
+    },
+    {
       "artifacts": [],
       "confidence": "low",
       "event_index": 396,
@@ -1482,6 +6340,35 @@
       "workstreams": []
     },
     {
+      "artifacts": [
+        "src/odylith/runtime/context_engine/execution_engine_handshake.py",
+        "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
+      ],
+      "confidence": "high",
+      "event_index": 545,
+      "explicit_components": [
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.",
+      "ts_iso": "2026-04-16T15:19:46-07:00",
+      "workstreams": [
+        "B-099"
+      ]
+    },
+    {
       "artifacts": [],
       "confidence": "low",
       "event_index": 377,
@@ -1494,6 +6381,37 @@
       "summary": "Odylith can already see governed truth starting to crystallize here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-16T14:56:30Z",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 544,
+      "explicit_components": [
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "remediator"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine",
+        "remediator"
+      ],
+      "meaningful": true,
+      "summary": "Hardened Context Engine to Execution Engine handshake: canonical execution-engine identity now fails closed on historical target ids before snapshot reuse, shared compact snapshots feed packet/runtime/remediator surfaces, execution benchmark gates enforce accuracy, false-admit/false-deny, and guard correctness before latency diagnostics, and sync validation is green for v0.1.11.",
+      "ts_iso": "2026-04-16T14:54:04-07:00",
+      "workstreams": [
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
+      ]
     },
     {
       "artifacts": [],
@@ -1510,20 +6428,35 @@
       "workstreams": []
     },
     {
-      "artifacts": [
-        "odylith/registry/source/component_registry.v1.json"
-      ],
+      "artifacts": [],
       "confidence": "high",
-      "event_index": 547,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 543,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "odylith"
+        "atlas",
+        "benchmark",
+        "execution-engine",
+        "odylith",
+        "odylith-context-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/component_registry.v1.json",
-      "ts_iso": "2026-04-16T13:17:46-07:00",
-      "workstreams": []
+      "summary": "Completed B-099 Context Engine and Execution Engine alignment waves for v0.1.11: canonical execution-engine handshake, shared snapshot reuse, Codex/Claude parity, benchmark cost metrics, docs/specs/Atlas refresh, and sync validation.",
+      "ts_iso": "2026-04-16T14:22:41-07:00",
+      "workstreams": [
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
+      ]
     },
     {
       "artifacts": [
@@ -2037,7 +6970,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
@@ -2116,7 +7050,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -2930,7 +7865,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -2953,7 +7889,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
@@ -2976,7 +7913,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
@@ -2999,7 +7937,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -3022,7 +7961,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -3045,7 +7985,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
@@ -3068,7 +8009,8 @@
         "compass",
         "governance-intervention-engine",
         "odylith",
-        "odylith-chatter"
+        "odylith-chatter",
+        "odylith-context-engine"
       ],
       "meaningful": true,
       "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
@@ -3228,6 +8170,7 @@
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter",
+        "odylith-context-engine",
         "radar"
       ],
       "meaningful": false,
@@ -4988,6 +9931,11 @@
     "B-101",
     "B-104",
     "B-100",
-    "B-103"
+    "B-103",
+    "B-107",
+    "B-108",
+    "B-109",
+    "B-106",
+    "B-105"
   ]
 }

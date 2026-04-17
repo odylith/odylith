@@ -21,6 +21,12 @@ cannot do.
    success criteria, validation plan, external dependencies, and critical
    path.
 
+   The packet must carry canonical `execution-engine` identity through the
+   Context Engine `execution_engine_handshake`. Target component identity is
+   separate from engine identity. Historical execution ids are not aliases;
+   explicit historical execution targets fail closed before stale snapshot
+   reuse or expensive runtime expansion.
+
 3. **Promote hard constraints**  
    User corrections such as "don't use X" or "only touch Y" are promoted into
    `HardConstraint` records so later heuristics cannot override them.
@@ -68,6 +74,13 @@ cannot do.
     delegation or parallel fan-out when the frontier says re-anchor, wait,
     verify or recover, unsafe closure, or the host cannot support it.
 
+12. **Reuse the compact snapshot**
+    Packet summaries and runtime surfaces consume the same compact
+    `execution_engine` snapshot instead of rebuilding policy state locally.
+    The snapshot carries reuse status, handshake version, snapshot duration,
+    and lightweight token estimates for the snapshot, handshake, runtime
+    contract, and total packet payload.
+
 ## What It Does Not Do
 
 - It does not ground truth from the repo. That is the Context Engine.
@@ -85,3 +98,9 @@ classification.
 Host-specific behavior, including delegation style, model selection, interrupt
 capability, and artifact paths, is additive and capability-gated through the
 execution profile. It is never baked into the shared contract.
+
+Codex and Claude Code must agree on base policy semantics for the same packet:
+admissibility outcome, execution mode, truthful next move, closure,
+validation archetype, authoritative lane, and re-anchor posture. They may
+differ in host-family, model-family, delegation-style, interrupt, artifact
+path, and capability-hint fields.

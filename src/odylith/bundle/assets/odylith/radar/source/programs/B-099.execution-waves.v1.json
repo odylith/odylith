@@ -5,7 +5,7 @@
     {
       "wave_id": "W1",
       "label": "Execution Engine Benchmark Proof and Canonical Cutover",
-      "status": "active",
+      "status": "complete",
       "summary": "Execution Engine Benchmark Proof and Canonical Cutover",
       "depends_on": [],
       "primary_workstreams": [
@@ -24,7 +24,7 @@
     {
       "wave_id": "W2",
       "label": "Context Execution Handshake Snapshot Normalization",
-      "status": "planned",
+      "status": "complete",
       "summary": "Context Execution Handshake Snapshot Normalization",
       "depends_on": [
         "W1"
@@ -34,12 +34,18 @@
       ],
       "carried_workstreams": [],
       "in_band_workstreams": [],
-      "gate_refs": []
+      "gate_refs": [
+        {
+          "workstream_id": "B-101",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
+          "label": "Context Execution Handshake Snapshot Normalization gate"
+        }
+      ]
     },
     {
       "wave_id": "W3",
       "label": "Codex Claude Execution Contract Parity",
-      "status": "planned",
+      "status": "complete",
       "summary": "Codex Claude Execution Contract Parity",
       "depends_on": [
         "W2"
@@ -49,12 +55,18 @@
       ],
       "carried_workstreams": [],
       "in_band_workstreams": [],
-      "gate_refs": []
+      "gate_refs": [
+        {
+          "workstream_id": "B-102",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
+          "label": "Codex Claude Execution Contract Parity gate"
+        }
+      ]
     },
     {
       "wave_id": "W4",
       "label": "Execution Snapshot Reuse and Hot Path Cost Reduction",
-      "status": "planned",
+      "status": "complete",
       "summary": "Execution Snapshot Reuse and Hot Path Cost Reduction",
       "depends_on": [
         "W3"
@@ -64,12 +76,18 @@
       ],
       "carried_workstreams": [],
       "in_band_workstreams": [],
-      "gate_refs": []
+      "gate_refs": [
+        {
+          "workstream_id": "B-103",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
+          "label": "Execution Snapshot Reuse and Hot Path Cost Reduction gate"
+        }
+      ]
     },
     {
       "wave_id": "W5",
       "label": "Execution Alignment Release Proof and Governance Closure",
-      "status": "planned",
+      "status": "complete",
       "summary": "Execution Alignment Release Proof and Governance Closure",
       "depends_on": [
         "W4"
@@ -79,7 +97,13 @@
       ],
       "carried_workstreams": [],
       "in_band_workstreams": [],
-      "gate_refs": []
+      "gate_refs": [
+        {
+          "workstream_id": "B-104",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
+          "label": "Execution Alignment Release Proof and Governance Closure gate"
+        }
+      ]
     }
   ]
 }

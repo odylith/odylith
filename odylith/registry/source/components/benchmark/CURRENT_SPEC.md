@@ -1,8 +1,8 @@
 # Benchmark
-Last updated: 2026-04-12
+Last updated: 2026-04-17
 
 
-Last updated (UTC): 2026-04-12
+Last updated (UTC): 2026-04-17
 
 ## Purpose
 Benchmark is Odylith's local proof subsystem for measuring whether Odylith-on
@@ -25,6 +25,12 @@ reviewer framing that explains how Odylith should be compared.
 - Local benchmark history under `.odylith/runtime/odylith-benchmarks/`.
 - The release-safe benchmark publication contract used by README and maintainer
   release proof.
+- Advisory mechanism reports that support release proof without pretending to
+  be full `odylith_on` outcome proof. The v0.1.11 visible intervention value
+  report lives in
+  `src/odylith/runtime/evaluation/odylith_intervention_value_engine_benchmark.py`
+  and evaluates the governed bootstrap corpus only as selector mechanism
+  evidence.
 
 ### Benchmark does not own
 - The grounding, routing, or orchestration runtime it measures.
@@ -32,6 +38,10 @@ reviewer framing that explains how Odylith should be compared.
 - Consumer-repo source truth outside the local Odylith tree.
 - Host-native benchmark claims that do not share the current matched proof
   harness.
+- Runtime claims that a sparse or synthetic corpus is ML-calibrated. Benchmark
+  may report `corpus_quality_state=bootstrap` and `calibration_publishable`,
+  but only a publishable non-synthetic adjudication corpus can support
+  calibration claims.
 
 ## Developer Mental Model
 - The corpus defines the scenarios, expectations, and validation hooks that
@@ -63,10 +73,11 @@ reviewer framing that explains how Odylith should be compared.
   governance packets choose the right lane, keep the right workstream anchor,
   and stay fail-closed on broad or unresolved scope.
 - The tracked corpus now also includes a dedicated
-  `execution_governance` family for execution-engine contract posture and
+  `execution_engine` family for Execution Engine contract posture and
   honest guardrail proof. That family measures whether packets and runtime
   summaries preserve the real `admit|deny|defer` decision, mode, next move,
-  closure posture, resume handle, authoritative lane, and fail-closed
+  closure posture, wait/resume state, validation archetype, host family,
+  target lane, delegation or parallelism guard posture, and fail-closed
   recovery shape instead of collapsing back to stale or generic route hints.
 - Proof-discipline summary metrics are first-class benchmark outputs now:
   `proof_state_present_rate`, `false_clearance_rate`,
@@ -78,31 +89,50 @@ reviewer framing that explains how Odylith should be compared.
   `context_engine_workstream_accuracy_rate`,
   `context_engine_fail_closed_ambiguity_rate`, and
   `context_engine_session_namespace_rate` when runtime-backed rows are present.
-- Execution-governance summary metrics are first-class benchmark outputs now
-  too: `execution_governance_present_rate`,
-  `execution_governance_resume_token_present_rate`,
-  `execution_governance_outcome_accuracy_rate`,
-  `execution_governance_mode_accuracy_rate`,
-  `execution_governance_next_move_accuracy_rate`,
-  `execution_governance_closure_accuracy_rate`,
-  `execution_governance_wait_status_accuracy_rate`,
-  `execution_governance_validation_archetype_accuracy_rate`,
-  `execution_governance_current_phase_accuracy_rate`,
-  `execution_governance_last_successful_phase_accuracy_rate`,
-  `execution_governance_authoritative_lane_accuracy_rate`,
-  `execution_governance_target_lane_accuracy_rate`,
-  `execution_governance_resume_token_accuracy_rate`,
-  `execution_governance_host_family_accuracy_rate`,
-  `execution_governance_model_family_accuracy_rate`, and
-  `execution_governance_reanchor_accuracy_rate` when execution-backed rows are
-  present.
+- Execution Engine summary metrics are first-class benchmark outputs now too:
+  `execution_engine_present_rate`,
+  `execution_engine_resume_token_present_rate`,
+  `execution_engine_outcome_accuracy_rate`,
+  `execution_engine_mode_accuracy_rate`,
+  `execution_engine_next_move_accuracy_rate`,
+  `execution_engine_closure_accuracy_rate`,
+  `execution_engine_wait_status_accuracy_rate`,
+  `execution_engine_validation_archetype_accuracy_rate`,
+  `execution_engine_current_phase_accuracy_rate`,
+  `execution_engine_last_successful_phase_accuracy_rate`,
+  `execution_engine_authoritative_lane_accuracy_rate`,
+  `execution_engine_target_lane_accuracy_rate`,
+  `execution_engine_resume_token_accuracy_rate`,
+  `execution_engine_host_family_accuracy_rate`,
+  `execution_engine_model_family_accuracy_rate`,
+  `execution_engine_component_id_accuracy_rate`,
+  `execution_engine_canonical_component_id_accuracy_rate`,
+  `execution_engine_identity_status_accuracy_rate`,
+  `execution_engine_target_component_status_accuracy_rate`,
+  `execution_engine_snapshot_reuse_status_accuracy_rate`,
+  `execution_engine_reanchor_accuracy_rate`,
+  `execution_engine_delegation_guard_accuracy_rate`, and
+  `execution_engine_parallelism_guard_accuracy_rate` when execution-backed rows
+  are present.
+- Execution Engine cost metrics are measured as lower-is-better diagnostics:
+  `execution_engine_median_context_packet_build_ms`,
+  `execution_engine_median_snapshot_duration_ms`,
+  `execution_engine_median_prompt_bundle_tokens`,
+  `execution_engine_median_runtime_contract_tokens`, and
+  `execution_engine_median_total_payload_tokens`.
+- Intervention Value Engine advisory metrics are measured separately from the
+  full-product benchmark: visible-block precision, must-surface recall,
+  duplicate visible rate, visibility-failure recall, no-output accuracy, p95
+  selector latency, corpus quality state, and calibration publishability. These
+  are mechanism-health signals, not a substitute for paired `odylith_on` vs
+  `odylith_off` outcome lift.
 - A live `odylith_on` versus `odylith_off` comparison only counts as benchmark
   proof when both lanes run the same host CLI model, reasoning effort,
   sandbox policy, approval posture, validator contract, and stripped workspace
   shape for the proof host under test. The intended lane difference is the
   declared Odylith product assistance stack, not a hidden side channel:
-  grounding packet, selected docs and repo anchors, execution-governance
-  posture and truthful next-move guidance, scenario-declared focused-check
+  grounding packet, selected docs and repo anchors, Execution Engine posture
+  and truthful next-move guidance, scenario-declared focused-check
   shaping, preflight focused-check results only when those checks run in the
   disposable benchmark workspace and are logged in the report, and bounded
   orchestration or recovery policy.
@@ -207,10 +237,12 @@ reviewer framing that explains how Odylith should be compared.
 - Keep Context Engine benchmark slices honest: packet-lane accuracy,
   selection-state accuracy, workstream accuracy, and ambiguity fail-closed
   behavior must stay at `1.0` whenever the sampled corpus includes those rows.
-- Keep execution-engine benchmark slices honest: execution-governance
+- Keep Execution Engine benchmark slices honest: Execution Engine
   presence, resume-token presence, outcome accuracy, mode accuracy, truthful
-  next-move accuracy, closure accuracy, and authoritative-lane accuracy must
-  stay at `1.0` whenever the sampled corpus includes those rows.
+  next-move accuracy, closure accuracy, wait/resume accuracy, host-family
+  accuracy, target-lane accuracy, guard accuracy, canonical identity accuracy,
+  snapshot-reuse posture, and authoritative-lane accuracy must stay at `1.0`
+  whenever the sampled corpus includes those rows.
 - Keep the first shipped release proof local-memory-first; hybrid rerank and
   remote retrieval remain experiment lanes until they improve proof without
   harming the current pass.

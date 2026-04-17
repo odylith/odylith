@@ -1,5 +1,5 @@
 ---
-status: queued
+status: implementation
 idea_id: B-099
 title: Context Engine and Execution Engine Seamless Alignment Program
 date: 2026-04-16
@@ -14,7 +14,7 @@ ordering_score: 70
 ordering_rationale: The product already has separate Context Engine and Execution Engine surfaces, but the strongest user value only appears when they align with measured, host-general precision. Benchmark proof first prevents the alignment program from becoming a narrative-only cleanup and catches live drift before enforcement and cost tuning build on it.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md
 execution_model: umbrella_waves
 workstream_type: umbrella
 workstream_parent:

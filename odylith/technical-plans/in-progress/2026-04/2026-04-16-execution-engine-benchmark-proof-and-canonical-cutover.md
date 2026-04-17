@@ -61,7 +61,7 @@ No related Casebook bug found. The current failing focused benchmark proof is ca
 - Stale component ids fail closed before route readiness.
 - Focused execution benchmark tests pass.
 - Registry and backlog validators pass.
-- The execution-wave program exists under `B-099` with Wave 1 active and later waves planned.
+- The execution-wave program exists under `B-099` with Waves 1-5 complete.
 - `git diff --check` passes.
 
 ## Impacted Areas

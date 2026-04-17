@@ -1,0 +1,42 @@
+%% Reviewed 2026-04-17 for v0.1.11 to keep live-proof blocker state, Execution Engine frontier, Context Engine packets, Tribunal diagnosis, visible interventions, and benchmark acceptance on one falsifiable proof lane.
+flowchart LR
+  subgraph Truth["Tracked Truth"]
+    Bugs["Casebook Bugs<br/>blocker, fingerprint,<br/>first failing phase,<br/>clearance condition"]
+    Plans["Bound Plans<br/>lane intent, constraints,<br/>validation ladder"]
+  end
+
+  subgraph Runtime["Local Runtime Proof Memory"]
+    Ledger[".odylith/runtime/<br/>odylith-proof-surfaces.v1.json<br/>live_proof_lanes"]
+    Events["Compass / Codex events<br/>work_category, proof_phase,<br/>evidence_tier"]
+  end
+
+  Resolver["Proof-State Resolver<br/>split authority + lane_id resolution"]
+
+  Truth --> Resolver
+  Runtime --> Resolver
+
+  Resolver --> Delivery["Delivery Intelligence<br/>scoped snapshots,<br/>operator queue,<br/>proof drift warnings"]
+  Resolver --> Tribunal["Tribunal<br/>same-case reuse,<br/>falsified_live memory,<br/>proof-state case rows"]
+  Resolver --> Packets["Context Engine Packets<br/>bootstrap-session,<br/>session-brief,<br/>governance-slice, impact"]
+  Resolver --> Execution["Execution Engine Snapshot<br/>verify / recover / wait / closure state"]
+  Resolver --> Surfaces["Shell / Compass / Registry<br/>shared proof control panel<br/>and proof-link routes"]
+  Resolver --> Intervention["Visible Intervention Broker<br/>earned proof warning + chat-confirmed state"]
+  Resolver --> Benchmark["Benchmark Acceptance<br/>false-admit / false-deny + validation gap"]
+  Resolver --> Chatter["Claim Guard<br/>fixed in code vs fixed live<br/>status lint"]
+
+  Delivery --> Operator["Operator / Maintainer"]
+  Tribunal --> Operator
+  Packets --> Operator
+  Execution --> Operator
+  Surfaces --> Operator
+  Intervention --> Operator
+  Benchmark --> Operator
+  Chatter --> Operator
+
+  Repeat["Repeated fingerprint<br/>after claimed fix"] --> Ledger
+  Ledger --> Falsify["Mark prior hypothesis<br/>falsified live,<br/>keep same blocker seam"]
+  Falsify --> Resolver
+
+  Frontier["Hosted ladder advances<br/>past prior failing phase"] --> Ledger
+  Ledger --> Clear["proof_status => live_verified"]
+  Clear --> Resolver

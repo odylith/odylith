@@ -40,6 +40,7 @@ from odylith.runtime.common.consumer_profile import truth_root_path
 from odylith.runtime.common.guidance_paths import has_project_guidance
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference
+from odylith.runtime.governance import component_registry_candidate_policy
 from odylith.runtime.governance.component_registry_path_aliases import equivalent_component_artifact_tokens
 from odylith.runtime.governance.component_registry_path_aliases import canonical_component_artifact_token
 from odylith.runtime.governance.component_registry_review_policy import (
@@ -78,7 +79,7 @@ _FEATURE_HISTORY_PLAN_ROUTE_VERSION = "radar-html-v1"
 _PRODUCT_LAYER_NORMALIZATION_VERSION = "consumer-distro-suffix-v1"
 _RADAR_IDEA_CONTRACT_VERSION = f"v0.1.11:{backlog_contract.IDEA_SPEC_CACHE_VERSION}"
 _COMPONENT_INDEX_CACHE_VERSION = "v2"
-_COMPONENT_REPORT_CACHE_VERSION = "v4"
+_COMPONENT_REPORT_CACHE_VERSION = "v5"
 _ACTIVE_SURFACE_MODULE_STEMS: frozenset[str] = frozenset(
     {
         "compass_standup_brief_batch",
@@ -1681,6 +1682,8 @@ def _append_candidate_signal(
 ) -> None:
     normalized = normalize_component_id(token) or _slugify(token)
     if not normalized:
+        return
+    if component_registry_candidate_policy.is_retired_component_candidate_token(normalized):
         return
     key = (source, normalized)
     row = queue.get(key)

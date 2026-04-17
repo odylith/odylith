@@ -195,12 +195,13 @@ The router combines three kinds of signals:
   extracted from keys such as `routing_handoff`, `context_packet`,
   `evidence_pack`, `optimization_snapshot`, `architecture_audit`,
   `validation_bundle`, `governance_obligations`, `surface_refs`,
-  `diagram_watch_gaps`, and compact `execution_governance_*` summary fields.
+  `diagram_watch_gaps`, and compact `execution_engine_*` summary fields.
 
-Execution-governance summary fields are first-class hard-gate inputs. Re-anchor
-pressure, live contradictions, semantic wait state, critical-path verify or
-recover modes, unsafe closure, and host-serial posture must all be allowed to
-keep a leaf local before any profile ladder scoring runs.
+Execution Engine summary fields are first-class hard-gate inputs. Canonical
+Execution Engine identity, re-anchor pressure, live contradictions, semantic
+wait state, critical-path verify or recover modes, unsafe closure, and
+host-serial posture must all be allowed to keep a leaf local before any
+profile ladder scoring runs.
 
 The router also enforces implied write-surface rules. For example, prompts that
 mention tests, docs, governance artifacts, or contracts must declare path scope

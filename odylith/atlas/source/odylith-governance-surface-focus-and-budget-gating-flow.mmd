@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-09 for B-071 to keep governance-surface focus gating and cheap narration flow explicit in Atlas.
+%% Reviewed 2026-04-17 for v0.1.11 to keep governance-surface focus gating, Execution Engine profile selection, visible-intervention proof, and benchmark cost gates explicit in Atlas.
 flowchart LR
   Start["Repo state changes or operator opens a governance surface"]
   Delivery["Delivery Intelligence snapshot refresh<br/>compute shared scope_signal once"]
@@ -22,6 +22,9 @@ flowchart LR
   RegistryPromoted["Registry default ordering<br/>higher ladder signals first"]
   AtlasPromoted["Atlas active-workstream pills<br/>promoted_default only"]
   ShellBudget["Shell / chatter / future reasoning<br/>map budget_class to host-specific cheap model profile"]
+  ExecutionProfile["Execution Engine<br/>map budget_class to host profile + snapshot policy"]
+  VisibilityBroker["Visible Intervention Broker<br/>hard fail-visible when proof is missing"]
+  BenchmarkBudget["Benchmark harness<br/>accuracy gates first<br/>latency and token gates second"]
 
   Start --> Delivery
   Delivery --> Split
@@ -58,8 +61,21 @@ flowchart LR
   R3 --> ShellBudget
   R4 --> ShellBudget
   R5 --> ShellBudget
+  R3 --> ExecutionProfile
+  R4 --> ExecutionProfile
+  R5 --> ExecutionProfile
+  R2 --> VisibilityBroker
+  R3 --> VisibilityBroker
+  R4 --> VisibilityBroker
+  R5 --> VisibilityBroker
+  R3 --> BenchmarkBudget
+  R4 --> BenchmarkBudget
+  R5 --> BenchmarkBudget
 
   Note["Host-neutral policy:<br/>R0-R1 => none/cache_only<br/>R2 => cache_only<br/>R3 => fast_simple<br/>R4-R5 => escalated_reasoning"]:::note
   ShellBudget --> Note
+  ExecutionProfile --> Note
+  VisibilityBroker --> Note
+  BenchmarkBudget --> Note
 
   classDef note fill:#f5f9ff,stroke:#7aa0d6,color:#1f355f

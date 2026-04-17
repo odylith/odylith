@@ -1,0 +1,100 @@
+%% Reviewed 2026-04-17 for v0.1.11 to keep delivery governance aligned with Context Engine packets, Execution Engine snapshots, Tribunal/remediator reasoning, visible interventions, and benchmark closure proof.
+flowchart TB
+  subgraph Observe["1. Observe and Triage"]
+    Repo["Repo delta sensors<br/>code, specs, plans, manifests, generated artifacts"]
+    Timeline["Compass timeline<br/>decision, implementation, clearance events"]
+    Gates["Local and CI gates<br/>pre-commit, lint, unit tests, release checks"]
+    SignalLog["Signal journal<br/>src/odylith/runtime/context_engine/odylith_context_engine.py"]
+    Classifier["Meaningful activity classifier<br/>ignore generated-only or global-only churn"]
+    Mapper["Scope mapper<br/>component, workstream, diagram, plan resolution"]
+    ContextPacket["Context Engine packet digest<br/>quality, target resolution, route readiness"]
+    ExecutionSnapshot["Execution Engine snapshot<br/>admissibility, next move, closure, validation"]
+    Triage["Cheap case triage<br/>30s active / 300s idle backoff<br/>fingerprint short-circuiting"]
+  end
+
+  subgraph Tribunal["2. Tribunal Reasoning Engine"]
+    Dossier["Case dossier builder<br/>decision at stake, artifacts, timestamps,<br/>ownership candidates, CI and deploy evidence"]
+    Actors["Multi-actor tribunal<br/>observer, ownership, causal, policy, normative,<br/>adversary, counterfactual, gap, risk, prescriber"]
+    Judge["Adjudicator<br/>leading explanation, rival explanation,<br/>confidence, disagreement state"]
+    Editor["Editorial brief generator<br/>crisp maintainer note + systemic brief"]
+  end
+
+  subgraph Remediator["3. Remediator"]
+    Packets["Correction packet compiler<br/>deterministic, AI engine, hybrid, manual"]
+    Approval["Approval ledger<br/>packet fingerprint + operator intent"]
+    Execution["Bounded execution or delegation<br/>deterministic apply or AI-engine handoff"]
+    Clearance["Clearance ledger<br/>post-action validation and stale-packet rejection"]
+  end
+
+  subgraph Visibility["4. Visible intervention and benchmark proof"]
+    Broker["Visible Intervention Broker<br/>Observation / Proposal / Assist decision"]
+    Benchmark["Benchmark acceptance<br/>false-admit / false-deny + truthful closure"]
+  end
+
+  subgraph Runtime["5. Runtime v4 Artifacts"]
+    Delivery["delivery_intelligence.v4<br/>case refs, dossier evidence, systemic themes"]
+    Reasoning["reasoning.v4<br/>outcomes, briefs, packets, cache metadata"]
+    Posture["posture.v4<br/>status, breaches, approvals, clearance state"]
+    VisibilityLedger["visibility ledger<br/>fallback-ready / chat-confirmed"]
+  end
+
+  subgraph Surfaces["6. Control Plane and Native Evidence"]
+    Odylith["Odylith<br/>ranked cases, selected brief, proof, actions"]
+    Shell["Tooling shell inbox<br/>compact preview of top interventions"]
+    Radar["Radar<br/>native workstream evidence"]
+    Registry["Registry<br/>native component and authority evidence"]
+    Casebook["Casebook<br/>native bug evidence and learnings"]
+    Atlas["Atlas<br/>native diagram and freshness evidence"]
+    CompassUI["Compass<br/>native timeline evidence"]
+  end
+
+  Repo --> SignalLog
+  Timeline --> SignalLog
+  Gates --> SignalLog
+  SignalLog --> Classifier
+  Classifier --> Mapper
+  Mapper --> ContextPacket
+  ContextPacket --> ExecutionSnapshot
+  Mapper --> Triage
+  ExecutionSnapshot --> Triage
+  Triage --> Dossier
+
+  Dossier --> Actors
+  Actors --> Judge
+  Judge --> Editor
+  Judge --> Packets
+  Packets --> Approval
+  Approval --> Execution
+  Execution --> Clearance
+  Editor --> Broker
+  ExecutionSnapshot --> Broker
+  Clearance --> Benchmark
+  Broker --> VisibilityLedger
+
+  Dossier --> Delivery
+  Editor --> Reasoning
+  Packets --> Reasoning
+  Approval --> Posture
+  Clearance --> Posture
+  Delivery --> Posture
+  VisibilityLedger --> Posture
+
+  Posture --> Odylith
+  Reasoning --> Odylith
+  Delivery --> Odylith
+  Broker --> Shell
+  Benchmark --> Odylith
+  Odylith --> Shell
+
+  Radar --> Shell
+  Registry --> Shell
+  Casebook --> Shell
+  Atlas --> Shell
+  CompassUI --> Shell
+
+  Shell --> Odylith
+  Odylith --> Radar
+  Odylith --> Registry
+  Odylith --> Casebook
+  Odylith --> Atlas
+  Odylith --> CompassUI

@@ -50,6 +50,28 @@ def test_render_prompt_context_can_surface_a_teaser_without_anchor() -> None:
     assert rendered == surface_runtime.wrap_live_text("Odylith is noticing governed truth take shape here.")
 
 
+def test_claude_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_path: Path) -> None:
+    prompt = "ZERO signals in my chat. Odylith interventions NEED to be visible."
+
+    rendered = claude_host_prompt_context.render_prompt_system_message(
+        repo_root=tmp_path,
+        prompt=prompt,
+        session_id="claude-zero-signals",
+    )
+    bundle = claude_host_prompt_context._prompt_conversation_bundle(
+        repo_root=tmp_path,
+        prompt=prompt,
+        session_id="claude-zero-signals",
+    )
+    observation = dict(bundle["observation"])
+
+    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
+    assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"
+    assert observation["memory_summary"]["visibility_complaint"] is True
+    assert observation["tribunal_summary"]["source"] == "intervention_alignment_context"
+
+
 def test_render_prompt_context_falls_back_to_relevant_docs_when_no_targets() -> None:
     payload = {"relevant_docs": ["odylith/CLAUDE.md"]}
     rendered = claude_host_prompt_context.render_prompt_context(
@@ -174,6 +196,6 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
 
     assert exit_code == 0
     output = capsys.readouterr().out
-    assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\nOdylith can already")
+    assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith can already")
     assert output.rstrip().endswith(surface_runtime.LIVE_BOUNDARY)
     assert not output.lstrip().startswith("{")

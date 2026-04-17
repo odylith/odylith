@@ -7,68 +7,12 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
-from odylith.runtime.intervention_engine import surface_runtime
 
 
 def _normalize_text(value: object) -> str:
     return " ".join(str(value or "").split()).strip()
-
-
-def _operator_reports_visibility_failure(*, prompt: str, summary: str) -> bool:
-    text = f"{prompt} {summary}".casefold()
-    if not text.strip():
-        return False
-    direct_markers = (
-        "not seeing",
-        "do not see",
-        "don't see",
-        "cannot see",
-        "can't see",
-        "not visible",
-        "no hook output",
-        "no hook outputs",
-        "hook output hidden",
-        "hidden hook",
-        "only assist works",
-        "only assit works",
-        "assist stopped",
-        "assist is not",
-        "intervention is not",
-        "interventions are not",
-        "observation is not",
-        "proposal is not",
-        "not rendering",
-        "not showing",
-    )
-    if any(marker in text for marker in direct_markers):
-        return True
-    visibility_terms = ("visible", "visibility", "rendering", "showing", "chat output", "hook output")
-    odylith_terms = ("odylith", "intervention", "assist", "assit", "observation", "proposal", "hook")
-    uncertainty_terms = ("not sure", "unsure", "still not sure")
-    if (
-        any(marker in text for marker in uncertainty_terms)
-        and any(marker in text for marker in visibility_terms)
-        and any(marker in text for marker in odylith_terms)
-    ):
-        return True
-    if "not working" in text and any(token in text for token in ("odylith", "intervention", "assist", "hook", "chat", "ux")):
-        return True
-    if _normalize_text(prompt).casefold() in {"i do not think it is working", "i don't think it is working"}:
-        return True
-    return False
-
-
-def _operator_visibility_failure_observation(*, host_family: str) -> str:
-    host = _normalize_text(host_family).capitalize() or "This host"
-    return (
-        "**Odylith Observation:** This is a visibility failure, not a quiet moment. "
-        f"{host} may be computing intervention payloads, but this chat has not proven "
-        "that hooks are actually rendering them, so the assistant has to show the "
-        "Odylith Markdown directly until the host path is visibly proven."
-    )
 
 
 def render_visible_intervention(
@@ -102,54 +46,23 @@ def render_visible_intervention(
         assistant_summary=summary,
         changed_paths=changed_paths,
     )
-    parts: list[str] = []
-    live = host_surface_runtime.render_visible_live_intervention(
-        bundle,
-        markdown=True,
+    decision = host_surface_runtime.visible_intervention_decision(
+        repo_root=repo_root,
+        bundle=bundle,
+        host_family=host_family,
+        turn_phase=normalized_phase,
+        session_id=session_id,
         include_proposal=proposal,
+        include_closeout=closeout,
+        delivery_channel="manual_visible_command",
+        delivery_status="manual_visible",
     )
-    closeout_text = (
-        conversation_surface.render_closeout_text(bundle, markdown=True)
-        if closeout
-        else ""
-    )
-    for text in (live, closeout_text):
-        token = str(text or "").strip()
-        if token and token not in parts:
-            parts.append(token)
-    rendered = "\n\n".join(parts).strip()
-    if _operator_reports_visibility_failure(prompt=prompt, summary=summary) and "**Odylith Observation:**" not in rendered:
-        fallback = surface_runtime.wrap_live_text(
-            _operator_visibility_failure_observation(host_family=host_family)
-        )
-        if record_delivery:
-            stream_state.append_intervention_event(
-                repo_root=Path(repo_root).expanduser().resolve(),
-                kind="intervention_card",
-                summary="Visibility failure fallback rendered.",
-                session_id=session_id,
-                host_family=host_family,
-                intervention_key=f"visible-fallback-{_normalize_text(host_family).lower() or 'host'}",
-                turn_phase=normalized_phase,
-                display_markdown=fallback,
-                display_plain=fallback.replace("**", ""),
-                prompt_excerpt=prompt,
-                assistant_summary=summary,
-                moment_kind="visibility",
-                semantic_signature=("visibility", "fallback"),
-                delivery_channel="manual_visible_command",
-                delivery_status="manual_visible",
-                render_surface=f"{_normalize_text(host_family).lower() or 'host'}_visible_intervention",
-            )
-        return fallback
+    rendered = decision.visible_markdown
     if rendered and record_delivery:
-        conversation_surface.append_intervention_events(
+        host_surface_runtime.append_visible_intervention_events(
             repo_root=Path(repo_root).expanduser().resolve(),
             bundle=bundle,
-            include_proposal=proposal,
-            include_closeout=closeout,
-            delivery_channel="manual_visible_command",
-            delivery_status="manual_visible",
+            decision=decision,
             render_surface=f"{_normalize_text(host_family).lower() or 'host'}_visible_intervention",
         )
     return rendered

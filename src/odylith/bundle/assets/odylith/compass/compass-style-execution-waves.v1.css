@@ -1,6 +1,8 @@
 .execution-wave-board {
   display: grid;
   gap: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-section {
@@ -8,11 +10,15 @@
   border-radius: 16px;
   background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-program-stack {
   display: grid;
   gap: 24px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-section summary {
@@ -31,6 +37,7 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .execution-wave-section-summary-compass {
@@ -59,6 +66,8 @@
 .execution-wave-section-line {
   color: #27445e;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-section-line-muted {
@@ -71,6 +80,7 @@
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .execution-wave-section-toggle {
@@ -113,6 +123,8 @@
   padding: 16px 18px 18px;
   display: grid;
   gap: 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-focus {
@@ -120,6 +132,8 @@
   border-radius: 14px;
   background: linear-gradient(135deg, #f9fbff 0%, #ffffff 58%, #f3faf7 100%);
   padding: 16px 18px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-focus-grid {
@@ -127,6 +141,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
   align-items: start;
+  min-width: 0;
 }
 
 .execution-wave-focus-copy {
@@ -147,6 +162,8 @@
   color: #27445e;
   line-height: 1.6;
   max-width: 70ch;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-focus-line-muted {
@@ -164,6 +181,8 @@
 .execution-wave-sequence {
   display: grid;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-card {
@@ -172,6 +191,8 @@
   border-radius: 14px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-card summary {
@@ -201,6 +222,7 @@
 .execution-wave-card-summary {
   cursor: pointer;
   padding: 14px 16px;
+  min-width: 0;
 }
 
 .execution-wave-card-summary:hover {
@@ -230,6 +252,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
   align-items: start;
+  min-width: 0;
 }
 
 .execution-wave-card-shell-full-copy {
@@ -251,6 +274,7 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .execution-wave-card-shell-full-copy .execution-wave-title-row {
@@ -265,12 +289,16 @@
   line-height: 1.25;
   letter-spacing: -0.01em;
   min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-sub {
   color: #27445e;
   line-height: 1.6;
   max-width: 72ch;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-card-shell-full-copy .execution-wave-sub {
@@ -284,6 +312,7 @@
   flex-wrap: wrap;
   gap: 8px 12px;
   align-items: center;
+  min-width: 0;
 }
 
 .execution-wave-card-shell-full-copy .execution-wave-compact {
@@ -335,11 +364,15 @@
   padding: 12px 16px 16px;
   display: grid;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-body-grid {
   display: grid;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-body-grid-top {
@@ -389,6 +422,8 @@
 .execution-wave-highlight-copy {
   color: #27445e;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-highlight-copy-strong {
@@ -403,11 +438,13 @@
   align-items: flex-start;
   align-content: flex-start;
   min-height: 28px;
+  min-width: 0;
 }
 
 .execution-wave-gates {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .execution-wave-gate {
@@ -415,11 +452,14 @@
   border-radius: 11px;
   background: #ffffff;
   padding: 10px 11px;
+  min-width: 0;
 }
 
 .execution-wave-gate-label {
   color: #27445e;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-gate-meta {
@@ -467,7 +507,7 @@
   }
 
   .execution-wave-section-summary-compass {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .execution-wave-section-meta-bottom {
@@ -638,7 +678,7 @@
 }
 
 .card.execution-waves-card .execution-wave-program-stack {
-  gap: 12px;
+  gap: 14px;
 }
 
 .execution-wave-section.execution-wave-section-flat {
@@ -668,7 +708,13 @@
 }
 
 .execution-wave-section.execution-wave-section-program-card {
+  border-color: #cfe0f7;
+  background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
   box-shadow: 0 10px 28px rgba(37, 99, 235, 0.06);
+}
+
+.execution-wave-section.execution-wave-section-program-card .execution-wave-section-body {
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.72) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
 .execution-wave-program-stack-release .execution-wave-section {

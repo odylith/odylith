@@ -38,6 +38,13 @@ def _string(value: Any) -> str:
     return str(value or "").strip()
 
 
+def _float(value: Any) -> float:
+    try:
+        return round(float(value or 0.0), 3)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _strings(*values: Any) -> tuple[str, ...]:
     seen: set[str] = set()
     ordered: list[str] = []
@@ -885,6 +892,21 @@ def compact_execution_engine_snapshot(snapshot: Mapping[str, Any]) -> dict[str, 
             "runtime_settled_sync_session": bool(runtime_contract.get("settled_sync_session")),
             "runtime_invalidated_by_step": _string(runtime_contract.get("invalidated_by_step")),
             "context_pressure": _string(snapshot.get("context_pressure")),
+            "component_id": _string(snapshot.get("component_id")),
+            "canonical_component_id": _string(snapshot.get("canonical_component_id")),
+            "identity_status": _string(snapshot.get("identity_status")),
+            "target_component_id": _string(snapshot.get("target_component_id")),
+            "target_component_ids": _strings(snapshot.get("target_component_ids")),
+            "target_component_status": _string(snapshot.get("target_component_status")),
+            "snapshot_duration_ms": _float(snapshot.get("snapshot_duration_ms")),
+            "snapshot_estimated_tokens": int(snapshot.get("snapshot_estimated_tokens", 0) or 0),
+            "runtime_contract_estimated_tokens": int(
+                snapshot.get("runtime_contract_estimated_tokens", 0) or 0
+            ),
+            "handshake_estimated_tokens": int(snapshot.get("handshake_estimated_tokens", 0) or 0),
+            "total_payload_estimated_tokens": int(snapshot.get("total_payload_estimated_tokens", 0) or 0),
+            "snapshot_reuse_status": _string(snapshot.get("snapshot_reuse_status")),
+            "handshake_version": _string(snapshot.get("handshake_version")),
         }.items()
         if value not in ("", [], {}, None, 0)
     }
@@ -979,6 +1001,31 @@ def summary_fields_from_execution_engine(snapshot: Mapping[str, Any]) -> dict[st
             compact.get("runtime_invalidated_by_step")
         ),
         "execution_engine_context_pressure": _string(compact.get("context_pressure")),
+        "execution_engine_component_id": _string(compact.get("component_id")),
+        "execution_engine_canonical_component_id": _string(
+            compact.get("canonical_component_id")
+        ),
+        "execution_engine_identity_status": _string(compact.get("identity_status")),
+        "execution_engine_target_component_id": _string(compact.get("target_component_id")),
+        "execution_engine_target_component_ids": _strings(compact.get("target_component_ids")),
+        "execution_engine_target_component_status": _string(
+            compact.get("target_component_status")
+        ),
+        "execution_engine_snapshot_duration_ms": _float(compact.get("snapshot_duration_ms")),
+        "execution_engine_snapshot_estimated_tokens": int(
+            compact.get("snapshot_estimated_tokens", 0) or 0
+        ),
+        "execution_engine_runtime_contract_estimated_tokens": int(
+            compact.get("runtime_contract_estimated_tokens", 0) or 0
+        ),
+        "execution_engine_handshake_estimated_tokens": int(
+            compact.get("handshake_estimated_tokens", 0) or 0
+        ),
+        "execution_engine_total_payload_estimated_tokens": int(
+            compact.get("total_payload_estimated_tokens", 0) or 0
+        ),
+        "execution_engine_snapshot_reuse_status": _string(compact.get("snapshot_reuse_status")),
+        "execution_engine_handshake_version": _string(compact.get("handshake_version")),
     }
 
 

@@ -1,20 +1,22 @@
-%% Reviewed 2026-04-16 for B-096 and CB-121 to show how one shared cross-host engine turns conversation evidence into humane observations, confirmation-gated proposals, chat-visible assistant fallback, delivery-status proof, and Compass-audited governed writes across dev, dogfood, and consumer lanes.
+%% Reviewed 2026-04-17 for B-096, CB-122, CB-123, and v0.1.11 to show the proposition-first visible intervention value engine replacing the block-first signal-ranker path: evidence intake -> proposition ledger -> hard gates -> value features -> conflict graph and subset optimizer -> visibility broker -> ruled renderer -> Compass decision log and adjudication report.
 flowchart LR
     User["Live conversation turn<br/>prompt + assistant summary + edit or bash checkpoint"] --> Hosts
-    Packet["Grounded packet + delivery truth<br/>packet summary + active refs + lane context"] --> Envelope
+    Packet["Grounded packet + delivery truth<br/>context packet summary + active refs + lane context"] --> Alignment
+    RuntimeTruth["Execution + memory + Tribunal truth<br/>execution snapshot + session stream + adjudication signals"] --> Alignment
     History["Governed source truth<br/>Radar + Registry + Atlas + Casebook"] --> Core
-    Stream["Compass stream history<br/>dedupe + pending proposal lifecycle"] --> Core
-    Exec["Execution Engine<br/>admissibility + urgency input"] --> Core
+    Stream["Compass stream history<br/>dedupe + pending proposal lifecycle"] --> Alignment
+    Stream --> Core
+    Alignment["alignment_context hot path<br/>compact Context packet + Execution summary<br/>session memory + delivery ledger + Tribunal summary<br/>no provider calls or repo-wide search"] --> Envelope
 
     subgraph Hosts["Host adapters"]
         Codex["Codex hooks<br/>prompt context + stop summary<br/>Bash post-tool checkpoint"]
         Claude["Claude hooks<br/>prompt context + prompt teaser<br/>stop + post-edit + post-bash checkpoint"]
     end
 
-    Codex --> Envelope["ObservationEnvelope<br/>host_family + session_id + turn_phase<br/>prompt_excerpt + assistant_summary<br/>changed_paths + packet_summary<br/>delivery_snapshot + active_target_refs"]
+    Codex --> Envelope["ObservationEnvelope<br/>host_family + session_id + turn_phase<br/>prompt_excerpt + assistant_summary<br/>changed_paths + packet/context summary<br/>execution + memory + Tribunal + visibility summaries<br/>delivery_snapshot + active_target_refs"]
     Claude --> Envelope
 
-    Envelope --> Core["Governance Intervention Engine<br/>fact selection + corroboration + dedupe<br/>proposal assembly + voice seam"]
+    Envelope --> Intake["Evidence intake<br/>Context packet + Execution snapshot<br/>memory/session stream + Tribunal summary<br/>Casebook/Radar/Registry/Atlas anchors<br/>host delivery ledger"]
 
     subgraph Facts["Fact classes"]
         HistoryFact["history"]
@@ -24,22 +26,34 @@ flowchart LR
         Opportunity["capture_opportunity"]
     end
 
-    Core --> HistoryFact
-    Core --> GovernanceTruth
-    Core --> Invariant
-    Core --> Topology
-    Core --> Opportunity
+    Intake --> HistoryFact
+    Intake --> GovernanceTruth
+    Intake --> Invariant
+    Intake --> Topology
+    Intake --> Opportunity
+    Intake --> Propositions["SignalProposition ledger<br/>claim text + support state<br/>anchors + semantic signature<br/>duplicate key + evidence fingerprints"]
+    Propositions --> HardGates["Hard gates<br/>unsupported/stale/contradictory<br/>generated-only + hidden-only<br/>duplicate semantic proposition<br/>proposal restatement"]
+    HardGates --> Features["InterventionValueFeatures<br/>correctness x positive value<br/>materiality + actionability + novelty<br/>timing + user need + visibility need<br/>minus interruption + redundancy + uncertainty + brand risk"]
+    Features --> ConflictGraph["Conflict graph + subset optimizer<br/>top 12 candidates<br/>max 3 ambient + one Observation + one Proposal<br/>hard cap 4 live blocks, Assist excluded"]
+    ConflictGraph --> Core["VisibleSignalSelectionDecision<br/>selected + suppressed propositions<br/>utility summary + no-output reason<br/>decision-log payload"]
 
     Core --> Teaser["Teaser only<br/>one sentence on prompt submit when one strong signal exists"]
+    Core --> Ambient["Odylith Risks / History / Insight<br/>multiple only when distinct, supported, high value<br/>zero duplicate propositions"]
     Core --> Observation["**Odylith Observation**<br/>one short human line<br/>the non-obvious fact that changes the next move"]
-    Core --> Proposal["**Odylith Proposal**<br/>flat per-surface actions<br/>one confirmation for the whole bundle"]
-    Core --> Events["Compass lifecycle events<br/>intervention_teaser<br/>intervention_card<br/>capture_proposed<br/>capture_applied<br/>capture_declined"]
-    Core --> DeliveryMetadata["Delivery metadata<br/>delivery_channel + delivery_status<br/>render_surface"]
+    Core --> Proposal["**Odylith Proposal**<br/>only when it adds concrete action<br/>one confirmation for the whole bundle"]
+    Core --> Broker["VisibleInterventionDecision broker<br/>one shared visibility decision<br/>visible_markdown + developer_context<br/>delivery_channel + delivery_status<br/>proof_required + latency + fingerprints"]
 
-    Observation --> Chatter["Odylith Chatter + assistant render<br/>friendly + delightful + soulful<br/>simple + clear + accurate + human"]
-    Proposal --> Chatter
+    Teaser --> Broker
+    Ambient --> Broker
+    Observation --> Broker
+    Proposal --> Broker
+    Broker --> Events["Compass lifecycle events<br/>intervention_teaser<br/>ambient_signal<br/>intervention_card<br/>capture_proposed<br/>capture_applied<br/>capture_declined<br/>assist_closeout"]
+    Broker --> DeliveryMetadata["Delivery metadata<br/>assistant_render_required<br/>assistant_fallback_ready<br/>manual_visible<br/>best_effort_visible<br/>stop_continuation_ready<br/>assistant_chat_confirmed"]
+
+    Broker --> Renderer["Ruled live renderer<br/>repair missing top/bottom rulers<br/>never drop a good signal for ruler absence<br/>Assist remains closeout-owned"]
+    Renderer --> Chatter["Odylith Chatter + assistant render<br/>friendly + delightful + soulful<br/>simple + clear + accurate + human"]
     Chatter --> HookPayloads["Hook payloads<br/>systemMessage + additionalContext<br/>structured evidence, not visibility proof"]
-    HookPayloads --> AssistantFallback["Assistant-render fallback<br/>speak exact Markdown when host hides hooks"]
+    HookPayloads --> AssistantFallback["Assistant-render fallback<br/>speak exact Markdown when host hides hooks<br/>hard fail-visible while proof is missing"]
     Chatter --> ManualVisible["visible-intervention CLI<br/>plain Markdown escape hatch"]
     AssistantFallback --> Chat["Chat-visible UX<br/>Observation / Proposal / Assist actually shown"]
     ManualVisible --> Chat
@@ -47,10 +61,17 @@ flowchart LR
     StopGuard --> Chat
     DeliveryMetadata --> Events
     Events --> Ledger["Delivery ledger<br/>Teaser + Ambient + Observation<br/>Proposal + Assist visibility"]
-    Ledger --> Status["intervention-status CLI<br/>readiness + active lanes<br/>recent visible-ready beats + smoke"]
+    Ledger --> Status["intervention-status CLI<br/>static readiness + active lanes<br/>unproven vs proven-this-session<br/>exact fallback smoke"]
+    Status --> ChatProbe["Status transcript probe<br/>promotes only exact rendered Markdown<br/>to assistant_chat_confirmed"]
+    ChatProbe --> Ledger
     Status --> Chat
+    Core --> DecisionLog["Compass decision log<br/>selected + suppressed propositions<br/>semantic conflicts + feature values + utility<br/>evidence fingerprints + duplicate groups + proof state"]
+    DecisionLog --> Events
+    Corpus["Adjudication corpus<br/>bootstrap quality state<br/>synthetic cases do not count for calibration<br/>real transcript density gates for publishable=true"] --> Benchmark
+    Broker --> Benchmark["Value/visibility regression harness<br/>Codex + Claude transcript probes<br/>hidden payload is never success<br/>p95 selector latency <= 15 ms"]
+    ChatProbe --> Benchmark
 
-    Proposal --> Confirm{"User confirms<br/>apply this proposal"}
+    Chat --> Confirm{"User confirms after visible proposal<br/>apply this proposal"}
     Confirm -->|yes| Apply["CLI-first apply<br/>Radar + Registry + Atlas + Casebook<br/>only where a safe helper exists"]
     Confirm -->|no| Decline["Decline only<br/>no governed write"]
 

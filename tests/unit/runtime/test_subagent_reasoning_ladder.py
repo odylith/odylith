@@ -1626,6 +1626,13 @@ def test_assessment_extracts_execution_engine_fields_from_context_packet() -> No
                         "authoritative_lane": "context_engine.governance_slice.authoritative",
                         "host_family": "codex",
                         "model_family": "codex",
+                        "component_id": "execution-engine",
+                        "canonical_component_id": "execution-engine",
+                        "identity_status": "canonical",
+                        "target_component_id": "execution-engine",
+                        "target_component_ids": ["execution-engine"],
+                        "target_component_status": "execution_engine",
+                        "snapshot_reuse_status": "built",
                         "host_supports_native_spawn": True,
                         "runtime_invalidated_by_step": "render_compass_dashboard",
                     },
@@ -1662,7 +1669,54 @@ def test_assessment_extracts_execution_engine_fields_from_context_packet() -> No
     ]
     assert summary["execution_engine_host_family"] == "codex"
     assert summary["execution_engine_host_supports_native_spawn"] is True
+    assert summary["execution_engine_component_id"] == "execution-engine"
+    assert summary["execution_engine_canonical_component_id"] == "execution-engine"
+    assert summary["execution_engine_identity_status"] == "canonical"
+    assert summary["execution_engine_target_component_id"] == "execution-engine"
+    assert summary["execution_engine_target_component_ids"] == ["execution-engine"]
+    assert summary["execution_engine_target_component_status"] == "execution_engine"
+    assert summary["execution_engine_snapshot_reuse_status"] == "built"
     assert summary["execution_engine_runtime_invalidated_by_step"] == "render_compass_dashboard"
+
+
+def test_assessment_fail_closes_stale_raw_execution_engine_identity_before_delegation() -> None:
+    request = router.route_request_from_mapping(
+        {
+            "prompt": "Implement the execution packet only if the active identity is canonical.",
+            "task_kind": "implementation",
+            "needs_write": True,
+            "evidence_cone_grounded": True,
+            "context_signals": {
+                "component": "execution-" + "governance",
+                "context_packet": {
+                    "route": {"route_ready": True, "native_spawn_ready": True},
+                    "packet_quality": {"i": "implementation", "native_spawn_ready": True},
+                    "execution_engine": {
+                        "present": True,
+                        "outcome": "admit",
+                        "mode": "implement",
+                        "next_move": "implement.bounded_patch",
+                        "closure": "safe",
+                        "host_family": "codex",
+                        "host_supports_native_spawn": True,
+                    },
+                },
+            },
+        }
+    )
+
+    assessment = router.assess_request(request)
+    summary = assessment.context_signal_summary
+    reason = router._odylith_execution_guard_reason(assessment)  # noqa: SLF001
+
+    assert summary["execution_engine_outcome"] == "deny"
+    assert summary["execution_engine_mode"] == "recover"
+    assert summary["execution_engine_next_move"] == "re_anchor.execution_engine_identity"
+    assert summary["execution_engine_identity_status"] == "blocked_noncanonical_target"
+    assert summary["execution_engine_target_component_id"] == "execution-" + "governance"
+    assert summary["execution_engine_target_component_status"] == "blocked_noncanonical_execution_engine"
+    assert summary["execution_engine_snapshot_reuse_status"] == "fail_closed_identity"
+    assert "noncanonical execution-engine identity" in reason
 
 
 def test_assessment_prefers_explicit_execution_engine_snapshot_over_stale_flat_fallbacks() -> None:
@@ -1686,6 +1740,13 @@ def test_assessment_prefers_explicit_execution_engine_snapshot_over_stale_flat_f
                         "history_rule_hits": [],
                         "pressure_signals": [],
                         "host_family": "claude",
+                        "component_id": "execution-engine",
+                        "canonical_component_id": "execution-engine",
+                        "identity_status": "canonical",
+                        "target_component_id": "execution-engine",
+                        "target_component_ids": ["execution-engine"],
+                        "target_component_status": "execution_engine",
+                        "snapshot_reuse_status": "reused_context_packet_snapshot",
                         "host_supports_native_spawn": False,
                         "has_writable_targets": False,
                         "requires_more_consumer_context": False,
@@ -1700,6 +1761,9 @@ def test_assessment_prefers_explicit_execution_engine_snapshot_over_stale_flat_f
                 "latest_execution_engine_pressure_signals": ["wait:building", "denials:2"],
                 "latest_execution_engine_host_supports_native_spawn": True,
                 "latest_execution_engine_requires_more_consumer_context": True,
+                "latest_execution_engine_identity_status": "blocked_noncanonical_target",
+                "latest_execution_engine_target_component_status": "blocked_noncanonical_execution_engine",
+                "latest_execution_engine_snapshot_reuse_status": "fail_closed_identity",
                 "latest_execution_engine_runtime_invalidated_by_step": "render_compass_dashboard",
             },
         }
@@ -1716,6 +1780,9 @@ def test_assessment_prefers_explicit_execution_engine_snapshot_over_stale_flat_f
     assert summary["execution_engine_pressure_signals"] == []
     assert summary["execution_engine_host_family"] == "claude"
     assert summary["execution_engine_host_supports_native_spawn"] is False
+    assert summary["execution_engine_identity_status"] == "canonical"
+    assert summary["execution_engine_target_component_status"] == "execution_engine"
+    assert summary["execution_engine_snapshot_reuse_status"] == "reused_context_packet_snapshot"
     assert summary["execution_engine_requires_more_consumer_context"] is False
     assert summary["execution_engine_runtime_invalidated_by_step"] == ""
 
@@ -1739,6 +1806,28 @@ def test_router_execution_engine_reanchor_blocks_delegation() -> None:
     assert "re-anchor" in reason
     assert "Odylith" not in reason
     assert "runtime handoff" not in reason
+
+
+def test_router_execution_engine_identity_guard_blocks_delegation() -> None:
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        context_signal_summary={
+            "execution_engine_present": True,
+            "execution_engine_outcome": "admit",
+            "execution_engine_identity_status": "blocked_noncanonical_target",
+            "execution_engine_target_component_id": "execution-" + "governance",
+            "execution_engine_target_component_status": "blocked_noncanonical_execution_engine",
+            "execution_engine_snapshot_reuse_status": "fail_closed_identity",
+            "execution_engine_host_family": "codex",
+            "execution_engine_host_supports_native_spawn": True,
+        },
+    )
+
+    reason = router._odylith_execution_guard_reason(assessment)  # noqa: SLF001
+
+    assert "noncanonical execution-engine identity" in reason
+    assert "re-anchor locally" in reason
 
 
 def test_router_execution_engine_host_serial_reason_uses_packet_derived_host_capability() -> None:

@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import Any
 from typing import Mapping
 
+from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import path_bundle_codec
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bindings
-from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.governance import proof_state as proof_state_runtime
 
 def bind(host: Any) -> None:
@@ -357,12 +357,15 @@ def _compact_bootstrap_or_brief_hot_path_delivery(
         if compact_fallback:
             compact["fallback_scan"] = compact_fallback
     if isinstance(compact.get("context_packet"), Mapping):
-        _eg = runtime_surface_governance.compact_execution_engine_snapshot(
-            runtime_surface_governance.build_packet_execution_engine_snapshot(
-                payload=payload,
-                context_packet=compact_context_packet,
-            )
+        compact_context_packet = execution_engine_handshake.attach_execution_engine_handshake(
+            compact_context_packet,
+            payload=payload,
         )
+        _eg = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+            payload=payload,
+            context_packet=compact_context_packet,
+        )
+        compact["context_packet"] = compact_context_packet
         if _eg:
             compact["context_packet"]["execution_engine"] = _eg
     return compact

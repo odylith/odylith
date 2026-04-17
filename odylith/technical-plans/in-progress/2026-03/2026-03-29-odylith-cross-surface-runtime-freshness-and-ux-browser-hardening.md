@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-03-29
 
-Updated: 2026-04-16
+Updated: 2026-04-17
 
 Backlog: B-025
 
@@ -108,6 +108,9 @@ Related Bugs:
       board when stale shared shell CSS overrides still impose an auto-fit
       multi-column layout after the operator already restored the prior stacked
       format.
+- [x] Compass `Programs` can regress into borderless rows inside the outer
+      Programs container even though `Release Targets` renders comparable
+      governance records as proper inner cards.
 - [x] Shared shell-surface contracts can still split into duplicated source
       template CSS, generated shared CSS, live checked-in assets, and bundled
       mirrors, which lets later rebuilds silently reopen workstream-button and
@@ -314,9 +317,9 @@ Related Bugs:
 - [x] Compass labels the outer program container `Programs`, parallel to
       `Release Targets`, so the two grouped sections are legible before the
       inner cards open.
-- [x] Compass `Programs` now treats its disclosure shell as an explicit flat
-      section contract, so the grouped outer box cannot silently regrow a
-      redundant nested inner card when shared section chrome shifts.
+- [x] Compass `Programs` now renders each visible execution-wave program as a
+      release-like inner card inside the outer Programs container, while the
+      redundant inner focus panel stays suppressed.
 - [x] Compass outer `Programs` and `Release Targets` containers now keep
       subtle but distinct surface tints so the two governance families are
       visually separable without changing the shared layout contract.
@@ -397,6 +400,8 @@ Related Bugs:
 - [x] [dashboard_ui_primitives.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/dashboard_ui_primitives.py)
 - [x] [execution_wave_ui_runtime_primitives.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/execution_wave_ui_runtime_primitives.py)
 - [x] [compass_dashboard_frontend_contract.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/compass_dashboard_frontend_contract.py)
+- [x] [templates/compass_dashboard/compass-waves.v1.js](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/templates/compass_dashboard/compass-waves.v1.js)
+- [x] [templates/compass_dashboard/compass-style-execution-waves.v1.css](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-execution-waves.v1.css)
 - [x] [dashboard_shell_links.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/dashboard_shell_links.py)
 - [x] [render_registry_dashboard.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_registry_dashboard.py)
 - [x] [render_mermaid_catalog.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/render_mermaid_catalog.py)
@@ -506,6 +511,9 @@ Related Bugs:
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_layout_audit.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_deep.py -k casebook_detail_stacks_cleanly_in_compact_viewport`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_render_compass_dashboard.py tests/unit/runtime/test_surface_shell_contracts.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_compass_dashboard_shell.py tests/unit/runtime/test_render_compass_dashboard.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/integration/runtime/test_surface_browser_layout_audit.py::test_compass_programs_render_release_like_inner_card_chrome_in_browser tests/integration/runtime/test_surface_browser_layout_audit.py::test_compass_programs_render_release_like_inner_card_chrome_in_compact_browser tests/integration/runtime/test_surface_browser_layout_audit.py::test_compass_program_box_does_not_highlight_active_inner_wave_in_browser tests/integration/runtime/test_surface_browser_layout_audit.py::test_compass_program_box_does_not_highlight_active_inner_wave_in_compact_browser`
+- [x] `PYTHONPATH=src python3 -m odylith.runtime.governance.validate_component_registry_contract --repo-root . --policy-mode advisory`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output odylith/casebook/casebook.html`
 - [x] `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output src/odylith/bundle/assets/odylith/casebook/casebook.html`
 - [x] `python -m py_compile src/odylith/runtime/surfaces/render_casebook_dashboard.py tests/unit/runtime/test_render_casebook_dashboard.py tests/integration/runtime/test_surface_browser_layout_audit.py`
@@ -691,6 +699,11 @@ Related Bugs:
       override, keeps `Release Targets` on the prior stacked format, records
       the regression in Casebook, and codifies that future release-target
       layout changes require explicit operator authorization.
+- [x] April 17 Programs card-shape follow-on keeps `Programs` visually parallel
+      to `Release Targets`: each visible execution-wave program now renders as
+      an inner card inside the outer tinted Programs container, the redundant
+      focus panel remains suppressed, and Dashboard/Compass governance records
+      plus browser proof remember that shape.
 - [x] April 9 follow-on collapses the remaining Compass and Registry
       top-line KPI/stat-card CSS forks into the shared Dashboard KPI contract
       and adds browser proof that Compass, Radar, Registry, and Casebook keep

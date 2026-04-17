@@ -1,8 +1,8 @@
 # Tribunal
-Last updated: 2026-04-09
+Last updated: 2026-04-17
 
 
-Last updated (UTC): 2026-04-09
+Last updated (UTC): 2026-04-17
 
 ## Purpose
 Tribunal is Odylith's diagnosis engine. It converts delivery scopes into
@@ -18,6 +18,10 @@ plus one bounded correction packet per case.
 - Adjudication and confidence scoring.
 - Optional provider enrichment with evidence validation.
 - Ranked case queue and systemic brief generation.
+- Compact Tribunal summaries that can feed the visible intervention value
+  engine with precomputed risk, causal, and discriminating-next-check signals.
+  Tribunal supplies structured diagnosis evidence; it does not decide whether
+  a visible Odylith block should render.
 
 ### Tribunal does not own
 - Executing corrective action. That belongs to the caller and Remediator.
@@ -25,6 +29,9 @@ plus one bounded correction packet per case.
 - Surface rendering. It produces structured payloads consumed elsewhere.
 - Live agent chatter. Chatter may consume precomputed Tribunal-backed payloads,
   but Tribunal must not be invoked on demand just to narrate a turn.
+- Live signal selection or chat-visible proof. The Governance Intervention
+  Engine may consume cached Tribunal summaries in the hot path, but provider
+  Tribunal calls are forbidden inside live visibility checks.
 - Next-action admissibility. Execution Engine consumes diagnosis as one
   evidence input, but Tribunal does not decide whether the intended command is
   procedurally allowed.

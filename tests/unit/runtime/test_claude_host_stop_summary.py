@@ -104,21 +104,20 @@ def test_stop_intervention_bundle_uses_recent_prompt_excerpt_not_intervention_su
     )
     seen: dict[str, object] = {}
 
-    def _fake_compose_conversation_bundle(**kwargs):  # noqa: ANN001
-        request = kwargs["request"]
+    def _fake_compose_host_bundle(**kwargs):  # noqa: ANN001
         seen["repo_root"] = kwargs["repo_root"]
-        seen["prompt"] = request.prompt
-        seen["candidate_paths"] = list(request.candidate_paths)
-        seen["session_id"] = request.session_id
+        seen["prompt"] = kwargs["prompt_excerpt"]
+        seen["candidate_paths"] = list(kwargs["changed_paths"])
+        seen["session_id"] = kwargs["session_id"]
         return {
             "intervention_bundle": {"ok": True},
             "closeout_bundle": {"markdown_text": "**Odylith Assist:** kept this grounded."},
         }
 
     monkeypatch.setattr(
-        claude_host_stop_summary.conversation_runtime,
-        "compose_conversation_bundle",
-        _fake_compose_conversation_bundle,
+        claude_host_stop_summary.host_surface_runtime,
+        "compose_host_conversation_bundle",
+        _fake_compose_host_bundle,
     )
 
     bundle = claude_host_stop_summary._stop_intervention_bundle(
@@ -154,15 +153,14 @@ def test_stop_intervention_bundle_recovers_recent_changed_paths(monkeypatch, tmp
     )
     seen: dict[str, object] = {}
 
-    def _fake_compose_conversation_bundle(**kwargs):  # noqa: ANN001
-        request = kwargs["request"]
-        seen["candidate_paths"] = list(request.candidate_paths)
+    def _fake_compose_host_bundle(**kwargs):  # noqa: ANN001
+        seen["candidate_paths"] = list(kwargs["changed_paths"])
         return {"intervention_bundle": {"ok": True}, "closeout_bundle": {}}
 
     monkeypatch.setattr(
-        claude_host_stop_summary.conversation_runtime,
-        "compose_conversation_bundle",
-        _fake_compose_conversation_bundle,
+        claude_host_stop_summary.host_surface_runtime,
+        "compose_host_conversation_bundle",
+        _fake_compose_host_bundle,
     )
 
     claude_host_stop_summary._stop_intervention_bundle(
@@ -199,9 +197,8 @@ def test_stop_intervention_bundle_can_recover_prompt_when_last_message_is_short(
     )
     seen: dict[str, object] = {}
 
-    def _fake_compose_conversation_bundle(**kwargs):  # noqa: ANN001
-        request = kwargs["request"]
-        seen["prompt"] = request.prompt
+    def _fake_compose_host_bundle(**kwargs):  # noqa: ANN001
+        seen["prompt"] = kwargs["prompt_excerpt"]
         seen["assistant_summary"] = kwargs["assistant_summary"]
         return {
             "intervention_bundle": {},
@@ -212,9 +209,9 @@ def test_stop_intervention_bundle_can_recover_prompt_when_last_message_is_short(
         }
 
     monkeypatch.setattr(
-        claude_host_stop_summary.conversation_runtime,
-        "compose_conversation_bundle",
-        _fake_compose_conversation_bundle,
+        claude_host_stop_summary.host_surface_runtime,
+        "compose_host_conversation_bundle",
+        _fake_compose_host_bundle,
     )
 
     bundle = claude_host_stop_summary._stop_intervention_bundle(
@@ -252,9 +249,9 @@ def test_render_stop_summary_combines_observation_and_assist(tmp_path: Path) -> 
     )
 
     assert rendered == (
-        "---\n"
-        "**Odylith Observation:** The signal is real.\n"
         "---\n\n"
+        "**Odylith Observation:** The signal is real.\n"
+        "\n---\n\n"
         "**Odylith Assist:** kept this grounded."
     )
 
@@ -295,9 +292,9 @@ def test_render_stop_summary_replays_unseen_live_beat_through_stop_lane(tmp_path
     )
 
     assert rendered == (
-        "---\n"
-        "**Odylith Insight:** this beat was computed earlier but still needs a visible lane.\n"
         "---\n\n"
+        "**Odylith Insight:** this beat was computed earlier but still needs a visible lane.\n"
+        "\n---\n\n"
         "**Odylith Assist:** kept this grounded."
     )
 

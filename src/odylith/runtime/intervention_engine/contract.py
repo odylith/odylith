@@ -67,6 +67,11 @@ class ObservationEnvelope:
     assistant_summary: str = ""
     changed_paths: list[str] = field(default_factory=list)
     packet_summary: dict[str, Any] = field(default_factory=dict)
+    context_packet_summary: dict[str, Any] = field(default_factory=dict)
+    execution_engine_summary: dict[str, Any] = field(default_factory=dict)
+    memory_summary: dict[str, Any] = field(default_factory=dict)
+    tribunal_summary: dict[str, Any] = field(default_factory=dict)
+    visibility_summary: dict[str, Any] = field(default_factory=dict)
     delivery_snapshot: dict[str, Any] = field(default_factory=dict)
     active_target_refs: list[dict[str, str]] = field(default_factory=list)
 
@@ -79,6 +84,11 @@ class ObservationEnvelope:
             "assistant_summary": self.assistant_summary,
             "changed_paths": list(self.changed_paths),
             "packet_summary": dict(self.packet_summary),
+            "context_packet_summary": dict(self.context_packet_summary),
+            "execution_engine_summary": dict(self.execution_engine_summary),
+            "memory_summary": dict(self.memory_summary),
+            "tribunal_summary": dict(self.tribunal_summary),
+            "visibility_summary": dict(self.visibility_summary),
             "delivery_snapshot": dict(self.delivery_snapshot),
             "active_target_refs": [dict(row) for row in self.active_target_refs],
         }
@@ -94,6 +104,11 @@ class ObservationEnvelope:
             assistant_summary=_normalize_string(payload.get("assistant_summary")),
             changed_paths=_normalize_string_list(payload.get("changed_paths")),
             packet_summary=_normalize_mapping(payload.get("packet_summary")),
+            context_packet_summary=_normalize_mapping(payload.get("context_packet_summary")),
+            execution_engine_summary=_normalize_mapping(payload.get("execution_engine_summary")),
+            memory_summary=_normalize_mapping(payload.get("memory_summary")),
+            tribunal_summary=_normalize_mapping(payload.get("tribunal_summary")),
+            visibility_summary=_normalize_mapping(payload.get("visibility_summary")),
             delivery_snapshot=_normalize_mapping(payload.get("delivery_snapshot")),
             active_target_refs=_normalize_ref_list(payload.get("active_target_refs")),
         )

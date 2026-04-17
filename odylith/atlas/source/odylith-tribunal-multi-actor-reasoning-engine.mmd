@@ -1,8 +1,11 @@
-%% Reviewed 2026-03-30 for Tribunal provider-breaker and deterministic fallback behavior before release proof.
+%% Reviewed 2026-04-17 for v0.1.11 to connect Tribunal reasoning to Context Engine packets, Execution Engine snapshots, memory/session evidence, visible interventions, and benchmark proof without weakening deterministic fallback behavior.
 flowchart TB
   subgraph Intake["1. Grounded dossier intake"]
     Scope["Ranked case scope<br/>decision at stake, rank, confidence"]
     Evidence["Grounded evidence bundle<br/>artifacts, code refs, timestamps,<br/>components, surfaces, approvals, clearance"]
+    ContextPacket["Context Engine packet digest<br/>packet quality + target resolution + route readiness"]
+    ExecutionSignal["Execution Engine snapshot digest<br/>admissibility + next move + validation + closure"]
+    SessionMemory["Memory/session digest<br/>recent corrections + proof events + delivery ledger"]
     Policies["Reasoning policies<br/>grounding, non-generic output,<br/>self-reference downgrade, disagreement surfacing"]
     Dossier["Tribunal dossier<br/>odylith/runtime/contracts/tribunal_case.v1"]
   end
@@ -28,6 +31,8 @@ flowchart TB
     Editor["Editor<br/>decision brief without actor chatter"]
     Systemic["Systemic synthesis<br/>collapse repeated case noise into shared causes"]
     PacketHint["Packet recommendation seed<br/>manual, deterministic, AI-engine, hybrid"]
+    InterventionHint["Visible intervention signal<br/>Observation / Proposal evidence and risk"]
+    BenchmarkSignal["Benchmark proof signal<br/>expected posture + false-admit risk"]
   end
 
   subgraph Guardrails["4. Guardrails"]
@@ -38,6 +43,9 @@ flowchart TB
 
   Scope --> Dossier
   Evidence --> Dossier
+  ContextPacket --> Dossier
+  ExecutionSignal --> Dossier
+  SessionMemory --> Dossier
   Policies --> Dossier
 
   Dossier --> Observer
@@ -75,3 +83,5 @@ flowchart TB
   Fallback --> Editor
   Judge --> Systemic
   Judge --> PacketHint
+  Editor --> InterventionHint
+  Judge --> BenchmarkSignal

@@ -1,0 +1,89 @@
+%% Reviewed 2026-04-17 for v0.1.11 to keep runtime, memory, Context Engine, Execution Engine, visible-intervention, benchmark, conversation, and validation boundaries explicit across product execution.
+flowchart LR
+    subgraph Inputs["1. Product truth and contracts"]
+        CLI["src/odylith/cli.py + install/*"]
+        Registry["component_registry.v1.json + CURRENT_SPEC.md"]
+        Workstreams["Radar + plans + bugs + Atlas catalog"]
+        Guidance["agents-guidelines + runtime/source"]
+    end
+
+    subgraph Runtime["2. Runtime modules"]
+        Context["context_engine/*<br/>compiler + grounding + packets"]
+        Bundle["memory/odylith_projection_bundle.py"]
+        Snapshot["memory/odylith_projection_snapshot.py"]
+        Backend["memory/odylith_memory_backend.py"]
+        Remote["memory/odylith_remote_retrieval.py"]
+        Contracts["memory/tooling_memory_contracts.py"]
+        Governance["governance/*<br/>delivery intelligence + sync"]
+        Execution["execution_engine/*<br/>host profile + admissibility + shared snapshot"]
+        Evaluation["evaluation/* + reasoning/*<br/>benchmark + tribunal + remediator"]
+        Intervention["intervention_engine/*<br/>alignment context + visibility broker"]
+        Conversation["orchestration/* + chatter<br/>router + orchestrator + odylith chatter"]
+        Surfaces["surfaces/*<br/>Dashboard + Radar + Atlas + Compass + Registry + Casebook"]
+    end
+
+    subgraph State["3. Runtime state and generated assets"]
+        ProductRoot["odylith/<br/>materialized product files + generated surfaces"]
+        CompilerRoot[".odylith/runtime/odylith-compiler<br/>bundle + snapshot artifacts"]
+        MemoryRoot[".odylith/runtime/odylith-memory<br/>lance + tantivy + judgment memory + remote sync"]
+        RuntimeRoot[".odylith/<br/>sessions + delivery intelligence + benchmarks<br/>execution snapshots + visibility ledgers"]
+    end
+
+    subgraph Boundaries["4. Execution boundaries"]
+        RuntimeBoundary["Runtime boundary<br/>invoked Odylith executable decides interpreter"]
+        WriteBoundary["Write boundary<br/>repo scope decides editable files"]
+        ValidationBoundary["Validation boundary<br/>target repo toolchain proves target code"]
+        RepoToolchain["Target repo toolchain<br/>consumer repo toolchain or product source-tree helpers"]
+        RuntimeBoundary -. distinct .-> WriteBoundary
+        WriteBoundary -. distinct .-> ValidationBoundary
+        ValidationBoundary --> RepoToolchain
+    end
+
+    CLI --> Context
+    Registry --> Context
+    Workstreams --> Governance
+    Workstreams --> Surfaces
+    Guidance --> Context
+
+    Context --> Bundle
+    Context --> Snapshot
+    Bundle --> Backend
+    Bundle --> Remote
+    Bundle --> Contracts
+    Snapshot --> Contracts
+    Backend --> Contracts
+    Remote --> Contracts
+    Contracts --> Governance
+    Contracts --> Execution
+    Contracts --> Evaluation
+    Contracts --> Intervention
+    Contracts --> Conversation
+    Context --> Execution
+    Governance --> Surfaces
+    Governance --> Execution
+    Execution --> Intervention
+    Execution --> Conversation
+    Evaluation --> Conversation
+    Evaluation --> Execution
+    Evaluation --> Intervention
+    Intervention --> Conversation
+    Intervention --> Surfaces
+    Conversation --> Surfaces
+
+    Governance --> ProductRoot
+    Surfaces --> ProductRoot
+    Bundle --> CompilerRoot
+    Snapshot --> CompilerRoot
+    Backend --> MemoryRoot
+    Remote --> MemoryRoot
+    Governance --> RuntimeRoot
+    Execution --> RuntimeRoot
+    Evaluation --> RuntimeRoot
+    Intervention --> RuntimeRoot
+    Conversation --> RuntimeRoot
+
+    CLI --> RuntimeBoundary
+    ProductRoot --> WriteBoundary
+    CompilerRoot --> RuntimeBoundary
+    MemoryRoot --> RuntimeBoundary
+    RuntimeRoot --> RuntimeBoundary

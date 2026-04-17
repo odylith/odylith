@@ -1,4 +1,4 @@
-%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+%% Reviewed 2026-04-17 for v0.1.11 to include Context Engine packet quality, Execution Engine posture, memory/session visibility, and benchmark risk in Tribunal candidate selection.
 flowchart TB
   subgraph Universe["1. Observed scope universe (Delivery Intelligence)"]
     Components["Component snapshots"]
@@ -6,6 +6,9 @@ flowchart TB
     Diagrams["Diagram snapshots"]
     Surfaces["Surface aggregate snapshots"]
     Grid["Grid aggregate snapshot"]
+    ContextSignals["Context Engine packet signals<br/>packet quality + route readiness"]
+    ExecutionSignals["Execution Engine signals<br/>admissibility + next move + closure risk"]
+    MemorySignals["Memory/session signals<br/>hard corrections + visibility ledger"]
     Build["build_delivery_intelligence_artifact()"]
   end
 
@@ -13,6 +16,8 @@ flowchart TB
     Annotate["_annotate_live_actionability()"]
     LiveReason["diagnostics.live_actionable<br/>diagnostics.live_reason"]
     Scenario["operator_readout.primary_scenario<br/>severity, action framing, proof refs"]
+    BenchmarkRisk["benchmark_risk<br/>false-admit + false-deny + validation gap"]
+    VisibilityGap["visibility_gap<br/>earned intervention not chat-confirmed"]
   end
 
   subgraph Eligibility["3. Tribunal eligibility gate"]
@@ -46,12 +51,19 @@ flowchart TB
   Diagrams --> Build
   Surfaces --> Build
   Grid --> Build
+  ContextSignals --> Build
+  ExecutionSignals --> Build
+  MemorySignals --> Build
 
   Build --> Annotate
   Annotate --> LiveReason
   Annotate --> Scenario
+  Annotate --> BenchmarkRisk
+  Annotate --> VisibilityGap
   LiveReason --> GateType
   Scenario --> GateScenario
+  BenchmarkRisk --> GateScenario
+  VisibilityGap --> GateScenario
 
   GateType -- "no" --> ExType
   GateType -- "yes" --> GateLive

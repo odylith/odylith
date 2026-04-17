@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
@@ -108,32 +107,27 @@ def main(argv: list[str] | None = None) -> int:
         command=command,
         session_id=session_id,
     )
-    developer_context = (
-        host_surface_runtime.render_developer_context(
-            bundle,
-            markdown=True,
-            include_proposal=True,
-            include_closeout=True,
-        )
-        if bundle
-        else ""
-    )
-    live_intervention = (
-        host_surface_runtime.render_visible_live_intervention(
-            bundle,
-            markdown=True,
-            include_proposal=True,
-        )
-        if bundle
-        else ""
-    )
-    if bundle and developer_context:
-        conversation_surface.append_intervention_events(
+    decision = (
+        host_surface_runtime.visible_intervention_decision(
             repo_root=repo_root,
             bundle=bundle,
+            host_family="claude",
+            turn_phase="post_bash_checkpoint",
+            session_id=session_id,
             include_proposal=True,
-            delivery_channel="system_message_and_assistant_fallback",
-            delivery_status="assistant_fallback_ready",
+            include_closeout=False,
+            developer_include_closeout=True,
+        )
+        if bundle
+        else None
+    )
+    developer_context = decision.developer_context if decision is not None else ""
+    live_intervention = decision.visible_markdown if decision is not None else ""
+    if bundle and decision is not None and developer_context:
+        host_surface_runtime.append_visible_intervention_events(
+            repo_root=repo_root,
+            bundle=bundle,
+            decision=decision,
             render_surface="claude_post_tool_use",
         )
     payload_out = host_surface_runtime.claude_post_tool_payload(

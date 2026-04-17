@@ -1,8 +1,8 @@
 # Compass
-Last updated: 2026-04-14
+Last updated: 2026-04-17
 
 
-Last updated (UTC): 2026-04-14
+Last updated (UTC): 2026-04-17
 
 ## Purpose
 Compass is Odylith's execution, decision, and runtime-posture surface. It turns
@@ -40,6 +40,11 @@ standup-level summary should be.
   `assist_closeout`) live in that same canonical stream; Compass derives
   pending proposal state and visible-delivery status from those events instead
   of keeping a second proposal or host-status ledger.
+- v0.1.11 value-engine decisions may attach selected and suppressed
+  propositions, duplicate groups, feature values, utility, suppression reason,
+  calibration posture, and visibility proof state to those intervention
+  events. Compass projects that compact decision log; it does not recompute
+  relevance or decide chat visibility locally.
 - That pending-proposal read model is UX-bearing, not just a counter. It must
   preserve prompt-rooted context plus rich proposal display payloads and status
   so downstream shells and future surfaces can render the same delightful
@@ -111,6 +116,11 @@ standup-level summary should be.
 - The outer program container should be explicitly titled `Programs`, parallel
   to the `Release Targets` outer container, so the two governance groupings
   read as separate sections before the inner cards begin.
+- Compass `Programs` must render each visible execution-wave program as an
+  inner carded `execution-wave-section-program-card`, parallel to
+  `Release Targets` inner release cards. Do not flatten Programs back to
+  borderless `execution-wave-section-flat`; the outer tinted container groups
+  the family, and the inner cards carry the individual program records.
 - Those two outer governance containers should also stay subtly tinted by
   family instead of reading as identical plain-white blocks: `Programs`
   keeps the cool execution-engine tint and `Release Targets` keeps a
@@ -599,6 +609,11 @@ or component definitions.
   update the grouped release renderer, shared Compass base CSS, bundle mirrors,
   and tests together, and do not change the established stacked format without
   explicit operator authorization.
+- Program-card layout change:
+  update the grouped program renderer, Compass execution-wave CSS, bundle
+  mirrors, Dashboard/Compass component specs, and browser/unit proof together,
+  and do not change the established inner-card format without explicit
+  operator authorization.
 - Shell asset contract or shared execution-wave CSS change:
   update `compass_dashboard_frontend_contract.py`, the shared execution-wave
   generator, thin Compass overrides, live shell assets, bundle mirrors, and
@@ -655,6 +670,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-17: Locked Compass `Programs` to release-like inner cards so each visible execution-wave program is a proper card inside the outer tinted Programs container, with unit and browser proof guarding against borderless flattening. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-14: Restored true rolling-window Timeline Audit rendering so Compass now shows every populated local day inside the active `24h` or `48h` window instead of collapsing to the selected `audit_day`; current-day future hours still stay clipped at the loaded runtime horizon. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-109`)
 - 2026-04-12: Tightened Compass live narration around the human-voice contract again: deterministic rules now explicitly govern evidence eligibility and fail-closed drift rejection, while the brief itself stays free-flowing. `Current execution` now prefers one live lane plus one concrete action, `Next planned` stays on the immediate next move, `Risks to watch` must name explicit seams, and thin evidence packets are expected to produce shorter output instead of broader portfolio prose. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-10: Centralized Compass brief voice under the Registry-owned `briefs-voice-contract` component, retired deterministic brief fallback, and tightened the brief runtime to fresh provider, exact cache, or explicit unavailable. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

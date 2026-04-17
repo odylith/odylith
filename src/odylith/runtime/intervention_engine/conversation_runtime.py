@@ -1414,11 +1414,13 @@ def compose_conversation_bundle(
         surface="chatter_history",
     )
     selected_signal = ""
+    selected_signals: list[str] = []
     for key in _EXPLICIT_SIGNAL_PRIORITY:
         payload = {"risks": risks, "insight": insight, "history": history}[key]
         if payload["eligible"] and payload["render_hint"] == "explicit_label":
-            selected_signal = key
-            break
+            selected_signals.append(key)
+    if selected_signals:
+        selected_signal = selected_signals[0]
     assist = claim_runtime.enforce_payload(
         compose_closeout_assist(
             request=request,
@@ -1486,6 +1488,11 @@ def compose_conversation_bundle(
                     value = context_packet.get(key)
                     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
                         packet_summary[key] = [str(item).strip() for item in value if str(item).strip()]
+        context_packet_summary = _nested_mapping(context_payload, "context_packet")
+        execution_engine_summary = _nested_mapping(context_payload, "execution_engine_summary")
+        memory_summary = _nested_mapping(context_payload, "memory_summary") or _nested_mapping(context_payload, "memory_snapshot")
+        visibility_summary = _nested_mapping(context_payload, "visibility_summary") or _nested_mapping(context_payload, "delivery_ledger")
+        delivery_snapshot = _nested_mapping(context_payload, "delivery_snapshot")
         live_bundle = conversation_surface.build_conversation_bundle(
             repo_root=Path(repo_root).expanduser().resolve(),
             observation={
@@ -1503,7 +1510,12 @@ def compose_conversation_bundle(
                 "workstreams": getattr(request, "workstreams", []),
                 "components": getattr(request, "components", []),
                 "packet_summary": packet_summary,
-                "delivery_snapshot": context_payload if isinstance(context_payload, Mapping) else {},
+                "context_packet_summary": context_packet_summary,
+                "execution_engine_summary": execution_engine_summary,
+                "memory_summary": memory_summary,
+                "tribunal_summary": tribunal_context,
+                "visibility_summary": visibility_summary,
+                "delivery_snapshot": delivery_snapshot,
             },
         )
         intervention_bundle = dict(live_bundle.get("intervention_bundle", {}))
@@ -1519,10 +1531,14 @@ def compose_conversation_bundle(
             "claim_lint": claim_lint,
             "claim_enforcement": claim_enforcement,
             "selected_signal": selected_signal,
+            "selected_signals": selected_signals,
             "render_policy": {
                 "ambient_by_default": True,
                 "explicit_labels_rare": True,
-                "one_signal_at_a_time": True,
+                "one_signal_at_a_time": False,
+                "max_signals_per_turn": 3,
+                "dedupe_by_signal_kind": True,
+                "dedupe_by_semantic_signature": True,
                 "priority": list(_EXPLICIT_SIGNAL_PRIORITY),
                 "claim_terms_require_lint": bool(claim_lint.get("blocked_terms")),
                 "commentary_mode": str(metrics.get("commentary_mode", "")).strip(),

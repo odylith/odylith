@@ -1,9 +1,12 @@
-%% Reviewed 2026-03-30 for provider-breaker and explicit deterministic fallback behavior before release proof.
+%% Reviewed 2026-04-17 for v0.1.11 to connect Tribunal adjudication to Context Engine packet evidence, Execution Engine snapshots, memory/session proof, visible interventions, and benchmark acceptance checks.
 flowchart LR
   subgraph Intake["1. Dossier intake"]
     Subject["Subject + decision at stake"]
     Observations["Observations<br/>owned artifacts, semantic-diff candidates,<br/>changed artifacts, code refs, proof routes, evidence gaps"]
     Evidence["Named evidence items"]
+    ContextPacket["Context packet digest<br/>packet quality + target resolution + route readiness"]
+    ExecutionSnapshot["Execution snapshot digest<br/>admissibility + next move + closure + validation"]
+    SessionProof["Session memory + visibility ledger<br/>hard corrections + chat-confirmed state"]
     Dossier["Grounded Tribunal dossier"]
   end
 
@@ -33,6 +36,7 @@ flowchart LR
     Editor["Editor<br/>queue headline + concise lead brief"]
     Systemic["Systemic brief<br/>shared latent causes across cases"]
     QueueRow["Case queue row<br/>headline, brief, reasoning_state,<br/>proof_routes, selection rationale"]
+    InterventionSignal["Visible intervention signal<br/>Observation / Proposal payload candidate"]
   end
 
   subgraph Action["5. Packet assembly and control loop"]
@@ -40,11 +44,15 @@ flowchart LR
     Ledger["decisions.v1.jsonl<br/>approve / delegate / apply / clear / dismiss"]
     Posture["sync_workstream_artifacts merge<br/>packet status + clearance state"]
     Surface["Odylith UI + CLI"]
+    Benchmark["Benchmark acceptance<br/>closure + validation + false-admit guard"]
   end
 
   Subject --> Dossier
   Observations --> Dossier
   Evidence --> Dossier
+  ContextPacket --> Dossier
+  ExecutionSnapshot --> Dossier
+  SessionProof --> Dossier
 
   Dossier --> Observer
   Dossier --> Ownership
@@ -79,9 +87,12 @@ flowchart LR
 
   Judge --> Systemic
   Editor --> QueueRow
+  Editor --> InterventionSignal
   Judge --> Packet
   QueueRow --> Surface
   Systemic --> Surface
+  InterventionSignal --> Surface
   Packet --> Ledger
   Ledger --> Posture
+  Posture --> Benchmark
   Posture --> Surface

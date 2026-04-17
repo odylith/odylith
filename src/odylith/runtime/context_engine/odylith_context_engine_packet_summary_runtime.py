@@ -4,6 +4,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bootstrap_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
 from odylith.runtime.context_engine import packet_quality_codec
@@ -307,16 +308,10 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
     )
     proof_reopen = proof_state_runtime.proof_reopen_signal(proof_state) if proof_state else {}
     proof_resolution_state = str(proof_state_resolution.get("state", "")).strip() or ("resolved" if proof_state else "none")
-    execution_engine_payload = (
-        dict(payload.get("execution_engine", {}))
-        if isinstance(payload.get("execution_engine"), Mapping)
-        else dict(context_packet.get("execution_engine", {}))
-        if isinstance(context_packet.get("execution_engine"), Mapping)
-        else runtime_surface_governance.build_packet_execution_engine_snapshot(
-            payload=payload,
-            context_packet=context_packet,
-            routing_handoff=routing_handoff,
-        )
+    execution_engine_payload = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload=payload,
+        context_packet=context_packet,
+        routing_handoff=routing_handoff,
     )
     summary = {
         "bootstrapped_at": str(payload.get("bootstrapped_at", "")).strip(),

@@ -36,9 +36,10 @@ agent reasons, plans, edits, or delegates.
    If the packet cannot honestly bound the slice, emit signals such as
    `full_scan_recommended` instead of pretending the repo is fully covered.
 
-7. **Hand off the retained execution bridge**  
-   Preserve `routing_handoff`, packet quality, and narrowing guidance so
-   orchestration and execution engine can act on the same grounded truth.
+7. **Hand off the execution bridge**
+   Preserve `routing_handoff`, packet quality, narrowing guidance, and the
+   versioned `execution_engine_handshake` so orchestration and Execution Engine
+   consumers act on the same grounded truth.
 
 Common packet shapes include `bootstrap-session`, `impact`, `architecture`,
 `governance-slice`, `session-brief`, `context`, and `query`.
@@ -53,6 +54,32 @@ Common packet shapes include `bootstrap-session`, `impact`, `architecture`,
   local accelerator layered on top of them.
 - It does not justify broad repo discovery when the slice is still ambiguous.
   In that case it should explicitly tell the caller to widen.
+- It does not translate historical execution component ids. Packets that
+  address the Execution Engine boundary must carry canonical `execution-engine`
+  identity or fail closed before route readiness.
+
+## Execution Engine Handoff
+
+The Context Engine owns the evidence cone for the Execution Engine:
+canonical Execution Engine identity, target component identity, packet kind
+and state, packet quality, `turn_context`, `target_resolution`,
+`presentation_policy`, recommended validation, and route readiness.
+
+That handoff is carried as `execution_engine_handshake` with version `v1`.
+The packet builder attaches the handshake and either builds one compact
+Execution Engine snapshot or reuses the compact snapshot already carried by
+the packet. Summary surfaces should consume that shared snapshot instead of
+rebuilding local policy posture.
+
+Historical execution component ids are not aliases. If a packet explicitly
+targets a noncanonical execution id, the handshake marks the target as
+`blocked_noncanonical_execution_engine` and the snapshot fails closed before
+any expensive runtime expansion or stale snapshot reuse.
+
+The handshake also carries lightweight cost diagnostics for benchmark and
+hot-path tuning: snapshot duration, snapshot token estimate, runtime-contract
+token estimate, handshake token estimate, total payload token estimate, reuse
+status, and handshake version.
 
 ## Design Principle
 

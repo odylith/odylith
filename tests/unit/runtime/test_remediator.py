@@ -128,9 +128,37 @@ def test_packet_summary_exposes_execution_engine_posture(tmp_path: Path) -> None
 
     summary = remediator.packet_summary(packet)
 
+    assert summary["execution_engine_present"] is True
     assert summary["execution_engine_outcome"] == "admit"
     assert summary["execution_engine_mode"] == "implement"
     assert summary["execution_engine_authoritative_lane"] == "reasoning.remediator.authoritative"
+    assert summary["execution_engine_validation_archetype"] == "generic"
+
+
+def test_packet_summary_fail_closes_stale_raw_execution_identity() -> None:
+    packet = {
+        "id": "pkt-stale-identity",
+        "case_id": "case-stale-identity",
+        "component": "execution-" + "governance",
+        "execution_mode": "deterministic",
+        "execution_engine": {
+            "present": True,
+            "outcome": "admit",
+            "mode": "implement",
+            "next_move": "implement.bounded_patch",
+            "closure": "safe",
+        },
+    }
+
+    summary = remediator.packet_summary(packet)
+
+    assert summary["execution_engine_outcome"] == "deny"
+    assert summary["execution_engine_mode"] == "recover"
+    assert summary["execution_engine_next_move"] == "re_anchor.execution_engine_identity"
+    assert summary["execution_engine_identity_status"] == "blocked_noncanonical_target"
+    assert summary["execution_engine_target_component_id"] == "execution-" + "governance"
+    assert summary["execution_engine_target_component_status"] == "blocked_noncanonical_execution_engine"
+    assert summary["execution_engine_snapshot_reuse_status"] == "fail_closed_identity"
 
 
 def test_apply_deterministic_packet_refuses_non_admissible_execution(tmp_path: Path) -> None:
@@ -150,4 +178,28 @@ def test_apply_deterministic_packet_refuses_non_admissible_execution(tmp_path: P
 
     assert result["ok"] is False
     assert result["returncode"] == 2
+    assert "not admissible" in result["error"]
+
+
+def test_apply_deterministic_packet_blocks_stale_raw_execution_identity(tmp_path: Path) -> None:
+    packet = {
+        "id": "pkt-stale-identity",
+        "component": "execution-" + "governance",
+        "execution_mode": "deterministic",
+        "commands": [["/usr/bin/false"]],
+        "execution_engine": {
+            "present": True,
+            "outcome": "admit",
+            "mode": "implement",
+            "next_move": "implement.bounded_patch",
+            "closure": "safe",
+        },
+    }
+
+    result = remediator.apply_deterministic_packet(repo_root=tmp_path, packet=packet)
+
+    assert result["ok"] is False
+    assert result["returncode"] == 2
+    assert result["execution_engine"]["outcome"] == "deny"
+    assert result["execution_engine"]["next_move"] == "re_anchor.execution_engine_identity"
     assert "not admissible" in result["error"]

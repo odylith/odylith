@@ -48,6 +48,101 @@ def test_execution_engine_family_prefers_governance_slice_and_bounded_profile() 
     assert profile["include_code_neighbors"] is False
 
 
+def test_execution_engine_benchmark_payload_enrichment_carries_related_component_identity() -> None:
+    payload = odylith_benchmark_execution_engine.enrich_packet_payload_for_execution_engine_family(
+        payload={"routing_handoff": {"route_ready": False}},
+        scenario={"family": "execution_engine", "component": "subagent-router"},
+    )
+
+    summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+
+    assert payload["component"] == "subagent-router"
+    assert payload["component_id"] == "execution-engine"
+    assert payload["canonical_component_id"] == "execution-engine"
+    assert payload["component_ids"] == ["subagent-router", "execution-engine"]
+    assert summary["execution_engine_component_id"] == "execution-engine"
+    assert summary["execution_engine_canonical_component_id"] == "execution-engine"
+    assert summary["execution_engine_identity_status"] == "canonical"
+    assert summary["execution_engine_target_component_status"] == "execution_engine_plus_related"
+
+
+def test_execution_engine_benchmark_payload_enrichment_preserves_hard_cut_failure() -> None:
+    payload = odylith_benchmark_execution_engine.enrich_packet_payload_for_execution_engine_family(
+        payload={},
+        scenario={"family": "execution_engine", "component": "execution-" + "governance"},
+    )
+
+    summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+
+    assert payload["component"] == "execution-" + "governance"
+    assert payload["component_id"] == "execution-engine"
+    assert summary["execution_engine_component_id"] == "execution-engine"
+    assert summary["execution_engine_identity_status"] == "blocked_noncanonical_target"
+    assert summary["execution_engine_target_component_status"] == "blocked_noncanonical_execution_engine"
+    assert summary["execution_engine_outcome"] == "deny"
+    assert summary["execution_engine_snapshot_reuse_status"] == "fail_closed_identity"
+
+
+def test_execution_engine_packet_summary_fail_closes_stale_raw_snapshot_identity() -> None:
+    summary = store._packet_summary_from_bootstrap_payload(  # noqa: SLF001
+        {
+            "component": "execution-" + "governance",
+            "packet_kind": "governance_slice",
+            "context_packet": {
+                "packet_kind": "governance_slice",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+            "execution_engine": {
+                "present": True,
+                "outcome": "admit",
+                "mode": "verify",
+                "next_move": "verify.selected_matrix",
+                "closure": "safe",
+            },
+        }
+    )
+
+    assert summary["execution_engine_present"] is True
+    assert summary["execution_engine_outcome"] == "deny"
+    assert summary["execution_engine_mode"] == "recover"
+    assert summary["execution_engine_next_move"] == "re_anchor.execution_engine_identity"
+    assert summary["execution_engine_closure"] == "incomplete"
+    assert summary["execution_engine_identity_status"] == "blocked_noncanonical_target"
+    assert summary["execution_engine_target_component_id"] == "execution-" + "governance"
+    assert summary["execution_engine_target_component_status"] == "blocked_noncanonical_execution_engine"
+    assert summary["execution_engine_snapshot_reuse_status"] == "fail_closed_identity"
+
+
+def test_execution_engine_benchmark_payload_enrichment_does_not_hide_nested_stale_identity() -> None:
+    payload = odylith_benchmark_execution_engine.enrich_packet_payload_for_execution_engine_family(
+        payload={
+            "execution_engine": {
+                "present": True,
+                "outcome": "admit",
+                "mode": "verify",
+                "next_move": "verify.selected_matrix",
+                "component_id": "execution-engine",
+                "canonical_component_id": "execution-engine",
+                "identity_status": "canonical",
+                "target_component_id": "execution-" + "governance",
+                "target_component_status": "execution_engine",
+            }
+        },
+        scenario={"family": "execution_engine", "component": "execution-engine"},
+    )
+
+    summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+
+    assert payload["component"] == "execution-engine"
+    assert summary["execution_engine_outcome"] == "deny"
+    assert summary["execution_engine_mode"] == "recover"
+    assert summary["execution_engine_identity_status"] == "blocked_noncanonical_target"
+    assert summary["execution_engine_target_component_id"] == "execution-" + "governance"
+    assert summary["execution_engine_target_component_status"] == "blocked_noncanonical_execution_engine"
+    assert summary["execution_engine_snapshot_reuse_status"] == "fail_closed_identity"
+
+
 def test_execution_engine_summary_aggregates_family_metrics() -> None:
     summary = runner._mode_summary(  # noqa: SLF001
         mode="odylith_on",
@@ -56,7 +151,10 @@ def test_execution_engine_summary_aggregates_family_metrics() -> None:
                 "kind": "packet",
                 "scenario_family": "execution_engine",
                 "latency_ms": 8.0,
+                "context_engine_packet_build_ms": 10.0,
                 "effective_estimated_tokens": 72,
+                "runtime_contract_estimated_tokens": 20,
+                "total_payload_estimated_tokens": 210,
                 "packet": {
                     "execution_engine_present": True,
                     "execution_engine_outcome": "admit",
@@ -69,7 +167,13 @@ def test_execution_engine_summary_aggregates_family_metrics() -> None:
                     "execution_engine_validation_archetype": "verify",
                     "execution_engine_authoritative_lane": "context_engine.governance_slice.authoritative",
                     "execution_engine_host_family": "codex",
+                    "execution_engine_component_id": "execution-engine",
+                    "execution_engine_canonical_component_id": "execution-engine",
+                    "execution_engine_identity_status": "canonical",
+                    "execution_engine_target_component_status": "execution_engine",
+                    "execution_engine_snapshot_reuse_status": "built",
                     "execution_engine_requires_reanchor": False,
+                    "execution_engine_snapshot_duration_ms": 2.0,
                 },
                 "expectation_ok": True,
                 "expectation_details": {
@@ -85,6 +189,11 @@ def test_execution_engine_summary_aggregates_family_metrics() -> None:
                         "context_engine.governance_slice.authoritative"
                     ],
                     "expected_execution_engine_host_family": ["codex"],
+                    "expected_execution_engine_component_id": ["execution-engine"],
+                    "expected_execution_engine_canonical_component_id": ["execution-engine"],
+                    "expected_execution_engine_identity_status": ["canonical"],
+                    "expected_execution_engine_target_component_status": ["execution_engine"],
+                    "expected_execution_engine_snapshot_reuse_status": ["built"],
                     "expected_execution_engine_requires_reanchor": False,
                 },
             },
@@ -92,7 +201,10 @@ def test_execution_engine_summary_aggregates_family_metrics() -> None:
                 "kind": "packet",
                 "scenario_family": "execution_engine",
                 "latency_ms": 9.0,
+                "context_engine_packet_build_ms": 20.0,
                 "effective_estimated_tokens": 68,
+                "runtime_contract_estimated_tokens": 40,
+                "total_payload_estimated_tokens": 230,
                 "packet": {
                     "execution_engine_present": True,
                     "execution_engine_outcome": "admit",
@@ -104,7 +216,13 @@ def test_execution_engine_summary_aggregates_family_metrics() -> None:
                     "execution_engine_validation_archetype": "recover",
                     "execution_engine_authoritative_lane": "context_engine.impact.authoritative",
                     "execution_engine_host_family": "codex",
+                    "execution_engine_component_id": "execution-engine",
+                    "execution_engine_canonical_component_id": "execution-engine",
+                    "execution_engine_identity_status": "canonical",
+                    "execution_engine_target_component_status": "execution_engine",
+                    "execution_engine_snapshot_reuse_status": "built",
                     "execution_engine_requires_reanchor": False,
+                    "execution_engine_snapshot_duration_ms": 4.0,
                 },
                 "expectation_ok": True,
                 "expectation_details": {
@@ -119,6 +237,11 @@ def test_execution_engine_summary_aggregates_family_metrics() -> None:
                         "context_engine.impact.authoritative"
                     ],
                     "expected_execution_engine_host_family": ["codex"],
+                    "expected_execution_engine_component_id": ["execution-engine"],
+                    "expected_execution_engine_canonical_component_id": ["execution-engine"],
+                    "expected_execution_engine_identity_status": ["canonical"],
+                    "expected_execution_engine_target_component_status": ["execution_engine"],
+                    "expected_execution_engine_snapshot_reuse_status": ["built"],
                     "expected_execution_engine_requires_reanchor": False,
                     "expected_execution_engine_delegation_guard_blocked": True,
                     "expected_execution_engine_parallelism_guard_blocked": True,
@@ -140,9 +263,19 @@ def test_execution_engine_summary_aggregates_family_metrics() -> None:
     assert summary["execution_engine_expected_authoritative_lane_count"] == 2
     assert summary["execution_engine_expected_resume_token_count"] == 2
     assert summary["execution_engine_expected_host_family_count"] == 2
+    assert summary["execution_engine_expected_component_id_count"] == 2
+    assert summary["execution_engine_expected_canonical_component_id_count"] == 2
+    assert summary["execution_engine_expected_identity_status_count"] == 2
+    assert summary["execution_engine_expected_target_component_status_count"] == 2
+    assert summary["execution_engine_expected_snapshot_reuse_status_count"] == 2
     assert summary["execution_engine_expected_reanchor_count"] == 2
     assert summary["execution_engine_expected_delegation_guard_count"] == 1
     assert summary["execution_engine_expected_parallelism_guard_count"] == 1
+    assert summary["execution_engine_median_context_packet_build_ms"] == 15.0
+    assert summary["execution_engine_median_snapshot_duration_ms"] == 3.0
+    assert summary["execution_engine_median_prompt_bundle_tokens"] == 70.0
+    assert summary["execution_engine_median_runtime_contract_tokens"] == 30.0
+    assert summary["execution_engine_median_total_payload_tokens"] == 220.0
     assert summary["execution_engine_false_admit_rate"] == 0.0
     assert summary["execution_engine_false_deny_rate"] == 0.0
     assert summary["execution_engine_outcome_accuracy_rate"] == 1.0
@@ -155,12 +288,17 @@ def test_execution_engine_summary_aggregates_family_metrics() -> None:
     assert summary["execution_engine_authoritative_lane_accuracy_rate"] == 1.0
     assert summary["execution_engine_resume_token_accuracy_rate"] == 1.0
     assert summary["execution_engine_host_family_accuracy_rate"] == 1.0
+    assert summary["execution_engine_component_id_accuracy_rate"] == 1.0
+    assert summary["execution_engine_canonical_component_id_accuracy_rate"] == 1.0
+    assert summary["execution_engine_identity_status_accuracy_rate"] == 1.0
+    assert summary["execution_engine_target_component_status_accuracy_rate"] == 1.0
+    assert summary["execution_engine_snapshot_reuse_status_accuracy_rate"] == 1.0
     assert summary["execution_engine_reanchor_accuracy_rate"] == 1.0
     assert summary["execution_engine_delegation_guard_accuracy_rate"] == 1.0
     assert summary["execution_engine_parallelism_guard_accuracy_rate"] == 1.0
 
 
-def test_execution_engine_family_alias_tracks_false_admit_and_false_deny_rates() -> None:
+def test_execution_engine_family_token_variant_tracks_false_admit_and_false_deny_rates() -> None:
     summary = odylith_benchmark_execution_engine.summary_from_rows(
         [
             {
@@ -192,6 +330,131 @@ def test_execution_engine_family_alias_tracks_false_admit_and_false_deny_rates()
     assert summary["execution_engine_outcome_accuracy_rate"] == 0.0
 
 
+def test_execution_engine_payload_enrichment_preserves_related_target_identity() -> None:
+    enriched = odylith_benchmark_execution_engine.enrich_packet_payload_for_execution_engine_family(
+        payload={
+            "packet_kind": "impact",
+            "component": "subagent-router",
+            "routing_handoff": {
+                "route_ready": False,
+                "native_spawn_ready": False,
+                "narrowing_required": True,
+            },
+            "execution_engine": {
+                "present": True,
+                "component_id": "execution-engine",
+                "target_component_status": "missing",
+                "snapshot_reuse_status": "reused_payload_snapshot",
+            },
+        },
+        scenario={"family": "execution_engine", "component": "subagent-router"},
+    )
+
+    assert enriched["component"] == "subagent-router"
+    assert enriched["component_id"] == "execution-engine"
+    assert enriched["canonical_component_id"] == "execution-engine"
+    assert enriched["component_ids"] == ["subagent-router", "execution-engine"]
+    assert enriched["related_component_ids"] == ["execution-engine"]
+    assert "execution_engine" not in enriched
+
+    packet = store._packet_summary_from_bootstrap_payload(enriched)  # noqa: SLF001
+    assert packet["execution_engine_component_id"] == "execution-engine"
+    assert packet["execution_engine_canonical_component_id"] == "execution-engine"
+    assert packet["execution_engine_identity_status"] == "canonical"
+    assert packet["execution_engine_target_component_status"] == "execution_engine_plus_related"
+    assert packet["execution_engine_snapshot_reuse_status"] == "built"
+
+
+def test_packet_expectation_gate_rejects_execution_engine_identity_mismatch() -> None:
+    ok, details = store._packet_satisfies_evaluation_expectations(  # noqa: SLF001
+        {
+            "execution_engine_present": True,
+            "execution_engine_outcome": "admit",
+            "execution_engine_mode": "verify",
+            "execution_engine_next_move": "verify.selected_matrix",
+            "execution_engine_closure": "incomplete",
+            "execution_engine_validation_archetype": "verify",
+            "execution_engine_component_id": "execution-engine",
+            "execution_engine_canonical_component_id": "execution-engine",
+            "execution_engine_identity_status": "canonical",
+            "execution_engine_target_component_status": "missing",
+            "execution_engine_snapshot_reuse_status": "reused_payload_snapshot",
+        },
+        {
+            "execution_engine_outcome": ["admit"],
+            "execution_engine_mode": ["verify"],
+            "execution_engine_next_move": ["verify.selected_matrix"],
+            "execution_engine_closure": ["incomplete"],
+            "execution_engine_validation_archetype": ["verify"],
+            "execution_engine_component_id": ["execution-engine"],
+            "execution_engine_canonical_component_id": ["execution-engine"],
+            "execution_engine_identity_status": ["canonical"],
+            "execution_engine_target_component_status": ["execution_engine"],
+            "execution_engine_snapshot_reuse_status": ["built"],
+        },
+    )
+
+    assert ok is False
+    assert details["observed_execution_engine_target_component_status"] == "missing"
+    assert details["observed_execution_engine_snapshot_reuse_status"] == "reused_payload_snapshot"
+
+
+def test_execution_engine_identity_regression_holds_even_when_action_policy_matches() -> None:
+    summary = odylith_benchmark_execution_engine.summary_from_rows(
+        [
+            {
+                "scenario_family": "execution_engine",
+                "packet": {
+                    "execution_engine_present": True,
+                    "execution_engine_outcome": "admit",
+                    "execution_engine_mode": "verify",
+                    "execution_engine_next_move": "verify.selected_matrix",
+                    "execution_engine_closure": "incomplete",
+                    "execution_engine_resume_token": "resume:governance_slice",
+                    "execution_engine_validation_archetype": "verify",
+                    "execution_engine_host_family": "codex",
+                    "execution_engine_component_id": "execution-" + "governance",
+                    "execution_engine_canonical_component_id": "execution-" + "governance",
+                    "execution_engine_identity_status": "canonical",
+                    "execution_engine_target_component_status": "execution_engine",
+                    "execution_engine_snapshot_reuse_status": "reused_payload_snapshot",
+                },
+                "expectation_details": {
+                    "expected_execution_engine_outcome": ["admit"],
+                    "expected_execution_engine_mode": ["verify"],
+                    "expected_execution_engine_next_move": ["verify.selected_matrix"],
+                    "expected_execution_engine_closure": ["incomplete"],
+                    "expected_execution_engine_resume_token": ["resume:governance_slice"],
+                    "expected_execution_engine_validation_archetype": ["verify"],
+                    "expected_execution_engine_host_family": ["codex"],
+                    "expected_execution_engine_component_id": ["execution-engine"],
+                    "expected_execution_engine_canonical_component_id": ["execution-engine"],
+                    "expected_execution_engine_identity_status": ["blocked_noncanonical_target"],
+                    "expected_execution_engine_target_component_status": [
+                        "blocked_noncanonical_execution_engine"
+                    ],
+                    "expected_execution_engine_snapshot_reuse_status": ["fail_closed_identity"],
+                },
+            }
+        ]
+    )
+    checks = odylith_benchmark_execution_engine.acceptance_checks(summary)
+
+    assert summary["execution_engine_outcome_accuracy_rate"] == 1.0
+    assert summary["execution_engine_mode_accuracy_rate"] == 1.0
+    assert summary["execution_engine_component_id_accuracy_rate"] == 0.0
+    assert summary["execution_engine_canonical_component_id_accuracy_rate"] == 0.0
+    assert summary["execution_engine_identity_status_accuracy_rate"] == 0.0
+    assert summary["execution_engine_target_component_status_accuracy_rate"] == 0.0
+    assert summary["execution_engine_snapshot_reuse_status_accuracy_rate"] == 0.0
+    assert checks["execution_engine_outcome_accurate"] is True
+    assert checks["execution_engine_component_id_accurate"] is False
+    assert checks["execution_engine_canonical_component_id_accurate"] is False
+    assert checks["execution_engine_identity_status_accurate"] is False
+    assert checks["execution_engine_target_component_status_accurate"] is False
+    assert checks["execution_engine_snapshot_reuse_status_accurate"] is False
+
+
 def test_execution_engine_summary_comparison_includes_family_deltas() -> None:
     comparison = runner._summary_comparison(  # noqa: SLF001
         candidate_mode="odylith_on",
@@ -202,6 +465,11 @@ def test_execution_engine_summary_comparison_includes_family_deltas() -> None:
                 "execution_engine_resume_token_present_rate": 1.0,
                 "execution_engine_false_admit_rate": 0.0,
                 "execution_engine_false_deny_rate": 0.0,
+                "execution_engine_median_context_packet_build_ms": 10.0,
+                "execution_engine_median_snapshot_duration_ms": 2.0,
+                "execution_engine_median_prompt_bundle_tokens": 72.0,
+                "execution_engine_median_runtime_contract_tokens": 20.0,
+                "execution_engine_median_total_payload_tokens": 210.0,
                 "execution_engine_outcome_accuracy_rate": 1.0,
                 "execution_engine_mode_accuracy_rate": 1.0,
                 "execution_engine_next_move_accuracy_rate": 1.0,
@@ -211,6 +479,11 @@ def test_execution_engine_summary_comparison_includes_family_deltas() -> None:
                 "execution_engine_authoritative_lane_accuracy_rate": 1.0,
                 "execution_engine_resume_token_accuracy_rate": 1.0,
                 "execution_engine_host_family_accuracy_rate": 1.0,
+                "execution_engine_component_id_accuracy_rate": 1.0,
+                "execution_engine_canonical_component_id_accuracy_rate": 1.0,
+                "execution_engine_identity_status_accuracy_rate": 1.0,
+                "execution_engine_target_component_status_accuracy_rate": 1.0,
+                "execution_engine_snapshot_reuse_status_accuracy_rate": 1.0,
                 "execution_engine_reanchor_accuracy_rate": 1.0,
                 "execution_engine_delegation_guard_accuracy_rate": 1.0,
                 "execution_engine_parallelism_guard_accuracy_rate": 1.0,
@@ -220,6 +493,11 @@ def test_execution_engine_summary_comparison_includes_family_deltas() -> None:
                 "execution_engine_resume_token_present_rate": 0.0,
                 "execution_engine_false_admit_rate": 1.0,
                 "execution_engine_false_deny_rate": 1.0,
+                "execution_engine_median_context_packet_build_ms": 20.0,
+                "execution_engine_median_snapshot_duration_ms": 5.0,
+                "execution_engine_median_prompt_bundle_tokens": 100.0,
+                "execution_engine_median_runtime_contract_tokens": 30.0,
+                "execution_engine_median_total_payload_tokens": 240.0,
                 "execution_engine_outcome_accuracy_rate": 0.0,
                 "execution_engine_mode_accuracy_rate": 0.0,
                 "execution_engine_next_move_accuracy_rate": 0.0,
@@ -229,6 +507,11 @@ def test_execution_engine_summary_comparison_includes_family_deltas() -> None:
                 "execution_engine_authoritative_lane_accuracy_rate": 0.0,
                 "execution_engine_resume_token_accuracy_rate": 0.0,
                 "execution_engine_host_family_accuracy_rate": 0.0,
+                "execution_engine_component_id_accuracy_rate": 0.0,
+                "execution_engine_canonical_component_id_accuracy_rate": 0.0,
+                "execution_engine_identity_status_accuracy_rate": 0.0,
+                "execution_engine_target_component_status_accuracy_rate": 0.0,
+                "execution_engine_snapshot_reuse_status_accuracy_rate": 0.0,
                 "execution_engine_reanchor_accuracy_rate": 0.0,
                 "execution_engine_delegation_guard_accuracy_rate": 0.0,
                 "execution_engine_parallelism_guard_accuracy_rate": 0.0,
@@ -240,6 +523,11 @@ def test_execution_engine_summary_comparison_includes_family_deltas() -> None:
     assert comparison["execution_engine_resume_token_present_delta"] == 1.0
     assert comparison["execution_engine_false_admit_rate_delta"] == -1.0
     assert comparison["execution_engine_false_deny_rate_delta"] == -1.0
+    assert comparison["execution_engine_median_context_packet_build_ms_delta"] == -10.0
+    assert comparison["execution_engine_median_snapshot_duration_ms_delta"] == -3.0
+    assert comparison["execution_engine_median_prompt_bundle_tokens_delta"] == -28.0
+    assert comparison["execution_engine_median_runtime_contract_tokens_delta"] == -10.0
+    assert comparison["execution_engine_median_total_payload_tokens_delta"] == -30.0
     assert comparison["execution_engine_outcome_accuracy_delta"] == 1.0
     assert comparison["execution_engine_mode_accuracy_delta"] == 1.0
     assert comparison["execution_engine_next_move_accuracy_delta"] == 1.0
@@ -249,6 +537,11 @@ def test_execution_engine_summary_comparison_includes_family_deltas() -> None:
     assert comparison["execution_engine_authoritative_lane_accuracy_delta"] == 1.0
     assert comparison["execution_engine_resume_token_accuracy_delta"] == 1.0
     assert comparison["execution_engine_host_family_accuracy_delta"] == 1.0
+    assert comparison["execution_engine_component_id_accuracy_delta"] == 1.0
+    assert comparison["execution_engine_canonical_component_id_accuracy_delta"] == 1.0
+    assert comparison["execution_engine_identity_status_accuracy_delta"] == 1.0
+    assert comparison["execution_engine_target_component_status_accuracy_delta"] == 1.0
+    assert comparison["execution_engine_snapshot_reuse_status_accuracy_delta"] == 1.0
     assert comparison["execution_engine_reanchor_accuracy_delta"] == 1.0
     assert comparison["execution_engine_delegation_guard_accuracy_delta"] == 1.0
     assert comparison["execution_engine_parallelism_guard_accuracy_delta"] == 1.0
@@ -277,7 +570,16 @@ def test_acceptance_holds_on_execution_engine_regressions() -> None:
                 "execution_engine_expected_authoritative_lane_count": 1,
                 "execution_engine_expected_resume_token_count": 1,
                 "execution_engine_expected_host_family_count": 1,
+                "execution_engine_expected_component_id_count": 1,
+                "execution_engine_expected_canonical_component_id_count": 1,
+                "execution_engine_expected_identity_status_count": 1,
+                "execution_engine_expected_target_component_status_count": 1,
+                "execution_engine_expected_snapshot_reuse_status_count": 1,
                 "execution_engine_expected_reanchor_count": 1,
+                "execution_engine_expected_delegation_guard_count": 1,
+                "execution_engine_expected_parallelism_guard_count": 1,
+                "execution_engine_false_admit_rate": 1.0,
+                "execution_engine_false_deny_rate": 1.0,
                 "execution_engine_outcome_accuracy_rate": 0.0,
                 "execution_engine_mode_accuracy_rate": 0.0,
                 "execution_engine_next_move_accuracy_rate": 0.0,
@@ -287,7 +589,14 @@ def test_acceptance_holds_on_execution_engine_regressions() -> None:
                 "execution_engine_authoritative_lane_accuracy_rate": 0.0,
                 "execution_engine_resume_token_accuracy_rate": 0.0,
                 "execution_engine_host_family_accuracy_rate": 0.0,
+                "execution_engine_component_id_accuracy_rate": 0.0,
+                "execution_engine_canonical_component_id_accuracy_rate": 0.0,
+                "execution_engine_identity_status_accuracy_rate": 0.0,
+                "execution_engine_target_component_status_accuracy_rate": 0.0,
+                "execution_engine_snapshot_reuse_status_accuracy_rate": 0.0,
                 "execution_engine_reanchor_accuracy_rate": 0.0,
+                "execution_engine_delegation_guard_accuracy_rate": 0.0,
+                "execution_engine_parallelism_guard_accuracy_rate": 0.0,
             },
             "raw_agent_baseline": {
                 "scenario_count": 1,
@@ -309,6 +618,11 @@ def test_acceptance_holds_on_execution_engine_regressions() -> None:
                 "execution_engine_expected_authoritative_lane_count": 1,
                 "execution_engine_expected_resume_token_count": 1,
                 "execution_engine_expected_host_family_count": 1,
+                "execution_engine_expected_component_id_count": 1,
+                "execution_engine_expected_canonical_component_id_count": 1,
+                "execution_engine_expected_identity_status_count": 1,
+                "execution_engine_expected_target_component_status_count": 1,
+                "execution_engine_expected_snapshot_reuse_status_count": 1,
                 "execution_engine_expected_reanchor_count": 1,
                 "execution_engine_outcome_accuracy_rate": 1.0,
                 "execution_engine_mode_accuracy_rate": 1.0,
@@ -319,6 +633,11 @@ def test_acceptance_holds_on_execution_engine_regressions() -> None:
                 "execution_engine_authoritative_lane_accuracy_rate": 1.0,
                 "execution_engine_resume_token_accuracy_rate": 1.0,
                 "execution_engine_host_family_accuracy_rate": 1.0,
+                "execution_engine_component_id_accuracy_rate": 1.0,
+                "execution_engine_canonical_component_id_accuracy_rate": 1.0,
+                "execution_engine_identity_status_accuracy_rate": 1.0,
+                "execution_engine_target_component_status_accuracy_rate": 1.0,
+                "execution_engine_snapshot_reuse_status_accuracy_rate": 1.0,
                 "execution_engine_reanchor_accuracy_rate": 1.0,
             },
         },
@@ -357,7 +676,16 @@ def test_acceptance_holds_on_execution_engine_regressions() -> None:
                     "execution_engine_expected_authoritative_lane_count": 1,
                     "execution_engine_expected_resume_token_count": 1,
                     "execution_engine_expected_host_family_count": 1,
+                    "execution_engine_expected_component_id_count": 1,
+                    "execution_engine_expected_canonical_component_id_count": 1,
+                    "execution_engine_expected_identity_status_count": 1,
+                    "execution_engine_expected_target_component_status_count": 1,
+                    "execution_engine_expected_snapshot_reuse_status_count": 1,
                     "execution_engine_expected_reanchor_count": 1,
+                    "execution_engine_expected_delegation_guard_count": 1,
+                    "execution_engine_expected_parallelism_guard_count": 1,
+                    "execution_engine_false_admit_rate": 1.0,
+                    "execution_engine_false_deny_rate": 1.0,
                     "execution_engine_outcome_accuracy_rate": 0.0,
                     "execution_engine_mode_accuracy_rate": 0.0,
                     "execution_engine_next_move_accuracy_rate": 0.0,
@@ -367,7 +695,14 @@ def test_acceptance_holds_on_execution_engine_regressions() -> None:
                     "execution_engine_authoritative_lane_accuracy_rate": 0.0,
                     "execution_engine_resume_token_accuracy_rate": 0.0,
                     "execution_engine_host_family_accuracy_rate": 0.0,
+                    "execution_engine_component_id_accuracy_rate": 0.0,
+                    "execution_engine_canonical_component_id_accuracy_rate": 0.0,
+                    "execution_engine_identity_status_accuracy_rate": 0.0,
+                    "execution_engine_target_component_status_accuracy_rate": 0.0,
+                    "execution_engine_snapshot_reuse_status_accuracy_rate": 0.0,
                     "execution_engine_reanchor_accuracy_rate": 0.0,
+                    "execution_engine_delegation_guard_accuracy_rate": 0.0,
+                    "execution_engine_parallelism_guard_accuracy_rate": 0.0,
                 },
                 "raw_agent_baseline": {
                     "required_path_recall_rate": 1.0,
@@ -388,6 +723,11 @@ def test_acceptance_holds_on_execution_engine_regressions() -> None:
                     "execution_engine_expected_authoritative_lane_count": 1,
                     "execution_engine_expected_resume_token_count": 1,
                     "execution_engine_expected_host_family_count": 1,
+                    "execution_engine_expected_component_id_count": 1,
+                    "execution_engine_expected_canonical_component_id_count": 1,
+                    "execution_engine_expected_identity_status_count": 1,
+                    "execution_engine_expected_target_component_status_count": 1,
+                    "execution_engine_expected_snapshot_reuse_status_count": 1,
                     "execution_engine_expected_reanchor_count": 1,
                     "execution_engine_outcome_accuracy_rate": 1.0,
                     "execution_engine_mode_accuracy_rate": 1.0,
@@ -398,6 +738,11 @@ def test_acceptance_holds_on_execution_engine_regressions() -> None:
                     "execution_engine_authoritative_lane_accuracy_rate": 1.0,
                     "execution_engine_resume_token_accuracy_rate": 1.0,
                     "execution_engine_host_family_accuracy_rate": 1.0,
+                    "execution_engine_component_id_accuracy_rate": 1.0,
+                    "execution_engine_canonical_component_id_accuracy_rate": 1.0,
+                    "execution_engine_identity_status_accuracy_rate": 1.0,
+                    "execution_engine_target_component_status_accuracy_rate": 1.0,
+                    "execution_engine_snapshot_reuse_status_accuracy_rate": 1.0,
                     "execution_engine_reanchor_accuracy_rate": 1.0,
                 },
             }
@@ -421,7 +766,16 @@ def test_acceptance_holds_on_execution_engine_regressions() -> None:
     assert acceptance["checks"]["execution_engine_authoritative_lane_accurate"] is False
     assert acceptance["checks"]["execution_engine_resume_token_accurate"] is False
     assert acceptance["checks"]["execution_engine_host_family_accurate"] is False
+    assert acceptance["checks"]["execution_engine_component_id_accurate"] is False
+    assert acceptance["checks"]["execution_engine_canonical_component_id_accurate"] is False
+    assert acceptance["checks"]["execution_engine_identity_status_accurate"] is False
+    assert acceptance["checks"]["execution_engine_target_component_status_accurate"] is False
+    assert acceptance["checks"]["execution_engine_snapshot_reuse_status_accurate"] is False
     assert acceptance["checks"]["execution_engine_reanchor_accurate"] is False
+    assert acceptance["checks"]["execution_engine_false_admit_zero"] is False
+    assert acceptance["checks"]["execution_engine_false_deny_zero"] is False
+    assert acceptance["checks"]["execution_engine_delegation_guard_accurate"] is False
+    assert acceptance["checks"]["execution_engine_parallelism_guard_accurate"] is False
     assert "execution_engine" in acceptance["weak_families"]
 
 
@@ -475,8 +829,14 @@ def test_execution_engine_historical_component_id_fails_closed() -> None:
 
     assert summary["route_ready"] is False
     assert summary["native_spawn_ready"] is False
+    assert summary["execution_engine_outcome"] == "deny"
+    assert summary["execution_engine_requires_reanchor"] is True
     assert summary["execution_engine_mode"] == "recover"
-    assert summary["execution_engine_next_move"] == "recover.current_blocker"
+    assert summary["execution_engine_next_move"] == "re_anchor.execution_engine_identity"
+    assert summary["execution_engine_closure"] == "incomplete"
+    assert summary["execution_engine_validation_archetype"] == "identity"
+    assert summary["execution_engine_identity_status"] == "blocked_noncanonical_target"
+    assert summary["execution_engine_target_component_status"] == "blocked_noncanonical_execution_engine"
 
 
 def test_execution_engine_probe_broad_scope_stays_fail_closed() -> None:

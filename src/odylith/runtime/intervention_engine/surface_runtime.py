@@ -16,8 +16,8 @@ _STOP_RECOVERABLE_LIVE_KINDS: tuple[str, ...] = (
     "ambient_signal",
     "intervention_teaser",
 )
-_STOP_RECOVERY_SKIP_STATUSES: frozenset[str] = frozenset({"manual_visible"})
-_STOP_RECOVERY_SKIP_CHANNELS: frozenset[str] = frozenset({"manual_visible_command", "stop_one_shot_guard"})
+_STOP_RECOVERY_SKIP_STATUSES: frozenset[str] = frozenset({"assistant_chat_confirmed", "manual_visible"})
+_STOP_RECOVERY_SKIP_CHANNELS: frozenset[str] = frozenset({"assistant_chat_transcript", "manual_visible_command", "stop_one_shot_guard"})
 
 
 def _normalize_string(value: Any) -> str:
@@ -46,8 +46,8 @@ def wrap_live_text(value: Any) -> str:
     if not text:
         return ""
     if text.startswith(f"{LIVE_BOUNDARY}\n") and text.endswith(f"\n{LIVE_BOUNDARY}"):
-        return text
-    return f"{LIVE_BOUNDARY}\n{text}\n{LIVE_BOUNDARY}"
+        text = _normalize_block_string(text[len(LIVE_BOUNDARY) + 1 : -(len(LIVE_BOUNDARY) + 1)])
+    return f"{LIVE_BOUNDARY}\n\n{text}\n\n{LIVE_BOUNDARY}"
 
 
 def _normalize_string_list(value: Any) -> list[str]:
@@ -209,6 +209,11 @@ def observation_envelope(
     bugs: Sequence[str] = (),
     diagrams: Sequence[str] = (),
     packet_summary: Mapping[str, Any] | None = None,
+    context_packet_summary: Mapping[str, Any] | None = None,
+    execution_engine_summary: Mapping[str, Any] | None = None,
+    memory_summary: Mapping[str, Any] | None = None,
+    tribunal_summary: Mapping[str, Any] | None = None,
+    visibility_summary: Mapping[str, Any] | None = None,
     delivery_snapshot: Mapping[str, Any] | None = None,
     active_target_refs: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
@@ -236,6 +241,11 @@ def observation_envelope(
         "assistant_summary": _normalize_string(assistant_summary),
         "changed_paths": _normalize_string_list(changed_paths),
         "packet_summary": _mapping(packet_summary),
+        "context_packet_summary": _mapping(context_packet_summary),
+        "execution_engine_summary": _mapping(execution_engine_summary),
+        "memory_summary": _mapping(memory_summary),
+        "tribunal_summary": _mapping(tribunal_summary),
+        "visibility_summary": _mapping(visibility_summary),
         "delivery_snapshot": _mapping(delivery_snapshot),
         "active_target_refs": refs,
     }
@@ -287,6 +297,7 @@ def append_bundle_events(
     delivery_status: str = "",
     render_surface: str = "",
     delivery_latency_ms: float | None = None,
+    metadata: Mapping[str, Any] | None = None,
 ) -> list[str]:
     observation = _mapping(bundle.get("observation"))
     candidate = _mapping(bundle.get("candidate"))
@@ -333,6 +344,7 @@ def append_bundle_events(
             delivery_status=delivery_status,
             render_surface=render_surface,
             delivery_latency_ms=delivery_latency_ms,
+            metadata=metadata,
         )
         events.append("intervention_teaser")
     if stage == "card" and not _normalize_string(candidate.get("suppressed_reason")) and _normalize_string(candidate.get("markdown_text")):
@@ -357,6 +369,7 @@ def append_bundle_events(
             delivery_status=delivery_status,
             render_surface=render_surface,
             delivery_latency_ms=delivery_latency_ms,
+            metadata=metadata,
         )
         events.append("intervention_card")
     if (
@@ -389,6 +402,7 @@ def append_bundle_events(
             delivery_status=delivery_status,
             render_surface=render_surface,
             delivery_latency_ms=delivery_latency_ms,
+            metadata=metadata,
         )
         events.append("capture_proposed")
     return events

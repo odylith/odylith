@@ -1,0 +1,459 @@
+{
+  "version": "intervention-value-adjudication-corpus.v1",
+  "quality_state": "bootstrap",
+  "cases": [
+    {
+      "id": "casebook_history_and_distinct_risk_both_surface",
+      "origin": "casebook_regression",
+      "counts_for_calibration": true,
+      "source_refs": ["B-096", "CB-122"],
+      "label_source": "maintainer_adjudication",
+      "adjudicator": "freedom-research",
+      "rationale": "A prior Casebook recurrence and a distinct live visibility invariant both change the next move, so both should render when the user is diagnosing why Odylith is invisible.",
+      "selection_context": {"explicit_diagnosis_or_planning": true},
+      "expected_selected_propositions": ["prop-risk-visible-proof", "prop-history-cb122"],
+      "must_suppress_propositions": [],
+      "duplicate_groups": [],
+      "visibility_expectation": "visible",
+      "no_output_reason": "",
+      "options": [
+        {
+          "option_id": "risk-visible-proof",
+          "proposed_label": "risks",
+          "block_kind": "ambient",
+          "markdown_text": "**Odylith Risks:** Static hook readiness is not chat-visible proof.",
+          "plain_text": "Odylith Risks: Static hook readiness is not chat-visible proof.",
+          "proposition": {
+            "proposition_id": "prop-risk-visible-proof",
+            "claim_text": "Static hook readiness is not chat-visible proof.",
+            "proposition_kind": "risks",
+            "support_state": "supported",
+            "duplicate_key": "invariant:chat-visible-proof",
+            "freshness_state": "current",
+            "semantic_signature": ["hook", "readiness", "visible", "proof"],
+            "anchor_refs": [{"kind": "bug", "id": "CB-122", "path": "odylith/casebook/bugs/2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md", "label": "CB-122"}],
+            "evidence": [{"source_kind": "casebook", "source_id": "CB-122", "freshness": "current", "confidence": 0.96, "excerpt": "chat_visible_proof=unproven_this_session", "evidence_class": "bug_regression"}]
+          },
+          "value_features": {
+            "correctness_confidence": 0.96,
+            "materiality": 0.94,
+            "actionability": 0.74,
+            "novelty": 0.72,
+            "timing_relevance": 0.9,
+            "user_need": 0.9,
+            "visibility_need": 0.95,
+            "interruption_cost": 0.04,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.01,
+            "brand_risk": 0.01
+          }
+        },
+        {
+          "option_id": "history-cb122",
+          "proposed_label": "history",
+          "block_kind": "ambient",
+          "markdown_text": "**Odylith History:** CB-122 already records this exact ready-but-unproven recurrence.",
+          "plain_text": "Odylith History: CB-122 already records this exact ready-but-unproven recurrence.",
+          "proposition": {
+            "proposition_id": "prop-history-cb122",
+            "claim_text": "CB-122 already records this exact ready-but-unproven recurrence.",
+            "proposition_kind": "history",
+            "support_state": "supported",
+            "duplicate_key": "bug:CB-122",
+            "freshness_state": "current",
+            "semantic_signature": ["cb122", "ready", "unproven", "recurrence"],
+            "anchor_refs": [{"kind": "bug", "id": "CB-122", "path": "odylith/casebook/bugs/2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md", "label": "CB-122"}],
+            "evidence": [{"source_kind": "casebook", "source_id": "CB-122", "freshness": "current", "confidence": 0.96, "excerpt": "Status: Open; Severity: P0", "evidence_class": "history"}]
+          },
+          "value_features": {
+            "correctness_confidence": 0.95,
+            "materiality": 0.87,
+            "actionability": 0.66,
+            "novelty": 0.68,
+            "timing_relevance": 0.82,
+            "user_need": 0.86,
+            "visibility_need": 0.78,
+            "interruption_cost": 0.04,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.01,
+            "brand_risk": 0.01
+          }
+        }
+      ]
+    },
+    {
+      "id": "duplicate_risk_and_observation_collapse_to_observation",
+      "origin": "casebook_regression",
+      "counts_for_calibration": true,
+      "source_refs": ["B-096", "CB-121"],
+      "label_source": "maintainer_adjudication",
+      "adjudicator": "freedom-research",
+      "rationale": "A live Observation should carry the proposition when a Risk block repeats the same invariant, because duplicate Odylith blocks damage trust.",
+      "selection_context": {"explicit_diagnosis_or_planning": true},
+      "expected_selected_propositions": ["prop-observation-visible-proof"],
+      "must_suppress_propositions": ["prop-risk-visible-proof-duplicate"],
+      "duplicate_groups": ["invariant:chat-visible-proof"],
+      "visibility_expectation": "visible",
+      "no_output_reason": "",
+      "options": [
+        {
+          "option_id": "risk-visible-proof-duplicate",
+          "proposed_label": "risks",
+          "block_kind": "ambient",
+          "markdown_text": "**Odylith Risks:** Hook payload generation is not visible proof.",
+          "plain_text": "Odylith Risks: Hook payload generation is not visible proof.",
+          "proposition": {
+            "proposition_id": "prop-risk-visible-proof-duplicate",
+            "claim_text": "Hook payload generation is not visible proof.",
+            "proposition_kind": "risks",
+            "support_state": "supported",
+            "duplicate_key": "invariant:chat-visible-proof",
+            "freshness_state": "current",
+            "semantic_signature": ["hook", "payload", "visible", "proof"],
+            "evidence": [{"source_kind": "casebook", "source_id": "CB-121", "freshness": "current", "confidence": 0.94, "excerpt": "Generated hook payload is not proof of chat-visible UX.", "evidence_class": "invariant"}]
+          },
+          "value_features": {
+            "correctness_confidence": 0.94,
+            "materiality": 0.9,
+            "actionability": 0.62,
+            "novelty": 0.5,
+            "timing_relevance": 0.85,
+            "user_need": 0.82,
+            "visibility_need": 0.86,
+            "interruption_cost": 0.04,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.01,
+            "brand_risk": 0.01
+          }
+        },
+        {
+          "option_id": "observation-visible-proof",
+          "proposed_label": "observation",
+          "block_kind": "observation",
+          "markdown_text": "**Odylith Observation:** Hook payload generation is not visible proof, so this chat needs assistant-rendered Markdown until delivery is confirmed.",
+          "plain_text": "Odylith Observation: Hook payload generation is not visible proof, so this chat needs assistant-rendered Markdown until delivery is confirmed.",
+          "proposition": {
+            "proposition_id": "prop-observation-visible-proof",
+            "claim_text": "Hook payload generation is not visible proof, so this chat needs assistant-rendered Markdown until delivery is confirmed.",
+            "proposition_kind": "observation",
+            "support_state": "supported",
+            "duplicate_key": "invariant:chat-visible-proof",
+            "freshness_state": "current",
+            "semantic_signature": ["hook", "payload", "visible", "proof"],
+            "evidence": [{"source_kind": "casebook", "source_id": "CB-121", "freshness": "current", "confidence": 0.96, "excerpt": "Generated hook payload is not proof of chat-visible UX.", "evidence_class": "live_observation"}]
+          },
+          "value_features": {
+            "correctness_confidence": 0.96,
+            "materiality": 0.93,
+            "actionability": 0.84,
+            "novelty": 0.58,
+            "timing_relevance": 0.9,
+            "user_need": 0.9,
+            "visibility_need": 0.94,
+            "interruption_cost": 0.05,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.01,
+            "brand_risk": 0.01
+          }
+        }
+      ]
+    },
+    {
+      "id": "observation_and_actionable_proposal_render_together",
+      "origin": "real_transcript",
+      "counts_for_calibration": true,
+      "source_refs": ["B-096"],
+      "label_source": "maintainer_adjudication",
+      "adjudicator": "freedom-research",
+      "rationale": "A proposal is useful only when it adds a concrete next step beyond the observation; here it updates governed truth under B-096.",
+      "selection_context": {"explicit_diagnosis_or_planning": true},
+      "expected_selected_propositions": ["prop-observation-b096", "prop-proposal-b096"],
+      "must_suppress_propositions": [],
+      "duplicate_groups": [],
+      "visibility_expectation": "visible",
+      "no_output_reason": "",
+      "options": [
+        {
+          "option_id": "observation-b096",
+          "proposed_label": "observation",
+          "block_kind": "observation",
+          "markdown_text": "**Odylith Observation:** B-096 already owns the intervention contract, so the fix should extend that governed lane.",
+          "plain_text": "Odylith Observation: B-096 already owns the intervention contract, so the fix should extend that governed lane.",
+          "proposition": {
+            "proposition_id": "prop-observation-b096",
+            "claim_text": "B-096 already owns the intervention contract, so the fix should extend that governed lane.",
+            "proposition_kind": "observation",
+            "support_state": "supported",
+            "duplicate_key": "workstream:B-096",
+            "freshness_state": "current",
+            "semantic_signature": ["b096", "intervention", "contract"],
+            "anchor_refs": [{"kind": "workstream", "id": "B-096", "path": "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md", "label": "B-096"}],
+            "evidence": [{"source_kind": "radar", "source_id": "B-096", "freshness": "current", "confidence": 0.96, "excerpt": "Conversation observation engine, governed proposal flow, and human intervention voice contract", "evidence_class": "governed_anchor"}]
+          },
+          "value_features": {
+            "correctness_confidence": 0.96,
+            "materiality": 0.9,
+            "actionability": 0.78,
+            "novelty": 0.62,
+            "timing_relevance": 0.88,
+            "user_need": 0.84,
+            "visibility_need": 0.74,
+            "interruption_cost": 0.05,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.01,
+            "brand_risk": 0.01
+          }
+        },
+        {
+          "option_id": "proposal-b096",
+          "proposed_label": "proposal",
+          "block_kind": "proposal",
+          "markdown_text": "-----\nOdylith Proposal: Update B-096 with the proposition-level value engine contract.\n-----",
+          "plain_text": "Odylith Proposal: Update B-096 with the proposition-level value engine contract.",
+          "action_payload": {"actions": [{"surface": "radar", "target_id": "B-096", "operation": "update"}]},
+          "proposition": {
+            "proposition_id": "prop-proposal-b096",
+            "claim_text": "Update B-096 with the proposition-level value engine contract.",
+            "proposition_kind": "proposal",
+            "support_state": "supported",
+            "duplicate_key": "proposal:B-096:value-engine",
+            "freshness_state": "current",
+            "semantic_signature": ["b096", "value", "engine", "contract"],
+            "evidence": [{"source_kind": "technical_plan", "source_id": "B-096", "freshness": "current", "confidence": 0.92, "excerpt": "proposition-level value engine", "evidence_class": "actionable_proposal"}]
+          },
+          "value_features": {
+            "correctness_confidence": 0.92,
+            "materiality": 0.88,
+            "actionability": 0.98,
+            "novelty": 0.64,
+            "timing_relevance": 0.86,
+            "user_need": 0.82,
+            "visibility_need": 0.72,
+            "interruption_cost": 0.05,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.02,
+            "brand_risk": 0.02
+          }
+        }
+      ]
+    },
+    {
+      "id": "weak_unsupported_insight_stays_quiet",
+      "origin": "synthetic_gate",
+      "counts_for_calibration": false,
+      "source_refs": ["B-096"],
+      "label_source": "test_adjudication",
+      "adjudicator": "freedom-research",
+      "rationale": "A weak unsupported Insight is exactly the branded filler the system must not show.",
+      "selection_context": {},
+      "expected_selected_propositions": [],
+      "must_suppress_propositions": ["prop-weak-insight"],
+      "duplicate_groups": [],
+      "visibility_expectation": "none",
+      "no_output_reason": "no_high_value_supported_signal",
+      "options": [
+        {
+          "option_id": "weak-insight",
+          "proposed_label": "insight",
+          "block_kind": "ambient",
+          "markdown_text": "**Odylith Insight:** This might be loosely related.",
+          "plain_text": "Odylith Insight: This might be loosely related.",
+          "proposition": {
+            "proposition_id": "prop-weak-insight",
+            "claim_text": "This might be loosely related.",
+            "proposition_kind": "insight",
+            "support_state": "unsupported",
+            "duplicate_key": "weak:loose",
+            "freshness_state": "current",
+            "semantic_signature": ["weak", "loose"],
+            "evidence": [{"source_kind": "synthetic", "source_id": "weak", "freshness": "current", "confidence": 0.2, "excerpt": "loosely related", "evidence_class": "negative_control"}]
+          },
+          "value_features": {
+            "correctness_confidence": 0.2,
+            "materiality": 0.25,
+            "actionability": 0.0,
+            "novelty": 0.2,
+            "timing_relevance": 0.1,
+            "user_need": 0.1,
+            "visibility_need": 0.1,
+            "interruption_cost": 0.12,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.35,
+            "brand_risk": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "adversarial_high_score_without_evidence_stays_quiet",
+      "origin": "synthetic_gate",
+      "counts_for_calibration": false,
+      "source_refs": ["B-096", "CB-123"],
+      "label_source": "test_adjudication",
+      "adjudicator": "freedom-research",
+      "rationale": "A caller can fabricate a high score, so the value engine must require grounded evidence before spending Odylith brand attention.",
+      "selection_context": {"explicit_diagnosis_or_planning": true},
+      "expected_selected_propositions": [],
+      "must_suppress_propositions": ["prop-no-evidence-risk"],
+      "duplicate_groups": [],
+      "visibility_expectation": "none",
+      "no_output_reason": "no_high_value_supported_signal",
+      "options": [
+        {
+          "option_id": "no-evidence-risk",
+          "proposed_label": "risks",
+          "block_kind": "ambient",
+          "markdown_text": "**Odylith Risks:** A high-scored claim without evidence should not render.",
+          "plain_text": "Odylith Risks: A high-scored claim without evidence should not render.",
+          "proposition": {
+            "proposition_id": "prop-no-evidence-risk",
+            "claim_text": "A high-scored claim without evidence should not render.",
+            "proposition_kind": "risks",
+            "support_state": "supported",
+            "duplicate_key": "adversarial:no-evidence",
+            "freshness_state": "current",
+            "semantic_signature": ["adversarial", "no", "evidence"]
+          },
+          "value_features": {
+            "correctness_confidence": 1.0,
+            "materiality": 1.0,
+            "actionability": 1.0,
+            "novelty": 1.0,
+            "timing_relevance": 1.0,
+            "user_need": 1.0,
+            "visibility_need": 1.0,
+            "interruption_cost": 0.0,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.0,
+            "brand_risk": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "same_label_distinct_risks_can_stack_under_budget",
+      "origin": "synthetic_gate",
+      "counts_for_calibration": false,
+      "source_refs": ["B-096"],
+      "label_source": "test_adjudication",
+      "adjudicator": "freedom-research",
+      "rationale": "Same-label ambient blocks are allowed when the propositions are distinct, high-value, supported, and still inside the live budget.",
+      "selection_context": {"explicit_diagnosis_or_planning": true},
+      "expected_selected_propositions": ["prop-risk-hidden-hooks", "prop-risk-duplicate-writes"],
+      "must_suppress_propositions": [],
+      "duplicate_groups": [],
+      "visibility_expectation": "visible",
+      "no_output_reason": "",
+      "options": [
+        {
+          "option_id": "risk-hidden-hooks",
+          "proposed_label": "risks",
+          "block_kind": "ambient",
+          "markdown_text": "**Odylith Risks:** Hidden hook payloads cannot satisfy chat-visible proof.",
+          "plain_text": "Odylith Risks: Hidden hook payloads cannot satisfy chat-visible proof.",
+          "proposition": {
+            "proposition_id": "prop-risk-hidden-hooks",
+            "claim_text": "Hidden hook payloads cannot satisfy chat-visible proof.",
+            "proposition_kind": "risks",
+            "support_state": "supported",
+            "duplicate_key": "risk:hidden-hooks",
+            "freshness_state": "current",
+            "semantic_signature": ["hidden", "hooks", "chat", "proof"],
+            "evidence": [{"source_kind": "casebook", "source_id": "CB-122", "freshness": "current", "confidence": 0.94, "excerpt": "chat_visible_proof=unproven_this_session", "evidence_class": "visibility_invariant"}]
+          },
+          "value_features": {
+            "correctness_confidence": 0.94,
+            "materiality": 0.94,
+            "actionability": 0.82,
+            "novelty": 0.72,
+            "timing_relevance": 0.9,
+            "user_need": 0.88,
+            "visibility_need": 0.92,
+            "interruption_cost": 0.04,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.01,
+            "brand_risk": 0.01
+          }
+        },
+        {
+          "option_id": "risk-duplicate-writes",
+          "proposed_label": "risks",
+          "block_kind": "ambient",
+          "markdown_text": "**Odylith Risks:** Duplicate governance writes would corrupt v0.1.11 release truth.",
+          "plain_text": "Odylith Risks: Duplicate governance writes would corrupt v0.1.11 release truth.",
+          "proposition": {
+            "proposition_id": "prop-risk-duplicate-writes",
+            "claim_text": "Duplicate governance writes would corrupt v0.1.11 release truth.",
+            "proposition_kind": "risks",
+            "support_state": "supported",
+            "duplicate_key": "risk:duplicate-governance-writes",
+            "freshness_state": "current",
+            "semantic_signature": ["duplicate", "governance", "release", "truth"],
+            "evidence": [{"source_kind": "radar_program", "source_id": "B-096", "freshness": "current", "confidence": 0.92, "excerpt": "governance binding and release proof wave", "evidence_class": "governance_program"}]
+          },
+          "value_features": {
+            "correctness_confidence": 0.92,
+            "materiality": 0.9,
+            "actionability": 0.8,
+            "novelty": 0.7,
+            "timing_relevance": 0.86,
+            "user_need": 0.84,
+            "visibility_need": 0.78,
+            "interruption_cost": 0.04,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.01,
+            "brand_risk": 0.01
+          }
+        }
+      ]
+    },
+    {
+      "id": "visibility_failure_forces_supported_observation",
+      "origin": "casebook_regression",
+      "counts_for_calibration": true,
+      "source_refs": ["CB-122"],
+      "label_source": "maintainer_adjudication",
+      "adjudicator": "freedom-research",
+      "rationale": "When the user says Odylith signals are invisible, a supported live observation must move to assistant-visible fallback instead of staying hidden.",
+      "selection_context": {"explicit_diagnosis_or_planning": true},
+      "expected_selected_propositions": ["prop-visibility-failure"],
+      "must_suppress_propositions": [],
+      "duplicate_groups": [],
+      "visibility_expectation": "failure",
+      "no_output_reason": "",
+      "options": [
+        {
+          "option_id": "visibility-failure-observation",
+          "proposed_label": "observation",
+          "block_kind": "observation",
+          "markdown_text": "**Odylith Observation:** This is a visibility failure, not a quiet moment.",
+          "plain_text": "Odylith Observation: This is a visibility failure, not a quiet moment.",
+          "proof_required": true,
+          "proposition": {
+            "proposition_id": "prop-visibility-failure",
+            "claim_text": "This is a visibility failure, not a quiet moment.",
+            "proposition_kind": "observation",
+            "support_state": "supported",
+            "duplicate_key": "visibility-failure:chat",
+            "freshness_state": "current",
+            "semantic_signature": ["visibility", "failure", "chat"],
+            "evidence": [{"source_kind": "user_transcript", "source_id": "visibility_complaint", "freshness": "current", "confidence": 1.0, "excerpt": "I cannot see if this is working", "evidence_class": "visibility_failure"}]
+          },
+          "value_features": {
+            "correctness_confidence": 1.0,
+            "materiality": 0.96,
+            "actionability": 0.86,
+            "novelty": 0.82,
+            "timing_relevance": 1.0,
+            "user_need": 1.0,
+            "visibility_need": 1.0,
+            "interruption_cost": 0.03,
+            "redundancy_cost": 0.0,
+            "uncertainty_penalty": 0.0,
+            "brand_risk": 0.0
+          }
+        }
+      ]
+    }
+  ]
+}

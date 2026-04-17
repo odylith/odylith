@@ -1,5 +1,5 @@
 .card.execution-waves-card .execution-wave-program-stack {
-  gap: 12px;
+  gap: 14px;
 }
 
 .execution-wave-section.execution-wave-section-flat {
@@ -29,7 +29,13 @@
 }
 
 .execution-wave-section.execution-wave-section-program-card {
+  border-color: #cfe0f7;
+  background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
   box-shadow: 0 10px 28px rgba(37, 99, 235, 0.06);
+}
+
+.execution-wave-section.execution-wave-section-program-card .execution-wave-section-body {
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.72) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
 .execution-wave-program-stack-release .execution-wave-section {

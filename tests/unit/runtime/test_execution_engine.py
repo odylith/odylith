@@ -10,6 +10,7 @@ from odylith.runtime.execution_engine import resource_closure
 from odylith.runtime.execution_engine import runtime_lane_policy
 from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.execution_engine import validation
+from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.execution_engine.contract import ExecutionContract
 from odylith.runtime.execution_engine.contract import ExecutionEvent
 from odylith.runtime.execution_engine.contract import detect_execution_host_profile
@@ -319,6 +320,321 @@ def test_runtime_lane_policy_blocks_consumer_lane_without_writable_targets() -> 
     assert guard.blocked is True
     assert guard.code == "execution-engine-consumer-fence"
     assert "does not yet have writable consumer targets" in guard.reason
+
+
+def test_runtime_lane_policy_blocks_noncanonical_identity_even_if_outcome_admits() -> None:
+    guard = runtime_lane_policy.delegation_guard(
+        {
+            "execution_engine_present": True,
+            "execution_engine_outcome": "admit",
+            "execution_engine_component_id": "execution-engine",
+            "execution_engine_canonical_component_id": "execution-engine",
+            "execution_engine_identity_status": "blocked_noncanonical_target",
+            "execution_engine_target_component_id": "execution-" + "governance",
+            "execution_engine_target_component_status": "blocked_noncanonical_execution_engine",
+            "execution_engine_snapshot_reuse_status": "fail_closed_identity",
+        }
+    )
+
+    assert guard.blocked is True
+    assert guard.code == "execution-engine-identity"
+    assert "noncanonical execution-engine identity" in guard.reason
+
+
+def test_runtime_lane_policy_identity_guard_blocks_each_malformed_identity_field() -> None:
+    base = {
+        "execution_engine_present": True,
+        "execution_engine_outcome": "admit",
+        "execution_engine_mode": "implement",
+        "execution_engine_closure": "safe",
+        "execution_engine_host_family": "codex",
+        "execution_engine_host_supports_native_spawn": True,
+    }
+    cases = (
+        {"execution_engine_component_id": "execution-" + "governance"},
+        {"execution_engine_canonical_component_id": "execution-" + "governance"},
+        {"execution_engine_identity_status": "blocked_noncanonical_target"},
+        {"execution_engine_target_component_id": "execution-" + "governance"},
+        {"execution_engine_target_component_status": "blocked_noncanonical_execution_engine"},
+        {"execution_engine_snapshot_reuse_status": "fail_closed_identity"},
+    )
+
+    for overrides in cases:
+        guard = runtime_lane_policy.parallelism_guard({**base, **overrides})
+        assert guard.blocked is True, overrides
+        assert guard.code == "execution-engine-identity"
+
+
+def test_context_execution_handshake_carries_stable_shape_without_aliasing() -> None:
+    handshake = execution_engine_handshake.normalize_execution_engine_handshake(
+        payload={
+            "component": "execution-engine",
+            "packet_kind": "governance_slice",
+            "turn_context": {"intent": "verify", "surfaces": ["compass"]},
+            "target_resolution": {
+                "lane": "consumer",
+                "candidate_targets": [{"path": "src/app.py", "writable": True}],
+            },
+            "presentation_policy": {"commentary_mode": "task_first"},
+            "recommended_commands": ["pytest -q"],
+        },
+        context_packet={
+            "packet_quality": {"rc": "high"},
+            "route": {"route_ready": True, "native_spawn_ready": True},
+        },
+        routing_handoff={"route_ready": True, "native_spawn_ready": True},
+    )
+
+    assert handshake["version"] == "v1"
+    assert handshake["component_id"] == "execution-engine"
+    assert handshake["canonical_component_id"] == "execution-engine"
+    assert handshake["identity_status"] == "canonical"
+    assert handshake["target_component_id"] == "execution-engine"
+    assert handshake["target_component_status"] == "execution_engine"
+    assert handshake["packet_kind"] == "governance_slice"
+    assert handshake["turn_context"]["intent"] == "verify"
+    assert handshake["target_resolution"]["lane"] == "consumer"
+    assert handshake["presentation_policy"]["commentary_mode"] == "task_first"
+    assert handshake["recommended_validation"]["recommended_commands"] == ["pytest -q"]
+    assert handshake["route_readiness"]["route_ready"] is True
+
+    stale = execution_engine_handshake.normalize_execution_engine_handshake(
+        payload={"component": "execution-" + "governance", "packet_kind": "governance_slice"},
+        context_packet={},
+    )
+    assert stale["component_id"] == "execution-engine"
+    assert stale["canonical_component_id"] == "execution-engine"
+    assert stale["identity_status"] == "blocked_noncanonical_target"
+    assert stale["target_component_id"] == "execution-" + "governance"
+    assert stale["target_component_status"] == "blocked_noncanonical_execution_engine"
+
+
+def test_context_execution_handshake_reads_related_component_truth() -> None:
+    context_packet = {
+        "related_entities": {
+            "component": [
+                {"entity_id": "execution-engine", "title": "Execution Engine"},
+                {"entity_id": "odylith", "title": "Odylith"},
+            ]
+        }
+    }
+    handshake = execution_engine_handshake.normalize_execution_engine_handshake(
+        payload={"packet_kind": "context_dossier"},
+        context_packet=context_packet,
+    )
+    compact = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload={"packet_kind": "context_dossier"},
+        context_packet=context_packet,
+        host_candidates=("codex",),
+    )
+
+    assert handshake["target_component_id"] == "execution-engine"
+    assert handshake["target_component_ids"] == ["execution-engine", "odylith"]
+    assert handshake["target_component_status"] == "execution_engine_plus_related"
+    assert compact["target_component_id"] == "execution-engine"
+    assert compact["target_component_ids"] == ["execution-engine", "odylith"]
+    assert compact["target_component_status"] == "execution_engine_plus_related"
+
+
+def test_context_execution_handshake_fail_closes_nested_historical_identity() -> None:
+    compact = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload={
+            "target_resolution": {
+                "lane": "consumer",
+                "candidate_targets": [
+                    {
+                        "path": "src/odylith/runtime/execution_engine/policy.py",
+                        "component_id": "execution-" + "governance",
+                    }
+                ],
+            }
+        },
+        context_packet={"route": {"route_ready": True, "native_spawn_ready": True}},
+    )
+
+    assert compact["outcome"] == "deny"
+    assert compact["identity_status"] == "blocked_noncanonical_target"
+    assert compact["target_component_id"] == "execution-" + "governance"
+    assert compact["target_component_status"] == "blocked_noncanonical_execution_engine"
+    assert compact["snapshot_reuse_status"] == "fail_closed_identity"
+
+
+def test_context_execution_handshake_fail_closes_diagnostic_anchor_component_values() -> None:
+    compact = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload={
+            "target_resolution": {
+                "diagnostic_anchors": [
+                    {"kind": "component", "value": "execution-" + "governance"},
+                    {"kind": "workstream", "value": "B-099"},
+                ]
+            },
+            "execution_engine": {
+                "present": True,
+                "outcome": "admit",
+                "mode": "verify",
+                "next_move": "verify.selected_matrix",
+            },
+        },
+        context_packet={"route": {"route_ready": True, "native_spawn_ready": True}},
+    )
+
+    assert compact["outcome"] == "deny"
+    assert compact["mode"] == "recover"
+    assert compact["target_component_id"] == "execution-" + "governance"
+    assert compact["identity_status"] == "blocked_noncanonical_target"
+    assert compact["snapshot_reuse_status"] == "fail_closed_identity"
+    assert compact["snapshot_duration_ms"] == 0.0
+
+
+def test_context_execution_handshake_does_not_treat_workstream_entities_as_components() -> None:
+    handshake = execution_engine_handshake.normalize_execution_engine_handshake(
+        payload={
+            "entity_id": "B-099",
+            "packet_kind": "context_dossier",
+            "target_resolution": {
+                "diagnostic_anchors": [
+                    {"kind": "workstream", "value": "B-099"},
+                    {"kind": "release", "value": "release-0-1-11"},
+                ]
+            },
+        },
+        context_packet={
+            "related_entities": {
+                "plan": [{"entity_id": "odylith/technical-plans/in-progress/x.md"}],
+                "release": [{"entity_id": "release-0-1-11"}],
+            }
+        },
+    )
+
+    assert handshake["target_component_id"] == ""
+    assert handshake["target_component_ids"] == []
+    assert handshake["target_component_status"] == "missing"
+    assert handshake["identity_status"] == "canonical"
+
+
+def test_execution_engine_snapshot_helper_reuses_existing_compact_snapshot() -> None:
+    existing = {
+        "present": True,
+        "outcome": "admit",
+        "mode": "verify",
+        "next_move": "verify.selected_matrix",
+    }
+
+    compact = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload={},
+        context_packet={"execution_engine": existing},
+    )
+
+    assert compact["outcome"] == "admit"
+    assert compact["snapshot_reuse_status"] == "reused_context_packet_snapshot"
+    assert compact["handshake_version"] == "v1"
+    assert compact["snapshot_estimated_tokens"] > 0
+
+
+def test_execution_engine_snapshot_helper_compacts_reused_full_snapshot() -> None:
+    full_snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
+        {
+            "component": "execution-engine",
+            "packet_kind": "governance_slice",
+            "context_packet_state": "compact",
+            "changed_paths": ["src/odylith/runtime/execution_engine/policy.py"],
+            "context_packet": {
+                "packet_kind": "governance_slice",
+                "packet_state": "compact",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+        },
+        host_candidates=["codex_cli"],
+    )
+
+    compact = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload={"component": "execution-engine"},
+        context_packet={"execution_engine": full_snapshot},
+    )
+
+    assert "contract" not in compact
+    assert compact["present"] is True
+    assert compact["host_family"] == "codex"
+    assert compact["snapshot_reuse_status"] == "reused_context_packet_snapshot"
+    assert compact["runtime_contract_estimated_tokens"] > 0
+
+
+def test_execution_engine_snapshot_helper_exposes_cost_metrics() -> None:
+    compact = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+        payload={
+            "component": "execution-engine",
+            "packet_kind": "bootstrap_session",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "route": {"route_ready": True, "native_spawn_ready": True},
+            },
+            "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+        },
+        host_candidates=["codex_cli"],
+        reuse_existing=False,
+    )
+
+    assert compact["snapshot_reuse_status"] == "built"
+    assert compact["snapshot_duration_ms"] >= 0.0
+    assert compact["snapshot_estimated_tokens"] > 0
+    assert compact["runtime_contract_estimated_tokens"] > 0
+    assert compact["handshake_estimated_tokens"] > 0
+
+    summary = runtime_surface_governance.summary_fields_from_execution_engine(compact)
+    assert summary["execution_engine_snapshot_duration_ms"] >= 0.0
+    assert summary["execution_engine_snapshot_estimated_tokens"] > 0
+    assert summary["execution_engine_runtime_contract_estimated_tokens"] > 0
+    assert summary["execution_engine_snapshot_reuse_status"] == "built"
+
+
+def test_codex_and_claude_snapshots_keep_same_policy_semantics() -> None:
+    payload = {
+        "packet_kind": "governance_slice",
+        "context_packet_state": "compact",
+        "changed_paths": ["src/odylith/runtime/execution_engine/policy.py"],
+        "component": "execution-engine",
+        "recommended_tests": [{"path": "tests/unit/runtime/test_execution_engine.py"}],
+        "context_packet": {
+            "packet_kind": "governance_slice",
+            "packet_state": "compact",
+            "route": {"route_ready": True, "native_spawn_ready": True},
+        },
+        "routing_handoff": {"route_ready": True, "native_spawn_ready": True},
+    }
+
+    codex = runtime_surface_governance.summary_fields_from_execution_engine(
+        runtime_surface_governance.build_packet_execution_engine_snapshot(
+            payload,
+            host_candidates=["codex_cli"],
+        )
+    )
+    claude = runtime_surface_governance.summary_fields_from_execution_engine(
+        runtime_surface_governance.build_packet_execution_engine_snapshot(
+            payload,
+            host_candidates=["claude_code"],
+        )
+    )
+
+    semantic_keys = (
+        "execution_engine_outcome",
+        "execution_engine_mode",
+        "execution_engine_next_move",
+        "execution_engine_closure",
+        "execution_engine_validation_archetype",
+        "execution_engine_authoritative_lane",
+        "execution_engine_requires_reanchor",
+    )
+    for key in semantic_keys:
+        assert claude[key] == codex[key]
+
+    assert codex["execution_engine_host_family"] == "codex"
+    assert claude["execution_engine_host_family"] == "claude"
+    assert codex["execution_engine_host_delegation_style"] == "routed_spawn"
+    assert claude["execution_engine_host_delegation_style"] == "task_tool_subagents"
+    assert codex["execution_engine_host_supports_interrupt"] is True
+    assert claude["execution_engine_host_supports_interrupt"] is False
+    assert codex["execution_engine_host_supports_artifact_paths"] is True
+    assert claude["execution_engine_host_supports_artifact_paths"] is False
 
 
 def test_promote_instruction_constraints_hardens_inline_user_corrections() -> None:

@@ -5452,6 +5452,45 @@ def test_execution_engine_router_recovery_packet_fixture_drives_truthful_recover
     assert packet["execution_engine_current_phase"] == "status synthesis"
     assert packet["execution_engine_closure"] == "incomplete"
     assert packet["execution_engine_validation_archetype"] == "recover"
+    assert packet["execution_engine_component_id"] == "execution-engine"
+    assert packet["execution_engine_canonical_component_id"] == "execution-engine"
+    assert packet["execution_engine_identity_status"] == "canonical"
+    assert packet["execution_engine_target_component_status"] == "execution_engine_plus_related"
+    assert packet["execution_engine_snapshot_reuse_status"] == "built"
+
+
+def test_execution_engine_packet_expectations_hard_gate_identity_fields() -> None:
+    packet = {
+        "execution_engine_present": True,
+        "execution_engine_outcome": "admit",
+        "execution_engine_mode": "verify",
+        "execution_engine_next_move": "verify.selected_matrix",
+        "execution_engine_closure": "incomplete",
+        "execution_engine_component_id": "execution-engine",
+        "execution_engine_canonical_component_id": "execution-engine",
+        "execution_engine_identity_status": "canonical",
+        "execution_engine_target_component_status": "missing",
+        "execution_engine_snapshot_reuse_status": "built",
+    }
+
+    matched, details = store._packet_satisfies_evaluation_expectations(  # noqa: SLF001
+        packet,
+        {
+            "execution_engine_outcome": ["admit"],
+            "execution_engine_mode": ["verify"],
+            "execution_engine_next_move": ["verify.selected_matrix"],
+            "execution_engine_closure": ["incomplete"],
+            "execution_engine_component_id": ["execution-engine"],
+            "execution_engine_canonical_component_id": ["execution-engine"],
+            "execution_engine_identity_status": ["canonical"],
+            "execution_engine_target_component_status": ["execution_engine"],
+            "execution_engine_snapshot_reuse_status": ["built"],
+        },
+    )
+
+    assert matched is False
+    assert details["observed_execution_engine_target_component_status"] == "missing"
+    assert details["expected_execution_engine_target_component_status"] == ["execution_engine"]
 
 
 def test_execution_engine_runtime_surface_packet_fixture_keeps_phase_truth() -> None:
@@ -5477,6 +5516,11 @@ def test_execution_engine_runtime_surface_packet_fixture_keeps_phase_truth() -> 
     assert packet["execution_engine_resume_token"] == "resume:governance_slice"
     assert packet["execution_engine_validation_archetype"] == "verify"
     assert packet["execution_engine_authoritative_lane"] == "context_engine.governance_slice.authoritative"
+    assert packet["execution_engine_component_id"] == "execution-engine"
+    assert packet["execution_engine_canonical_component_id"] == "execution-engine"
+    assert packet["execution_engine_identity_status"] == "canonical"
+    assert packet["execution_engine_target_component_status"] == "execution_engine"
+    assert packet["execution_engine_snapshot_reuse_status"] == "built"
 
 
 def test_execution_engine_governance_slice_ambiguity_uses_narrowing_lane() -> None:
@@ -5532,6 +5576,9 @@ def test_live_corpus_workstream_ids_exist_in_repo_truth() -> None:
         "B-073",
         "B-074",
         "B-078",
+        "B-100",
+        "B-101",
+        "B-102",
     }
 
 
@@ -6740,6 +6787,11 @@ def test_prepare_live_scenario_request_preserves_execution_engine_packet_summary
     assert packet_summary["execution_engine_current_phase"] == "verify"
     assert packet_summary["execution_engine_next_move"] == "verify.selected_matrix"
     assert packet_summary["execution_engine_resume_token"] == "resume:governance_slice"
+    assert packet_summary["execution_engine_component_id"] == "execution-engine"
+    assert packet_summary["execution_engine_canonical_component_id"] == "execution-engine"
+    assert packet_summary["execution_engine_identity_status"] == "canonical"
+    assert packet_summary["execution_engine_target_component_status"] == "execution_engine"
+    assert packet_summary["execution_engine_snapshot_reuse_status"] == "built"
 
 
 def test_prepare_live_scenario_request_adds_architecture_component_anchors() -> None:

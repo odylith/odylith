@@ -1,7 +1,7 @@
 # Execution Engine
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
-Last updated (UTC): 2026-04-16
+Last updated (UTC): 2026-04-17
 
 ## Registry Identity
 
@@ -46,6 +46,9 @@ The answer is not prose advice. The answer is a structured payload made of:
 - `ContradictionRecord`
 - compact summary fields consumed by packets, shell surfaces, router guards,
   orchestrator guards, deterministic remediation, and intervention timing
+- compact summary fields consumed by the visible intervention value engine as
+  timing, actionability, validation, closure, recover, and visibility-need
+  evidence
 
 The runtime is intentionally policy-first. It does not call tools. It does not
 mutate files. It does not own the host's transport. It gives the caller a
@@ -72,6 +75,28 @@ not each invent their own local rules for whether a slice is safe to delegate,
 verify, recover, or resume. They should consume the same compact execution
 snapshot and explain the same denial, defer, closure, wait, and validation
 state.
+
+## Context Engine Handshake
+
+The Context Engine to Execution Engine handoff is a versioned packet
+handshake, currently `v1`. The handoff is built by
+`src/odylith/runtime/context_engine/execution_engine_handshake.py` and carried
+inside Context Engine packets as `execution_engine_handshake`.
+
+The handshake carries canonical component identity, identity status, packet
+kind and state, expanded packet quality, `turn_context`,
+`target_resolution`, `presentation_policy`, recommended validation, and route
+readiness. Only `execution-engine` is canonical. Missing or noncanonical
+component identity remains explicit and must fail closed before route
+readiness or benchmark expectation evaluation. There is no alias source and
+no compatibility translation for historical execution component ids.
+
+The Execution Engine consumes the packet plus handshake once, emits one
+compact snapshot, and allows packet summaries or surface summaries to reuse
+that snapshot instead of rebuilding policy state. Reuse status, handshake
+version, snapshot duration, runtime-contract token estimate, handshake token
+estimate, snapshot token estimate, and total payload token estimate travel in
+the compact summary as diagnostic fields.
 
 ## Scope
 
@@ -118,6 +143,9 @@ state.
   [Tribunal](../tribunal/CURRENT_SPEC.md)
 - friendly observation/proposal rendering; that belongs to
   [Governance Intervention Engine](../governance-intervention-engine/CURRENT_SPEC.md)
+- visible signal selection. Execution Engine snapshots can influence
+  materiality, actionability, timing relevance, and recover posture, but the
+  proposition value engine owns relevance scoring and chat-visible selection.
 - delegated-worker transport; that belongs to
   [Subagent Router](../subagent-router/CURRENT_SPEC.md), host adapters, and
   [Subagent Orchestrator](../subagent-orchestrator/CURRENT_SPEC.md)
@@ -316,6 +344,18 @@ This adapter is intentionally deterministic and no-op quiet. Adding a field to
 the snapshot means updating compact summaries and affected surface tests
 together.
 
+### Context Engine handshake helper
+
+`src/odylith/runtime/context_engine/execution_engine_handshake.py` is the
+Context Engine-owned adapter that normalizes the handshake, attaches it to
+packets, builds the compact Execution Engine snapshot, and reuses an existing
+compact snapshot when the packet already carries one.
+
+The helper is deliberately outside the oversized Context Engine store and the
+oversized benchmark runner. Runtime surfaces should call the helper or consume
+the compact snapshot it produced; they should not rebuild local execution
+posture from packet fragments.
+
 ### `runtime_lane_policy.py`
 
 Provides local guards for delegation and parallel fan-out. The guards consume
@@ -327,31 +367,36 @@ cannot support the requested coordination safely.
 
 ## Execution Pipeline
 
-1. Receive a grounded packet from the Context Engine.
-2. Extract packet kind, route readiness, full-scan posture, selected paths,
+1. Receive a grounded packet and `execution_engine_handshake` from the Context Engine.
+2. Treat `component_id=execution-engine` as the canonical engine identity and
+   keep target component identity in `target_component_*` fields.
+3. Fail closed before stale snapshot reuse or expensive runtime expansion when
+   a target component explicitly uses a historical execution id such as
+   `execution-governance`.
+4. Extract packet kind, route readiness, full-scan posture, selected paths,
    workstream, proof state, recommended tests, recommended commands, and
    routing handoff.
-3. Preserve structured turn intake as `TurnContext`.
-4. Preserve lane-fenced writable and diagnostic target state as
+5. Preserve structured turn intake as `TurnContext`.
+6. Preserve lane-fenced writable and diagnostic target state as
    `TargetResolution`.
-5. Preserve presentation hints as `TurnPresentationPolicy`.
-6. Detect the host as an `ExecutionHostProfile`.
-7. Infer execution mode: `explore`, `implement`, `verify`, or `recover`.
-8. Build the `ExecutionContract`.
-9. Promote inline user instructions into hard constraints.
-10. Detect contradictions.
-11. Infer the resource dependency graph and classify closure.
-12. Normalize external dependency state.
-13. Synthesize validation obligations.
-14. Emit a semantic receipt and resume handle.
-15. Evaluate admissibility for the primary next action.
-16. Collect history-rule pressure.
-17. Build the append-only event stream.
-18. Derive the execution frontier.
-19. Re-evaluate admissibility with the derived frontier.
-20. Evaluate nearby denial actions so surfaces can explain alternatives.
-21. Build sync-runtime provenance.
-22. Emit the full snapshot and compact summary fields.
+7. Preserve presentation hints as `TurnPresentationPolicy`.
+8. Detect the host as an `ExecutionHostProfile`.
+9. Infer execution mode: `explore`, `implement`, `verify`, or `recover`.
+10. Build the `ExecutionContract`.
+11. Promote inline user instructions into hard constraints.
+12. Detect contradictions.
+13. Infer the resource dependency graph and classify closure.
+14. Normalize external dependency state.
+15. Synthesize validation obligations.
+16. Emit a semantic receipt and resume handle.
+17. Evaluate admissibility for the primary next action.
+18. Collect history-rule pressure.
+19. Build the append-only event stream.
+20. Derive the execution frontier.
+21. Re-evaluate admissibility with the derived frontier.
+22. Evaluate nearby denial actions so surfaces can explain alternatives.
+23. Build sync-runtime provenance.
+24. Emit the full snapshot and compact summary fields.
 
 ## Execution Modes
 
@@ -502,6 +547,12 @@ Summary fields include:
 - `execution_engine_host_supports_native_spawn`
 - `execution_engine_host_supports_interrupt`
 - `execution_engine_host_supports_artifact_paths`
+- `execution_engine_component_id`
+- `execution_engine_canonical_component_id`
+- `execution_engine_identity_status`
+- `execution_engine_target_component_id`
+- `execution_engine_target_component_ids`
+- `execution_engine_target_component_status`
 - `execution_engine_target_lane`
 - `execution_engine_has_writable_targets`
 - `execution_engine_requires_more_consumer_context`
@@ -509,6 +560,13 @@ Summary fields include:
 - `execution_engine_runtime_reuse_scope`
 - `execution_engine_runtime_invalidated_by_step`
 - `execution_engine_context_pressure`
+- `execution_engine_snapshot_reuse_status`
+- `execution_engine_handshake_version`
+- `execution_engine_snapshot_duration_ms`
+- `execution_engine_snapshot_estimated_tokens`
+- `execution_engine_runtime_contract_estimated_tokens`
+- `execution_engine_handshake_estimated_tokens`
+- `execution_engine_total_payload_estimated_tokens`
 
 New fields must be compact, deterministic, and no-op quiet. Surface refreshes
 must not churn when the logical execution snapshot has not changed.
@@ -524,6 +582,7 @@ run the compact summary through:
 
 The guards block when:
 
+- the snapshot carries a noncanonical or blocked Execution Engine identity
 - the snapshot was invalidated by a runtime step
 - re-anchor is required
 - live contradictions exist
@@ -554,6 +613,10 @@ parallel program schema.
 ## Invariants
 
 - Context Engine owns grounding; Execution Engine owns admissibility.
+- The Context Engine to Execution Engine handoff uses canonical
+  `execution-engine` identity only.
+- Execution summaries consume the shared compact snapshot instead of
+  re-deriving local policy state.
 - The base contract is host-general first.
 - Host-specific behavior is additive and capability-gated.
 - Hard user constraints are promoted into structured records before execution.
@@ -565,6 +628,8 @@ parallel program schema.
 - Consumer diagnostic anchors are not writable targets.
 - Compact summaries must preserve real reasons, not only counts.
 - Runtime sync reuse metadata must travel with snapshots built during sync.
+- Snapshot reuse and cost fields are diagnostic, deterministic, and no-op
+  quiet.
 - Intervention rendering may consume execution posture but must not redefine
   or bypass it.
 - The engine must stay useful without optional host features; unsupported
@@ -660,8 +725,8 @@ CLI and integration validation:
 
 Registry validation:
 
-- `PYTHONPATH=src python -m odylith.cli validate registry --repo-root .`
-- `PYTHONPATH=src python -m odylith.cli registry refresh --repo-root .`
+- `odylith validate registry --repo-root .`
+- `odylith registry refresh --repo-root .`
 
 For changes that alter packet integration or host behavior, also run the
 relevant Context Engine packet tests and host-runtime contract tests.
@@ -670,6 +735,9 @@ relevant Context Engine packet tests and host-runtime contract tests.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-16 · Implementation:** Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.
+  - Scope: B-099
+  - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/execution_engine/runtime_lane_policy.py
 - **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
   - Scope: B-099, B-100
   - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
@@ -685,3 +753,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-13: Optimized the execution engine for Claude Code with host-specific capability fields, Claude presentation defaults, context-pressure events, artifact-path lane guards, and two Claude-specific history-rule failure classes. Wired execution engine into all three delivery paths that previously bypassed it: the non-hot-path bootstrap compactor, the hot-path bootstrap delivery, and the context dossier delivery. 49 tests, 385 regression pass. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-14: Clarified Execution Engine as an intervention input rather than an intervention renderer: it now supplies shared admissibility and urgency posture to the new conversation-observation engine without owning the human voice or proposal UX. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-16: Cut the Registry and benchmark contract over to `execution-engine` as the only accepted component id, removed compatibility aliases, and kept the detailed runtime contract for admissibility, frontier, closure, receipts, validation, host profile, and guard behavior. (Plan: [B-100](odylith/radar/radar.html?view=plan&workstream=B-100))
+- 2026-04-16: Added handshake `v1` and compact snapshot reuse across Context Engine packet builders and packet summaries; added snapshot duration plus token-cost diagnostics to the execution benchmark family. (Plan: [B-101](odylith/radar/radar.html?view=plan&workstream=B-101), Plan: [B-103](odylith/radar/radar.html?view=plan&workstream=B-103))
+- 2026-04-16: Added paired Codex and Claude semantic parity proof and Claude execution benchmark scenarios for route-ready and wait/resume lanes while keeping host differences behind `ExecutionHostProfile`. (Plan: [B-102](odylith/radar/radar.html?view=plan&workstream=B-102))

@@ -388,6 +388,41 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
         for token in odylith_write_policy.get("protected_roots", [])
         if str(token).strip().strip("/")
     ]
+    execution_engine_component_id = _normalize_string(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_component_id"),
+            _mapping_lookup(base, "execution_engine_component_id"),
+            _mapping_lookup(base, "latest_execution_engine_component_id"),
+        )
+    )
+    execution_engine_canonical_component_id = _normalize_string(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_canonical_component_id"),
+            _mapping_lookup(base, "execution_engine_canonical_component_id"),
+            _mapping_lookup(base, "latest_execution_engine_canonical_component_id"),
+        )
+    )
+    execution_engine_identity_status = _normalize_token(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_identity_status"),
+            _mapping_lookup(base, "execution_engine_identity_status"),
+            _mapping_lookup(base, "latest_execution_engine_identity_status"),
+        )
+    )
+    execution_engine_target_component_status = _normalize_token(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_target_component_status"),
+            _mapping_lookup(base, "execution_engine_target_component_status"),
+            _mapping_lookup(base, "latest_execution_engine_target_component_status"),
+        )
+    )
+    execution_engine_snapshot_reuse_status = _normalize_token(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_snapshot_reuse_status"),
+            _mapping_lookup(base, "execution_engine_snapshot_reuse_status"),
+            _mapping_lookup(base, "latest_execution_engine_snapshot_reuse_status"),
+        )
+    )
     execution_engine_target_lane = _normalize_token(
         _first_present(
             _mapping_lookup(execution_engine_summary, "execution_engine_target_lane"),
@@ -483,6 +518,11 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
         "odylith_fix_mode": _normalize_token(odylith_write_policy.get("odylith_fix_mode")) or "unknown",
         "allow_odylith_mutations": bool(odylith_write_policy.get("allow_odylith_mutations")),
         "protected_roots": protected_roots,
+        "execution_engine_component_id": execution_engine_component_id,
+        "execution_engine_canonical_component_id": execution_engine_canonical_component_id,
+        "execution_engine_identity_status": execution_engine_identity_status,
+        "execution_engine_target_component_status": execution_engine_target_component_status,
+        "execution_engine_snapshot_reuse_status": execution_engine_snapshot_reuse_status,
         "execution_engine_target_lane": execution_engine_target_lane,
         "execution_engine_has_writable_targets": execution_engine_has_writable_targets,
         "execution_engine_requires_more_consumer_context": execution_engine_requires_more_consumer_context,

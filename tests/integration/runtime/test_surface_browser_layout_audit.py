@@ -866,7 +866,7 @@ def test_compass_program_and_release_cards_keep_distinct_surface_tints_in_compac
     _assert_compass_program_and_release_cards_keep_distinct_surface_tints(*compact_browser_context)
 
 
-def _assert_compass_programs_do_not_render_nested_inner_card_chrome(  # noqa: ANN001
+def _assert_compass_programs_render_release_like_inner_card_chrome(  # noqa: ANN001
     base_url: str,
     context,
 ) -> None:
@@ -877,7 +877,9 @@ def _assert_compass_programs_do_not_render_nested_inner_card_chrome(  # noqa: AN
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
     section = compass.locator("#execution-waves-host .execution-wave-section").first
+    release_section = compass.locator("#release-groups-host .execution-wave-section").first
     section.wait_for(timeout=15000)
+    release_section.wait_for(timeout=15000)
 
     style = section.evaluate(
         """(node) => {
@@ -886,6 +888,7 @@ def _assert_compass_programs_do_not_render_nested_inner_card_chrome(  # noqa: AN
             const summaryStyle = summary ? window.getComputedStyle(summary) : null;
             return {
               flatClass: node.classList.contains("execution-wave-section-flat"),
+              programCardClass: node.classList.contains("execution-wave-section-program-card"),
               borderTopWidth: sectionStyle.borderTopWidth,
               backgroundImage: sectionStyle.backgroundImage,
               borderRadius: sectionStyle.borderRadius,
@@ -894,24 +897,35 @@ def _assert_compass_programs_do_not_render_nested_inner_card_chrome(  # noqa: AN
             };
         }"""
     )
+    release_style = release_section.evaluate(
+        """(node) => {
+            const sectionStyle = window.getComputedStyle(node);
+            return {
+              borderTopWidth: sectionStyle.borderTopWidth,
+              borderRadius: sectionStyle.borderRadius,
+            };
+        }"""
+    )
 
-    assert style["flatClass"] is True
-    assert style["borderTopWidth"] == "0px"
-    assert style["backgroundImage"] == "none"
-    assert style["borderRadius"] == "0px"
-    assert style["summaryPaddingLeft"] == "0px"
-    assert style["summaryPaddingRight"] == "0px"
+    assert style["flatClass"] is False
+    assert style["programCardClass"] is True
+    assert style["borderTopWidth"] == release_style["borderTopWidth"] == "1px"
+    assert style["backgroundImage"] != "none"
+    assert style["borderRadius"] == release_style["borderRadius"]
+    assert style["borderRadius"] != "0px"
+    assert style["summaryPaddingLeft"] != "0px"
+    assert style["summaryPaddingRight"] != "0px"
     assert section.locator(".execution-wave-focus").count() == 0
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_compass_programs_do_not_render_nested_inner_card_chrome_in_browser(browser_context) -> None:  # noqa: ANN001
-    _assert_compass_programs_do_not_render_nested_inner_card_chrome(*browser_context)
+def test_compass_programs_render_release_like_inner_card_chrome_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_compass_programs_render_release_like_inner_card_chrome(*browser_context)
 
 
-def test_compass_programs_do_not_render_nested_inner_card_chrome_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
-    _assert_compass_programs_do_not_render_nested_inner_card_chrome(*compact_browser_context)
+def test_compass_programs_render_release_like_inner_card_chrome_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_compass_programs_render_release_like_inner_card_chrome(*compact_browser_context)
 
 
 def _assert_compass_program_box_does_not_highlight_active_inner_wave(  # noqa: ANN001
@@ -945,8 +959,8 @@ def _assert_compass_program_box_does_not_highlight_active_inner_wave(  # noqa: A
     )
 
     assert initial_style["openWaveCount"] == 0
-    assert initial_style["boxShadow"] == "none"
-    assert initial_style["backgroundImage"] == "none"
+    assert initial_style["boxShadow"] != "none"
+    assert initial_style["backgroundImage"] != "none"
 
     first_wave_card.locator("> summary").first.click()
 
@@ -963,8 +977,8 @@ def _assert_compass_program_box_does_not_highlight_active_inner_wave(  # noqa: A
     )
 
     assert expanded_style["openWaveCount"] >= 1
-    assert expanded_style["boxShadow"] == "none"
-    assert expanded_style["backgroundImage"] == "none"
+    assert expanded_style["boxShadow"] == initial_style["boxShadow"]
+    assert expanded_style["backgroundImage"] == initial_style["backgroundImage"]
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

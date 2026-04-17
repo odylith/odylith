@@ -1,15 +1,18 @@
-%% Reviewed 2026-03-30 for deterministic dashboard refresh and Tribunal provider-breaker behavior before release proof.
+%% Reviewed 2026-04-17 for v0.1.11 to keep signal journaling aligned with Context Engine packet digests, Execution Engine snapshots, visibility ledgers, Tribunal/remediator reasoning, and benchmark proof without adding provider work to hot refresh.
 flowchart TB
   subgraph Sources["1. External signal sources"]
     Repo["Repo worktree + git state<br/>dirty paths, generated changes, touched artifacts"]
     Compass["Compass timeline stream<br/>mapped decisions, implementations, statements"]
     Runtime["Build / CI / deploy / precommit / explicit Odylith events"]
+    Session["Session memory + delivery ledger<br/>hard corrections, proof events, chat-visible status"]
   end
 
   subgraph Journal["2. Signal normalization and journal"]
     RepoRows["_repo_signal_rows()<br/>synthetic repo_change rows"]
     TimelineRows["_timeline_signal_rows()<br/>explicit mapped events"]
     Logger["src/odylith/runtime/context_engine/odylith_context_engine.py<br/>validate source, status, workstreams, components, artifacts"]
+    ExecutionRows["execution snapshot rows<br/>admissibility, next move, validation, closure"]
+    VisibilityRows["visibility rows<br/>fallback-ready, manual-visible, chat-confirmed"]
     Events["odylith/runtime/events.v1.jsonl<br/>append-only Signal Journal"]
   end
 
@@ -31,6 +34,9 @@ flowchart TB
     Engine["tribunal_engine.build_tribunal_payload()<br/>selection, dossier, actors, adjudication, editor"]
     Breaker["Run-scoped provider breaker<br/>disable enrichment after first timeout or transport failure"]
     Remediator["remediator.compile_correction_packet()<br/>bounded packet compilation"]
+    Execution["execution_engine snapshot reuse<br/>single policy summary for routers and surfaces"]
+    Visibility["visibility broker<br/>one shared visible decision"]
+    Benchmark["benchmark acceptance<br/>accuracy first, latency and tokens second"]
   end
 
   subgraph RuntimeStore["6. Persisted runtime truth"]
@@ -50,7 +56,10 @@ flowchart TB
   Repo --> RepoRows
   Compass --> TimelineRows
   Runtime --> Logger
+  Session --> Logger
   Logger --> Events
+  ExecutionRows --> Events
+  VisibilityRows --> Events
 
   RepoRows --> Watcher
   TimelineRows --> Watcher
@@ -67,6 +76,11 @@ flowchart TB
   Adapter --> Engine
   Breaker -. governs provider retries .-> Engine
   Engine --> Remediator
+  Live --> Execution
+  Engine --> Visibility
+  Execution --> Visibility
+  Execution --> Benchmark
+  Remediator --> Benchmark
 
   Artifact --> DeliveryFile
   Merge --> PostureFile

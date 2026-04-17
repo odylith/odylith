@@ -1,0 +1,56 @@
+%% Reviewed 2026-04-17 for v0.1.11 to connect Tribunal dossier assembly and Remediator execution to Context Engine packets, Execution Engine snapshots, session memory, visible interventions, and benchmark proof.
+sequenceDiagram
+  participant Odylith as Odylith Observer
+  participant Delivery as Delivery Intelligence
+  participant Context as Context Engine
+  participant Execution as Execution Engine
+  participant Memory as Memory Substrate
+  participant Dossier as Dossier Builder
+  participant Actors as Tribunal Actors
+  participant Judge as Adjudicator
+  participant Editor as Editor
+  participant Remediator as Remediator
+  participant Visibility as Visible Intervention Broker
+  participant Benchmark as Benchmark Harness
+  participant Approval as Approval Ledger
+  participant Operator as Maintainer
+  participant Clearance as Clearance Check
+  participant Runtime as Runtime v4 Store
+
+  Odylith->>Delivery: Select changed or contested scope
+  Delivery->>Context: Request compact packet digest
+  Context-->>Dossier: Packet quality, target resolution, route readiness
+  Delivery->>Execution: Request compact execution snapshot
+  Execution-->>Dossier: Admissibility, next move, validation, closure
+  Delivery->>Memory: Request session and delivery-ledger summary
+  Memory-->>Dossier: Recent corrections, proof events, visible delivery state
+  Delivery->>Dossier: Assemble case dossier with repo objects, checkpoints, approvals, and evidence
+  Dossier->>Actors: Run observer, ownership, causal, policy, normative, adversary, counterfactual, gap, risk, prescriber
+  Actors-->>Judge: Actor memos + disagreement
+  Judge->>Judge: Choose leading explanation, rival explanation, and confidence
+  Judge->>Editor: Produce decision brief + systemic context
+  Judge->>Remediator: Hand off executable prescription candidate
+  Editor->>Visibility: Emit compact intervention signal when user-visible risk is earned
+
+  alt No bounded execution path
+    Remediator-->>Odylith: Manual-only recommendation
+    Odylith->>Runtime: Persist outcome without packet
+  else Bounded packet candidate
+    Remediator->>Remediator: Compile deterministic, AI-engine, or hybrid packet
+    Remediator->>Approval: Persist fingerprint, preconditions, validation, rollback
+    Odylith->>Runtime: Persist case, reasoning, posture, and packet state
+    Operator->>Odylith: Approve or reject packet
+    alt Deterministic packet approved
+      Odylith->>Remediator: Execute bounded local action
+      Remediator->>Clearance: Run validation + stale checks
+    else AI-engine or hybrid packet approved
+      Remediator-->>Operator: Emit constrained AI-engine handoff
+      Operator->>Odylith: Record outcome after external execution
+      Odylith->>Clearance: Run post-action validation
+    else Rejected or stale
+      Approval-->>Odylith: Keep case contested or reopen
+    end
+    Clearance-->>Odylith: Cleared, failed, or reopened
+    Clearance->>Benchmark: Record closure, validation, false-admit or false-deny evidence
+    Odylith->>Runtime: Update posture and clearance state
+  end

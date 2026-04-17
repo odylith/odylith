@@ -13,6 +13,7 @@ from typing import Mapping
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.intervention_engine import delivery_ledger
+from odylith.runtime.intervention_engine import visibility_broker
 
 
 def _normalize_string(value: Any) -> str:
@@ -138,7 +139,32 @@ def _static_readiness(*, repo_root: Path, host_family: str) -> dict[str, Any]:
 
 def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dict[str, Any]:
     visible_count = int(ledger.get("visible_event_count") or 0)
+    unconfirmed_count = int(ledger.get("unconfirmed_event_count") or 0)
     latest = ledger.get("latest_visible_event") if isinstance(ledger.get("latest_visible_event"), Mapping) else {}
+    latest_unconfirmed = (
+        ledger.get("latest_unconfirmed_event")
+        if isinstance(ledger.get("latest_unconfirmed_event"), Mapping)
+        else {}
+    )
+    if unconfirmed_count > 0:
+        status = "proven_with_pending_confirmation" if visible_count > 0 else "pending_confirmation"
+        latest_status = _normalize_token(latest_unconfirmed.get("delivery_status")) or "unknown"
+        latest_channel = _normalize_token(latest_unconfirmed.get("delivery_channel")) or "unknown"
+        visible_prefix = (
+            f"{visible_count} proven-visible event(s) exist, but "
+            if visible_count
+            else "No proven-visible event is recorded yet, and "
+        )
+        return {
+            "status": status,
+            "summary": (
+                f"{visible_prefix}{unconfirmed_count} Odylith beat(s) still require exact chat confirmation; "
+                f"latest pending delivery is {latest_status} via {latest_channel}."
+            ),
+            "latest_delivery_channel": latest_channel,
+            "visible_event_count": visible_count,
+            "unconfirmed_event_count": unconfirmed_count,
+        }
     if visible_count > 0:
         channel = _normalize_token(latest.get("delivery_channel")) or "unknown"
         return {
@@ -146,6 +172,7 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
             "summary": f"{visible_count} proven-visible event(s) recorded for this session; latest via {channel}.",
             "latest_delivery_channel": channel,
             "visible_event_count": visible_count,
+            "unconfirmed_event_count": 0,
         }
     if static_ready:
         return {
@@ -156,12 +183,14 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
             ),
             "latest_delivery_channel": "",
             "visible_event_count": 0,
+            "unconfirmed_event_count": 0,
         }
     return {
         "status": "degraded",
         "summary": "Static readiness is degraded; do not claim live intervention visibility for this session.",
         "latest_delivery_channel": "",
         "visible_event_count": 0,
+        "unconfirmed_event_count": 0,
     }
 
 
@@ -171,11 +200,19 @@ def inspect_intervention_status(
     host_family: str,
     session_id: str = "",
     limit: int = 200,
+    last_assistant_message: str = "",
 ) -> dict[str, Any]:
     root = Path(repo_root).expanduser().resolve()
     host = _normalize_token(host_family) or "codex"
     resolved_session = _normalize_string(session_id) or agent_runtime_contract.default_host_session_id()
     readiness = _static_readiness(repo_root=root, host_family=host)
+    confirmed_events = visibility_broker.confirm_assistant_chat_delivery(
+        repo_root=root,
+        host_family=host,
+        session_id=resolved_session,
+        last_assistant_message=last_assistant_message,
+        render_surface=f"{host}_intervention_status",
+    ) if _normalize_string(last_assistant_message) else []
     ledger = delivery_ledger.delivery_snapshot(
         repo_root=root,
         host_family=host,
@@ -201,6 +238,7 @@ def inspect_intervention_status(
         "chat_visible_proof": proof,
         "active_lanes": delivery_ledger.active_lane_matrix(host_family=host),
         "delivery_ledger": ledger,
+        "chat_confirmed_event_count": len(confirmed_events),
         "pending_proposal_count": int(pending.get("pending_count") or 0),
         "fresh_session_required_after_runtime_change": True,
         "smoke_command": (
@@ -266,8 +304,12 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
     lines.append(
         f"Ledger: {int(ledger.get('event_count') or 0)} recent event(s), "
         f"{int(ledger.get('visible_event_count') or 0)} proven-visible event(s), "
+        f"{int(ledger.get('unconfirmed_event_count') or 0)} pending chat-confirmation event(s), "
         f"{pending_count} pending proposal(s)."
     )
+    confirmed_count = int(report.get("chat_confirmed_event_count") or 0)
+    if confirmed_count:
+        lines.append(f"Chat transcript confirmations recorded on this probe: {confirmed_count}.")
     lines.append(f"Fast smoke: `{_normalize_string(report.get('smoke_command'))}`")
     return "\n".join(lines).strip()
 
@@ -280,6 +322,11 @@ def main_with_host(host_family: str, argv: list[str] | None = None) -> int:
     parser.add_argument("--repo-root", default=".", help="Repository root for intervention status.")
     parser.add_argument("--session-id", default="", help="Host session id to inspect.")
     parser.add_argument("--limit", type=int, default=200, help="Recent intervention events to inspect.")
+    parser.add_argument(
+        "--last-assistant-message",
+        default="",
+        help="Optional latest assistant text; confirms exact Odylith Markdown as chat-visible proof.",
+    )
     parser.add_argument("--json", action="store_true", help="Emit status as JSON.")
     args = parser.parse_args(list(argv or sys.argv[1:]))
     report = inspect_intervention_status(
@@ -287,6 +334,7 @@ def main_with_host(host_family: str, argv: list[str] | None = None) -> int:
         host_family=host_family,
         session_id=args.session_id,
         limit=args.limit,
+        last_assistant_message=args.last_assistant_message,
     )
     if args.json:
         sys.stdout.write(json.dumps(report, indent=2, sort_keys=True) + "\n")

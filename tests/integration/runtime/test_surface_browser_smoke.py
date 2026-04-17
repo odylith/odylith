@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import contextlib
+from datetime import datetime
+from datetime import timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
@@ -68,7 +70,9 @@ def _ready_compass_fixture_root(tmp_path: Path) -> Path:
     runtime_json_path = runtime_dir / "current.v1.json"
     runtime_js_path = runtime_dir / "current.v1.js"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
-    generated_utc = "2026-04-10T03:00:00Z"
+    generated_instant = datetime.now(timezone.utc).replace(microsecond=0)
+    generated_utc = generated_instant.isoformat().replace("+00:00", "Z")
+    now_local_iso = generated_instant.astimezone().isoformat()
 
     def _ready_brief(fingerprint: str) -> dict[str, object]:
         return {
@@ -102,6 +106,7 @@ def _ready_compass_fixture_root(tmp_path: Path) -> Path:
         }
 
     payload["generated_utc"] = generated_utc
+    payload["now_local_iso"] = now_local_iso
     standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
     standup_brief["24h"] = _ready_brief("seeded-ready-24h")
     standup_brief["48h"] = _ready_brief("seeded-ready-48h")
@@ -794,7 +799,7 @@ def test_compass_copy_brief_notice_stays_below_brief_title_instead_of_header(
                         }"""
                     )
                     assert layout["noticeTopGap"] is not None and 0 <= layout["noticeTopGap"] <= 16
-                    assert layout["bannerHidden"] is True
+                    assert layout["bannerHidden"] is True, layout
                     assert layout["bannerText"] == ""
 
                     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

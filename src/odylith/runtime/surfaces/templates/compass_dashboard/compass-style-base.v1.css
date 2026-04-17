@@ -44,6 +44,7 @@
       padding: 22px 18px 34px;
       display: grid;
       gap: 12px;
+      min-width: 0;
     }
     .hero {
   background: linear-gradient(145deg, #ffffff, #ecfeff 58%, #eff6ff);
@@ -183,6 +184,21 @@ h1 {
   background: linear-gradient(180deg, #edf4ff 0%, #f8fbff 100%);
 }
 
+    .card {
+      min-width: 0;
+      max-width: 100%;
+    }
+    .card > * {
+      min-width: 0;
+    }
+    #execution-waves-host,
+    #release-groups-host,
+    #current-workstreams,
+    #risk-list,
+    #timeline {
+      min-width: 0;
+      max-width: 100%;
+    }
     .card.release-groups-card {
   padding-bottom: 15px;
   border-color: #cfe4d1;
@@ -259,13 +275,23 @@ h1 {
       gap: 40px;
       grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
       align-items: start;
+      min-width: 0;
+      max-width: 100%;
     }
     .layout > .stack {
       min-width: 0;
+      max-width: 100%;
     }
     .stack {
       display: grid;
+      grid-template-columns: minmax(0, 1fr);
       gap: 12px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .stack > * {
+      min-width: 0;
+      max-width: 100%;
     }
     @media (max-width: 900px) {
       .layout {
@@ -278,6 +304,7 @@ h1 {
       padding: 0;
       display: grid;
       gap: 12px;
+      min-width: 0;
       overflow-wrap: anywhere;
     }
     .standup-brief-panel {
@@ -617,6 +644,8 @@ h1 {
       border: 1px solid #dbeafe;
       border-radius: 12px;
       background: #ffffff;
+      min-width: 0;
+      max-width: 100%;
       overflow-x: hidden;
       overflow-y: auto;
     }

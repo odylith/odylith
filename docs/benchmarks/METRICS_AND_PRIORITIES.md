@@ -100,6 +100,8 @@ required rates on sampled execution-engine rows:
 
 - `execution_engine_present_rate = 1.0`
 - `execution_engine_resume_token_present_rate = 1.0`
+- `execution_engine_false_admit_rate = 0.0`
+- `execution_engine_false_deny_rate = 0.0`
 - `execution_engine_outcome_accuracy_rate = 1.0`
 - `execution_engine_mode_accuracy_rate = 1.0`
 - `execution_engine_next_move_accuracy_rate = 1.0`
@@ -118,14 +120,32 @@ required rates on sampled execution-engine rows:
 - `execution_engine_host_family_accuracy_rate = 1.0`
 - `execution_engine_model_family_accuracy_rate = 1.0` whenever the sampled
   corpus includes model-family rows
+- `execution_engine_component_id_accuracy_rate = 1.0`
+- `execution_engine_canonical_component_id_accuracy_rate = 1.0`
+- `execution_engine_identity_status_accuracy_rate = 1.0`
+- `execution_engine_target_component_status_accuracy_rate = 1.0`
+- `execution_engine_snapshot_reuse_status_accuracy_rate = 1.0`
 - `execution_engine_reanchor_accuracy_rate = 1.0`
+- `execution_engine_delegation_guard_accuracy_rate = 1.0` whenever the sampled
+  corpus includes delegation-guard rows
+- `execution_engine_parallelism_guard_accuracy_rate = 1.0` whenever the
+  sampled corpus includes parallelism-guard rows
+
+Execution Engine benchmark slices also report lower-is-better hot-path cost
+diagnostics:
+
+- `execution_engine_median_context_packet_build_ms`
+- `execution_engine_median_snapshot_duration_ms`
+- `execution_engine_median_prompt_bundle_tokens`
+- `execution_engine_median_runtime_contract_tokens`
+- `execution_engine_median_total_payload_tokens`
 
 ## Corpus Seriousness Floor
 
 The benchmark only earns a serious publication claim if the tracked corpus and
 the published proof both clear these bars:
 
-- at least `60` implementation scenarios
+- at least `60` tracked implementation scenarios
 - at least `35` write-plus-validator scenarios
 - at least `12` correctness-critical scenarios
 - mechanism-heavy implementation families at or below `40%` of implementation
@@ -180,6 +200,10 @@ execution-engine checks:
   generic route hints?
 - Did broad or ambiguous scope fail closed into `recover` with the right
   closure posture?
+- Did canonical `execution-engine` identity survive the packet, summary,
+  router, and benchmark layers without historical alias recovery?
+- Did Context Engine to Execution Engine snapshot reuse stay explicit, so
+  surfaces do not silently rebuild a different posture?
 - Did resume tokens and authoritative lanes survive carry-through into the
   public surfaces?
 

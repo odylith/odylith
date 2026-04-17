@@ -5,7 +5,7 @@ Last updated: 2026-04-16
 Last updated (UTC): 2026-04-15
 
 ## Purpose
-Radar is Odylith's authoritative workstream backlog and execution-governance
+Radar is Odylith's authoritative workstream backlog and execution-evidence
 surface. It turns backlog markdown, plan linkage, traceability metadata, and
 execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.

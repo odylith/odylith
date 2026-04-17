@@ -1,8 +1,8 @@
 # Governance Intervention Engine
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 
-Last updated (UTC): 2026-04-16
+Last updated (UTC): 2026-04-17
 
 ## Purpose
 Governance Intervention Engine is Odylith's shared conversation-observation
@@ -14,10 +14,52 @@ through Compass instead of leaving it as host-local improvisation. It also
 owns the live mid-turn surface contract for teaser and explicit intervention
 beats so prompt, stop, post-edit, and post-bash hooks do not have to route
 through the heavier closeout chatter stack just to speak one truthful line.
+In v0.1.11 it also owns the visible intervention value engine: a
+proposition-first deterministic selector that turns locally supported evidence
+into the smallest high-value set of distinct visible Odylith blocks without
+claiming ML calibration.
 
 ## Scope And Non-Goals
 ### Governance Intervention Engine owns
 - The shared cross-host `ObservationEnvelope` intake contract.
+- The shared `VisibleInterventionDecision` broker contract that chooses visible
+  Markdown, hidden developer continuity, delivery channel, proof status,
+  latency, and source fingerprints once for all host adapters.
+- The proposition-level value engine contracts:
+  `SignalEvidence`, `SignalProposition`, `InterventionValueFeatures`,
+  `VisibleInterventionOption`, and `VisibleSignalSelectionDecision`.
+- Hard gates for unsupported, stale, contradictory, generated-only,
+  hidden-only, mixed non-current evidence, missing-evidence, weak-evidence,
+  unknown visible labels or block kinds, label/block-kind mismatches,
+  duplicate, and proposal-restatement propositions.
+- Deterministic expected-value scoring, adaptive live budgets, and bounded
+  subset selection for Risks, History, Insight, Observation, and Proposal.
+- Proposition-first ambient stacking. Same-label blocks are allowed only when
+  their duplicate keys and semantic signatures are distinct, evidence-qualified,
+  and still inside the adaptive live budget.
+- Semantic duplicate prevention is a hard selection constraint, not a renderer
+  nicety. If two eligible options carry materially overlapping proposition
+  signatures under different duplicate keys, or if sparse/incorrect producer
+  metadata still carries the same normalized claim text, the selector must
+  keep the stronger/actionable option and suppress the other before visible
+  output.
+- `Odylith Proposal` may bypass semantic-overlap suppression only when it has
+  a concrete action and distinct proposition text. A proposal that repeats the
+  exact Observation claim is still a duplicate, even when its payload contains
+  an action.
+- Adversarial selector diagnostics: selected/suppressed logs must expose
+  hard-gate reasons, evidence-gate counts, pruned candidate counts, conflict
+  graph size, enumerated subset count, selected utility, and latency.
+- Hot-path ambient candidate generation must prefilter supported facts before
+  voice rendering, cap rendered candidate payloads, and let the value engine
+  decide final visibility from proposition identity rather than signal label.
+- Ambient candidate rendering must avoid duplicate voice work: build the
+  semantic body once, derive the ruled Markdown/plain labels deterministically,
+  and spend voice-render cost only on candidates that survived support and
+  strength prefilters.
+- Ruled live-block canonicalization for Ambient/Observation/Proposal output;
+  missing rulers are repaired, while `Odylith Assist` remains closeout-owned
+  and outside the live ruled block.
 - The live mid-turn conversation surface fast path used by Codex and Claude
   hooks, including teaser rendering, low-signal suppression, and host-parity
   shaping.
@@ -25,6 +67,9 @@ through the heavier closeout chatter stack just to speak one truthful line.
   and `capture_opportunity` beats.
 - Intervention thresholds for teaser, corroborated observation card, and
   proposal eligibility.
+- The bootstrap intervention-value adjudication corpus and advisory selector
+  report, including provenance and density gates that keep calibration loading
+  disabled unless the artifact is explicitly publishable.
 - Duplicate suppression keyed to the active session and prior Compass
   intervention lifecycle events.
 - Proposal assembly across Radar, Registry, Atlas, and Casebook, including the
@@ -44,6 +89,8 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - Stream audit storage or pending-proposal read models; that belongs to
   [Compass](../compass/CURRENT_SPEC.md).
 - Unsafe auto-update flows where no safe CLI-backed helper exists yet.
+- Public claims that the selector is ML-calibrated while the governed corpus is
+  still in `quality_state=bootstrap`.
 
 ## Developer Mental Model
 - The engine should feel like Odylith quietly joining the conversation at the
@@ -61,6 +108,11 @@ through the heavier closeout chatter stack just to speak one truthful line.
 - Full `Odylith Observation` blocks need corroboration from at least two
   evidence classes among prompt text, assistant summary, changed paths,
   packet or execution truth, or governed artifact matches.
+- Multiple ambient blocks may render in one chat when their propositions are
+  distinct, supported, timely, and high value. The current budget is adaptive:
+  base `1`, plus explicit diagnosis/planning, plus multiple high-materiality
+  propositions, plus actionable proposal readiness, hard-capped at `4` live
+  blocks and `3` ambient blocks.
 - `Odylith Proposal` is the smallest coherent governed action bundle Odylith
   can honestly carry from the evidence in front of it. It is not a loose pile
   of chores.
@@ -103,6 +155,14 @@ through the heavier closeout chatter stack just to speak one truthful line.
   Shared host payload builder that keeps one hidden developer-context bundle
   for continuity while composing the visible checkpoint or stop surface for
   Codex and Claude.
+- `src/odylith/runtime/intervention_engine/alignment_context.py`
+  Hot-path alignment reader that feeds prompt, checkpoint, Stop, manual
+  fallback, and status surfaces with the same compact Context Engine packet,
+  Execution Engine snapshot summary, session-memory snapshot, delivery-ledger
+  visibility state, and Tribunal summary. It reads only cached local runtime
+  artifacts and precomputed delivery intelligence; it must not invoke provider
+  calls, full context-store expansion, or repo-wide search while deciding
+  chat visibility.
 - `src/odylith/runtime/intervention_engine/conversation_runtime.py`
   Shared ambient-signal selection, closeout Assist composition, and
   conversation-bundle assembly for subagent orchestration plus host-adoption
@@ -124,6 +184,47 @@ through the heavier closeout chatter stack just to speak one truthful line.
   recent Observation/Proposal/Ambient/Assist delivery, and pending proposal
   context from the Compass intervention stream without creating a second
   host-local truth store.
+- `src/odylith/runtime/intervention_engine/visibility_broker.py`
+  Shared chat-visible decision broker consumed by Codex, Claude, manual
+  fallback, Stop recovery, status probes, and tests. It is the only runtime
+  surface allowed to decide whether an earned beat is visible, fallback-ready,
+  assistant-render-required, or chat-confirmed.
+- `src/odylith/runtime/intervention_engine/value_engine.py`
+  Public facade for the proposition-first value engine. It re-exports the
+  forward v0.1.11 runtime contract without preserving the removed block-first
+  signal-ranker API.
+- `src/odylith/runtime/intervention_engine/value_engine_types.py`
+  Evidence/proposition/value contracts plus deterministic utility scoring.
+  This owns `SignalEvidence`, `SignalProposition`,
+  `InterventionValueFeatures`, `VisibleInterventionOption`,
+  `VisibleSignalSelectionDecision`, evidence-confidence ceilings, and the
+  `deterministic_utility_v1` posture.
+- `src/odylith/runtime/intervention_engine/value_engine_selection.py`
+  Hard suppression gates, duplicate collapse, proposal dependency checks,
+  concrete proposal-action validation, adaptive live budgets, bounded subset
+  enumeration, semantic-signature conflict edges, ambient-label crowding cost,
+  and compact selected / suppressed decision logs. The selector caches labels,
+  duplicate keys, normalized feature vectors, semantic tokens, and proposal
+  action state before subset enumeration so latency is spent on subset value,
+  not repeated string normalization.
+- `src/odylith/runtime/intervention_engine/value_engine_corpus.py`
+  Governed adjudication-corpus loading, provenance validation, density gates,
+  advisory selector metrics, and the runtime rule that calibrated artifacts are
+  not loadable until corpus quality is explicitly publishable.
+- `src/odylith/runtime/intervention_engine/value_engine_event_metadata.py`
+  Compact value-decision event metadata builder. It keeps selected/suppressed
+  proposition proof logging out of the hot conversation renderer and stores
+  only bounded evidence fingerprints and feature payloads in stream events.
+- `src/odylith/runtime/evaluation/odylith_intervention_value_engine_benchmark.py`
+  Advisory benchmark report for selector mechanism evidence. It reports
+  precision, must-surface recall, duplicate visible rate, visibility-failure
+  recall, no-output accuracy, p95 selector latency, corpus quality state, and
+  calibration publishability without presenting those metrics as full
+  `odylith_on` outcome proof.
+- `src/odylith/install/value_engine_migration.py`
+  v0.1.10 to v0.1.11 forward migration. It removes stale signal-ranker source
+  artifacts, writes the new value-engine corpus when the bundled asset exists,
+  and records the migration ledger under `.odylith/state/migrations/`.
 - `src/odylith/runtime/intervention_engine/apply.py`
   CLI-first apply and decline handling for supported proposal bundles.
 - `src/odylith/runtime/intervention_engine/cli.py`
@@ -139,8 +240,47 @@ through the heavier closeout chatter stack just to speak one truthful line.
 ### Core public types
 - `ObservationEnvelope`
   Fixed fields: `host_family`, `session_id`, `turn_phase`, `prompt_excerpt`,
-  `assistant_summary`, `changed_paths`, `packet_summary`, `delivery_snapshot`,
-  and `active_target_refs`.
+  `assistant_summary`, `changed_paths`, `packet_summary`,
+  `context_packet_summary`, `execution_engine_summary`, `memory_summary`,
+  `tribunal_summary`, `visibility_summary`, `delivery_snapshot`, and
+  `active_target_refs`.
+- `VisibleInterventionDecision`
+  Compact broker output carrying `visible_markdown`, `developer_context`,
+  `delivery_channel`, `delivery_status`, `proof_required`,
+  `no_output_reason`, `latency_ms`, source fingerprints, and the shared
+  visibility summary reused by host payloads, status probes, and transcript
+  tests.
+- `SignalEvidence`
+  Compact support row with source kind, source id/path, source fingerprint,
+  freshness, confidence, excerpt, and evidence class.
+- `SignalProposition`
+  Stable proposition row with claim text, kind, support state, anchors,
+  semantic signature, duplicate key, freshness state, evidence list, and
+  source fingerprints.
+- `InterventionValueFeatures`
+  Deterministic value feature vector:
+  correctness confidence, materiality, actionability, novelty, timing
+  relevance, user need, visibility need, interruption cost, redundancy cost,
+  uncertainty penalty, and brand risk.
+- `VisibleInterventionOption`
+  Candidate render option carrying one proposition, label, block kind, rendered
+  Markdown/plain text, proof requirement, action payload, value features, and
+  compact metadata.
+- `VisibleSignalSelectionDecision`
+  Selected and suppressed options, duplicate groups, no-output reason,
+  selected block-set id, utility summary, proof posture, and decision-log
+  payload.
+- Host alignment context
+  Compact, non-public payload consumed by host surfaces before the broker
+  decides visibility. Required fields are `context_packet`,
+  `execution_engine_summary`, `memory_summary`, `visibility_summary`,
+  `delivery_snapshot`, and `tribunal_summary`. When an operator reports zero
+  ambient highlights, zero signals, invisible Observations/Proposals, or a
+  missing Assist, this context must infer the `B-096`/`CB-122` visibility
+  recurrence, include the Governance Intervention Engine plus Context Engine,
+  Execution Engine, memory backend, and Tribunal components, and force the
+  Execution Engine next move into a recover lane until chat-visible proof is
+  confirmed.
 - `GovernanceFact`
   Fixed fact classes: `history`, `governance_truth`, `invariant`,
   `topology`, and `capture_opportunity`.
@@ -237,6 +377,10 @@ through the heavier closeout chatter stack just to speak one truthful line.
     failure-level governance status when that status materially changes the
     next move; this is useful host context but is not alone considered proof
     that the user saw the beat
+- Host adapters must consume the shared `VisibleInterventionDecision` instead
+  of deriving visibility policy locally. The same decision object feeds Codex
+  prompt/post-bash/stop paths, Claude prompt/post-edit/post-bash/stop paths,
+  manual `visible-intervention` fallback, and `intervention-status`.
 - Host-composed conversation bundles must preserve the live-surface ambient
   payload separately from closeout ambient/supplemental signals. `Odylith
   Insight`, `Odylith History`, and `Odylith Risks` are live checkpoint beats;
@@ -261,11 +405,16 @@ through the heavier closeout chatter stack just to speak one truthful line.
   These commands are the cheap operator proof before claiming a session has
   live Observation/Proposal/Ambient/Assist delivery; `Activation: ready` alone
   is static wiring, not session-visible proof.
-- `assistant_fallback_ready` and structured `systemMessage` generation are
-  hidden-ready hook states, not session-visible proof. The delivery ledger may
-  retain those events for Stop replay and continuity, but chat-visible proof
-  requires a proven visible channel such as manual visible Markdown,
-  best-effort stdout teaser, or Stop one-shot continuation.
+- `assistant_fallback_ready`, `assistant_render_required`, and structured
+  `systemMessage` generation are hidden-ready or assistant-required states,
+  not session-visible proof. The delivery ledger may retain those events for
+  Stop replay and continuity, but chat-visible proof requires a proven visible
+  channel such as manual visible Markdown, best-effort stdout teaser, Stop
+  one-shot continuation, or `assistant_chat_confirmed`.
+- `assistant_chat_confirmed` is recorded only when a status probe or Stop path
+  sees the exact Odylith Markdown from a prior non-visible beat in the latest
+  assistant message. A generated hook payload, `systemMessage`, or
+  `additionalContext` field must never promote itself to chat-visible proof.
 - Stop-summary hooks may block once with a continuation reason when a real
   Observation or `Odylith Assist:` closeout was generated but is not already
   visible in the last assistant message. The `stop_hook_active` guard prevents
@@ -357,6 +506,17 @@ through the heavier closeout chatter stack just to speak one truthful line.
   `delivery_status`, and `render_surface` so `intervention-status` can answer
   whether a specific Codex or Claude session is actually visible-ready without
   doing fresh repo search or relying on host payload faith.
+- Value-decision metadata is part of the live event stream for selected
+  Teaser/Ambient/Observation/Proposal events. Events must carry compact
+  selected and suppressed proposition ids, duplicate groups, semantic
+  signatures, feature vectors, evidence fingerprints, net utility, and proof
+  posture. Assistant chat confirmation must preserve that metadata while
+  moving delivery state to `assistant_chat_confirmed`.
+- Distinct ambient propositions must keep distinct event identity even when
+  they share the same visible label. Same-label `Odylith Risks`, `Odylith
+  History`, or `Odylith Insight` blocks use selected candidate ids as
+  `intervention_key` values; transcript confirmation must be able to confirm
+  each rendered block independently from one assistant message.
 - Empty or missing hook session ids must fall back to a stable host-local
   synthetic session token. Intervention runtime may recover recent memory only
   from that resolved session; an empty session id must never widen into
@@ -507,6 +667,9 @@ parallel payload schemas.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-16 · Implementation:** Hardened intervention chat-visible delivery with a shared broker, assistant-render-required proof states, transcript confirmation, D-038 proposal visibility gating, and focused runtime/browser validation.
+  - Scope: B-096
+  - Evidence: src/odylith/runtime/intervention_engine/visibility_broker.py, tests/integration/runtime/test_intervention_visibility_browser.py +1 more
 - **2026-04-15 · Implementation:** Completed intervention chat-visibility hardening: Codex and Claude now report assistant-visible readiness, visible-intervention renders Observation/Proposal/Assist Markdown, Stop Assist recovers from validation proof without claiming artifacts, and CB-121 plus B-096 governance records were updated.
   - Scope: B-096
   - Evidence: odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md, src/odylith/runtime/intervention_engine/host_surface_runtime.py +1 more
@@ -531,3 +694,6 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-16: Fixed the host-composed live ambient path so checkpoint bundles preserve `live_ambient_signals` and emit concrete Ambient Highlight events instead of falling back to generic teasers. The same change removed duplicate visible Markdown and shortened fallback instruction prose to lower hidden-context token overhead. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-16: Made Ambient Highlight the single recorded live beat when it wins the slot, carrying the candidate intervention key and semantic signature so continuity dedupes the visible ambient signal instead of logging a generic teaser plus ambient duplicate. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-16: Added cached Codex post-bash grounding so repeated edit-like hooks no longer rerun slow or failing `odylith start` probes on every command, while each hook still evaluates selective sync and live intervention output. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-17: Hardened the v0.1.11 Visible Intervention Value Engine against adversarial selector inputs: fabricated high scores now need evidence, weak evidence cannot masquerade as high correctness, same-label ambient blocks can stack only when propositions are distinct, concrete proposal actions are required, and candidate floods are pruned before bounded subset enumeration. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Expanded v0.1.11 QA with counterfactual tests for hidden-confidence inflation, missing confidence defaults, anchor-only governed support, deterministic input order, strict corpus provenance, ambient fact-flood prefiltering, same-label ambient event logging, and D-038 browser contract drift. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Fixed same-label ambient proof identity so two distinct high-value blocks in one assistant message write separate candidate keys and transcript confirmation proves both instead of collapsing them into one visible event. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bugs: `CB-122`, `CB-123`)

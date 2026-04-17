@@ -62,6 +62,7 @@ from odylith.install.state import (
     write_install_state,
     write_version_pin,
 )
+from odylith.install.value_engine_migration import migrate_visible_intervention_value_engine
 from odylith.runtime.common.consumer_profile import consumer_profile_path, write_consumer_profile
 from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.common import codex_cli_capabilities
@@ -855,6 +856,20 @@ def plan_upgrade_lifecycle(
                 ),
             )
         )
+        steps.append(
+            _lifecycle_step(
+                "Apply the v0.1.10 to v0.1.11 visible-intervention value-engine migration and remove stale signal-ranker artifacts.",
+                "runtime_state",
+                "repo_pin",
+                paths=(
+                    ".odylith/state/migrations/v0.1.11-visible-intervention-value-engine.v1.json",
+                    "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json",
+                    "odylith/runtime/source/intervention-signal-ranker-corpus.v1.json",
+                    "odylith/runtime/source/intervention-signal-ranker-calibration.v1.json",
+                ),
+                detail="v0.1.11 cuts over to deterministic_utility_v1; no signal-ranker compatibility shim is kept.",
+            )
+        )
         if write_pin or follow_latest:
             steps.append(
                 _lifecycle_step(
@@ -1448,6 +1463,30 @@ def _sync_consumer_casebook_bug_index(*, repo_root: Path, repo_role: str) -> Non
     if str(repo_role).strip() == PRODUCT_REPO_ROLE:
         return
     sync_casebook_bug_index.sync_casebook_bug_index(repo_root=repo_root, migrate_bug_ids=True)
+
+
+def _value_engine_migration_payload(
+    *,
+    repo_root: Path,
+    repo_role: str,
+    previous_version: str,
+    target_version: str,
+    runtime_root: Path | None,
+) -> dict[str, object]:
+    if str(repo_role).strip() == PRODUCT_REPO_ROLE:
+        return {
+            "migration_id": "v0.1.11-visible-intervention-value-engine",
+            "applied": False,
+            "previous_version": str(previous_version or "").strip(),
+            "target_version": str(target_version or "").strip(),
+            "skipped_reason": "product_repo_source_truth",
+        }
+    return migrate_visible_intervention_value_engine(
+        repo_root=repo_root,
+        previous_version=previous_version,
+        target_version=target_version,
+        runtime_root=runtime_root,
+    ).as_dict()
 
 
 def _ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str = CONSUMER_REPO_ROLE) -> None:
@@ -2595,6 +2634,13 @@ def install_bundle(
             include_brand=False,
             version=active_version,
         )
+        value_engine_migration = _value_engine_migration_payload(
+            repo_root=root,
+            repo_role=repo_role,
+            previous_version=pin_before.odylith_version if pin_before is not None else "",
+            target_version=active_version,
+            runtime_root=runtime_root,
+        )
         append_install_ledger(
             repo_root=root,
             payload={
@@ -2602,6 +2648,7 @@ def install_bundle(
                 "status": "ready",
                 "active_version": active_version,
                 "pinned_version": str(load_version_pin(repo_root=root, fallback_version=active_version).odylith_version),
+                "value_engine_migration": value_engine_migration,
             },
         )
         _append_self_host_timeline_event(
@@ -2797,6 +2844,13 @@ def upgrade_install(
                 version=current_version,
             )
             _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
+            value_engine_migration = _value_engine_migration_payload(
+                repo_root=root,
+                repo_role=repo_role,
+                previous_version=current_version,
+                target_version=current_version,
+                runtime_root=current_runtime,
+            )
             append_install_ledger(
                 repo_root=root,
                 payload={
@@ -2807,6 +2861,7 @@ def upgrade_install(
                     "pinned_version": pin.odylith_version if pin else current_version,
                     "previous_version": current_version,
                     "verification": current_verification,
+                    "value_engine_migration": value_engine_migration,
                 },
             )
             return UpgradeSummary(
@@ -2919,6 +2974,13 @@ def upgrade_install(
             version=staged.version,
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
+        value_engine_migration = _value_engine_migration_payload(
+            repo_root=root,
+            repo_role=repo_role,
+            previous_version=current_version,
+            target_version=staged.version,
+            runtime_root=staged.root,
+        )
         append_install_ledger(
             repo_root=root,
             payload={
@@ -2929,6 +2991,7 @@ def upgrade_install(
                 "pinned_version": pin.odylith_version if pin else staged.version,
                 "previous_version": current_version,
                 "verification": staged.verification,
+                "value_engine_migration": value_engine_migration,
             },
         )
         _append_self_host_timeline_event(

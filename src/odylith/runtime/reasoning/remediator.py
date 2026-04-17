@@ -18,8 +18,10 @@ import subprocess
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.command_surface import display_command
+from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.execution_engine import policy as execution_policy
 from odylith.runtime.execution_engine import resource_closure as execution_resource_closure
+from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.execution_engine import validation as execution_validation
 from odylith.runtime.execution_engine.contract import ExecutionContract
 from odylith.runtime.execution_engine.contract import detect_execution_host_profile
@@ -454,22 +456,16 @@ def compile_correction_packet(
 def packet_summary(packet: Mapping[str, Any]) -> dict[str, Any]:
     """Return the small packet shape Odylith needs for posture and UI surfaces."""
 
-    execution_engine = (
-        dict(packet.get("execution_engine", {}))
-        if isinstance(packet.get("execution_engine"), Mapping)
-        else {}
+    execution_engine = {}
+    if isinstance(packet.get("execution_engine"), Mapping):
+        execution_engine = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+            payload=packet,
+            context_packet={},
+        )
+    execution_summary = runtime_surface_governance.summary_fields_from_execution_engine(
+        execution_engine
     )
-    contract = (
-        dict(execution_engine.get("contract", {}))
-        if isinstance(execution_engine.get("contract"), Mapping)
-        else {}
-    )
-    admissibility = (
-        dict(execution_engine.get("admissibility", {}))
-        if isinstance(execution_engine.get("admissibility"), Mapping)
-        else {}
-    )
-    return {
+    summary = {
         "id": str(packet.get("id", "")).strip(),
         "case_id": str(packet.get("case_id", "")).strip(),
         "outcome_id": str(packet.get("outcome_id", "")).strip(),
@@ -483,10 +479,9 @@ def packet_summary(packet: Mapping[str, Any]) -> dict[str, Any]:
             if str(token).strip()
         ],
         "status": str(packet.get("status", "draft")).strip() or "draft",
-        "execution_engine_outcome": str(admissibility.get("outcome", "")).strip(),
-        "execution_engine_mode": str(contract.get("execution_mode", "")).strip(),
-        "execution_engine_authoritative_lane": str(contract.get("authoritative_lane", "")).strip(),
     }
+    summary.update(execution_summary)
+    return summary
 
 
 def apply_deterministic_packet(*, repo_root: Path, packet: Mapping[str, Any]) -> dict[str, Any]:
@@ -514,16 +509,25 @@ def apply_deterministic_packet(*, repo_root: Path, packet: Mapping[str, Any]) ->
         }
 
     execution_engine = (
-        dict(packet.get("execution_engine", {}))
+        execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+            payload=packet,
+            context_packet={},
+        )
         if isinstance(packet.get("execution_engine"), Mapping)
         else _packet_execution_engine(packet)
+    )
+    execution_summary = runtime_surface_governance.summary_fields_from_execution_engine(
+        execution_engine
     )
     admissibility = (
         dict(execution_engine.get("admissibility", {}))
         if isinstance(execution_engine.get("admissibility"), Mapping)
         else {}
     )
-    if str(admissibility.get("outcome", "")).strip() not in {"", "admit"}:
+    outcome = str(execution_summary.get("execution_engine_outcome", "")).strip() or str(
+        admissibility.get("outcome", "")
+    ).strip()
+    if outcome not in {"", "admit"}:
         return {
             "ok": False,
             "error": (

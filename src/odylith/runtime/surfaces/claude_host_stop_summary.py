@@ -23,10 +23,8 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import conversation_surface
-from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
-from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 from odylith.runtime.surfaces import claude_host_shared
 
 
@@ -62,47 +60,16 @@ def _stop_intervention_bundle(
     )
     if not any((summary, prompt_excerpt, changed_paths, workstreams, components)):
         return {}
-    grounded = bool(prompt_excerpt or summary or changed_paths or workstreams or components)
-    request = orchestrator.OrchestrationRequest(
-        prompt=prompt_excerpt or summary,
-        candidate_paths=changed_paths,
+    return host_surface_runtime.compose_host_conversation_bundle(
+        repo_root=repo_root,
+        host_family="claude",
+        turn_phase="stop_summary",
+        session_id=session_id,
+        prompt_excerpt=prompt_excerpt,
+        assistant_summary=summary,
+        changed_paths=changed_paths,
         workstreams=workstreams,
         components=components,
-        needs_write=bool(changed_paths),
-        evidence_cone_grounded=grounded,
-        latency_sensitive=True,
-        task_kind="governance_closeout",
-        phase="closeout",
-        session_id=session_id,
-        context_signals={"host_family": "claude"},
-    )
-    decision = orchestrator.OrchestrationDecision(
-        mode="local_only",
-        decision_id=f"stop-summary-{session_id or 'claude'}",
-        delegate=False,
-        parallel_safety="local_only",
-        task_family="governance_closeout",
-        confidence=2,
-        rationale="Claude stop-summary surface",
-        refusal_stage="",
-        manual_review_recommended=False,
-        merge_owner="main_thread",
-    )
-    return conversation_runtime.compose_conversation_bundle(
-        request=request,
-        decision=decision,
-        adoption={
-            "grounded": grounded,
-            "route_ready": grounded,
-            "grounded_delegate": False,
-            "requires_widening": False,
-            "narrowing_required": False,
-        },
-        repo_root=repo_root,
-        final_changed_paths=changed_paths,
-        changed_path_source="session_event_history" if changed_paths else "",
-        turn_phase="stop_summary",
-        assistant_summary=summary,
     )
 
 
@@ -159,6 +126,14 @@ def main(argv: list[str] | None = None) -> int:
     payload = claude_host_shared.load_payload(raw)
     if bool(payload.get("stop_hook_active")):
         return 0
+    session_id = claude_host_shared.hook_session_id(payload)
+    host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=repo_root,
+        host_family="claude",
+        session_id=session_id,
+        last_assistant_message=str(payload.get("last_assistant_message", "")),
+        render_surface="claude_stop",
+    )
     summary = claude_host_shared.meaningful_stop_summary(
         str(payload.get("last_assistant_message", ""))
     )
@@ -170,19 +145,33 @@ def main(argv: list[str] | None = None) -> int:
             workstreams=workstreams,
         )
     bundle = _stop_intervention_bundle(repo_root=repo_root, payload=payload)
-    rendered = render_stop_summary(
-        repo_root=repo_root,
-        payload=payload,
-        conversation_bundle_override=bundle,
-    )
-    if bundle:
-        conversation_surface.append_intervention_events(
+    decision = (
+        host_surface_runtime.visible_intervention_decision(
             repo_root=repo_root,
             bundle=bundle,
+            host_family="claude",
+            turn_phase="stop_summary",
+            session_id=session_id,
             include_proposal=False,
             include_closeout=True,
-            delivery_channel="stop_one_shot_guard",
-            delivery_status="stop_continuation_ready",
+        )
+        if bundle
+        else None
+    )
+    rendered = (
+        decision.visible_markdown
+        if decision is not None
+        else render_stop_summary(
+            repo_root=repo_root,
+            payload=payload,
+            conversation_bundle_override=bundle,
+        )
+    )
+    if bundle and decision is not None:
+        host_surface_runtime.append_visible_intervention_events(
+            repo_root=repo_root,
+            bundle=bundle,
+            decision=decision,
             render_surface="claude_stop",
         )
     if rendered:

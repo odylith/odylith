@@ -95,6 +95,14 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
                 "execution_engine_host_family": "codex",
                 "execution_engine_model_family": "",
                 "execution_engine_host_supports_native_spawn": True,
+                "execution_engine_host_supports_interrupt": True,
+                "execution_engine_host_supports_artifact_paths": True,
+                "execution_engine_component_id": "execution-engine",
+                "execution_engine_canonical_component_id": "execution-engine",
+                "execution_engine_identity_status": "canonical",
+                "execution_engine_target_component_id": "execution-engine",
+                "execution_engine_target_component_ids": ["execution-engine"],
+                "execution_engine_target_component_status": "execution_engine",
                 "execution_engine_target_lane": "consumer",
                 "execution_engine_candidate_target_count": 2,
                 "execution_engine_diagnostic_anchor_count": 2,
@@ -105,6 +113,12 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
                 "execution_engine_suppress_routing_receipts": True,
                 "execution_engine_surface_fast_lane": True,
                 "execution_engine_runtime_invalidated_by_step": "render_compass_dashboard",
+                "execution_engine_snapshot_duration_ms": 3.5,
+                "execution_engine_snapshot_estimated_tokens": 140,
+                "execution_engine_runtime_contract_estimated_tokens": 35,
+                "execution_engine_total_payload_estimated_tokens": 360,
+                "execution_engine_snapshot_reuse_status": "built",
+                "execution_engine_handshake_version": "v1",
                 "turn_intent": 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
                 "turn_surface_count": 1,
                 "turn_visible_text_count": 1,
@@ -282,6 +296,14 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["latest_execution_engine_host_family"] == "codex"
     assert summary["latest_execution_engine_model_family"] == ""
     assert summary["latest_execution_engine_host_supports_native_spawn"] is True
+    assert summary["latest_execution_engine_host_supports_interrupt"] is True
+    assert summary["latest_execution_engine_host_supports_artifact_paths"] is True
+    assert summary["latest_execution_engine_component_id"] == "execution-engine"
+    assert summary["latest_execution_engine_canonical_component_id"] == "execution-engine"
+    assert summary["latest_execution_engine_identity_status"] == "canonical"
+    assert summary["latest_execution_engine_target_component_id"] == "execution-engine"
+    assert summary["latest_execution_engine_target_component_ids"] == ["execution-engine"]
+    assert summary["latest_execution_engine_target_component_status"] == "execution_engine"
     assert summary["latest_execution_engine_target_lane"] == "consumer"
     assert summary["latest_execution_engine_candidate_target_count"] == 2
     assert summary["latest_execution_engine_diagnostic_anchor_count"] == 2
@@ -295,6 +317,12 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
     assert summary["latest_execution_engine_suppress_routing_receipts"] is True
     assert summary["latest_execution_engine_surface_fast_lane"] is True
     assert summary["latest_execution_engine_runtime_invalidated_by_step"] == "render_compass_dashboard"
+    assert summary["latest_execution_engine_snapshot_duration_ms"] == 3.5
+    assert summary["latest_execution_engine_snapshot_estimated_tokens"] == 140
+    assert summary["latest_execution_engine_runtime_contract_estimated_tokens"] == 35
+    assert summary["latest_execution_engine_total_payload_estimated_tokens"] == 360
+    assert summary["latest_execution_engine_snapshot_reuse_status"] == "built"
+    assert summary["latest_execution_engine_handshake_version"] == "v1"
 
 
 def test_runtime_surface_summary_accepts_tuple_backed_execution_engine_lists(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001

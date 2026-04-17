@@ -1,34 +1,48 @@
-%% Reviewed 2026-04-16 to make the Execution Engine boundary explicit and keep Context Engine grounding-only.
+%% Reviewed 2026-04-17 for v0.1.11 to show the Context Engine, Execution Engine, memory substrate, Tribunal, visible intervention broker, and benchmark proof handshake as one shared runtime path.
 flowchart LR
     CLI["odylith CLI + shell"] --> Context["Context Engine<br/>compiler + grounding packets"]
     Truth["Repo truth<br/>Radar + Plans + Casebook + Registry + Atlas"] --> Context
 
     subgraph Memory["Governed memory substrate"]
         Bundle["Projection Bundle<br/>manifest + documents + edges"]
-        Snapshot["Projection Snapshot<br/>deterministic JSON fallback"]
+        MemorySnapshot["Projection Snapshot<br/>deterministic JSON fallback"]
         Backend["Memory Backend<br/>LanceDB + Tantivy + judgment memory"]
         Remote["Remote Retrieval<br/>optional Vespa augment / remote_only"]
+        SessionStream["Session + delivery stream<br/>recent turns + intervention ledger + proof events"]
         Contracts["Memory Contracts<br/>allowlist + compaction + execution-profile tokens"]
         Bundle --> Backend
         Bundle --> Remote
         Bundle --> Contracts
-        Snapshot --> Contracts
+        MemorySnapshot --> Contracts
         Backend --> Contracts
         Remote --> Contracts
+        SessionStream --> Contracts
     end
 
     Context --> Bundle
-    Context --> Snapshot
+    Context --> MemorySnapshot
     Contracts --> Delivery["Delivery Intelligence"]
     Contracts --> Proof["Proof State"]
     Delivery --> Tribunal["Tribunal"]
     Delivery --> Exec["Execution Engine<br/>task contract + admissibility + frontier"]
     Proof --> Exec
     Tribunal --> Exec
-    Contracts --> Exec
-    Exec --> Router["Subagent Router"]
-    Router --> Orchestrator["Subagent Orchestrator"]
+    Contracts --> Handshake["Context-to-Execution handshake v1<br/>execution-engine identity + packet kind + quality<br/>turn context + target resolution + presentation policy<br/>recommended validation + route readiness"]
+    Context --> Handshake
+    Handshake --> Exec
+    Exec --> ExecSnapshot["Shared compact execution snapshot<br/>admissibility + mode + next move + closure<br/>wait/resume + validation + host + latency/cost"]
+    ExecSnapshot --> Delivery
+    ExecSnapshot --> Router["Subagent Router"]
+    ExecSnapshot --> Orchestrator["Subagent Orchestrator"]
+    ExecSnapshot --> Surfaces["Packet + shell + Compass + dashboard summaries"]
+    ExecSnapshot --> Visibility["Visible Intervention Broker<br/>one Observation / Proposal / Assist decision"]
+    Contracts --> Visibility
+    Tribunal --> Visibility
     Delivery --> Chatter["Odylith Chatter"]
-    Tribunal --> Chatter
+    Visibility --> Chatter
+    Chatter --> Chat["Chat-visible UX<br/>ambient highlight + Odylith Observation<br/>Odylith Proposal + Odylith Assist"]
     Orchestrator --> Chatter
+    ExecSnapshot --> Benchmark["Benchmark proof<br/>accuracy gates first<br/>false-admit / false-deny + host parity<br/>latency and token budget next"]
+    Contracts --> Benchmark
+    Tribunal --> Benchmark
     Chatter --> CLI

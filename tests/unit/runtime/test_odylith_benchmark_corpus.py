@@ -25,6 +25,61 @@ def test_public_and_bundle_benchmark_corpus_stay_aligned() -> None:
     assert _load(PUBLIC_CORPUS) == _load(BUNDLE_CORPUS)
 
 
+def test_execution_engine_corpus_hard_gates_identity_for_every_execution_case() -> None:
+    corpus = _load(PUBLIC_CORPUS)
+    execution_cases = [
+        case
+        for case in corpus.get("scenarios", [])
+        if isinstance(case, dict) and str(case.get("family", "")).strip() == "execution_engine"
+    ]
+    required_keys = {
+        "execution_engine_component_id",
+        "execution_engine_canonical_component_id",
+        "execution_engine_identity_status",
+        "execution_engine_target_component_status",
+        "execution_engine_snapshot_reuse_status",
+    }
+
+    assert len(execution_cases) >= 9
+    historical_cases = [
+        case
+        for case in execution_cases
+        if str(case.get("case_id", "")) == "execution-engine-historical-id-fails-closed"
+    ]
+    assert len(historical_cases) == 1
+
+    for case in execution_cases:
+        expect = dict(case.get("expect", {}))
+        benchmark = dict(case.get("benchmark", {}))
+        missing = sorted(key for key in required_keys if key not in expect)
+        assert not missing, (case.get("case_id"), missing)
+
+        if case is historical_cases[0]:
+            assert benchmark.get("component") == "execution-governance"
+            assert expect["execution_engine_component_id"] == ["execution-engine"]
+            assert expect["execution_engine_canonical_component_id"] == ["execution-engine"]
+            assert expect["execution_engine_identity_status"] == ["blocked_noncanonical_target"]
+            assert expect["execution_engine_target_component_status"] == [
+                "blocked_noncanonical_execution_engine"
+            ]
+            assert expect["execution_engine_snapshot_reuse_status"] == ["fail_closed_identity"]
+            continue
+
+        assert "execution-governance" not in json.dumps(benchmark, sort_keys=True)
+        assert "execution-governance" not in json.dumps(expect, sort_keys=True)
+        assert expect["execution_engine_component_id"] == ["execution-engine"]
+        assert expect["execution_engine_canonical_component_id"] == ["execution-engine"]
+        assert expect["execution_engine_identity_status"] == ["canonical"]
+        benchmark_component = str(benchmark.get("component", "")).strip()
+        expected_target_status = (
+            ["execution_engine_plus_related"]
+            if benchmark_component and benchmark_component != "execution-engine"
+            else ["execution_engine"]
+        )
+        assert expect["execution_engine_target_component_status"] == expected_target_status
+        assert expect["execution_engine_snapshot_reuse_status"] == ["built"]
+
+
 def test_benchmark_corpus_declares_supporting_paths_and_write_targets_separately() -> None:
     scenarios = {str(row.get("scenario_id", "")).strip(): row for row in _load_normalized()}
 

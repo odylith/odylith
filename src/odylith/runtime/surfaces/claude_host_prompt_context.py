@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.intervention_engine import alignment_context
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
@@ -28,6 +29,16 @@ from odylith.runtime.surfaces import claude_host_shared
 
 
 _ANCHOR_RE = re.compile(r"\b(?:B|CB|D)-\d{3,}\b")
+
+
+def _alignment_mapping(alignment: Mapping[str, Any], key: str) -> Mapping[str, Any]:
+    value = alignment.get(key)
+    return value if isinstance(value, Mapping) else {}
+
+
+def _alignment_list(alignment: Mapping[str, Any], key: str) -> list[Any]:
+    value = alignment.get(key)
+    return value if isinstance(value, list) else []
 
 
 def _context_summary(output: str, ref: str) -> str:
@@ -73,16 +84,34 @@ def _prompt_conversation_bundle(
 ) -> dict[str, Any]:
     if isinstance(bundle_override, Mapping):
         return dict(bundle_override)
-    observation = intervention_surface_runtime.observation_envelope(
+    if isinstance(intervention_bundle_override, Mapping):
+        return {"intervention_bundle": dict(intervention_bundle_override)}
+    root = Path(repo_root).expanduser().resolve()
+    alignment = alignment_context.build_host_alignment_context(
+        repo_root=root,
         host_family="claude",
         turn_phase="prompt_submit",
         session_id=session_id,
         prompt_excerpt=prompt,
     )
-    if isinstance(intervention_bundle_override, Mapping):
-        return {"intervention_bundle": dict(intervention_bundle_override)}
+    observation = intervention_surface_runtime.observation_envelope(
+        host_family="claude",
+        turn_phase="prompt_submit",
+        session_id=session_id,
+        prompt_excerpt=prompt,
+        workstreams=_alignment_list(alignment, "workstreams"),
+        components=_alignment_list(alignment, "components"),
+        bugs=_alignment_list(alignment, "bugs"),
+        diagrams=_alignment_list(alignment, "diagrams"),
+        context_packet_summary=_alignment_mapping(alignment, "context_packet"),
+        execution_engine_summary=_alignment_mapping(alignment, "execution_engine_summary"),
+        memory_summary=_alignment_mapping(alignment, "memory_summary"),
+        tribunal_summary=_alignment_mapping(alignment, "tribunal_summary"),
+        visibility_summary=_alignment_mapping(alignment, "visibility_summary"),
+        delivery_snapshot=_alignment_mapping(alignment, "delivery_snapshot"),
+    )
     return conversation_surface.build_conversation_bundle(
-        repo_root=Path(repo_root).expanduser().resolve(),
+        repo_root=root,
         observation=observation,
     )
 
@@ -144,7 +173,16 @@ def render_prompt_system_message(
         bundle_override=conversation_bundle_override,
         intervention_bundle_override=intervention_bundle_override,
     )
-    return conversation_surface.render_live_text(
+    decision = host_surface_runtime.visible_intervention_decision(
+        repo_root=repo_root,
+        bundle=bundle,
+        host_family="claude",
+        turn_phase="prompt_submit",
+        session_id=session_id,
+        include_proposal=False,
+        include_closeout=False,
+    )
+    return decision.visible_markdown or conversation_surface.render_live_text(
         bundle,
         markdown=False,
         include_proposal=False,
@@ -174,6 +212,17 @@ def main(argv: list[str] | None = None) -> int:
         prompt=prompt,
         session_id=session_id,
     )
+    decision = host_surface_runtime.visible_intervention_decision(
+        repo_root=repo_root,
+        bundle=bundle,
+        host_family="claude",
+        turn_phase="prompt_submit",
+        session_id=session_id,
+        include_proposal=False,
+        include_closeout=False,
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+    )
     summary = render_prompt_context(
         repo_root=repo_root,
         prompt=prompt,
@@ -186,6 +235,15 @@ def main(argv: list[str] | None = None) -> int:
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
+    summary = decision.developer_context or summary
+    system_message = decision.visible_markdown or system_message
+    if decision.visible_markdown or decision.developer_context:
+        host_surface_runtime.append_visible_intervention_events(
+            repo_root=repo_root,
+            bundle=bundle,
+            decision=decision,
+            render_surface="claude_user_prompt_submit",
+        )
     if summary:
         sys.stdout.write(
             json.dumps(

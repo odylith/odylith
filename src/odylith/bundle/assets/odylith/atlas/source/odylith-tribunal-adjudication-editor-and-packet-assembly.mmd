@@ -1,0 +1,98 @@
+%% Reviewed 2026-04-17 for v0.1.11 to connect Tribunal adjudication to Context Engine packet evidence, Execution Engine snapshots, memory/session proof, visible interventions, and benchmark acceptance checks.
+flowchart LR
+  subgraph Intake["1. Dossier intake"]
+    Subject["Subject + decision at stake"]
+    Observations["Observations<br/>owned artifacts, semantic-diff candidates,<br/>changed artifacts, code refs, proof routes, evidence gaps"]
+    Evidence["Named evidence items"]
+    ContextPacket["Context packet digest<br/>packet quality + target resolution + route readiness"]
+    ExecutionSnapshot["Execution snapshot digest<br/>admissibility + next move + closure + validation"]
+    SessionProof["Session memory + visibility ledger<br/>hard corrections + chat-confirmed state"]
+    Dossier["Grounded Tribunal dossier"]
+  end
+
+  subgraph Actors["2. Actor pass"]
+    Observer["Observer"]
+    Ownership["Ownership Resolver"]
+    Causal["Causal Analyst"]
+    Policy["Policy Judge"]
+    Normative["Normative Judge"]
+    Adversary["Adversary"]
+    Counterfactual["Counterfactual Analyst"]
+    Gap["Gap Analyst"]
+    Risk["Risk Analyst"]
+    Prescriber["Prescriber"]
+  end
+
+  subgraph Adjudication["3. Adjudication + provider validation"]
+    Judge["Adjudicator<br/>form, leading story, rival, risk,<br/>next check, confidence factors"]
+    Provider["Optional provider refinement<br/>OpenAI-compatible or codex exec"]
+    Validate["Tribunal validator<br/>bounded fields + named evidence ids only"]
+    Fallback["Deterministic fallback"]
+    Breaker["Run-scoped provider breaker<br/>disable remaining provider attempts after timeout or transport failure"]
+    Hybrid["Validated refined fields<br/>provider_used / provider_validated"]
+  end
+
+  subgraph Editorial["4. Editorial merge"]
+    Editor["Editor<br/>queue headline + concise lead brief"]
+    Systemic["Systemic brief<br/>shared latent causes across cases"]
+    QueueRow["Case queue row<br/>headline, brief, reasoning_state,<br/>proof_routes, selection rationale"]
+    InterventionSignal["Visible intervention signal<br/>Observation / Proposal payload candidate"]
+  end
+
+  subgraph Action["5. Packet assembly and control loop"]
+    Packet["compile_correction_packet()<br/>deterministic | ai_engine | hybrid | manual"]
+    Ledger["decisions.v1.jsonl<br/>approve / delegate / apply / clear / dismiss"]
+    Posture["sync_workstream_artifacts merge<br/>packet status + clearance state"]
+    Surface["Odylith UI + CLI"]
+    Benchmark["Benchmark acceptance<br/>closure + validation + false-admit guard"]
+  end
+
+  Subject --> Dossier
+  Observations --> Dossier
+  Evidence --> Dossier
+  ContextPacket --> Dossier
+  ExecutionSnapshot --> Dossier
+  SessionProof --> Dossier
+
+  Dossier --> Observer
+  Dossier --> Ownership
+  Dossier --> Causal
+  Dossier --> Policy
+  Dossier --> Normative
+  Dossier --> Adversary
+  Dossier --> Counterfactual
+  Dossier --> Gap
+  Dossier --> Risk
+  Dossier --> Prescriber
+
+  Observer --> Judge
+  Ownership --> Judge
+  Causal --> Judge
+  Policy --> Judge
+  Normative --> Judge
+  Adversary --> Judge
+  Counterfactual --> Judge
+  Gap --> Judge
+  Risk --> Judge
+  Prescriber --> Judge
+
+  Judge --> Provider
+  Provider --> Validate
+  Validate -- "valid" --> Hybrid
+  Validate -- "timeout / transport / missing evidence / invalid fields" --> Fallback
+  Judge --> Fallback
+  Breaker -. governs remaining provider attempts .-> Provider
+  Hybrid --> Editor
+  Fallback --> Editor
+
+  Judge --> Systemic
+  Editor --> QueueRow
+  Editor --> InterventionSignal
+  Judge --> Packet
+  QueueRow --> Surface
+  Systemic --> Surface
+  InterventionSignal --> Surface
+  Packet --> Ledger
+  Ledger --> Posture
+  Posture --> Benchmark
+  Posture --> Surface

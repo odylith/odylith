@@ -1,5 +1,5 @@
 ---
-status: queued
+status: implementation
 
 idea_id: B-101
 
@@ -29,7 +29,7 @@ confidence: high
 
 founder_override: no
 
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md
 
 execution_model: standard
 

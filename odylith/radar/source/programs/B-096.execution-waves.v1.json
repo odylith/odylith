@@ -1,0 +1,109 @@
+{
+  "umbrella_id": "B-096",
+  "version": "v1",
+  "waves": [
+    {
+      "wave_id": "W1",
+      "label": "Visible Intervention Value Engine Governance Binding",
+      "status": "active",
+      "summary": "Visible Intervention Value Engine Governance Binding",
+      "depends_on": [],
+      "primary_workstreams": [
+        "B-105"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-105",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "Governance binding gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W2",
+      "label": "Visible Intervention Proposition Engine",
+      "status": "planned",
+      "summary": "Visible Intervention Proposition Engine",
+      "depends_on": [
+        "W1"
+      ],
+      "primary_workstreams": [
+        "B-106"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-106",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "Proposition engine gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W3",
+      "label": "Host Visibility Integration And Ruler Canonicalization",
+      "status": "planned",
+      "summary": "Host Visibility Integration And Ruler Canonicalization",
+      "depends_on": [
+        "W2"
+      ],
+      "primary_workstreams": [
+        "B-107"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-107",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "Host visibility gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W4",
+      "label": "Intervention Adjudication Corpus And Advisory Benchmark",
+      "status": "planned",
+      "summary": "Intervention Adjudication Corpus And Advisory Benchmark",
+      "depends_on": [
+        "W3"
+      ],
+      "primary_workstreams": [
+        "B-108"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-108",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "Adjudication benchmark gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W5",
+      "label": "v0.1.11 Visible Intervention Release Proof",
+      "status": "planned",
+      "summary": "v0.1.11 Visible Intervention Release Proof",
+      "depends_on": [
+        "W4"
+      ],
+      "primary_workstreams": [
+        "B-109"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-109",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "Release proof gate"
+        }
+      ]
+    }
+  ]
+}

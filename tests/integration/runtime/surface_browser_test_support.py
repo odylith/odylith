@@ -19,7 +19,7 @@ _LOCAL_SURFACE_HTML_RE = re.compile(
     r"^http://127\.0\.0\.1:\d+/odylith/(radar|registry|casebook|atlas|compass)/[^?#]+\.html(?:[?#].*)?$"
 )
 _LOCAL_COMPASS_HISTORY_JSON_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/history/\d{4}-\d{2}-\d{2}\.v1\.json(?:[?#].*)?$"
+    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/history/(?:index|\d{4}-\d{2}-\d{2})\.v1\.json(?:[?#].*)?$"
 )
 
 
