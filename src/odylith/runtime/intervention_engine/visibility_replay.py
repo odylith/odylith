@@ -15,18 +15,9 @@ from typing import Mapping
 
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import visibility_contract
-
-
-def _normalize_string(value: Any) -> str:
-    return visibility_contract.normalize_string(value)
-
-
-def _normalize_token(value: Any) -> str:
-    return visibility_contract.normalize_token(value)
-
-
-def _normalize_block_string(value: Any) -> str:
-    return visibility_contract.normalize_block_string(value)
+from odylith.runtime.intervention_engine.visibility_contract import normalize_block_string as _normalize_block_string
+from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
+from odylith.runtime.intervention_engine.visibility_contract import normalize_token as _normalize_token
 
 
 def _family(row: Mapping[str, Any]) -> str:

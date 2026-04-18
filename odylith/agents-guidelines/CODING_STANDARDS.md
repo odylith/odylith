@@ -40,6 +40,9 @@
 - New or materially rewritten runtime Python modules must carry a truthful
   module docstring.
 - Every anti-slop cleanup must add or update enforcement tests.
+- When a cleanup exposes a structural regression, fail closed: repair the
+  regression and rerun the governing proof surface before landing more slop
+  cleanup on top.
 - Use [ANTI_SLOP_AND_DECOMPOSITION.md](./ANTI_SLOP_AND_DECOMPOSITION.md) for
   the full ban list, decomposition triggers, and proof contract.
 

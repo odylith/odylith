@@ -7,22 +7,20 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_store
+from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import proof_state as proof_state_runtime
+from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.intervention_engine import stream_state as intervention_stream_state
 from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
 from odylith.runtime.surfaces import compass_governance_source_runtime
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_execution_focus_runtime
+from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
 from odylith.runtime.surfaces import compass_standup_runtime_reuse
 from odylith.runtime.surfaces import compass_window_update_index
-
-
-def _host():
-    from odylith.runtime.surfaces import compass_dashboard_runtime as host
-
-    return host
 
 
 def _emit_refresh_progress(
@@ -71,8 +69,7 @@ def _reusable_brief_sections_for_fact_packet(
     raw_sections = brief.get("sections")
     if not isinstance(raw_sections, Sequence) or not raw_sections:
         return None
-    narrator = _host().compass_standup_brief_narrator
-    return narrator._validated_cached_sections(  # noqa: SLF001
+    return compass_standup_brief_narrator._validated_cached_sections(  # noqa: SLF001
         raw_sections=raw_sections,
         fact_packet=fact_packet,
         cached_evidence_lookup=brief.get("evidence_lookup", {}),
@@ -300,9 +297,7 @@ def _compose_global_fact_packet_from_scoped_briefs(
     scoped_briefs_by_scope: Mapping[str, Mapping[str, Any]],
     ordered_scope_ids: list[str],
 ) -> dict[str, Any]:
-    host = _host()
-    narrator = host.compass_standup_brief_narrator
-    section_specs = narrator.STANDUP_BRIEF_SECTIONS
+    section_specs = compass_standup_brief_narrator.STANDUP_BRIEF_SECTIONS
     section_rows: dict[str, list[dict[str, Any]]] = {key: [] for key, _label in section_specs}
     facts: list[dict[str, Any]] = []
     fact_counter = 1
@@ -426,7 +421,8 @@ def _compose_global_fact_packet_from_scoped_briefs(
         for key, label in section_specs
     ]
     return {
-        "version": str(base_fact_packet.get("version", "")).strip() or narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+        "version": str(base_fact_packet.get("version", "")).strip()
+        or compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
         "window": str(base_fact_packet.get("window", "")).strip(),
         "scope": dict(base_fact_packet.get("scope", {})) if isinstance(base_fact_packet.get("scope", {}), Mapping) else {},
         "summary": dict(base_fact_packet.get("summary", {})) if isinstance(base_fact_packet.get("summary", {}), Mapping) else {},
@@ -479,67 +475,66 @@ def _build_runtime_payload(
     refresh_profile: str = "shell-safe",
     progress_callback: Any | None = None,
 ) -> dict[str, Any]:
-    host = _host()
-    _load_json = host._load_json
-    _load_component_index_runtime = host._load_component_index_runtime
-    _parse_backlog_rows = host._parse_backlog_rows
-    _parse_plan_active_rows = host._parse_plan_active_rows
-    _parse_bugs_rows = host._parse_bugs_rows
-    _COMPASS_TZ = host._COMPASS_TZ
-    _git_identity = host._git_identity
-    _collect_git_commits = host._collect_git_commits
-    _collect_git_local_changes = host._collect_git_local_changes
-    _collect_workstream_path_index = host._collect_workstream_path_index
-    _map_paths_to_workstreams = host._map_paths_to_workstreams
-    _safe_iso = host._safe_iso
-    _local_change_event_ts = host._local_change_event_ts
-    _local_change_summary = host._local_change_summary
-    _build_plan_timeline_events = host._build_plan_timeline_events
-    _build_bug_timeline_events = host._build_bug_timeline_events
-    _load_codex_stream_events = host._load_codex_stream_events
-    _normalize_repo_token = host._normalize_repo_token
-    _resolve = host._resolve
-    _parse_markdown_metadata_and_sections = host._parse_markdown_metadata_and_sections
-    _collect_plan_progress = host._collect_plan_progress
-    _build_window_activity = host._build_window_activity
-    _DATE_RE = host._DATE_RE
-    _timeline_projection = host._timeline_projection
-    _split_workstream_ids = host._split_workstream_ids
-    _cost_base_index = host._cost_base_index
-    _cost_with_activity = host._cost_with_activity
-    _component_rows_for_workstream = host._component_rows_for_workstream
-    _select_timeline_source_events = host._select_timeline_source_events
-    _event_public_payload = host._event_public_payload
-    _build_prompt_transactions = host._build_prompt_transactions
-    _extract_link_target = host._extract_link_target
-    _select_current_workstream_rows = host._select_current_workstream_rows
-    _filter_execution_wave_payload_for_current_context = host._filter_execution_wave_payload_for_current_context
-    _resolve_index_link_to_repo_path = host._resolve_index_link_to_repo_path
-    _extract_workstream_tokens_from_text = host._extract_workstream_tokens_from_text
-    _parse_date = host._parse_date
-    _WORKSTREAM_ID_RE = host._WORKSTREAM_ID_RE
-    _collect_recent_completed_plan_rows = host._collect_recent_completed_plan_rows
-    _is_bug_date_within_window = host._is_bug_date_within_window
-    _self_host_snapshot = host._self_host_snapshot
-    _self_host_risk_rows = host._self_host_risk_rows
-    _build_window_event_counts = host._build_window_event_counts
-    _filter_transactions_by_window = host._filter_transactions_by_window
-    _is_generated_only_local_change_event = host._is_generated_only_local_change_event
-    _is_generated_only_transaction = host._is_generated_only_transaction
-    _build_risk_posture_summary = host._build_risk_posture_summary
-    _scope_risk_rows = host._scope_risk_rows
-    _build_global_standup_fact_packet = host._build_global_standup_fact_packet
-    _build_scoped_standup_fact_packet = host._build_scoped_standup_fact_packet
-    _as_repo_path = host._as_repo_path
-    _COMPASS_TIMEZONE = host._COMPASS_TIMEZONE
-    _compact_odylith_runtime_summary = host._compact_odylith_runtime_summary
-    _TIMELINE_EVENT_LOOKBACK_HOURS = host._TIMELINE_EVENT_LOOKBACK_HOURS
-    _TIMELINE_EVENT_MAX_ROWS = host._TIMELINE_EVENT_MAX_ROWS
-    _DEFAULT_RECENT_FOCUS_WINDOW_MINUTES = host._DEFAULT_RECENT_FOCUS_WINDOW_MINUTES
-    governance = host.governance
-    odylith_reasoning = host.odylith_reasoning
-    compass_standup_brief_narrator = host.compass_standup_brief_narrator
-    odylith_context_engine_store = host.odylith_context_engine_store
+    from odylith.runtime.surfaces import compass_dashboard_runtime
+
+    _load_json = compass_dashboard_runtime._load_json
+    _load_component_index_runtime = compass_dashboard_runtime._load_component_index_runtime
+    _parse_backlog_rows = compass_dashboard_runtime._parse_backlog_rows
+    _parse_plan_active_rows = compass_dashboard_runtime._parse_plan_active_rows
+    _parse_bugs_rows = compass_dashboard_runtime._parse_bugs_rows
+    _COMPASS_TZ = compass_dashboard_runtime._COMPASS_TZ
+    _git_identity = compass_dashboard_runtime._git_identity
+    _collect_git_commits = compass_dashboard_runtime._collect_git_commits
+    _collect_git_local_changes = compass_dashboard_runtime._collect_git_local_changes
+    _collect_workstream_path_index = compass_dashboard_runtime._collect_workstream_path_index
+    _map_paths_to_workstreams = compass_dashboard_runtime._map_paths_to_workstreams
+    _safe_iso = compass_dashboard_runtime._safe_iso
+    _local_change_event_ts = compass_dashboard_runtime._local_change_event_ts
+    _local_change_summary = compass_dashboard_runtime._local_change_summary
+    _build_plan_timeline_events = compass_dashboard_runtime._build_plan_timeline_events
+    _build_bug_timeline_events = compass_dashboard_runtime._build_bug_timeline_events
+    _load_codex_stream_events = compass_dashboard_runtime._load_codex_stream_events
+    _normalize_repo_token = compass_dashboard_runtime._normalize_repo_token
+    _resolve = compass_dashboard_runtime._resolve
+    _parse_markdown_metadata_and_sections = compass_dashboard_runtime._parse_markdown_metadata_and_sections
+    _collect_plan_progress = compass_dashboard_runtime._collect_plan_progress
+    _build_window_activity = compass_dashboard_runtime._build_window_activity
+    _DATE_RE = compass_dashboard_runtime._DATE_RE
+    _timeline_projection = compass_dashboard_runtime._timeline_projection
+    _split_workstream_ids = compass_dashboard_runtime._split_workstream_ids
+    _cost_base_index = compass_dashboard_runtime._cost_base_index
+    _cost_with_activity = compass_dashboard_runtime._cost_with_activity
+    _component_rows_for_workstream = compass_dashboard_runtime._component_rows_for_workstream
+    _select_timeline_source_events = compass_dashboard_runtime._select_timeline_source_events
+    _event_public_payload = compass_dashboard_runtime._event_public_payload
+    _build_prompt_transactions = compass_dashboard_runtime._build_prompt_transactions
+    _extract_link_target = compass_dashboard_runtime._extract_link_target
+    _select_current_workstream_rows = compass_dashboard_runtime._select_current_workstream_rows
+    _filter_execution_wave_payload_for_current_context = (
+        compass_dashboard_runtime._filter_execution_wave_payload_for_current_context
+    )
+    _resolve_index_link_to_repo_path = compass_dashboard_runtime._resolve_index_link_to_repo_path
+    _extract_workstream_tokens_from_text = compass_dashboard_runtime._extract_workstream_tokens_from_text
+    _parse_date = compass_dashboard_runtime._parse_date
+    _WORKSTREAM_ID_RE = compass_dashboard_runtime._WORKSTREAM_ID_RE
+    _collect_recent_completed_plan_rows = compass_dashboard_runtime._collect_recent_completed_plan_rows
+    _is_bug_date_within_window = compass_dashboard_runtime._is_bug_date_within_window
+    _self_host_snapshot = compass_dashboard_runtime._self_host_snapshot
+    _self_host_risk_rows = compass_dashboard_runtime._self_host_risk_rows
+    _build_window_event_counts = compass_dashboard_runtime._build_window_event_counts
+    _filter_transactions_by_window = compass_dashboard_runtime._filter_transactions_by_window
+    _is_generated_only_local_change_event = compass_dashboard_runtime._is_generated_only_local_change_event
+    _is_generated_only_transaction = compass_dashboard_runtime._is_generated_only_transaction
+    _build_risk_posture_summary = compass_dashboard_runtime._build_risk_posture_summary
+    _scope_risk_rows = compass_dashboard_runtime._scope_risk_rows
+    _build_global_standup_fact_packet = compass_dashboard_runtime._build_global_standup_fact_packet
+    _build_scoped_standup_fact_packet = compass_dashboard_runtime._build_scoped_standup_fact_packet
+    _as_repo_path = compass_dashboard_runtime._as_repo_path
+    _COMPASS_TIMEZONE = compass_dashboard_runtime._COMPASS_TIMEZONE
+    _compact_odylith_runtime_summary = compass_dashboard_runtime._compact_odylith_runtime_summary
+    _TIMELINE_EVENT_LOOKBACK_HOURS = compass_dashboard_runtime._TIMELINE_EVENT_LOOKBACK_HOURS
+    _TIMELINE_EVENT_MAX_ROWS = compass_dashboard_runtime._TIMELINE_EVENT_MAX_ROWS
+    _DEFAULT_RECENT_FOCUS_WINDOW_MINUTES = compass_dashboard_runtime._DEFAULT_RECENT_FOCUS_WINDOW_MINUTES
     _build_execution_focus_payload = compass_execution_focus_runtime._build_execution_focus_payload
     traceability_graph = _load_json(traceability_graph_path)
     governance_context = compass_governance_source_runtime.build_live_governance_context(

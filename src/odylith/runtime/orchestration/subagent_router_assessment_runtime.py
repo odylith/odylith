@@ -10,13 +10,9 @@ from typing import Sequence
 from odylith.runtime.common.consumer_profile import load_consumer_profile
 from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.context_engine import packet_quality_codec
+from odylith.runtime.orchestration import subagent_router
+from odylith.runtime.orchestration import subagent_router_context_support
 from odylith.runtime.orchestration import subagent_router_execution_engine_runtime
-
-
-def _host():
-    from odylith.runtime.orchestration import subagent_router as host
-
-    return host
 
 
 def _bool_value(value: Any) -> bool:
@@ -40,56 +36,53 @@ def _preferred_value(summary: Mapping[str, Any], key: str, *fallbacks: Any) -> A
 
 
 def request_with_consumer_write_policy(
-    request: RouteRequest,
+    request: subagent_router.RouteRequest,
     *,
     repo_root: Path | None,
-) -> RouteRequest:
+) -> subagent_router.RouteRequest:
     if repo_root is None or not request.needs_write:
         return request
     profile = load_consumer_profile(repo_root=Path(repo_root).resolve())
     policy = dict(profile.get("odylith_write_policy", {})) if isinstance(profile.get("odylith_write_policy"), Mapping) else {}
     if not policy:
         return request
-    host = _host()
-    _normalize_context_signals = host._normalize_context_signals
-    RouteRequest = host.RouteRequest
-    merged_context = _normalize_context_signals(request.context_signals)
+    merged_context = subagent_router_context_support._normalize_context_signals(request.context_signals)
     if merged_context.get("odylith_write_policy") == policy:
         return request
     merged_context["odylith_write_policy"] = policy
     payload = request.as_dict()
     payload["context_signals"] = merged_context
-    return RouteRequest(**payload)
+    return subagent_router.RouteRequest(**payload)
 
 
-def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
-    host = _host()
-    _normalize_context_signals = host._normalize_context_signals
-    _context_signal_root = host._context_signal_root
-    _mapping_value = host._mapping_value
-    _validation_bundle_from_context = host._validation_bundle_from_context
-    _governance_obligations_from_context = host._governance_obligations_from_context
-    _surface_refs_from_context = host._surface_refs_from_context
-    _execution_profile_mapping = host._execution_profile_mapping
-    _preferred_router_profile_from_execution_profile = host._preferred_router_profile_from_execution_profile
-    _context_signal_score = host._context_signal_score
-    _context_lookup = host._context_lookup
-    _normalize_token = host._normalize_token
-    _context_signal_bool = host._context_signal_bool
-    _normalize_list = host._normalize_list
-    _count_or_list_len = host._count_or_list_len
-    _normalize_string = host._normalize_string
-    _dedupe_strings = host._dedupe_strings
-    _int_value = host._int_value
-    _clamp_score = host._clamp_score
-    _normalized_rate = host._normalized_rate
-    _latency_pressure_signal = host._latency_pressure_signal
-    _scaled_numeric_signal = host._scaled_numeric_signal
-    _context_signal_level = host._context_signal_level
-    _SCORE_MAX = host._SCORE_MAX
-    _SCORE_MIN = host._SCORE_MIN
+def _context_signal_summary(request: subagent_router.RouteRequest) -> dict[str, Any]:
+    _context_signal_root = subagent_router_context_support._context_signal_root
+    _mapping_value = subagent_router_context_support._mapping_value
+    _validation_bundle_from_context = subagent_router_context_support._validation_bundle_from_context
+    _governance_obligations_from_context = subagent_router_context_support._governance_obligations_from_context
+    _surface_refs_from_context = subagent_router_context_support._surface_refs_from_context
+    _execution_profile_mapping = subagent_router_context_support._execution_profile_mapping
+    _preferred_router_profile_from_execution_profile = (
+        subagent_router_context_support._preferred_router_profile_from_execution_profile
+    )
+    _context_signal_score = subagent_router_context_support._context_signal_score
+    _context_lookup = subagent_router_context_support._context_lookup
+    _normalize_token = subagent_router_context_support._normalize_token
+    _context_signal_bool = subagent_router_context_support._context_signal_bool
+    _normalize_list = subagent_router_context_support._normalize_list
+    _count_or_list_len = subagent_router_context_support._count_or_list_len
+    _normalize_string = subagent_router_context_support._normalize_string
+    _dedupe_strings = subagent_router_context_support._dedupe_strings
+    _int_value = subagent_router_context_support._int_value
+    _clamp_score = subagent_router_context_support._clamp_score
+    _normalized_rate = subagent_router_context_support._normalized_rate
+    _latency_pressure_signal = subagent_router_context_support._latency_pressure_signal
+    _scaled_numeric_signal = subagent_router_context_support._scaled_numeric_signal
+    _context_signal_level = subagent_router_context_support._context_signal_level
+    _SCORE_MAX = subagent_router_context_support._SCORE_MAX
+    _SCORE_MIN = subagent_router_context_support._SCORE_MIN
 
-    context_signals = _normalize_context_signals(request.context_signals)
+    context_signals = subagent_router_context_support._normalize_context_signals(request.context_signals)
     root = _context_signal_root(context_signals)
     context_packet = _mapping_value(context_signals, "context_packet")
     if not isinstance(context_packet, Mapping):
@@ -1357,34 +1350,33 @@ def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
     }
 
 
-def assess_request(request: RouteRequest) -> TaskAssessment:
-    host = _host()
-    _normalize_string = host._normalize_string
-    _normalize_list = host._normalize_list
-    infer_prompt_semantics = host.infer_prompt_semantics
-    infer_explicit_paths = host.infer_explicit_paths
-    surface_prefixes_for_path = host.surface_prefixes_for_path
-    _infer_phase_tokens = host._infer_phase_tokens
-    _contains_any = host._contains_any
-    _keyword_score = host._keyword_score
-    _clamp_score = host._clamp_score
-    _normalized_rate = host._normalized_rate
-    _normalize_token = host._normalize_token
-    _router_profile_from_token = host._router_profile_from_token
-    _classify_task_family = host._classify_task_family
-    TaskAssessment = host.TaskAssessment
-    RouterProfile = host.RouterProfile
-    _FEATURE_KEYWORDS = host._FEATURE_KEYWORDS
-    _WRITE_KEYWORDS = host._WRITE_KEYWORDS
-    _AMBIGUITY_KEYWORDS = host._AMBIGUITY_KEYWORDS
-    _RISK_KEYWORDS = host._RISK_KEYWORDS
-    _COORDINATION_KEYWORDS = host._COORDINATION_KEYWORDS
-    _REVERSIBILITY_KEYWORDS = host._REVERSIBILITY_KEYWORDS
-    _MECHANICAL_KEYWORDS = host._MECHANICAL_KEYWORDS
-    _VALIDATION_KEYWORDS = host._VALIDATION_KEYWORDS
-    _LATENCY_KEYWORDS = host._LATENCY_KEYWORDS
-    _DEPTH_KEYWORDS = host._DEPTH_KEYWORDS
-    _RUNTIME_EARNED_DEPTH_SELECTION_MODES = host._RUNTIME_EARNED_DEPTH_SELECTION_MODES
+def assess_request(request: subagent_router.RouteRequest) -> subagent_router.TaskAssessment:
+    _normalize_string = subagent_router._normalize_string
+    _normalize_list = subagent_router._normalize_list
+    infer_prompt_semantics = subagent_router.infer_prompt_semantics
+    infer_explicit_paths = subagent_router.infer_explicit_paths
+    surface_prefixes_for_path = subagent_router.surface_prefixes_for_path
+    _infer_phase_tokens = subagent_router._infer_phase_tokens
+    _contains_any = subagent_router._contains_any
+    _keyword_score = subagent_router._keyword_score
+    _clamp_score = subagent_router._clamp_score
+    _normalized_rate = subagent_router._normalized_rate
+    _normalize_token = subagent_router._normalize_token
+    _router_profile_from_token = subagent_router._router_profile_from_token
+    _classify_task_family = subagent_router._classify_task_family
+    TaskAssessment = subagent_router.TaskAssessment
+    RouterProfile = subagent_router.RouterProfile
+    _FEATURE_KEYWORDS = subagent_router._FEATURE_KEYWORDS
+    _WRITE_KEYWORDS = subagent_router._WRITE_KEYWORDS
+    _AMBIGUITY_KEYWORDS = subagent_router._AMBIGUITY_KEYWORDS
+    _RISK_KEYWORDS = subagent_router._RISK_KEYWORDS
+    _COORDINATION_KEYWORDS = subagent_router._COORDINATION_KEYWORDS
+    _REVERSIBILITY_KEYWORDS = subagent_router._REVERSIBILITY_KEYWORDS
+    _MECHANICAL_KEYWORDS = subagent_router._MECHANICAL_KEYWORDS
+    _VALIDATION_KEYWORDS = subagent_router._VALIDATION_KEYWORDS
+    _LATENCY_KEYWORDS = subagent_router._LATENCY_KEYWORDS
+    _DEPTH_KEYWORDS = subagent_router._DEPTH_KEYWORDS
+    _RUNTIME_EARNED_DEPTH_SELECTION_MODES = subagent_router._RUNTIME_EARNED_DEPTH_SELECTION_MODES
 
     prompt = _normalize_string(request.prompt)
     criteria = " ".join(_normalize_list(request.acceptance_criteria))
@@ -1556,7 +1548,7 @@ def assess_request(request: RouteRequest) -> TaskAssessment:
         - (1 if open_ended_scope_hits >= 2 else 0)
     )
 
-    write_scope_clarity = host._SCORE_MAX if not needs_write else 0
+    write_scope_clarity = subagent_router_context_support._SCORE_MAX if not needs_write else 0
     if needs_write:
         if explicit_path_count >= 1:
             write_scope_clarity += 2

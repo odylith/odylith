@@ -5,7 +5,8 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 from typing import Mapping
-from typing import Sequence
+
+from odylith.runtime.common import value_coercion
 
 VISIBLE_DELIVERY_STATUSES: frozenset[str] = frozenset(
     {
@@ -57,7 +58,7 @@ VISIBILITY_FAMILIES: tuple[str, ...] = (
 
 def normalize_string(value: Any) -> str:
     """Collapse internal whitespace and trim a scalar value."""
-    return " ".join(str(value or "").split()).strip()
+    return value_coercion.normalize_string(value)
 
 
 def normalize_block_string(value: Any) -> str:
@@ -80,31 +81,17 @@ def normalize_block_string(value: Any) -> str:
 
 def normalize_token(value: Any) -> str:
     """Normalize free-form text into a lowercase underscore token."""
-    return normalize_string(value).lower().replace(" ", "_").replace("-", "_")
+    return value_coercion.normalize_token(value)
 
 
 def normalize_string_list(value: Any, *, limit: int | None = None) -> list[str]:
     """Normalize scalar or sequence input into a deduplicated string list."""
-    cap = None if limit is None else max(1, int(limit))
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        token = normalize_string(value)
-        return [token] if token else []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = normalize_string(item)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-        if cap is not None and len(rows) >= cap:
-            break
-    return rows
+    return value_coercion.normalize_string_list(value, limit=limit)
 
 
 def mapping_copy(value: Any) -> dict[str, Any]:
     """Return a mutable plain-dict copy when the input behaves like a mapping."""
-    return dict(value) if isinstance(value, Mapping) else {}
+    return value_coercion.mapping_copy(value)
 
 
 def strip_live_boundary(value: Any) -> str:

@@ -1,3 +1,5 @@
+"""Exercise a local hosted-release install flow against a temporary repo."""
+
 from __future__ import annotations
 
 import argparse

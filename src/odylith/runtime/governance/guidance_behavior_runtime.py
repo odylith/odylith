@@ -7,6 +7,7 @@ import shlex
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.governance import guidance_behavior_platform_contracts
 from odylith.runtime.governance import guidance_behavior_guidance_contracts
 from odylith.runtime.governance import guidance_behavior_runtime_contracts
@@ -43,12 +44,6 @@ def _strings(*values: Any, limit: int = 16) -> list[str]:
             if len(rows) >= max(1, int(limit)):
                 return rows
     return rows
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
-
-
 def compact_summary(value: Any, *, limit: int = 6) -> dict[str, Any]:
     """Compact a Guidance Behavior summary for packet, memory, and transcript flow."""
 

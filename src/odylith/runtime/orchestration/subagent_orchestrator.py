@@ -33,7 +33,10 @@ import uuid
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as compass_timeline
+from odylith.runtime.common.value_coercion import bool_value as _normalize_bool
 from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.execution_engine import runtime_lane_policy
 from odylith.runtime.context_engine import odylith_context_engine_store as odylith_store
@@ -355,30 +358,9 @@ class TuningState:
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
-
-
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
 def _normalize_multiline_string(value: Any) -> str:
     text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
     return "\n".join(line.rstrip() for line in text.split("\n")).strip()
-
-
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
-
-
-def _normalize_bool(value: Any, *, default: bool = False) -> bool:
-    if isinstance(value, bool):
-        return value
-    token = _normalize_token(value)
-    if token in {"1", "true", "yes", "y", "on"}:
-        return True
-    if token in {"0", "false", "no", "n", "off"}:
-        return False
-    return default
 
 
 def _normalize_list(value: Any) -> list[str]:

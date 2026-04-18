@@ -25,6 +25,15 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   `agents-guidelines/CODING_STANDARDS.md` to keep fake modularization,
   duplicate micro-helpers, mirrored host drift, and filler comments out of
   shipped code.
+- For explicit deep anti-slop or decomposition passes in maintainer mode, use
+  `skills/fail-closed-code-hygiene/` so the pass fails closed on remaining
+  shims, duplicate helper clones, mirror drift, and missing proof.
+- In detached `source-local` maintainer dev posture, touching a red-zone file
+  (`2000+` LOC), a `1200+` LOC file that still grows, a host-mirror pair, or a
+  known duplicate-helper cluster must be treated as an anti-slop pass, not as
+  routine feature work. Use `skills/fail-closed-code-hygiene/`, extract a real
+  owner, add enforcement tests, and rerun the full required proof surface
+  before closeout.
 - Queued Radar items, case queues, and shell or Compass queue previews are not
   automatic implementation picks in the maintainer lane. Unless the user
   explicitly asks to work a queued item, do not start implementing it just
@@ -138,4 +147,5 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 
 ## Skills
 - `../skills/odylith-code-hygiene-guard/`
+- `skills/fail-closed-code-hygiene/`
 - `skills/release-benchmark-publishing/`

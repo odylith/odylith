@@ -32,10 +32,7 @@ def test_attach_delivery_scope_signals_annotates_entries(monkeypatch) -> None:
                 }
             }
 
-    class _FakeHost:
-        odylith_context_engine_store = _FakeStore()
-
-    monkeypatch.setattr(payload_runtime, "_host", lambda: _FakeHost)
+    monkeypatch.setattr(payload_runtime, "odylith_context_engine_store", _FakeStore())
     entries = [{"idea_id": "B-040"}, {"idea_id": "B-071"}]
 
     payload_runtime._attach_delivery_scope_signals(  # noqa: SLF001

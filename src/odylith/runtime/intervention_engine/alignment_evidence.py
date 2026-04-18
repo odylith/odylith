@@ -15,10 +15,13 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.common.value_coercion import int_value as _int
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.intervention_engine.contract import GovernanceFact
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
-from odylith.runtime.intervention_engine import visibility_contract
+from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
+from odylith.runtime.intervention_engine.visibility_contract import normalize_token as _normalize_token
 
 
 _ANCHOR_KEYS: tuple[tuple[str, str], ...] = (
@@ -52,29 +55,10 @@ _GUIDANCE_BEHAVIOR_PROBLEM_STATUSES = {
 _CHARACTER_PROBLEM_STATUSES = _GUIDANCE_BEHAVIOR_PROBLEM_STATUSES
 
 
-def _normalize_string(value: Any) -> str:
-    return visibility_contract.normalize_string(value)
-
-
-def _normalize_token(value: Any) -> str:
-    return visibility_contract.normalize_token(value)
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
-
-
 def _sequence(value: Any) -> list[Any]:
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return list(value)
     return []
-
-
-def _int(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
 
 
 def _string_list(value: Any, *, limit: int = 12) -> list[str]:

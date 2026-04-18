@@ -28,6 +28,7 @@ from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import backlog_rich_text
+from odylith.runtime.surfaces import backlog_render_support
 from odylith.runtime.surfaces import backlog_detail_pages
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
 from odylith.runtime.surfaces import generated_surface_refresh_guards
@@ -51,38 +52,22 @@ _EXECUTION_SECTION_TITLES: tuple[str, ...] = (
 )
 _PARKED_SECTION_TITLE = contract._PARKED_SECTION_TITLE
 _FINISHED_SECTION_TITLE = "Finished (Linked to `odylith/technical-plans/done`)"
-_DATE_TOKEN_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-_PLAN_UPDATED_RE = re.compile(r"(?im)^Updated:\s*(\d{4}-\d{2}-\d{2})\s*$")
-_PLAN_CREATED_RE = re.compile(r"(?im)^Created:\s*(\d{4}-\d{2}-\d{2})\s*$")
-_PLAN_FILENAME_DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
+_DATE_TOKEN_RE = backlog_render_support._DATE_TOKEN_RE
+_PLAN_UPDATED_RE = backlog_render_support._PLAN_UPDATED_RE
+_PLAN_CREATED_RE = backlog_render_support._PLAN_CREATED_RE
+_PLAN_FILENAME_DATE_RE = backlog_render_support._PLAN_FILENAME_DATE_RE
 _TRACEABILITY_SECTION_NAME = render_backlog_ui_html_runtime._TRACEABILITY_SECTION_NAME
 _TRACEABILITY_BUCKETS = render_backlog_ui_html_runtime._TRACEABILITY_BUCKETS
 _SCRIPT_DIR = "scr" + "ipts"
 _TESTS_DIR = "te" + "sts"
-_IDEA_ID_RE = re.compile(r"^B-\d{3,}$")
-_DIAGRAM_ID_RE = re.compile(r"^D-\d{3,}$")
+_IDEA_ID_RE = backlog_render_support._IDEA_ID_RE
+_DIAGRAM_ID_RE = backlog_render_support._DIAGRAM_ID_RE
 _DEFAULT_ACTIVE_WINDOW_MINUTES = 15
 _COMPASS_RUNTIME_PATH = "odylith/compass/runtime/current.v1.json"
 _BACKLOG_DETAIL_SHARD_SIZE = 48
 _BACKLOG_DOCUMENT_SHARD_SIZE = 32
-_BACKLOG_SUMMARY_HEAVY_FIELDS = frozenset(
-    {
-        "idea_file",
-        "idea_ui_file",
-        "promoted_to_plan_file",
-        "promoted_to_plan_ui_file",
-    }
-)
-_TRACEABILITY_INDEX_EDGE_TYPES = frozenset(
-    {
-        "parent_child",
-        "depends_on",
-        "blocks",
-        "reopens",
-        "split",
-        "merged",
-    }
-)
+_BACKLOG_SUMMARY_HEAVY_FIELDS = backlog_render_support._BACKLOG_SUMMARY_HEAVY_FIELDS
+_TRACEABILITY_INDEX_EDGE_TYPES = backlog_render_support._TRACEABILITY_INDEX_EDGE_TYPES
 _BACKLOG_REFRESH_GUARD_KEY = "backlog-dashboard-render"
 
 
@@ -124,19 +109,19 @@ def _refresh_guard_watched_paths(*, index_path: Path) -> tuple[Path | str, ...]:
 def _resolve_path(*, repo_root: Path, value: str) -> Path:
     """Backward-compatible wrapper over the shared surface path resolver."""
 
-    return surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=value)
+    return backlog_render_support._resolve_path(repo_root=repo_root, value=value)
 
 
 def _as_relative_href(*, output_path: Path, target: Path) -> str:
     """Backward-compatible wrapper over the shared relative href helper."""
 
-    return surface_path_helpers.relative_href(output_path=output_path, target=target)
+    return backlog_render_support._as_relative_href(output_path=output_path, target=target)
 
 
 def _as_portable_relative_href(*, output_path: Path, target: Path) -> str:
     """Backward-compatible wrapper for backlog detail pages and payload helpers."""
 
-    return surface_path_helpers.portable_relative_href(output_path=output_path, token=str(target))
+    return backlog_render_support._as_portable_relative_href(output_path=output_path, target=target)
 
 
 def _slug_token(value: str) -> str:
@@ -150,38 +135,16 @@ def _radar_route_href(
     workstream_id: str,
     view: str | None = None,
 ) -> str:
-    base_href = surface_path_helpers.portable_relative_href(
-        output_path=source_output_path,
-        token=str(target_output_path),
+    return backlog_render_support._radar_route_href(
+        source_output_path=source_output_path,
+        target_output_path=target_output_path,
+        workstream_id=workstream_id,
+        view=view,
     )
-    workstream = str(workstream_id or "").strip()
-    if not workstream:
-        return base_href
-    query_bits = [f"workstream={quote(workstream, safe='')}"]
-    if view:
-        query_bits.insert(0, f"view={quote(str(view).strip(), safe='')}")
-    return f"{base_href}?{'&'.join(query_bits)}"
 
 
 def _extract_sections_with_body(path: Path) -> list[tuple[str, list[str]]]:
-    content = path.read_text(encoding="utf-8")
-    lines = content.splitlines()
-
-    sections: list[tuple[str, list[str]]] = []
-    current_title: str | None = None
-    current_lines: list[str] = []
-    for line in lines:
-        if line.startswith("## "):
-            if current_title is not None:
-                sections.append((current_title, current_lines))
-            current_title = line[3:].strip()
-            current_lines = []
-            continue
-        if current_title is not None:
-            current_lines.append(line)
-    if current_title is not None:
-        sections.append((current_title, current_lines))
-    return sections
+    return backlog_render_support._extract_sections_with_body(path)
 
 
 def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
@@ -189,14 +152,11 @@ def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
 
 
 def _rewrite_section_text(*, repo_root: Path, text: str) -> str:
-    return backlog_rich_text._rewrite_section_text(repo_root=repo_root, text=text)
+    return backlog_render_support._rewrite_section_text(repo_root=repo_root, text=text)
 
 
 def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
-    return render_backlog_ui_html_runtime._render_section_body(
-        repo_root=repo_root,
-        lines=lines,
-    )
+    return backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)
 
 
 def _extract_traceability_path_tokens(text: str) -> list[str]:
@@ -222,71 +182,19 @@ def _collect_plan_traceability_paths(
 
 
 def _as_repo_path(*, repo_root: Path, target: Path) -> str:
-    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=target)
+    return backlog_render_support._as_repo_path(repo_root=repo_root, target=target)
 
 
 def _extract_sections_from_markdown(path: Path) -> dict[str, str]:
-    content = path.read_text(encoding="utf-8")
-    lines = content.splitlines()
-
-    sections: dict[str, list[str]] = {}
-    current: str | None = None
-    for line in lines:
-        if line.startswith("## "):
-            current = line[3:].strip()
-            sections.setdefault(current, [])
-            continue
-        if current is None:
-            continue
-        sections[current].append(line)
-
-    normalized: dict[str, str] = {}
-    for key, raw_lines in sections.items():
-        merged = " ".join(token.strip() for token in raw_lines if token.strip())
-        normalized[key] = merged.strip()
-    return normalized
+    return backlog_render_support._extract_sections_from_markdown(path)
 
 
 def _split_metadata_ids(*, value: str, pattern: re.Pattern[str]) -> list[str]:
-    values: list[str] = []
-    for raw in str(value or "").replace(";", ",").split(","):
-        token = raw.strip()
-        if not token:
-            continue
-        if not pattern.fullmatch(token):
-            continue
-        values.append(token)
-    return sorted(set(values))
+    return backlog_render_support._split_metadata_ids(value=value, pattern=pattern)
 
 
 def _extract_plan_dates(plan_path: Path) -> tuple[str, str, str]:
-    """Return `(created_date, updated_date, filename_date)` from plan metadata."""
-
-    filename_date = ""
-    filename_match = _PLAN_FILENAME_DATE_RE.search(plan_path.name)
-    if filename_match is not None:
-        token = str(filename_match.group(1)).strip()
-        if _DATE_TOKEN_RE.fullmatch(token):
-            filename_date = token
-
-    if not plan_path.is_file():
-        return "", "", filename_date
-
-    content = plan_path.read_text(encoding="utf-8")
-    created = ""
-    created_match = _PLAN_CREATED_RE.search(content)
-    if created_match is not None:
-        token = str(created_match.group(1)).strip()
-        if _DATE_TOKEN_RE.fullmatch(token):
-            created = token
-
-    updated_match = _PLAN_UPDATED_RE.search(content)
-    if updated_match is not None:
-        updated = str(updated_match.group(1)).strip()
-        if _DATE_TOKEN_RE.fullmatch(updated):
-            return created, updated, filename_date
-
-    return created, "", filename_date
+    return backlog_render_support._extract_plan_dates(plan_path)
 
 
 def _parse_iso_datetime(value: object) -> dt.datetime | None:

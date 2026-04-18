@@ -17,9 +17,11 @@ from typing import Any
 
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import visibility_replay
+from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 from odylith.runtime.surfaces import codex_host_shared
+from odylith.runtime.surfaces import host_intervention_support
 
 
 def command_from_payload(payload: dict[str, Any]) -> str:
@@ -69,21 +71,6 @@ def _post_bash_bundle(
         session_id=session_id,
         changed_paths=changed_paths,
     )
-
-
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _parts(*values: str) -> str:
-    rows: list[str] = []
-    for value in values:
-        token = str(value or "").strip()
-        if token and token not in rows:
-            rows.append(token)
-    return "\n\n".join(rows).strip()
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude post-bash-checkpoint",
@@ -142,7 +129,7 @@ def main(argv: list[str] | None = None) -> int:
         include_assist=False,
         include_teaser=False,
     )
-    developer_context = _parts(replay, developer_context) if replay else developer_context
+    developer_context = host_intervention_support.join_sections(replay, developer_context) if replay else developer_context
     live_intervention = replay or live_intervention
     if bundle and decision is not None and developer_context:
         host_surface_runtime.append_visible_intervention_events(
@@ -155,7 +142,7 @@ def main(argv: list[str] | None = None) -> int:
         developer_context=developer_context,
         system_message=host_surface_runtime.compose_checkpoint_system_message(
             live_intervention=live_intervention,
-            governance_status=_normalize_string((governance_message or {}).get("systemMessage")),
+            governance_status=host_intervention_support.join_sections((governance_message or {}).get("systemMessage")),
         ),
     )
     if payload_out:

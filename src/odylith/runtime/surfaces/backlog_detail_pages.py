@@ -5,13 +5,11 @@ from __future__ import annotations
 import html
 from pathlib import Path
 
+from odylith.runtime.governance import validate_backlog_contract as contract
 from odylith.runtime.surfaces import backlog_rich_text
-
-
-def _host():
-    from odylith.runtime.surfaces import render_backlog_ui as host
-
-    return host
+from odylith.runtime.surfaces import backlog_render_support
+from odylith.runtime.surfaces import dashboard_ui_primitives
+from odylith.runtime.surfaces import render_backlog_ui_html_runtime
 
 
 def _render_idea_spec_html(
@@ -21,27 +19,20 @@ def _render_idea_spec_html(
     entry: dict[str, object],
     destination_output_path: Path | None = None,
 ) -> str:
-    host = _host()
-    _resolve_path = host._resolve_path
-    _as_portable_relative_href = host._as_portable_relative_href
-    _extract_sections_with_body = host._extract_sections_with_body
-    _radar_route_href = host._radar_route_href
-    _rewrite_section_text = host._rewrite_section_text
-    _render_section_body = host._render_section_body
-    dashboard_ui_primitives = host.dashboard_ui_primitives
-    contract = host.contract
-
     idea_file = str(entry.get("idea_file", "")).strip()
-    idea_path = _resolve_path(repo_root=repo_root, value=idea_file)
+    idea_path = backlog_render_support._resolve_path(repo_root=repo_root, value=idea_file)
     if not idea_path.is_file():
         raise FileNotFoundError(f"missing idea markdown: {idea_path}")
 
     idea_output_path = destination_output_path or index_output_path
-    index_href = _as_portable_relative_href(output_path=idea_output_path, target=index_output_path)
+    index_href = backlog_render_support._as_portable_relative_href(
+        output_path=idea_output_path,
+        target=index_output_path,
+    )
 
     spec = contract._parse_idea_spec(idea_path)
     metadata = spec.metadata
-    sections = _extract_sections_with_body(idea_path)
+    sections = backlog_render_support._extract_sections_with_body(idea_path)
     section_map: dict[str, list[str]] = {}
     for section_title, section_lines in sections:
         normalized_title = section_title.strip().lower()
@@ -51,7 +42,7 @@ def _render_idea_spec_html(
     promoted_to_plan_ui_file = str(entry.get("promoted_to_plan_ui_file", "")).strip()
     promoted_to_plan_ui_href = ""
     if promoted_to_plan_ui_file:
-        promoted_to_plan_ui_href = _radar_route_href(
+        promoted_to_plan_ui_href = backlog_render_support._radar_route_href(
             source_output_path=idea_output_path,
             target_output_path=index_output_path,
             workstream_id=str(entry.get("idea_id", "")).strip(),
@@ -95,12 +86,12 @@ def _render_idea_spec_html(
         if fallback:
             rationale_bullets = [fallback]
     if len(rationale_bullets) > 1:
-        rationale_html = _render_section_body(
+        rationale_html = backlog_render_support._render_section_body(
             repo_root=repo_root,
             lines=[f"- {item}" for item in rationale_bullets],
         )
     elif len(rationale_bullets) == 1:
-        rationale_html = _render_section_body(
+        rationale_html = backlog_render_support._render_section_body(
             repo_root=repo_root,
             lines=[rationale_bullets[0]],
         )
@@ -108,7 +99,7 @@ def _render_idea_spec_html(
         rationale_html = "<p>No decision-basis bullets recorded.</p>"
     product_view_lines = section_map.get("product view", section_map.get("founder pov", []))
     product_view_html = (
-        _render_section_body(repo_root=repo_root, lines=product_view_lines)
+        backlog_render_support._render_section_body(repo_root=repo_root, lines=product_view_lines)
         if product_view_lines
         else "<p>Not captured in the idea spec yet.</p>"
     )
@@ -117,7 +108,7 @@ def _render_idea_spec_html(
         (
             f"<section class=\"block\">"
             f"<h2>{html.escape(title)}</h2>"
-            f"{_render_section_body(repo_root=repo_root, lines=lines)}"
+            f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)}"
             f"</section>"
         )
         for title, lines in sections
@@ -127,7 +118,7 @@ def _render_idea_spec_html(
         (
             f"<section class=\"block\">"
             f"<h2>{html.escape(title)}</h2>"
-            f"{_render_section_body(repo_root=repo_root, lines=lines)}"
+            f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)}"
             f"</section>"
         )
         for title, lines in sections
@@ -139,7 +130,7 @@ def _render_idea_spec_html(
     implemented_summary_html = (
         "<section class=\"block\">"
         "<h2>Implemented Summary</h2>"
-        f"{_render_section_body(repo_root=repo_root, lines=[implemented_summary])}"
+        f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=[implemented_summary])}"
         "</section>"
         if implemented_summary
         else ""
@@ -518,31 +509,19 @@ def _render_plan_html(
     entry: dict[str, object],
     destination_output_path: Path | None = None,
 ) -> str:
-    host = _host()
-    _resolve_path = host._resolve_path
-    _as_portable_relative_href = host._as_portable_relative_href
-    _radar_route_href = host._radar_route_href
-    _extract_sections_with_body = host._extract_sections_with_body
-    _render_section_body = host._render_section_body
-    _rewrite_section_text = host._rewrite_section_text
-    _collect_plan_traceability_paths = host._collect_plan_traceability_paths
-    _TRACEABILITY_SECTION_NAME = host._TRACEABILITY_SECTION_NAME
-    _TRACEABILITY_BUCKETS = host._TRACEABILITY_BUCKETS
-    dashboard_ui_primitives = host.dashboard_ui_primitives
-
     plan_file = str(entry.get("promoted_to_plan_file", "")).strip()
     if not plan_file:
         raise FileNotFoundError("missing promoted_to_plan_file")
-    plan_path = _resolve_path(repo_root=repo_root, value=plan_file)
+    plan_path = backlog_render_support._resolve_path(repo_root=repo_root, value=plan_file)
     if not plan_path.is_file():
         raise FileNotFoundError(f"missing plan markdown: {plan_path}")
 
     plan_output_path = destination_output_path or index_output_path
 
-    index_href = _as_portable_relative_href(output_path=plan_output_path, target=index_output_path)
+    index_href = backlog_render_support._as_portable_relative_href(output_path=plan_output_path, target=index_output_path)
     idea_ui_href = ""
     if str(entry.get("idea_id", "")).strip():
-        idea_ui_href = _radar_route_href(
+        idea_ui_href = backlog_render_support._radar_route_href(
             source_output_path=plan_output_path,
             target_output_path=index_output_path,
             workstream_id=str(entry.get("idea_id", "")).strip(),
@@ -550,7 +529,7 @@ def _render_plan_html(
         )
 
     plan_meta = _extract_plan_metadata(plan_path)
-    sections = _extract_sections_with_body(plan_path)
+    sections = backlog_render_support._extract_sections_with_body(plan_path)
 
     meta_order = (
         "Status",
@@ -588,7 +567,7 @@ def _render_plan_html(
         (
             f"<div class=\"meta-row\">"
             f"<div class=\"meta-row-key\">{html.escape(label)}</div>"
-            f"<div class=\"meta-row-val\">{_render_section_body(repo_root=repo_root, lines=[value or '-'])}</div>"
+            f"<div class=\"meta-row-val\">{backlog_render_support._render_section_body(repo_root=repo_root, lines=[value or '-'])}</div>"
             f"</div>"
         )
         for label, value in detail_pairs
@@ -599,11 +578,11 @@ def _render_plan_html(
         (
             f"<section class=\"block\">"
             f"<h2>{html.escape(title)}</h2>"
-            f"{_render_section_body(repo_root=repo_root, lines=lines)}"
+            f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)}"
             f"</section>"
         )
         for title, lines in sections
-        if title.strip().lower() != _TRACEABILITY_SECTION_NAME.lower()
+        if title.strip().lower() != render_backlog_ui_html_runtime._TRACEABILITY_SECTION_NAME.lower()
     )
     if not section_html:
         section_html = "<section class=\"block\"><h2>Content</h2><p>No markdown sections found.</p></section>"
@@ -618,9 +597,12 @@ def _render_plan_html(
         if idea_ui_href
         else "<span>No linked workstream page</span>"
     )
-    plan_traceability = _collect_plan_traceability_paths(repo_root=repo_root, sections=sections)
+    plan_traceability = render_backlog_ui_html_runtime._collect_plan_traceability_paths(
+        repo_root=repo_root,
+        sections=sections,
+    )
     traceability_group_html = ""
-    for label in _TRACEABILITY_BUCKETS:
+    for label in render_backlog_ui_html_runtime._TRACEABILITY_BUCKETS:
         paths = plan_traceability.get(label, [])
         if not paths:
             continue
@@ -630,7 +612,7 @@ def _render_plan_html(
             display = html.escape(rel_path)
             file_name = html.escape(Path(rel_path).name or rel_path)
             if target.exists():
-                href = _as_portable_relative_href(output_path=plan_output_path, target=target)
+                href = backlog_render_support._as_portable_relative_href(output_path=plan_output_path, target=target)
                 items.append(
                     (
                         f"<a class=\"trace-link\" href=\"{html.escape(href)}\" title=\"{display}\">"

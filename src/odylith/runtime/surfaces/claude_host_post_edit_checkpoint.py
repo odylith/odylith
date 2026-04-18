@@ -28,7 +28,9 @@ from typing import Mapping
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.intervention_engine import visibility_replay
+from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
 from odylith.runtime.surfaces import claude_host_shared
+from odylith.runtime.surfaces import host_intervention_support
 
 
 # Kept as module-level aliases for tests and call-sites that imported these
@@ -117,19 +119,6 @@ def _post_edit_bundle(
     )
 
 
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _parts(*values: str) -> str:
-    rows: list[str] = []
-    for value in values:
-        token = str(value or "").strip()
-        if token and token not in rows:
-            rows.append(token)
-    return "\n\n".join(rows).strip()
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude post-edit-checkpoint",
@@ -169,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     governance_status = _normalize_string(governance_result.get("systemMessage"))
     developer_context = decision.developer_context if decision is not None else ""
-    developer_context = _parts(governance_status, developer_context)
+    developer_context = host_intervention_support.join_sections(governance_status, developer_context)
     live_intervention = decision.visible_markdown if decision is not None else ""
     replay = visibility_replay.replayable_chat_markdown(
         repo_root=repo_root,
@@ -180,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
         include_assist=False,
         include_teaser=False,
     )
-    developer_context = _parts(replay, developer_context) if replay else developer_context
+    developer_context = host_intervention_support.join_sections(replay, developer_context) if replay else developer_context
     live_intervention = replay or live_intervention
     if bundle and decision is not None and developer_context:
         host_surface_runtime.append_visible_intervention_events(

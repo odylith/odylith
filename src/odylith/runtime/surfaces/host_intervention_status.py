@@ -16,14 +16,8 @@ from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.intervention_engine import visibility_replay
-
-
-def _normalize_string(value: Any) -> str:
-    return visibility_contract.normalize_string(value)
-
-
-def _normalize_token(value: Any) -> str:
-    return visibility_contract.normalize_token(value)
+from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
+from odylith.runtime.intervention_engine.visibility_contract import normalize_token as _normalize_token
 
 
 def _load_json(path: Path) -> dict[str, Any]:

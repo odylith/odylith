@@ -55,6 +55,28 @@
 - For behavioral refactors, run the focused regression suite for the touched
   slice and widen proof when the change reaches shared hot paths or user-facing
   surfaces.
+- If the change touches shared runtime hot paths, run the full runtime suite
+  before closeout.
+- If the change touches browser-proved UI or shell surfaces, run the full
+  headless browser matrix before closeout.
+- If the change touches install, upgrade, repair, launcher, bundled project
+  assets, or bundle-mirror generation, run the install suite and mirror-content
+  checks before closeout.
+
+## Fail-Closed Cleanup Rule
+- Do not stop at "better" when the touched slice still contains the same
+  bounded class of slop you set out to remove.
+- If you touch a shimmed extract, remove the shim or move the ownership
+  boundary for real in the same slice.
+- If you introduce a shared owner for `_mapping`, `_normalize_*`, `_delta`,
+  `_parts`, or similar helpers, update the touched duplicates onto that owner
+  before closeout.
+- If a touched change updates guidance or skills that ship through bundle
+  mirrors or install-managed assets, refresh those mirrors in the same change
+  and prove them with tests instead of assuming they stayed aligned.
+- Fail the pass locally when the touched files still contain banned shim or
+  duplicate-helper patterns after the refactor. In other words, fail closed
+  on unresolved slop in the touched slice.
 
 ## Review Questions
 - Does this change reduce a real duplication or boundary problem, or did it

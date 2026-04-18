@@ -7,14 +7,15 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.context_engine import odylith_context_engine_store
+from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance import plan_progress
+from odylith.runtime.governance import validate_backlog_contract as contract
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
-
-
-def _host():
-    from odylith.runtime.surfaces import render_backlog_ui as host
-
-    return host
+from odylith.runtime.governance import workstream_inference
+from odylith.runtime.surfaces import backlog_render_support
+from odylith.runtime.surfaces import dashboard_time
 
 
 def _parse_iso_datetime(value: object) -> dt.datetime | None:
@@ -36,20 +37,22 @@ def _load_compass_transactions(
     *,
     repo_root: Path,
 ) -> tuple[list[dict[str, Any]], int]:
-    host = _host()
-    runtime_path = host._resolve_path(repo_root=repo_root, value=host._COMPASS_RUNTIME_PATH)  # noqa: SLF001
+    runtime_path = backlog_render_support._resolve_path(
+        repo_root=repo_root,
+        value="odylith/compass/runtime/current.v1.json",
+    )
     if not runtime_path.is_file():
-        return [], host._DEFAULT_ACTIVE_WINDOW_MINUTES  # noqa: SLF001
+        return [], 15
 
     try:
         payload = json.loads(runtime_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
-        return [], host._DEFAULT_ACTIVE_WINDOW_MINUTES  # noqa: SLF001
+        return [], 15
     if not isinstance(payload, Mapping):
-        return [], host._DEFAULT_ACTIVE_WINDOW_MINUTES  # noqa: SLF001
+        return [], 15
 
     focus_payload = payload.get("execution_focus")
-    active_window_minutes = host._DEFAULT_ACTIVE_WINDOW_MINUTES  # noqa: SLF001
+    active_window_minutes = 15
     if isinstance(focus_payload, Mapping):
         raw_window = focus_payload.get("active_window_minutes")
         if isinstance(raw_window, int) and raw_window >= 1:
@@ -69,7 +72,7 @@ def _load_compass_transactions(
             seen: set[str] = set()
             for token in raw_workstreams:
                 ws_id = str(token or "").strip().upper()
-                if not host._IDEA_ID_RE.fullmatch(ws_id) or ws_id in seen:  # noqa: SLF001
+                if not backlog_render_support._IDEA_ID_RE.fullmatch(ws_id) or ws_id in seen:
                     continue
                 seen.add(ws_id)
                 workstreams.append(ws_id)
@@ -80,14 +83,14 @@ def _load_compass_transactions(
         raw_files = row.get("files")
         if isinstance(raw_files, list):
             for token in raw_files:
-                normalized = host.workstream_inference.normalize_repo_token(  # noqa: SLF001
+                normalized = workstream_inference.normalize_repo_token(
                     str(token or ""),
                     repo_root=repo_root,
                 )
                 if normalized:
                     files.append(normalized)
         has_meaningful_files = any(
-            not host.workstream_inference.is_generated_or_global_path(path)  # noqa: SLF001
+            not workstream_inference.is_generated_or_global_path(path)
             for path in files
         )
         transactions.append(
@@ -202,8 +205,7 @@ def _attach_delivery_scope_signals(
     repo_root: Path,
     runtime_mode: str,
 ) -> None:
-    host = _host()
-    payload = host.odylith_context_engine_store.load_delivery_surface_payload(  # noqa: SLF001
+    payload = odylith_context_engine_store.load_delivery_surface_payload(
         repo_root=repo_root,
         surface="radar",
         runtime_mode=runtime_mode,
@@ -241,8 +243,10 @@ def _component_catalog_rows(
 
 
 def _atlas_diagram_catalog_rows(*, repo_root: Path) -> list[dict[str, object]]:
-    host = _host()
-    catalog_path = host._resolve_path(repo_root=repo_root, value="odylith/atlas/source/catalog/diagrams.v1.json")  # noqa: SLF001
+    catalog_path = backlog_render_support._resolve_path(
+        repo_root=repo_root,
+        value="odylith/atlas/source/catalog/diagrams.v1.json",
+    )
     if not catalog_path.is_file():
         return []
     try:
@@ -260,9 +264,8 @@ def _load_component_index(
     repo_root: Path,
     runtime_mode: str = "auto",
 ) -> Mapping[str, component_registry.ComponentEntry]:
-    host = _host()
     try:
-        return host.odylith_context_engine_store.load_component_index(  # noqa: SLF001
+        return odylith_context_engine_store.load_component_index(
             repo_root=repo_root,
             runtime_mode=runtime_mode,
         )
@@ -275,11 +278,10 @@ def _attach_component_registry_links(
     entries: list[dict[str, object]],
     component_index: Mapping[str, component_registry.ComponentEntry],
 ) -> None:
-    host = _host()
     for entry in entries:
-        idea_id = host.component_registry.normalize_workstream_id(str(entry.get("idea_id", "")).strip())  # noqa: SLF001
+        idea_id = component_registry.normalize_workstream_id(str(entry.get("idea_id", "")).strip())
         component_ids = (
-            host.component_registry.component_ids_for_workstream(  # noqa: SLF001
+            component_registry.component_ids_for_workstream(
                 components=component_index,
                 workstream_id=idea_id,
             )
@@ -304,8 +306,7 @@ def _parse_section_rows(
     errors: list[str],
     index_path: Path,
 ) -> list[dict[str, str]]:
-    host = _host()
-    headers, rows, err = host.contract._collect_section_table(index_content, section_title)  # noqa: SLF001
+    headers, rows, err = contract._collect_section_table(index_content, section_title)
     if err is not None:
         errors.append(f"{index_path}: {err}")
         return []
@@ -332,8 +333,7 @@ def _parse_optional_section_rows(
     errors: list[str],
     index_path: Path,
 ) -> list[dict[str, str]]:
-    host = _host()
-    headers, rows, err = host.contract._collect_section_table(index_content, section_title)  # noqa: SLF001
+    headers, rows, err = contract._collect_section_table(index_content, section_title)
     if err is not None:
         if str(err).startswith("missing section"):
             return []
@@ -363,9 +363,8 @@ def _build_entry(
     rationale_map: dict[str, list[str]],
     errors: list[str],
 ) -> dict[str, object] | None:
-    host = _host()
     idea_id = payload["idea_id"].strip()
-    link_target = host.contract._parse_link_target(payload["link"])  # noqa: SLF001
+    link_target = contract._parse_link_target(payload["link"])
     if link_target is None:
         errors.append(f"invalid link column for `{idea_id}`")
         return None
@@ -374,8 +373,8 @@ def _build_entry(
         errors.append(f"idea markdown missing for `{idea_id}`: {idea_path}")
         return None
 
-    section_text = host._extract_sections_from_markdown(idea_path)  # noqa: SLF001
-    section_lines = host._extract_sections_with_body(idea_path)  # noqa: SLF001
+    section_text = backlog_render_support._extract_sections_from_markdown(idea_path)
+    section_lines = backlog_render_support._extract_sections_with_body(idea_path)
     section_lookup: dict[str, list[str]] = {}
     for title, lines in section_lines:
         normalized_title = str(title or "").strip().lower()
@@ -387,10 +386,10 @@ def _build_entry(
             normalized_title = str(title or "").strip().lower()
             lines = section_lookup.get(normalized_title, [])
             if lines:
-                return host._render_section_body(repo_root=repo_root, lines=lines)  # noqa: SLF001
+                return backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)
         return ""
 
-    spec = host.contract._parse_idea_spec(idea_path)  # noqa: SLF001
+    spec = contract._parse_idea_spec(idea_path)
     metadata = spec.metadata
     promoted_to_plan = str(metadata.get("promoted_to_plan", "")).strip()
     promoted_to_plan_path: Path | None = None
@@ -410,9 +409,9 @@ def _build_entry(
         "next_tasks": [],
     }
     if promoted_to_plan:
-        promoted_to_plan_path = host._resolve_path(repo_root=repo_root, value=promoted_to_plan)  # noqa: SLF001
-        plan_created, plan_updated, plan_file_date = host._extract_plan_dates(promoted_to_plan_path)  # noqa: SLF001
-        plan_data = host.plan_progress.collect_plan_progress(promoted_to_plan_path)  # noqa: SLF001
+        promoted_to_plan_path = backlog_render_support._resolve_path(repo_root=repo_root, value=promoted_to_plan)
+        plan_created, plan_updated, plan_file_date = backlog_render_support._extract_plan_dates(promoted_to_plan_path)
+        plan_data = plan_progress.collect_plan_progress(promoted_to_plan_path)
         if section == "finished":
             finished_sort_date = (
                 plan_updated
@@ -421,34 +420,35 @@ def _build_entry(
             )
 
     idea_date = str(metadata.get("date", "")).strip()
-    idea_date_display = host.dashboard_time.pacific_display_date_from_utc_token(  # noqa: SLF001
+    idea_date_display = dashboard_time.pacific_display_date_from_utc_token(
         idea_date,
         default=idea_date if idea_date else "",
     )
     execution_start_date = (
         plan_created
-        if section in {"execution", "finished"} and host._DATE_TOKEN_RE.fullmatch(plan_created or "")  # noqa: SLF001
+        if section in {"execution", "finished"} and backlog_render_support._DATE_TOKEN_RE.fullmatch(plan_created or "")
         else ""
     )
-    execution_start_date_display = host.dashboard_time.pacific_display_date_from_utc_token(  # noqa: SLF001
+    execution_start_date_display = dashboard_time.pacific_display_date_from_utc_token(
         execution_start_date,
         default=execution_start_date if execution_start_date else "",
     )
     execution_end_date = (
         (plan_updated or plan_file_date)
-        if section == "finished" and host._DATE_TOKEN_RE.fullmatch((plan_updated or plan_file_date or ""))  # noqa: SLF001
+        if section == "finished"
+        and backlog_render_support._DATE_TOKEN_RE.fullmatch((plan_updated or plan_file_date or ""))
         else ""
     )
-    execution_end_date_display = host.dashboard_time.pacific_display_date_from_utc_token(  # noqa: SLF001
+    execution_end_date_display = dashboard_time.pacific_display_date_from_utc_token(
         execution_end_date,
         default=execution_end_date if execution_end_date else "",
     )
-    finished_sort_date_display = host.dashboard_time.pacific_display_date_from_utc_token(  # noqa: SLF001
+    finished_sort_date_display = dashboard_time.pacific_display_date_from_utc_token(
         finished_sort_date,
         default=finished_sort_date if finished_sort_date else "",
     )
-    execution_start_calendar_date = host.dashboard_time.pacific_date_from_utc_token(execution_start_date)  # noqa: SLF001
-    execution_end_calendar_date = host.dashboard_time.pacific_date_from_utc_token(execution_end_date)  # noqa: SLF001
+    execution_start_calendar_date = dashboard_time.pacific_date_from_utc_token(execution_start_date)
+    execution_end_calendar_date = dashboard_time.pacific_date_from_utc_token(execution_end_date)
     execution_duration_days = ""
     if execution_start_calendar_date and execution_end_calendar_date:
         delta = (execution_end_calendar_date - execution_start_calendar_date).days
@@ -456,21 +456,21 @@ def _build_entry(
             execution_duration_days = str(delta)
     execution_age_days = ""
     if execution_start_calendar_date:
-        execution_anchor = execution_end_calendar_date or host.dashboard_time.dashboard_display_today()  # noqa: SLF001
+        execution_anchor = execution_end_calendar_date or dashboard_time.dashboard_display_today()
         execution_delta = (execution_anchor - execution_start_calendar_date).days
         if execution_delta >= 0:
             execution_age_days = str(execution_delta)
 
     idea_age_days = ""
-    idea_calendar_date = host.dashboard_time.pacific_date_from_utc_token(idea_date)  # noqa: SLF001
+    idea_calendar_date = dashboard_time.pacific_date_from_utc_token(idea_date)
     if idea_calendar_date:
         if section == "finished":
             idea_anchor = (
-                host.dashboard_time.pacific_date_from_utc_token(execution_end_date or finished_sort_date)  # noqa: SLF001
+                dashboard_time.pacific_date_from_utc_token(execution_end_date or finished_sort_date)
                 or idea_calendar_date
             )
         else:
-            idea_anchor = host.dashboard_time.dashboard_display_today()  # noqa: SLF001
+            idea_anchor = dashboard_time.dashboard_display_today()
         idea_delta = (idea_anchor - idea_calendar_date).days
         if idea_delta >= 0:
             idea_age_days = str(idea_delta)
@@ -502,10 +502,10 @@ def _build_entry(
         "sizing": payload["sizing"].strip(),
         "complexity": payload["complexity"].strip(),
         "status": payload["status"].strip(),
-        "idea_file": host._as_repo_path(repo_root=repo_root, target=idea_path),  # noqa: SLF001
-        "idea_href": host._as_relative_href(output_path=output_path, target=idea_path),  # noqa: SLF001
-        "idea_ui_file": host._as_repo_path(repo_root=repo_root, target=idea_ui_path),  # noqa: SLF001
-        "idea_ui_href": host._radar_route_href(  # noqa: SLF001
+        "idea_file": backlog_render_support._as_repo_path(repo_root=repo_root, target=idea_path),
+        "idea_href": backlog_render_support._as_relative_href(output_path=output_path, target=idea_path),
+        "idea_ui_file": backlog_render_support._as_repo_path(repo_root=repo_root, target=idea_ui_path),
+        "idea_ui_href": backlog_render_support._radar_route_href(
             source_output_path=output_path,
             target_output_path=idea_ui_path,
             workstream_id=idea_id,
@@ -540,28 +540,31 @@ def _build_entry(
         "success_metrics": section_text.get("Success Metrics", section_text.get("Success Metric", "")),
         "success_metrics_html": _section_html("Success Metrics", "Success Metric"),
         "implemented_summary_html": (
-            host._render_section_body(repo_root=repo_root, lines=[str(metadata.get("implemented_summary", "")).strip()])  # noqa: SLF001
+            backlog_render_support._render_section_body(
+                repo_root=repo_root,
+                lines=[str(metadata.get("implemented_summary", "")).strip()],
+            )
             if str(metadata.get("implemented_summary", "")).strip()
             else ""
         ),
         "promoted_to_plan": promoted_to_plan,
         "promoted_to_plan_file": (
-            host._as_repo_path(repo_root=repo_root, target=promoted_to_plan_path)  # noqa: SLF001
+            backlog_render_support._as_repo_path(repo_root=repo_root, target=promoted_to_plan_path)
             if promoted_to_plan_path is not None
             else ""
         ),
         "promoted_to_plan_href": (
-            host._as_relative_href(output_path=output_path, target=promoted_to_plan_path)  # noqa: SLF001
+            backlog_render_support._as_relative_href(output_path=output_path, target=promoted_to_plan_path)
             if promoted_to_plan_path is not None
             else ""
         ),
         "promoted_to_plan_ui_file": (
-            host._as_repo_path(repo_root=repo_root, target=plan_ui_path)  # noqa: SLF001
+            backlog_render_support._as_repo_path(repo_root=repo_root, target=plan_ui_path)
             if plan_ui_path is not None
             else ""
         ),
         "promoted_to_plan_ui_href": (
-            host._radar_route_href(  # noqa: SLF001
+            backlog_render_support._radar_route_href(
                 source_output_path=output_path,
                 target_output_path=plan_ui_path,
                 workstream_id=idea_id,
@@ -592,45 +595,45 @@ def _build_entry(
         "finished_sort_date": finished_sort_date,
         "workstream_type": str(metadata.get("workstream_type", "")).strip().lower(),
         "workstream_parent": str(metadata.get("workstream_parent", "")).strip(),
-        "workstream_children": host._split_metadata_ids(  # noqa: SLF001
+        "workstream_children": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("workstream_children", "")),
-            pattern=host._IDEA_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._IDEA_ID_RE,
         ),
-        "workstream_depends_on": host._split_metadata_ids(  # noqa: SLF001
+        "workstream_depends_on": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("workstream_depends_on", "")),
-            pattern=host._IDEA_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._IDEA_ID_RE,
         ),
-        "workstream_blocks": host._split_metadata_ids(  # noqa: SLF001
+        "workstream_blocks": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("workstream_blocks", "")),
-            pattern=host._IDEA_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._IDEA_ID_RE,
         ),
-        "related_diagram_ids": host._split_metadata_ids(  # noqa: SLF001
+        "related_diagram_ids": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("related_diagram_ids", "")),
-            pattern=host._DIAGRAM_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._DIAGRAM_ID_RE,
         ),
-        "workstream_reopens": host._split_metadata_ids(  # noqa: SLF001
+        "workstream_reopens": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("workstream_reopens", "")),
-            pattern=host._IDEA_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._IDEA_ID_RE,
         ),
-        "workstream_reopened_by": host._split_metadata_ids(  # noqa: SLF001
+        "workstream_reopened_by": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("workstream_reopened_by", "")),
-            pattern=host._IDEA_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._IDEA_ID_RE,
         ),
-        "workstream_split_from": host._split_metadata_ids(  # noqa: SLF001
+        "workstream_split_from": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("workstream_split_from", "")),
-            pattern=host._IDEA_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._IDEA_ID_RE,
         ),
-        "workstream_split_into": host._split_metadata_ids(  # noqa: SLF001
+        "workstream_split_into": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("workstream_split_into", "")),
-            pattern=host._IDEA_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._IDEA_ID_RE,
         ),
-        "workstream_merged_into": host._split_metadata_ids(  # noqa: SLF001
+        "workstream_merged_into": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("workstream_merged_into", "")),
-            pattern=host._IDEA_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._IDEA_ID_RE,
         ),
-        "workstream_merged_from": host._split_metadata_ids(  # noqa: SLF001
+        "workstream_merged_from": backlog_render_support._split_metadata_ids(
             value=str(metadata.get("workstream_merged_from", "")),
-            pattern=host._IDEA_ID_RE,  # noqa: SLF001
+            pattern=backlog_render_support._IDEA_ID_RE,
         ),
     }
 
@@ -656,10 +659,9 @@ def _backlog_summary_search_text(entry: Mapping[str, object]) -> str:
 
 
 def _build_backlog_summary_entry(entry: Mapping[str, object]) -> dict[str, object]:
-    host = _host()
     summary = dict(entry)
     summary["search_text"] = _backlog_summary_search_text(entry)
-    for key in host._BACKLOG_SUMMARY_HEAVY_FIELDS:  # noqa: SLF001
+    for key in backlog_render_support._BACKLOG_SUMMARY_HEAVY_FIELDS:
         summary.pop(key, None)
     plan = entry.get("plan")
     if isinstance(plan, Mapping):
@@ -688,7 +690,6 @@ def _build_backlog_detail_entry(entry: Mapping[str, object]) -> dict[str, object
 
 
 def _build_traceability_client_payload(traceability_graph: Mapping[str, object]) -> dict[str, object]:
-    host = _host()
     payload: dict[str, object] = {}
 
     workstreams = traceability_graph.get("workstreams")
@@ -701,7 +702,7 @@ def _build_traceability_client_payload(traceability_graph: Mapping[str, object])
             dict(edge)
             for edge in edges
             if isinstance(edge, Mapping)
-            and str(edge.get("edge_type", "")).strip() in host._TRACEABILITY_INDEX_EDGE_TYPES  # noqa: SLF001
+            and str(edge.get("edge_type", "")).strip() in backlog_render_support._TRACEABILITY_INDEX_EDGE_TYPES
         ]
 
     releases = traceability_graph.get("releases")

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Validate local git identity and recent history against repo policy."""
+
 from __future__ import annotations
 
 import argparse

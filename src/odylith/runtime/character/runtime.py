@@ -6,6 +6,7 @@ import hashlib
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.character import contract
 from odylith.runtime.governance import validate_agent_operating_character
 
@@ -22,12 +23,6 @@ PATH_MARKERS: tuple[str, ...] = (
     "odylith-agent-operating-character",
     "runtime/character",
 )
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
-
-
 def _strings(*values: Any, limit: int = 16) -> list[str]:
     rows: list[str] = []
     seen: set[str] = set()

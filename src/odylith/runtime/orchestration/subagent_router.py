@@ -33,12 +33,15 @@ import uuid
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as compass_timeline
+from odylith.runtime.common.value_coercion import bool_value as _normalize_bool
 from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.evaluation import odylith_evaluation_ledger
 from odylith.runtime.memory import tooling_memory_contracts
-from odylith.runtime.orchestration import subagent_router_assessment_runtime
+from odylith.runtime.orchestration import subagent_router_context_support
 from odylith.runtime.orchestration import subagent_router_runtime_policy
 
 
@@ -738,37 +741,13 @@ _TASK_CLASS_POLICIES: dict[str, TaskClassPolicy] = {
         rationale="Coordination-heavy work should stay local and be re-scoped before any delegated retry.",
     ),
 }
-
-
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
 def _normalize_multiline_string(value: Any) -> str:
     text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
     return "\n".join(line.rstrip() for line in text.split("\n")).strip()
 
 
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
-
-
-def _normalize_bool(value: Any, *, default: bool = False) -> bool:
-    if isinstance(value, bool):
-        return value
-    token = _normalize_token(value)
-    if token in {"1", "true", "yes", "y", "on"}:
-        return True
-    if token in {"0", "false", "no", "n", "off"}:
-        return False
-    return default
-
-
 def _normalize_list(value: Any) -> list[str]:
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return [_normalize_string(item) for item in value if _normalize_string(item)]
-    token = _normalize_string(value)
-    return [token] if token else []
+    return subagent_router_context_support._normalize_list(value)
 
 
 def _assessment_host_runtime(assessment: TaskAssessment) -> str:
@@ -798,31 +777,19 @@ def _delegation_style_for_assessment(assessment: TaskAssessment) -> str:
 
 
 def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
-    value = _mapping_value(payload, list_key)
-    return max(
-        len(value) if isinstance(value, list) else len(_normalize_list(value)),
-        _int_value(_mapping_value(payload, count_key)),
+    return subagent_router_context_support._count_or_list_len(
+        payload,
+        list_key=list_key,
+        count_key=count_key,
     )
 
 
 def _normalize_context_signals(value: Any) -> dict[str, Any]:
-    if not isinstance(value, Mapping):
-        return {}
-    return {_normalize_string(key): raw for key, raw in value.items() if _normalize_string(key)}
+    return subagent_router_context_support._normalize_context_signals(value)
 
 
 def _embedded_governance_signal(context_packet: Mapping[str, Any]) -> dict[str, Any]:
-    route = _mapping_value(context_packet, "route")
-    if not isinstance(route, Mapping):
-        return {}
-    governance = _mapping_value(route, "governance")
-    if not isinstance(governance, Mapping):
-        return {}
-    return {
-        _normalize_string(key): raw
-        for key, raw in governance_signal_codec.expand_governance_signal(governance).items()
-        if _normalize_string(key) and raw not in ("", [], {}, None, False)
-    }
+    return subagent_router_context_support._embedded_governance_signal(context_packet)
 
 
 def _validation_bundle_from_context(
@@ -830,21 +797,10 @@ def _validation_bundle_from_context(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
-    validation_bundle = _mapping_value(context_signals, "validation_bundle")
-    if isinstance(validation_bundle, Mapping):
-        return dict(validation_bundle)
-    governance = _embedded_governance_signal(context_packet)
-    compact: dict[str, Any] = {}
-    for key in (
-        "recommended_command_count",
-        "strict_gate_command_count",
-        "plan_binding_required",
-        "governed_surface_sync_required",
-    ):
-        value = _mapping_value(governance, key)
-        if value not in ("", [], {}, None, False):
-            compact[key] = value
-    return compact
+    return subagent_router_context_support._validation_bundle_from_context(
+        context_signals,
+        context_packet=context_packet,
+    )
 
 
 def _governance_obligations_from_context(
@@ -852,25 +808,10 @@ def _governance_obligations_from_context(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
-    governance_obligations = _mapping_value(context_signals, "governance_obligations")
-    if isinstance(governance_obligations, Mapping):
-        return dict(governance_obligations)
-    governance = _embedded_governance_signal(context_packet)
-    compact: dict[str, Any] = {}
-    for key in (
-        "touched_workstream_count",
-        "primary_workstream_id",
-        "touched_component_count",
-        "primary_component_id",
-        "required_diagram_count",
-        "linked_bug_count",
-        "closeout_doc_count",
-        "workstream_state_action_count",
-    ):
-        value = _mapping_value(governance, key)
-        if value not in ("", [], {}, None, False):
-            compact[key] = value
-    return compact
+    return subagent_router_context_support._governance_obligations_from_context(
+        context_signals,
+        context_packet=context_packet,
+    )
 
 
 def _surface_refs_from_context(
@@ -878,16 +819,10 @@ def _surface_refs_from_context(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
-    surface_refs = _mapping_value(context_signals, "surface_refs")
-    if isinstance(surface_refs, Mapping):
-        return dict(surface_refs)
-    governance = _embedded_governance_signal(context_packet)
-    compact: dict[str, Any] = {}
-    for key in ("surface_count", "reason_group_count"):
-        value = _mapping_value(governance, key)
-        if value not in ("", [], {}, None, False):
-            compact[key] = value
-    return compact
+    return subagent_router_context_support._surface_refs_from_context(
+        context_signals,
+        context_packet=context_packet,
+    )
 
 
 def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -917,44 +852,15 @@ def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, An
 
 
 def _mapping_value(payload: Mapping[str, Any], key: str) -> Any:
-    wanted = _normalize_token(key)
-    for raw_key, raw_value in payload.items():
-        if _normalize_token(raw_key) == wanted:
-            return raw_value
-    alias = {
-        "parallelism_hint": "p",
-        "reasoning_bias": "b",
-        "routing_confidence": "rc",
-        "intent_family": "i",
-        "intent_mode": "m",
-        "intent_critical_path": "cp",
-        "intent_confidence": "ic",
-        "intent_explicit": "ix",
-        "context_richness": "cr",
-        "accuracy_posture": "ap",
-        "utility_score": "us",
-        "context_density_level": "cd",
-        "reasoning_readiness_level": "rr",
-    }.get(wanted, "")
-    if alias:
-        for raw_key, raw_value in payload.items():
-            if _normalize_token(raw_key) == alias:
-                return raw_value
-    return None
+    return subagent_router_context_support._mapping_value(payload, key)
 
 
 def _context_signal_root(context_signals: Mapping[str, Any]) -> Mapping[str, Any]:
-    nested = _mapping_value(context_signals, "routing_handoff")
-    return nested if isinstance(nested, Mapping) else context_signals
+    return subagent_router_context_support._context_signal_root(context_signals)
 
 
 def _context_lookup(payload: Mapping[str, Any], *path: str) -> Any:
-    current: Any = payload
-    for key in path:
-        if not isinstance(current, Mapping):
-            return None
-        current = _mapping_value(current, key)
-    return current
+    return subagent_router_context_support._context_lookup(payload, *path)
 
 
 def _selected_counts_mapping(value: Any) -> dict[str, int]:
@@ -983,40 +889,11 @@ def _selected_counts_mapping(value: Any) -> dict[str, int]:
 
 
 def _context_signal_score(value: Any) -> int:
-    if isinstance(value, bool):
-        return _SCORE_MAX if value else _SCORE_MIN
-    if isinstance(value, (int, float)):
-        return _clamp_score(value)
-    if isinstance(value, Mapping):
-        for key in ("score", "level", "confidence", "rating", "value"):
-            nested = _mapping_value(value, key)
-            if nested is not None:
-                return _context_signal_score(nested)
-        return _SCORE_MIN
-    token = _normalize_token(value)
-    if token in {"none", "unknown", "false", "unready", "blocked"}:
-        return 0
-    if token in {"low", "weak", "light", "minimal"}:
-        return 1
-    if token in {"medium", "moderate", "partial"}:
-        return 2
-    if token in {"high", "strong", "grounded", "actionable", "ready"}:
-        return 3
-    if token in {"very_high", "max", "maximum", "full"}:
-        return 4
-    return 0
+    return subagent_router_context_support._context_signal_score(value)
 
 
 def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    rows: list[str] = []
-    for value in values:
-        token = str(value or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
+    return subagent_router_context_support._dedupe_strings(values)
 
 
 _USER_FACING_CHATTER_REPLACEMENTS: tuple[tuple[str, str], ...] = (
@@ -1061,67 +938,23 @@ def _sanitize_user_facing_lines(values: Sequence[str]) -> list[str]:
 
 
 def _context_signal_bool(value: Any) -> bool:
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)):
-        return float(value) > 0
-    if isinstance(value, Mapping):
-        for key in ("enabled", "ready", "supported", "allowed", "active", "value"):
-            nested = _mapping_value(value, key)
-            if nested is not None:
-                return _context_signal_bool(nested)
-    token = _normalize_token(value)
-    return token in {"1", "true", "yes", "y", "on", "ready", "supported", "primary", "support"}
+    return subagent_router_context_support._context_signal_bool(value)
 
 
 def _context_signal_level(score: int) -> str:
-    value = _clamp_score(score)
-    if value >= 4:
-        return "high"
-    if value >= 2:
-        return "medium"
-    if value >= 1:
-        return "low"
-    return "none"
+    return subagent_router_context_support._context_signal_level(score)
 
 
 def _scaled_numeric_signal(value: Any) -> int:
-    if isinstance(value, (int, float)):
-        numeric = float(value)
-        if 0.0 <= numeric <= 1.0:
-            return _clamp_score(round(numeric * _SCORE_MAX))
-        if numeric > _SCORE_MAX:
-            return _clamp_score(round(numeric / 25.0))
-        return _clamp_score(numeric)
-    return _context_signal_score(value)
+    return subagent_router_context_support._scaled_numeric_signal(value)
 
 
 def _normalized_rate(value: Any) -> float:
-    if isinstance(value, bool):
-        return 1.0 if value else 0.0
-    try:
-        numeric = float(value or 0.0)
-    except (TypeError, ValueError):
-        return 0.0
-    if numeric > 1.0:
-        numeric = numeric / 100.0 if numeric <= 100.0 else 1.0
-    return max(0.0, min(1.0, numeric))
+    return subagent_router_context_support._normalized_rate(value)
 
 
 def _latency_pressure_signal(value: Any) -> int:
-    try:
-        numeric = float(value or 0.0)
-    except (TypeError, ValueError):
-        return 0
-    if numeric >= 12000.0:
-        return 4
-    if numeric >= 6000.0:
-        return 3
-    if numeric >= 2500.0:
-        return 2
-    if numeric >= 1000.0:
-        return 1
-    return 0
+    return subagent_router_context_support._latency_pressure_signal(value)
 
 
 def _execution_profile_candidate(value: Any) -> dict[str, Any]:
@@ -1219,12 +1052,18 @@ def _execution_profile_mapping(
     evidence_pack: Mapping[str, Any],
     optimization_snapshot: Mapping[str, Any],
 ) -> dict[str, Any]:
-    return subagent_router_runtime_policy._execution_profile_mapping(root=root, context_packet=context_packet, evidence_pack=evidence_pack, optimization_snapshot=optimization_snapshot)
+    return subagent_router_context_support._execution_profile_mapping(
+        root=root,
+        context_packet=context_packet,
+        evidence_pack=evidence_pack,
+        optimization_snapshot=optimization_snapshot,
+    )
 
 
 
 def _preferred_router_profile_from_execution_profile(profile: Mapping[str, Any]) -> RouterProfile | None:
-    return subagent_router_runtime_policy._preferred_router_profile_from_execution_profile(profile=profile)
+    candidate = subagent_router_context_support._preferred_router_profile_from_execution_profile(profile)
+    return candidate if isinstance(candidate, RouterProfile) else None
 
 
 
@@ -1262,7 +1101,7 @@ def _build_host_message(*sections: Sequence[str]) -> str:
 
 
 def _clamp_score(value: int | float) -> int:
-    return max(_SCORE_MIN, min(_SCORE_MAX, int(round(float(value)))))
+    return subagent_router_context_support._clamp_score(value)
 
 
 def _clamp_bias(value: float) -> float:
@@ -1876,6 +1715,8 @@ def route_outcome_from_mapping(payload: Mapping[str, Any]) -> RouteOutcome:
 
 
 def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
+    from odylith.runtime.orchestration import subagent_router_assessment_runtime
+
     return subagent_router_assessment_runtime._context_signal_summary(request)
 
 
@@ -2178,6 +2019,8 @@ def _classify_task_family(
 
 
 def assess_request(request: RouteRequest) -> TaskAssessment:
+    from odylith.runtime.orchestration import subagent_router_assessment_runtime
+
     return subagent_router_assessment_runtime.assess_request(request)
 
 
@@ -2484,6 +2327,8 @@ def route_request(
     *,
     repo_root: Path | None = None,
 ) -> RoutingDecision:
+    from odylith.runtime.orchestration import subagent_router_assessment_runtime
+
     _ensure_valid_route_request(request)
     request = subagent_router_assessment_runtime.request_with_consumer_write_policy(
         request,

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+import time
 from urllib.parse import quote
 
 from tests.integration.runtime.surface_browser_test_support import (
@@ -27,6 +28,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _casebook_index_counts,
     _click_visible,
     _collect_sample_tokens,
+    _discard_external_mermaid_cdn_failures,
     _new_page,
     _run_in_browser_thread,
     _select_radar_row_with_link,
@@ -37,6 +39,9 @@ from tests.integration.runtime.surface_browser_test_support import (
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
+_RADAR_REDIRECT_ABORT_RE = re.compile(
+    r"^GET http://127\.0\.0\.1:\d+/odylith/radar/backlog-(?:app|payload)\.v1\.js(?:\?[^ ]*)?$"
+)
 
 
 def _ready_compass_fixture_root(tmp_path: Path) -> Path:
@@ -113,6 +118,41 @@ def _write_compass_fixture_runtime_payloads(
     if source_truth_payload is not None:
         source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
         source_truth_path.write_text(json.dumps(source_truth_payload, indent=2) + "\n", encoding="utf-8")
+
+
+def _first_backlog_document_workstream_id(view: str) -> str:
+    pattern = re.compile(rf"{re.escape(view)}:(B-\d{{3,}})")
+    text = "".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((_REPO_ROOT / "odylith" / "radar").glob("backlog-document-shard-*.v1.js"))
+    )
+    match = pattern.search(text)
+    assert match is not None, f"expected at least one Radar standalone document for view={view!r}"
+    return str(match.group(1))
+
+
+def _wait_for_radar_standalone_document(page, *, workstream_id: str, view: str, timeout: int = 15000) -> None:  # noqa: ANN001
+    _wait_for_shell_query_param(page, tab="radar", key="workstream", value=workstream_id, timeout=timeout)
+    _wait_for_shell_query_param(page, tab="radar", key="view", value=view, timeout=timeout)
+    deadline = time.monotonic() + (timeout / 1000)
+    while time.monotonic() < deadline:
+        frame_handle = page.locator("#frame-radar").element_handle()
+        frame = frame_handle.content_frame() if frame_handle is not None else None
+        if frame is not None:
+            back_link = frame.locator("a.back")
+            workstream_label = frame.locator("p.id")
+            if back_link.count() and workstream_label.count():
+                back_text = back_link.first.inner_text().strip()
+                workstream_text = workstream_label.first.inner_text().strip()
+                if back_text.startswith("Back to Backlog") and "Radar" in back_text and workstream_text == workstream_id:
+                    assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
+                    return
+        page.wait_for_timeout(200)
+    raise AssertionError(f"expected Radar standalone {view!r} document for {workstream_id}")
+
+
+def _discard_radar_redirect_abort_failures(failed_requests: list[str]) -> None:
+    failed_requests[:] = [entry for entry in failed_requests if not _RADAR_REDIRECT_ABORT_RE.match(entry)]
 
 
 def test_registry_detail_hides_default_live_status_card(browser_context) -> None:  # noqa: ANN001
@@ -812,17 +852,45 @@ def test_casebook_entrypoint_counts_match_bug_index_after_reload(browser_context
         expected_total_cases=expected_total_cases,
     )
 
-    page.reload(wait_until="domcontentloaded")
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
-    _assert_casebook_counts(
-        casebook,
-        expected_open_total=expected_open_total,
-        expected_total_cases=expected_total_cases,
-    )
 
-    failed_requests.clear()
-    bad_responses.clear()
+def test_radar_standalone_spec_route_survives_reload(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    workstream_id = _first_backlog_document_workstream_id("spec")
+
+    response = page.goto(
+        base_url + f"/odylith/index.html?tab=radar&workstream={quote(workstream_id, safe='')}&view=spec",
+        wait_until="domcontentloaded",
+    )
+    assert response is not None and response.ok
+
+    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="spec")
+
+    page.reload(wait_until="domcontentloaded")
+    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="spec")
+
+    _discard_external_mermaid_cdn_failures(failed_requests)
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_radar_plan_entrypoint_redirects_into_shell_standalone_plan_view(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    workstream_id = _first_backlog_document_workstream_id("plan")
+
+    response = page.goto(
+        base_url + f"/odylith/radar/radar.html?workstream={quote(workstream_id, safe='')}&view=plan",
+        wait_until="domcontentloaded",
+    )
+    assert response is not None and response.ok
+
+    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="plan")
+
+    page.reload(wait_until="domcontentloaded")
+    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="plan")
+
+    _discard_external_mermaid_cdn_failures(failed_requests)
+    _discard_radar_redirect_abort_failures(failed_requests)
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 

@@ -1,3 +1,5 @@
+"""Run the canonical version-truth synchronizer from the repo root."""
+
 from __future__ import annotations
 
 import sys

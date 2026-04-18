@@ -62,8 +62,20 @@
 - New or materially rewritten runtime Python modules must carry a truthful
   module docstring.
 - Every anti-slop cleanup must add or update enforcement tests.
+- Maintainer anti-slop passes fail closed: do not stop when the touched slice
+  still contains the same bounded shim, duplicate-helper, or mirror-drift
+  class you set out to remove.
+- When install, upgrade, repair, launcher, or bundled project-asset surfaces
+  move, proving `tests/unit/install` is mandatory. When browser-proved
+  surfaces move, proving the headless browser matrix is mandatory.
+- Host-mirror work fails closed as well. If a Codex/Claude or other host pair
+  still carries the same duplicated formatter, renderer, or checkpoint control
+  flow after the pass, the pass is incomplete; move the shared logic behind a
+  real owner before closeout.
 - Use `../../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` for the shared
-  ban list, decomposition triggers, and proof contract.
+  ban list, decomposition triggers, and proof contract, and use
+  `../skills/fail-closed-code-hygiene/` when a maintainer pass is explicitly
+  attacking structural slop.
 
 ## Non-Negotiable Maintainer Intervention Bar
 - Go deep on the bound slice before editing. Understand the surrounding
@@ -89,6 +101,10 @@
   invariants, state transitions, failure modes, and boundary assumptions so
   the next maintainer does not have to rediscover them from scratch. Do not
   add filler comments to code that is already obvious.
+- Treat install and bundle mirroring as first-class proof surfaces. When the
+  touched change affects guidance, hooks, skills, or install-managed mirrors,
+  update the live source and the shipped mirror in the same change and prove
+  both with tests before closeout.
 
 ## Branch And Write Safety
 - The Git `main` branch is read-only for authoring in this maintainer lane.
@@ -160,6 +176,10 @@
   LOC needs an explicit exception and decomposition plan, and any
   hand-maintained source file over `2000` LOC must already have an active
   decomposition workstream before more feature growth lands in it.
+- In detached `source-local` maintainer dev posture, no red-zone file may take
+  net new unrelated feature growth without a same-change ownership extraction
+  or decomposition cut. "We will clean it later" is not an acceptable
+  maintainer closeout posture for `2000+` LOC source files.
 - When maintainer work touches a hand-maintained source file that is already
   beyond those thresholds, the default action is refactor-first work: split
   it into multiple focused files or modules with robustness, reliability, and

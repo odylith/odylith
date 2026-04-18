@@ -30,6 +30,9 @@ _LOCAL_COMPASS_RUNTIME_JSON_RE = re.compile(
 _LOCAL_COMPASS_SOURCE_TRUTH_JSON_RE = re.compile(
     r"^http://127\.0\.0\.1:\d+/odylith/compass/compass-source-truth\.v1\.json(?:[?#].*)?$"
 )
+_EXTERNAL_MERMAID_CDN_REQUEST_RE = re.compile(
+    r"^GET https://cdn\.jsdelivr\.net/npm/mermaid@11/dist/mermaid\.min\.js(?:\s+.*)?$"
+)
 
 
 @contextlib.contextmanager
@@ -177,6 +180,13 @@ def _assert_clean_page(
     assert failed_requests == [], f"request failures: {failed_requests}"
     assert bad_responses == [], f"http error responses: {bad_responses}"
     page.close()
+
+
+def _discard_external_mermaid_cdn_failures(failed_requests: list[str]) -> None:
+    """Drop known standalone-doc Mermaid CDN misses from route-integrity assertions."""
+    failed_requests[:] = [
+        entry for entry in failed_requests if not _EXTERNAL_MERMAID_CDN_REQUEST_RE.match(entry)
+    ]
 
 
 def _extract_query_param(href: str, key: str) -> str:

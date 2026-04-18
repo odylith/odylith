@@ -28,6 +28,8 @@ from odylith.runtime.context_engine import odylith_context_engine_projection_reg
 from odylith.runtime.context_engine import odylith_context_engine_projection_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
 
+_MAKE_TARGET_RE = re.compile(r"^([A-Za-z0-9][A-Za-z0-9_.-]*):(?:\s|$)")
+
 
 def bind(host: Any) -> None:
     if isinstance(host, dict):
