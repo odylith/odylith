@@ -99,7 +99,7 @@ def test_execution_engine_handshake_reads_guidance_behavior_from_context_packet(
 
 
 def test_execution_engine_handshake_carries_character_validator_command() -> None:
-    command = "odylith validate agent-operating-character --repo-root ."
+    command = "odylith validate discipline --repo-root ."
 
     handshake = execution_engine_handshake.normalize_execution_engine_handshake(
         payload={

@@ -1,7 +1,7 @@
 # Benchmark
 
-## Adaptive Agent Operating Character Contract
-- Benchmark owns Product Truth for Agent Operating Character. The
+## Odylith Discipline Contract
+- Benchmark owns Product Truth for Odylith Discipline. The
   `agent_operating_character` family measures hard laws, unknown pressure,
   mixed pressure, learning replay, false allow/block behavior, intervention
   precision, zero-credit hot paths, and public-claim gating.
@@ -10,22 +10,22 @@
   warm and cold profiles, and pinned dogfood runtime health.
 - The family includes a critical host/lane parity scenario so Codex and Claude
   across dev, dogfood, and consumer lanes are benchmark-visible. Host model
-  aliases remain adapter metadata; hot Character proof requires zero host model
+  aliases remain adapter metadata; hot Odylith Discipline proof requires zero host model
   and provider calls.
-- Character validation is a platform contract, not only corpus parsing: it
+- Odylith Discipline validation is a platform contract, not only corpus parsing: it
   checks declared proof obligations, affordance ranking, intervention
   visibility, learning/memory signals, zero-credit budget counters, bundle
   mirrors, and cross-layer integration tokens before benchmark summaries can
-  report clean Character metrics.
-- Character metrics now include deterministic false allow/block rates,
+  report clean Odylith Discipline metrics.
+- Odylith Discipline metrics now include deterministic false allow/block rates,
   unknown-pressure handling, stance-vector coverage, noise-suppression,
   intervention precision, and unseen-pressure generalization alongside
   hot-path provider and host-model call counts.
-- Agent Operating Character corpus coverage includes false-block guards for
+- Odylith Discipline corpus coverage includes false-block guards for
   allowed technical-plan authoring, release-proof execution, credit-safety
   hardening, negated delegation, and modern Codex/Claude model-alias
   normalization.
-- Guidance Behavior and Agent Operating Character quick scenarios are tagged
+- Guidance Behavior and Odylith Discipline quick scenarios are tagged
   to B-110 so program/release proof and benchmark adoption metrics carry the
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
@@ -792,7 +792,7 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-04-17 · Implementation:** B-110 adaptive character hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged character benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
+- **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
   - Scope: B-110
   - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md
 - **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
@@ -814,4 +814,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-17: Bound the `guidance_behavior` benchmark/eval path into `odylith_guidance_behavior_platform_end_to_end.v1`, so quick-family selection, low-latency support-doc policy, benchmark isolation, host mirrors, consumer bundle assets, and install guidance are validated as one platform proof contract. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Added the `hot_path_efficiency` domain to Guidance Behavior platform proof and re-proved the quick family at `6` scenarios, `0.0` widening rate, no advisory failures, and Odylith ON packet timing of `median=5.712 ms`, `avg=5.999 ms`, `p95=7.463 ms`. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Hardened Guidance Behavior platform proof so stale live/source-bundle mirrors for guidance docs, host shims, skills, governed program/spec truth, and benchmark corpora fail validation instead of passing on token-present but lane-divergent consumer assets. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
-- 2026-04-18: Expanded Agent Operating Character benchmark sovereignty from scenario selection into contract-quality metrics: pressure observations, affordances, admissibility, proof obligations, learning replay, memory recurrence, intervention visibility, and platform integration now feed deterministic summary rates while provider and host-model call counts stay zero. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-18: Expanded Odylith Discipline benchmark sovereignty from scenario selection into contract-quality metrics: pressure observations, affordances, admissibility, proof obligations, learning replay, memory recurrence, intervention visibility, and platform integration now feed deterministic summary rates while provider and host-model call counts stay zero. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))

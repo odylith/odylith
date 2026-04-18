@@ -1,21 +1,21 @@
 # Odylith
 
-## Adaptive Agent Operating Character Contract
-- For v0.1.11, Odylith owns Adaptive Agent Operating Character as a platform
+## Odylith Discipline Contract
+- For v0.1.11, Odylith owns Odylith Discipline as a platform
   contract: local pressure observations, deterministic hard laws, adaptive
   stance facets, ranked affordances, credit-safe budgets, compact learning,
   Tribunal promotion, and benchmark sovereignty. The contract ids are
   `odylith_agent_operating_character.v1`,
   `odylith_agent_operating_character_learning.v1`, and
   `odylith_agent_operating_character_runtime_budget.v1`.
-- The public command surface is `odylith character status/check/explain`,
+- The public command surface is `odylith discipline status/check/explain`,
   `odylith validate agent-operating-character --repo-root .`, and the existing
-  `odylith benchmark --family agent_operating_character` path. Character hot
+  `odylith benchmark --family agent_operating_character` path. Odylith Discipline hot
   paths are deterministic and must not spend host model or provider credits.
 - The host/lane support contract is
   `odylith_agent_operating_character_host_lane_support.v1`: Codex and Claude
   are first-class host families, dev/dogfood/consumer are first-class lanes,
-  and host model aliases resolve to adapter families without turning Character
+  and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
 Last updated: 2026-04-15
 

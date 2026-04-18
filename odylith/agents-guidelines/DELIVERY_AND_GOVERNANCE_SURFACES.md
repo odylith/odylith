@@ -32,7 +32,7 @@
 - Always run Casebook preflight: search existing bugs first, record `no related bug found` when true, and capture a new bug immediately for a named failure mode or repeated-debug loop.
 - Keep Compass and session context current with intent, constraints, validation obligations, artifact links, and major decisions so the next turn inherits real repo memory instead of starting cold.
 - Fail closed when evidence is too weak to update a governed surface truthfully.
-- Adaptive Agent Operating Character turns pressure into governed learning
+- Odylith Discipline turns pressure into governed learning
   without turning every event into a surface update. Radar carries the B-110
   umbrella and waves, Registry carries component ownership, Atlas carries the
   loop topology, Compass carries compact practice/proof events when useful,

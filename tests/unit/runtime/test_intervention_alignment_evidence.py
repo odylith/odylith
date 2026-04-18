@@ -155,7 +155,7 @@ def test_character_summary_feeds_alignment_without_copy_or_noise_on_pass() -> No
                 "validation_status": "not_run",
                 "case_count": 19,
                 "selected_case_ids": ["character-visible-pass-stays-silent"],
-                "validator_command": "odylith validate agent-operating-character --repo-root .",
+                "validator_command": "odylith validate discipline --repo-root .",
             },
         },
     )
@@ -178,7 +178,7 @@ def test_failed_character_summary_becomes_single_high_signal_fact() -> None:
                 "status": "failed",
                 "validation_status": "failed",
                 "case_count": 1,
-                "validator_command": "odylith validate agent-operating-character --repo-root .",
+                "validator_command": "odylith validate discipline --repo-root .",
             },
         },
     )
@@ -188,6 +188,6 @@ def test_failed_character_summary_becomes_single_high_signal_fact() -> None:
         evidence_classes=alignment_evidence.runtime_evidence_classes(observation),
     )
 
-    assert [fact.headline for fact in facts] == ["Agent Operating Character validation is not passing."]
-    assert "local character validator" in facts[0].detail
+    assert [fact.headline for fact in facts] == ["Odylith Discipline validation is not passing."]
+    assert "local Discipline validator" in facts[0].detail
     assert "agent_operating_character_contract" in facts[0].evidence_classes

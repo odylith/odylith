@@ -1,17 +1,17 @@
 # Governance Intervention Engine
 
-## Adaptive Agent Operating Character Contract
-- Governance Intervention Engine owns live Voice. Character decisions can
+## Odylith Discipline Contract
+- Governance Intervention Engine owns live Voice. Odylith Discipline decisions can
   become visible only when they create immediate user value: concise nudges
   need a recovery action, Observations need useful evidence, Proposals need a
   bounded next move, and passing checks stay silent.
-- Character supplies evidence, recovery affordances, visibility proof needs,
+- Odylith Discipline supplies evidence, recovery affordances, visibility proof needs,
   and owner-surface metadata only. It must not template final Observation,
   Proposal, or Assist copy; the intervention and chatter layers keep the human
   voice live, evidence-shaped, and non-mechanical.
 - Visible-intervention claims require `intervention-status`, transcript
   confirmation, or direct rendered fallback.
-- Open-world Character pressure such as "stop templating voice" or "make the
+- Open-world Odylith Discipline pressure such as "stop templating voice" or "make the
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
@@ -94,13 +94,13 @@ claiming ML calibration.
   consumes the same summary that proves benchmark/eval wiring, host mirrors,
   consumer bundle assets, and install guidance instead of deriving separate
   relevance or visibility policy locally.
-- Material Agent Operating Character evidence from `alignment_evidence.py`.
-  Passing Character checks stay quiet. Failed, malformed, or unavailable
-  Character summaries can become one supported invariant with a concrete local
+- Material Odylith Discipline evidence from `alignment_evidence.py`.
+  Passing Discipline checks stay quiet. Failed, malformed, or unavailable
+  Odylith Discipline summaries can become one supported invariant with a concrete local
   recovery command, but they do not bypass the intervention value engine or
-  render canned Character copy.
-- Adaptive Character voice pressure is evidence for inspection, not permission
-  to generate fixed posture language. If Character admits the move, the live
+  render canned discipline copy.
+- Odylith Discipline voice pressure is evidence for inspection, not permission
+  to generate fixed posture language. If Odylith Discipline admits the move, the live
   intervention path remains silent unless the value engine independently earns
   a visible Observation or Proposal from current evidence.
 - Duplicate suppression keyed to the active session and prior Compass
@@ -778,5 +778,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-17: Integrated Guidance Behavior summaries into the intervention evidence cone: passing summaries remain non-chatty, failed/malformed/unavailable guidance behavior becomes one supported `guidance_behavior_contract` fact, and the same value-engine path consumes it without provider calls, repo-wide scans, or context-store expansion. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Added the Guidance Behavior platform end-to-end contract to the compact evidence cone so benchmark/eval wiring, Codex and Claude host mirrors, consumer bundle assets, and install guidance empower the same intervention decision without hot-path validation or provider calls. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Extended the Guidance Behavior platform contract with live/source-bundle byte-parity checks so intervention evidence, host guidance, benchmark corpora, and governed program/spec truth cannot silently diverge between source-local, dogfood, and consumer lanes. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
-- 2026-04-18: Wired Adaptive Agent Operating Character into the alignment evidence cone as local evidence, not scripted voice: passing checks remain silent, contract failures become a single high-signal invariant with recovery affordance, and the live intervention value engine still owns whether and how anything is shown. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
-- 2026-04-18: Tightened Character/Intervention boundary QA so proof-gathering commands such as `intervention-status` and `visible-intervention` stay silent admissible local actions, while actual visible-UX claims still require ledger proof, transcript confirmation, or rendered fallback evidence. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-18: Wired Odylith Discipline into the alignment evidence cone as local evidence, not scripted voice: passing checks remain silent, contract failures become a single high-signal invariant with recovery affordance, and the live intervention value engine still owns whether and how anything is shown. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-18: Tightened Odylith Discipline/Intervention boundary QA so proof-gathering commands such as `intervention-status` and `visible-intervention` stay silent admissible local actions, while actual visible-UX claims still require ledger proof, transcript confirmation, or rendered fallback evidence. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))

@@ -80,6 +80,13 @@ def _idea_text(
     )
 
 
+def _legacy_idea_text(**kwargs: str) -> str:
+    text = _idea_text(**kwargs)
+    if text.startswith("---\n"):
+        text = text[4:]
+    return text.replace("\n---\n\n", "\n\n", 1)
+
+
 def _write_plan(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -171,6 +178,37 @@ def test_program_create_scaffolds_program_and_updates_execution_model(tmp_path: 
     assert payload["waves"][0]["status"] == "active"
     assert payload["waves"][0]["primary_workstreams"] == ["B-202"]
     assert payload["waves"][1]["depends_on"] == ["W1"]
+
+
+def test_program_update_accepts_legacy_key_value_idea_header(tmp_path: Path) -> None:
+    _seed_program_repo(tmp_path)
+    umbrella_path = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-09-b-201.md"
+    umbrella_path.write_text(
+        _legacy_idea_text(
+            idea_id="B-201",
+            title="Execution umbrella",
+            promoted_to_plan="odylith/technical-plans/in-progress/2026-04-09-b-201.md",
+            execution_model="umbrella_waves",
+            workstream_type="umbrella",
+            workstream_children="B-202,B-203",
+        ),
+        encoding="utf-8",
+    )
+
+    assert program_wave_authoring.run_program(["--repo-root", str(tmp_path), "create", "B-201"]) == 0
+    rc = program_wave_authoring.run_program(
+        ["--repo-root", str(tmp_path), "update", "B-201", "--complete-wave", "W1", "--activate-wave", "W2"]
+    )
+
+    assert rc == 0
+    payload = json.loads(
+        (tmp_path / "odylith" / "radar" / "source" / "programs" / "B-201.execution-waves.v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert payload["waves"][0]["status"] == "complete"
+    assert payload["waves"][1]["status"] == "active"
+    assert "execution_model: umbrella_waves" in umbrella_path.read_text(encoding="utf-8")
 
 
 def test_program_create_json_emits_execution_engine_payload(

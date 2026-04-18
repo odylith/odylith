@@ -74,7 +74,7 @@ PRACTICE_EVENT_REQUIRED_FIELDS: tuple[str, ...] = (
 )
 
 HARD_LAWS: dict[str, str] = {
-    "supported_host_lane": "Use a supported host family and execution lane for Character decisions.",
+    "supported_host_lane": "Use a supported host family and execution lane for Odylith Discipline decisions.",
     "cli_first_governed_truth": "Use a CLI writer where governed truth has one.",
     "fresh_proof_completion": "Do not claim done, fixed, or resolved without fresh proof.",
     "visible_intervention_proof": "Do not claim visible intervention UX without visible proof or rendered fallback.",
@@ -98,7 +98,7 @@ HARD_LAW_RECOVERY_ACTIONS: dict[str, str] = {
 }
 
 HARD_LAW_RECOVERY_CUES: dict[str, str] = {
-    "supported_host_lane": "Choose Codex or Claude and dev, dogfood, or consumer before acting.",
+    "supported_host_lane": "Choose Codex or Claude and dev, dev-maintainer, dogfood, or consumer before acting.",
     "cli_first_governed_truth": "Use the owning Odylith CLI writer before hand edits.",
     "fresh_proof_completion": "Report implementation state without claiming completion, then run fresh proof.",
     "visible_intervention_proof": "Run intervention-status or render the visible-intervention fallback.",
@@ -106,7 +106,7 @@ HARD_LAW_RECOVERY_CUES: dict[str, str] = {
     "bounded_delegation": "Create owner, goal, expected output, stop condition, owned scope, and validation before delegation.",
     "benchmark_public_claim": "Run the required benchmark proof before publishing the claim.",
     "consumer_mutation_guard": "Diagnose and hand off unless the operator explicitly authorizes local product mutation.",
-    "explicit_model_credit": "Stay on local deterministic character checks unless the operator explicitly requests model execution.",
+    "explicit_model_credit": "Stay on local deterministic discipline checks unless the operator explicitly requests model execution.",
 }
 
 HARD_LAW_DECISIONS: dict[str, str] = {

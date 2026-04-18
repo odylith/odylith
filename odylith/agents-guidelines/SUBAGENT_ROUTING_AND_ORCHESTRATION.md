@@ -12,10 +12,10 @@
 - Keep Odylith-derived commentary ambient by default. If routing or topology produces a real non-obvious point, weave it into the update first and reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels for the rare cases that truly earn them.
 - In the final handoff, one short `Odylith Assist:` line is optional if the routed or local result has concrete observed counts, measured deltas, or validation outcomes worth naming. Prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance IDs inline only when they actually changed, name affected governance-contract IDs from bounded request or packet truth when no governed file moved, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual, not promotional. Silence is better than filler, so omit it when there is no clear user-facing delta.
 - Every delegated task needs an owner, goal, validation expectation, and termination condition.
-- Adaptive Agent Operating Character keeps coordination adaptive rather than
+- Odylith Discipline keeps coordination adaptive rather than
   posture-rigid. Broad delegation is a deterministic hard-law violation until
   the route is bounded with owner, goal, expected output, stop condition,
-  owned scope, validation expectation, and closeout state. Character checks
+  owned scope, validation expectation, and closeout state. Discipline checks
   may rank routing affordances, but they must not spawn subagents or spend
   host model credits to classify pressure.
 - When a grounded slice touches a hand-maintained source file that is already

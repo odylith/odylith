@@ -124,7 +124,7 @@ def test_context_packet_and_evidence_pack_retain_character_summary() -> None:
             "validation_status": "not_run",
             "case_count": 13,
             "selected_case_ids": ["character-credit-safe-hot-path"],
-            "validator_command": "odylith validate agent-operating-character --repo-root .",
+            "validator_command": "odylith validate discipline --repo-root .",
             "hot_path_contract": {
                 "provider_calls": False,
                 "host_model_calls": False,
@@ -156,6 +156,6 @@ def test_context_packet_and_evidence_pack_retain_character_summary() -> None:
     assert context_packet["character_summary"]["case_count"] == 13
     assert context_packet["character_summary"]["hot_path_contract"]["host_model_calls"] is False
     assert evidence_pack["character_summary"]["validator_command"].endswith(
-        "validate agent-operating-character --repo-root ."
+        "validate discipline --repo-root ."
     )
     assert evidence_pack["character_summary"]["hot_path_contract"]["projection_expansion"] is False

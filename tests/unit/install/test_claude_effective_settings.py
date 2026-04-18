@@ -41,9 +41,11 @@ def test_write_effective_claude_project_settings_writes_byte_stable_json(tmp_pat
     assert payload["hooks"]["PostToolUse"][1]["matcher"] == "Bash"
     prompt_hooks = payload["hooks"]["UserPromptSubmit"][0]["hooks"]
     assert [hook["command"] for hook in prompt_hooks] == [
+        'python3 "$CLAUDE_PROJECT_DIR"/.claude/hooks/show-me-prompt-guard.py "$CLAUDE_PROJECT_DIR"',
         '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"',
         '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"',
     ]
+    assert prompt_hooks[0]["timeout"] == 5
     post_edit_hook = payload["hooks"]["PostToolUse"][0]["hooks"][0]
     post_bash_hook = payload["hooks"]["PostToolUse"][1]["hooks"][0]
     subagent_stop_hook = payload["hooks"]["SubagentStop"][0]["hooks"][0]

@@ -1,9 +1,9 @@
 # Compass
 
-## Adaptive Agent Operating Character Contract
-- Compass owns compact execution memory for character work. It may project
+## Odylith Discipline Contract
+- Compass owns compact execution memory for Odylith Discipline work. It may project
   high-signal practice events, validation outcomes, benchmark proof status,
-  and release-gate posture, but should suppress weak character noise.
+  and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
 Last updated: 2026-04-17

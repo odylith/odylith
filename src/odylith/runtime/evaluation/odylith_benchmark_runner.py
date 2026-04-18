@@ -108,6 +108,11 @@ _MODE_ALIASES = {
 _VALID_MODES = frozenset((*DEFAULT_MODES, *DIAGNOSTIC_CONTROL_MODES, *_MODE_ALIASES.keys()))
 DEFAULT_CACHE_PROFILES: tuple[str, ...] = ("warm", "cold")
 _VALID_CACHE_PROFILES = frozenset({"warm", "cold"})
+_FAMILY_ALIASES = {
+    "discipline": "agent_operating_character",
+    "odylith-discipline": "agent_operating_character",
+    "odylith_discipline": "agent_operating_character",
+}
 _LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "agent_operating_character"})
 _MIN_BENCHMARK_RUNTIME_FREE_BYTES = 256 * 1024 * 1024
 _RUNTIME_POSTURE_MANAGED_HELPER_ENV = "ODYLITH_BENCHMARK_RUNTIME_POSTURE_MANAGED_HELPER"
@@ -2543,8 +2548,16 @@ def _scenario_selection_sort_key(scenario: Mapping[str, Any]) -> tuple[int, str,
     )
 
 
+def _normalize_family_filter(value: str) -> str:
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    alias = token.lower().replace(" ", "_")
+    return _FAMILY_ALIASES.get(token, _FAMILY_ALIASES.get(alias, _FAMILY_ALIASES.get(alias.replace("_", "-"), token)))
+
+
 def _normalize_family_filters(families: Sequence[str]) -> list[str]:
-    return _dedupe_strings([str(token).strip() for token in families if str(token).strip()])
+    return _dedupe_strings([_normalize_family_filter(str(token)) for token in families if str(token).strip()])
 
 
 def _representative_family_smoke_scenarios(*, scenarios: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:

@@ -68,7 +68,7 @@ def _write_validation_fixture(root: Path, *, cases: list[dict[str, object]] | No
                         "required_paths": [str(validator.CORPUS_RELATIVE_PATH)],
                         "critical_paths": [str(validator.CORPUS_RELATIVE_PATH)],
                         "validation_commands": [
-                            "odylith validate agent-operating-character --repo-root . --case-id character-fixture"
+                            "odylith validate discipline --repo-root . --case-id character-fixture"
                         ],
                     },
                     "expect": {"within_budget": True},
@@ -117,11 +117,11 @@ def test_agent_operating_character_validation_passes_seeded_contract() -> None:
     }.issubset(payload["platform_integration"]["layers"])
     assert len(payload["case_results"]) >= 19
     assert payload["host_lane_support"]["supported_host_families"] == ["codex", "claude"]
-    assert payload["host_lane_support"]["supported_lanes"] == ["dev", "dogfood", "consumer"]
+    assert payload["host_lane_support"]["supported_lanes"] == ["dev", "dev-maintainer", "dogfood", "consumer"]
     matrix = payload["host_lane_support"]["matrix"]
-    assert len(matrix) == 8
+    assert len(matrix) == 10
     support_rows = [row for row in matrix if "proofless_completion_decision" in row]
-    assert len(support_rows) == 6
+    assert len(support_rows) == 8
     assert all(row["support"]["semantic_contract_supported"] is True for row in support_rows)
     assert all(row["host_model_call_count"] == 0 for row in support_rows)
     assert all(row["provider_call_count"] == 0 for row in support_rows)

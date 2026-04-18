@@ -346,6 +346,13 @@ _CLAUDE_LAUNCHER_INVOCATION = f'"{_CLAUDE_PROJECT_DIR_TOKEN}"/.odylith/bin/odyli
 _CLAUDE_STATUSLINE_INVOCATION = f'"{_CLAUDE_PROJECT_DIR_TOKEN}"/.claude/statusline.sh'
 
 
+def _project_python_hook_command(script_name: str) -> str:
+    return (
+        f'python3 "{_CLAUDE_PROJECT_DIR_TOKEN}"/.claude/hooks/{script_name} '
+        f'"{_CLAUDE_PROJECT_DIR_TOKEN}"'
+    )
+
+
 def _baked_hook_command(claude_command: str, *extra_flags: str) -> str:
     parts = [
         _CLAUDE_LAUNCHER_INVOCATION,
@@ -405,6 +412,11 @@ def _baked_hooks_block() -> dict[str, Any]:
         "UserPromptSubmit": [
             {
                 "hooks": [
+                    {
+                        "type": "command",
+                        "command": _project_python_hook_command("show-me-prompt-guard.py"),
+                        "timeout": 5,
+                    },
                     {
                         "type": "command",
                         "command": _baked_hook_command("prompt-context"),

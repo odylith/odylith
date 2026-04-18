@@ -74,6 +74,7 @@ _VALIDATE_COMMAND_MODULES = {
     "casebook-source": _CASEBOOK_SOURCE_VALIDATION_MODULE,
     "component-registry": "odylith.runtime.governance.validate_component_registry_contract",
     "component-registry-contract": "odylith.runtime.governance.validate_component_registry_contract",
+    "discipline": "odylith.runtime.governance.validate_agent_operating_character",
     "agent-operating-character": "odylith.runtime.governance.validate_agent_operating_character",
     "guidance-behavior": "odylith.runtime.governance.validate_guidance_behavior",
     "guidance-portability": "odylith.runtime.governance.validate_guidance_portability",
@@ -2088,11 +2089,11 @@ def build_parser() -> argparse.ArgumentParser:
     validate = subparsers.add_parser("validate", help="Run Odylith governance and contract validators.")
     validate_subparsers = validate.add_subparsers(dest="validate_command", required=True)
     for command, help_text in (
-        ("agent-operating-character", "Validate Adaptive Agent Operating Character contracts and hot-path budgets."),
         ("backlog-contract", "Validate Radar backlog and plan linkage contracts."),
         ("casebook-source", "Validate Casebook markdown source records before rendering."),
         ("component-registry", "Validate Registry component inventory contracts."),
         ("component-registry-contract", "Validate Registry component inventory contracts."),
+        ("discipline", "Validate Odylith Discipline contracts and hot-path budgets."),
         ("guidance-behavior", "Validate guidance behavior pressure cases and high-risk guidance contracts."),
         ("guidance-portability", "Validate maintained guidance for portable Python and pytest invocation patterns."),
         ("plan-risk-mitigation", "Validate technical-plan risk and mitigation sections."),
@@ -2105,22 +2106,21 @@ def build_parser() -> argparse.ArgumentParser:
         child_parser = validate_subparsers.add_parser(command, help=help_text)
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
         child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
-
-    character = subparsers.add_parser("character", help="Inspect Adaptive Agent Operating Character state.")
-    character_subparsers = character.add_subparsers(dest="character_command", required=True)
-    character_status = character_subparsers.add_parser("status", help="Show local character readiness and budget posture.")
-    character_status.add_argument("--repo-root", default=".", help="Consumer repository root.")
-    character_status.add_argument("--json", action="store_true", dest="as_json", help="Render status as JSON.")
-    character_check = character_subparsers.add_parser("check", help="Evaluate a proposed move locally.")
-    character_check.add_argument("--repo-root", default=".", help="Consumer repository root.")
-    character_check.add_argument("--intent-file", required=True, help="File containing the proposed agent move.")
-    character_check.add_argument("--host", default="codex", help="Host family, for example codex or claude.")
-    character_check.add_argument("--lane", default="dev", help="Execution lane.")
-    character_check.add_argument("--json", action="store_true", dest="as_json", help="Render decision as JSON.")
-    character_explain = character_subparsers.add_parser("explain", help="Explain a prior character decision.")
-    character_explain.add_argument("--repo-root", default=".", help="Consumer repository root.")
-    character_explain.add_argument("--decision-id", required=True, help="Decision id to explain.")
-    character_explain.add_argument("--json", action="store_true", dest="as_json", help="Render explanation as JSON.")
+    discipline = subparsers.add_parser("discipline", help="Inspect Odylith Discipline behavior.")
+    discipline_subparsers = discipline.add_subparsers(dest="character_command", required=True)
+    discipline_status = discipline_subparsers.add_parser("status", help="Show local discipline readiness and budget posture.")
+    discipline_status.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    discipline_status.add_argument("--json", action="store_true", dest="as_json", help="Render status as JSON.")
+    discipline_check = discipline_subparsers.add_parser("check", help="Evaluate a proposed move locally.")
+    discipline_check.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    discipline_check.add_argument("--intent-file", required=True, help="File containing the proposed agent move.")
+    discipline_check.add_argument("--host", default="codex", help="Host family, for example codex or claude.")
+    discipline_check.add_argument("--lane", default="dev", help="Execution lane.")
+    discipline_check.add_argument("--json", action="store_true", dest="as_json", help="Render decision as JSON.")
+    discipline_explain = discipline_subparsers.add_parser("explain", help="Explain a prior discipline decision.")
+    discipline_explain.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    discipline_explain.add_argument("--decision-id", required=True, help="Decision id to explain.")
+    discipline_explain.add_argument("--json", action="store_true", dest="as_json", help="Render explanation as JSON.")
 
     context_engine = subparsers.add_parser("context-engine", help="Run Odylith Context Engine commands.")
     context_engine.add_argument("--repo-root", default=".", help="Consumer repository root.")
@@ -2441,13 +2441,24 @@ def main(argv: list[str] | None = None) -> int:
                     args = parser.parse_args(tokens)
                     return _cmd_validate(args)
                 return _run_module_main(_VERSION_TRUTH_MODULE, ["--repo-root", repo_root, *forwarded, "check"])
+            target = _VALIDATE_COMMAND_MODULES.get(tokens[1])
             if _help_requested(forwarded):
+                if tokens[1] == "agent-operating-character" and target is not None:
+                    return _run_module_main(target, ["--repo-root", repo_root, *forwarded])
                 parser = build_parser()
                 args = parser.parse_args(tokens)
                 return _cmd_validate(args)
-            target = _VALIDATE_COMMAND_MODULES.get(tokens[1])
             if target is not None:
                 return _run_module_main(target, ["--repo-root", repo_root, *forwarded])
+        if tokens[0] in {"discipline", "character"}:
+            repo_root, forwarded = _extract_repo_root(tokens[1:])
+            if forwarded and str(forwarded[0]).strip() == "check" and not _forwarded_has_flag(forwarded, "--lane"):
+                forwarded = list(forwarded)
+                insert_at = forwarded.index("--json") if "--json" in forwarded else len(forwarded)
+                forwarded[insert_at:insert_at] = ["--lane", "dev"]
+            return _module_attr(_CHARACTER_CLI_MODULE, "run_character")(
+                ensure_repo_root_args(repo_root=repo_root, argv=forwarded),
+            )
         if tokens[0] == "lane" and len(tokens) >= 2 and tokens[1] == "status":
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             if _help_requested(forwarded):
@@ -2636,7 +2647,7 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_program(args)
     if args.command == "wave":
         return _cmd_wave(args)
-    if args.command == "character":
+    if args.command in {"character", "discipline"}:
         return _cmd_character(args)
     if args.command == "governance":
         return _cmd_governance(args)

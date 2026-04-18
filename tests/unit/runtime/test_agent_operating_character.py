@@ -265,6 +265,16 @@ def test_character_normalizes_host_model_and_lane_aliases() -> None:
     assert decision["host_lane_support"]["delegation_surface"] == "task_tool_subagents"
     assert decision["decision"] == "block"
 
+    maintainer = evaluate_character_move(
+        intent="Run the local validator after these edits.",
+        host_family="codex",
+        lane="source-local",
+    )
+
+    assert maintainer["lane"] == "dev-maintainer"
+    assert maintainer["host_lane_support"]["runtime_posture"] == "source_local_maintainer"
+    assert maintainer["decision"] == "admit"
+
 
 def test_character_normalizes_modern_codex_and_claude_model_aliases() -> None:
     aliases = {
@@ -416,7 +426,7 @@ def test_character_runtime_summary_attaches_only_for_character_family() -> None:
     assert summary["family"] == "agent_operating_character"
     assert summary["status"] == "available"
     assert summary["hot_path_contract"]["host_model_calls"] is False
-    assert summary["validator_command"].endswith("validate agent-operating-character --repo-root .")
+    assert summary["validator_command"].endswith("validate discipline --repo-root .")
     assert character_runtime.summary_for_packet(
         repo_root=Path(__file__).resolve().parents[3],
         family_hint="unrelated_family",
@@ -451,6 +461,93 @@ def test_character_cli_check_is_credit_free_and_preserves_host_lane_aliases(tmp_
     assert payload["latency_budget"]["provider_call_count"] == 0
     assert payload["decision_record"]["recorded"] is True
     assert payload["practice_event"]["retention_class"] == "benchmark_pressure"
+
+
+def test_discipline_cli_default_check_is_human_readable_and_not_telemetry(tmp_path: Path, capsys) -> None:
+    intent = tmp_path / "intent.txt"
+    intent.write_text(
+        "Publish the release notes claiming Odylith Discipline is shipped and proven.",
+        encoding="utf-8",
+    )
+
+    rc = run_character(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "check",
+            "--intent-file",
+            str(intent),
+            "--host",
+            "claude",
+            "--lane",
+            "dev-maintainer",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0
+    assert "Odylith Discipline: blocked" in output
+    assert "Completion language needs fresh proof" in output
+    assert "Public shipped or proven product claims need benchmark proof first" in output
+    assert "Run fresh validation before making the claim" in output
+    assert "local-only check; no host model or provider calls" in output
+    assert "Detailed verification stays behind --json." in output
+    for leaked in (
+        "AOC",
+        "Agent Operating Character",
+        "Adaptive Agent Operating Character",
+        "contract:",
+        "forbidden_moves",
+        "hard_law_results",
+        "pressure_features",
+        "pressure_observations",
+        "retention_class",
+        "raw_transcript_retained",
+        "host_model_call_count",
+        "provider_call_count",
+        "broad_scan_count",
+    ):
+        assert leaked not in output
+
+
+def test_discipline_cli_default_status_and_explain_keep_telemetry_out(tmp_path: Path, capsys) -> None:
+    intent = tmp_path / "intent.txt"
+    intent.write_text("Say it is fixed now.", encoding="utf-8")
+    assert run_character(["--repo-root", str(tmp_path), "check", "--intent-file", str(intent), "--json"]) == 0
+    decision = json.loads(capsys.readouterr().out)
+
+    assert run_character(["--repo-root", str(tmp_path), "status"]) == 0
+    status_output = capsys.readouterr().out
+    assert "Odylith Discipline: ready" in status_output
+    assert "dev-maintainer" in status_output
+    assert "Detailed verification stays behind --json." in status_output
+
+    assert run_character(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "explain",
+            "--decision-id",
+            decision["decision_id"],
+        ]
+    ) == 0
+    explain_output = capsys.readouterr().out
+    assert "Odylith Discipline decision" in explain_output
+    assert "Completion language needs fresh proof" in explain_output
+
+    combined = f"{status_output}\n{explain_output}"
+    for leaked in (
+        "AOC",
+        "Adaptive Agent Operating Character",
+        "contract:",
+        "hard_law_results",
+        "pressure_features",
+        "retention_class",
+        "raw_transcript_retained",
+        "host_model_call_count",
+        "provider_call_count",
+    ):
+        assert leaked not in combined
 
 
 def test_character_cli_missing_intent_file_fails_without_model_work(tmp_path: Path, capsys) -> None:

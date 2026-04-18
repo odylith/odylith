@@ -312,7 +312,7 @@ def active_target_refs(observation: ObservationEnvelope) -> list[dict[str, str]]
             )
         )
     if _character_is_material(_character_summary_from_observation(observation)):
-        refs.append(_ref("component", "execution-engine", label="Agent Operating Character Contract"))
+        refs.append(_ref("component", "execution-engine", label="Odylith Discipline Contract"))
     return _dedupe_refs(refs)
 
 
@@ -613,17 +613,17 @@ def governance_facts_from_alignment(
         or character_validation_status in _CHARACTER_PROBLEM_STATUSES
     ):
         detail = (
-            "Run the local character validator before surfacing behavior claims."
+            "Run the local Discipline validator before surfacing behavior claims."
             if _normalize_string(character.get("validator_command"))
-            else "The Agent Operating Character corpus or validator is not in a usable passing state."
+            else "The Odylith Discipline corpus or validator is not in a usable passing state."
         )
         facts.append(
             _fact(
                 "invariant",
-                "Agent Operating Character validation is not passing.",
+                "Odylith Discipline validation is not passing.",
                 detail,
                 _merge_lists(evidence_classes, ["agent_operating_character_contract"], limit=10),
-                [_ref("component", "execution-engine", label="Agent Operating Character Contract")],
+                [_ref("component", "execution-engine", label="Odylith Discipline Contract")],
                 92,
             )
         )

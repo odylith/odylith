@@ -1254,6 +1254,53 @@ def test_character_check_dispatches_to_shared_cli(monkeypatch, tmp_path: Path) -
     ]
 
 
+def test_discipline_alias_dispatches_to_shared_character_cli(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    class _CharacterModule:
+        @staticmethod
+        def run_character(argv: list[str]) -> int:
+            captured["argv"] = list(argv)
+            return 9
+
+    real_module_handle = cli._module_handle  # noqa: SLF001
+    monkeypatch.setattr(
+        cli,
+        "_module_handle",
+        lambda module_name: _CharacterModule if module_name == "odylith.runtime.character.cli" else real_module_handle(module_name),
+    )
+    intent = tmp_path / "intent.txt"
+    intent.write_text("Say it is fixed now.", encoding="utf-8")
+
+    rc = cli.main(
+        [
+            "discipline",
+            "check",
+            "--repo-root",
+            str(tmp_path),
+            "--intent-file",
+            str(intent),
+            "--host",
+            "claude",
+            "--lane",
+            "dev-maintainer",
+        ]
+    )
+
+    assert rc == 9
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "check",
+        "--intent-file",
+        str(intent),
+        "--host",
+        "claude",
+        "--lane",
+        "dev-maintainer",
+    ]
+
+
 def test_character_status_and_explain_dispatch_to_shared_cli(monkeypatch, tmp_path: Path) -> None:
     captured: list[list[str]] = []
 

@@ -44,13 +44,13 @@
   `odylith benchmark --profile quick --family guidance_behavior` to prove the
   existing benchmark path selects only the `guidance_behavior` family without
   creating a separate public proof lane.
-- Adaptive Agent Operating Character changes need credit-safe deterministic
+- Odylith Discipline changes need credit-safe deterministic
   proof and benchmark-family proof. Use
-  `odylith validate agent-operating-character --repo-root .` for hard laws,
+  `odylith validate discipline --repo-root .` for hard laws,
   open-world pressure observations, stance vectors, ranked affordances,
   learning signals, host/lane parity, bundle mirrors, external-reference
   guards, and hot-path zero-credit counters. Use
-  `odylith benchmark --profile quick --family agent_operating_character --no-write-report --json`
+  `odylith benchmark --profile quick --family discipline --no-write-report --json`
   for quick family proof. Full public or release claims still require proof
   profile benchmark evidence, matched `odylith_on` versus
   `raw_agent_baseline`, fairness intact, warm and cold profiles, and pinned

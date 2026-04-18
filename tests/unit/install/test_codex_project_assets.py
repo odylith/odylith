@@ -13,6 +13,7 @@ PROJECT_ROOT_BUNDLE = REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "pro
 CODEX_COMMAND_SKILLS = {
     "odylith-start/SKILL.md",
     "odylith-context/SKILL.md",
+    "odylith-show-me/SKILL.md",
     "odylith-query/SKILL.md",
     "odylith-session-brief/SKILL.md",
     "odylith-sync/SKILL.md",
@@ -23,7 +24,7 @@ CODEX_COMMAND_SKILLS = {
     "odylith-casebook-bug-capture/SKILL.md",
     "odylith-casebook-bug-preflight/SKILL.md",
     "odylith-guidance-behavior/SKILL.md",
-    "odylith-agent-operating-character/SKILL.md",
+    "odylith-discipline/SKILL.md",
 }
 
 
@@ -34,6 +35,7 @@ def _managed_files(base: Path) -> set[str]:
         if path.is_file()
         and path.name != ".DS_Store"
         and "__pycache__" not in path.parts
+        and "worktrees" not in path.parts
         and not path.name.endswith(".pyc")
     }
 

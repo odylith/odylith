@@ -6,7 +6,7 @@ from typing import Any
 HOST_LANE_SUPPORT_CONTRACT = "odylith_agent_operating_character_host_lane_support.v1"
 
 SUPPORTED_HOST_FAMILIES: tuple[str, ...] = ("codex", "claude")
-SUPPORTED_LANES: tuple[str, ...] = ("dev", "dogfood", "consumer")
+SUPPORTED_LANES: tuple[str, ...] = ("dev", "dev-maintainer", "dogfood", "consumer")
 
 _HOST_ALIASES: dict[str, str] = {
     "codex": "codex",
@@ -35,11 +35,15 @@ _HOST_ALIASES: dict[str, str] = {
 
 _LANE_ALIASES: dict[str, str] = {
     "dev": "dev",
-    "source_local": "dev",
-    "source-local": "dev",
-    "maintainer": "dev",
-    "maintainer_dev": "dev",
-    "maintainer-dev": "dev",
+    "dev_maintainer": "dev-maintainer",
+    "dev-maintainer": "dev-maintainer",
+    "source_local": "dev-maintainer",
+    "source-local": "dev-maintainer",
+    "source_local_maintainer": "dev-maintainer",
+    "source-local-maintainer": "dev-maintainer",
+    "maintainer": "dev-maintainer",
+    "maintainer_dev": "dev-maintainer",
+    "maintainer-dev": "dev-maintainer",
     "dogfood": "dogfood",
     "pinned": "dogfood",
     "pinned_dogfood": "dogfood",
@@ -86,7 +90,7 @@ def host_capabilities(host_family: str) -> dict[str, Any]:
             "host_family": "codex",
             "known_host": True,
             "delegation_surface": "routed_spawn",
-            "skill_surfaces": [".agents/skills/odylith-agent-operating-character/SKILL.md"],
+            "skill_surfaces": [".agents/skills/odylith-discipline/SKILL.md"],
             "visible_intervention_status_command": "odylith codex intervention-status --repo-root .",
         }
     if host == "claude":
@@ -96,8 +100,8 @@ def host_capabilities(host_family: str) -> dict[str, Any]:
             "known_host": True,
             "delegation_surface": "task_tool_subagents",
             "skill_surfaces": [
-                ".claude/skills/odylith-agent-operating-character/SKILL.md",
-                ".claude/commands/odylith-agent-operating-character.md",
+                ".claude/skills/odylith-discipline/SKILL.md",
+                ".claude/commands/odylith-discipline.md",
             ],
             "visible_intervention_status_command": "odylith claude intervention-status --repo-root .",
         }
@@ -118,7 +122,15 @@ def lane_capabilities(lane: str) -> dict[str, Any]:
         return {
             "lane": "dev",
             "known_lane": True,
-            "runtime_posture": "source_local",
+            "runtime_posture": "local_dev",
+            "product_mutation_default": "allowed_when_grounded",
+            "release_claim_allowed": False,
+        }
+    if normalized == "dev-maintainer":
+        return {
+            "lane": "dev-maintainer",
+            "known_lane": True,
+            "runtime_posture": "source_local_maintainer",
             "product_mutation_default": "allowed_when_grounded",
             "release_claim_allowed": False,
         }

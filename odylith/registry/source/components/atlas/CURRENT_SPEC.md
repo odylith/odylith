@@ -1,7 +1,7 @@
 # Atlas
 
-## Adaptive Agent Operating Character Contract
-- Atlas owns the topology view of the character-learning loop. D-039 shows
+## Odylith Discipline Contract
+- Atlas owns the topology view of the Odylith Discipline learning loop. D-039 shows
   intent, local pressure observations, adaptive stance, hard laws, ranked
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,

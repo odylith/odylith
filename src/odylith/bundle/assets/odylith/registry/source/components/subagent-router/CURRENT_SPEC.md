@@ -1,10 +1,10 @@
 # Subagent Router
 
-## Adaptive Agent Operating Character Contract
+## Odylith Discipline Contract
 - Subagent Router owns the first Coordination affordance. Broad delegation is
   inadmissible until Context/Scout-style narrowing is satisfied and a bounded
   route-ready contract exists.
-- Character checks may recommend routing affordances but must not spawn
+- Discipline checks may recommend routing affordances but must not spawn
   subagents or call host models to classify pressure.
 Last updated: 2026-04-09
 

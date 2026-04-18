@@ -712,6 +712,22 @@ def test_quick_profile_default_is_bounded_current_head_sentinel_smoke() -> None:
     assert set(selected_ids) == set(runner._QUICK_PROFILE_SENTINEL_CASE_IDS)  # noqa: SLF001
 
 
+def test_discipline_benchmark_family_alias_selects_internal_family() -> None:
+    scenarios = [
+        {"scenario_id": "discipline-a", "family": "agent_operating_character", "priority": "critical"},
+        {"scenario_id": "other-a", "family": "guidance_behavior", "priority": "critical"},
+    ]
+
+    selection = runner._resolve_benchmark_scenario_selection(  # noqa: SLF001
+        all_scenarios=scenarios,
+        benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
+        families=("discipline",),
+    )
+
+    assert selection["selected_families"] == {"agent_operating_character"}
+    assert [row["scenario_id"] for row in selection["scenarios"]] == ["discipline-a"]
+
+
 def test_run_benchmarks_supports_family_filtered_shards(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001

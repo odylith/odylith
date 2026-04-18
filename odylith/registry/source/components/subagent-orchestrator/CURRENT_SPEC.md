@@ -1,6 +1,6 @@
 # Subagent Orchestrator
 
-## Adaptive Agent Operating Character Contract
+## Odylith Discipline Contract
 - Subagent Orchestrator owns routed Coordination execution. Foreman-style UX
   labels are benchmark vocabulary; runtime admissibility requires owner, goal,
   expected output, stop condition, owned scope, validation expectation, and

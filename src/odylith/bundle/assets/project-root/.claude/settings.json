@@ -95,6 +95,11 @@
       {
         "hooks": [
           {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/show-me-prompt-guard.py \"$CLAUDE_PROJECT_DIR\"",
+            "timeout": 5,
+            "type": "command"
+          },
+          {
             "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude prompt-context --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30,
             "type": "command"

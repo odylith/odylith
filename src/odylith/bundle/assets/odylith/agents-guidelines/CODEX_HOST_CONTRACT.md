@@ -13,16 +13,16 @@
 - Host-specific guidance belongs only where a native host capability is real,
   locally supported, and materially reduces hops compared with the shared CLI
   path.
-- Adaptive Agent Operating Character is host-semantic, not Codex-specific.
-  Codex may surface `.agents/skills/odylith-agent-operating-character`, but
+- Odylith Discipline is host-semantic, not Codex-specific.
+  Codex may surface `.agents/skills/odylith-discipline`, but
   pressure observation, stance, hard-law, affordance, learning, validation, and
   benchmark decisions must come from the shared local runtime. Codex hooks,
   compatibility probes, and routed subagents must not spend host model credits
-  to classify character pressure.
-- Character support is proven as a host/lane matrix, not a Codex-only happy
+  to classify Odylith Discipline pressure.
+- Odylith Discipline support is proven as a host/lane matrix, not a Codex-only happy
   path: Codex and Claude must share the same semantic contract across dev,
   pinned dogfood, and consumer lanes. Codex model aliases resolve to the Codex
-  adapter family, but the Character decision remains local and model-agnostic.
+  adapter family, but the Odylith Discipline decision remains local and model-agnostic.
 
 ## Codex Project-Asset Surface
 - Codex CLI can load repo-scoped project assets from `.codex/` plus repo-scoped

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from odylith.runtime.common import host_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.evaluation import odylith_benchmark_execution_engine
@@ -821,7 +822,10 @@ def test_execution_engine_probe_packet_exposes_current_repo_contract() -> None:
     assert summary["execution_engine_closure"] == "incomplete"
     assert summary["execution_engine_validation_archetype"] == "verify"
     assert summary["execution_engine_resume_token"] == "resume:governance_slice"
-    assert summary["execution_engine_host_family"] == "codex"
+    expected_host_family = host_runtime.host_capabilities(
+        host_runtime.detect_host_runtime() or "unknown"
+    )["host_family"]
+    assert summary["execution_engine_host_family"] == expected_host_family
 
 
 def test_execution_engine_historical_component_id_fails_closed() -> None:

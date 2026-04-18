@@ -5,7 +5,7 @@
     {
       "wave_id": "W1",
       "label": "Adaptive Character Governance Alignment",
-      "status": "active",
+      "status": "complete",
       "summary": "Bind B-110 and child slices to v0.1.11, update source governance, Registry, Atlas, AGENTS, guidelines, skills, Compass, and release targeting before runtime implementation.",
       "depends_on": [],
       "primary_workstreams": [
@@ -24,7 +24,7 @@
     {
       "wave_id": "W2",
       "label": "Adaptive Character Runtime And Budget Kernel",
-      "status": "planned",
+      "status": "complete",
       "summary": "Add the local character runtime package, deterministic hard laws, open-world pressure observations, stance vector inference, ranked affordances, and runtime budget enforcement.",
       "depends_on": [
         "W1"
@@ -45,7 +45,7 @@
     {
       "wave_id": "W3",
       "label": "Adaptive Character Learning Spine",
-      "status": "planned",
+      "status": "complete",
       "summary": "Add compact learning events, retention tiers, recurrence fingerprints, noise suppression, and benchmark/Tribunal promotion hooks.",
       "depends_on": [
         "W2"
@@ -66,7 +66,7 @@
     {
       "wave_id": "W4",
       "label": "Adaptive Character Subsystem Integration",
-      "status": "planned",
+      "status": "complete",
       "summary": "Connect Context, Execution, Proof State, Memory, Router, Orchestrator, Intervention, Chatter, Tribunal, and surfaces through compact character contracts.",
       "depends_on": [
         "W3"
@@ -87,7 +87,7 @@
     {
       "wave_id": "W5",
       "label": "Adaptive Character Tooling And Host Parity",
-      "status": "planned",
+      "status": "complete",
       "summary": "Add character CLI commands, shared skill, Codex and Claude shims, and lane parity without host-model calls on hot character paths.",
       "depends_on": [
         "W4"
@@ -108,7 +108,7 @@
     {
       "wave_id": "W6",
       "label": "Adaptive Character Benchmark Sovereignty",
-      "status": "planned",
+      "status": "complete",
       "summary": "Add the agent_operating_character benchmark family, adaptive replay and novelty suites, latency and credit metrics, and publication guards while keeping guidance_behavior green.",
       "depends_on": [
         "W5"
@@ -129,7 +129,7 @@
     {
       "wave_id": "W7",
       "label": "Adaptive Character Surfaces And Release Proof",
-      "status": "planned",
+      "status": "active",
       "summary": "Refresh governed surfaces, run browser checks, restore pinned dogfood before shipped-runtime claims, and block public claims until full proof passes.",
       "depends_on": [
         "W6"

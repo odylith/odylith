@@ -39,8 +39,8 @@
 - `./.odylith/bin/odylith program ...` and `./.odylith/bin/odylith wave ...` for umbrella execution-wave members and gates.
 - `./.odylith/bin/odylith dashboard refresh --repo-root . [--surfaces ...]` for explicit multi-surface shell rerenders when the task is about a combined view rather than one owned surface.
 - `./.odylith/bin/odylith validate ...` for governance and contract validators.
-- `./.odylith/bin/odylith character {status,check,explain}` for local,
-  deterministic Adaptive Agent Operating Character inspection. These commands
+- `./.odylith/bin/odylith discipline {status,check,explain}` for local,
+  deterministic Odylith Discipline inspection. These commands
   must stay credit-free and must not call host models, providers, subagents,
   broad scans, full validation, benchmark execution, or projection expansion.
 - `./.odylith/bin/odylith context`, `./.odylith/bin/odylith query`, `./.odylith/bin/odylith session-brief`, `./.odylith/bin/odylith context-engine ...` for grounding and retrieval.

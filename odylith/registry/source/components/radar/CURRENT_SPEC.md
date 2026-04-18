@@ -1,9 +1,9 @@
 # Radar
 
-## Adaptive Agent Operating Character Contract
+## Odylith Discipline Contract
 - Radar owns public workstream accountability for B-110 and child workstreams
   B-111 through B-117. The surface should show the umbrella, execution waves,
-  release target `release-0-1-11`, and proof gates without turning character
+  release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
 Last updated: 2026-04-17
 

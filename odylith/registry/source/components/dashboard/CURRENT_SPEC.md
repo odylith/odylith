@@ -1,7 +1,7 @@
 # Dashboard
 
-## Adaptive Agent Operating Character Contract
-- Dashboard owns high-signal operator status only. Character posture,
+## Odylith Discipline Contract
+- Dashboard owns high-signal operator status only. Odylith Discipline posture,
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.

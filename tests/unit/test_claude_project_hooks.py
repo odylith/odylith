@@ -94,6 +94,43 @@ def _run_hook(script_name: str, repo_root: Path, *, payload: dict[str, object] |
     )
 
 
+def test_show_me_prompt_guard_routes_first_demo_without_launcher(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    completed = _run_hook(
+        "show-me-prompt-guard.py",
+        repo_root,
+        payload={"prompt": "Odylith, show me what you can do."},
+    )
+
+    assert completed.returncode == 0
+    assert completed.stderr == ""
+    payload = json.loads(completed.stdout)
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "odylith-show-me" in additional_context
+    assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." in additional_context
+    assert "stdout only" in additional_context
+    assert "`intervention-status`, `visible-intervention`" in additional_context
+    assert "launcher-state explanations" in additional_context
+
+
+def test_show_me_prompt_guard_stays_silent_for_unrelated_prompts(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    completed = _run_hook(
+        "show-me-prompt-guard.py",
+        repo_root,
+        payload={"prompt": "Please fix the dashboard tests."},
+    )
+
+    assert completed.returncode == 0
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
 def test_session_start_hook_refreshes_claude_auto_memory(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()

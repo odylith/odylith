@@ -1,7 +1,7 @@
 # Casebook
 
-## Adaptive Agent Operating Character Contract
-- Casebook owns severe or repeated failure memory for character pressure.
+## Odylith Discipline Contract
+- Casebook owns severe or repeated failure memory for Odylith Discipline pressure.
   Recurring false allows, false blocks, proofless claims, visible-UX misses,
   or governance-bypass patterns should become Casebook bugs only when evidence
   is concrete enough to prevent rediscovery.

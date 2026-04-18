@@ -1,4 +1,4 @@
-"""Low-latency runtime helpers for Adaptive Agent Operating Character evidence."""
+"""Low-latency runtime helpers for Odylith Discipline evidence."""
 
 from __future__ import annotations
 
@@ -12,12 +12,13 @@ from odylith.runtime.governance import validate_agent_operating_character
 
 RUNTIME_SUMMARY_CONTRACT = "odylith_agent_operating_character_runtime_summary.v1"
 CHARACTER_SUMMARY_KEY = "character_summary"
-VALIDATION_COMMAND = "odylith validate agent-operating-character --repo-root ."
-BENCHMARK_COMMAND = "odylith benchmark --profile quick --family agent_operating_character --no-write-report --json"
+VALIDATION_COMMAND = "odylith validate discipline --repo-root ."
+BENCHMARK_COMMAND = "odylith benchmark --profile quick --family discipline --no-write-report --json"
 PATH_MARKERS: tuple[str, ...] = (
     "agent-operating-character-evaluation-corpus.v1.json",
     "validate_agent_operating_character.py",
     "agent_operating_character",
+    "odylith-discipline",
     "odylith-agent-operating-character",
     "runtime/character",
 )

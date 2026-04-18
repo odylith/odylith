@@ -57,14 +57,14 @@
 {"action": "add", "note": "Bind host visibility and ruler canonicalization wave to v0.1.11.", "recorded_at": "2026-04-17T06:14:40Z", "release_id": "release-0-1-11", "workstream_id": "B-107"}
 {"action": "add", "note": "Bind intervention adjudication corpus and advisory benchmark wave to v0.1.11.", "recorded_at": "2026-04-17T06:14:44Z", "release_id": "release-0-1-11", "workstream_id": "B-108"}
 {"action": "add", "note": "Bind v0.1.11 visible intervention release-proof wave to the active release.", "recorded_at": "2026-04-17T06:14:49Z", "release_id": "release-0-1-11", "workstream_id": "B-109"}
-{"action": "add", "note": "v0.1.11 final alignment: adaptive Agent Operating Character, credit-safe hot path, learning spine, and benchmark sovereignty.", "recorded_at": "2026-04-17T22:36:13Z", "release_id": "release-0-1-11", "workstream_id": "B-110"}
-{"action": "add", "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.", "recorded_at": "2026-04-17T22:37:41Z", "release_id": "release-0-1-11", "workstream_id": "B-111"}
-{"action": "add", "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.", "recorded_at": "2026-04-17T22:37:42Z", "release_id": "release-0-1-11", "workstream_id": "B-112"}
-{"action": "add", "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.", "recorded_at": "2026-04-17T22:37:43Z", "release_id": "release-0-1-11", "workstream_id": "B-113"}
-{"action": "add", "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.", "recorded_at": "2026-04-17T22:37:43Z", "release_id": "release-0-1-11", "workstream_id": "B-114"}
-{"action": "add", "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.", "recorded_at": "2026-04-17T22:37:44Z", "release_id": "release-0-1-11", "workstream_id": "B-115"}
-{"action": "add", "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.", "recorded_at": "2026-04-17T22:37:44Z", "release_id": "release-0-1-11", "workstream_id": "B-116"}
-{"action": "add", "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.", "recorded_at": "2026-04-17T22:37:45Z", "release_id": "release-0-1-11", "workstream_id": "B-117"}
+{"action": "add", "note": "v0.1.11 final alignment: Odylith Discipline, credit-safe hot path, learning spine, and benchmark sovereignty.", "recorded_at": "2026-04-17T22:36:13Z", "release_id": "release-0-1-11", "workstream_id": "B-110"}
+{"action": "add", "note": "B-110 child slice for v0.1.11 Odylith Discipline.", "recorded_at": "2026-04-17T22:37:41Z", "release_id": "release-0-1-11", "workstream_id": "B-111"}
+{"action": "add", "note": "B-110 child slice for v0.1.11 Odylith Discipline.", "recorded_at": "2026-04-17T22:37:42Z", "release_id": "release-0-1-11", "workstream_id": "B-112"}
+{"action": "add", "note": "B-110 child slice for v0.1.11 Odylith Discipline.", "recorded_at": "2026-04-17T22:37:43Z", "release_id": "release-0-1-11", "workstream_id": "B-113"}
+{"action": "add", "note": "B-110 child slice for v0.1.11 Odylith Discipline.", "recorded_at": "2026-04-17T22:37:43Z", "release_id": "release-0-1-11", "workstream_id": "B-114"}
+{"action": "add", "note": "B-110 child slice for v0.1.11 Odylith Discipline.", "recorded_at": "2026-04-17T22:37:44Z", "release_id": "release-0-1-11", "workstream_id": "B-115"}
+{"action": "add", "note": "B-110 child slice for v0.1.11 Odylith Discipline.", "recorded_at": "2026-04-17T22:37:44Z", "release_id": "release-0-1-11", "workstream_id": "B-116"}
+{"action": "add", "note": "B-110 child slice for v0.1.11 Odylith Discipline.", "recorded_at": "2026-04-17T22:37:45Z", "release_id": "release-0-1-11", "workstream_id": "B-117"}
 {"action": "add", "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.", "recorded_at": "2026-04-18T00:10:48Z", "release_id": "release-0-1-12", "workstream_id": "B-118"}
 {"action": "add", "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.", "recorded_at": "2026-04-18T00:10:48Z", "release_id": "release-0-1-12", "workstream_id": "B-119"}
 {"action": "add", "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.", "recorded_at": "2026-04-18T00:10:49Z", "release_id": "release-0-1-12", "workstream_id": "B-120"}

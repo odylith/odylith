@@ -21,6 +21,8 @@ def humanize(value: str) -> str:
 
 
 def progress(msg: str) -> None:
+    if not sys.stderr.isatty():
+        return
     print(f"  {msg}", file=sys.stderr, flush=True)
 
 

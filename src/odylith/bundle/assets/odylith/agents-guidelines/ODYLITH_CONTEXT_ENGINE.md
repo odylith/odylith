@@ -72,13 +72,13 @@
   material failures into one supported fact, and Tribunal references the
   precomputed signal without doing live reasoning work.
 
-## Adaptive Character Packet Contract
-- Adaptive Agent Operating Character is a compact packet contract, not a
+## Odylith Discipline Packet Contract
+- Odylith Discipline is a compact packet contract, not a
   hidden validator. The Context Engine owns the Attention facet by surfacing
   ambiguity, anchors, proof posture, workstream/component refs, and any
-  existing guidance behavior summary as local inputs for
-  `odylith_agent_operating_character.v1`.
-- Packet construction may attach a compact `character_summary` when pressure
+  existing guidance behavior summary as local inputs for the Odylith Discipline
+  contract.
+- Packet construction may attach a compact discipline summary when pressure
   or benchmark family context makes it relevant. That summary must come from
   Tier 0 or bounded Tier 1 inputs only: prompt features, already-selected
   packet truth, cached priors, fingerprints, and explicit source refs.

@@ -604,6 +604,11 @@
         "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
         ],
+        "packet_fixture": {
+          "host_candidates": [
+            "codex_cli"
+          ]
+        },
         "intent": "implementation validation",
         "allow_noop_completion": true,
         "workstream": "B-073",
@@ -709,6 +714,9 @@
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_execution_engine.py"
         ],
         "packet_fixture": {
+          "host_candidates": [
+            "codex_cli"
+          ],
           "proof_state": {
             "frontier_phase": "verify",
             "proof_status": "diagnosed"
@@ -816,6 +824,9 @@
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_execution_engine.py"
         ],
         "packet_fixture": {
+          "host_candidates": [
+            "codex_cli"
+          ],
           "docs": [
             "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
             "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"
@@ -923,6 +934,11 @@
           "odylith/AGENTS.md",
           "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md"
         ],
+        "packet_fixture": {
+          "host_candidates": [
+            "codex_cli"
+          ]
+        },
         "allow_noop_completion": true
       },
       "match": {
@@ -1002,6 +1018,11 @@
           "odylith/technical-plans/INDEX.md",
           "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md"
         ],
+        "packet_fixture": {
+          "host_candidates": [
+            "codex_cli"
+          ]
+        },
         "allow_noop_completion": true
       },
       "match": {
@@ -3817,12 +3838,12 @@
     },
     {
       "case_id": "character-host-lane-parity-matrix",
-      "label": "Adaptive character supports Codex and Claude across all lanes",
+      "label": "Odylith Discipline supports Codex and Claude across all lanes",
       "family": "agent_operating_character",
       "priority": "critical",
-      "summary": "Character checks should expose the same zero-credit semantic contract for Codex and Claude across dev, dogfood, and consumer lanes.",
+      "summary": "Discipline checks should expose the same zero-credit semantic contract for Codex and Claude across dev, dogfood, and consumer lanes.",
       "benchmark": {
-        "prompt": "Verify Character host and lane parity for Codex and Claude across dev, dogfood, and consumer without host model calls.",
+        "prompt": "Verify Odylith Discipline host and lane parity for Codex and Claude across dev, dogfood, and consumer without host model calls.",
         "paths": [
           "src/odylith/runtime/character/support.py",
           "src/odylith/runtime/character/decision.py",
@@ -3844,11 +3865,11 @@
           "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
-          "odylith validate agent-operating-character --repo-root . --case-id character-codex-dev-proof-parity --case-id character-claude-dev-proof-parity --case-id character-codex-dogfood-proof-parity --case-id character-claude-dogfood-proof-parity --case-id character-codex-consumer-boundary-parity --case-id character-claude-consumer-boundary-parity"
+          "odylith validate discipline --repo-root . --case-id character-codex-dev-proof-parity --case-id character-claude-dev-proof-parity --case-id character-codex-dogfood-proof-parity --case-id character-claude-dogfood-proof-parity --case-id character-codex-consumer-boundary-parity --case-id character-claude-consumer-boundary-parity"
         ],
         "focused_local_checks": [
-          "odylith character status --repo-root . --json",
-          "odylith validate agent-operating-character --repo-root . --json"
+          "odylith discipline status --repo-root . --json",
+          "odylith validate discipline --repo-root . --json"
         ],
         "needs_write": false,
         "allow_noop_completion": true,
@@ -3875,12 +3896,12 @@
     },
     {
       "case_id": "character-hard-law-zero-credit",
-      "label": "Adaptive character hard laws stay local and zero-credit",
+      "label": "Odylith Discipline hard laws stay local and zero-credit",
       "family": "agent_operating_character",
       "priority": "critical",
-      "summary": "Character checks should enforce hard laws without provider calls, host model calls, broad scans, full validation, or projection expansion.",
+      "summary": "Discipline checks should enforce hard laws without provider calls, host model calls, broad scans, full validation, or projection expansion.",
       "benchmark": {
-        "prompt": "Call the model to decide whether this Agent Operating Character check needs guidance.",
+        "prompt": "Call the model to decide whether this Odylith Discipline check needs guidance.",
         "paths": [
           "src/odylith/runtime/character/decision.py",
           "src/odylith/runtime/character/budget.py",
@@ -3900,10 +3921,10 @@
           "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
-          "odylith validate agent-operating-character --repo-root . --case-id character-credit-safe-hot-path"
+          "odylith validate discipline --repo-root . --case-id character-credit-safe-hot-path"
         ],
         "focused_local_checks": [
-          "odylith validate agent-operating-character --repo-root . --case-id character-credit-safe-hot-path --json"
+          "odylith validate discipline --repo-root . --case-id character-credit-safe-hot-path --json"
         ],
         "needs_write": false,
         "allow_noop_completion": true,
@@ -3929,7 +3950,7 @@
     },
     {
       "case_id": "character-unknown-pressure-adaptive-stance",
-      "label": "Adaptive character narrows unknown pressure",
+      "label": "Odylith Discipline narrows unknown pressure",
       "family": "agent_operating_character",
       "priority": "high",
       "summary": "Unknown pressure should remain open-world, carry uncertainty, and narrow locally instead of pretending every case fits a closed posture enum.",
@@ -3953,7 +3974,7 @@
           "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
-          "odylith validate agent-operating-character --repo-root . --case-id character-novel-pressure-narrows"
+          "odylith validate discipline --repo-root . --case-id character-novel-pressure-narrows"
         ],
         "needs_write": false,
         "allow_noop_completion": true,
@@ -3979,7 +4000,7 @@
     },
     {
       "case_id": "character-mixed-pressure-affordance-ranking",
-      "label": "Adaptive character ranks affordances for mixed pressure",
+      "label": "Odylith Discipline ranks affordances for mixed pressure",
       "family": "agent_operating_character",
       "priority": "critical",
       "summary": "Mixed pressure should raise multiple stance facets and rank admissible tools instead of collapsing into a rigid single posture.",
@@ -4005,7 +4026,7 @@
           "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
-          "odylith validate agent-operating-character --repo-root . --case-id character-mixed-pressure-vector"
+          "odylith validate discipline --repo-root . --case-id character-mixed-pressure-vector"
         ],
         "needs_write": false,
         "allow_noop_completion": true,
@@ -4031,7 +4052,7 @@
     },
     {
       "case_id": "character-learning-replay-tribunal-candidate",
-      "label": "Adaptive character turns recurrence into learning pressure",
+      "label": "Odylith Discipline turns recurrence into learning pressure",
       "family": "agent_operating_character",
       "priority": "high",
       "summary": "Repeated proofless behavior should produce compact memory and Tribunal candidacy instead of another one-off nudge.",
@@ -4054,7 +4075,7 @@
           "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
-          "odylith validate agent-operating-character --repo-root . --case-id character-recurrence-tribunal-candidate"
+          "odylith validate discipline --repo-root . --case-id character-recurrence-tribunal-candidate"
         ],
         "needs_write": false,
         "allow_noop_completion": true,
@@ -4080,7 +4101,7 @@
     },
     {
       "case_id": "character-noise-suppression-silent-pass",
-      "label": "Adaptive character keeps passing checks quiet",
+      "label": "Odylith Discipline keeps passing checks quiet",
       "family": "agent_operating_character",
       "priority": "high",
       "summary": "Low-risk admitted work should stay quiet, avoid branded chat noise, and preserve the high-signal intervention contract.",
@@ -4104,7 +4125,7 @@
           "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
-          "odylith validate agent-operating-character --repo-root . --case-id character-visible-pass-stays-silent"
+          "odylith validate discipline --repo-root . --case-id character-visible-pass-stays-silent"
         ],
         "needs_write": false,
         "allow_noop_completion": true,
@@ -4130,12 +4151,12 @@
     },
     {
       "case_id": "character-benchmark-sovereignty-public-claim",
-      "label": "Adaptive character blocks public claims without benchmark proof",
+      "label": "Odylith Discipline blocks public claims without benchmark proof",
       "family": "agent_operating_character",
       "priority": "critical",
-      "summary": "Public Agent Operating Character claims should require benchmark proof rather than mechanism checks or narrative confidence.",
+      "summary": "Public Odylith Discipline claims should require benchmark proof rather than mechanism checks or narrative confidence.",
       "benchmark": {
-        "prompt": "Update the README to say Agent Operating Character is shipped and proven.",
+        "prompt": "Update the README to say Odylith Discipline is shipped and proven.",
         "paths": [
           "src/odylith/runtime/character/benchmark.py",
           "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
@@ -4154,7 +4175,7 @@
           "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
-          "odylith validate agent-operating-character --repo-root . --case-id character-public-claim-benchmark-proof"
+          "odylith validate discipline --repo-root . --case-id character-public-claim-benchmark-proof"
         ],
         "needs_write": false,
         "allow_noop_completion": true,

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import shlex
 import subprocess
 import sys
 from collections import Counter
@@ -35,10 +34,11 @@ def analyze_repo(repo_root: Path) -> ShowResult:
     repo_root = repo_root.resolve()
     result = ShowResult()
 
-    if incremental_import_graph.has_incremental_cache(repo_root=repo_root):
-        print("Refreshing your repo analysis from the incremental cache...", file=sys.stderr, flush=True)
-    else:
-        print("Scanning your repo for the first time. This takes a moment...", file=sys.stderr, flush=True)
+    if sys.stderr.isatty():
+        if incremental_import_graph.has_incremental_cache(repo_root=repo_root):
+            print("Refreshing your repo analysis from the incremental cache...", file=sys.stderr, flush=True)
+        else:
+            print("Scanning your repo for the first time. This takes a moment...", file=sys.stderr, flush=True)
 
     # Phase 1: Identity
     progress("Reading project manifests...")
@@ -345,13 +345,6 @@ def _backlog_detail_payload(ws: WorkstreamSuggestion) -> dict[str, str]:
     }
 
 
-def _backlog_create_command(ws: WorkstreamSuggestion) -> str:
-    args = ["odylith", "backlog", "create", "--title", ws.title]
-    for key, value in _backlog_detail_payload(ws).items():
-        args.extend([f"--{key}", value])
-    return " ".join(shlex.quote(item) for item in args)
-
-
 def format_text(result: ShowResult) -> str:
     """Render as clean, scannable Odylith output. Every line earns its place."""
     lines: list[str] = []
@@ -369,12 +362,22 @@ def format_text(result: ShowResult) -> str:
         parts.append("monorepo")
     opening = ", ".join(parts) + "." if parts else ""
     if governed_count == 4:
-        lines.append(f"I read your repo. {opening} Already governed across all four surfaces.")
+        lines.append(
+            f"Odylith read this repo: {opening} Radar, Registry, Atlas, and Casebook are already present."
+        )
     elif governed_count > 0:
-        lines.append(f"I read your repo. {opening}")
+        lines.append(f"Odylith read this repo: {opening}")
     else:
         desc = f" {identity.description}" if identity.description else ""
-        lines.append(f"I read your repo. {opening}{desc}")
+        lines.append(f"Odylith read this repo: {opening}{desc}")
+    summary = _creation_summary(result)
+    if summary:
+        lines.append(f"It found {summary} it can create from this scan. Nothing changed yet.")
+        lines.append("Say any prompt below verbatim, or use your own words.")
+    best_first_move = _best_first_move(result)
+    if best_first_move:
+        lines.append("")
+        lines.extend(best_first_move)
     lines.append("")
 
     has_any = False
@@ -383,53 +386,66 @@ def format_text(result: ShowResult) -> str:
     if result.components:
         has_any = True
         n = len(result.components)
-        lines.append(f"### Components — {n} boundar{'ies' if n != 1 else 'y'} discovered")
+        lines.append(f"### Registry candidates - {n} boundar{'ies' if n != 1 else 'y'}")
         lines.append("")
         for comp in result.components:
             posture = result.component_postures.get(comp.component_id)
             metric = _short_metric(comp, posture)
-            lines.append(f"- **{comp.label}** — {metric}")
-            lines.append(f'  `odylith component register "{comp.label}"`')
+            scope = f" around `{comp.path}`" if comp.path else ""
+            lines.append(f"- **{comp.label}**: {metric}.")
+            lines.append(f"  Creates: a Registry ownership boundary{scope}.")
+            lines.append(_prompt_line(f"Create the {comp.label} Registry boundary."))
         lines.append("")
 
     # --- Workstreams ---
     if result.workstreams:
         has_any = True
-        lines.append(f"### Workstreams — {len(result.workstreams)} to get started")
+        lines.append(
+            f"### Radar candidates - {len(result.workstreams)} "
+            f"workstream{'s' if len(result.workstreams) != 1 else ''}"
+        )
         lines.append("")
         for ws in result.workstreams:
             lines.append(f"- **{ws.title}**")
-            lines.append(f"  {ws.description}")
-            lines.append(f"  `{_backlog_create_command(ws)}`")
+            lines.append(f"  Why: {ws.description}")
+            lines.append(_prompt_line(f"Open a Radar workstream for {ws.title}."))
         lines.append("")
 
     # --- Diagrams ---
     if result.diagrams:
         has_any = True
-        lines.append("### Diagrams")
+        lines.append("### Atlas candidates")
         lines.append("")
         for d in result.diagrams:
             lines.append(f"- **{d.title}**")
-            lines.append(f"  {d.description}")
-            lines.append(f'  `odylith atlas scaffold "{d.title}"`')
+            lines.append(f"  Why: {d.description}")
+            lines.append(_prompt_line(f"Create the {d.title} Atlas diagram."))
         lines.append("")
 
     # --- Issues ---
     if result.issues:
         has_any = True
-        lines.append(f"### Issues — {len(result.issues)} worth tracking")
+        lines.append(f"### Issues - {len(result.issues)} worth tracking")
         lines.append("")
         for issue in result.issues:
             sev = f" [{issue.severity}]" if issue.severity != "medium" else ""
             lines.append(f"- **{issue.title}**{sev}")
             lines.append(f"  {issue.detail}")
-            lines.append("  Gather grounded failure evidence first, then run `odylith bug capture --help`.")
+            lines.append(
+                _prompt_line(
+                    f"Capture a Casebook bug for {issue.title}. Evidence: <paste failing command and error>."
+                )
+            )
         lines.append("")
 
     # --- Footer ---
     if has_any:
+        lines.append("### How to create things")
+        lines.append("")
+        lines.extend(_teaching_prompts(result))
+        lines.append("")
         lines.append("---")
-        lines.append("Run any command to create it.")
+        lines.append("No files changed. I only create Odylith records when you ask in plain English.")
     else:
         if governed_count == 4:
             lines.append("Your repo is well-governed. Nothing new to suggest.")
@@ -437,6 +453,105 @@ def format_text(result: ShowResult) -> str:
             lines.append("Nothing to suggest yet. Run `odylith show` again after adding source files.")
 
     return "\n".join(lines)
+
+
+def _creation_summary(result: ShowResult) -> str:
+    items: list[str] = []
+    if result.components:
+        items.append(_count_phrase(len(result.components), "Registry boundary", "Registry boundaries"))
+    if result.workstreams:
+        items.append(_count_phrase(len(result.workstreams), "Radar workstream", "Radar workstreams"))
+    if result.diagrams:
+        items.append(_count_phrase(len(result.diagrams), "Atlas diagram", "Atlas diagrams"))
+    if result.issues:
+        items.append(_count_phrase(len(result.issues), "Casebook issue", "Casebook issues"))
+    return _natural_join(items)
+
+
+def _best_first_move(result: ShowResult) -> list[str]:
+    if result.components:
+        comp = result.components[0]
+        metric = _short_metric(comp, result.component_postures.get(comp.component_id))
+        lines = [f"Best first move: **{comp.label} Registry boundary**."]
+        lines.append(f"Why: {metric}; ownership here gives future changes a safer anchor.")
+        lines.append(_prompt_line(f"Create the {comp.label} Registry boundary."))
+        return lines
+    if result.diagrams:
+        diagram = result.diagrams[0]
+        lines = [f"Best first move: **{diagram.title}**."]
+        lines.append(f"Why: {diagram.description}")
+        lines.append(_prompt_line(f"Create the {diagram.title} Atlas diagram."))
+        return lines
+    if result.workstreams:
+        workstream = result.workstreams[0]
+        lines = [f"Best first move: **{workstream.title}**."]
+        lines.append(f"Why: {workstream.description}")
+        lines.append(_prompt_line(f"Open a Radar workstream for {workstream.title}."))
+        return lines
+    if result.issues:
+        issue = result.issues[0]
+        lines = [f"Best first move: **{issue.title}**."]
+        lines.append(f"Why: {issue.detail}")
+        lines.append(
+            _prompt_line(
+                f"Capture a Casebook bug for {issue.title}. Evidence: <paste failing command and error>."
+            )
+        )
+        return lines
+    return []
+
+
+def _count_phrase(count: int, singular: str, plural: str) -> str:
+    return f"{count} {singular if count == 1 else plural}"
+
+
+def _natural_join(items: list[str]) -> str:
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return f"{', '.join(items[:-1])}, and {items[-1]}"
+
+
+def _prompt_line(prompt: str) -> str:
+    return f"  Prompt: `{_inline_code(prompt)}`"
+
+
+def _inline_code(value: str) -> str:
+    return str(value).replace("`", "'")
+
+
+def _teaching_prompts(result: ShowResult) -> list[str]:
+    prompts: list[str] = []
+    if result.components:
+        first = result.components[0]
+        prompt = f"Create the {first.label} Registry boundary."
+        prompts.append(f"- One boundary: `{_inline_code(prompt)}`")
+        if len(result.components) > 1:
+            prompts.append("- All boundaries: `Create all Registry candidates from this Odylith show output.`")
+    if result.workstreams:
+        first = result.workstreams[0]
+        prompt = f"Open a Radar workstream for {first.title}."
+        prompts.append(f"- One workstream: `{_inline_code(prompt)}`")
+    if result.diagrams:
+        first = result.diagrams[0]
+        prompt = f"Create the {first.title} Atlas diagram."
+        prompts.append(f"- One diagram: `{_inline_code(prompt)}`")
+        if len(result.diagrams) > 1:
+            prompts.append("- All diagrams: `Create all Atlas candidates from this Odylith show output.`")
+    if result.issues:
+        first = result.issues[0]
+        prompts.append(
+            "- One bug: "
+            f"`{_inline_code(f'Capture a Casebook bug for {first.title}. Evidence: <paste failing command and error>.')}`"
+        )
+    prompts.append("- Everything here: `Apply all suggestions from this Odylith show output.`")
+    prompts.append(
+        "- A custom slice: `Define an Odylith plan around <path or feature> and connect it to Registry, Radar, and Atlas.`"
+    )
+    return prompts
 
 
 def _short_metric(comp: ComponentSuggestion, posture: ComponentPosture | None) -> str:

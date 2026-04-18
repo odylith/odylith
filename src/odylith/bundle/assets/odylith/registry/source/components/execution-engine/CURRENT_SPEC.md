@@ -1,27 +1,27 @@
 # Execution Engine
 
-## Adaptive Agent Operating Character Contract
-- Execution Engine owns the Restraint facet. It consumes character hard-law
+## Odylith Discipline Contract
+- Execution Engine owns the Restraint facet. It consumes Odylith Discipline hard-law
   results and stance vectors as admissibility inputs, including CLI-first
   governed truth, fresh-proof completion, visible proof, queue non-adoption,
   bounded delegation, benchmark public-claim proof, consumer mutation guard,
   and explicit model-credit authorization.
 - Denials must include the nearest admissible action whenever possible so the
   agent can recover locally instead of stalling or spending host model credits.
-- Runtime surface governance may carry compact Character summaries and
+- Runtime surface governance may carry compact Odylith Discipline summaries and
   validator commands as local admissibility evidence. This path must not run
   full validation, widen repo scans, or probe host capability when the local
-  Character or Guidance Behavior summary is already sufficient.
+  Odylith Discipline or Guidance Behavior summary is already sufficient.
 - The `odylith_agent_operating_character_host_lane_support.v1` matrix is an
   Execution Engine contract input: Codex maps to routed spawn, Claude maps to
   Task-tool subagents, dev maps to source-local maintainer work, dogfood maps
   to pinned shipped-runtime proof, and consumer maps to diagnose-and-handoff by
   default for Odylith product mutations.
-- Character hard-law outcomes must come from the shared Character policy
+- Odylith Discipline hard-law outcomes must come from the shared Odylith Discipline policy
   contract, not duplicated Execution-side law lists. Execution consumes the
   resulting block/defer/admit decision, forbidden moves, stance vector, and
   nearest admissible action.
-- Character signal handling is negation-aware and surface-aware. Execution must
+- Odylith Discipline signal handling is negation-aware and surface-aware. Execution must
   admit preventive discipline work such as "do not spawn subagents" or "zero
   host model calls", must admit allowed authored governance work without
   CLI-writer evidence, and must still defer/block the corresponding unsafe
@@ -79,10 +79,10 @@ The answer is not prose advice. The answer is a structured payload made of:
 - recommended validation commands sourced from compact Guidance Behavior
   summaries when the Context Engine packet proves that guidance behavior is in
   scope
-- recommended Character validation commands sourced from compact Agent
-  Operating Character summaries, with zero-credit local proof carried as
+- recommended Odylith Discipline validation commands sourced from compact Agent
+  Odylith Discipline summaries, with zero-credit local proof carried as
   posture evidence rather than as host-model inference
-- adaptive Character affordances such as integration-contract inspection,
+- Odylith Discipline affordances such as integration-contract inspection,
   live-voice surface inspection, learning-feedback-loop inspection, and small
   admissible change plus validation when no hard law is violated
 - public-claim proof distinction: proof execution remains an admissible action
@@ -801,4 +801,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-17: Added Guidance Behavior validator-command carry-through to Context Engine handshakes and runtime-surface governance snapshots so guidance pressure proof travels with recommended validation while full validation stays outside the hot path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-17: Preserved Guidance Behavior platform-contract summary in Execution Engine handshakes and runtime-surface recommendations so benchmark/eval and host-lane mirror proof are available as validation posture without changing live execution policy. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
 - 2026-04-17: Hardened Guidance Behavior narrowing snapshots so they preserve validator-command recommendations without probing host capabilities until a route-ready delegate path can use the host profile, keeping Codex and Claude semantics shared while cutting avoidable hot-path latency. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
-- 2026-04-18: Connected Adaptive Agent Operating Character summaries into runtime-surface governance so hard-law and stance evidence can shape admissibility and recommended recovery commands locally, while host probes, full validation, and model-credit spending stay out of the hot path. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-18: Connected Odylith Discipline summaries into runtime-surface governance so hard-law and stance evidence can shape admissibility and recommended recovery commands locally, while host probes, full validation, and model-credit spending stay out of the hot path. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))

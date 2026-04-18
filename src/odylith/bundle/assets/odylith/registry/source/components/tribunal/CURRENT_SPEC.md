@@ -1,12 +1,12 @@
 # Tribunal
 
-## Adaptive Agent Operating Character Contract
+## Odylith Discipline Contract
 - Tribunal owns the Judgment facet. Repeated, ambiguous, costly, or false
   allow/block pressure becomes a Tribunal candidate with rival explanations and
   discriminating next checks.
 - Tribunal may promote a pattern into doctrine, tool affordance, skill
   guidance, benchmark case, or Casebook bug. It is not the hot path and must
-  not run provider reasoning for ordinary character decisions.
+  not run provider reasoning for ordinary Odylith Discipline decisions.
 Last updated: 2026-04-17
 
 

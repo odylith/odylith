@@ -55,7 +55,7 @@ def _supported_host_lane_law(support: Mapping[str, Any]) -> dict[str, Any] | Non
         "label": HARD_LAWS["supported_host_lane"],
         "status": "violated",
         "evidence": "unsupported host family or execution lane",
-        "recovery": "Choose Codex or Claude and dev, dogfood, or consumer before acting.",
+        "recovery": "Choose Codex or Claude and dev, dev-maintainer, dogfood, or consumer before acting.",
     }
 
 

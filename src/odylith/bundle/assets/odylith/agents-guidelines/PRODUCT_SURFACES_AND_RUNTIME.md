@@ -7,10 +7,10 @@
 - The supported operator contract is the `odylith` CLI.
 - Use `odylith sync`, `odylith context-engine`, `odylith benchmark`, `odylith compass ...`, and `odylith atlas ...` as the public workflow.
 - Do not default back to removed local wrapper modules when the CLI already owns the surface.
-- Adaptive Agent Operating Character exposes only local deterministic agent
-  tooling in v0.1.11: `odylith character status`, `odylith character check`,
-  `odylith character explain`, and
-  `odylith validate agent-operating-character`. Benchmark proof stays under
+- Odylith Discipline exposes only local deterministic agent
+  tooling in v0.1.11: `odylith discipline status`, `odylith discipline check`,
+  `odylith discipline explain`, and
+  `odylith validate discipline`. Benchmark proof stays under
   `odylith benchmark`; do not create a separate public proof lane.
 
 ## Project-Root Host Assets
@@ -83,7 +83,7 @@
   `Odylith Assist` and stay to one short labeled line. Proposal should look
   like a short ruled block with one calm lead line beginning `Odylith Proposal:`,
   a few bullets, and one quiet confirmation line.
-- Adaptive Character feeds this voice layer only when visible value is earned.
+- Odylith Discipline feeds this voice layer only when visible value is earned.
   Passing checks stay silent, nudges need a concrete recovery action,
   Observations need evidence the user benefits now, and visible claims require
   `intervention-status`, transcript confirmation, or direct

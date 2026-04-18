@@ -51,6 +51,22 @@
   "timeline": [
     {
       "artifacts": [
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 278,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/registry/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-17T23:58:27-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
         "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",
         "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
         "src/odylith/runtime/character/benchmark.py",
@@ -158,7 +174,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 adaptive character hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged character benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.",
+      "summary": "B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.",
       "ts_iso": "2026-04-17T20:06:43-07:00",
       "workstreams": [
         "B-110"
@@ -382,7 +398,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 final QA recorded post-sync validators, quick benchmark family proof, and full browser surface regression for Adaptive Agent Operating Character hardening.",
+      "summary": "B-110 final QA recorded post-sync validators, quick benchmark family proof, and full browser surface regression for Odylith Discipline hardening.",
       "ts_iso": "2026-04-17T18:12:15-07:00",
       "workstreams": [
         "B-110"
@@ -439,7 +455,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 hardening connected Adaptive Agent Operating Character proof obligations, live-voice evidence shaping, platform integration validation, and zero-credit benchmark metrics across Execution, Intervention, Memory, and Benchmark.",
+      "summary": "B-110 hardening connected Odylith Discipline proof obligations, live-voice evidence shaping, platform integration validation, and zero-credit benchmark metrics across Execution, Intervention, Memory, and Benchmark.",
       "ts_iso": "2026-04-17T18:05:11-07:00",
       "workstreams": [
         "B-110"
@@ -560,7 +576,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 adaptive Agent Operating Character source-local proof landed: zero-credit validator, guidance-behavior validator, quick benchmark family selection, and character quick benchmark are green; pinned dogfood runtime proof remains blocked by managed runtime drift.",
+      "summary": "B-110 Odylith Discipline source-local proof landed: zero-credit validator, guidance-behavior validator, quick benchmark family selection, and Discipline quick benchmark are green; pinned dogfood runtime proof remains blocked by managed runtime drift.",
       "ts_iso": "2026-04-17T16:17:00-07:00",
       "workstreams": [
         "B-110",
@@ -571,23 +587,6 @@
         "B-115",
         "B-116"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/registry/CURRENT_SPEC.md",
-        "src/odylith/runtime/surfaces/render_registry_dashboard.py"
-      ],
-      "confidence": "high",
-      "event_index": 278,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "registry"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/registry/CURRENT_SPEC.md, src/odylith/runtime/surfaces/render_registry_dashboard.py",
-      "ts_iso": "2026-04-17T16:00:54-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

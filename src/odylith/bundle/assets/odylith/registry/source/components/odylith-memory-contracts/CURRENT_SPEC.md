@@ -1,7 +1,7 @@
 # Odylith Memory Contracts
 
-## Adaptive Agent Operating Character Contract
-- Memory Contracts own the Learning facet. Character learning events use
+## Odylith Discipline Contract
+- Memory Contracts own the Learning facet. Odylith Discipline learning events use
   `odylith_agent_operating_character_learning.v1` and retain compact practice
   signals only: pressure features, stance vector, hard-law result, decision,
   recovery action, proof obligation/status, benchmark/case ids, related
@@ -110,7 +110,7 @@ corpus or run validation while shaping context packets or evidence packs.
 - Sensitive tokens, secrets, DSNs, private-key material, and non-allowlisted
   paths must be excluded from portable packets.
 - Transcript-shaped source refs and ephemeral host paths must be suppressed
-  from Character practice events even when they appear in local decision
+  from Odylith Discipline practice events even when they appear in local decision
   receipts. Durable practice memory keeps governed source refs and compact
   fingerprints, not temp files.
 - Summary-only compaction is allowed to omit detail, but it must not invent
@@ -147,5 +147,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-07: Promoted the packet-safe memory contract layer into a first-class Registry component so allowlisting, redaction, execution-profile encoding, and compact evidence shaping stop hiding inside one helper module. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
 - 2026-04-17: Preserved compact Guidance Behavior summaries in `context_packet.v1` and `evidence_pack.v1` so Context Engine, Execution Engine, and Governance Intervention Engine share one low-latency contract without expanding the corpus or running validation on the hot path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-17: Retained the Guidance Behavior platform-contract summary inside compact memory/evidence packets so benchmark/eval, host mirror, bundle, and install-proof availability survives packet handoff without widening stored context. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
-- 2026-04-18: Hardened Adaptive Agent Operating Character learning events so recurrence can retain `tribunal_doctrine_candidate`, intervention visibility is stored as evidence state rather than generated prose, and durable updates remain gated by benchmark, validator, Tribunal, or governance proof. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
-- 2026-04-18: Hardened Character practice-event compaction against transcript-shaped source refs and malformed credit counters: transcript-like refs are suppressed like secrets, non-integer counters become validation issues, and budget checks fail closed instead of throwing or silently greenlighting bad payloads. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-18: Hardened Odylith Discipline learning events so recurrence can retain `tribunal_doctrine_candidate`, intervention visibility is stored as evidence state rather than generated prose, and durable updates remain gated by benchmark, validator, Tribunal, or governance proof. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-18: Hardened Odylith Discipline practice-event compaction against transcript-shaped source refs and malformed credit counters: transcript-like refs are suppressed like secrets, non-integer counters become validation issues, and budget checks fail closed instead of throwing or silently greenlighting bad payloads. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))

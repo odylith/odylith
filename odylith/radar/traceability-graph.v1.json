@@ -6908,7 +6908,7 @@
     },
     {
       "idea_id": "B-110",
-      "title": "Adaptive Agent Operating Character, Credit-Safe And Benchmark-Proved",
+      "title": "Discipline, Credit-Safe And Benchmark-Proved",
       "status": "implementation",
       "workstream_type": "umbrella",
       "workstream_parent": "",
@@ -7017,7 +7017,7 @@
           "from_release_id": "",
           "to_release_id": "",
           "recorded_at": "2026-04-17T22:36:13Z",
-          "note": "v0.1.11 final alignment: adaptive Agent Operating Character, credit-safe hot path, learning spine, and benchmark sovereignty.",
+          "note": "v0.1.11 final alignment: Odylith Discipline, credit-safe hot path, learning spine, and benchmark sovereignty.",
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
@@ -7035,7 +7035,7 @@
     },
     {
       "idea_id": "B-111",
-      "title": "Adaptive Character Governance Alignment",
+      "title": "Discipline Governance Alignment",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-110",
@@ -7134,7 +7134,7 @@
           "from_release_id": "",
           "to_release_id": "",
           "recorded_at": "2026-04-17T22:37:41Z",
-          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "note": "B-110 child slice for v0.1.11 Odylith Discipline.",
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
@@ -7153,7 +7153,7 @@
           "umbrella_id": "B-110",
           "wave_id": "W1",
           "wave_label": "Adaptive Character Governance Alignment",
-          "wave_status": "active",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
         }
@@ -7161,7 +7161,7 @@
     },
     {
       "idea_id": "B-112",
-      "title": "Adaptive Character Runtime And Budget Kernel",
+      "title": "Discipline Runtime And Budget Kernel",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-110",
@@ -7260,7 +7260,7 @@
           "from_release_id": "",
           "to_release_id": "",
           "recorded_at": "2026-04-17T22:37:42Z",
-          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "note": "B-110 child slice for v0.1.11 Odylith Discipline.",
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
@@ -7279,7 +7279,7 @@
           "umbrella_id": "B-110",
           "wave_id": "W2",
           "wave_label": "Adaptive Character Runtime And Budget Kernel",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
         }
@@ -7287,7 +7287,7 @@
     },
     {
       "idea_id": "B-113",
-      "title": "Adaptive Character Learning Spine",
+      "title": "Discipline Learning Spine",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-110",
@@ -7386,7 +7386,7 @@
           "from_release_id": "",
           "to_release_id": "",
           "recorded_at": "2026-04-17T22:37:43Z",
-          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "note": "B-110 child slice for v0.1.11 Odylith Discipline.",
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
@@ -7405,7 +7405,7 @@
           "umbrella_id": "B-110",
           "wave_id": "W3",
           "wave_label": "Adaptive Character Learning Spine",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
         }
@@ -7413,7 +7413,7 @@
     },
     {
       "idea_id": "B-114",
-      "title": "Adaptive Character Subsystem Integration",
+      "title": "Discipline Subsystem Integration",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-110",
@@ -7512,7 +7512,7 @@
           "from_release_id": "",
           "to_release_id": "",
           "recorded_at": "2026-04-17T22:37:43Z",
-          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "note": "B-110 child slice for v0.1.11 Odylith Discipline.",
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
@@ -7531,7 +7531,7 @@
           "umbrella_id": "B-110",
           "wave_id": "W4",
           "wave_label": "Adaptive Character Subsystem Integration",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
         }
@@ -7539,7 +7539,7 @@
     },
     {
       "idea_id": "B-115",
-      "title": "Adaptive Character Tooling And Host Parity",
+      "title": "Discipline Tooling And Host Parity",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-110",
@@ -7638,7 +7638,7 @@
           "from_release_id": "",
           "to_release_id": "",
           "recorded_at": "2026-04-17T22:37:44Z",
-          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "note": "B-110 child slice for v0.1.11 Odylith Discipline.",
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
@@ -7657,7 +7657,7 @@
           "umbrella_id": "B-110",
           "wave_id": "W5",
           "wave_label": "Adaptive Character Tooling And Host Parity",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
         }
@@ -7665,7 +7665,7 @@
     },
     {
       "idea_id": "B-116",
-      "title": "Adaptive Character Benchmark Sovereignty",
+      "title": "Discipline Benchmark Sovereignty",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-110",
@@ -7764,7 +7764,7 @@
           "from_release_id": "",
           "to_release_id": "",
           "recorded_at": "2026-04-17T22:37:44Z",
-          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "note": "B-110 child slice for v0.1.11 Odylith Discipline.",
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
@@ -7783,7 +7783,7 @@
           "umbrella_id": "B-110",
           "wave_id": "W6",
           "wave_label": "Adaptive Character Benchmark Sovereignty",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
         }
@@ -7791,7 +7791,7 @@
     },
     {
       "idea_id": "B-117",
-      "title": "Adaptive Character Surfaces And Release Proof",
+      "title": "Discipline Surfaces And Release Proof",
       "status": "implementation",
       "workstream_type": "child",
       "workstream_parent": "B-110",
@@ -7890,7 +7890,7 @@
           "from_release_id": "",
           "to_release_id": "",
           "recorded_at": "2026-04-17T22:37:45Z",
-          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "note": "B-110 child slice for v0.1.11 Odylith Discipline.",
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
@@ -7909,7 +7909,7 @@
           "umbrella_id": "B-110",
           "wave_id": "W7",
           "wave_label": "Adaptive Character Surfaces And Release Proof",
-          "wave_status": "planned",
+          "wave_status": "active",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
         }
@@ -9346,7 +9346,7 @@
         {
           "wave_id": "W1",
           "label": "Adaptive Character Governance Alignment",
-          "status": "active",
+          "status": "complete",
           "summary": "Bind B-110 and child slices to v0.1.11, update source governance, Registry, Atlas, AGENTS, guidelines, skills, Compass, and release targeting before runtime implementation.",
           "depends_on": [],
           "primary_workstreams": [
@@ -9365,7 +9365,7 @@
         {
           "wave_id": "W2",
           "label": "Adaptive Character Runtime And Budget Kernel",
-          "status": "planned",
+          "status": "complete",
           "summary": "Add the local character runtime package, deterministic hard laws, open-world pressure observations, stance vector inference, ranked affordances, and runtime budget enforcement.",
           "depends_on": [
             "W1"
@@ -9386,7 +9386,7 @@
         {
           "wave_id": "W3",
           "label": "Adaptive Character Learning Spine",
-          "status": "planned",
+          "status": "complete",
           "summary": "Add compact learning events, retention tiers, recurrence fingerprints, noise suppression, and benchmark/Tribunal promotion hooks.",
           "depends_on": [
             "W2"
@@ -9407,7 +9407,7 @@
         {
           "wave_id": "W4",
           "label": "Adaptive Character Subsystem Integration",
-          "status": "planned",
+          "status": "complete",
           "summary": "Connect Context, Execution, Proof State, Memory, Router, Orchestrator, Intervention, Chatter, Tribunal, and surfaces through compact character contracts.",
           "depends_on": [
             "W3"
@@ -9428,7 +9428,7 @@
         {
           "wave_id": "W5",
           "label": "Adaptive Character Tooling And Host Parity",
-          "status": "planned",
+          "status": "complete",
           "summary": "Add character CLI commands, shared skill, Codex and Claude shims, and lane parity without host-model calls on hot character paths.",
           "depends_on": [
             "W4"
@@ -9449,7 +9449,7 @@
         {
           "wave_id": "W6",
           "label": "Adaptive Character Benchmark Sovereignty",
-          "status": "planned",
+          "status": "complete",
           "summary": "Add the agent_operating_character benchmark family, adaptive replay and novelty suites, latency and credit metrics, and publication guards while keeping guidance_behavior green.",
           "depends_on": [
             "W5"
@@ -9470,7 +9470,7 @@
         {
           "wave_id": "W7",
           "label": "Adaptive Character Surfaces And Release Proof",
-          "status": "planned",
+          "status": "active",
           "summary": "Refresh governed surfaces, run browser checks, restore pinned dogfood before shipped-runtime claims, and block public claims until full proof passes.",
           "depends_on": [
             "W6"
@@ -10258,56 +10258,56 @@
     {
       "id": "B-110",
       "type": "workstream",
-      "label": "Adaptive Agent Operating Character, Credit-Safe And Benchmark-Proved",
+      "label": "Discipline, Credit-Safe And Benchmark-Proved",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-agent-operating-character-with-learning-spine.md"
     },
     {
       "id": "B-111",
       "type": "workstream",
-      "label": "Adaptive Character Governance Alignment",
+      "label": "Discipline Governance Alignment",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-governance-alignment.md"
     },
     {
       "id": "B-112",
       "type": "workstream",
-      "label": "Adaptive Character Runtime And Budget Kernel",
+      "label": "Discipline Runtime And Budget Kernel",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-runtime-and-budget-kernel.md"
     },
     {
       "id": "B-113",
       "type": "workstream",
-      "label": "Adaptive Character Learning Spine",
+      "label": "Discipline Learning Spine",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-learning-spine.md"
     },
     {
       "id": "B-114",
       "type": "workstream",
-      "label": "Adaptive Character Subsystem Integration",
+      "label": "Discipline Subsystem Integration",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-subsystem-integration.md"
     },
     {
       "id": "B-115",
       "type": "workstream",
-      "label": "Adaptive Character Tooling And Host Parity",
+      "label": "Discipline Tooling And Host Parity",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-tooling-and-host-parity.md"
     },
     {
       "id": "B-116",
       "type": "workstream",
-      "label": "Adaptive Character Benchmark Sovereignty",
+      "label": "Discipline Benchmark Sovereignty",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-benchmark-sovereignty.md"
     },
     {
       "id": "B-117",
       "type": "workstream",
-      "label": "Adaptive Character Surfaces And Release Proof",
+      "label": "Discipline Surfaces And Release Proof",
       "status": "implementation",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-surfaces-and-release-proof.md"
     },
@@ -10853,7 +10853,7 @@
     {
       "id": "diagram:D-039",
       "type": "diagram",
-      "label": "Adaptive Agent Operating Character Loop",
+      "label": "Odylith Discipline Loop",
       "diagram_id": "D-039",
       "file": "odylith/atlas/source/odylith-adaptive-agent-operating-character-loop.mmd"
     },
@@ -15430,5 +15430,5 @@
     "warning_count": 4,
     "warning_item_count": 4
   },
-  "generated_utc": "2026-04-18 00:41:59Z"
+  "generated_utc": "2026-04-18 06:58:58Z"
 }

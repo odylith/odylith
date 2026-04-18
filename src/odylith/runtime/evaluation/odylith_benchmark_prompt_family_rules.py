@@ -158,7 +158,9 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
             return 2
         if lowered.endswith("/agents-guidelines/odylith_context_engine.md"):
             return 2
-        if lowered.endswith("/skill.md") and "odylith-agent-operating-character" in lowered:
+        if lowered.endswith("/skill.md") and (
+            "odylith-discipline" in lowered or "odylith-agent-operating-character" in lowered
+        ):
             return 2
         return 4
     if normalized_family == "cross_surface_governance_sync":

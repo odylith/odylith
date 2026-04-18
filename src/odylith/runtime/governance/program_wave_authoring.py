@@ -184,19 +184,32 @@ def _ensure_child_of_umbrella(
 
 def _parse_front_matter(path: Path) -> tuple[list[tuple[str, str]], str]:
     text = path.read_text(encoding="utf-8")
-    if not text.startswith("---\n"):
-        raise ValueError(f"{path}: missing front matter")
-    end = text.find("\n---\n", 4)
-    if end == -1:
-        raise ValueError(f"{path}: malformed front matter")
-    header_text = text[4:end]
-    body = text[end + 5 :]
+    if text.startswith("---\n"):
+        end = text.find("\n---\n", 4)
+        if end == -1:
+            raise ValueError(f"{path}: malformed front matter")
+        header_text = text[4:end]
+        body = text[end + 5 :]
+    else:
+        lines = text.splitlines()
+        body_start = next(
+            (index for index, line in enumerate(lines) if line.startswith("## ")),
+            len(lines),
+        )
+        header_text = "\n".join(lines[:body_start]).strip()
+        body = "\n".join(lines[body_start:])
+        if body:
+            body += "\n"
+        if not header_text:
+            raise ValueError(f"{path}: missing front matter")
     entries: list[tuple[str, str]] = []
     for line in header_text.splitlines():
         if ":" not in line:
             continue
         key, value = line.split(":", 1)
         entries.append((key.strip(), value.strip()))
+    if not entries:
+        raise ValueError(f"{path}: missing front matter")
     return entries, body
 
 

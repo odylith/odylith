@@ -36,7 +36,7 @@ def _bundle() -> dict[str, object]:
     }
 
 
-def test_visible_intervention_renders_live_markdown_without_assist(monkeypatch) -> None:
+def test_visible_intervention_renders_live_markdown_without_assist(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(
         host_visible_intervention.host_surface_runtime,
         "compose_host_conversation_bundle",
@@ -44,8 +44,10 @@ def test_visible_intervention_renders_live_markdown_without_assist(monkeypatch) 
     )
 
     rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
         host_family="codex",
         phase="post_bash_checkpoint",
+        session_id="unit-visible-live",
         changed_paths=["src/example.py"],
     )
 
@@ -54,7 +56,7 @@ def test_visible_intervention_renders_live_markdown_without_assist(monkeypatch) 
     assert "Odylith Assist:" not in rendered
 
 
-def test_visible_intervention_renders_stop_assist(monkeypatch) -> None:
+def test_visible_intervention_renders_stop_assist(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(
         host_visible_intervention.host_surface_runtime,
         "compose_host_conversation_bundle",
@@ -62,8 +64,10 @@ def test_visible_intervention_renders_stop_assist(monkeypatch) -> None:
     )
 
     rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
         host_family="claude",
         phase="stop_summary",
+        session_id="unit-visible-stop",
         summary="Implemented the visible fallback.",
     )
 

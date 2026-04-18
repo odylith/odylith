@@ -107,7 +107,7 @@ PLATFORM_LAYER_TOKENS: tuple[dict[str, Any], ...] = (
             "src/odylith/runtime/intervention_engine/alignment_evidence.py": (
                 "_character_summary_from_observation",
                 "agent_operating_character_contract",
-                "Agent Operating Character validation is not passing.",
+                "Odylith Discipline validation is not passing.",
             ),
             "src/odylith/runtime/character/voice.py": (
                 "evidence_shaped_no_scripted_copy",
@@ -141,8 +141,8 @@ class CharacterCorpusStateError(ValueError):
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="odylith validate agent-operating-character",
-        description="Validate Adaptive Agent Operating Character cases, learning contracts, and credit-safe hot paths.",
+        prog="odylith validate discipline",
+        description="Validate Odylith Discipline cases, learning contracts, and credit-safe hot paths.",
     )
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--case-id", action="append", default=[])
@@ -223,7 +223,7 @@ def _assertion_shape_issues(
             issues.append(
                 character_contract.CharacterIssue(
                     "case_lane",
-                    f"case {label} benchmark_assertions.lane must be dev, dogfood, or consumer",
+                    f"case {label} benchmark_assertions.lane must be one of {', '.join(character_support.SUPPORTED_LANES)}",
                     case_id=case_id,
                 )
             )
@@ -816,7 +816,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.as_json:
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
-        print(f"agent operating character validation: {payload.get('status')}")
+        print(f"Odylith Discipline validation: {payload.get('status')}")
         for issue in payload.get("issues", []):
             print(f"- {issue.get('check_id')}: {issue.get('message')}")
     return rc

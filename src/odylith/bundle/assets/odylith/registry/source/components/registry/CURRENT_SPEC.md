@@ -1,9 +1,9 @@
 # Registry
 
-## Adaptive Agent Operating Character Contract
-- Registry owns component accountability for Agent Operating Character. Each
+## Odylith Discipline Contract
+- Registry owns component accountability for Odylith Discipline. Each
   affected component spec names its faculty, hot-path boundary, proof duty,
-  and surface duty so the character layer remains cross-cutting rather than a
+  and surface duty so the Odylith Discipline layer remains cross-cutting rather than a
   runtime-only feature.
 Last updated: 2026-04-15
 

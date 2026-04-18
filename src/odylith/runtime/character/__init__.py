@@ -1,4 +1,4 @@
-"""Adaptive Agent Operating Character runtime."""
+"""Odylith Discipline runtime."""
 
 from odylith.runtime.character.decision import evaluate_character_move
 

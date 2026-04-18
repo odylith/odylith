@@ -3,8 +3,8 @@
 Use this skill when guidance behavior pressure cases, high-risk agent
 instructions, or cross-host guidance contracts need deterministic validation.
 Guidance Behavior is the first deterministic pressure-family proof lane under
-Adaptive Agent Operating Character; it proves concrete hard-law families while
-the broader character layer handles open-world stance, credit budgets, learning
+Odylith Discipline; it proves concrete hard-law families while
+the broader Odylith Discipline layer handles open-world stance, credit budgets, learning
 signals, and benchmark sovereignty.
 
 ## Default Flow

@@ -19,16 +19,57 @@ from odylith.runtime.character.support import SUPPORTED_HOST_FAMILIES, SUPPORTED
 
 DECISION_CACHE_RELATIVE = Path(".odylith/cache/agent-operating-character/decisions")
 
+_HUMAN_LAW_REASONS = {
+    "supported_host_lane": "This host or lane is outside the shared Codex/Claude discipline contract.",
+    "cli_first_governed_truth": "This governed truth has an owning writer; use that path before hand edits.",
+    "fresh_proof_completion": "Completion language needs fresh proof before it can be claimed.",
+    "visible_intervention_proof": "Visible UX claims need status proof or a rendered fallback.",
+    "queue_non_adoption": "Queued work is context until the operator explicitly authorizes implementation.",
+    "bounded_delegation": "Delegation needs owner, goal, output, stop condition, owned scope, and validation.",
+    "benchmark_public_claim": "Public shipped or proven product claims need benchmark proof first.",
+    "consumer_mutation_guard": "Consumer-lane product mutation needs explicit authorization.",
+    "explicit_model_credit": "Discipline checks must stay local unless the operator explicitly requests model spend.",
+}
+
+_HUMAN_ACTIONS = {
+    "act_with_proof_obligation": "Proceed locally, then keep proof current before claiming completion.",
+    "ask_for_explicit_authorization": "Ask for explicit authorization before adopting the queued work.",
+    "check_platform_integration_contracts": "Check the platform integration contracts before changing behavior.",
+    "choose_supported_host_lane": "Choose Codex or Claude on dev, dev-maintainer, dogfood, or consumer.",
+    "diagnose_and_handoff": "Diagnose the issue and hand off unless product mutation is authorized.",
+    "inspect_learning_feedback_loop": "Inspect the learning feedback loop without storing raw transcript data.",
+    "inspect_voice_surfaces_without_scripted_copy": "Inspect voice surfaces without adding scripted copy.",
+    "make_delegation_route_ready": "Make the delegation bounded, owned, terminable, and validated.",
+    "narrow_context_first": "Narrow the context first, then choose the next admissible move.",
+    "prove_visible_intervention_or_render_fallback": "Prove visibility with status evidence or render the fallback.",
+    "run_benchmark_proof": "Run the required benchmark proof before publishing the claim.",
+    "run_fresh_validation": "Run fresh validation before making the claim.",
+    "stay_local_or_request_explicit_model_budget": "Stay local, or ask for explicit model budget before spending credits.",
+    "use_cli_writer": "Use the owning CLI writer first.",
+}
+
+_HUMAN_PROOF = {
+    "benchmark_proof_required": "benchmark proof before public product claims",
+    "bounded_delegation_contract_required": "a bounded delegation contract",
+    "fresh_validation_required": "fresh validation evidence",
+    "governed_cli_writer_required": "the governed CLI writer path",
+    "local_proof_obligation": "local proof before stronger claims",
+    "matched_benchmark_proof_required": "matched benchmark proof before public product claims",
+    "visible_intervention_proof_required": "visible status proof or rendered fallback",
+}
+
+_MACHINE_DETAIL_HINT = "Detailed verification stays behind --json."
+
 
 def _json(payload: Mapping[str, Any]) -> str:
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(prog="odylith character", description="Inspect adaptive Agent Operating Character state.")
+    parser = argparse.ArgumentParser(prog="odylith discipline", description="Inspect local discipline behavior.")
     parser.add_argument("--repo-root", default=".")
     subparsers = parser.add_subparsers(dest="character_command", required=True)
-    status = subparsers.add_parser("status", help="Show current local character readiness.")
+    status = subparsers.add_parser("status", help="Show current local discipline readiness.")
     status.add_argument("--json", action="store_true", dest="as_json")
     check = subparsers.add_parser("check", help="Evaluate a proposed move locally.")
     check.add_argument("--intent-file", required=True)
@@ -45,14 +86,153 @@ def _print(payload: Mapping[str, Any], *, as_json: bool) -> None:
     if as_json:
         print(_json(payload), end="")
         return
-    print(f"contract: {payload.get('contract', CHARACTER_CONTRACT)}")
-    print(f"status: {payload.get('status', payload.get('decision', 'ready'))}")
-    if payload.get("nearest_admissible_action"):
-        print(f"next: {payload['nearest_admissible_action']}")
+    if str(payload.get("status", "")).strip() == "ready":
+        _print_human_status(payload)
+        return
+    if str(payload.get("status", "")).strip() == "explained":
+        _print_human_explanation(payload)
+        return
+    if "decision" in payload:
+        _print_human_check(payload)
+        return
+    _print_human_fallback(payload)
+
+
+def _clean_strings(value: Any) -> list[str]:
+    if isinstance(value, str):
+        candidates = [value]
+    elif isinstance(value, list | tuple | set):
+        candidates = list(value)
+    else:
+        candidates = []
+    rows: list[str] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        token = str(candidate or "").strip()
+        if not token or token in seen:
+            continue
+        seen.add(token)
+        rows.append(token)
+    return rows
+
+
+def _decision_label(value: Any) -> str:
+    token = str(value or "ready").strip()
+    return {
+        "admit": "admitted",
+        "block": "blocked",
+        "defer": "deferred",
+        "escalate": "escalated",
+        "institutionalize": "institutionalized",
+        "nudge": "nudged",
+        "silent": "ready",
+    }.get(token, token or "ready")
+
+
+def _human_law_reason(law_id: str) -> str:
+    return _HUMAN_LAW_REASONS.get(law_id, "This move needs a lower-risk path before acting.")
+
+
+def _human_action(action: Any) -> str:
+    token = str(action or "").strip()
+    return _HUMAN_ACTIONS.get(token, token.replace("_", " ") if token else "Choose the lowest-risk local move.")
+
+
+def _human_proof(proof: Any) -> str:
+    token = str(proof or "").strip()
+    return _HUMAN_PROOF.get(token, token.replace("_", " ") if token else "")
+
+
+def _violated_law_ids(payload: Mapping[str, Any]) -> list[str]:
+    explicit = _clean_strings(payload.get("violated_laws"))
+    if explicit:
+        return explicit
+    rows = payload.get("hard_law_results")
+    if not isinstance(rows, list):
+        return []
+    violations: list[str] = []
+    for row in rows:
+        if not isinstance(row, Mapping) or str(row.get("status", "")).strip() != "violated":
+            continue
+        law_id = str(row.get("law_id", "")).strip()
+        if law_id:
+            violations.append(law_id)
+    return violations
+
+
+def _budget_line(payload: Mapping[str, Any]) -> str:
     budget = payload.get("latency_budget")
-    if isinstance(budget, Mapping):
-        print(f"hot_path_budget_passed: {str(budget.get('hot_path_budget_passed')).lower()}")
-        print(f"host_model_call_count: {budget.get('host_model_call_count', 0)}")
+    if not isinstance(budget, Mapping):
+        return "Budget: local discipline path; use --json for counters."
+    local_only = (
+        int(budget.get("host_model_call_count", 0) or 0) == 0
+        and int(budget.get("provider_call_count", 0) or 0) == 0
+    )
+    if local_only and bool(budget.get("hot_path_budget_passed")):
+        return "Budget: local-only check; no host model or provider calls."
+    return "Budget: review the detailed JSON before relying on this decision."
+
+
+def _print_human_status(payload: Mapping[str, Any]) -> None:
+    support = payload.get("host_lane_support") if isinstance(payload.get("host_lane_support"), Mapping) else {}
+    hosts = ", ".join(_clean_strings(support.get("supported_host_families"))) or "unknown"
+    lanes = ", ".join(_clean_strings(support.get("supported_lanes"))) or "unknown"
+    latest = payload.get("last_decision") if isinstance(payload.get("last_decision"), Mapping) else {}
+    print("Odylith Discipline: ready")
+    print("Hot path: local and zero-credit by default.")
+    print(f"Hosts: {hosts}")
+    print(f"Lanes: {lanes}")
+    if latest.get("decision"):
+        next_action = _human_action(latest.get("nearest_admissible_action"))
+        print(f"Last decision: {_decision_label(latest.get('decision'))}; next: {next_action}")
+    benchmark = payload.get("benchmark_proof_freshness")
+    if isinstance(benchmark, Mapping) and benchmark.get("state"):
+        print("Benchmark proof: explicit benchmark run required for public claims.")
+    print(_MACHINE_DETAIL_HINT)
+
+
+def _print_human_check(payload: Mapping[str, Any]) -> None:
+    print(f"Odylith Discipline: {_decision_label(payload.get('decision'))}")
+    violations = _violated_law_ids(payload)
+    if violations:
+        for law_id in violations[:4]:
+            print(f"Reason: {_human_law_reason(law_id)}")
+    elif str(payload.get("decision", "")).strip() == "defer":
+        print("Reason: The intent is still ambiguous enough to narrow before acting.")
+    else:
+        print("Reason: No hard law blocked this local move.")
+    print(f"Next: {_human_action(payload.get('nearest_admissible_action'))}")
+    proof = _human_proof(payload.get("proof_obligation"))
+    if proof:
+        print(f"Proof needed: {proof}")
+    print(_budget_line(payload))
+    print(_MACHINE_DETAIL_HINT)
+
+
+def _print_human_explanation(payload: Mapping[str, Any]) -> None:
+    decision_id = str(payload.get("decision_id", "")).strip()
+    suffix = f" {decision_id}" if decision_id else ""
+    print(f"Odylith Discipline decision{suffix}: {_decision_label(payload.get('decision'))}")
+    violations = _violated_law_ids(payload)
+    if violations:
+        for law_id in violations[:4]:
+            print(f"Why: {_human_law_reason(law_id)}")
+    else:
+        print("Why: No hard law violation was recorded for this decision.")
+    print(f"Next: {_human_action(payload.get('nearest_admissible_action'))}")
+    proof = _human_proof(payload.get("proof_obligation"))
+    if proof:
+        print(f"Proof needed: {proof}")
+    print(_budget_line(payload))
+    print(_MACHINE_DETAIL_HINT)
+
+
+def _print_human_fallback(payload: Mapping[str, Any]) -> None:
+    print(f"Odylith Discipline: {str(payload.get('status', 'unavailable')).strip() or 'unavailable'}")
+    reason = str(payload.get("reason", "")).strip()
+    if reason:
+        print(f"Reason: {reason}")
+    print(_MACHINE_DETAIL_HINT)
 
 
 def _decision_cache_dir(repo_root: Path) -> Path:
@@ -157,7 +337,7 @@ def _explain_decision(payload: Mapping[str, Any]) -> dict[str, Any]:
         "learning_outcome": str(learning.get("outcome", "")).strip(),
         "retention_class": str(learning.get("retention_class", "")).strip(),
         "what_would_change_result": recovery
-        or ["Add concrete local evidence that lowers uncertainty, then rerun character check."],
+        or ["Add concrete local evidence that lowers uncertainty, then rerun discipline check."],
         "practice_event": payload.get("practice_event", {})
         if isinstance(payload.get("practice_event"), Mapping)
         else {},
@@ -204,9 +384,9 @@ def run_character(argv: Sequence[str] | None = None) -> int:
                 "projection_expansions": 0,
             },
             "commands": [
-                "odylith character check --repo-root . --intent-file PATH --json",
-                "odylith validate agent-operating-character --repo-root .",
-                "odylith benchmark --profile quick --family agent_operating_character --no-write-report --json",
+                "odylith discipline check --repo-root . --intent-file PATH --json",
+                "odylith validate discipline --repo-root .",
+                "odylith benchmark --profile quick --family discipline --no-write-report --json",
             ],
         }
         _print(payload, as_json=bool(args.as_json))
@@ -234,7 +414,7 @@ def run_character(argv: Sequence[str] | None = None) -> int:
             "contract": CHARACTER_CONTRACT,
             "decision_id": decision_id,
             "status": "not_found",
-            "reason": "No local character decision record exists for this decision id.",
+            "reason": "No local discipline decision record exists for this decision id.",
             "cache_scope": str(DECISION_CACHE_RELATIVE),
         }
         _print(payload, as_json=bool(args.as_json))
