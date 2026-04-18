@@ -713,6 +713,8 @@ def test_selected_runtime_extracts_do_not_rebind_host_modules() -> None:
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_runtime_signals.py",
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_subtasks_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "backlog_rich_text.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_outcome_digest_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_standup_fact_packets.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "render_backlog_ui_html_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_execution_focus_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_transaction_runtime.py",
@@ -722,6 +724,17 @@ def test_selected_runtime_extracts_do_not_rebind_host_modules() -> None:
         text = path.read_text(encoding="utf-8")
         assert "def _host():" not in text, f"host shim resurfaced in {path.relative_to(ROOT)}"
         assert "host = _host()" not in text, f"host rebinding resurfaced in {path.relative_to(ROOT)}"
+
+
+def test_compass_extracts_use_direct_support_owners() -> None:
+    paths = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_outcome_digest_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_standup_fact_packets.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_window_update_index.py",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "compass_dashboard_runtime" not in text, f"dashboard-runtime reach-through resurfaced in {path.relative_to(ROOT)}"
 
 
 def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:

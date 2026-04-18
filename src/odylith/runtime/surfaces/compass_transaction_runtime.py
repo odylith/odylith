@@ -85,6 +85,16 @@ def _split_source_vs_generated_files(files: Sequence[str]) -> tuple[list[str], l
     return list(source), list(generated)
 
 
+def _transaction_end_ts(row: Mapping[str, Any]) -> dt.datetime | None:
+    end_ts = compass_base._parse_iso_ts(str(row.get("end_ts_iso", "")).strip())
+    if end_ts is not None:
+        return end_ts.astimezone(compass_base._COMPASS_TZ)
+    start_ts = compass_base._parse_iso_ts(str(row.get("start_ts_iso", "")).strip())
+    if start_ts is not None:
+        return start_ts.astimezone(compass_base._COMPASS_TZ)
+    return None
+
+
 def _local_change_surface_label(path: str) -> str:
     token = compass_base._normalize_repo_token(path)
     lower = token.lower()

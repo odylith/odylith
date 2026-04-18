@@ -9,6 +9,11 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
+from odylith.runtime.surfaces import compass_briefing_support
+from odylith.runtime.surfaces import compass_dashboard_base as compass_base
+from odylith.runtime.surfaces import compass_outcome_digest_runtime
+from odylith.runtime.surfaces import compass_self_host_runtime
+from odylith.runtime.surfaces import compass_standup_brief_narrator
 
 
 _ACTION_LEAD_RE = re.compile(
@@ -18,6 +23,47 @@ _ACTION_LEAD_RE = re.compile(
     r"ship|stabilize|stop|tighten|unify|update|validate|verify|wire)\b",
     re.IGNORECASE,
 )
+
+_COMPASS_TZ = compass_base._COMPASS_TZ
+_action_clause_for_narrative = compass_briefing_support._action_clause_for_narrative
+_action_tokens_for_workstream = compass_briefing_support._action_tokens_for_workstream
+_build_completed_group_lines = compass_briefing_support._build_completed_group_lines
+_collect_window_execution_updates = compass_briefing_support._collect_window_execution_updates
+_collect_window_transaction_updates = compass_outcome_digest_runtime._collect_window_transaction_updates
+_decapitalize_clause = compass_briefing_support._decapitalize_clause
+_estimate_remaining_days = compass_briefing_support._estimate_remaining_days
+_execution_status_phrase = compass_briefing_support._execution_status_phrase
+_finalize_standup_fact_packet = compass_briefing_support._finalize_standup_fact_packet
+_follow_on_text = compass_briefing_support._follow_on_text
+_forcing_function_text = compass_briefing_support._forcing_function_text
+_freshness_age_label = compass_briefing_support._freshness_age_label
+_freshness_bucket = compass_briefing_support._freshness_bucket
+_freshness_fact_text = compass_briefing_support._freshness_fact_text
+_global_fallback_next_text = compass_briefing_support._global_fallback_next_text
+_global_fallback_risk_text = compass_briefing_support._global_fallback_risk_text
+_latest_evidence_marker = compass_briefing_support._latest_evidence_marker
+_latest_window_activity_iso = compass_briefing_support._latest_window_activity_iso
+_lineage_context_summary = compass_briefing_support._lineage_context_summary
+_narrative_excerpt = compass_base._narrative_excerpt
+_normalize_action_task = compass_briefing_support._normalize_action_task
+_plan_deliverable_label = compass_briefing_support._plan_deliverable_label
+_progress_story = compass_briefing_support._progress_story
+_risk_facts = compass_briefing_support._risk_facts
+_safe_iso = compass_base._safe_iso
+_scoped_fallback_next_text = compass_briefing_support._scoped_fallback_next_text
+_scoped_fallback_risk_text = compass_briefing_support._scoped_fallback_risk_text
+_standup_fact = compass_briefing_support._standup_fact
+_timeline_clause = compass_briefing_support._timeline_clause
+_wave_context_summary = compass_briefing_support._wave_context_summary
+_ws_label = compass_briefing_support._ws_label
+_ws_why_context = compass_briefing_support._ws_why_context
+
+
+def _self_host_status_fact(snapshot: Mapping[str, Any]) -> dict[str, Any] | None:
+    return compass_self_host_runtime.self_host_status_fact(
+        snapshot,
+        standup_fact_builder=_standup_fact,
+    )
 
 
 def _sentence(text: str) -> str:
@@ -62,66 +108,14 @@ def _timeline_fact_text(timeline_story: str) -> str:
     return _sentence(story)
 
 
-def _host():
-    from odylith.runtime.surfaces import compass_dashboard_runtime as host
-
-    return host
-
-
-def _build_scoped_standup_fact_packet(
+def _direction_clause_for_story(
     *,
-    row: Mapping[str, Any],
-    next_actions: Sequence[Mapping[str, str]],
-    recent_completed: Sequence[Mapping[str, str]],
-    window_events: Sequence[Mapping[str, Any]],
-    window_transactions: Sequence[Mapping[str, Any]],
-    execution_updates: Sequence[Mapping[str, Any]] | None = None,
-    transaction_updates: Sequence[Mapping[str, Any]] | None = None,
-    window_hours: int,
-    risk_rows: Mapping[str, Sequence[Mapping[str, Any]]],
-    risk_summary: str,
-    self_host_snapshot: Mapping[str, Any] | None = None,
-    now: dt.datetime | None = None,
-) -> dict[str, Any]:
-    host = _host()
-    _COMPASS_TZ = host._COMPASS_TZ
-    _ws_label = host._ws_label
-    _ws_why_context = host._ws_why_context
-    _estimate_remaining_days = host._estimate_remaining_days
-    compass_standup_brief_narrator = host.compass_standup_brief_narrator
-    _plan_deliverable_label = host._plan_deliverable_label
-    _collect_window_execution_updates = host._collect_window_execution_updates
-    _action_tokens_for_workstream = host._action_tokens_for_workstream
-    _action_clause_for_narrative = host._action_clause_for_narrative
-    _execution_status_phrase = host._execution_status_phrase
-    _progress_story = host._progress_story
-    _narrative_excerpt = host._narrative_excerpt
-    _timeline_clause = host._timeline_clause
-    _latest_evidence_marker = host._latest_evidence_marker
-    _freshness_bucket = host._freshness_bucket
-    _freshness_age_label = host._freshness_age_label
-    _freshness_fact_text = host._freshness_fact_text
-    _self_host_status_fact = host._self_host_status_fact
-    _scoped_fallback_next_text = host._scoped_fallback_next_text
-    _wave_context_summary = host._wave_context_summary
-    _lineage_context_summary = host._lineage_context_summary
-    _standup_fact = host._standup_fact
-    _decapitalize_clause = host._decapitalize_clause
-    _scoped_fallback_risk_text = host._scoped_fallback_risk_text
-    _forcing_function_text = host._forcing_function_text
-    _follow_on_text = host._follow_on_text
-    _risk_facts = host._risk_facts
-    _finalize_standup_fact_packet = host._finalize_standup_fact_packet
-    _safe_iso = host._safe_iso
-
-    now_value = now if isinstance(now, dt.datetime) else dt.datetime.now(tz=_COMPASS_TZ)
-    idea_id = str(row.get("idea_id", "")).strip()
-    label = _ws_label(row)
-    why_context = _ws_why_context(row)
-    purpose = why_context.get("purpose", "")
-    benefit = why_context.get("benefit", "")
-    use_story = why_context.get("use_story", "") or purpose
-    architecture_consequence = why_context.get("architecture_consequence", "") or benefit
+    label: str,
+    purpose: str,
+    benefit: str,
+    use_story: str,
+    architecture_consequence: str,
+) -> str:
     direction_source = benefit or architecture_consequence or use_story or purpose
     direction_source = _narrative_excerpt(direction_source, max_sentences=1, max_chars=180)
     if (
@@ -151,12 +145,47 @@ def _build_scoped_standup_fact_packet(
         "",
     ).strip()
     if direction_source.lower().startswith(("this gives operators a clearer contract", "gives operators a clearer contract")):
-        direction_source = _narrative_excerpt(purpose or benefit or use_story or label, max_sentences=1, max_chars=180)
+        direction_source = _narrative_excerpt(
+            purpose or benefit or use_story or label,
+            max_sentences=1,
+            max_chars=180,
+        )
     direction_lead = direction_source.lstrip("`'\"“”‘’").replace("`", "")
     if _ACTION_LEAD_RE.match(direction_lead):
-        direction_clause = direction_source
-    else:
-        direction_clause = _action_clause_for_narrative(direction_source) or direction_source
+        return direction_source
+    return _action_clause_for_narrative(direction_source) or direction_source
+
+
+def _build_scoped_standup_fact_packet(
+    *,
+    row: Mapping[str, Any],
+    next_actions: Sequence[Mapping[str, str]],
+    recent_completed: Sequence[Mapping[str, str]],
+    window_events: Sequence[Mapping[str, Any]],
+    window_transactions: Sequence[Mapping[str, Any]],
+    execution_updates: Sequence[Mapping[str, Any]] | None = None,
+    transaction_updates: Sequence[Mapping[str, Any]] | None = None,
+    window_hours: int,
+    risk_rows: Mapping[str, Sequence[Mapping[str, Any]]],
+    risk_summary: str,
+    self_host_snapshot: Mapping[str, Any] | None = None,
+    now: dt.datetime | None = None,
+) -> dict[str, Any]:
+    now_value = now if isinstance(now, dt.datetime) else dt.datetime.now(tz=_COMPASS_TZ)
+    idea_id = str(row.get("idea_id", "")).strip()
+    label = _ws_label(row)
+    why_context = _ws_why_context(row)
+    purpose = why_context.get("purpose", "")
+    benefit = why_context.get("benefit", "")
+    use_story = why_context.get("use_story", "") or purpose
+    architecture_consequence = why_context.get("architecture_consequence", "") or benefit
+    direction_clause = _direction_clause_for_story(
+        label=label,
+        purpose=purpose,
+        benefit=benefit,
+        use_story=use_story,
+        architecture_consequence=architecture_consequence,
+    )
     status = str(row.get("status", "")).strip() or "unknown"
     plan = row.get("plan", {}) if isinstance(row.get("plan"), Mapping) else {}
     progress_ratio = float(plan.get("progress_ratio", 0.0) or 0.0)
@@ -176,7 +205,7 @@ def _build_scoped_standup_fact_packet(
     transaction_updates = (
         [dict(item) for item in transaction_updates if isinstance(item, Mapping)]
         if isinstance(transaction_updates, Sequence)
-        else host._collect_window_transaction_updates(window_transactions, ws_id=idea_id, max_items=2)
+        else _collect_window_transaction_updates(window_transactions, ws_id=idea_id, max_items=2)
     )
     execution_updates = (
         [dict(item) for item in execution_updates if isinstance(item, Mapping)]
@@ -528,32 +557,6 @@ def _build_global_standup_fact_packet(
     self_host_risks: Sequence[Mapping[str, Any]],
     now: dt.datetime | None = None,
 ) -> dict[str, Any]:
-    host = _host()
-    _COMPASS_TZ = host._COMPASS_TZ
-    _ws_label = host._ws_label
-    _ws_why_context = host._ws_why_context
-    _estimate_remaining_days = host._estimate_remaining_days
-    _action_clause_for_narrative = host._action_clause_for_narrative
-    _execution_status_phrase = host._execution_status_phrase
-    _timeline_clause = host._timeline_clause
-    _latest_evidence_marker = host._latest_evidence_marker
-    _latest_window_activity_iso = host._latest_window_activity_iso
-    _freshness_bucket = host._freshness_bucket
-    _freshness_age_label = host._freshness_age_label
-    _freshness_fact_text = host._freshness_fact_text
-    _build_completed_group_lines = host._build_completed_group_lines
-    _narrative_excerpt = host._narrative_excerpt
-    _global_fallback_next_text = host._global_fallback_next_text
-    compass_standup_brief_narrator = host.compass_standup_brief_narrator
-    _standup_fact = host._standup_fact
-    _decapitalize_clause = host._decapitalize_clause
-    _self_host_status_fact = host._self_host_status_fact
-    _normalize_action_task = host._normalize_action_task
-    _global_fallback_risk_text = host._global_fallback_risk_text
-    _risk_facts = host._risk_facts
-    _finalize_standup_fact_packet = host._finalize_standup_fact_packet
-    _safe_iso = host._safe_iso
-
     now_value = now if isinstance(now, dt.datetime) else dt.datetime.now(tz=_COMPASS_TZ)
     focused_primary = dict(ws_rows[0]) if ws_rows else {}
     primary_label = _ws_label(focused_primary) if focused_primary else "current priority lane"
@@ -563,57 +566,25 @@ def _build_global_standup_fact_packet(
     primary_benefit = primary_why_context.get("benefit", "")
     primary_use_story = primary_why_context.get("use_story", "") or primary_purpose
     primary_architecture_consequence = primary_why_context.get("architecture_consequence", "") or primary_benefit
-    direction_source = primary_benefit or primary_architecture_consequence or primary_use_story or primary_purpose
-    direction_source = _narrative_excerpt(direction_source, max_sentences=1, max_chars=180)
-    if (
-        direction_source.lower().startswith("for operators who ")
-        or direction_source.lower().startswith("if ")
-        or "product claim" in direction_source.lower()
-    ):
-        direction_source = _narrative_excerpt(
-            primary_architecture_consequence or primary_benefit or primary_use_story or primary_purpose,
-            max_sentences=1,
-            max_chars=180,
-        )
-    for prefix in (
-        "The architecture move is to ",
-        "The architecture move is ",
-        "The change now is to ",
-        "The change is to ",
-    ):
-        if direction_source.startswith(prefix):
-            direction_source = direction_source[len(prefix):].strip()
-            break
-    direction_source = direction_source.replace(
-        ", which gives operators a clearer contract and lower coordination risk.",
-        "",
-    ).replace(
-        " which gives operators a clearer contract and lower coordination risk.",
-        "",
-    ).strip()
-    if direction_source.lower().startswith(("this gives operators a clearer contract", "gives operators a clearer contract")):
-        direction_source = _narrative_excerpt(
-            primary_purpose or primary_benefit or primary_use_story or primary_label,
-            max_sentences=1,
-            max_chars=180,
-        )
-    direction_lead = direction_source.lstrip("`'\"“”‘’").replace("`", "")
-    if _ACTION_LEAD_RE.match(direction_lead):
-        direction_clause = direction_source
-    else:
-        direction_clause = _action_clause_for_narrative(direction_source) or direction_source
+    direction_clause = _direction_clause_for_story(
+        label=primary_label,
+        purpose=primary_purpose,
+        benefit=primary_benefit,
+        use_story=primary_use_story,
+        architecture_consequence=primary_architecture_consequence,
+    )
     primary_plan = focused_primary.get("plan", {}) if isinstance(focused_primary.get("plan"), Mapping) else {}
     primary_progress_ratio = float(primary_plan.get("progress_ratio", 0.0) or 0.0)
     eta_days, eta_source = _estimate_remaining_days(focused_primary if focused_primary else {})
     execution_updates = (
         [dict(item) for item in execution_updates if isinstance(item, Mapping)]
         if isinstance(execution_updates, Sequence)
-        else host._collect_window_execution_updates(window_events, max_items=3)
+        else _collect_window_execution_updates(window_events, max_items=3)
     )
     transaction_updates = (
         [dict(item) for item in transaction_updates if isinstance(item, Mapping)]
         if isinstance(transaction_updates, Sequence)
-        else host._collect_window_transaction_updates(window_transactions, max_items=3)
+        else _collect_window_transaction_updates(window_transactions, max_items=3)
     )
     execution_highlights = [
         str(item.get("summary", "")).strip()
