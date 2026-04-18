@@ -1,3 +1,5 @@
+"""Odylith Context Engine Hot Path Scope Runtime helpers for the Odylith context engine layer."""
+
 from __future__ import annotations
 
 from odylith.runtime.common import agent_runtime_contract

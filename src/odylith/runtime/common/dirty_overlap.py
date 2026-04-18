@@ -1,3 +1,5 @@
+"""Dirty Overlap helpers for the Odylith common layer."""
+
 from __future__ import annotations
 
 from collections import Counter

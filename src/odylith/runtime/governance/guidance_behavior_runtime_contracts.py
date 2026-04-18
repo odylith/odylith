@@ -1,3 +1,5 @@
+"""Guidance Behavior Runtime Contracts helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 from pathlib import Path

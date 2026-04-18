@@ -1,3 +1,5 @@
+"""Dashboard Refresh Contract helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 from odylith.runtime.common.command_surface import display_command

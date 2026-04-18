@@ -1,3 +1,5 @@
+"""Odylith Benchmark Publication helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 import argparse

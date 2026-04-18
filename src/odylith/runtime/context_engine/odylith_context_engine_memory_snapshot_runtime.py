@@ -1,3 +1,5 @@
+"""Odylith Context Engine Memory Snapshot Runtime helpers for the Odylith context engine layer."""
+
 from __future__ import annotations
 
 import contextlib

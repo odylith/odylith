@@ -131,6 +131,13 @@ ODYLITH_CHATTER_SPEC_TOKEN = "odylith-chatter/CURRENT_SPEC.md"
 ODYLITH_ASSIST_METADATA_ONLY = "metadata-only"
 ODYLITH_AMBIENT_SIGNAL_LABELS = "`Odylith Insight:`, `Odylith History:`, or `Odylith Risks:`"
 ODYLITH_SILENCE_RULE = "Silence is better than filler"
+ANTI_SLOP_TREAT_AS_REGRESSION = "Treat AI slop as a regression."
+ANTI_SLOP_FAKE_MODULARIZATION = "`def _host()` plus a wall of rebound private host symbols is banned."
+ANTI_SLOP_DUPLICATE_HELPERS = (
+    "Do not duplicate generic coercion helpers such as `_mapping`, `_json_dict`, `_normalize_*`, `_delta`, or `_parts`"
+)
+ANTI_SLOP_DOCSTRING_RULE = "New or materially rewritten runtime Python modules must carry a truthful module docstring."
+ANTI_SLOP_ENFORCEMENT = "Every anti-slop cleanup must add or update enforcement tests."
 LEGACY_CONSUMER_CHATTER_FRAGMENTS = (
     "must ground in Odylith first",
     "Direct repo scan before Odylith grounding is a policy violation",
@@ -598,6 +605,60 @@ def test_consumer_guidance_contract_drops_legacy_chatter_lines() -> None:
             assert fragment not in text, f"legacy consumer chatter remains in {path.relative_to(ROOT)}: {fragment!r}"
 
 
+def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
+    routing_paths = (
+        ROOT / "AGENTS.md",
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "odylith" / "maintainer" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "install" / "agents.py",
+        ROOT / "src" / "odylith" / "install" / "manager.py",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+    )
+    for path in routing_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_TREAT_AS_REGRESSION in normalized, f"anti-slop regression bar drifted in {path.relative_to(ROOT)}"
+        assert "ANTI_SLOP_AND_DECOMPOSITION.md" in normalized, f"anti-slop guide routing drifted in {path.relative_to(ROOT)}"
+        assert "code-hygiene-guard" in normalized, f"anti-slop skill routing drifted in {path.relative_to(ROOT)}"
+
+    proof_paths = (
+        ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "odylith" / "maintainer" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+    )
+    for path in proof_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_TREAT_AS_REGRESSION in normalized, f"anti-slop regression bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_FAKE_MODULARIZATION in normalized, f"fake-modularization ban drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_DUPLICATE_HELPERS in normalized, f"duplicate-helper ban drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_DOCSTRING_RULE in normalized, f"docstring rule drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_ENFORCEMENT in normalized, f"anti-slop proof contract drifted in {path.relative_to(ROOT)}"
+
+
+def test_anti_slop_guidance_and_skill_bundle_assets_stay_synced() -> None:
+    pairs = (
+        (
+            ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+            ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ),
+        (
+            ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+            ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+        ),
+    )
+    for source_path, bundle_path in pairs:
+        assert bundle_path.is_file(), f"bundle mirror missing: {bundle_path.relative_to(ROOT)}"
+        assert bundle_path.read_text(encoding="utf-8") == source_path.read_text(encoding="utf-8")
+
+    shim_path = ROOT / ".agents" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md"
+    shim_text = shim_path.read_text(encoding="utf-8")
+    assert "name: odylith-code-hygiene-guard" in shim_text
+    assert "@../../../odylith/skills/odylith-code-hygiene-guard/SKILL.md" in shim_text
+
+
 def test_runtime_orchestration_templates_stay_debranded() -> None:
     paths = (
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py",
@@ -632,3 +693,14 @@ def test_runtime_user_facing_reason_templates_stay_task_first() -> None:
         text = path.read_text(encoding="utf-8")
         for fragment in fragments:
             assert fragment not in text, f"user-facing runtime template drifted in {path.relative_to(ROOT)}: {fragment!r}"
+
+
+def test_context_engine_runtime_extracts_do_not_rebind_store_hosts() -> None:
+    paths = (
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_compiler_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_grounding_runtime.py",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "def _host():" not in text, f"store-host shim resurfaced in {path.relative_to(ROOT)}"
+        assert "host = _host()" not in text, f"store-host rebinding resurfaced in {path.relative_to(ROOT)}"

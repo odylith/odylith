@@ -1,3 +1,5 @@
+"""Guidance Paths helpers for the Odylith common layer."""
+
 from __future__ import annotations
 
 from pathlib import Path

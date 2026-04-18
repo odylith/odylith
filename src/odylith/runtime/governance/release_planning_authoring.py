@@ -1,3 +1,5 @@
+"""Release Planning Authoring helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 import argparse

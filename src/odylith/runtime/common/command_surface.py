@@ -1,3 +1,5 @@
+"""Command Surface helpers for the Odylith common layer."""
+
 from __future__ import annotations
 
 import shlex

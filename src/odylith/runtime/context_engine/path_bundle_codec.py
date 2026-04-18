@@ -1,3 +1,5 @@
+"""Path Bundle Codec helpers for the Odylith context engine layer."""
+
 from __future__ import annotations
 
 from typing import Any

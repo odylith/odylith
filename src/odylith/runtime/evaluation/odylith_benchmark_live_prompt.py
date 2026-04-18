@@ -1,3 +1,5 @@
+"""Odylith Benchmark Live Prompt helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 import json

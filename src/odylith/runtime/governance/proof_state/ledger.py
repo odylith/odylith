@@ -1,3 +1,5 @@
+"""Ledger helpers for the Odylith governance proof state layer."""
+
 from __future__ import annotations
 
 import json

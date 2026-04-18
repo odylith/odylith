@@ -1,3 +1,5 @@
+"""History Rules helpers for the Odylith execution engine layer."""
+
 from __future__ import annotations
 
 from typing import Any

@@ -16,6 +16,7 @@ import pytest
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
 from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.context_engine import governance_signal_codec
+from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime as grounding_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_governance_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
@@ -6633,14 +6634,14 @@ def test_component_governance_hot_path_prefers_explicit_component_over_full_comp
 def test_release_publication_hot_path_uses_light_component_detail_lookup(monkeypatch) -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "benchmark-raw-baseline-publication-contract")
-    original = store.load_registry_detail
+    original = grounding_runtime.load_registry_detail
     seen_detail_levels: list[str] = []
 
     def _tracked_load_registry_detail(**kwargs):  # noqa: ANN003
         seen_detail_levels.append(str(kwargs.get("detail_level", "full")).strip() or "full")
         return original(**kwargs)
 
-    monkeypatch.setattr(store, "load_registry_detail", _tracked_load_registry_detail)
+    monkeypatch.setattr(grounding_runtime, "load_registry_detail", _tracked_load_registry_detail)
 
     packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
         repo_root=REPO_ROOT,
@@ -8257,9 +8258,9 @@ def test_build_impact_report_reuses_supplied_snapshots(monkeypatch, tmp_path: Pa
         raise AssertionError("optimization snapshot should be reused")
 
     monkeypatch.setattr(store.tooling_guidance_catalog, "load_guidance_catalog", _unexpected_catalog_load)
-    monkeypatch.setattr(store, "load_runtime_optimization_snapshot", _unexpected_optimization_load)
+    monkeypatch.setattr(grounding_runtime, "load_runtime_optimization_snapshot", _unexpected_optimization_load)
     monkeypatch.setattr(
-        store,
+        grounding_runtime,
         "_resolve_changed_path_scope_context",
         lambda **kwargs: {  # noqa: ANN001
             "analysis_paths": [],
@@ -8298,7 +8299,7 @@ def test_build_impact_report_reuses_supplied_snapshots(monkeypatch, tmp_path: Pa
 
 def test_build_impact_report_can_skip_finalize_packet(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
-        store,
+        grounding_runtime,
         "_resolve_changed_path_scope_context",
         lambda **kwargs: {  # noqa: ANN001
             "analysis_paths": [],

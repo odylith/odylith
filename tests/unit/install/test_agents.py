@@ -79,6 +79,9 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "odylith compass deep-refresh" in block
     assert "missing-shim, or fallback-path details implicit" in block
     assert "Keep the default operating lane shared across Codex and Claude Code" in block
+    assert "Treat AI slop as a regression." in block
+    assert "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md" in block
+    assert "odylith/skills/odylith-code-hygiene-guard/SKILL.md" in block
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in block
     assert "the exact file/workstream, the bug under test, or the validation in flight" in block
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in block

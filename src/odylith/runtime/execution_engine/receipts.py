@@ -1,3 +1,5 @@
+"""Receipts helpers for the Odylith execution engine layer."""
+
 from __future__ import annotations
 
 from odylith.runtime.execution_engine.contract import ExternalDependencyState

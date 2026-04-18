@@ -1,3 +1,5 @@
+"""Odylith Intervention Value Engine Benchmark helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -1,3 +1,5 @@
+"""Sync Runtime Contract helpers for the Odylith execution engine layer."""
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -1,3 +1,5 @@
+"""Component Registry Review Policy helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping

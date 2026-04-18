@@ -2,19 +2,78 @@
 
 from __future__ import annotations
 
+import re
 import time
 from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.common import derivation_provenance
+from odylith.runtime.context_engine import odylith_architecture_mode
+from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_projection_query_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_support
+from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.governance import sync_session as governed_sync_session
+from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance import delivery_intelligence_engine
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
+from odylith.runtime.memory import odylith_memory_backend
+from odylith.runtime.memory import odylith_projection_bundle
+from odylith.runtime.memory import odylith_projection_snapshot
 
 
-def _host():
-    from odylith.runtime.context_engine import odylith_context_engine_store as host
+_WORKSTREAM_ID_RE = re.compile(r"^B-\d{3,}$")
+SCHEMA_VERSION = odylith_context_engine_runtime_support.SCHEMA_VERSION
+_utc_now = odylith_context_engine_runtime_support.utc_now
+runtime_root = odylith_control_state.runtime_root
+read_runtime_state = odylith_control_state.read_state
+write_runtime_state = odylith_control_state.write_state
+record_runtime_timing = odylith_context_engine_runtime_support.record_runtime_timing
+load_runtime_timing_summary = odylith_context_engine_runtime_learning_runtime.load_runtime_timing_summary
+_projection_names_for_scope = odylith_context_engine_runtime_support.projection_names_for_scope
+_projected_input_fingerprints = odylith_context_engine_projection_search_runtime._projected_input_fingerprints
+projection_input_fingerprint = odylith_context_engine_projection_search_runtime.projection_input_fingerprint
+_empty_projection_tables = odylith_context_engine_projection_search_runtime._empty_projection_tables
+_load_backlog_projection = odylith_context_engine_projection_search_runtime._load_backlog_projection
+_load_release_projection = odylith_context_engine_projection_runtime._load_release_projection
+_load_idea_specs = odylith_context_engine_projection_search_runtime._load_idea_specs
+_parse_link_target = odylith_context_engine_projection_search_runtime._parse_link_target
+_normalize_repo_token = odylith_context_engine_projection_query_runtime._normalize_repo_token
+_safe_json = odylith_context_engine_projection_search_runtime._safe_json
+_projection_state_row = odylith_context_engine_projection_search_runtime._projection_state_row
+_load_plan_projection = odylith_context_engine_projection_search_runtime._load_plan_projection
+_raw_text = odylith_context_engine_projection_search_runtime._raw_text
+_load_bug_projection = odylith_context_engine_projection_search_runtime._load_bug_projection
+_bug_archive_bucket_from_link_target = (
+    odylith_context_engine_projection_search_runtime._bug_archive_bucket_from_link_target
+)
+_load_diagram_projection = odylith_context_engine_projection_search_runtime._load_diagram_projection
+_load_codex_event_projection = odylith_context_engine_projection_search_runtime._load_codex_event_projection
+_load_traceability_projection = odylith_context_engine_projection_search_runtime._load_traceability_projection
+_load_component_match_rows_from_components = (
+    odylith_context_engine_projection_search_runtime._load_component_match_rows_from_components
+)
+_load_engineering_notes = odylith_context_engine_projection_query_runtime._load_engineering_notes
+_load_code_graph = odylith_context_engine_projection_query_runtime._load_code_graph
+_load_test_graph = odylith_context_engine_projection_query_runtime._load_test_graph
+_json_dict = odylith_context_engine_projection_query_runtime._json_dict
+_ProjectionConnection = odylith_context_engine_projection_search_runtime._ProjectionConnection
+projection_snapshot_path = odylith_projection_snapshot.snapshot_path
+preferred_watcher_backend = odylith_context_engine_runtime_support.preferred_watcher_backend
 
-    return host
+
+def append_runtime_event(*, repo_root: Path, event_type: str, payload: Mapping[str, Any]) -> None:
+    """Append one compiler event row to the shared runtime event ledger."""
+    odylith_control_state.append_event(
+        repo_root=repo_root,
+        event_type=str(event_type).strip() or "projection_update",
+        payload=dict(payload),
+        version=SCHEMA_VERSION,
+        ts_iso=_utc_now(),
+    )
 
 
 def warm_projections(
@@ -25,50 +84,6 @@ def warm_projections(
     scope: str = "default",
 ) -> dict[str, Any]:
     """Build or refresh local projections and return a summary."""
-
-    host = _host()
-    runtime_root = host.runtime_root
-    _projection_names_for_scope = host._projection_names_for_scope
-    _projected_input_fingerprints = host._projected_input_fingerprints
-    projection_input_fingerprint = host.projection_input_fingerprint
-    read_runtime_state = host.read_runtime_state
-    record_runtime_timing = host.record_runtime_timing
-    load_runtime_timing_summary = host.load_runtime_timing_summary
-    _empty_projection_tables = host._empty_projection_tables
-    _load_backlog_projection = host._load_backlog_projection
-    _load_release_projection = host._load_release_projection
-    _load_idea_specs = host._load_idea_specs
-    _WORKSTREAM_ID_RE = host._WORKSTREAM_ID_RE
-    _parse_link_target = host._parse_link_target
-    _normalize_repo_token = host._normalize_repo_token
-    _safe_json = host._safe_json
-    _projection_state_row = host._projection_state_row
-    _load_plan_projection = host._load_plan_projection
-    _raw_text = host._raw_text
-    _load_bug_projection = host._load_bug_projection
-    _bug_archive_bucket_from_link_target = host._bug_archive_bucket_from_link_target
-    _load_diagram_projection = host._load_diagram_projection
-    _load_codex_event_projection = host._load_codex_event_projection
-    _load_traceability_projection = host._load_traceability_projection
-    _load_component_match_rows_from_components = host._load_component_match_rows_from_components
-    _load_engineering_notes = host._load_engineering_notes
-    _load_code_graph = host._load_code_graph
-    _load_test_graph = host._load_test_graph
-    _json_dict = host._json_dict
-    _ProjectionConnection = host._ProjectionConnection
-    _utc_now = host._utc_now
-    write_runtime_state = host.write_runtime_state
-    append_runtime_event = host.append_runtime_event
-    projection_snapshot_path = host.projection_snapshot_path
-    preferred_watcher_backend = host.preferred_watcher_backend
-    odylith_projection_bundle = host.odylith_projection_bundle
-    odylith_projection_snapshot = host.odylith_projection_snapshot
-    odylith_memory_backend = host.odylith_memory_backend
-    odylith_context_cache = host.odylith_context_cache
-    component_registry = host.component_registry
-    delivery_intelligence_engine = host.delivery_intelligence_engine
-    odylith_architecture_mode = host.odylith_architecture_mode
-    SCHEMA_VERSION = host.SCHEMA_VERSION
 
     def _compatible_projection_scopes(requested_scope: str) -> tuple[str, ...]:
         return odylith_memory_backend.compatible_projection_scopes(requested_scope=requested_scope)

@@ -1,3 +1,5 @@
+"""Compass Governance Source Runtime helpers for the Odylith surfaces layer."""
+
 from __future__ import annotations
 
 import copy

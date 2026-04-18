@@ -1,3 +1,5 @@
+"""Value Engine helpers for the Odylith intervention engine layer."""
+
 from __future__ import annotations
 
 from odylith.runtime.intervention_engine.value_engine_corpus import advisory_report

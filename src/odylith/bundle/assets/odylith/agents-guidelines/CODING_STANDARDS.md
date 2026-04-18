@@ -15,6 +15,23 @@
 - New helpers should stay bounded, named for the real contract they carry, and
   covered by focused validation rather than introduced as one-off glue.
 
+## Anti-Slop Guardrails
+- Treat AI slop as a regression.
+- Do not ship fake modularization. `def _host()` plus a wall of rebound
+  private host symbols is banned.
+- Do not duplicate generic coercion helpers such as `_mapping`,
+  `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
+  shared owner is appropriate.
+- Do not keep host-mirror files near-identical when a shared helper, shared
+  renderer, or shared formatter would remove the duplication.
+- Do not add filler comments or docstrings. Comments must explain invariants,
+  failure modes, boundary assumptions, or non-obvious state transitions.
+- New or materially rewritten runtime Python modules must carry a truthful
+  module docstring.
+- Every anti-slop cleanup must add or update enforcement tests.
+- Use [ANTI_SLOP_AND_DECOMPOSITION.md](./ANTI_SLOP_AND_DECOMPOSITION.md) for
+  the full ban list, decomposition triggers, and proof contract.
+
 ## Source File Discipline
 - The repo-root file-size policy is non-negotiable for Odylith-owned product
   code.

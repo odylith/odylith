@@ -1,3 +1,5 @@
+"""Subagent Orchestrator Odylith Runtime helpers for the Odylith orchestration layer."""
+
 from __future__ import annotations
 
 from typing import Any

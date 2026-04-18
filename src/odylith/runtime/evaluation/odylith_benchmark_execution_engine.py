@@ -1,3 +1,5 @@
+"""Odylith Benchmark Execution Engine helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 from typing import Any, Mapping, Sequence

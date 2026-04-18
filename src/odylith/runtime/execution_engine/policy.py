@@ -1,3 +1,5 @@
+"""Policy helpers for the Odylith execution engine layer."""
+
 from __future__ import annotations
 
 from dataclasses import replace

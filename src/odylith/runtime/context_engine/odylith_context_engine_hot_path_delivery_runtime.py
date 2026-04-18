@@ -1,3 +1,5 @@
+"""Odylith Context Engine Hot Path Delivery Runtime helpers for the Odylith context engine layer."""
+
 from __future__ import annotations
 
 from typing import Any

@@ -1,3 +1,5 @@
+"""Release Planning Contract helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 import datetime as dt

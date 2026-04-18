@@ -875,15 +875,15 @@ def test_projection_compiler_runtime_refuses_fast_reuse_when_local_backend_is_st
     monkeypatch,
 ) -> None:
     runtime_root = tmp_path / ".odylith" / "runtime"
-    monkeypatch.setattr(store, "runtime_root", lambda **_kwargs: runtime_root)
-    monkeypatch.setattr(store, "projection_input_fingerprint", lambda **_kwargs: "fp-1")
+    monkeypatch.setattr(projection_compiler_runtime, "runtime_root", lambda **_kwargs: runtime_root)
+    monkeypatch.setattr(projection_compiler_runtime, "projection_input_fingerprint", lambda **_kwargs: "fp-1")
     monkeypatch.setattr(
-        store,
+        projection_compiler_runtime,
         "read_runtime_state",
         lambda **_kwargs: {"projection_fingerprint": "fp-1", "projection_scope": "reasoning"},
     )
-    monkeypatch.setattr(store, "load_runtime_timing_summary", lambda **_kwargs: [])
-    monkeypatch.setattr(store, "record_runtime_timing", lambda **_kwargs: None)
+    monkeypatch.setattr(projection_compiler_runtime, "load_runtime_timing_summary", lambda **_kwargs: [])
+    monkeypatch.setattr(projection_compiler_runtime, "record_runtime_timing", lambda **_kwargs: None)
     monkeypatch.setattr(
         store.odylith_projection_bundle,
         "load_bundle_manifest",
@@ -916,7 +916,7 @@ def test_projection_compiler_runtime_refuses_fast_reuse_when_local_backend_is_st
     )
     monkeypatch.setattr(store.odylith_context_cache, "advisory_lock", lambda **_kwargs: contextlib.nullcontext())
     monkeypatch.setattr(
-        store,
+        projection_compiler_runtime,
         "_empty_projection_tables",
         lambda: (_ for _ in ()).throw(RuntimeError("rebuild_required")),
     )
@@ -972,19 +972,19 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
         },
     )
 
-    monkeypatch.setattr(store, "runtime_root", lambda **_kwargs: runtime_root)
+    monkeypatch.setattr(projection_compiler_runtime, "runtime_root", lambda **_kwargs: runtime_root)
     monkeypatch.setattr(
-        store,
+        projection_compiler_runtime,
         "projection_input_fingerprint",
         lambda **kwargs: "fp-full" if kwargs.get("scope") == "full" else "fp-reasoning",
     )
     monkeypatch.setattr(
-        store,
+        projection_compiler_runtime,
         "read_runtime_state",
         lambda **_kwargs: {"projection_fingerprint": "fp-old", "projection_scope": "reasoning"},
     )
-    monkeypatch.setattr(store, "load_runtime_timing_summary", lambda **_kwargs: [])
-    monkeypatch.setattr(store, "record_runtime_timing", lambda **kwargs: timing_rows.append(kwargs))
+    monkeypatch.setattr(projection_compiler_runtime, "load_runtime_timing_summary", lambda **_kwargs: [])
+    monkeypatch.setattr(projection_compiler_runtime, "record_runtime_timing", lambda **kwargs: timing_rows.append(kwargs))
     monkeypatch.setattr(
         store.odylith_projection_bundle,
         "load_bundle_manifest",
@@ -1027,8 +1027,12 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
         lambda **kwargs: kwargs.get("projection_scope") == "full"
         and kwargs.get("projection_fingerprint") == "fp-full",
     )
-    monkeypatch.setattr(store, "preferred_watcher_backend", lambda **_kwargs: "poll")
-    monkeypatch.setattr(store, "write_runtime_state", lambda **kwargs: state_writes.append(dict(kwargs["payload"])))
+    monkeypatch.setattr(projection_compiler_runtime, "preferred_watcher_backend", lambda **_kwargs: "poll")
+    monkeypatch.setattr(
+        projection_compiler_runtime,
+        "write_runtime_state",
+        lambda **kwargs: state_writes.append(dict(kwargs["payload"])),
+    )
 
     summary = projection_compiler_runtime.warm_projections(
         repo_root=tmp_path,

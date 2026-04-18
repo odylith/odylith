@@ -8,13 +8,95 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.common.command_surface import display_command
+from odylith.runtime.context_engine import tooling_context_packet_builder
+from odylith.runtime.context_engine import tooling_guidance_catalog
 from odylith.runtime.context_engine.grounding_component_priority import prioritize_governance_components
-
-
-def _host():
-    from odylith.runtime.context_engine import odylith_context_engine_store as host
-
-    return host
+from odylith.runtime.context_engine.odylith_context_engine_hot_path_delivery_runtime import (
+    _collect_component_validation_commands,
+    _compact_code_neighbors_for_packet,
+    _compact_stage_timings,
+    _delivery_profile_hot_path,
+    _elapsed_stage_ms,
+    _fallback_scan_payload,
+    _impact_family_profile,
+    _normalize_family_hint,
+    _recommended_validation_commands,
+)
+from odylith.runtime.context_engine.odylith_context_engine_hot_path_governance_runtime import (
+    _bounded_explicit_governance_closeout_docs,
+    _companion_context_paths,
+    _governance_can_skip_runtime_warmup,
+    _governance_closeout_docs,
+    _governance_diagram_catalog_companions,
+    _governance_explicit_slice_grounded,
+    _governance_hot_path_docs,
+    _governance_requires_architecture_audit,
+    _governance_state_actions,
+    _governance_surface_refs,
+    select_impacted_diagrams,
+)
+from odylith.runtime.context_engine.odylith_context_engine_hot_path_packet_core_runtime import (
+    _compact_hot_path_payload_within_budget,
+    _hot_path_workstream_selection,
+)
+from odylith.runtime.context_engine.odylith_context_engine_hot_path_packet_finalize_runtime import (
+    _compact_hot_path_runtime_packet,
+    _compact_workstream_row_for_packet,
+    _compact_workstream_selection_for_packet,
+)
+from odylith.runtime.context_engine.odylith_context_engine_hot_path_runtime import (
+    _base_workstream_candidate,
+    _broad_shared_only_input,
+    _compact_bug_row_for_governance_packet,
+    _compact_component_entry_for_governance_packet,
+    _compact_component_row_for_packet,
+    _compact_diagram_row_for_packet,
+    _compact_engineering_notes,
+    _compact_test_row_for_packet,
+    _component_grounded_selection_none,
+    _dedupe_strings,
+    _hot_path_can_stay_fail_closed_without_full_scan,
+    _impact_budget_profile,
+    _impact_packet_state,
+    _limit_mappings,
+    _limit_strings,
+)
+from odylith.runtime.context_engine.odylith_context_engine_hot_path_scope_runtime import (
+    _collect_code_neighbors,
+    _collect_impacted_components,
+    _collect_impacted_workstreams,
+    _collect_recommended_tests,
+    _collect_relevant_bugs,
+    _collect_relevant_notes,
+    _compact_architecture_audit_for_packet,
+    _resolve_changed_path_scope_context,
+    _workstream_selection,
+)
+from odylith.runtime.context_engine.odylith_context_engine_packet_architecture_runtime import (
+    build_architecture_audit,
+)
+from odylith.runtime.context_engine.odylith_context_engine_projection_backlog_runtime import (
+    load_backlog_detail,
+)
+from odylith.runtime.context_engine.odylith_context_engine_projection_entity_runtime import (
+    _entity_by_kind_id,
+)
+from odylith.runtime.context_engine.odylith_context_engine_projection_registry_runtime import (
+    load_registry_detail,
+)
+from odylith.runtime.context_engine.odylith_context_engine_projection_search_runtime import (
+    _collect_retrieval_miss_recovery,
+    _compact_miss_recovery_for_packet,
+    _connect,
+    _warm_runtime,
+)
+from odylith.runtime.context_engine.odylith_context_engine_runtime_learning_runtime import (
+    _load_judgment_workstream_hint,
+    load_runtime_optimization_snapshot,
+)
+from odylith.runtime.context_engine import odylith_context_engine_runtime_support
+from odylith.runtime.governance import component_registry_intelligence as component_registry
 
 
 def build_governance_slice(
@@ -33,41 +115,6 @@ def build_governance_slice(
     intent: str = "",
     validation_command_hints: Sequence[str] = (),
 ) -> dict[str, Any]:
-    host = _host()
-    _delivery_profile_hot_path = host._delivery_profile_hot_path
-    tooling_guidance_catalog = host.tooling_guidance_catalog
-    load_runtime_optimization_snapshot = host.load_runtime_optimization_snapshot
-    load_backlog_detail = host.load_backlog_detail
-    load_registry_detail = host.load_registry_detail
-    component_registry = host.component_registry
-    _dedupe_strings = host._dedupe_strings
-    _fallback_scan_payload = host._fallback_scan_payload
-    tooling_context_packet_builder = host.tooling_context_packet_builder
-    _compact_hot_path_runtime_packet = host._compact_hot_path_runtime_packet
-    _elapsed_stage_ms = host._elapsed_stage_ms
-    _governance_requires_architecture_audit = host._governance_requires_architecture_audit
-    build_architecture_audit = host.build_architecture_audit
-    _compact_workstream_row_for_packet = host._compact_workstream_row_for_packet
-    _compact_component_entry_for_governance_packet = host._compact_component_entry_for_governance_packet
-    _compact_diagram_row_for_packet = host._compact_diagram_row_for_packet
-    _normalize_family_hint = host._normalize_family_hint
-    _governance_explicit_slice_grounded = host._governance_explicit_slice_grounded
-    _compact_bug_row_for_governance_packet = host._compact_bug_row_for_governance_packet
-    _governance_closeout_docs = host._governance_closeout_docs
-    _governance_diagram_catalog_companions = host._governance_diagram_catalog_companions
-    _companion_context_paths = host._companion_context_paths
-    _governance_surface_refs = host._governance_surface_refs
-    display_command = host.display_command
-    _hot_path_workstream_selection = host._hot_path_workstream_selection
-    _bounded_explicit_governance_closeout_docs = host._bounded_explicit_governance_closeout_docs
-    _broad_shared_only_input = host._broad_shared_only_input
-    _governance_state_actions = host._governance_state_actions
-    _compact_architecture_audit_for_packet = host._compact_architecture_audit_for_packet
-    _governance_hot_path_docs = host._governance_hot_path_docs
-    _governance_can_skip_runtime_warmup = host._governance_can_skip_runtime_warmup
-    record_runtime_timing = host.record_runtime_timing
-    _compact_stage_timings = host._compact_stage_timings
-
     root = Path(repo_root).resolve()
     started_at = time.perf_counter()
     stage_timings: dict[str, float] = {}
@@ -710,7 +757,7 @@ def build_governance_slice(
         finalized["governance_hot_path_docs"] = governance_hot_path_docs[:8]
         finalized["governance_hot_path_docs_authoritative"] = True
     stage_timings["finalize"] = _elapsed_stage_ms(stage_started)
-    record_runtime_timing(
+    odylith_context_engine_runtime_support.record_runtime_timing(
         repo_root=root,
         category="reasoning",
         operation="governance_slice",
@@ -752,62 +799,13 @@ def build_impact_report(
     skip_runtime_warmup: bool = False,
     finalize_packet: bool = True,
 ) -> dict[str, Any]:
-    host = _host()
-    _delivery_profile_hot_path = host._delivery_profile_hot_path
-    _impact_family_profile = host._impact_family_profile
-    tooling_guidance_catalog = host.tooling_guidance_catalog
-    load_runtime_optimization_snapshot = host.load_runtime_optimization_snapshot
-    _elapsed_stage_ms = host._elapsed_stage_ms
-    _resolve_changed_path_scope_context = host._resolve_changed_path_scope_context
-    _broad_shared_only_input = host._broad_shared_only_input
-    _fallback_scan_payload = host._fallback_scan_payload
-    tooling_context_packet_builder = host.tooling_context_packet_builder
-    _impact_packet_state = host._impact_packet_state
-    _compact_hot_path_runtime_packet = host._compact_hot_path_runtime_packet
-    _hot_path_can_stay_fail_closed_without_full_scan = host._hot_path_can_stay_fail_closed_without_full_scan
-    _warm_runtime = host._warm_runtime
-    _connect = host._connect
-    _load_judgment_workstream_hint = host._load_judgment_workstream_hint
-    select_impacted_diagrams = host.select_impacted_diagrams
-    _collect_impacted_components = host._collect_impacted_components
-    _entity_by_kind_id = host._entity_by_kind_id
-    _base_workstream_candidate = host._base_workstream_candidate
-    _workstream_selection = host._workstream_selection
-    _collect_impacted_workstreams = host._collect_impacted_workstreams
-    _collect_relevant_notes = host._collect_relevant_notes
-    _collect_code_neighbors = host._collect_code_neighbors
-    _collect_recommended_tests = host._collect_recommended_tests
-    _collect_component_validation_commands = host._collect_component_validation_commands
-    _dedupe_strings = host._dedupe_strings
-    _companion_context_paths = host._companion_context_paths
-    _collect_relevant_bugs = host._collect_relevant_bugs
-    _collect_retrieval_miss_recovery = host._collect_retrieval_miss_recovery
-    _impact_budget_profile = host._impact_budget_profile
-    _limit_mappings = host._limit_mappings
-    _compact_workstream_row_for_packet = host._compact_workstream_row_for_packet
-    _compact_workstream_selection_for_packet = host._compact_workstream_selection_for_packet
-    _compact_component_row_for_packet = host._compact_component_row_for_packet
-    _compact_diagram_row_for_packet = host._compact_diagram_row_for_packet
-    _compact_engineering_notes = host._compact_engineering_notes
-    _limit_strings = host._limit_strings
-    _recommended_validation_commands = host._recommended_validation_commands
-    _compact_test_row_for_packet = host._compact_test_row_for_packet
-    _component_grounded_selection_none = host._component_grounded_selection_none
-    _compact_architecture_audit_for_packet = host._compact_architecture_audit_for_packet
-    build_architecture_audit = host.build_architecture_audit
-    _compact_code_neighbors_for_packet = host._compact_code_neighbors_for_packet
-    _compact_miss_recovery_for_packet = host._compact_miss_recovery_for_packet
-    record_runtime_timing = host.record_runtime_timing
-    _compact_stage_timings = host._compact_stage_timings
-    _compact_hot_path_payload_within_budget = host._compact_hot_path_payload_within_budget
-
     root = Path(repo_root).resolve()
     started_at = time.perf_counter()
     stage_timings: dict[str, float] = {}
 
     def _record_and_return(payload: Mapping[str, Any], *, component_count: int = 0) -> dict[str, Any]:
         payload_mapping = dict(payload)
-        record_runtime_timing(
+        odylith_context_engine_runtime_support.record_runtime_timing(
             repo_root=root,
             category="reasoning",
             operation="impact",

@@ -1,3 +1,5 @@
+"""Odylith Benchmark Isolation helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 import contextlib

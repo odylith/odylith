@@ -1,3 +1,5 @@
+"""Odylith Context Engine Projection Search Runtime helpers for the Odylith context engine layer."""
+
 from __future__ import annotations
 
 from typing import Any

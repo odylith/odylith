@@ -20,6 +20,11 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   source for maintainer-side coding, testing, generated-artifact authoring,
   branch and write safety, refactor-first policy, release-surface source
   updates, benchmark harness changes, and coding validation expectations.
+- Treat AI slop as a regression. In this product lane, use
+  `../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` together with
+  `agents-guidelines/CODING_STANDARDS.md` to keep fake modularization,
+  duplicate micro-helpers, mirrored host drift, and filler comments out of
+  shipped code.
 - Queued Radar items, case queues, and shell or Compass queue previews are not
   automatic implementation picks in the maintainer lane. Unless the user
   explicitly asks to work a queued item, do not start implementing it just
@@ -126,9 +131,11 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   as acceptable release polish.
 
 ## Routing
+- Shared anti-slop and decomposition policy: `../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md`
 - Maintainer coding standards: `agents-guidelines/CODING_STANDARDS.md`
 - Release benchmark publishing: `agents-guidelines/RELEASE_BENCHMARKS.md`
 - Canonical release order: `../MAINTAINER_RELEASE_RUNBOOK.md`
 
 ## Skills
+- `../skills/odylith-code-hygiene-guard/`
 - `skills/release-benchmark-publishing/`

@@ -47,6 +47,24 @@
   speed or token win that regresses recall, accuracy, precision, grounding,
   or reliability.
 
+## Anti-Slop Bans
+- Treat AI slop as a regression.
+- Apply that bar aggressively in this maintainer lane.
+- Do not ship fake modularization. `def _host()` plus a wall of rebound
+  private host symbols is banned.
+- Do not duplicate generic coercion helpers such as `_mapping`,
+  `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
+  shared owner is appropriate.
+- Do not keep host-mirror files near-identical when a shared helper, shared
+  renderer, or shared formatter would remove the duplicated control flow.
+- Do not add filler comments or docstrings. Comments must explain invariants,
+  failure modes, boundary assumptions, or non-obvious state transitions.
+- New or materially rewritten runtime Python modules must carry a truthful
+  module docstring.
+- Every anti-slop cleanup must add or update enforcement tests.
+- Use `../../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` for the shared
+  ban list, decomposition triggers, and proof contract.
+
 ## Non-Negotiable Maintainer Intervention Bar
 - Go deep on the bound slice before editing. Understand the surrounding
   modules, shared helpers, call sites, invariants, generated surfaces,

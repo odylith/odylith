@@ -1,3 +1,5 @@
+"""Release Planning View Model helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 from collections import defaultdict

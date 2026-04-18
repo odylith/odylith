@@ -1,3 +1,5 @@
+"""CLI helpers for the Odylith intervention engine layer."""
+
 from __future__ import annotations
 
 import argparse

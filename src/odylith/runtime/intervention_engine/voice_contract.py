@@ -1,3 +1,5 @@
+"""Voice Contract helpers for the Odylith intervention engine layer."""
+
 from __future__ import annotations
 
 OBSERVATION_LABEL_MARKDOWN = "**Odylith Observation:**"

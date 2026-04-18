@@ -1,3 +1,5 @@
+"""Authoring Execution Policy helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

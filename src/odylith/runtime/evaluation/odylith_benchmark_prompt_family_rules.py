@@ -1,3 +1,5 @@
+"""Odylith Benchmark Prompt Family Rules helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 

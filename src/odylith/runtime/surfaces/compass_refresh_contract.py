@@ -1,3 +1,5 @@
+"""Compass Refresh Contract helpers for the Odylith surfaces layer."""
+
 from __future__ import annotations
 
 DEFAULT_REFRESH_PROFILE = "shell-safe"

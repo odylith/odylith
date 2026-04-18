@@ -794,13 +794,13 @@ def test_build_governance_slice_hot_path_requests_unfinalized_impact(monkeypatch
         detail_levels.append(str(kwargs.get("detail_level", "full")).strip() or "full")
         return None
 
-    monkeypatch.setattr(store, "load_backlog_detail", _fake_load_backlog_detail)
-    monkeypatch.setattr(store, "load_registry_detail", lambda **kwargs: None)
-    monkeypatch.setattr(store, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
-    monkeypatch.setattr(store, "_governance_closeout_docs", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_governance_diagram_catalog_companions", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_companion_context_paths", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "load_backlog_detail", _fake_load_backlog_detail)
+    monkeypatch.setattr(grounding_runtime, "load_registry_detail", lambda **kwargs: None)
+    monkeypatch.setattr(grounding_runtime, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
+    monkeypatch.setattr(grounding_runtime, "_governance_closeout_docs", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_governance_diagram_catalog_companions", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_companion_context_paths", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: [])
 
     payload = grounding_runtime.build_governance_slice(
         repo_root=tmp_path,
@@ -853,13 +853,13 @@ def test_build_governance_slice_hot_path_uses_grounding_light_workstream_detail(
         }
 
     monkeypatch.setattr(grounding_runtime, "build_impact_report", _fake_build_impact_report)
-    monkeypatch.setattr(store, "load_backlog_detail", _fake_load_backlog_detail)
-    monkeypatch.setattr(store, "load_registry_detail", lambda **kwargs: None)
-    monkeypatch.setattr(store, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
-    monkeypatch.setattr(store, "_governance_closeout_docs", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_governance_diagram_catalog_companions", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_companion_context_paths", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "load_backlog_detail", _fake_load_backlog_detail)
+    monkeypatch.setattr(grounding_runtime, "load_registry_detail", lambda **kwargs: None)
+    monkeypatch.setattr(grounding_runtime, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
+    monkeypatch.setattr(grounding_runtime, "_governance_closeout_docs", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_governance_diagram_catalog_companions", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_companion_context_paths", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: [])
 
     payload = grounding_runtime.build_governance_slice(
         repo_root=tmp_path,
@@ -911,19 +911,19 @@ def test_build_governance_slice_hot_path_prefers_authoritative_governance_docs_b
         return {"context_packet": {}, "route_ready": True}
 
     monkeypatch.setattr(grounding_runtime, "build_impact_report", _fake_build_impact_report)
-    monkeypatch.setattr(store, "load_backlog_detail", lambda **kwargs: None)
-    monkeypatch.setattr(store, "load_registry_detail", lambda **kwargs: None)
-    monkeypatch.setattr(store, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
-    monkeypatch.setattr(store, "_governance_closeout_docs", lambda **kwargs: ["README.md", "docs/benchmarks/README.md"])
-    monkeypatch.setattr(store, "_governance_diagram_catalog_companions", lambda **kwargs: ["odylith/atlas/source/catalog/diagrams.v1.json"])
-    monkeypatch.setattr(store, "_companion_context_paths", lambda **kwargs: ["odylith/technical-plans/example.md"])
-    monkeypatch.setattr(store, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: list(kwargs.get("docs", [])))
+    monkeypatch.setattr(grounding_runtime, "load_backlog_detail", lambda **kwargs: None)
+    monkeypatch.setattr(grounding_runtime, "load_registry_detail", lambda **kwargs: None)
+    monkeypatch.setattr(grounding_runtime, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
+    monkeypatch.setattr(grounding_runtime, "_governance_closeout_docs", lambda **kwargs: ["README.md", "docs/benchmarks/README.md"])
+    monkeypatch.setattr(grounding_runtime, "_governance_diagram_catalog_companions", lambda **kwargs: ["odylith/atlas/source/catalog/diagrams.v1.json"])
+    monkeypatch.setattr(grounding_runtime, "_companion_context_paths", lambda **kwargs: ["odylith/technical-plans/example.md"])
+    monkeypatch.setattr(grounding_runtime, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: list(kwargs.get("docs", [])))
     monkeypatch.setattr(
-        store,
+        grounding_runtime,
         "_governance_hot_path_docs",
         lambda **kwargs: ["odylith/registry/source/components/benchmark/CURRENT_SPEC.md"],
     )
-    monkeypatch.setattr(store, "_compact_hot_path_runtime_packet", lambda **kwargs: dict(kwargs.get("payload", {})))
+    monkeypatch.setattr(grounding_runtime, "_compact_hot_path_runtime_packet", lambda **kwargs: dict(kwargs.get("payload", {})))
     monkeypatch.setattr(store.tooling_context_packet_builder, "finalize_packet", _fake_finalize_packet)
 
     payload = grounding_runtime.build_governance_slice(
