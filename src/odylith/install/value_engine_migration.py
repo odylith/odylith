@@ -1,3 +1,5 @@
+"""Migration helpers for the v0.1.11 visible-intervention value engine cutover."""
+
 from __future__ import annotations
 
 import json
@@ -6,7 +8,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from odylith.install.fs import atomic_write_text
+from odylith.install.fs import atomic_write_text, display_path
+from odylith.install.managed_runtime import managed_runtime_site_packages_roots
 from odylith.runtime.common.product_assets import bundled_product_root
 
 MIGRATION_ID = "v0.1.11-visible-intervention-value-engine"
@@ -33,6 +36,8 @@ _OLD_RUNTIME_PACKAGE_RELATIVE_PATHS: tuple[Path, ...] = (
 
 @dataclass(frozen=True)
 class ValueEngineMigrationResult:
+    """Result payload for the visible-intervention value-engine migration."""
+
     migration_id: str
     applied: bool
     previous_version: str
@@ -43,6 +48,7 @@ class ValueEngineMigrationResult:
     ledger_path: str = ""
 
     def as_dict(self) -> dict[str, Any]:
+        """Return the migration result as a JSON-serializable payload."""
         return {
             "schema_version": MIGRATION_SCHEMA_VERSION,
             "migration_id": self.migration_id,
@@ -57,10 +63,12 @@ class ValueEngineMigrationResult:
 
 
 def _normalize_version(value: str) -> str:
+    """Normalize version tokens so callers may pass `v0.x.y` or `0.x.y`."""
     return str(value or "").strip().lstrip("v")
 
 
 def _version_key(value: str) -> tuple[int, int, int, str]:
+    """Build a sortable key for semantic-ish version comparisons."""
     token = _normalize_version(value)
     parts = token.split(".", 2)
     if len(parts) < 3:
@@ -77,58 +85,44 @@ def _version_key(value: str) -> tuple[int, int, int, str]:
 
 
 def _is_at_least(value: str, baseline: str) -> bool:
+    """Return whether one normalized version is at least the baseline."""
     return _version_key(value) >= _version_key(baseline)
 
 
 def _is_before(value: str, baseline: str) -> bool:
+    """Return whether one normalized version is strictly before the baseline."""
     return bool(_normalize_version(value)) and _version_key(value) < _version_key(baseline)
 
 
 def _ledger_path(*, repo_root: Path) -> Path:
+    """Return the ledger path that records this migration's completion."""
     return repo_root / ".odylith" / "state" / "migrations" / f"{MIGRATION_ID}.v1.json"
 
 
-def _relative_display_path(*, repo_root: Path, path: Path) -> str:
-    try:
-        return path.relative_to(repo_root).as_posix()
-    except ValueError:
-        return path.as_posix()
-
-
 def _old_source_artifact_paths(*, repo_root: Path) -> list[Path]:
+    """Return the legacy source artifacts removed by this migration."""
     return [repo_root / relative_path for relative_path in _OLD_SIGNAL_RANKER_SOURCE_PATHS]
 
-
-def _runtime_site_roots(*, runtime_root: Path | None) -> tuple[Path, ...]:
-    if runtime_root is None or not runtime_root.exists():
-        return ()
-    roots: list[Path] = []
-    for lib_root in (runtime_root / "lib").glob("python*"):
-        site_packages = lib_root / "site-packages"
-        if site_packages.is_dir():
-            roots.append(site_packages)
-    direct = runtime_root / "site-packages"
-    if direct.is_dir():
-        roots.append(direct)
-    return tuple(roots)
-
-
 def _old_runtime_artifact_paths(*, runtime_root: Path | None) -> list[Path]:
+    """Return the legacy runtime artifacts removed by this migration."""
     paths: list[Path] = []
-    for site_root in _runtime_site_roots(runtime_root=runtime_root):
+    for site_root in managed_runtime_site_packages_roots(runtime_root):
         paths.extend(site_root / relative_path for relative_path in _OLD_RUNTIME_PACKAGE_RELATIVE_PATHS)
     return paths
 
 
 def _artifact_exists(paths: Sequence[Path]) -> bool:
+    """Return whether any migration target artifact still exists."""
     return any(path.exists() for path in paths)
 
 
 def _value_corpus_source() -> Path:
+    """Return the bundled replacement corpus shipped with the product."""
     return bundled_product_root() / "runtime" / "source" / VALUE_CORPUS_RELATIVE_PATH.name
 
 
 def _copy_value_corpus(*, repo_root: Path) -> tuple[str, ...]:
+    """Copy the bundled value corpus into the repo when it changed."""
     source_path = _value_corpus_source()
     if not source_path.is_file():
         return ()
@@ -139,34 +133,54 @@ def _copy_value_corpus(*, repo_root: Path) -> tuple[str, ...]:
     if current_text == source_text:
         return ()
     atomic_write_text(target_path, source_text, encoding="utf-8")
-    return (_relative_display_path(repo_root=repo_root, path=target_path),)
+    return (display_path(repo_root=repo_root, path=target_path),)
 
 
 def _remove_paths(*, repo_root: Path, paths: Sequence[Path]) -> tuple[str, ...]:
+    """Remove legacy files and directories, returning the removed display paths."""
     removed: list[str] = []
     for path in paths:
         if path.is_symlink() or path.is_file():
             path.unlink()
-            removed.append(_relative_display_path(repo_root=repo_root, path=path))
+            removed.append(display_path(repo_root=repo_root, path=path))
         elif path.is_dir():
             for child in sorted(path.rglob("*"), key=lambda item: len(item.parts), reverse=True):
                 if child.is_symlink() or child.is_file():
                     child.unlink()
-                    removed.append(_relative_display_path(repo_root=repo_root, path=child))
+                    removed.append(display_path(repo_root=repo_root, path=child))
                 elif child.is_dir():
                     child.rmdir()
             path.rmdir()
-            removed.append(_relative_display_path(repo_root=repo_root, path=path))
+            removed.append(display_path(repo_root=repo_root, path=path))
     return tuple(removed)
 
 
 def _write_ledger(*, repo_root: Path, payload: Mapping[str, Any]) -> str:
+    """Write the migration ledger with the current UTC timestamp."""
     path = _ledger_path(repo_root=repo_root)
     path.parent.mkdir(parents=True, exist_ok=True)
     normalized = dict(payload)
     normalized["recorded_utc"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     atomic_write_text(path, json.dumps(normalized, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return _relative_display_path(repo_root=repo_root, path=path)
+    return display_path(repo_root=repo_root, path=path)
+
+
+def _should_apply_migration(
+    *,
+    previous_version: str,
+    target_version: str,
+    source_artifacts: Sequence[Path],
+    runtime_artifacts: Sequence[Path],
+    ledger_exists: bool,
+) -> bool:
+    """Return whether the migration still needs to run for this install posture."""
+    return _is_at_least(target_version, TARGET_VERSION) and (
+        not previous_version
+        or _is_before(previous_version, TARGET_VERSION)
+        or _artifact_exists(source_artifacts)
+        or _artifact_exists(runtime_artifacts)
+        or not ledger_exists
+    )
 
 
 def migrate_visible_intervention_value_engine(
@@ -176,21 +190,20 @@ def migrate_visible_intervention_value_engine(
     target_version: str = "",
     runtime_root: str | Path | None = None,
 ) -> ValueEngineMigrationResult:
+    """Apply the v0.1.11 value-engine migration when the install is in scope."""
     root = Path(repo_root).expanduser().resolve()
     target = _normalize_version(target_version)
     previous = _normalize_version(previous_version)
     runtime = Path(runtime_root).expanduser().resolve() if runtime_root is not None else None
     source_artifacts = _old_source_artifact_paths(repo_root=root)
     runtime_artifacts = _old_runtime_artifact_paths(runtime_root=runtime)
-    should_run = (
-        _is_at_least(target, TARGET_VERSION)
-        and (
-            not previous
-            or _is_before(previous, TARGET_VERSION)
-            or _artifact_exists(source_artifacts)
-            or _artifact_exists(runtime_artifacts)
-            or not _ledger_path(repo_root=root).is_file()
-        )
+    ledger_path = _ledger_path(repo_root=root)
+    should_run = _should_apply_migration(
+        previous_version=previous,
+        target_version=target,
+        source_artifacts=source_artifacts,
+        runtime_artifacts=runtime_artifacts,
+        ledger_exists=ledger_path.is_file(),
     )
     if not should_run:
         return ValueEngineMigrationResult(
@@ -199,7 +212,7 @@ def migrate_visible_intervention_value_engine(
             previous_version=previous,
             target_version=target,
             skipped_reason="target_not_in_v0_1_11_migration_window",
-            ledger_path=_relative_display_path(repo_root=root, path=_ledger_path(repo_root=root)),
+            ledger_path=display_path(repo_root=root, path=ledger_path),
         )
     removed = _remove_paths(repo_root=root, paths=source_artifacts + runtime_artifacts)
     written = _copy_value_corpus(repo_root=root)

@@ -1,3 +1,5 @@
+"""Detect drift between Compass runtime release state and source truth."""
+
 from __future__ import annotations
 
 import json
@@ -12,19 +14,21 @@ _ACTIVE_WORKSTREAM_STATUSES = {"planning", "implementation"}
 
 
 def _load_idea_specs(*, repo_root: Path) -> dict[str, backlog_contract.IdeaSpec]:
+    """Load valid backlog idea specs keyed by normalized workstream id."""
     ideas_root = Path(repo_root).resolve() / "odylith" / "radar" / "source" / "ideas"
     if not ideas_root.is_dir():
         return {}
     specs: dict[str, backlog_contract.IdeaSpec] = {}
     for path in sorted(ideas_root.rglob("*.md")):
         spec = backlog_contract._parse_idea_spec(path)  # noqa: SLF001
-        idea_id = str(spec.metadata.get("idea_id", "")).strip().upper()
-        if backlog_contract._IDEA_ID_RE.fullmatch(idea_id):  # noqa: SLF001
+        idea_id = _normalized_idea_id(spec.metadata.get("idea_id"))
+        if idea_id:
             specs[idea_id] = spec
     return specs
 
 
 def load_release_view_from_source(*, repo_root: Path) -> tuple[dict[str, Any], dict[str, str], list[str]]:
+    """Build the release planning read model from repo source files."""
     idea_specs = _load_idea_specs(repo_root=repo_root)
     payload, errors, _state = release_planning_view_model.build_release_view_from_repo(
         repo_root=Path(repo_root).resolve(),
@@ -37,34 +41,42 @@ def load_release_view_from_source(*, repo_root: Path) -> tuple[dict[str, Any], d
     return payload, workstream_status_by_id, list(errors)
 
 
+def _normalized_idea_id(value: Any) -> str:
+    """Return a canonical idea id when the value matches the backlog contract."""
+    idea_id = str(value or "").strip().upper()
+    return idea_id if backlog_contract._IDEA_ID_RE.fullmatch(idea_id) else ""  # noqa: SLF001
+
+
 def _workstream_ids(items: Any) -> list[str]:
+    """Normalize arbitrary release membership lists into sorted idea ids."""
     if not isinstance(items, list):
         return []
-    return sorted(
-        {
-            str(item).strip().upper()
-            for item in items
-            if backlog_contract._IDEA_ID_RE.fullmatch(str(item).strip().upper())  # noqa: SLF001
-        }
-    )
+    return sorted({idea_id for item in items if (idea_id := _normalized_idea_id(item))})
+
+
+def _active_workstream_ids(rows: Any) -> list[str]:
+    """Collect active or planning workstream ids from a list of row mappings."""
+    if not isinstance(rows, list):
+        return []
+    active_ids: set[str] = set()
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        if str(row.get("status", "")).strip().lower() not in _ACTIVE_WORKSTREAM_STATUSES:
+            continue
+        idea_id = _normalized_idea_id(row.get("idea_id"))
+        if idea_id:
+            active_ids.add(idea_id)
+    return sorted(active_ids)
 
 
 def _runtime_workstream_ids(payload: Mapping[str, Any]) -> list[str]:
-    current = payload.get("current_workstreams")
-    if not isinstance(current, list):
-        return []
-    return sorted(
-        {
-            str(row.get("idea_id", "")).strip().upper()
-            for row in current
-            if isinstance(row, Mapping)
-            and str(row.get("status", "")).strip().lower() in _ACTIVE_WORKSTREAM_STATUSES
-            and backlog_contract._IDEA_ID_RE.fullmatch(str(row.get("idea_id", "")).strip().upper())  # noqa: SLF001
-        }
-    )
+    """Read visible current workstream membership from the runtime payload."""
+    return _active_workstream_ids(payload.get("current_workstreams"))
 
 
 def _read_json_object(path: Path) -> dict[str, Any]:
+    """Load a JSON object from disk, returning an empty dict on read errors."""
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -76,6 +88,7 @@ def _load_compass_release_truth_from_traceability(
     *,
     repo_root: Path,
 ) -> tuple[dict[str, Any], list[str]]:
+    """Load release truth directly from the traceability graph when present."""
     payload = _read_json_object(
         Path(repo_root).resolve() / "odylith" / "radar" / "traceability-graph.v1.json"
     )
@@ -88,20 +101,11 @@ def _load_compass_release_truth_from_traceability(
     )
     if not current_release:
         return {}, []
-    rows = payload.get("workstreams")
-    current_workstreams = sorted(
-        {
-            str(row.get("idea_id", "")).strip().upper()
-            for row in rows
-            if isinstance(row, Mapping)
-            and str(row.get("status", "")).strip().lower() in _ACTIVE_WORKSTREAM_STATUSES
-            and backlog_contract._IDEA_ID_RE.fullmatch(str(row.get("idea_id", "")).strip().upper())  # noqa: SLF001
-        }
-    ) if isinstance(rows, list) else []
-    return current_release, current_workstreams
+    return current_release, _active_workstream_ids(payload.get("workstreams"))
 
 
 def _format_workstreams(items: list[str]) -> str:
+    """Render workstream id lists for operator-facing drift warnings."""
     if not items:
         return "none"
     return ", ".join(items)
@@ -112,6 +116,7 @@ def build_compass_runtime_truth_drift(
     repo_root: Path,
     runtime_payload: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Describe visible Compass drift relative to the current release truth."""
     payload = dict(runtime_payload or {})
     if not payload:
         return {}

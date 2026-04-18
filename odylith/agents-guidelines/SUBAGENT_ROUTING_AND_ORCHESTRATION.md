@@ -19,10 +19,12 @@
   may rank routing affordances, but they must not spawn subagents or spend
   host model credits to classify pressure.
 - When a grounded slice touches a hand-maintained source file that is already
-  beyond policy thresholds, keep the delegated or local plan aligned with
-  [CODING_STANDARDS.md](./CODING_STANDARDS.md): refactor-first, bounded, and
-  reuse-oriented instead of authorizing more in-place growth for the
-  oversized file unless an explicit exception already exists.
+  beyond the applicable policy thresholds, keep the delegated or local plan
+  aligned with the active coding standards for that lane: maintainer work
+  follows
+  [../maintainer/agents-guidelines/CODING_STANDARDS.md](../maintainer/agents-guidelines/CODING_STANDARDS.md),
+  while consumer work defers to the repo's own policy after Odylith narrows
+  the slice.
 - Prefer route-ready execution payloads over ad-hoc task drafting.
 - Stay local when the task is under-specified, shared-write-heavy, or blocked on immediate adjudication.
 

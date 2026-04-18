@@ -13,6 +13,7 @@ from odylith.runtime.surfaces import dashboard_surface_bundle
 
 @dataclass(frozen=True)
 class ToolingDashboardSurfacePaths:
+    """Concrete HTML output paths for the tooling dashboard and linked surfaces."""
     output_path: Path
     radar_path: Path
     atlas_path: Path
@@ -23,10 +24,12 @@ class ToolingDashboardSurfacePaths:
 
 @dataclass(frozen=True)
 class ToolingDashboardBuildResult:
+    """Runtime payload bundle returned by the tooling dashboard builder."""
     runtime_payload: dict[str, Any]
 
 
 def _shell_repo_name(*, repo_root: Path) -> str:
+    """Return the shell repo label shown in the tooling dashboard chrome."""
     root = Path(repo_root).resolve()
     if (root / "src" / "odylith").is_dir() and (root / "odylith").is_dir() and (root / "pyproject.toml").is_file():
         return "odylith"
@@ -34,11 +37,13 @@ def _shell_repo_name(*, repo_root: Path) -> str:
 
 
 def _as_href(*, output_path: Path, target: Path) -> str:
+    """Build a relative href from the dashboard output to another surface."""
     rel = os.path.relpath(str(target), start=str(output_path.parent))
     return Path(rel).as_posix()
 
 
 def _rendered_surface_files(*, surface_html: Path) -> list[Path]:
+    """Collect rendered files that contribute to one surface version token."""
     files: list[Path] = []
     if surface_html.is_file():
         files.append(surface_html)
@@ -59,6 +64,7 @@ def _rendered_surface_files(*, surface_html: Path) -> list[Path]:
 
 
 def _surface_version_token(*, surface_html: Path) -> str:
+    """Return the max mtime token across the rendered files for one surface."""
     mtimes = [
         path.stat().st_mtime_ns
         for path in _rendered_surface_files(surface_html=surface_html)
@@ -70,23 +76,29 @@ def _surface_version_token(*, surface_html: Path) -> str:
 
 
 def _versioned_surface_href(*, output_path: Path, target: Path) -> str:
+    """Append a cache-busting version token to one linked surface href."""
     href = _as_href(output_path=output_path, target=target)
     version = _surface_version_token(surface_html=target)
     return dashboard_surface_bundle.append_query_param(href=href, name="v", value=version)
 
 
+def _surface_checks(paths: ToolingDashboardSurfacePaths) -> tuple[tuple[str, Path], ...]:
+    """Return the named surface html files that must exist for the dashboard."""
+    return (
+        ("radar", paths.radar_path),
+        ("atlas", paths.atlas_path),
+        ("compass", paths.compass_path),
+        ("registry", paths.registry_path),
+        ("casebook", paths.casebook_path),
+    )
+
+
 def validate_surface_paths(paths: ToolingDashboardSurfacePaths) -> list[str]:
+    """Validate that all linked tooling-dashboard surface html files exist."""
     errors: list[str] = []
-    if not paths.radar_path.is_file():
-        errors.append(f"missing radar html: {paths.radar_path}")
-    if not paths.atlas_path.is_file():
-        errors.append(f"missing atlas html: {paths.atlas_path}")
-    if not paths.compass_path.is_file():
-        errors.append(f"missing compass html: {paths.compass_path}")
-    if not paths.registry_path.is_file():
-        errors.append(f"missing registry html: {paths.registry_path}")
-    if not paths.casebook_path.is_file():
-        errors.append(f"missing casebook html: {paths.casebook_path}")
+    for label, path in _surface_checks(paths):
+        if not path.is_file():
+            errors.append(f"missing {label} html: {path}")
     return errors
 
 
@@ -102,6 +114,7 @@ def build_runtime_payload(
     brand_payload: Mapping[str, Any],
     shell_version_label: str,
 ) -> ToolingDashboardBuildResult:
+    """Build the runtime payload consumed by the tooling dashboard shell."""
     spotlight_payload = dict(release_spotlight)
     version_story_payload = dict(version_story)
 

@@ -1,3 +1,5 @@
+"""Regression coverage for Codex host capability inspection and rendering."""
+
 from __future__ import annotations
 
 import json
@@ -9,6 +11,7 @@ from odylith.runtime.surfaces import codex_host_compatibility
 
 
 def _seed_repo(repo_root: Path) -> None:
+    """Create the minimum repo-local Codex asset surface needed for tests."""
     (repo_root / "AGENTS.md").write_text("# Repo Guidance\n\nUse Odylith first.\n", encoding="utf-8")
     launcher = repo_root / ".odylith" / "bin"
     launcher.mkdir(parents=True, exist_ok=True)

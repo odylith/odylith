@@ -1,3 +1,5 @@
+"""Regression coverage for derivation provenance helpers."""
+
 from __future__ import annotations
 
 import json

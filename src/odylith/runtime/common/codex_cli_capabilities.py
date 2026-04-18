@@ -32,6 +32,7 @@ _CODEX_CHECKPOINT_MATCHER_TOKENS: tuple[str, ...] = ("Bash",)
 
 @dataclass(frozen=True)
 class CodexCliCapabilitySnapshot:
+    """Captured Codex CLI capability state for one repo and binary combination."""
     repo_root: str
     codex_bin: str
     codex_available: bool
@@ -57,10 +58,12 @@ class CodexCliCapabilitySnapshot:
     overall_posture: str
 
     def to_dict(self) -> dict[str, Any]:
+        """Return the snapshot as a plain mapping for JSON output."""
         return asdict(self)
 
 
 def _resolve_repo_root(repo_root: Path | str) -> Path:
+    """Normalize repo-root inputs onto a resolved filesystem path."""
     return Path(repo_root).resolve()
 
 
@@ -71,6 +74,7 @@ def _run_codex_command(
     args: list[str],
     timeout: int = 10,
 ) -> subprocess.CompletedProcess[str] | None:
+    """Run a Codex CLI command and suppress local execution/probe failures."""
     try:
         return subprocess.run(
             [codex_bin, *args],
@@ -85,6 +89,7 @@ def _run_codex_command(
 
 
 def parse_codex_version(text: str) -> str:
+    """Extract a version token from `codex --version` style output."""
     match = _CODEX_VERSION_RE.search(str(text or ""))
     if match:
         return str(match.group("version")).strip()
@@ -93,6 +98,7 @@ def parse_codex_version(text: str) -> str:
 
 
 def parse_feature_flags(text: str) -> dict[str, dict[str, Any]]:
+    """Parse `codex features list` output into a structured mapping."""
     parsed: dict[str, dict[str, Any]] = {}
     for raw_line in str(text or "").splitlines():
         line = raw_line.strip()
@@ -112,6 +118,7 @@ def parse_feature_flags(text: str) -> dict[str, dict[str, Any]]:
 
 
 def _first_project_doc_probe_token(repo_root: Path) -> str:
+    """Return the first non-empty AGENTS line for prompt-input probe matching."""
     path = repo_root / "AGENTS.md"
     if not path.is_file():
         return ""
@@ -123,6 +130,7 @@ def _first_project_doc_probe_token(repo_root: Path) -> str:
 
 
 def _unsupported_probe(completed: subprocess.CompletedProcess[str] | None) -> bool:
+    """Return whether a probe failed because the CLI subcommand is unsupported."""
     if completed is None:
         return False
     combined = f"{completed.stdout}\n{completed.stderr}".lower()
@@ -130,6 +138,7 @@ def _unsupported_probe(completed: subprocess.CompletedProcess[str] | None) -> bo
 
 
 def _load_codex_hooks(repo_root: Path) -> dict[str, Any]:
+    """Load the local Codex hooks configuration when present and valid."""
     path = repo_root / ".codex" / "hooks.json"
     if not path.is_file():
         return {}
@@ -141,6 +150,7 @@ def _load_codex_hooks(repo_root: Path) -> dict[str, Any]:
 
 
 def _matcher_tokens(value: Any) -> set[str]:
+    """Split a hook matcher expression into comparable tokens."""
     matcher = str(value or "").strip()
     if not matcher:
         return set()
@@ -148,6 +158,7 @@ def _matcher_tokens(value: Any) -> set[str]:
 
 
 def _matcher_covers(value: Any, required_tokens: tuple[str, ...]) -> bool:
+    """Return whether a matcher covers the required hook token set."""
     if not required_tokens:
         return True
     matcher = str(value or "").strip()
@@ -164,6 +175,7 @@ def _hook_command_present(
     *,
     required_matcher_tokens: tuple[str, ...] = (),
 ) -> bool:
+    """Return whether a hooks payload wires the requested command for one event."""
     bucket = payload.get(event_name)
     if not isinstance(bucket, list):
         return False
@@ -185,17 +197,29 @@ def _hook_command_present(
     return False
 
 
+def _baseline_asset_state(repo_root: Path) -> dict[str, bool]:
+    """Inspect the repo-local assets that define the Codex baseline contract."""
+    return {
+        "launcher_present": (repo_root / ".odylith" / "bin" / "odylith").is_file(),
+        "repo_agents_present": (repo_root / "AGENTS.md").is_file(),
+        "codex_project_assets_present": (
+            (repo_root / ".codex" / "config.toml").is_file()
+            and (repo_root / ".codex" / "hooks.json").is_file()
+            and any((repo_root / ".codex" / "agents").glob("*.toml"))
+        ),
+        "codex_skill_shims_present": any((repo_root / ".agents" / "skills").rglob("SKILL.md")),
+    }
+
+
 @lru_cache(maxsize=32)
 def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) -> CodexCliCapabilitySnapshot:
+    """Probe Codex CLI capabilities and cache the result for repeated reads."""
     resolved_root = _resolve_repo_root(repo_root)
-    launcher_present = (resolved_root / ".odylith" / "bin" / "odylith").is_file()
-    repo_agents_present = (resolved_root / "AGENTS.md").is_file()
-    codex_project_assets_present = (
-        (resolved_root / ".codex" / "config.toml").is_file()
-        and (resolved_root / ".codex" / "hooks.json").is_file()
-        and any((resolved_root / ".codex" / "agents").glob("*.toml"))
-    )
-    codex_skill_shims_present = any((resolved_root / ".agents" / "skills").rglob("SKILL.md"))
+    assets = _baseline_asset_state(resolved_root)
+    launcher_present = assets["launcher_present"]
+    repo_agents_present = assets["repo_agents_present"]
+    codex_project_assets_present = assets["codex_project_assets_present"]
+    codex_skill_shims_present = assets["codex_skill_shims_present"]
     baseline_ready = launcher_present and repo_agents_present
     hooks_payload = _load_codex_hooks(resolved_root)
     supports_user_prompt_submit_hook = _hook_command_present(
@@ -284,6 +308,7 @@ def _inspect_cached(repo_root: str, codex_bin: str, probe_prompt_input: bool) ->
 
 
 def clear_codex_cli_capability_cache() -> None:
+    """Clear memoized Codex CLI capability snapshots."""
     _inspect_cached.cache_clear()
 
 
@@ -293,6 +318,7 @@ def inspect_codex_cli_capabilities(
     codex_bin: str = "codex",
     probe_prompt_input: bool = True,
 ) -> CodexCliCapabilitySnapshot:
+    """Inspect Codex CLI capabilities for the given repo and binary."""
     return _inspect_cached(str(_resolve_repo_root(repo_root)), str(codex_bin or "codex").strip() or "codex", bool(probe_prompt_input))
 
 
@@ -301,6 +327,7 @@ def render_effective_codex_project_config(
     repo_root: Path | str = ".",
     capabilities: CodexCliCapabilitySnapshot | None = None,
 ) -> str:
+    """Render the effective `.codex/config.toml` that Odylith expects locally."""
     resolved_root = _resolve_repo_root(repo_root)
     snapshot = capabilities or inspect_codex_cli_capabilities(
         repo_root=resolved_root,
@@ -336,6 +363,7 @@ def write_effective_codex_project_config(
     repo_root: Path | str,
     capabilities: CodexCliCapabilitySnapshot | None = None,
 ) -> Path:
+    """Write the effective Codex project config into the repo-local `.codex` tree."""
     resolved_root = _resolve_repo_root(repo_root)
     target_path = resolved_root / ".codex" / "config.toml"
     target_path.parent.mkdir(parents=True, exist_ok=True)

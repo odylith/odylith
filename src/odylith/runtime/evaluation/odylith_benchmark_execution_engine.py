@@ -4,10 +4,43 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.execution_engine import runtime_lane_policy
+from odylith.runtime.evaluation import benchmark_metric_helpers
 
 
 FAMILY = "execution_engine"
 CANONICAL_COMPONENT_ID = execution_engine_handshake.CANONICAL_EXECUTION_ENGINE_COMPONENT_ID
+_SUMMARY_DELTA_FIELDS = {
+    "execution_engine_present_rate_delta": "execution_engine_present_rate",
+    "execution_engine_resume_token_present_delta": "execution_engine_resume_token_present_rate",
+    "execution_engine_outcome_accuracy_delta": "execution_engine_outcome_accuracy_rate",
+    "execution_engine_false_admit_rate_delta": "execution_engine_false_admit_rate",
+    "execution_engine_false_deny_rate_delta": "execution_engine_false_deny_rate",
+    "execution_engine_mode_accuracy_delta": "execution_engine_mode_accuracy_rate",
+    "execution_engine_next_move_accuracy_delta": "execution_engine_next_move_accuracy_rate",
+    "execution_engine_closure_accuracy_delta": "execution_engine_closure_accuracy_rate",
+    "execution_engine_wait_status_accuracy_delta": "execution_engine_wait_status_accuracy_rate",
+    "execution_engine_validation_archetype_accuracy_delta": "execution_engine_validation_archetype_accuracy_rate",
+    "execution_engine_current_phase_accuracy_delta": "execution_engine_current_phase_accuracy_rate",
+    "execution_engine_last_successful_phase_accuracy_delta": "execution_engine_last_successful_phase_accuracy_rate",
+    "execution_engine_authoritative_lane_accuracy_delta": "execution_engine_authoritative_lane_accuracy_rate",
+    "execution_engine_target_lane_accuracy_delta": "execution_engine_target_lane_accuracy_rate",
+    "execution_engine_resume_token_accuracy_delta": "execution_engine_resume_token_accuracy_rate",
+    "execution_engine_host_family_accuracy_delta": "execution_engine_host_family_accuracy_rate",
+    "execution_engine_model_family_accuracy_delta": "execution_engine_model_family_accuracy_rate",
+    "execution_engine_component_id_accuracy_delta": "execution_engine_component_id_accuracy_rate",
+    "execution_engine_canonical_component_id_accuracy_delta": "execution_engine_canonical_component_id_accuracy_rate",
+    "execution_engine_identity_status_accuracy_delta": "execution_engine_identity_status_accuracy_rate",
+    "execution_engine_target_component_status_accuracy_delta": "execution_engine_target_component_status_accuracy_rate",
+    "execution_engine_snapshot_reuse_status_accuracy_delta": "execution_engine_snapshot_reuse_status_accuracy_rate",
+    "execution_engine_reanchor_accuracy_delta": "execution_engine_reanchor_accuracy_rate",
+    "execution_engine_delegation_guard_accuracy_delta": "execution_engine_delegation_guard_accuracy_rate",
+    "execution_engine_parallelism_guard_accuracy_delta": "execution_engine_parallelism_guard_accuracy_rate",
+    "execution_engine_median_context_packet_build_ms_delta": "execution_engine_median_context_packet_build_ms",
+    "execution_engine_median_snapshot_duration_ms_delta": "execution_engine_median_snapshot_duration_ms",
+    "execution_engine_median_prompt_bundle_tokens_delta": "execution_engine_median_prompt_bundle_tokens",
+    "execution_engine_median_runtime_contract_tokens_delta": "execution_engine_median_runtime_contract_tokens",
+    "execution_engine_median_total_payload_tokens_delta": "execution_engine_median_total_payload_tokens",
+}
 
 
 def _token(value: Any) -> str:
@@ -202,13 +235,6 @@ def _backed(row: Mapping[str, Any]) -> bool:
         or packet.get("execution_engine_present")
         or any(str(key).startswith("expected_execution_engine_") for key in details)
     )
-
-
-def _rate(flags: Sequence[bool]) -> float:
-    values = [1.0 if bool(flag) else 0.0 for flag in flags]
-    if not values:
-        return 0.0
-    return round(sum(values) / max(1, len(values)), 3)
 
 
 def _number(value: Any) -> float:
@@ -418,8 +444,10 @@ def summary_from_rows(scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, A
 
     return {
         "execution_engine_backed_scenario_count": len(rows),
-        "execution_engine_present_rate": _rate(present),
-        "execution_engine_resume_token_present_rate": _rate(resume_token_present),
+        "execution_engine_present_rate": benchmark_metric_helpers.boolean_rate(present),
+        "execution_engine_resume_token_present_rate": benchmark_metric_helpers.boolean_rate(
+            resume_token_present
+        ),
         "execution_engine_expected_outcome_count": outcome_backed_count,
         "execution_engine_expected_mode_count": mode_backed_count,
         "execution_engine_expected_next_move_count": next_move_backed_count,
@@ -446,236 +474,78 @@ def summary_from_rows(scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, A
         "execution_engine_median_prompt_bundle_tokens": _median(prompt_bundle_tokens),
         "execution_engine_median_runtime_contract_tokens": _median(runtime_contract_tokens),
         "execution_engine_median_total_payload_tokens": _median(total_payload_tokens),
-        "execution_engine_false_admit_rate": _rate(false_admit),
-        "execution_engine_false_deny_rate": _rate(false_deny),
-        "execution_engine_outcome_accuracy_rate": _rate(outcome_accuracy),
-        "execution_engine_mode_accuracy_rate": _rate(mode_accuracy),
-        "execution_engine_next_move_accuracy_rate": _rate(next_move_accuracy),
-        "execution_engine_closure_accuracy_rate": _rate(closure_accuracy),
-        "execution_engine_wait_status_accuracy_rate": _rate(wait_status_accuracy),
-        "execution_engine_validation_archetype_accuracy_rate": _rate(validation_accuracy),
-        "execution_engine_current_phase_accuracy_rate": _rate(current_phase_accuracy),
-        "execution_engine_last_successful_phase_accuracy_rate": _rate(
+        "execution_engine_false_admit_rate": benchmark_metric_helpers.boolean_rate(false_admit),
+        "execution_engine_false_deny_rate": benchmark_metric_helpers.boolean_rate(false_deny),
+        "execution_engine_outcome_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            outcome_accuracy
+        ),
+        "execution_engine_mode_accuracy_rate": benchmark_metric_helpers.boolean_rate(mode_accuracy),
+        "execution_engine_next_move_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            next_move_accuracy
+        ),
+        "execution_engine_closure_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            closure_accuracy
+        ),
+        "execution_engine_wait_status_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            wait_status_accuracy
+        ),
+        "execution_engine_validation_archetype_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            validation_accuracy
+        ),
+        "execution_engine_current_phase_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            current_phase_accuracy
+        ),
+        "execution_engine_last_successful_phase_accuracy_rate": benchmark_metric_helpers.boolean_rate(
             last_successful_phase_accuracy
         ),
-        "execution_engine_authoritative_lane_accuracy_rate": _rate(
+        "execution_engine_authoritative_lane_accuracy_rate": benchmark_metric_helpers.boolean_rate(
             authoritative_lane_accuracy
         ),
-        "execution_engine_target_lane_accuracy_rate": _rate(target_lane_accuracy),
-        "execution_engine_resume_token_accuracy_rate": _rate(resume_token_accuracy),
-        "execution_engine_host_family_accuracy_rate": _rate(host_family_accuracy),
-        "execution_engine_model_family_accuracy_rate": _rate(model_family_accuracy),
-        "execution_engine_component_id_accuracy_rate": _rate(component_id_accuracy),
-        "execution_engine_canonical_component_id_accuracy_rate": _rate(canonical_component_id_accuracy),
-        "execution_engine_identity_status_accuracy_rate": _rate(identity_status_accuracy),
-        "execution_engine_target_component_status_accuracy_rate": _rate(
+        "execution_engine_target_lane_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            target_lane_accuracy
+        ),
+        "execution_engine_resume_token_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            resume_token_accuracy
+        ),
+        "execution_engine_host_family_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            host_family_accuracy
+        ),
+        "execution_engine_model_family_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            model_family_accuracy
+        ),
+        "execution_engine_component_id_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            component_id_accuracy
+        ),
+        "execution_engine_canonical_component_id_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            canonical_component_id_accuracy
+        ),
+        "execution_engine_identity_status_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            identity_status_accuracy
+        ),
+        "execution_engine_target_component_status_accuracy_rate": benchmark_metric_helpers.boolean_rate(
             target_component_status_accuracy
         ),
-        "execution_engine_snapshot_reuse_status_accuracy_rate": _rate(
+        "execution_engine_snapshot_reuse_status_accuracy_rate": benchmark_metric_helpers.boolean_rate(
             snapshot_reuse_status_accuracy
         ),
-        "execution_engine_reanchor_accuracy_rate": _rate(requires_reanchor_accuracy),
-        "execution_engine_delegation_guard_accuracy_rate": _rate(
+        "execution_engine_reanchor_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            requires_reanchor_accuracy
+        ),
+        "execution_engine_delegation_guard_accuracy_rate": benchmark_metric_helpers.boolean_rate(
             delegation_guard_accuracy
         ),
-        "execution_engine_parallelism_guard_accuracy_rate": _rate(
+        "execution_engine_parallelism_guard_accuracy_rate": benchmark_metric_helpers.boolean_rate(
             parallelism_guard_accuracy
         ),
     }
 
 
 def comparison(*, candidate: Mapping[str, Any], baseline: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        "execution_engine_present_rate_delta": round(
-            float(candidate.get("execution_engine_present_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_present_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_resume_token_present_delta": round(
-            float(candidate.get("execution_engine_resume_token_present_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_resume_token_present_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_outcome_accuracy_delta": round(
-            float(candidate.get("execution_engine_outcome_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_outcome_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_false_admit_rate_delta": round(
-            float(candidate.get("execution_engine_false_admit_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_false_admit_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_false_deny_rate_delta": round(
-            float(candidate.get("execution_engine_false_deny_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_false_deny_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_mode_accuracy_delta": round(
-            float(candidate.get("execution_engine_mode_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_mode_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_next_move_accuracy_delta": round(
-            float(candidate.get("execution_engine_next_move_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_next_move_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_closure_accuracy_delta": round(
-            float(candidate.get("execution_engine_closure_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_closure_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_wait_status_accuracy_delta": round(
-            float(candidate.get("execution_engine_wait_status_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_wait_status_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_validation_archetype_accuracy_delta": round(
-            float(candidate.get("execution_engine_validation_archetype_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_validation_archetype_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_current_phase_accuracy_delta": round(
-            float(candidate.get("execution_engine_current_phase_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_current_phase_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_last_successful_phase_accuracy_delta": round(
-            float(candidate.get("execution_engine_last_successful_phase_accuracy_rate", 0.0) or 0.0)
-            - float(
-                baseline.get("execution_engine_last_successful_phase_accuracy_rate", 0.0)
-                or 0.0
-            ),
-            3,
-        ),
-        "execution_engine_authoritative_lane_accuracy_delta": round(
-            float(candidate.get("execution_engine_authoritative_lane_accuracy_rate", 0.0) or 0.0)
-            - float(
-                baseline.get("execution_engine_authoritative_lane_accuracy_rate", 0.0)
-                or 0.0
-            ),
-            3,
-        ),
-        "execution_engine_target_lane_accuracy_delta": round(
-            float(candidate.get("execution_engine_target_lane_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_target_lane_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_resume_token_accuracy_delta": round(
-            float(candidate.get("execution_engine_resume_token_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_resume_token_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_host_family_accuracy_delta": round(
-            float(candidate.get("execution_engine_host_family_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_host_family_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_model_family_accuracy_delta": round(
-            float(candidate.get("execution_engine_model_family_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_model_family_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_component_id_accuracy_delta": round(
-            float(candidate.get("execution_engine_component_id_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_component_id_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_canonical_component_id_accuracy_delta": round(
-            float(
-                candidate.get("execution_engine_canonical_component_id_accuracy_rate", 0.0)
-                or 0.0
-            )
-            - float(
-                baseline.get("execution_engine_canonical_component_id_accuracy_rate", 0.0)
-                or 0.0
-            ),
-            3,
-        ),
-        "execution_engine_identity_status_accuracy_delta": round(
-            float(candidate.get("execution_engine_identity_status_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_identity_status_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_target_component_status_accuracy_delta": round(
-            float(
-                candidate.get("execution_engine_target_component_status_accuracy_rate", 0.0)
-                or 0.0
-            )
-            - float(
-                baseline.get("execution_engine_target_component_status_accuracy_rate", 0.0)
-                or 0.0
-            ),
-            3,
-        ),
-        "execution_engine_snapshot_reuse_status_accuracy_delta": round(
-            float(
-                candidate.get("execution_engine_snapshot_reuse_status_accuracy_rate", 0.0)
-                or 0.0
-            )
-            - float(
-                baseline.get("execution_engine_snapshot_reuse_status_accuracy_rate", 0.0)
-                or 0.0
-            ),
-            3,
-        ),
-        "execution_engine_reanchor_accuracy_delta": round(
-            float(candidate.get("execution_engine_reanchor_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_reanchor_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_delegation_guard_accuracy_delta": round(
-            float(candidate.get("execution_engine_delegation_guard_accuracy_rate", 0.0) or 0.0)
-            - float(
-                baseline.get("execution_engine_delegation_guard_accuracy_rate", 0.0)
-                or 0.0
-            ),
-            3,
-        ),
-        "execution_engine_parallelism_guard_accuracy_delta": round(
-            float(candidate.get("execution_engine_parallelism_guard_accuracy_rate", 0.0) or 0.0)
-            - float(
-                baseline.get("execution_engine_parallelism_guard_accuracy_rate", 0.0)
-                or 0.0
-            ),
-            3,
-        ),
-        "execution_engine_median_context_packet_build_ms_delta": round(
-            float(candidate.get("execution_engine_median_context_packet_build_ms", 0.0) or 0.0)
-            - float(
-                baseline.get("execution_engine_median_context_packet_build_ms", 0.0)
-                or 0.0
-            ),
-            3,
-        ),
-        "execution_engine_median_snapshot_duration_ms_delta": round(
-            float(candidate.get("execution_engine_median_snapshot_duration_ms", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_median_snapshot_duration_ms", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_median_prompt_bundle_tokens_delta": round(
-            float(candidate.get("execution_engine_median_prompt_bundle_tokens", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_median_prompt_bundle_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "execution_engine_median_runtime_contract_tokens_delta": round(
-            float(
-                candidate.get("execution_engine_median_runtime_contract_tokens", 0.0)
-                or 0.0
-            )
-            - float(
-                baseline.get("execution_engine_median_runtime_contract_tokens", 0.0)
-                or 0.0
-            ),
-            3,
-        ),
-        "execution_engine_median_total_payload_tokens_delta": round(
-            float(candidate.get("execution_engine_median_total_payload_tokens", 0.0) or 0.0)
-            - float(baseline.get("execution_engine_median_total_payload_tokens", 0.0) or 0.0),
-            3,
-        ),
-    }
+    return benchmark_metric_helpers.summary_deltas(
+        candidate=candidate,
+        baseline=baseline,
+        field_map=_SUMMARY_DELTA_FIELDS,
+    )
 
 
 def acceptance_checks(summary: Mapping[str, Any]) -> dict[str, bool]:

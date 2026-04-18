@@ -1,3 +1,5 @@
+"""Performance regression coverage for intervention-engine hot paths."""
+
 from __future__ import annotations
 
 import json
@@ -12,6 +14,7 @@ from odylith.runtime.intervention_engine import surface_runtime
 
 
 def _seed_repo(root: Path) -> None:
+    """Create the minimum repo truth needed for intervention-engine tests."""
     (root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
     (root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
         json.dumps({"version": "v1", "components": []}) + "\n",

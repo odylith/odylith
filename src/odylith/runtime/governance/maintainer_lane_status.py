@@ -21,6 +21,7 @@ _RELEASE_SESSION_PATH = Path(".odylith/locks/release-session.json")
 
 
 def _git_stdout(*, repo_root: Path, args: list[str]) -> str:
+    """Run a git command and return trimmed stdout on success."""
     completed = subprocess.run(
         ["git", *args],
         cwd=str(repo_root),
@@ -34,14 +35,17 @@ def _git_stdout(*, repo_root: Path, args: list[str]) -> str:
 
 
 def _current_branch(repo_root: Path) -> str:
+    """Return the current git branch name, or an empty string if detached."""
     return _git_stdout(repo_root=repo_root, args=["branch", "--show-current"])
 
 
 def _current_head(repo_root: Path) -> str:
+    """Return the current HEAD object id."""
     return _git_stdout(repo_root=repo_root, args=["rev-parse", "HEAD"])
 
 
 def _worktree_clean(repo_root: Path) -> bool:
+    """Return whether tracked and staged git state is clean."""
     tracked = subprocess.run(
         ["git", "diff", "--quiet", "--ignore-submodules", "HEAD", "--"],
         cwd=str(repo_root),
@@ -60,6 +64,7 @@ def _worktree_clean(repo_root: Path) -> bool:
 
 
 def _load_release_session(*, repo_root: Path) -> dict[str, Any]:
+    """Load the current release-session lock file and classify its state."""
     path = repo_root / _RELEASE_SESSION_PATH
     if not path.is_file():
         return {"state": "inactive", "path": str(path)}
@@ -92,6 +97,7 @@ def _load_release_session(*, repo_root: Path) -> dict[str, Any]:
 
 
 def _main_branch_authoring_block(*, repo_root: Path, branch: str) -> dict[str, Any]:
+    """Return the maintainer-lane main-branch authoring block state."""
     blocked = product_repo_role(repo_root=repo_root) == PRODUCT_REPO_ROLE and str(branch).strip() == "main"
     return {
         "blocked": blocked,
@@ -104,6 +110,7 @@ def _main_branch_authoring_block(*, repo_root: Path, branch: str) -> dict[str, A
 
 
 def _default_branch_command() -> str:
+    """Return the default branch-creation command for maintainer work."""
     year = datetime.now(UTC).year
     return f"git switch -c {year}/freedom/<tag>"
 
@@ -120,6 +127,7 @@ def _next_command(
     version_truth_errors: Sequence[str],
     benchmark_status: str,
 ) -> str:
+    """Choose the next maintainer-lane command from current repo posture."""
     if repo_role != PRODUCT_REPO_ROLE:
         return "./.odylith/bin/odylith start --repo-root ."
     if branch == "main":
@@ -140,7 +148,20 @@ def _next_command(
     return "make release-candidate"
 
 
+def _mapping_payload(value: Any) -> dict[str, Any]:
+    """Return a plain dict when the value is mapping-like."""
+    return dict(value) if isinstance(value, Mapping) else {}
+
+
+def _string_list(value: Any) -> list[str]:
+    """Return a cleaned list of non-empty strings."""
+    if not isinstance(value, list):
+        return []
+    return [str(item).strip() for item in value if str(item).strip()]
+
+
 def lane_status_payload(*, repo_root: str | Path) -> dict[str, Any]:
+    """Build the maintainer-lane status payload for the current repo root."""
     root = Path(repo_root).expanduser().resolve()
     status = version_status(repo_root=root)
     branch = _current_branch(root)
@@ -177,12 +198,13 @@ def lane_status_payload(*, repo_root: str | Path) -> dict[str, Any]:
 
 
 def render_lane_status(payload: Mapping[str, Any]) -> str:
-    main_block = dict(payload.get("main_branch_authoring_block", {})) if isinstance(payload.get("main_branch_authoring_block"), Mapping) else {}
-    session = dict(payload.get("release_session", {})) if isinstance(payload.get("release_session"), Mapping) else {}
-    version_payload = dict(payload.get("version_truth", {})) if isinstance(payload.get("version_truth"), Mapping) else {}
-    benchmark_payload = dict(payload.get("benchmark_compare", {})) if isinstance(payload.get("benchmark_compare"), Mapping) else {}
-    errors = [str(item).strip() for item in version_payload.get("errors", []) if str(item).strip()] if isinstance(version_payload.get("errors"), list) else []
-    notes = [str(item).strip() for item in benchmark_payload.get("notes", []) if str(item).strip()] if isinstance(benchmark_payload.get("notes"), list) else []
+    """Render the maintainer-lane status payload for human CLI consumption."""
+    main_block = _mapping_payload(payload.get("main_branch_authoring_block"))
+    session = _mapping_payload(payload.get("release_session"))
+    version_payload = _mapping_payload(payload.get("version_truth"))
+    benchmark_payload = _mapping_payload(payload.get("benchmark_compare"))
+    errors = _string_list(version_payload.get("errors"))
+    notes = _string_list(benchmark_payload.get("notes"))
     return "\n".join(
         [
             "odylith lane status",
@@ -205,6 +227,7 @@ def render_lane_status(payload: Mapping[str, Any]) -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI parser for maintainer-lane status inspection."""
     parser = argparse.ArgumentParser(prog="odylith lane status", description="Show Odylith maintainer lane posture and next action.")
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--json", action="store_true", dest="as_json")
@@ -212,14 +235,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """CLI entrypoint for maintainer-lane status rendering."""
     args = build_parser().parse_args(argv)
     payload = lane_status_payload(repo_root=args.repo_root)
     if args.as_json:
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         print(render_lane_status(payload))
-    blocked = bool(dict(payload.get("main_branch_authoring_block", {})).get("blocked"))
-    benchmark_status = str(dict(payload.get("benchmark_compare", {})).get("status") or "").strip()
+    blocked = bool(_mapping_payload(payload.get("main_branch_authoring_block")).get("blocked"))
+    benchmark_status = str(_mapping_payload(payload.get("benchmark_compare")).get("status") or "").strip()
     if blocked:
         return 1
     if benchmark_status == "fail":

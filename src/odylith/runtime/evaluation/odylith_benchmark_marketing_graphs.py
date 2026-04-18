@@ -9,6 +9,7 @@ from pathlib import Path
 import statistics
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_runner
 
 
@@ -349,9 +350,9 @@ def _quality_pairs(report: Mapping[str, Any]) -> tuple[list[dict[str, Any]], str
                 "label": str(scenario.get("label", "")).strip() or str(scenario.get("scenario_id", "")).strip(),
                 "family": _short_family(str(scenario.get("family", "")).strip()),
                 "baseline_recall": _clamp_unit(baseline.get("required_path_recall")),
-                "baseline_latency": float(baseline.get("latency_ms", 0.0) or 0.0),
+                "baseline_latency": benchmark_metric_helpers.numeric_value(baseline, "latency_ms"),
                 "candidate_recall": _clamp_unit(candidate.get("required_path_recall")),
-                "candidate_latency": float(candidate.get("latency_ms", 0.0) or 0.0),
+                "candidate_latency": benchmark_metric_helpers.numeric_value(candidate, "latency_ms"),
             }
         )
     return pairs, candidate_mode, baseline_mode

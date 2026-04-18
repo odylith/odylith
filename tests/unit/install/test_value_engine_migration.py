@@ -52,6 +52,26 @@ def test_value_engine_migration_removes_v010_signal_ranker_artifacts(tmp_path: P
     assert "odylith/runtime/source/intervention-signal-ranker-corpus.v1.json" in ledger["removed_paths"]
 
 
+def test_value_engine_migration_removes_legacy_artifacts_from_direct_site_packages_root(tmp_path: Path) -> None:
+    repo_root = tmp_path / "consumer"
+    repo_root.mkdir()
+    runtime_root = repo_root / ".odylith/runtime/versions/0.1.11"
+    stale_runtime_path = runtime_root / "site-packages/odylith/runtime/intervention_engine/signal_ranker.py"
+    stale_runtime_path.parent.mkdir(parents=True, exist_ok=True)
+    stale_runtime_path.write_text("# legacy ranker\n", encoding="utf-8")
+
+    result = migrate_visible_intervention_value_engine(
+        repo_root=repo_root,
+        previous_version="0.1.10",
+        target_version="0.1.11",
+        runtime_root=runtime_root,
+    )
+
+    assert result.applied is True
+    assert not stale_runtime_path.exists()
+    assert ".odylith/runtime/versions/0.1.11/site-packages/odylith/runtime/intervention_engine/signal_ranker.py" in result.removed_paths
+
+
 def test_value_engine_migration_skips_pre_v011_targets(tmp_path: Path) -> None:
     repo_root = tmp_path / "consumer"
     repo_root.mkdir()

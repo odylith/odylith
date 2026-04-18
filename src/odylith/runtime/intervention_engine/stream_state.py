@@ -1,3 +1,5 @@
+"""Append-only intervention event state and cache-backed read helpers."""
+
 from __future__ import annotations
 
 import datetime as dt
@@ -21,6 +23,13 @@ _INTERVENTION_EVENT_KINDS: frozenset[str] = frozenset(
         "assist_closeout",
     }
 )
+_PROPOSAL_EVENT_KINDS: frozenset[str] = frozenset(
+    {
+        "capture_proposed",
+        "capture_applied",
+        "capture_declined",
+    }
+)
 _EVENT_STREAM_CACHE: dict[tuple[str, int, int], list[dict[str, Any]]] = {}
 _SESSION_MEMORY_CACHE: dict[tuple[tuple[str, int, int], str, int], dict[str, Any]] = {}
 _PENDING_PROPOSAL_CACHE: dict[tuple[tuple[str, int, int], int], dict[str, Any]] = {}
@@ -28,10 +37,12 @@ _STREAM_PATH_CACHE: dict[tuple[str, str], Path] = {}
 
 
 def _normalize_string(value: Any) -> str:
+    """Normalize arbitrary values into stable single-line comparison tokens."""
     return " ".join(str(value or "").split()).strip()
 
 
 def _normalize_block_string(value: Any) -> str:
+    """Normalize multi-line markdown/plaintext while preserving paragraph breaks."""
     text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
     rows: list[str] = []
     blank_run = 0
@@ -49,6 +60,7 @@ def _normalize_block_string(value: Any) -> str:
 
 
 def _normalize_string_list(value: Any) -> list[str]:
+    """Normalize a list-ish input into a de-duplicated string list."""
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         token = _normalize_string(value)
         return [token] if token else []
@@ -64,6 +76,7 @@ def _normalize_string_list(value: Any) -> list[str]:
 
 
 def _json_safe_mapping(value: Any) -> dict[str, Any]:
+    """Coerce mapping-like metadata into JSON-safe plain data."""
     if not isinstance(value, Mapping):
         return {}
     try:
@@ -74,7 +87,13 @@ def _json_safe_mapping(value: Any) -> dict[str, Any]:
     return decoded if isinstance(decoded, dict) else {}
 
 
+def _event_kind(value: Mapping[str, Any] | None) -> str:
+    """Return the normalized intervention event kind for one payload row."""
+    return _normalize_string((value or {}).get("kind")).lower()
+
+
 def _agent_stream_path(*, repo_root: Path, value: Any = "") -> Path:
+    """Resolve the event stream path, honoring explicit and candidate overrides."""
     cache_key = (str(repo_root), _normalize_string(value))
     cached = _STREAM_PATH_CACHE.get(cache_key)
     if cached is not None:
@@ -100,6 +119,7 @@ def _agent_stream_path(*, repo_root: Path, value: Any = "") -> Path:
 
 
 def _stream_cache_signature(*, repo_root: Path) -> tuple[str, int, int]:
+    """Fingerprint the current event stream file for cache invalidation."""
     stream_path = _agent_stream_path(repo_root=repo_root)
     if not stream_path.is_file():
         return (stream_path.as_posix(), -1, -1)
@@ -111,7 +131,39 @@ def _stream_cache_signature(*, repo_root: Path) -> tuple[str, int, int]:
 
 
 def event_cache_signature(*, repo_root: Path) -> tuple[str, int, int]:
+    """Expose the current event stream cache signature to other runtime helpers."""
     return _stream_cache_signature(repo_root=repo_root)
+
+
+def _clear_event_caches() -> None:
+    """Clear all memoized state derived from the intervention event stream."""
+    _EVENT_STREAM_CACHE.clear()
+    _SESSION_MEMORY_CACHE.clear()
+    _PENDING_PROPOSAL_CACHE.clear()
+
+
+def _pending_proposal_row(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Project one pending proposal event into the host-visible summary shape."""
+    return {
+        "intervention_key": _normalize_string(row.get("intervention_key")),
+        "summary": _normalize_string(row.get("summary")),
+        "session_id": _normalize_string(row.get("session_id")),
+        "host_family": _normalize_string(row.get("host_family")).lower(),
+        "turn_phase": _normalize_string(row.get("turn_phase")).lower(),
+        "action_surfaces": _normalize_string_list(row.get("action_surfaces")),
+        "workstreams": _normalize_string_list(row.get("workstreams")),
+        "confirmation_text": _normalize_string(row.get("confirmation_text")),
+        "proposal_status": _normalize_string(row.get("proposal_status")).lower(),
+        "display_markdown": _normalize_block_string(row.get("display_markdown")),
+        "display_plain": _normalize_block_string(row.get("display_plain")),
+        "prompt_excerpt": _normalize_string(row.get("prompt_excerpt")),
+        "moment_kind": _normalize_string(row.get("moment_kind")).lower(),
+        "semantic_signature": _normalize_string_list(row.get("semantic_signature")),
+        "delivery_channel": _normalize_string(row.get("delivery_channel")).lower(),
+        "delivery_status": _normalize_string(row.get("delivery_status")).lower(),
+        "render_surface": _normalize_string(row.get("render_surface")).lower(),
+        "ts_iso": _normalize_string(row.get("ts_iso")),
+    }
 
 
 def append_intervention_event(
@@ -141,6 +193,7 @@ def append_intervention_event(
     delivery_latency_ms: float | None = None,
     metadata: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Append one normalized intervention event to the session event stream."""
     normalized_kind = _normalize_string(kind).lower()
     if normalized_kind not in _INTERVENTION_EVENT_KINDS:
         raise ValueError(f"unsupported intervention event kind: {kind}")
@@ -179,9 +232,7 @@ def append_intervention_event(
     stream_path.parent.mkdir(parents=True, exist_ok=True)
     with stream_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(payload, sort_keys=True) + "\n")
-    _EVENT_STREAM_CACHE.clear()
-    _SESSION_MEMORY_CACHE.clear()
-    _PENDING_PROPOSAL_CACHE.clear()
+    _clear_event_caches()
     return payload
 
 
@@ -191,6 +242,7 @@ def load_recent_intervention_events(
     limit: int = 200,
     session_id: str = "",
 ) -> list[dict[str, Any]]:
+    """Load recent normalized intervention events, optionally scoped to one session."""
     stream_path = _agent_stream_path(repo_root=repo_root)
     if not stream_path.is_file():
         return []
@@ -210,7 +262,7 @@ def load_recent_intervention_events(
                         continue
                     if not isinstance(payload, Mapping):
                         continue
-                    kind = _normalize_string(payload.get("kind")).lower()
+                    kind = _event_kind(payload)
                     if kind not in _INTERVENTION_EVENT_KINDS:
                         continue
                     rows.append(dict(payload))
@@ -234,6 +286,7 @@ def session_memory_snapshot(
     session_id: str,
     limit: int = 80,
 ) -> dict[str, Any]:
+    """Summarize recent intervention-memory state for one host session."""
     cache_key = (event_cache_signature(repo_root=repo_root), _normalize_string(session_id), max(1, int(limit)))
     cached = _SESSION_MEMORY_CACHE.get(cache_key)
     if cached is not None:
@@ -278,6 +331,7 @@ def session_memory_snapshot(
 
 
 def pending_proposal_state(*, repo_root: Path, limit: int = 400) -> dict[str, Any]:
+    """Return the currently pending intervention proposals across recent events."""
     cache_key = (event_cache_signature(repo_root=repo_root), max(1, int(limit)))
     cached = _PENDING_PROPOSAL_CACHE.get(cache_key)
     if cached is not None:
@@ -285,11 +339,7 @@ def pending_proposal_state(*, repo_root: Path, limit: int = 400) -> dict[str, An
     events = load_recent_intervention_events(repo_root=repo_root, limit=limit)
     latest_by_key: dict[str, dict[str, Any]] = {}
     for row in events:
-        if _normalize_string(row.get("kind")).lower() not in {
-            "capture_proposed",
-            "capture_applied",
-            "capture_declined",
-        }:
+        if _event_kind(row) not in _PROPOSAL_EVENT_KINDS:
             continue
         key = _normalize_string(row.get("intervention_key"))
         if not key:
@@ -297,30 +347,9 @@ def pending_proposal_state(*, repo_root: Path, limit: int = 400) -> dict[str, An
         latest_by_key[key] = row
     pending: list[dict[str, Any]] = []
     for row in latest_by_key.values():
-        if _normalize_string(row.get("kind")).lower() != "capture_proposed":
+        if _event_kind(row) != "capture_proposed":
             continue
-        pending.append(
-            {
-                "intervention_key": _normalize_string(row.get("intervention_key")),
-                "summary": _normalize_string(row.get("summary")),
-                "session_id": _normalize_string(row.get("session_id")),
-                "host_family": _normalize_string(row.get("host_family")).lower(),
-                "turn_phase": _normalize_string(row.get("turn_phase")).lower(),
-                "action_surfaces": _normalize_string_list(row.get("action_surfaces")),
-                "workstreams": _normalize_string_list(row.get("workstreams")),
-                "confirmation_text": _normalize_string(row.get("confirmation_text")),
-                "proposal_status": _normalize_string(row.get("proposal_status")).lower(),
-                "display_markdown": _normalize_block_string(row.get("display_markdown")),
-                "display_plain": _normalize_block_string(row.get("display_plain")),
-                "prompt_excerpt": _normalize_string(row.get("prompt_excerpt")),
-                "moment_kind": _normalize_string(row.get("moment_kind")).lower(),
-                "semantic_signature": _normalize_string_list(row.get("semantic_signature")),
-                "delivery_channel": _normalize_string(row.get("delivery_channel")).lower(),
-                "delivery_status": _normalize_string(row.get("delivery_status")).lower(),
-                "render_surface": _normalize_string(row.get("render_surface")).lower(),
-                "ts_iso": _normalize_string(row.get("ts_iso")),
-            }
-        )
+        pending.append(_pending_proposal_row(row))
     pending.sort(key=lambda row: row.get("ts_iso", ""), reverse=True)
     payload = {
         "pending_count": len(pending),

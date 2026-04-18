@@ -178,7 +178,9 @@ def test_show_me_skill_blocks_host_status_detours() -> None:
             assert "with CLI commands" not in text
         else:
             assert "Run the first available show command" in text
-            assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." in text
+            assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." not in text
+            assert "`./.odylith/bin/odylith show --repo-root .`" in text
+            assert "`odylith show --repo-root .`" in text
             assert "`intervention-status`, `visible-intervention`" in text
             assert "not proof" in text
             assert "capture stdout only" in text
@@ -203,7 +205,9 @@ def test_claude_show_me_guard_is_shipped_in_project_assets() -> None:
         text = path.read_text(encoding="utf-8")
         assert "Odylith show-me first-match route" in text
         assert "odylith-show-me" in text
-        assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." in text
+        assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." not in text
+        assert "`./.odylith/bin/odylith show --repo-root .`" in text
+        assert "`odylith show --repo-root .`" in text
         assert "`intervention-status`, `visible-intervention`" in text
 
 

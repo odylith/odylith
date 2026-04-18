@@ -7,8 +7,6 @@ exploration request. Works identically on Claude Code and Codex.
 1. Run the first available show command and capture stdout only:
    - Installed or dogfood repo with launcher:
      `./.odylith/bin/odylith show --repo-root .`
-   - Source-only Odylith checkout without launcher:
-     `PYTHONPATH=src python -m odylith.cli show --repo-root .`
    - Shell-installed fallback:
      `odylith show --repo-root .`
 2. Do not run `odylith start`, `odylith doctor`, `odylith version`,

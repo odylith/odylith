@@ -14,10 +14,12 @@ SURFACE_RUNTIME_CONTRACT_VERSION = "v1"
 
 
 def _normalize_scope(value: str) -> str:
+    """Normalize projection scopes onto the contract's canonical token shape."""
     return str(value or "default").strip().lower() or "default"
 
 
 def _json_safe(value: Any) -> Any:
+    """Recursively coerce values into JSON-stable structures."""
     if isinstance(value, Mapping):
         return {
             str(key): _json_safe(item)
@@ -34,6 +36,7 @@ def _json_safe(value: Any) -> Any:
 
 @lru_cache(maxsize=128)
 def _fingerprint_source_files_cached(paths: tuple[str, ...]) -> str:
+    """Memoize source-file digest computation for repeated provenance checks."""
     rows: list[dict[str, str]] = []
     for raw_path in paths:
         path = Path(raw_path)
@@ -50,6 +53,7 @@ def _fingerprint_source_files_cached(paths: tuple[str, ...]) -> str:
 
 
 def fingerprint_source_files(paths: Sequence[Path | str]) -> str:
+    """Fingerprint the provided source files after path normalization."""
     normalized = tuple(
         sorted(
             str(Path(path).resolve())
@@ -61,6 +65,7 @@ def fingerprint_source_files(paths: Sequence[Path | str]) -> str:
 
 
 def active_sync_generation(*, repo_root: Path) -> tuple[int, bool, str]:
+    """Read the active governed-sync generation for the current repo when present."""
     from odylith.runtime.governance import sync_session
 
     session = sync_session.active_sync_session()
@@ -79,6 +84,7 @@ def build_derivation_provenance(
     code_version: str,
     flags: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Build the provenance block carried by runtime and sync artifacts."""
     root = Path(repo_root).resolve()
     return {
         "version": PROVENANCE_VERSION,
@@ -92,6 +98,7 @@ def build_derivation_provenance(
 
 
 def extract_provenance(payload: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Extract a provenance mapping from a larger payload when available."""
     if not isinstance(payload, Mapping):
         return {}
     provenance = payload.get("provenance")
@@ -104,6 +111,7 @@ def provenance_matches(
     expected: Mapping[str, Any],
     require_generation: bool,
 ) -> bool:
+    """Compare provenance payloads under the requested generation strictness."""
     actual_map = dict(actual) if isinstance(actual, Mapping) else {}
     expected_map = dict(expected)
     required_fields = (
@@ -138,6 +146,7 @@ def build_surface_runtime_contract(
     invalidated_by_step: str = "",
     extra: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Assemble the runtime contract exposed by a generated governed surface."""
     from odylith.runtime.memory import odylith_memory_backend
     from odylith.runtime.memory import odylith_projection_bundle
     from odylith.runtime.memory import odylith_projection_snapshot

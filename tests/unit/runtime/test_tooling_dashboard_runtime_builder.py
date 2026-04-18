@@ -1,3 +1,5 @@
+"""Coverage for tooling dashboard runtime payload builders."""
+
 from __future__ import annotations
 
 from pathlib import Path

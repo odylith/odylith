@@ -1,3 +1,5 @@
+"""Coverage for current-workstream ranking and visibility selection."""
+
 from __future__ import annotations
 
 from odylith.runtime.surfaces import compass_current_workstreams_runtime
@@ -11,6 +13,7 @@ def _row(
     active_release: bool = False,
     active_wave: bool = False,
 ) -> dict[str, object]:
+    """Construct a Compass current-workstream row fixture."""
     aliases = ["current"] if current_release else []
     return {
         "idea_id": idea_id,

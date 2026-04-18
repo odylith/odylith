@@ -1,3 +1,5 @@
+"""Normalize precomputed delivery-intelligence artifacts for conversation use."""
+
 from __future__ import annotations
 
 import json
@@ -16,14 +18,17 @@ _DELIVERY_SIGNAL_CACHE: dict[str, tuple[int, dict[str, Any]]] = {}
 
 
 def _normalize_string(value: Any) -> str:
+    """Normalize arbitrary values into stable single-line strings."""
     return " ".join(str(value or "").split()).strip()
 
 
 def _normalize_token(value: Any) -> str:
+    """Normalize values into lowercase token form for comparisons and ids."""
     return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
 
 
 def _dedupe_strings(values: Sequence[str]) -> list[str]:
+    """De-duplicate normalized strings while preserving input order."""
     rows: list[str] = []
     seen: set[str] = set()
     for raw in values:
@@ -36,6 +41,7 @@ def _dedupe_strings(values: Sequence[str]) -> list[str]:
 
 
 def _normalize_string_list(value: Any) -> list[str]:
+    """Normalize a list-ish input into a de-duplicated string list."""
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return _dedupe_strings([str(token) for token in value])
     token = _normalize_string(value)
@@ -43,6 +49,7 @@ def _normalize_string_list(value: Any) -> list[str]:
 
 
 def _normalize_surface_list(value: Any) -> list[str]:
+    """Normalize mixed surface payloads into a shell-safe surface list."""
     rows: list[str] = []
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         for item in value:
@@ -54,6 +61,7 @@ def _normalize_surface_list(value: Any) -> list[str]:
 
 
 def _normalize_proof_refs(value: Any) -> list[dict[str, Any]]:
+    """Normalize proof references through the operator-readout contract."""
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         return []
     return [
@@ -63,7 +71,13 @@ def _normalize_proof_refs(value: Any) -> list[dict[str, Any]]:
     ][:4]
 
 
+def _mapping_copy(value: Any) -> dict[str, Any]:
+    """Return a mutable mapping copy when the input behaves like a mapping."""
+    return dict(value) if isinstance(value, Mapping) else {}
+
+
 def _normalize_ladder_signal(raw_signal: Any) -> dict[str, Any]:
+    """Normalize scope ladder signal metadata for conversation runtime use."""
     if not isinstance(raw_signal, Mapping):
         return {}
     rank = scope_signal_ladder.scope_signal_rank(raw_signal)
@@ -84,6 +98,7 @@ def _normalize_ladder_signal(raw_signal: Any) -> dict[str, Any]:
 
 
 def _normalize_operator_readout(raw_readout: Any) -> dict[str, Any]:
+    """Normalize operator-readout payloads to the delivery runtime contract."""
     readout = dict(raw_readout) if isinstance(raw_readout, Mapping) else {}
     return {
         "primary_scenario": _normalize_string(readout.get("primary_scenario")) or "clear_path",
@@ -97,6 +112,7 @@ def _normalize_operator_readout(raw_readout: Any) -> dict[str, Any]:
 
 
 def _normalize_scope_signal(raw_scope: Any) -> dict[str, Any]:
+    """Normalize one scope signal row from the delivery artifact."""
     if not isinstance(raw_scope, Mapping):
         return {}
     return {
@@ -113,15 +129,14 @@ def _normalize_scope_signal(raw_scope: Any) -> dict[str, Any]:
         "operator_readout": _normalize_operator_readout(raw_scope.get("operator_readout")),
         "evidence_refs": _normalize_proof_refs(raw_scope.get("evidence_refs")),
         "proof_state": proof_state.normalize_proof_state(raw_scope.get("proof_state", {})),
-        "proof_state_resolution": dict(raw_scope.get("proof_state_resolution", {}))
-        if isinstance(raw_scope.get("proof_state_resolution"), Mapping)
-        else {},
+        "proof_state_resolution": _mapping_copy(raw_scope.get("proof_state_resolution")),
         "scope_signal": _normalize_ladder_signal(raw_scope.get("scope_signal")),
-        "claim_guard": dict(raw_scope.get("claim_guard", {})) if isinstance(raw_scope.get("claim_guard"), Mapping) else {},
+        "claim_guard": _mapping_copy(raw_scope.get("claim_guard")),
     }
 
 
 def _normalize_case_queue_entry(raw_case: Any) -> dict[str, Any]:
+    """Normalize one Tribunal case-queue entry for delivery reuse."""
     if not isinstance(raw_case, Mapping):
         return {}
     return {
@@ -132,15 +147,14 @@ def _normalize_case_queue_entry(raw_case: Any) -> dict[str, Any]:
         "systemic_theme_tags": _normalize_string_list(raw_case.get("systemic_theme_tags")),
         "proof_refs": _normalize_proof_refs(raw_case.get("proof_refs")),
         "proof_state": proof_state.normalize_proof_state(raw_case.get("proof_state", {})),
-        "proof_state_resolution": dict(raw_case.get("proof_state_resolution", {}))
-        if isinstance(raw_case.get("proof_state_resolution"), Mapping)
-        else {},
-        "claim_guard": dict(raw_case.get("claim_guard", {})) if isinstance(raw_case.get("claim_guard"), Mapping) else {},
-        "proof_reopen": dict(raw_case.get("proof_reopen", {})) if isinstance(raw_case.get("proof_reopen"), Mapping) else {},
+        "proof_state_resolution": _mapping_copy(raw_case.get("proof_state_resolution")),
+        "claim_guard": _mapping_copy(raw_case.get("claim_guard")),
+        "proof_reopen": _mapping_copy(raw_case.get("proof_reopen")),
     }
 
 
 def _normalize_systemic_brief(raw_brief: Any) -> dict[str, Any]:
+    """Normalize the systemic-brief block from a delivery artifact."""
     if not isinstance(raw_brief, Mapping):
         return {}
     return {
@@ -153,6 +167,7 @@ def _normalize_systemic_brief(raw_brief: Any) -> dict[str, Any]:
 
 
 def _normalize_tribunal_context_payload(raw_context: Any, *, source: str) -> dict[str, Any]:
+    """Normalize explicit or cached Tribunal context into one stable payload."""
     if not isinstance(raw_context, Mapping):
         return {}
     scope_signals = []
@@ -181,6 +196,7 @@ def _normalize_tribunal_context_payload(raw_context: Any, *, source: str) -> dic
 
 
 def delivery_signal_snapshot(repo_root: Path | None) -> dict[str, Any]:
+    """Load and cache normalized delivery-intelligence signals for one repo."""
     if repo_root is None:
         return {}
     artifact_path = Path(repo_root).resolve() / _DELIVERY_ARTIFACT_RELATIVE_PATH
@@ -248,6 +264,7 @@ def tribunal_context(
     repo_root: Path | None,
     anchor_artifacts: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
+    """Resolve explicit or cached Tribunal context relevant to anchored artifacts."""
     for key in ("tribunal_delivery_signals", "tribunal_signals"):
         explicit = context_payload.get(key)
         normalized = _normalize_tribunal_context_payload(
@@ -265,11 +282,11 @@ def tribunal_context(
     case_queue: list[dict[str, Any]] = []
     for row in anchor_artifacts:
         key = (str(row.get("kind", "")).strip(), str(row.get("id", "")).strip())
-        scope = dict(snapshot.get("scopes_by_id", {}).get(key, {}))
+        scope = _mapping_copy(snapshot.get("scopes_by_id", {}).get(key, {}))
         if not scope:
             continue
         scopes.append(scope)
-        case_row = dict(snapshot.get("case_queue_by_scope", {}).get(str(scope.get("scope_key", "")), {}))
+        case_row = _mapping_copy(snapshot.get("case_queue_by_scope", {}).get(str(scope.get("scope_key", "")), {}))
         if case_row:
             case_queue.append(case_row)
     if not scopes:
@@ -278,7 +295,7 @@ def tribunal_context(
         {
             "scope_signals": scopes[:3],
             "case_queue": case_queue[:3],
-            "systemic_brief": dict(snapshot.get("systemic_brief", {})),
+            "systemic_brief": _mapping_copy(snapshot.get("systemic_brief")),
         },
         source="precomputed_delivery_artifact",
     )

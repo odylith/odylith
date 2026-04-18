@@ -9,6 +9,7 @@ from odylith.install.manager import product_source_version
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation.benchmark_snapshot_fallbacks import (
     load_release_baseline_summary,
     load_tracked_latest_summary,
@@ -28,6 +29,16 @@ _FAIL_CRITICAL_RATE_DELTA = 0.01
 _WARN_CRITICAL_RATE_DELTA = 0.005
 _FAIL_WIDENING_RATE_DELTA = 0.02
 _WARN_WIDENING_RATE_DELTA = 0.01
+_SUMMARY_DELTA_FIELDS = {
+    "latency_delta_ms": "latency_delta_ms",
+    "prompt_token_delta": "prompt_token_delta",
+    "required_path_recall_delta": "required_path_recall_delta",
+    "validation_success_delta": "validation_success_delta",
+    "critical_required_path_recall_delta": "critical_required_path_recall_delta",
+    "critical_validation_success_delta": "critical_validation_success_delta",
+    "hallucinated_surface_rate_delta": "hallucinated_surface_rate_delta",
+    "unnecessary_widening_rate_delta": "unnecessary_widening_rate_delta",
+}
 
 
 @dataclass(frozen=True)
@@ -165,10 +176,6 @@ def _resolve_baseline_report(*, repo_root: Path, baseline: str, candidate_report
         if baseline_summary:
             return baseline_summary, "last-shipped"
     return None, "missing-last-shipped"
-
-
-def _delta(candidate: Mapping[str, Any], baseline: Mapping[str, Any], key: str) -> float:
-    return round(float(candidate.get(key, 0.0) or 0.0) - float(baseline.get(key, 0.0) or 0.0), 3)
 
 
 def _override_notes(override: BenchmarkProofOverride) -> tuple[str, str]:
@@ -365,16 +372,11 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
             ),
             blocking=True,
         )
-    deltas = {
-        "latency_delta_ms": _delta(candidate_summary, baseline_summary, "latency_delta_ms"),
-        "prompt_token_delta": _delta(candidate_summary, baseline_summary, "prompt_token_delta"),
-        "required_path_recall_delta": _delta(candidate_summary, baseline_summary, "required_path_recall_delta"),
-        "validation_success_delta": _delta(candidate_summary, baseline_summary, "validation_success_delta"),
-        "critical_required_path_recall_delta": _delta(candidate_summary, baseline_summary, "critical_required_path_recall_delta"),
-        "critical_validation_success_delta": _delta(candidate_summary, baseline_summary, "critical_validation_success_delta"),
-        "hallucinated_surface_rate_delta": _delta(candidate_summary, baseline_summary, "hallucinated_surface_rate_delta"),
-        "unnecessary_widening_rate_delta": _delta(candidate_summary, baseline_summary, "unnecessary_widening_rate_delta"),
-    }
+    deltas = benchmark_metric_helpers.summary_deltas(
+        candidate=candidate_summary,
+        baseline=baseline_summary,
+        field_map=_SUMMARY_DELTA_FIELDS,
+    )
     notes: list[str] = []
     failures: list[str] = []
     warnings: list[str] = []

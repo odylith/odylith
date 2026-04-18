@@ -1,3 +1,5 @@
+"""Shared normalized data contracts for intervention-engine runtime surfaces."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -8,10 +10,12 @@ from typing import Sequence
 
 
 def _normalize_string(value: Any) -> str:
+    """Collapse internal whitespace and trim a scalar value."""
     return " ".join(str(value or "").split()).strip()
 
 
 def _normalize_string_list(value: Any) -> list[str]:
+    """Normalize scalar or sequence input into a deduplicated string list."""
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         rows: list[str] = []
         seen: set[str] = set()
@@ -27,10 +31,12 @@ def _normalize_string_list(value: Any) -> list[str]:
 
 
 def _normalize_mapping(value: Any) -> dict[str, Any]:
+    """Return a plain dict when the input is mapping-like."""
     return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _normalize_ref_list(value: Any) -> list[dict[str, str]]:
+    """Normalize reference payloads into the canonical ref-row shape."""
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         return []
     rows: list[dict[str, str]] = []
@@ -58,8 +64,15 @@ def _normalize_ref_list(value: Any) -> list[dict[str, str]]:
     return rows
 
 
+def _copy_dict_rows(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """Return shallow-copied dict rows for JSON-friendly payload serialization."""
+    return [dict(row) for row in rows]
+
+
 @dataclass(frozen=True)
 class ObservationEnvelope:
+    """Normalized observation context collected around one intervention decision."""
+
     host_family: str = ""
     session_id: str = ""
     turn_phase: str = ""
@@ -76,6 +89,7 @@ class ObservationEnvelope:
     active_target_refs: list[dict[str, str]] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
+        """Return the observation envelope as a JSON-friendly dict."""
         return {
             "host_family": self.host_family,
             "session_id": self.session_id,
@@ -90,11 +104,12 @@ class ObservationEnvelope:
             "tribunal_summary": dict(self.tribunal_summary),
             "visibility_summary": dict(self.visibility_summary),
             "delivery_snapshot": dict(self.delivery_snapshot),
-            "active_target_refs": [dict(row) for row in self.active_target_refs],
+            "active_target_refs": _copy_dict_rows(self.active_target_refs),
         }
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any] | None) -> "ObservationEnvelope":
+        """Build an observation envelope from an arbitrary mapping payload."""
         payload = dict(value) if isinstance(value, Mapping) else {}
         return cls(
             host_family=_normalize_string(payload.get("host_family")).lower(),
@@ -116,6 +131,8 @@ class ObservationEnvelope:
 
 @dataclass(frozen=True)
 class GovernanceFact:
+    """One grounded governance fact that can support intervention copy."""
+
     kind: str
     headline: str
     detail: str = ""
@@ -124,18 +141,21 @@ class GovernanceFact:
     priority: int = 0
 
     def as_dict(self) -> dict[str, Any]:
+        """Return the governance fact as a JSON-friendly dict."""
         return {
             "kind": self.kind,
             "headline": self.headline,
             "detail": self.detail,
             "evidence_classes": list(self.evidence_classes),
-            "refs": [dict(row) for row in self.refs],
+            "refs": _copy_dict_rows(self.refs),
             "priority": self.priority,
         }
 
 
 @dataclass(frozen=True)
 class InterventionCandidate:
+    """One candidate user-visible intervention produced by the engine."""
+
     key: str
     stage: str
     eligible: bool
@@ -149,6 +169,7 @@ class InterventionCandidate:
     headline: str = ""
 
     def as_dict(self) -> dict[str, Any]:
+        """Return the intervention candidate as a JSON-friendly dict."""
         return {
             "key": self.key,
             "stage": self.stage,
@@ -157,7 +178,7 @@ class InterventionCandidate:
             "markdown_text": self.markdown_text,
             "plain_text": self.plain_text,
             "evidence_classes": list(self.evidence_classes),
-            "facts": [dict(row) for row in self.facts],
+            "facts": _copy_dict_rows(self.facts),
             "moment": dict(self.moment),
             "suppressed_reason": self.suppressed_reason,
             "headline": self.headline,
@@ -166,6 +187,8 @@ class InterventionCandidate:
 
 @dataclass(frozen=True)
 class CaptureAction:
+    """One proposed governed action attached to an intervention proposal."""
+
     surface: str
     action: str
     target_kind: str = ""
@@ -178,6 +201,7 @@ class CaptureAction:
     payload: dict[str, Any] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
+        """Return the capture action as a JSON-friendly dict."""
         return {
             "surface": self.surface,
             "action": self.action,
@@ -194,6 +218,8 @@ class CaptureAction:
 
 @dataclass(frozen=True)
 class CaptureBundle:
+    """One capture proposal bundle ready for rendering or suppression."""
+
     key: str
     eligible: bool
     stale: bool = False
@@ -206,6 +232,7 @@ class CaptureBundle:
     suppressed_reason: str = ""
 
     def as_dict(self) -> dict[str, Any]:
+        """Return the capture bundle as a JSON-friendly dict."""
         return {
             "key": self.key,
             "eligible": self.eligible,
@@ -213,7 +240,7 @@ class CaptureBundle:
             "markdown_text": self.markdown_text,
             "plain_text": self.plain_text,
             "confirmation_text": self.confirmation_text,
-            "actions": [dict(row) for row in self.actions],
+            "actions": _copy_dict_rows(self.actions),
             "action_surfaces": list(self.action_surfaces),
             "apply_supported": self.apply_supported,
             "suppressed_reason": self.suppressed_reason,
@@ -222,6 +249,8 @@ class CaptureBundle:
 
 @dataclass(frozen=True)
 class InterventionBundle:
+    """Top-level intervention-engine output bundle for one user-facing moment."""
+
     observation: dict[str, Any]
     facts: list[dict[str, Any]]
     candidate: dict[str, Any]
@@ -230,9 +259,10 @@ class InterventionBundle:
     pending_state: dict[str, Any]
 
     def as_dict(self) -> dict[str, Any]:
+        """Return the intervention bundle as a JSON-friendly dict."""
         return {
             "observation": dict(self.observation),
-            "facts": [dict(row) for row in self.facts],
+            "facts": _copy_dict_rows(self.facts),
             "candidate": dict(self.candidate),
             "proposal": dict(self.proposal),
             "render_policy": dict(self.render_policy),

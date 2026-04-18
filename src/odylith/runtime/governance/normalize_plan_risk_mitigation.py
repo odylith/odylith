@@ -39,12 +39,14 @@ _PLACEHOLDER_MITIGATION = "TODO (add explicit mitigation)."
 
 @dataclass
 class _RiskEntry:
+    """One normalized risk plus its nested mitigations."""
     checked: bool
     risk_text: str
     mitigations: list[tuple[bool, str]] = field(default_factory=list)
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Parse CLI arguments for plan risk/mitigation normalization."""
     parser = argparse.ArgumentParser(
         prog="odylith sync",
         description=(
@@ -61,6 +63,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _list_plan_files(*, repo_root: Path) -> list[Path]:
+    """Return the plan markdown files covered by this normalizer."""
     files: list[Path] = []
     for pattern in _PLAN_GLOBS:
         files.extend(path for path in repo_root.glob(pattern) if path.is_file())
@@ -68,10 +71,12 @@ def _list_plan_files(*, repo_root: Path) -> list[Path]:
 
 
 def _trimmed(text: str) -> str:
+    """Collapse arbitrary text into a stable single-line token."""
     return " ".join(str(text or "").strip().split())
 
 
 def _parse_checkbox(*, body: str) -> tuple[bool, str]:
+    """Extract checkbox state from a bullet body when present."""
     match = _CHECKBOX_RE.match(body.strip())
     if not match:
         return False, body.strip()
@@ -80,6 +85,7 @@ def _parse_checkbox(*, body: str) -> tuple[bool, str]:
 
 
 def _parse_risk_or_mitigation(text: str) -> tuple[str | None, str]:
+    """Classify one line of risk text into risk, mitigation, inline pair, or plain text."""
     raw = _trimmed(text)
     if not raw:
         return None, ""
@@ -101,7 +107,13 @@ def _parse_risk_or_mitigation(text: str) -> tuple[str | None, str]:
     return None, raw
 
 
+def _placeholder_entry() -> _RiskEntry:
+    """Return the synthetic legacy-backfill risk entry used for orphan mitigations."""
+    return _RiskEntry(checked=False, risk_text="Unspecified risk (legacy backfill).")
+
+
 def _emit_entry(lines: list[str], entry: _RiskEntry) -> None:
+    """Render one normalized risk entry and its nested mitigations."""
     risk_checked = "x" if entry.checked else " "
     risk_text = _trimmed(entry.risk_text) or "Unspecified risk (legacy backfill)."
     lines.append(f"- [{risk_checked}] Risk: {risk_text}")
@@ -127,6 +139,7 @@ def _emit_entry(lines: list[str], entry: _RiskEntry) -> None:
 
 
 def _normalize_risk_section_lines(lines: list[str]) -> list[str]:
+    """Normalize one risks section body into nested risk and mitigation bullets."""
     out: list[str] = []
     pending: _RiskEntry | None = None
 
@@ -164,7 +177,7 @@ def _normalize_risk_section_lines(lines: list[str]) -> list[str]:
                 continue
             if plain_tag == "mitigation":
                 if pending is None:
-                    pending = _RiskEntry(checked=False, risk_text="Unspecified risk (legacy backfill).")
+                    pending = _placeholder_entry()
                 pending.mitigations.append((pending.checked, plain_payload))
                 continue
 
@@ -193,7 +206,7 @@ def _normalize_risk_section_lines(lines: list[str]) -> list[str]:
 
         if tag == "mitigation":
             if pending is None:
-                pending = _RiskEntry(checked=False, risk_text="Unspecified risk (legacy backfill).")
+                pending = _placeholder_entry()
             pending.mitigations.append((checked, payload))
             continue
 
@@ -214,6 +227,7 @@ def _normalize_risk_section_lines(lines: list[str]) -> list[str]:
 
 
 def normalize_risk_mitigation_markdown(text: str) -> str:
+    """Normalize every risks section in one plan markdown document."""
     lines = text.splitlines()
     out: list[str] = []
     idx = 0
@@ -242,6 +256,7 @@ def normalize_risk_mitigation_markdown(text: str) -> str:
 
 
 def normalize_plan_risk_mitigation(*, repo_root: Path, check_only: bool) -> tuple[int, list[str]]:
+    """Normalize all covered plan files, optionally in check-only mode."""
     changed: list[str] = []
     for plan_path in _list_plan_files(repo_root=repo_root):
         source = plan_path.read_text(encoding="utf-8")
@@ -256,6 +271,7 @@ def normalize_plan_risk_mitigation(*, repo_root: Path, check_only: bool) -> tupl
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """CLI entrypoint for repo-wide plan risk/mitigation normalization."""
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
     changed_count, changed_files = normalize_plan_risk_mitigation(

@@ -7,6 +7,7 @@ diagram identifiers so both HTML generators can emit consistent tooltip data.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from typing import Any, Iterable, Mapping
 
 _WORKSTREAM_ID_RE = re.compile(r"^B-\d+$")
@@ -15,6 +16,7 @@ _COMPONENT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 
 
 def normalize_workstream_id(value: Any) -> str:
+    """Normalize workstream ids to the canonical `B-123` form."""
     token = str(value or "").strip()
     if not token:
         return ""
@@ -24,6 +26,7 @@ def normalize_workstream_id(value: Any) -> str:
 
 
 def normalize_diagram_id(value: Any) -> str:
+    """Normalize diagram ids and strip optional `diagram:` prefixes."""
     token = str(value or "").strip()
     if not token:
         return ""
@@ -35,6 +38,7 @@ def normalize_diagram_id(value: Any) -> str:
 
 
 def normalize_component_id(value: Any) -> str:
+    """Normalize component ids to the lowercase registry token form."""
     token = str(value or "").strip().lower()
     if not token:
         return ""
@@ -44,11 +48,27 @@ def normalize_component_id(value: Any) -> str:
 
 
 def _sorted_lookup(mapping: Mapping[str, str]) -> dict[str, str]:
+    """Return a mapping sorted by key for stable UI payload output."""
     return {key: mapping[key] for key in sorted(mapping)}
 
 
 def _normalize_title(value: Any) -> str:
+    """Normalize display titles without altering their visible casing."""
     return str(value or "").strip()
+
+
+def _store_title(
+    lookup: dict[str, str],
+    *,
+    raw_id: Any,
+    raw_title: Any,
+    normalize_id: Callable[[Any], str],
+) -> None:
+    """Record one normalized title entry when both id and title are valid."""
+    normalized_id = normalize_id(raw_id)
+    title = _normalize_title(raw_title)
+    if normalized_id and title:
+        lookup[normalized_id] = title
 
 
 def build_workstream_title_lookup(
@@ -56,14 +76,16 @@ def build_workstream_title_lookup(
     entries: Iterable[Mapping[str, Any]] | None = None,
     traceability_graph: Mapping[str, Any] | None = None,
 ) -> dict[str, str]:
+    """Build a workstream-id to title lookup from entries and traceability graph data."""
     lookup: dict[str, str] = {}
 
     for row in entries or []:
-        idea_id = normalize_workstream_id(row.get("idea_id"))
-        title = _normalize_title(row.get("title"))
-        if not idea_id or not title:
-            continue
-        lookup[idea_id] = title
+        _store_title(
+            lookup,
+            raw_id=row.get("idea_id"),
+            raw_title=row.get("title"),
+            normalize_id=normalize_workstream_id,
+        )
 
     graph = traceability_graph if isinstance(traceability_graph, Mapping) else {}
     workstreams = graph.get("workstreams", [])
@@ -71,11 +93,12 @@ def build_workstream_title_lookup(
         for row in workstreams:
             if not isinstance(row, Mapping):
                 continue
-            idea_id = normalize_workstream_id(row.get("idea_id"))
-            title = _normalize_title(row.get("title"))
-            if not idea_id or not title:
-                continue
-            lookup[idea_id] = title
+            _store_title(
+                lookup,
+                raw_id=row.get("idea_id"),
+                raw_title=row.get("title"),
+                normalize_id=normalize_workstream_id,
+            )
 
     return _sorted_lookup(lookup)
 
@@ -85,14 +108,16 @@ def build_diagram_title_lookup(
     diagrams: Iterable[Mapping[str, Any]] | None = None,
     traceability_graph: Mapping[str, Any] | None = None,
 ) -> dict[str, str]:
+    """Build a diagram-id to title lookup from catalog and graph-derived data."""
     lookup: dict[str, str] = {}
 
     for row in diagrams or []:
-        diagram_id = normalize_diagram_id(row.get("diagram_id") or row.get("id"))
-        title = _normalize_title(row.get("title") or row.get("label"))
-        if not diagram_id or not title:
-            continue
-        lookup[diagram_id] = title
+        _store_title(
+            lookup,
+            raw_id=row.get("diagram_id") or row.get("id"),
+            raw_title=row.get("title") or row.get("label"),
+            normalize_id=normalize_diagram_id,
+        )
 
     graph = traceability_graph if isinstance(traceability_graph, Mapping) else {}
     graph_diagrams = graph.get("diagrams", [])
@@ -100,11 +125,12 @@ def build_diagram_title_lookup(
         for row in graph_diagrams:
             if not isinstance(row, Mapping):
                 continue
-            diagram_id = normalize_diagram_id(row.get("diagram_id") or row.get("id"))
-            title = _normalize_title(row.get("title") or row.get("label"))
-            if not diagram_id or not title:
-                continue
-            lookup[diagram_id] = title
+            _store_title(
+                lookup,
+                raw_id=row.get("diagram_id") or row.get("id"),
+                raw_title=row.get("title") or row.get("label"),
+                normalize_id=normalize_diagram_id,
+            )
 
     nodes = graph.get("nodes", [])
     if isinstance(nodes, list):
@@ -114,11 +140,12 @@ def build_diagram_title_lookup(
             node_type = str(row.get("type", "")).strip().lower()
             if node_type != "diagram":
                 continue
-            diagram_id = normalize_diagram_id(row.get("diagram_id") or row.get("id"))
-            title = _normalize_title(row.get("title") or row.get("label"))
-            if not diagram_id or not title:
-                continue
-            lookup[diagram_id] = title
+            _store_title(
+                lookup,
+                raw_id=row.get("diagram_id") or row.get("id"),
+                raw_title=row.get("title") or row.get("label"),
+                normalize_id=normalize_diagram_id,
+            )
 
     return _sorted_lookup(lookup)
 
@@ -127,13 +154,15 @@ def build_component_title_lookup(
     *,
     components: Iterable[Mapping[str, Any]] | None = None,
 ) -> dict[str, str]:
+    """Build a component-id to title lookup from registry component rows."""
     lookup: dict[str, str] = {}
     for row in components or []:
-        component_id = normalize_component_id(row.get("component_id") or row.get("id"))
-        title = _normalize_title(row.get("name") or row.get("title") or row.get("label"))
-        if not component_id or not title:
-            continue
-        lookup[component_id] = title
+        _store_title(
+            lookup,
+            raw_id=row.get("component_id") or row.get("id"),
+            raw_title=row.get("name") or row.get("title") or row.get("label"),
+            normalize_id=normalize_component_id,
+        )
     return _sorted_lookup(lookup)
 
 
@@ -141,6 +170,7 @@ def build_diagram_related_workstream_lookup(
     *,
     diagrams: Iterable[Mapping[str, Any]] | None = None,
 ) -> dict[str, list[str]]:
+    """Build a diagram-id to related-workstream-id lookup for tooltip payloads."""
     lookup: dict[str, list[str]] = {}
     for row in diagrams or []:
         diagram_id = normalize_diagram_id(row.get("diagram_id") or row.get("id"))
@@ -169,6 +199,7 @@ def build_tooltip_lookup_payload(
     components: Iterable[Mapping[str, Any]] | None = None,
     traceability_graph: Mapping[str, Any] | None = None,
 ) -> dict[str, object]:
+    """Build the combined tooltip payload consumed by Radar and Atlas UI surfaces."""
     return {
         "workstream_titles": build_workstream_title_lookup(
             entries=entries,

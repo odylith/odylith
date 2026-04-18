@@ -22,30 +22,37 @@ EDGES_FILENAME = "edges.v1.jsonl"
 
 
 def runtime_root(*, repo_root: Path) -> Path:
+    """Return the mutable runtime root that stores compiled projection bundles."""
     return (Path(repo_root).resolve() / ".odylith" / "runtime").resolve()
 
 
 def compiler_root(*, repo_root: Path) -> Path:
+    """Return the compiler-owned bundle directory under the runtime root."""
     return (runtime_root(repo_root=repo_root) / BUNDLE_DIRNAME).resolve()
 
 
 def manifest_path(*, repo_root: Path) -> Path:
+    """Return the compiled bundle manifest path."""
     return (compiler_root(repo_root=repo_root) / MANIFEST_FILENAME).resolve()
 
 
 def documents_path(*, repo_root: Path) -> Path:
+    """Return the compiled bundle documents JSONL path."""
     return (compiler_root(repo_root=repo_root) / DOCUMENTS_FILENAME).resolve()
 
 
 def edges_path(*, repo_root: Path) -> Path:
+    """Return the compiled bundle edges JSONL path."""
     return (compiler_root(repo_root=repo_root) / EDGES_FILENAME).resolve()
 
 
 def _utc_now() -> str:
+    """Return a zero-microsecond UTC timestamp string for bundle manifests."""
     return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _read_jsonl_rows(path: Path) -> list[dict[str, Any]]:
+    """Load JSONL rows from disk while skipping malformed records."""
     if not path.is_file():
         return []
     rows: list[dict[str, Any]] = []
@@ -66,6 +73,11 @@ def _read_jsonl_rows(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _render_jsonl_rows(rows: list[dict[str, Any]]) -> str:
+    """Render bundle rows as deterministic JSONL content."""
+    return "".join(json.dumps(dict(row), sort_keys=True, ensure_ascii=False) + "\n" for row in rows)
+
+
 def write_bundle(
     *,
     repo_root: Path,
@@ -77,6 +89,7 @@ def write_bundle(
     provenance: Mapping[str, Any] | None = None,
     source: str = "projection_compile",
 ) -> dict[str, Any]:
+    """Write the compiled projection bundle documents, edges, and manifest."""
     root = Path(repo_root).resolve()
     bundle_root = compiler_root(repo_root=root)
     bundle_root.mkdir(parents=True, exist_ok=True)
@@ -84,8 +97,8 @@ def write_bundle(
     edges_target = edges_path(repo_root=root)
     manifest_target = manifest_path(repo_root=root)
     lock_key = str(bundle_root)
-    documents_rendered = "".join(json.dumps(dict(row), sort_keys=True, ensure_ascii=False) + "\n" for row in documents)
-    edges_rendered = "".join(json.dumps(dict(row), sort_keys=True, ensure_ascii=False) + "\n" for row in edges)
+    documents_rendered = _render_jsonl_rows(documents)
+    edges_rendered = _render_jsonl_rows(edges)
     manifest = {
         "version": BUNDLE_VERSION,
         "compiled_utc": _utc_now(),
@@ -122,18 +135,22 @@ def write_bundle(
 
 
 def load_bundle_manifest(*, repo_root: Path) -> dict[str, Any]:
+    """Load the current projection bundle manifest."""
     return odylith_context_cache.read_json_object(manifest_path(repo_root=repo_root))
 
 
 def load_documents(*, repo_root: Path) -> list[dict[str, Any]]:
+    """Load compiled projection documents from the bundle JSONL."""
     return _read_jsonl_rows(documents_path(repo_root=repo_root))
 
 
 def load_edges(*, repo_root: Path) -> list[dict[str, Any]]:
+    """Load compiled projection edges from the bundle JSONL."""
     return _read_jsonl_rows(edges_path(repo_root=repo_root))
 
 
 def load_bundle(*, repo_root: Path) -> dict[str, Any]:
+    """Load the bundle manifest plus documents and edges together."""
     manifest = load_bundle_manifest(repo_root=repo_root)
     return {
         "manifest": manifest,

@@ -47,15 +47,18 @@ _UNSUPPORTED_TOKENS: frozenset[str] = frozenset(
 
 
 def _normalize_token(value: Any) -> str:
+    """Normalize host-runtime tokens for comparison against known aliases."""
     return " ".join(str(value or "").split()).strip().lower().replace("-", "_").replace(" ", "_")
 
 
 def _is_truthy_env(value: Any) -> bool:
+    """Interpret common shell truthy values the same way across host probes."""
     token = str(value or "").strip().lower()
     return token not in {"", "0", "false", "no", "off"}
 
 
 def normalize_host_runtime(value: Any) -> str:
+    """Map raw host hints onto the supported runtime identifiers."""
     token = _normalize_token(value)
     if token in _CODEX_TOKENS:
         return _CODEX_HOST_RUNTIME
@@ -67,6 +70,7 @@ def normalize_host_runtime(value: Any) -> str:
 
 
 def detect_host_runtime(*, environ: Mapping[str, str] | None = None) -> str:
+    """Infer the active host runtime from the environment when possible."""
     env = environ or os.environ
     bundle_id = str(env.get("__CFBundleIdentifier", "")).strip().lower()
     if (
@@ -81,11 +85,37 @@ def detect_host_runtime(*, environ: Mapping[str, str] | None = None) -> str:
 
 
 def resolve_host_runtime(*candidates: Any, environ: Mapping[str, str] | None = None) -> str:
+    """Choose the first explicit host hint that normalizes cleanly, else probe."""
     for value in candidates:
         normalized = normalize_host_runtime(value)
         if normalized:
             return normalized
     return detect_host_runtime(environ=environ)
+
+
+def _base_capabilities(
+    *,
+    host_runtime: str,
+    host_family: str,
+    delegation_style: str,
+    supports_native_spawn: bool,
+    supports_interrupt: bool,
+    supports_artifact_paths: bool,
+    supports_local_structured_reasoning: bool,
+    supports_explicit_model_selection: bool,
+) -> dict[str, Any]:
+    """Build the shared capability shape returned by every host probe."""
+    return {
+        "host_runtime": host_runtime,
+        "host_family": host_family,
+        "model_family": _UNSPECIFIED_MODEL_FAMILY,
+        "delegation_style": delegation_style,
+        "supports_native_spawn": supports_native_spawn,
+        "supports_interrupt": supports_interrupt,
+        "supports_artifact_paths": supports_artifact_paths,
+        "supports_local_structured_reasoning": supports_local_structured_reasoning,
+        "supports_explicit_model_selection": supports_explicit_model_selection,
+    }
 
 
 def host_capabilities(
@@ -94,19 +124,19 @@ def host_capabilities(
     default_when_unknown: bool = False,
     repo_root: Path | str | None = None,
 ) -> dict[str, Any]:
+    """Return the capability contract exposed by the requested host runtime."""
     normalized = normalize_host_runtime(host_runtime)
     if normalized == _CODEX_HOST_RUNTIME:
-        payload = {
-            "host_runtime": normalized,
-            "host_family": _CODEX_HOST_FAMILY,
-            "model_family": _UNSPECIFIED_MODEL_FAMILY,
-            "delegation_style": _CODEX_DELEGATION_STYLE,
-            "supports_native_spawn": True,
-            "supports_interrupt": True,
-            "supports_artifact_paths": True,
-            "supports_local_structured_reasoning": True,
-            "supports_explicit_model_selection": True,
-        }
+        payload = _base_capabilities(
+            host_runtime=normalized,
+            host_family=_CODEX_HOST_FAMILY,
+            delegation_style=_CODEX_DELEGATION_STYLE,
+            supports_native_spawn=True,
+            supports_interrupt=True,
+            supports_artifact_paths=True,
+            supports_local_structured_reasoning=True,
+            supports_explicit_model_selection=True,
+        )
         snapshot = codex_cli_capabilities.inspect_codex_cli_capabilities(
             repo_root=repo_root or ".",
             probe_prompt_input=False,
@@ -134,17 +164,16 @@ def host_capabilities(
         )
         return payload
     if normalized == _CLAUDE_HOST_RUNTIME:
-        payload = {
-            "host_runtime": normalized,
-            "host_family": _CLAUDE_HOST_FAMILY,
-            "model_family": _UNSPECIFIED_MODEL_FAMILY,
-            "delegation_style": _CLAUDE_DELEGATION_STYLE,
-            "supports_native_spawn": True,
-            "supports_interrupt": False,
-            "supports_artifact_paths": False,
-            "supports_local_structured_reasoning": True,
-            "supports_explicit_model_selection": True,
-        }
+        payload = _base_capabilities(
+            host_runtime=normalized,
+            host_family=_CLAUDE_HOST_FAMILY,
+            delegation_style=_CLAUDE_DELEGATION_STYLE,
+            supports_native_spawn=True,
+            supports_interrupt=False,
+            supports_artifact_paths=False,
+            supports_local_structured_reasoning=True,
+            supports_explicit_model_selection=True,
+        )
         snapshot = claude_cli_capabilities.inspect_claude_cli_capabilities(
             repo_root=repo_root or ".",
             probe_version=False,
@@ -181,28 +210,26 @@ def host_capabilities(
         )
         return payload
     if normalized == _UNSUPPORTED_HOST_RUNTIME:
-        return {
-            "host_runtime": normalized,
-            "host_family": _UNKNOWN_HOST_FAMILY,
-            "model_family": _UNSPECIFIED_MODEL_FAMILY,
-            "delegation_style": _UNKNOWN_DELEGATION_STYLE,
-            "supports_native_spawn": False,
-            "supports_interrupt": False,
-            "supports_artifact_paths": False,
-            "supports_local_structured_reasoning": False,
-            "supports_explicit_model_selection": False,
-        }
-    return {
-        "host_runtime": normalized or _UNKNOWN_HOST_RUNTIME,
-        "host_family": _UNKNOWN_HOST_FAMILY,
-        "model_family": _UNSPECIFIED_MODEL_FAMILY,
-        "delegation_style": _UNKNOWN_DELEGATION_STYLE,
-        "supports_native_spawn": bool(default_when_unknown),
-        "supports_interrupt": False,
-        "supports_artifact_paths": False,
-        "supports_local_structured_reasoning": False,
-        "supports_explicit_model_selection": False,
-    }
+        return _base_capabilities(
+            host_runtime=normalized,
+            host_family=_UNKNOWN_HOST_FAMILY,
+            delegation_style=_UNKNOWN_DELEGATION_STYLE,
+            supports_native_spawn=False,
+            supports_interrupt=False,
+            supports_artifact_paths=False,
+            supports_local_structured_reasoning=False,
+            supports_explicit_model_selection=False,
+        )
+    return _base_capabilities(
+        host_runtime=normalized or _UNKNOWN_HOST_RUNTIME,
+        host_family=_UNKNOWN_HOST_FAMILY,
+        delegation_style=_UNKNOWN_DELEGATION_STYLE,
+        supports_native_spawn=bool(default_when_unknown),
+        supports_interrupt=False,
+        supports_artifact_paths=False,
+        supports_local_structured_reasoning=False,
+        supports_explicit_model_selection=False,
+    )
 
 
 def resolve_host_capabilities(
@@ -210,6 +237,7 @@ def resolve_host_capabilities(
     environ: Mapping[str, str] | None = None,
     repo_root: Path | str | None = None,
 ) -> dict[str, Any]:
+    """Resolve the runtime first, then load the matching host capability contract."""
     return host_capabilities(
         resolve_host_runtime(*candidates, environ=environ),
         default_when_unknown=False,
@@ -218,4 +246,5 @@ def resolve_host_capabilities(
 
 
 def native_spawn_supported(host_runtime: Any, *, default_when_unknown: bool = False) -> bool:
+    """Return whether the host contract allows native delegated execution."""
     return bool(host_capabilities(host_runtime, default_when_unknown=default_when_unknown).get("supports_native_spawn"))

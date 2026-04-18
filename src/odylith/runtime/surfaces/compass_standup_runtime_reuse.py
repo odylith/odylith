@@ -13,6 +13,7 @@ _REUSE_STATE_VERSION = "v1"
 
 
 def _trimmed_list(items: Sequence[Any] | None, *, limit: int = 0) -> list[str]:
+    """Normalize arbitrary sequences into trimmed string lists."""
     normalized = [str(item or "").strip() for item in (items or []) if str(item or "").strip()]
     if limit > 0:
         return normalized[:limit]
@@ -20,6 +21,7 @@ def _trimmed_list(items: Sequence[Any] | None, *, limit: int = 0) -> list[str]:
 
 
 def _mapping_list(items: Sequence[Mapping[str, Any]] | None, *, limit: int = 0) -> list[dict[str, str]]:
+    """Project reusable update rows onto the shell-safe fingerprint shape."""
     rows: list[dict[str, str]] = []
     for item in items or []:
         if not isinstance(item, Mapping):
@@ -40,6 +42,7 @@ def _mapping_list(items: Sequence[Mapping[str, Any]] | None, *, limit: int = 0) 
 
 
 def _self_host_signature(snapshot: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Keep only the self-host fields that affect reuse validity."""
     source = snapshot if isinstance(snapshot, Mapping) else {}
     return {
         "repo_role": str(source.get("repo_role", "")).strip(),
@@ -52,14 +55,47 @@ def _self_host_signature(snapshot: Mapping[str, Any] | None) -> dict[str, Any]:
 
 
 def _brief_sections(brief: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Return standup brief sections as mutable mapping copies."""
     raw_sections = brief.get("sections")
     return [dict(item) for item in raw_sections if isinstance(item, Mapping)] if isinstance(raw_sections, Sequence) else []
+
+
+def _plan_summary(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Project plan progress fields into the reuse fingerprint shape."""
+    plan = row.get("plan") if isinstance(row.get("plan"), Mapping) else {}
+    return {
+        "progress_ratio": float(plan.get("progress_ratio", 0.0) or 0.0),
+        "done_tasks": int(plan.get("done_tasks", 0) or 0),
+        "total_tasks": int(plan.get("total_tasks", 0) or 0),
+        "progress_classification": str(plan.get("progress_classification", "")).strip(),
+        "display_progress_label": str(plan.get("display_progress_label", "")).strip(),
+        "display_progress_state": str(plan.get("display_progress_state", "")).strip(),
+        "next_tasks": _trimmed_list(
+            plan.get("next_tasks") if isinstance(plan.get("next_tasks"), Sequence) else [],
+            limit=2,
+        ),
+    }
+
+
+def _focus_row_summary(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Project the focus-row fields that affect global brief reuse."""
+    plan = _plan_summary(row)
+    return {
+        "idea_id": str(row.get("idea_id", "")).strip(),
+        "title": str(row.get("title", "")).strip(),
+        "status": str(row.get("status", "")).strip(),
+        "progress_ratio": float(plan.get("progress_ratio", 0.0) or 0.0),
+        "progress_classification": str(plan.get("progress_classification", "")).strip(),
+        "display_progress_label": str(plan.get("display_progress_label", "")).strip(),
+        "display_progress_state": str(plan.get("display_progress_state", "")).strip(),
+    }
 
 
 def prior_runtime_state(
     *,
     payload: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
+    """Read reusable standup runtime state when the schema still matches."""
     source = payload if isinstance(payload, Mapping) else {}
     runtime_contract = source.get("runtime_contract")
     if not isinstance(runtime_contract, Mapping):
@@ -81,6 +117,7 @@ def window_runtime_state(
     *,
     window_key: str,
 ) -> dict[str, Any]:
+    """Return cached runtime state for one dashboard window."""
     source = prior_state if isinstance(prior_state, Mapping) else {}
     runtime_state = source.get("runtime")
     if not isinstance(runtime_state, Mapping):
@@ -94,6 +131,7 @@ def window_global_brief(
     *,
     window_key: str,
 ) -> dict[str, Any]:
+    """Return the cached global standup brief for one dashboard window."""
     source = prior_state if isinstance(prior_state, Mapping) else {}
     global_map = source.get("global")
     if not isinstance(global_map, Mapping):
@@ -107,6 +145,7 @@ def window_scoped_briefs(
     *,
     window_key: str,
 ) -> dict[str, dict[str, Any]]:
+    """Return cached scoped briefs for one dashboard window."""
     source = prior_state if isinstance(prior_state, Mapping) else {}
     scoped_map = source.get("scoped")
     if not isinstance(scoped_map, Mapping):
@@ -122,6 +161,7 @@ def window_scoped_briefs(
 
 
 def brief_ready_without_notice(brief: Mapping[str, Any] | None) -> bool:
+    """Return whether a brief can be reused without showing any notice banner."""
     source = brief if isinstance(brief, Mapping) else {}
     return (
         str(source.get("status", "")).strip().lower() == "ready"
@@ -136,6 +176,7 @@ def reuse_ready_brief(
     fingerprint: str,
     sections: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
+    """Repackage a cached brief as a ready reuse payload."""
     evidence_lookup = brief.get("evidence_lookup")
     cached_source = str(brief.get("source", "")).strip().lower()
     cache_mode = "fallback" if cached_source in {"provider", "cache"} else ""
@@ -164,14 +205,15 @@ def scoped_reuse_fingerprint(
     risk_summary: str,
     self_host_snapshot: Mapping[str, Any] | None,
 ) -> str:
+    """Fingerprint the scoped standup inputs that affect brief reuse safety."""
     activity = row.get("activity")
     activity_window = (
         activity.get(f"{int(window_hours)}h", {})
         if isinstance(activity, Mapping)
         else {}
     )
-    plan = row.get("plan") if isinstance(row.get("plan"), Mapping) else {}
     timeline = row.get("timeline") if isinstance(row.get("timeline"), Mapping) else {}
+    plan = _plan_summary(row)
     payload = {
         "version": _REUSE_STATE_VERSION,
         "window_hours": int(window_hours),
@@ -184,15 +226,7 @@ def scoped_reuse_fingerprint(
             "local_change_count": int(activity_window.get("local_change_count", 0) or 0),
             "file_touch_count": int(activity_window.get("file_touch_count", 0) or 0),
         },
-        "plan": {
-            "progress_ratio": float(plan.get("progress_ratio", 0.0) or 0.0),
-            "done_tasks": int(plan.get("done_tasks", 0) or 0),
-            "total_tasks": int(plan.get("total_tasks", 0) or 0),
-            "progress_classification": str(plan.get("progress_classification", "")).strip(),
-            "display_progress_label": str(plan.get("display_progress_label", "")).strip(),
-            "display_progress_state": str(plan.get("display_progress_state", "")).strip(),
-            "next_tasks": _trimmed_list(plan.get("next_tasks") if isinstance(plan.get("next_tasks"), Sequence) else [], limit=2),
-        },
+        "plan": plan,
         "timeline": {
             "last_activity_iso": str(timeline.get("last_activity_iso", "")).strip(),
             "eta_days": timeline.get("eta_days"),
@@ -222,19 +256,12 @@ def global_reuse_fingerprint(
     risk_summary: str,
     self_host_snapshot: Mapping[str, Any] | None,
 ) -> str:
+    """Fingerprint the global standup inputs that affect brief reuse safety."""
     payload = {
         "version": _REUSE_STATE_VERSION,
         "window_hours": int(window_hours),
         "focus_rows": [
-            {
-                "idea_id": str(row.get("idea_id", "")).strip(),
-                "title": str(row.get("title", "")).strip(),
-                "status": str(row.get("status", "")).strip(),
-                "progress_ratio": float(((row.get("plan") or {}) if isinstance(row.get("plan"), Mapping) else {}).get("progress_ratio", 0.0) or 0.0),
-                "progress_classification": str((((row.get("plan") or {}) if isinstance(row.get("plan"), Mapping) else {}).get("progress_classification", ""))).strip(),
-                "display_progress_label": str((((row.get("plan") or {}) if isinstance(row.get("plan"), Mapping) else {}).get("display_progress_label", ""))).strip(),
-                "display_progress_state": str((((row.get("plan") or {}) if isinstance(row.get("plan"), Mapping) else {}).get("display_progress_state", ""))).strip(),
-            }
+            _focus_row_summary(row)
             for row in focus_rows[:3]
             if isinstance(row, Mapping)
         ],

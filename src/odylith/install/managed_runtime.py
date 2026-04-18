@@ -1,7 +1,10 @@
+"""Managed runtime platform and feature-pack catalog for Odylith installs."""
+
 from __future__ import annotations
 
 import platform
 from dataclasses import dataclass
+from pathlib import Path
 
 
 MANAGED_RUNTIME_SCHEMA_VERSION = "odylith-runtime-bundle.v1"
@@ -21,6 +24,8 @@ CONTEXT_ENGINE_FEATURE_PACK_ID = "odylith-context-engine-memory"
 
 @dataclass(frozen=True)
 class ManagedRuntimePlatform:
+    """One supported bundled-runtime platform target."""
+
     slug: str
     display_name: str
     system: str
@@ -30,15 +35,19 @@ class ManagedRuntimePlatform:
 
     @property
     def asset_name(self) -> str:
+        """Return the shipped Odylith runtime bundle filename."""
         return f"odylith-runtime-{self.slug}.tar.gz"
 
     @property
     def upstream_asset_url(self) -> str:
+        """Return the upstream Python-build-standalone asset URL."""
         return f"{MANAGED_PYTHON_BASE_URL}/{self.upstream_asset_name}"
 
 
 @dataclass(frozen=True)
 class ManagedRuntimeFeaturePack:
+    """Optional package set layered onto the base managed runtime."""
+
     pack_id: str
     display_name: str
     python_requirements: tuple[str, ...]
@@ -46,9 +55,11 @@ class ManagedRuntimeFeaturePack:
     platform_requirement_exclusions: tuple[tuple[str, tuple[str, ...]], ...] = ()
 
     def asset_name(self, runtime_platform: ManagedRuntimePlatform) -> str:
+        """Return the archived feature-pack asset name for one platform."""
         return f"{self.pack_id}-{runtime_platform.slug}.tar.gz"
 
     def python_requirements_for_platform(self, runtime_platform: ManagedRuntimePlatform) -> tuple[str, ...]:
+        """Return the requirements for one platform after exclusions are applied."""
         excluded: tuple[str, ...] = ()
         for slug, requirements in self.platform_requirement_exclusions:
             if slug == runtime_platform.slug:
@@ -105,27 +116,48 @@ SUPPORTED_MANAGED_RUNTIME_FEATURE_PACKS: tuple[ManagedRuntimeFeaturePack, ...] =
 
 
 def supported_managed_runtime_platforms() -> tuple[ManagedRuntimePlatform, ...]:
+    """Return the supported bundled-runtime platforms."""
     return SUPPORTED_MANAGED_RUNTIME_PLATFORMS
 
 
 def supported_managed_runtime_feature_packs() -> tuple[ManagedRuntimeFeaturePack, ...]:
+    """Return the supported optional bundled-runtime feature packs."""
     return SUPPORTED_MANAGED_RUNTIME_FEATURE_PACKS
 
 
-def managed_runtime_platform_by_slug(slug: str) -> ManagedRuntimePlatform:
-    token = str(slug or "").strip()
-    for candidate in SUPPORTED_MANAGED_RUNTIME_PLATFORMS:
-        if candidate.slug == token:
+def _lookup_supported_item[T](
+    token: str,
+    *,
+    candidates: tuple[T, ...],
+    key: str,
+    label: str,
+) -> T:
+    """Return one supported catalog item by exact token or raise a clear error."""
+    normalized = str(token or "").strip()
+    for candidate in candidates:
+        if str(getattr(candidate, key, "")).strip() == normalized:
             return candidate
-    raise ValueError(f"unsupported managed runtime platform slug: {slug!r}")
+    raise ValueError(f"unsupported {label}: {token!r}")
+
+
+def managed_runtime_platform_by_slug(slug: str) -> ManagedRuntimePlatform:
+    """Return one supported platform by slug."""
+    return _lookup_supported_item(
+        slug,
+        candidates=SUPPORTED_MANAGED_RUNTIME_PLATFORMS,
+        key="slug",
+        label="managed runtime platform slug",
+    )
 
 
 def managed_runtime_feature_pack_by_id(pack_id: str) -> ManagedRuntimeFeaturePack:
-    token = str(pack_id or "").strip()
-    for candidate in SUPPORTED_MANAGED_RUNTIME_FEATURE_PACKS:
-        if candidate.pack_id == token:
-            return candidate
-    raise ValueError(f"unsupported managed runtime feature pack: {pack_id!r}")
+    """Return one supported feature pack by id."""
+    return _lookup_supported_item(
+        pack_id,
+        candidates=SUPPORTED_MANAGED_RUNTIME_FEATURE_PACKS,
+        key="pack_id",
+        label="managed runtime feature pack",
+    )
 
 
 def detect_managed_runtime_platform(
@@ -133,6 +165,7 @@ def detect_managed_runtime_platform(
     system_name: str | None = None,
     machine_name: str | None = None,
 ) -> ManagedRuntimePlatform | None:
+    """Detect the best supported platform for the current host."""
     observed_system = str(system_name or platform.system()).strip()
     observed_machine = str(machine_name or platform.machine()).strip().lower()
     for candidate in SUPPORTED_MANAGED_RUNTIME_PLATFORMS:
@@ -143,5 +176,21 @@ def detect_managed_runtime_platform(
     return None
 
 
+def managed_runtime_site_packages_roots(runtime_root: Path | None) -> tuple[Path, ...]:
+    """Return the existing site-packages roots under one managed runtime."""
+    if runtime_root is None or not runtime_root.exists():
+        return ()
+    roots: list[Path] = []
+    for lib_root in (runtime_root / "lib").glob("python*"):
+        site_packages = lib_root / "site-packages"
+        if site_packages.is_dir():
+            roots.append(site_packages)
+    direct = runtime_root / "site-packages"
+    if direct.is_dir():
+        roots.append(direct)
+    return tuple(dict.fromkeys(roots))
+
+
 def supported_platform_labels() -> list[str]:
+    """Return the display labels for all supported platforms."""
     return [candidate.display_name for candidate in SUPPORTED_MANAGED_RUNTIME_PLATFORMS]

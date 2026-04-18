@@ -1,3 +1,5 @@
+"""Regression coverage for Compass release-truth drift detection."""
+
 from __future__ import annotations
 
 import json
@@ -29,6 +31,7 @@ _SECTIONS = (
 
 
 def _idea_text(*, idea_id: str, title: str, status: str) -> str:
+    """Build a synthetic idea markdown fixture with all required sections."""
     sections = "\n\n".join(
         f"## {section}\nGrounded fixture coverage for {section.lower()} in this synthetic workstream."
         for section in _SECTIONS
@@ -70,6 +73,7 @@ def _idea_text(*, idea_id: str, title: str, status: str) -> str:
 
 
 def _seed_release_truth_repo(repo_root: Path) -> None:
+    """Seed a minimal release-truth fixture repo for drift tests."""
     ideas_root = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04"
     ideas_root.mkdir(parents=True, exist_ok=True)
     ideas_root.joinpath("2026-04-09-b-067.md").write_text(
@@ -156,6 +160,7 @@ def _write_traceability(
     completed_workstreams: list[str],
     current_workstreams: list[dict[str, str]],
 ) -> None:
+    """Write a traceability graph fixture with the requested release state."""
     traceability_path = repo_root / "odylith" / "radar" / "traceability-graph.v1.json"
     traceability_path.parent.mkdir(parents=True, exist_ok=True)
     traceability_path.write_text(

@@ -1,3 +1,5 @@
+"""Shared headless-browser support for Odylith integration surface tests."""
+
 from __future__ import annotations
 
 import contextlib
@@ -205,6 +207,7 @@ def _select_radar_row_with_link(
     *,
     query_key: str,
 ) -> tuple[str, str, str]:  # noqa: ANN001
+    """Return the first Radar workstream whose detail pane renders a deep link."""
     row_buttons = radar.locator("button[data-idea-id]")
     count = row_buttons.count()
     for index in range(count):
@@ -220,6 +223,91 @@ def _select_radar_row_with_link(
             token = _extract_query_param(href, query_key)
             if token:
                 return idea_id, token, href
+    raise AssertionError(failure_message)
+
+
+def _locator_appears(locator, *, timeout: int = 1000) -> bool:  # noqa: ANN001
+    """Return whether a locator attaches within a short bounded timeout."""
+    with contextlib.suppress(Exception):
+        locator.first.wait_for(state="attached", timeout=timeout)
+        return True
+    return False
+
+
+def _select_radar_workstream_with_detail_selector(
+    page,
+    *,
+    detail_selector: str,
+    failure_message: str,
+    detail_ready_selector: str = "#detail .detail-title",
+    selector_timeout: int = 1000,
+) -> tuple[object, str]:  # noqa: ANN001
+    """Select the first Radar workstream whose detail pane renders a selector."""
+    radar = page.frame_locator("#frame-radar")
+    row_buttons = radar.locator("button[data-idea-id]")
+    count = row_buttons.count()
+    for index in range(count):
+        button = row_buttons.nth(index)
+        idea_id = str(button.get_attribute("data-idea-id") or "").strip()
+        if not idea_id:
+            continue
+        button.click()
+        _wait_for_shell_query_param(page, tab="radar", key="workstream", value=idea_id)
+        radar.locator(detail_ready_selector).wait_for(timeout=15000)
+        if _locator_appears(radar.locator(f"#detail {detail_selector}"), timeout=selector_timeout):
+            return radar, idea_id
+    raise AssertionError(failure_message)
+
+
+def _select_registry_component_with_detail_selector(
+    page,
+    *,
+    detail_selector: str,
+    failure_message: str,
+    detail_ready_selector: str = "#detail .component-name",
+    selector_timeout: int = 1000,
+) -> tuple[object, str]:  # noqa: ANN001
+    """Select the first Registry component whose detail pane renders a selector."""
+    registry = page.frame_locator("#frame-registry")
+    buttons = registry.locator("button[data-component]")
+    count = buttons.count()
+    for index in range(count):
+        button = buttons.nth(index)
+        component_id = str(button.get_attribute("data-component") or "").strip()
+        if not component_id:
+            continue
+        button.click()
+        _wait_for_shell_query_param(page, tab="registry", key="component", value=component_id)
+        registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
+        registry.locator(detail_ready_selector).wait_for(timeout=15000)
+        if _locator_appears(registry.locator(f"#detail {detail_selector}"), timeout=selector_timeout):
+            return registry, component_id
+    raise AssertionError(failure_message)
+
+
+def _select_casebook_bug_with_detail_selector(
+    page,
+    *,
+    detail_selector: str,
+    failure_message: str,
+    detail_ready_selector: str = "#detailPane .detail-title",
+    selector_timeout: int = 1000,
+) -> tuple[object, str]:  # noqa: ANN001
+    """Select the first Casebook bug whose detail pane renders a selector."""
+    casebook = page.frame_locator("#frame-casebook")
+    rows = casebook.locator("button.bug-row")
+    count = rows.count()
+    for index in range(count):
+        row = rows.nth(index)
+        bug_route = str(row.get_attribute("data-bug") or "").strip()
+        if not bug_route:
+            continue
+        row.click()
+        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=bug_route)
+        casebook.locator(f'button.bug-row.active[data-bug="{bug_route}"]').wait_for(timeout=15000)
+        casebook.locator(detail_ready_selector).wait_for(timeout=15000)
+        if _locator_appears(casebook.locator(f"#detailPane {detail_selector}"), timeout=selector_timeout):
+            return casebook, bug_route
     raise AssertionError(failure_message)
 
 

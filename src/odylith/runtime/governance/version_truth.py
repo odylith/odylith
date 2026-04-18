@@ -26,6 +26,8 @@ _PACKAGE_VERSION_RE = re.compile(r'^__version__\s*=\s*["\'](?P<version>[^"\']+)[
 
 @dataclass(frozen=True)
 class VersionTruth:
+    """Resolved version-truth surfaces for the current repository."""
+
     repo_root: Path
     source_version: str
     package_version: str
@@ -35,18 +37,22 @@ class VersionTruth:
 
     @property
     def pin_version(self) -> str:
+        """Return the currently tracked pinned product version."""
         return str(self.pin.odylith_version if self.pin is not None else "").strip()
 
     @property
     def is_product_repo(self) -> bool:
+        """Return whether the repo root is the Odylith product repository."""
         return product_repo_role(repo_root=self.repo_root) == PRODUCT_REPO_ROLE
 
 
 def package_version_path(*, repo_root: str | Path) -> Path:
+    """Return the package `__init__` path that owns the shipped version token."""
     return Path(repo_root).expanduser().resolve() / _PACKAGE_INIT_RELATIVE
 
 
 def load_package_version(*, repo_root: str | Path) -> str:
+    """Read the package version assignment from `src/odylith/__init__.py`."""
     path = package_version_path(repo_root=repo_root)
     if not path.is_file():
         return ""
@@ -58,6 +64,7 @@ def load_package_version(*, repo_root: str | Path) -> str:
 
 
 def collect_version_truth(*, repo_root: str | Path) -> VersionTruth:
+    """Collect all current version-truth surfaces for the repo."""
     root = Path(repo_root).expanduser().resolve()
     return VersionTruth(
         repo_root=root,
@@ -70,6 +77,7 @@ def collect_version_truth(*, repo_root: str | Path) -> VersionTruth:
 
 
 def validate_version_truth(*, repo_root: str | Path) -> list[str]:
+    """Validate that package and pin files agree with `pyproject.toml`."""
     truth = collect_version_truth(repo_root=repo_root)
     if not truth.is_product_repo:
         return []
@@ -96,6 +104,7 @@ def validate_version_truth(*, repo_root: str | Path) -> list[str]:
 
 
 def _normalize_release_version(version: str) -> str:
+    """Normalize version input so callers can pass either `0.x.y` or `v0.x.y`."""
     normalized = str(version or "").strip()
     if normalized.startswith("v"):
         normalized = normalized[1:]
@@ -103,6 +112,7 @@ def _normalize_release_version(version: str) -> str:
 
 
 def validate_release_security_docs(*, repo_root: str | Path, expected_version: str) -> list[str]:
+    """Validate that release-facing security docs mention the expected release tag."""
     truth = collect_version_truth(repo_root=repo_root)
     if not truth.is_product_repo:
         return []
@@ -125,6 +135,7 @@ def validate_release_security_docs(*, repo_root: str | Path, expected_version: s
 
 
 def render_package_init(*, version: str) -> str:
+    """Render the canonical contents for `src/odylith/__init__.py`."""
     normalized = str(version or "").strip()
     return (
         '"""Odylith CLI and public contracts."""\n\n'
@@ -134,6 +145,7 @@ def render_package_init(*, version: str) -> str:
 
 
 def sync_version_truth(*, repo_root: str | Path) -> list[Path]:
+    """Regenerate tracked version-truth files from the source version."""
     truth = collect_version_truth(repo_root=repo_root)
     if not truth.is_product_repo:
         raise ValueError("version truth sync is only supported in the Odylith product repo")
@@ -162,6 +174,7 @@ def sync_version_truth(*, repo_root: str | Path) -> list[Path]:
 
 
 def render_version_truth(*, repo_root: str | Path) -> dict[str, object]:
+    """Return the current version-truth state as a JSON-friendly payload."""
     truth = collect_version_truth(repo_root=repo_root)
     return {
         "repo_root": str(truth.repo_root),
@@ -176,6 +189,7 @@ def render_version_truth(*, repo_root: str | Path) -> dict[str, object]:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI parser for version-truth inspection and sync commands."""
     parser = argparse.ArgumentParser(description="Inspect or synchronize Odylith version source truth.")
     parser.add_argument("--repo-root", default=".")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -190,7 +204,16 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _print_errors(header: str, errors: Sequence[str]) -> int:
+    """Print a failed validation block and return the standard CLI exit code."""
+    print(header)
+    for item in errors:
+        print(f"- {item}")
+    return 2
+
+
 def main(argv: Sequence[str] | None = None) -> int:
+    """CLI entrypoint for version-truth inspection and synchronization."""
     parser = build_parser()
     args = parser.parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
@@ -201,10 +224,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "check":
             errors = validate_version_truth(repo_root=repo_root)
             if errors:
-                print("odylith version truth FAILED")
-                for item in errors:
-                    print(f"- {item}")
-                return 2
+                return _print_errors("odylith version truth FAILED", errors)
             payload = render_version_truth(repo_root=repo_root)
             print("odylith version truth passed")
             print(f"- source_version: {payload['source_version']}")
@@ -222,10 +242,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "release-check":
             errors = validate_release_security_docs(repo_root=repo_root, expected_version=args.expected_version)
             if errors:
-                print("odylith release security docs FAILED")
-                for item in errors:
-                    print(f"- {item}")
-                return 2
+                return _print_errors("odylith release security docs FAILED", errors)
             print("odylith release security docs passed")
             print(f"- expected_version: v{_normalize_release_version(args.expected_version)}")
             return 0

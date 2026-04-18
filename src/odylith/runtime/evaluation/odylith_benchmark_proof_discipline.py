@@ -1,17 +1,24 @@
+"""Benchmark summary helpers for the live proof-discipline family."""
+
 from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.evaluation import benchmark_metric_helpers
+
 
 def _token(value: Any) -> str:
+    """Normalize arbitrary values into stripped comparison tokens."""
     return str(value or "").strip()
 
 
 def _packet(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract the benchmark packet payload as a mutable mapping copy."""
     return dict(row.get("packet", {})) if isinstance(row.get("packet"), Mapping) else {}
 
 
 def _expectation_details(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract structured expectation details from a benchmark row."""
     return (
         dict(row.get("expectation_details", {}))
         if isinstance(row.get("expectation_details"), Mapping)
@@ -20,14 +27,17 @@ def _expectation_details(row: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _family(row: Mapping[str, Any]) -> str:
+    """Return the declared scenario family for a benchmark row."""
     return _token(row.get("scenario_family") or row.get("family"))
 
 
 def _has_expectation_key(details: Mapping[str, Any], prefix: str) -> bool:
+    """Return whether expectation details contain fields with the given prefix."""
     return any(str(key).startswith(prefix) for key in details)
 
 
 def _proof_backed(row: Mapping[str, Any]) -> bool:
+    """Return whether the row carries proof-discipline benchmark evidence."""
     packet = _packet(row)
     details = _expectation_details(row)
     return bool(
@@ -39,6 +49,7 @@ def _proof_backed(row: Mapping[str, Any]) -> bool:
 
 
 def _expected_highest_truthful_claim(*, proof_status: str, hosted_frontier_advanced: bool) -> str:
+    """Return the truthful claim label implied by the proof-state packet."""
     if hosted_frontier_advanced:
         return "fixed live"
     return {
@@ -53,6 +64,7 @@ def _expected_highest_truthful_claim(*, proof_status: str, hosted_frontier_advan
 
 
 def _expected_frontier_advanced(packet: Mapping[str, Any]) -> bool:
+    """Return whether the packet implies a hosted frontier advancement."""
     proof_status = _token(packet.get("proof_status"))
     if proof_status == "live_verified":
         return True
@@ -63,14 +75,8 @@ def _expected_frontier_advanced(packet: Mapping[str, Any]) -> bool:
     return bool(first_phase and frontier_phase and frontier_phase != first_phase)
 
 
-def _rate(flags: Sequence[bool]) -> float:
-    values = [1.0 if bool(flag) else 0.0 for flag in flags]
-    if not values:
-        return 0.0
-    return round(sum(values) / max(1, len(values)), 3)
-
-
 def summary_from_rows(scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Summarize proof-discipline accuracy from benchmark rows."""
     proof_rows = [row for row in scenario_rows if isinstance(row, Mapping) and _proof_backed(row)]
     packets = [_packet(row) for row in proof_rows if _packet(row)]
     proof_present = [bool(packet.get("proof_state_present")) for packet in packets]
@@ -115,42 +121,29 @@ def summary_from_rows(scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, A
         "proof_discipline_backed_scenario_count": len(proof_rows),
         "proof_state_backed_scenario_count": len([packet for packet in packets if bool(packet.get("proof_state_present"))]),
         "proof_same_fingerprint_backed_scenario_count": len(same_fingerprint_rows),
-        "proof_state_present_rate": _rate(proof_present),
-        "false_clearance_rate": _rate(false_clearance),
-        "proof_frontier_gate_accuracy_rate": _rate(frontier_gate),
-        "proof_claim_guard_accuracy_rate": _rate(claim_guard),
-        "proof_same_fingerprint_reuse_rate": _rate(same_fingerprint_reuse),
+        "proof_state_present_rate": benchmark_metric_helpers.boolean_rate(proof_present),
+        "false_clearance_rate": benchmark_metric_helpers.boolean_rate(false_clearance),
+        "proof_frontier_gate_accuracy_rate": benchmark_metric_helpers.boolean_rate(frontier_gate),
+        "proof_claim_guard_accuracy_rate": benchmark_metric_helpers.boolean_rate(claim_guard),
+        "proof_same_fingerprint_reuse_rate": benchmark_metric_helpers.boolean_rate(
+            same_fingerprint_reuse
+        ),
     }
 
 
 def comparison(*, candidate: Mapping[str, Any], baseline: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        "proof_state_present_rate_delta": round(
-            float(candidate.get("proof_state_present_rate", 0.0) or 0.0)
-            - float(baseline.get("proof_state_present_rate", 0.0) or 0.0),
-            3,
-        ),
-        "false_clearance_rate_delta": round(
-            float(candidate.get("false_clearance_rate", 0.0) or 0.0)
-            - float(baseline.get("false_clearance_rate", 0.0) or 0.0),
-            3,
-        ),
-        "proof_frontier_gate_accuracy_delta": round(
-            float(candidate.get("proof_frontier_gate_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("proof_frontier_gate_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "proof_claim_guard_accuracy_delta": round(
-            float(candidate.get("proof_claim_guard_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("proof_claim_guard_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "proof_same_fingerprint_reuse_delta": round(
-            float(candidate.get("proof_same_fingerprint_reuse_rate", 0.0) or 0.0)
-            - float(baseline.get("proof_same_fingerprint_reuse_rate", 0.0) or 0.0),
-            3,
-        ),
-    }
+    """Compare candidate and baseline proof-discipline family summaries."""
+    return benchmark_metric_helpers.summary_deltas(
+        candidate=candidate,
+        baseline=baseline,
+        field_map={
+            "proof_state_present_rate_delta": "proof_state_present_rate",
+            "false_clearance_rate_delta": "false_clearance_rate",
+            "proof_frontier_gate_accuracy_delta": "proof_frontier_gate_accuracy_rate",
+            "proof_claim_guard_accuracy_delta": "proof_claim_guard_accuracy_rate",
+            "proof_same_fingerprint_reuse_delta": "proof_same_fingerprint_reuse_rate",
+        },
+    )
 
 
 LOWER_BETTER_SUMMARY_FIELDS = frozenset({"false_clearance_rate"})

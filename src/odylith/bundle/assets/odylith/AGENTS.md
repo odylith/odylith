@@ -154,13 +154,14 @@ Scope: applies to Odylith paths under `odylith/`.
 - Treat routed or orchestrated native delegation as the default execution path for substantive grounded work when the current host supports it across the consumer lane and both Odylith product-repo maintainer postures: pinned dogfood and detached `source-local` maintainer dev, unless Odylith explicitly keeps the slice local.
 - Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract. Codex uses routed `spawn_agent` payloads; Claude Code uses the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.
 
-## Source File Size Discipline
-- Odylith coding standards now live in
-  `agents-guidelines/CODING_STANDARDS.md`; treat that file as the single
-  agent-guidance source for documentation, reuse, robustness, file-size
+## Coding Standards
+- The shared Odylith coding baseline now lives in
+  `agents-guidelines/CODING_STANDARDS.md`; that file is consumer-safe and
+  defers to consumer repo standards for consumer-owned code.
+- Maintainer-only Odylith product coding policy now lives in
+  `maintainer/agents-guidelines/CODING_STANDARDS.md`; use it in maintainer
+  mode for deep-scan expectations, inline documentation bar, source-file
   discipline, refactor-first posture, and coding validation expectations.
-- The repo-root file-size policy remains non-negotiable for Odylith-owned
-  product code in this repo.
 
 ## Governance Contract
 - For non-trivial work touching Odylith governance under `odylith/`, create or update the bound plan under `odylith/technical-plans/` per `technical-plans/AGENTS.md`.
@@ -183,7 +184,8 @@ Scope: applies to Odylith paths under `odylith/`.
 
 ## Routing
 - Context engine behavior: `agents-guidelines/ODYLITH_CONTEXT_ENGINE.md`
-- Coding standards: `agents-guidelines/CODING_STANDARDS.md`
+- Shared coding standards baseline: `agents-guidelines/CODING_STANDARDS.md`
+- Maintainer coding standards: `maintainer/agents-guidelines/CODING_STANDARDS.md`
 - Grounding and narrowing: `agents-guidelines/GROUNDING_AND_NARROWING.md`
 - Governance and delivery surfaces: `agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md`
 - Security and trust boundary: `agents-guidelines/SECURITY_AND_TRUST.md`

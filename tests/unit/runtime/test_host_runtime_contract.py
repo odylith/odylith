@@ -1,3 +1,5 @@
+"""Regression coverage for host runtime capability contracts."""
+
 from __future__ import annotations
 
 from odylith.runtime.common import codex_cli_capabilities

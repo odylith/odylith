@@ -12,6 +12,7 @@ from odylith.install.fs import atomic_write_text
 from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_FEATURE_PACK_FILENAME,
     MANAGED_RUNTIME_VERIFICATION_FILENAME,
+    managed_runtime_site_packages_roots,
 )
 from odylith.install.runtime_tree_policy import is_ignored_runtime_tree_entry
 
@@ -371,7 +372,7 @@ def _hot_entries(version_root: Path) -> list[RuntimeEntry]:
         candidate = version_root / relative_path
         if candidate.is_file() and not candidate.is_symlink():
             hot_paths.append(relative_path)
-    for site_packages_root in version_root.glob("lib/python*/site-packages"):
+    for site_packages_root in managed_runtime_site_packages_roots(version_root):
         for candidate_root in (site_packages_root / "odylith", *site_packages_root.glob("odylith-*.dist-info")):
             if not candidate_root.exists():
                 continue

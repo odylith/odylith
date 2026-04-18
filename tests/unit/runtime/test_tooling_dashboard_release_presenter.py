@@ -1,3 +1,5 @@
+"""Coverage for tooling-dashboard release spotlight rendering."""
+
 from __future__ import annotations
 
 from odylith.runtime.surfaces import tooling_dashboard_release_presenter

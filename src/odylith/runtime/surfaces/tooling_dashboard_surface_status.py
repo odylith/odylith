@@ -13,6 +13,7 @@ _COMPASS_STALE_RUNTIME_MINUTES = 90
 
 
 def now_utc() -> str:
+    """Return the current UTC timestamp in the shell-status format."""
     return dt.datetime.now(dt.UTC).strftime("%Y-%m-%d %H:%M:%SZ")
 
 
@@ -21,6 +22,7 @@ def build_surface_runtime_status(
     repo_root: Path,
     shell_rendered_utc: str,
 ) -> dict[str, dict[str, Any]]:
+    """Build shell-surface warning payloads for runtime-backed dashboard surfaces."""
     compass_status = _build_compass_surface_status(
         repo_root=Path(repo_root).resolve(),
         shell_rendered_utc=shell_rendered_utc,
@@ -35,6 +37,7 @@ def _build_compass_surface_status(
     repo_root: Path,
     shell_rendered_utc: str,
 ) -> dict[str, Any]:
+    """Build the shell status banner for Compass when runtime state warrants it."""
     payload = _read_json_object(repo_root / "odylith" / "compass" / "runtime" / "current.v1.json")
     if not payload:
         return {}
@@ -70,6 +73,7 @@ def _failed_refresh_posture(
     shell_rendered_utc: str,
     last_refresh_attempt: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Return the warning banner when a relevant Compass refresh failed."""
     status = str(last_refresh_attempt.get("status", "")).strip().lower()
     if status != "failed":
         return {}
@@ -88,11 +92,10 @@ def _failed_refresh_posture(
     warning = str(payload.get("warning", "")).strip()
     if warning:
         return {}
-    if not warning:
-        warning = (
-            "Requested Compass refresh failed before a fresh payload was written. "
-            f"Showing the prior runtime snapshot from {generated_utc or 'the last successful render'}."
-        )
+    warning = (
+        "Requested Compass refresh failed before a fresh payload was written. "
+        f"Showing the prior runtime snapshot from {generated_utc or 'the last successful render'}."
+    )
     meta_parts = []
     if generated_utc:
         meta_parts.append(f"Snapshot: {generated_utc}")
@@ -121,6 +124,7 @@ def _source_truth_drift_posture(
     repo_root: Path,
     payload: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Return any shell banner for Compass release-truth drift."""
     drift = release_truth_runtime.build_compass_runtime_truth_drift(
         repo_root=repo_root,
         runtime_payload=payload,
@@ -134,6 +138,7 @@ def _source_truth_drift_posture(
 
 
 def _read_json_object(path: Path) -> dict[str, Any]:
+    """Load a JSON object from disk or return an empty dict on failure."""
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -142,6 +147,7 @@ def _read_json_object(path: Path) -> dict[str, Any]:
 
 
 def _parse_utc_token(value: str) -> dt.datetime | None:
+    """Parse an ISO-like UTC token into an aware UTC datetime."""
     token = str(value or "").strip()
     if not token:
         return None
@@ -160,6 +166,7 @@ def _runtime_snapshot_is_stale_for_compass_banner(
     generated_utc: str,
     shell_rendered_utc: str,
 ) -> bool:
+    """Return whether the runtime snapshot is stale enough to justify the banner."""
     generated_at = _parse_utc_token(generated_utc)
     rendered_at = _parse_utc_token(shell_rendered_utc)
     if generated_at is None or rendered_at is None:
@@ -173,6 +180,7 @@ def _refresh_attempt_matches_snapshot(
     generated_utc: str,
     attempted_utc: str,
 ) -> bool:
+    """Return whether the failed refresh attempt belongs to the shown snapshot."""
     generated_at = _parse_utc_token(generated_utc)
     attempted_at = _parse_utc_token(attempted_utc)
     if generated_at is None or attempted_at is None:

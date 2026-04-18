@@ -1,3 +1,5 @@
+"""Cache-backed continuity snapshots for intervention moments."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -8,13 +10,27 @@ from typing import Sequence
 from odylith.runtime.intervention_engine import stream_state
 
 _CONTINUITY_CACHE: dict[tuple[tuple[str, int, int], str, str, str, int], dict[str, Any]] = {}
+_VISIBLE_DELIVERY_STATUSES = {
+    "assistant_chat_confirmed",
+    "best_effort_visible",
+    "manual_visible",
+    "stop_continuation_ready",
+}
+_VISIBLE_DELIVERY_CHANNELS = {
+    "assistant_chat_transcript",
+    "manual_visible_command",
+    "stdout_teaser",
+    "stop_one_shot_guard",
+}
 
 
 def _normalize_string(value: Any) -> str:
+    """Collapse arbitrary values into stable single-line comparison tokens."""
     return " ".join(str(value or "").split()).strip()
 
 
 def _normalize_string_list(value: Any) -> list[str]:
+    """Normalize a list-ish value into a de-duplicated list of non-empty strings."""
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         token = _normalize_string(value)
         return [token] if token else []
@@ -30,15 +46,23 @@ def _normalize_string_list(value: Any) -> list[str]:
 
 
 def _signature_token(value: Any) -> str:
+    """Render semantic-signature content into a cache-friendly token."""
     return "|".join(_normalize_string_list(value))
 
 
 def _mapping(value: Any) -> dict[str, Any]:
+    """Return a mutable mapping copy when the input behaves like a mapping."""
     return dict(value) if isinstance(value, Mapping) else {}
 
 
+def _event_kind(event: Mapping[str, Any]) -> str:
+    """Normalize intervention event kinds for stage comparisons."""
+    return _normalize_string(event.get("kind")).lower()
+
+
 def _event_stage(event: Mapping[str, Any]) -> str:
-    kind = _normalize_string(event.get("kind")).lower()
+    """Map an intervention event into the visible continuity stage it implies."""
+    kind = _event_kind(event)
     if kind in {"intervention_teaser", "ambient_signal"}:
         return "teaser"
     if kind == "intervention_card":
@@ -49,11 +73,33 @@ def _event_stage(event: Mapping[str, Any]) -> str:
 
 
 def _event_has_proven_visible_delivery(event: Mapping[str, Any]) -> bool:
+    """Return whether delivery metadata proves the event was chat-visible."""
     status = _normalize_string(event.get("delivery_status")).lower().replace("-", "_").replace(" ", "_")
     channel = _normalize_string(event.get("delivery_channel")).lower().replace("-", "_").replace(" ", "_")
-    if status in {"assistant_chat_confirmed", "best_effort_visible", "manual_visible", "stop_continuation_ready"}:
+    if status in _VISIBLE_DELIVERY_STATUSES:
         return True
-    return channel in {"assistant_chat_transcript", "manual_visible_command", "stdout_teaser", "stop_one_shot_guard"}
+    return channel in _VISIBLE_DELIVERY_CHANNELS
+
+
+def _matching_events(
+    *,
+    rows: Sequence[Mapping[str, Any]],
+    moment_key: str,
+    signature_token: str,
+) -> list[dict[str, Any]]:
+    """Prefer exact-key matches and fall back to semantic-signature matches."""
+    key_matches: list[dict[str, Any]] = []
+    signature_matches: list[dict[str, Any]] = []
+    for row in rows:
+        payload = _mapping(row)
+        row_key = _normalize_string(payload.get("intervention_key"))
+        row_signature = _signature_token(payload.get("semantic_signature"))
+        if moment_key and row_key == moment_key:
+            key_matches.append(payload)
+            continue
+        if signature_token and row_signature and row_signature == signature_token:
+            signature_matches.append(payload)
+    return key_matches if key_matches else signature_matches
 
 
 def moment_continuity_snapshot(
@@ -64,6 +110,7 @@ def moment_continuity_snapshot(
     semantic_signature: Sequence[str] = (),
     limit: int = 120,
 ) -> dict[str, Any]:
+    """Return the visible continuity state for one intervention moment."""
     signature_token = _signature_token(semantic_signature)
     cache_key = (
         stream_state.event_cache_signature(repo_root=repo_root),
@@ -80,24 +127,15 @@ def moment_continuity_snapshot(
         limit=limit,
         session_id=session_id,
     )
-    wanted_key = _normalize_string(moment_key)
-    wanted_signature = signature_token
-    key_matches: list[dict[str, Any]] = []
-    signature_matches: list[dict[str, Any]] = []
-    for row in rows:
-        payload = _mapping(row)
-        row_key = _normalize_string(payload.get("intervention_key"))
-        row_signature = _signature_token(payload.get("semantic_signature"))
-        if wanted_key and row_key == wanted_key:
-            key_matches.append(payload)
-            continue
-        if wanted_signature and row_signature and row_signature == wanted_signature:
-            signature_matches.append(payload)
-    matching = key_matches if key_matches else signature_matches
+    matching = _matching_events(
+        rows=rows,
+        moment_key=_normalize_string(moment_key),
+        signature_token=signature_token,
+    )
     latest = matching[-1] if matching else {}
-    latest_kind = _normalize_string(latest.get("kind")).lower()
-    seen_teaser = any(_normalize_string(row.get("kind")).lower() in {"intervention_teaser", "ambient_signal"} for row in matching)
-    seen_card = any(_normalize_string(row.get("kind")).lower() == "intervention_card" for row in matching)
+    latest_kind = _event_kind(latest)
+    seen_teaser = any(_event_kind(row) in {"intervention_teaser", "ambient_signal"} for row in matching)
+    seen_card = any(_event_kind(row) == "intervention_card" for row in matching)
     latest_moment_kind = _normalize_string(latest.get("moment_kind")).lower()
     latest_stage = _event_stage(latest)
     proposal_pending = latest_kind == "capture_proposed"
@@ -133,6 +171,7 @@ def moment_continuity_snapshot(
 
 
 def evolve_candidate_stage(*, stage: str, continuity: Mapping[str, Any]) -> str:
+    """Suppress teaser reruns once the same moment has advanced further."""
     normalized = _normalize_string(stage).lower()
     floor = _normalize_string(continuity.get("stage_floor")).lower()
     if floor == "card" and normalized == "teaser":

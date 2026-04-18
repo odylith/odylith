@@ -4,10 +4,10 @@ import contextlib
 import json
 import os
 import signal
-import shutil
 from pathlib import Path
 import time
 
+from odylith.install.fs import display_path, remove_path
 from odylith.install.paths import repo_runtime_paths
 from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.context_engine import odylith_context_engine_store
@@ -57,7 +57,7 @@ def reset_local_state(*, repo_root: str | Path) -> list[str]:
             continue
         seen.add(resolved)
         if _remove_target(resolved):
-            removed.append(_display_path(repo_root=root, path=resolved))
+            removed.append(display_path(repo_root=root, path=resolved))
     return removed
 
 
@@ -118,20 +118,10 @@ def _stop_live_context_engine_daemon(root: Path) -> None:
 
 
 def _remove_target(path: Path) -> bool:
-    if path.is_symlink() or path.is_file():
-        path.unlink()
-        return True
-    if path.is_dir():
-        shutil.rmtree(path)
+    if path.is_symlink() or path.exists():
+        remove_path(path)
         return True
     return False
-
-
-def _display_path(*, repo_root: Path, path: Path) -> str:
-    try:
-        return path.relative_to(repo_root).as_posix()
-    except ValueError:
-        return str(path)
 
 
 __all__ = ["reset_local_state"]

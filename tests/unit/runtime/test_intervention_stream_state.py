@@ -1,3 +1,5 @@
+"""Regression coverage for intervention event-stream state helpers."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +8,7 @@ from odylith.runtime.intervention_engine import stream_state
 
 
 class _OddObject:
+    """Fixture object that forces metadata serialization onto the fallback path."""
     def __str__(self) -> str:
         return "odd-object"
 

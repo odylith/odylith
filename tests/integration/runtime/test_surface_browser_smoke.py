@@ -11,9 +11,16 @@ import shutil
 import threading
 import traceback
 from typing import Iterator
-from urllib.parse import parse_qs, quote, urlparse
+from urllib.parse import quote
 
 import pytest
+from tests.integration.runtime.surface_browser_test_support import (
+    _click_visible,
+    _extract_query_param,
+    _select_radar_row_with_link,
+    _wait_for_shell_query_param,
+    _wait_for_shell_tab,
+)
 
 playwright_sync = pytest.importorskip("playwright.sync_api")
 
@@ -236,11 +243,6 @@ def _assert_clean_page(
     page.close()
 
 
-def _extract_query_param(href: str, key: str) -> str:
-    values = parse_qs(urlparse(href).query).get(key, ())
-    return str(values[0]).strip() if values else ""
-
-
 def _casebook_index_counts() -> tuple[int, int]:
     text = (_REPO_ROOT / "odylith" / "casebook" / "bugs" / "INDEX.md").read_text(encoding="utf-8")
     section = ""
@@ -274,76 +276,6 @@ def _assert_casebook_counts(casebook, *, expected_open_total: int, expected_tota
     assert casebook.locator("#kpiTotalCases").inner_text().strip() == str(expected_total_cases)
     assert casebook.locator("button.bug-row").count() == expected_total_cases
     assert casebook.locator("#listMeta").inner_text().strip() == f"Visible: {expected_total_cases}"
-
-
-def _select_radar_row_with_link(
-    radar,
-    link_selector: str,
-    failure_message: str,
-    *,
-    query_key: str,
-) -> tuple[str, str, str]:  # noqa: ANN001
-    row_buttons = radar.locator("button[data-idea-id]")
-    count = row_buttons.count()
-    for index in range(count):
-        button = row_buttons.nth(index)
-        idea_id = str(button.get_attribute("data-idea-id") or "").strip()
-        if not idea_id:
-            continue
-        button.click()
-        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=idea_id).wait_for(timeout=15000)
-        links = radar.locator(f"#detail {link_selector}")
-        if links.count():
-            href = str(links.first.get_attribute("href") or "").strip()
-            token = _extract_query_param(href, query_key)
-            if token:
-                return idea_id, token, href
-    raise AssertionError(failure_message)
-
-
-def _wait_for_shell_query_param(
-    page,
-    *,
-    tab: str,
-    key: str,
-    value: str,
-    timeout: int = 15000,
-) -> None:  # noqa: ANN001
-    page.wait_for_function(
-        """({ tab, key, value }) => {
-            try {
-              const url = new URL(window.location.href);
-              return url.pathname.endsWith("/odylith/index.html")
-                && url.searchParams.get("tab") === tab
-                && url.searchParams.get(key) === value;
-            } catch (_error) {
-              return false;
-            }
-        }""",
-        arg={"tab": tab, "key": key, "value": value},
-        timeout=timeout,
-    )
-
-
-def _wait_for_shell_tab(page, tab: str, timeout: int = 15000) -> None:  # noqa: ANN001
-    page.wait_for_function(
-        """(tab) => {
-            try {
-              const url = new URL(window.location.href);
-              return url.pathname.endsWith("/odylith/index.html")
-                && url.searchParams.get("tab") === tab;
-            } catch (_error) {
-              return false;
-            }
-        }""",
-        arg=tab,
-        timeout=timeout,
-    )
-
-
-def _click_visible(locator) -> None:  # noqa: ANN001
-    locator.scroll_into_view_if_needed(timeout=15000)
-    locator.click()
 
 
 def _collect_sample_tokens(page, base_url: str) -> dict[str, str]:  # noqa: ANN001

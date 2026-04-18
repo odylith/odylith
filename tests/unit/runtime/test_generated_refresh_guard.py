@@ -1,3 +1,5 @@
+"""Regression coverage for generated rebuild skip-guard behavior."""
+
 from __future__ import annotations
 
 import subprocess
@@ -8,6 +10,7 @@ from odylith.runtime.surfaces import generated_surface_refresh_guards
 
 
 def _git(repo_root: Path, *args: str) -> None:
+    """Run git commands against the temporary test repository."""
     subprocess.run(
         ["git", "-C", str(repo_root), *args],
         check=True,

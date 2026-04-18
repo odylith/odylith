@@ -1,20 +1,27 @@
+"""Benchmark summary helpers for the context-engine grounding family."""
+
 from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
+
+from odylith.runtime.evaluation import benchmark_metric_helpers
 
 
 FAMILY = "context_engine_grounding"
 
 
 def _token(value: Any) -> str:
+    """Normalize arbitrary values into stripped comparison tokens."""
     return str(value or "").strip()
 
 
 def _packet(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract the benchmark packet payload as a mutable mapping copy."""
     return dict(row.get("packet", {})) if isinstance(row.get("packet"), Mapping) else {}
 
 
 def _expectation_details(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract structured expectation details from a benchmark row."""
     return (
         dict(row.get("expectation_details", {}))
         if isinstance(row.get("expectation_details"), Mapping)
@@ -23,10 +30,12 @@ def _expectation_details(row: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _family(row: Mapping[str, Any]) -> str:
+    """Return the declared scenario family for a benchmark row."""
     return _token(row.get("scenario_family") or row.get("family"))
 
 
 def _expected_tokens(details: Mapping[str, Any], field_name: str) -> set[str]:
+    """Read one expected-* field as a normalized token set."""
     expected = details.get(f"expected_{field_name}")
     if isinstance(expected, list):
         return {str(token).strip() for token in expected if str(token).strip()}
@@ -35,11 +44,13 @@ def _expected_tokens(details: Mapping[str, Any], field_name: str) -> set[str]:
 
 
 def _packet_source(row: Mapping[str, Any]) -> str:
+    """Return the effective packet source from row or nested packet state."""
     packet = _packet(row)
     return _token(row.get("packet_source")) or _token(packet.get("packet_source"))
 
 
 def _runtime_adoption(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract nested Odylith adoption/runtime metadata from a benchmark row."""
     orchestration = dict(row.get("orchestration", {})) if isinstance(row.get("orchestration"), Mapping) else {}
     return (
         dict(orchestration.get("odylith_adoption", {}))
@@ -49,6 +60,7 @@ def _runtime_adoption(row: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _backed(row: Mapping[str, Any]) -> bool:
+    """Return whether the row carries context-engine-backed benchmark evidence."""
     details = _expectation_details(row)
     return bool(
         _family(row) == FAMILY
@@ -58,14 +70,8 @@ def _backed(row: Mapping[str, Any]) -> bool:
     )
 
 
-def _rate(flags: Sequence[bool]) -> float:
-    values = [1.0 if bool(flag) else 0.0 for flag in flags]
-    if not values:
-        return 0.0
-    return round(sum(values) / max(1, len(values)), 3)
-
-
 def summary_from_rows(scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Summarize context-engine grounding accuracy from benchmark rows."""
     rows = [row for row in scenario_rows if isinstance(row, Mapping) and _backed(row)]
     packet_source_accuracy: list[bool] = []
     selection_state_accuracy: list[bool] = []
@@ -126,42 +132,37 @@ def summary_from_rows(scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, A
         "context_engine_expected_workstream_count": workstream_backed_count,
         "context_engine_ambiguity_backed_scenario_count": ambiguity_backed_count,
         "context_engine_runtime_backed_scenario_count": runtime_backed_count,
-        "context_engine_packet_source_accuracy_rate": _rate(packet_source_accuracy),
-        "context_engine_selection_state_accuracy_rate": _rate(selection_state_accuracy),
-        "context_engine_workstream_accuracy_rate": _rate(workstream_accuracy),
-        "context_engine_fail_closed_ambiguity_rate": _rate(ambiguity_fail_closed),
-        "context_engine_session_namespace_rate": _rate(session_namespaced),
+        "context_engine_packet_source_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            packet_source_accuracy
+        ),
+        "context_engine_selection_state_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            selection_state_accuracy
+        ),
+        "context_engine_workstream_accuracy_rate": benchmark_metric_helpers.boolean_rate(
+            workstream_accuracy
+        ),
+        "context_engine_fail_closed_ambiguity_rate": benchmark_metric_helpers.boolean_rate(
+            ambiguity_fail_closed
+        ),
+        "context_engine_session_namespace_rate": benchmark_metric_helpers.boolean_rate(
+            session_namespaced
+        ),
     }
 
 
 def comparison(*, candidate: Mapping[str, Any], baseline: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        "context_engine_packet_source_accuracy_delta": round(
-            float(candidate.get("context_engine_packet_source_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("context_engine_packet_source_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "context_engine_selection_state_accuracy_delta": round(
-            float(candidate.get("context_engine_selection_state_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("context_engine_selection_state_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "context_engine_workstream_accuracy_delta": round(
-            float(candidate.get("context_engine_workstream_accuracy_rate", 0.0) or 0.0)
-            - float(baseline.get("context_engine_workstream_accuracy_rate", 0.0) or 0.0),
-            3,
-        ),
-        "context_engine_fail_closed_ambiguity_delta": round(
-            float(candidate.get("context_engine_fail_closed_ambiguity_rate", 0.0) or 0.0)
-            - float(baseline.get("context_engine_fail_closed_ambiguity_rate", 0.0) or 0.0),
-            3,
-        ),
-        "context_engine_session_namespace_delta": round(
-            float(candidate.get("context_engine_session_namespace_rate", 0.0) or 0.0)
-            - float(baseline.get("context_engine_session_namespace_rate", 0.0) or 0.0),
-            3,
-        ),
-    }
+    """Compare candidate and baseline context-engine family summaries."""
+    return benchmark_metric_helpers.summary_deltas(
+        candidate=candidate,
+        baseline=baseline,
+        field_map={
+            "context_engine_packet_source_accuracy_delta": "context_engine_packet_source_accuracy_rate",
+            "context_engine_selection_state_accuracy_delta": "context_engine_selection_state_accuracy_rate",
+            "context_engine_workstream_accuracy_delta": "context_engine_workstream_accuracy_rate",
+            "context_engine_fail_closed_ambiguity_delta": "context_engine_fail_closed_ambiguity_rate",
+            "context_engine_session_namespace_delta": "context_engine_session_namespace_rate",
+        },
+    )
 
 
 LOWER_BETTER_SUMMARY_FIELDS = frozenset()

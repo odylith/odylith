@@ -40,6 +40,7 @@ from typing import Any, Iterator, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.evaluation import benchmark_group_summaries
+from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_isolation
 from odylith.runtime.evaluation import odylith_benchmark_context_engine
 from odylith.runtime.evaluation import odylith_benchmark_execution_engine
@@ -5451,8 +5452,7 @@ def _sum(values: Sequence[float]) -> float:
 
 
 def _rate(values: Sequence[bool]) -> float:
-    rows = [1.0 if bool(value) else 0.0 for value in values]
-    return _avg(rows)
+    return benchmark_metric_helpers.boolean_rate(values)
 
 
 def _stage_latency_summary(scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, dict[str, float]]:
@@ -6682,123 +6682,43 @@ def _summary_comparison(
     baseline_payload = _lookup_mode_mapping(mode_summaries, baseline_mode)
     candidate = dict(candidate_payload) if isinstance(candidate_payload, Mapping) else {}
     baseline = dict(baseline_payload) if isinstance(baseline_payload, Mapping) else {}
+    field_map = {
+        "median_latency_delta_ms": "median_latency_ms",
+        "avg_latency_delta_ms": "avg_latency_ms",
+        "p95_latency_delta_ms": "p95_latency_ms",
+        "median_initial_prompt_token_delta": "median_initial_prompt_tokens",
+        "median_token_delta": "median_effective_tokens",
+        "median_prompt_token_delta": "median_effective_tokens",
+        "median_total_payload_token_delta": "median_total_payload_tokens",
+        "median_runtime_contract_token_delta": "median_runtime_contract_tokens",
+        "median_operator_diag_token_delta": "median_operator_diag_tokens",
+        "median_observed_path_count_delta": "median_observed_path_count",
+        "median_candidate_write_path_count_delta": "median_candidate_write_path_count",
+        "median_selected_doc_count_delta": "median_selected_doc_count",
+        "median_selected_command_count_delta": "median_selected_command_count",
+        "required_path_recall_delta": "required_path_recall_rate",
+        "required_path_precision_delta": "required_path_precision_rate",
+        "hallucinated_surface_rate_delta": "hallucinated_surface_rate",
+        "validation_success_delta": "validation_success_rate",
+        "write_surface_precision_delta": "write_surface_precision_rate",
+        "unnecessary_widening_rate_delta": "unnecessary_widening_rate",
+        "critical_required_path_recall_delta": "critical_required_path_recall_rate",
+        "critical_validation_success_delta": "critical_validation_success_rate",
+        "expectation_success_delta": "expectation_success_rate",
+        "route_ready_validation_success_delta": "route_ready_validation_success_rate",
+        "route_ready_expectation_success_delta": "route_ready_expectation_success_rate",
+    }
     comparison = {
         "candidate_mode": _public_mode_name(candidate_mode),
         "baseline_mode": _public_mode_name(baseline_mode),
-        "median_latency_delta_ms": round(
-            float(candidate.get("median_latency_ms", 0.0) or 0.0) - float(baseline.get("median_latency_ms", 0.0) or 0.0),
-            3,
-        ),
-        "avg_latency_delta_ms": round(
-            float(candidate.get("avg_latency_ms", 0.0) or 0.0) - float(baseline.get("avg_latency_ms", 0.0) or 0.0),
-            3,
-        ),
-        "p95_latency_delta_ms": round(
-            float(candidate.get("p95_latency_ms", 0.0) or 0.0) - float(baseline.get("p95_latency_ms", 0.0) or 0.0),
-            3,
-        ),
-        "median_initial_prompt_token_delta": round(
-            float(candidate.get("median_initial_prompt_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_initial_prompt_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_token_delta": round(
-            float(candidate.get("median_effective_tokens", 0.0) or 0.0) - float(baseline.get("median_effective_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_prompt_token_delta": round(
-            float(candidate.get("median_effective_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_effective_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_total_payload_token_delta": round(
-            float(candidate.get("median_total_payload_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_total_payload_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_runtime_contract_token_delta": round(
-            float(candidate.get("median_runtime_contract_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_runtime_contract_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_operator_diag_token_delta": round(
-            float(candidate.get("median_operator_diag_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_operator_diag_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_observed_path_count_delta": round(
-            float(candidate.get("median_observed_path_count", 0.0) or 0.0)
-            - float(baseline.get("median_observed_path_count", 0.0) or 0.0),
-            3,
-        ),
-        "median_candidate_write_path_count_delta": round(
-            float(candidate.get("median_candidate_write_path_count", 0.0) or 0.0)
-            - float(baseline.get("median_candidate_write_path_count", 0.0) or 0.0),
-            3,
-        ),
-        "median_selected_doc_count_delta": round(
-            float(candidate.get("median_selected_doc_count", 0.0) or 0.0)
-            - float(baseline.get("median_selected_doc_count", 0.0) or 0.0),
-            3,
-        ),
-        "median_selected_command_count_delta": round(
-            float(candidate.get("median_selected_command_count", 0.0) or 0.0)
-            - float(baseline.get("median_selected_command_count", 0.0) or 0.0),
-            3,
-        ),
-        "required_path_recall_delta": round(
-            float(candidate.get("required_path_recall_rate", 0.0) or 0.0) - float(baseline.get("required_path_recall_rate", 0.0) or 0.0),
-            3,
-        ),
-        "required_path_precision_delta": round(
-            float(candidate.get("required_path_precision_rate", 0.0) or 0.0)
-            - float(baseline.get("required_path_precision_rate", 0.0) or 0.0),
-            3,
-        ),
-        "hallucinated_surface_rate_delta": round(
-            float(candidate.get("hallucinated_surface_rate", 0.0) or 0.0)
-            - float(baseline.get("hallucinated_surface_rate", 0.0) or 0.0),
-            3,
-        ),
-        "validation_success_delta": round(
-            float(candidate.get("validation_success_rate", 0.0) or 0.0) - float(baseline.get("validation_success_rate", 0.0) or 0.0),
-            3,
-        ),
-        "write_surface_precision_delta": round(
-            float(candidate.get("write_surface_precision_rate", 0.0) or 0.0)
-            - float(baseline.get("write_surface_precision_rate", 0.0) or 0.0),
-            3,
-        ),
-        "unnecessary_widening_rate_delta": round(
-            float(candidate.get("unnecessary_widening_rate", 0.0) or 0.0)
-            - float(baseline.get("unnecessary_widening_rate", 0.0) or 0.0),
-            3,
-        ),
-        "critical_required_path_recall_delta": round(
-            float(candidate.get("critical_required_path_recall_rate", 0.0) or 0.0)
-            - float(baseline.get("critical_required_path_recall_rate", 0.0) or 0.0),
-            3,
-        ),
-        "critical_validation_success_delta": round(
-            float(candidate.get("critical_validation_success_rate", 0.0) or 0.0)
-            - float(baseline.get("critical_validation_success_rate", 0.0) or 0.0),
-            3,
-        ),
-        "expectation_success_delta": round(
-            float(candidate.get("expectation_success_rate", 0.0) or 0.0) - float(baseline.get("expectation_success_rate", 0.0) or 0.0),
-            3,
-        ),
-        "route_ready_validation_success_delta": round(
-            float(candidate.get("route_ready_validation_success_rate", 0.0) or 0.0)
-            - float(baseline.get("route_ready_validation_success_rate", 0.0) or 0.0),
-            3,
-        ),
-        "route_ready_expectation_success_delta": round(
-            float(candidate.get("route_ready_expectation_success_rate", 0.0) or 0.0)
-            - float(baseline.get("route_ready_expectation_success_rate", 0.0) or 0.0),
-            3,
-        ),
     }
+    comparison.update(
+        benchmark_metric_helpers.summary_deltas(
+            candidate=candidate,
+            baseline=baseline,
+            field_map=field_map,
+        )
+    )
     comparison.update(
         odylith_benchmark_proof_discipline.comparison(
             candidate=candidate,
@@ -7688,26 +7608,34 @@ def _aggregate_published_scenarios(
             profile_candidates.append(
                 (
                     (
-                        round(float(candidate.get("latency_ms", 0.0) or 0.0) - float(baseline.get("latency_ms", 0.0) or 0.0), 3),
-                        round(
-                            float(candidate.get("effective_estimated_tokens", candidate.get("codex_prompt_estimated_tokens", 0.0)) or 0.0)
-                            - float(baseline.get("effective_estimated_tokens", baseline.get("codex_prompt_estimated_tokens", 0.0)) or 0.0),
-                            3,
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="latency_ms",
                         ),
-                        round(
-                            float(candidate.get("total_payload_estimated_tokens", candidate.get("effective_estimated_tokens", 0.0)) or 0.0)
-                            - float(baseline.get("total_payload_estimated_tokens", baseline.get("effective_estimated_tokens", 0.0)) or 0.0),
-                            3,
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="effective_estimated_tokens",
+                            candidate_fallback_fields=("codex_prompt_estimated_tokens",),
+                            baseline_fallback_fields=("codex_prompt_estimated_tokens",),
                         ),
-                        round(
-                            float(baseline.get("required_path_recall", 0.0) or 0.0)
-                            - float(candidate.get("required_path_recall", 0.0) or 0.0),
-                            3,
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="total_payload_estimated_tokens",
+                            candidate_fallback_fields=("effective_estimated_tokens",),
+                            baseline_fallback_fields=("effective_estimated_tokens",),
                         ),
-                        round(
-                            float(baseline.get("validation_success_proxy", 0.0) or 0.0)
-                            - float(candidate.get("validation_success_proxy", 0.0) or 0.0),
-                            3,
+                        benchmark_metric_helpers.numeric_delta(
+                            baseline,
+                            candidate,
+                            candidate_field="required_path_recall",
+                        ),
+                        benchmark_metric_helpers.numeric_delta(
+                            baseline,
+                            candidate,
+                            candidate_field="validation_success_proxy",
                         ),
                     ),
                     str(profile).strip(),
@@ -7811,13 +7739,17 @@ def _acceptance(
     )
     bootstrap_payload_delta = 0.0
     if bootstrap_candidate and bootstrap_baseline:
-        bootstrap_payload_delta = float(bootstrap_candidate.get("median_total_payload_tokens", 0.0) or 0.0) - float(
-            bootstrap_baseline.get("median_total_payload_tokens", 0.0) or 0.0
+        bootstrap_payload_delta = benchmark_metric_helpers.summary_delta(
+            bootstrap_candidate,
+            bootstrap_baseline,
+            "median_total_payload_tokens",
         )
     architecture_latency_delta = 0.0
     if architecture_candidate and architecture_baseline:
-        architecture_latency_delta = float(architecture_candidate.get("median_latency_ms", 0.0) or 0.0) - float(
-            architecture_baseline.get("median_latency_ms", 0.0) or 0.0
+        architecture_latency_delta = benchmark_metric_helpers.summary_delta(
+            architecture_candidate,
+            architecture_baseline,
+            "median_latency_ms",
         )
     candidate_scenario_count = int(candidate.get("scenario_count", 0) or 0)
     candidate_validation_backed_scenario_count = int(candidate.get("validation_backed_scenario_count", 0) or 0)

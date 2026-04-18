@@ -103,6 +103,34 @@ def test_sync_casebook_bug_index_migrates_missing_bug_ids_by_default(tmp_path: P
     assert "| CB-001 | 2026-03-26 | Example open bug | P1 | tooling | Open | [2026-03-26-example-open-bug.md](2026-03-26-example-open-bug.md) |" in index_text
 
 
+def test_sync_casebook_bug_index_cli_reports_duplicate_bug_ids_directly(tmp_path: Path, capsys) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    _write_bug(
+        bug_root / "2026-03-26-first-bug.md",
+        bug_id="CB-009",
+        status="Open",
+        created="2026-03-26",
+        severity="P1",
+        components="tooling",
+    )
+    _write_bug(
+        bug_root / "2026-03-27-second-bug.md",
+        bug_id="CB-009",
+        status="Open",
+        created="2026-03-27",
+        severity="P0",
+        components="dashboard",
+    )
+
+    rc = sync_casebook_bug_index.main(["--repo-root", str(tmp_path)])
+
+    output = capsys.readouterr().out
+    assert rc == 2
+    assert "duplicate Casebook bug ID 'CB-009'" in output
+    assert "casebook source validation failed" not in output
+
+
 def test_load_bug_rows_skips_missing_stale_bug_targets(tmp_path: Path) -> None:
     bug_root = tmp_path / "odylith" / "casebook" / "bugs"
     bug_root.mkdir(parents=True, exist_ok=True)

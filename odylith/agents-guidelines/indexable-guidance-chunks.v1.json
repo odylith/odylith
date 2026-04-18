@@ -8,7 +8,7 @@
       "chunk_path": "odylith/agents-guidelines/CODING_STANDARDS.md",
       "title": "Coding Standards",
       "section": "Documentation, reuse, and robustness",
-      "summary": "Treat documentation, reuse, robustness, file-size discipline, refactor-first posture, and focused coding validation as one canonical coding-standards contract.",
+      "summary": "Treat documentation, reuse, robustness, inline-doc signal, and focused coding validation as the shared coding baseline, while consumer repo standards still govern consumer-owned code.",
       "tags": [
         "coding",
         "documentation",

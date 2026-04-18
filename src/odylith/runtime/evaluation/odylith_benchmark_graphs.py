@@ -15,6 +15,7 @@ from pathlib import Path
 import statistics
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_marketing_graphs as marketing_graphs
 from odylith.runtime.evaluation import odylith_benchmark_runner
 from odylith.runtime.evaluation import odylith_benchmark_taxonomy
@@ -559,16 +560,34 @@ def _scenario_rows(report: Mapping[str, Any]) -> list[dict[str, Any]]:
                 "scenario_id": str(scenario.get("scenario_id", "")).strip(),
                 "label": str(scenario.get("label", "")).strip() or str(scenario.get("scenario_id", "")).strip(),
                 "family": str(scenario.get("family", "")).strip(),
-                "candidate_prompt": float(candidate.get("codex_prompt_estimated_tokens", 0.0) or 0.0),
-                "baseline_prompt": float(baseline.get("codex_prompt_estimated_tokens", 0.0) or 0.0),
-                "candidate_latency": float(candidate.get("latency_ms", 0.0) or 0.0),
-                "baseline_latency": float(baseline.get("latency_ms", 0.0) or 0.0),
-                "candidate_total": float(candidate.get("total_payload_estimated_tokens", 0.0) or 0.0),
-                "baseline_total": float(baseline.get("total_payload_estimated_tokens", 0.0) or 0.0),
-                "required_path_recall_delta": float(candidate.get("required_path_recall", 0.0) or 0.0)
-                - float(baseline.get("required_path_recall", 0.0) or 0.0),
-                "validation_success_delta": float(candidate.get("validation_success_proxy", 0.0) or 0.0)
-                - float(baseline.get("validation_success_proxy", 0.0) or 0.0),
+                "candidate_prompt": benchmark_metric_helpers.numeric_value(
+                    candidate,
+                    "codex_prompt_estimated_tokens",
+                ),
+                "baseline_prompt": benchmark_metric_helpers.numeric_value(
+                    baseline,
+                    "codex_prompt_estimated_tokens",
+                ),
+                "candidate_latency": benchmark_metric_helpers.numeric_value(candidate, "latency_ms"),
+                "baseline_latency": benchmark_metric_helpers.numeric_value(baseline, "latency_ms"),
+                "candidate_total": benchmark_metric_helpers.numeric_value(
+                    candidate,
+                    "total_payload_estimated_tokens",
+                ),
+                "baseline_total": benchmark_metric_helpers.numeric_value(
+                    baseline,
+                    "total_payload_estimated_tokens",
+                ),
+                "required_path_recall_delta": benchmark_metric_helpers.numeric_delta(
+                    candidate,
+                    baseline,
+                    candidate_field="required_path_recall",
+                ),
+                "validation_success_delta": benchmark_metric_helpers.numeric_delta(
+                    candidate,
+                    baseline,
+                    candidate_field="validation_success_proxy",
+                ),
             }
         )
     return rows
@@ -934,45 +953,66 @@ def _render_family_heatmap_svg(report: Mapping[str, Any]) -> str:
             {
                 "category": odylith_benchmark_taxonomy.family_group_label(family),
                 "family": family,
-                "baseline_prompt": float(baseline.get("median_effective_tokens", 0.0) or 0.0),
-                "baseline_latency": float(baseline.get("median_latency_ms", 0.0) or 0.0),
+                "baseline_prompt": benchmark_metric_helpers.numeric_value(
+                    baseline,
+                    "median_effective_tokens",
+                ),
+                "baseline_latency": benchmark_metric_helpers.numeric_value(
+                    baseline,
+                    "median_latency_ms",
+                ),
                 "prompt_delta": float(
                     delta_row.get(
                         "median_prompt_token_delta",
-                        float(candidate.get("median_effective_tokens", 0.0) or 0.0)
-                        - float(baseline.get("median_effective_tokens", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="median_effective_tokens",
+                        ),
                     )
                     or 0.0
                 ),
                 "latency_delta": float(
                     delta_row.get(
                         "median_latency_delta_ms",
-                        float(candidate.get("median_latency_ms", 0.0) or 0.0)
-                        - float(baseline.get("median_latency_ms", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="median_latency_ms",
+                        ),
                     )
                     or 0.0
                 ),
                 "recall_delta": float(
                     delta_row.get(
                         "required_path_recall_delta",
-                        float(candidate.get("required_path_recall_rate", 0.0) or 0.0)
-                        - float(baseline.get("required_path_recall_rate", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="required_path_recall_rate",
+                        ),
                     )
                     or 0.0
                 ),
                 "validation_delta": float(
                     delta_row.get(
                         "validation_success_delta",
-                        float(candidate.get("validation_success_rate", 0.0) or 0.0)
-                        - float(baseline.get("validation_success_rate", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="validation_success_rate",
+                        ),
                     )
                     or 0.0
                 ),
                 "expectation_delta": float(
                     delta_row.get(
                         "expectation_success_delta",
-                        float(candidate.get("expectation_success_rate", 0.0) or 0.0)
-                        - float(baseline.get("expectation_success_rate", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="expectation_success_rate",
+                        ),
                     )
                     or 0.0
                 ),

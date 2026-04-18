@@ -1,3 +1,5 @@
+"""Coverage for Radar/Atlas tooltip lookup payload helpers."""
+
 from __future__ import annotations
 
 from odylith.runtime.governance import traceability_ui_lookup as lookup

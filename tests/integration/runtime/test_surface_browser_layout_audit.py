@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
+    _select_casebook_bug_with_detail_selector,
+    _select_radar_row_with_link,
+    _select_radar_workstream_with_detail_selector,
+    _select_registry_component_with_detail_selector,
     _new_page,
     _wait_for_shell_query_param,
     browser_context,
@@ -442,21 +446,12 @@ def _governance_kpi_style(locator, card_selector: str, label_selector: str, valu
 
 
 def _select_radar_workstream_chip_for_style_audit(page):  # noqa: ANN001
-    radar = page.frame_locator("#frame-radar")
-    row_buttons = radar.locator("button[data-idea-id]")
-    count = row_buttons.count()
-    for index in range(count):
-        button = row_buttons.nth(index)
-        idea_id = str(button.get_attribute("data-idea-id") or "").strip()
-        if not idea_id:
-            continue
-        button.click()
-        _wait_for_shell_query_param(page, tab="radar", key="workstream", value=idea_id)
-        radar.locator("#detail .detail-title").wait_for(timeout=15000)
-        chips = radar.locator("#detail button.execution-wave-chip-link, #detail button.entity-id-chip")
-        if chips.count():
-            return radar
-    raise AssertionError("expected a Radar detail with at least one rendered workstream chip")
+    radar, _idea_id = _select_radar_workstream_with_detail_selector(
+        page,
+        detail_selector="button.execution-wave-chip-link, button.entity-id-chip",
+        failure_message="expected a Radar detail with at least one rendered workstream chip",
+    )
+    return radar
 
 
 def _open_radar_topology_relations_for_style_audit(radar) -> bool:  # noqa: ANN001
@@ -522,20 +517,12 @@ def _select_compass_deep_link_chip_for_style_audit(page):  # noqa: ANN001
 
 
 def _select_registry_deep_link_chip_for_style_audit(page):  # noqa: ANN001
-    registry = page.frame_locator("#frame-registry")
-    buttons = registry.locator("button[data-component]")
-    count = buttons.count()
-    for index in range(count):
-        button = buttons.nth(index)
-        component_id = str(button.get_attribute("data-component") or "").strip()
-        if not component_id:
-            continue
-        button.click()
-        registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
-        registry.locator("#detail .component-name").wait_for(timeout=15000)
-        if registry.locator("#detail a.detail-action-chip").count():
-            return registry
-    raise AssertionError("expected a Registry detail with at least one deep-link chip")
+    registry, _component_id = _select_registry_component_with_detail_selector(
+        page,
+        detail_selector="a.detail-action-chip",
+        failure_message="expected a Registry detail with at least one deep-link chip",
+    )
+    return registry
 
 
 def _select_registry_forensic_digest_stress_component(page):  # noqa: ANN001
@@ -678,20 +665,12 @@ def test_registry_forensic_digest_keeps_default_view_compact_in_compact_browser(
 
 
 def _select_casebook_deep_link_chip_for_style_audit(page):  # noqa: ANN001
-    casebook = page.frame_locator("#frame-casebook")
-    rows = casebook.locator("button.bug-row")
-    count = rows.count()
-    for index in range(count):
-        row = rows.nth(index)
-        bug_id = str(row.get_attribute("data-bug") or "").strip()
-        if not bug_id:
-            continue
-        row.click()
-        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=bug_id)
-        casebook.locator("#detailPane .detail-title").wait_for(timeout=15000)
-        if casebook.locator("#detailPane a.action-chip").count():
-            return casebook
-    raise AssertionError("expected a Casebook detail with at least one deep-link chip")
+    casebook, _bug_route = _select_casebook_bug_with_detail_selector(
+        page,
+        detail_selector="a.action-chip",
+        failure_message="expected a Casebook detail with at least one deep-link chip",
+    )
+    return casebook
 
 
 def _assert_shared_workstream_buttons_keep_compact_style_contract(  # noqa: ANN001

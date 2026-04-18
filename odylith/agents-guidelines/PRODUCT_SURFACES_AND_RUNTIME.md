@@ -56,7 +56,13 @@
     - if the current branch is `main`, create and switch to a new branch before any code or tracked-file edit
     - if work is already on a non-`main` branch, keep using that branch
   - source-file discipline posture:
-    - follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the canonical Odylith coding standards, including file-size discipline, refactor-first posture, documentation, reuse, robustness, and focused validation expectations
+    - follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the shared
+      consumer-safe documentation, reuse, robustness, and focused-validation
+      baseline
+    - follow
+      [../maintainer/agents-guidelines/CODING_STANDARDS.md](../maintainer/agents-guidelines/CODING_STANDARDS.md)
+      for maintainer-only file-size discipline, refactor-first posture, and
+      deep-scan coding policy
 
 ## Observation And Proposal Contract
 - `**Odylith Observation**` and `Odylith Proposal` are shipped product

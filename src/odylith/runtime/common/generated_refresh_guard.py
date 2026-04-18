@@ -13,6 +13,7 @@ _CACHE_VERSION = "v1"
 
 
 def _normalize_watch_tokens(watched_paths: Sequence[str | Path]) -> tuple[str, ...]:
+    """Normalize watched path tokens into stable, de-duplicated POSIX strings."""
     rows: list[str] = []
     seen: set[str] = set()
     for raw in watched_paths:
@@ -28,6 +29,7 @@ def _normalize_watch_tokens(watched_paths: Sequence[str | Path]) -> tuple[str, .
 
 
 def _resolve_watch_path(*, repo_root: Path, token: str) -> Path:
+    """Resolve watched-path tokens relative to the repo root when needed."""
     path = Path(str(token or "").strip())
     if path.is_absolute():
         return path.resolve()
@@ -35,6 +37,7 @@ def _resolve_watch_path(*, repo_root: Path, token: str) -> Path:
 
 
 def _update_tree_digest(hasher: hashlib._Hash, path: Path, *, root: Path) -> None:
+    """Add filesystem shape and mtimes for one path subtree into the digest."""
     try:
         stat = path.stat()
     except OSError:
@@ -60,10 +63,16 @@ def _update_tree_digest(hasher: hashlib._Hash, path: Path, *, root: Path) -> Non
 
 
 def _path_fingerprint(path: Path) -> str:
+    """Fingerprint a file or directory tree rooted at the given path."""
     target = Path(path).resolve()
     hasher = hashlib.sha256()
     _update_tree_digest(hasher, target, root=target if target.is_dir() else target.parent)
     return hasher.hexdigest()
+
+
+def _resolved_output_paths(output_paths: Sequence[Path]) -> tuple[Path, ...]:
+    """Resolve output paths once before reading or recording cache state."""
+    return tuple(Path(path).resolve() for path in output_paths)
 
 
 def compute_input_fingerprint(
@@ -72,6 +81,7 @@ def compute_input_fingerprint(
     watched_paths: Sequence[str | Path],
     extra: Mapping[str, Any] | None = None,
 ) -> str:
+    """Fingerprint the watched inputs and extra cache-invalidating metadata."""
     root = Path(repo_root).resolve()
     normalized = _normalize_watch_tokens(watched_paths)
     payload: dict[str, Any] = {
@@ -87,6 +97,7 @@ def compute_input_fingerprint(
 
 
 def _output_signatures(output_paths: Sequence[Path]) -> dict[str, Any]:
+    """Capture current output path signatures for rebuild-skip comparisons."""
     return {
         str(Path(path).resolve()): odylith_context_cache.path_signature(Path(path).resolve())
         for path in output_paths
@@ -102,6 +113,7 @@ def should_skip_rebuild(
     output_paths: Sequence[Path],
     extra: Mapping[str, Any] | None = None,
 ) -> tuple[bool, str, dict[str, Any]]:
+    """Return whether a generated rebuild can be skipped safely."""
     root = Path(repo_root).resolve()
     fingerprint = compute_input_fingerprint(
         repo_root=root,
@@ -116,7 +128,7 @@ def should_skip_rebuild(
         or not isinstance(cached.get("outputs"), Mapping)
     ):
         return False, fingerprint, {}
-    outputs = tuple(Path(path).resolve() for path in output_paths)
+    outputs = _resolved_output_paths(output_paths)
     current_outputs = _output_signatures(outputs)
     if dict(cached.get("outputs", {})) != current_outputs:
         return False, fingerprint, {}
@@ -133,6 +145,7 @@ def record_rebuild(
     output_paths: Sequence[Path],
     metadata: Mapping[str, Any] | None = None,
 ) -> None:
+    """Persist the cache entry that proves a rebuild just refreshed outputs."""
     root = Path(repo_root).resolve()
     cache_path = odylith_context_cache.cache_path(repo_root=root, namespace=namespace, key=key)
     odylith_context_cache.write_json_if_changed(
@@ -141,7 +154,7 @@ def record_rebuild(
         payload={
             "version": _CACHE_VERSION,
             "input_fingerprint": str(input_fingerprint or "").strip(),
-            "outputs": _output_signatures(tuple(Path(path).resolve() for path in output_paths)),
+            "outputs": _output_signatures(_resolved_output_paths(output_paths)),
             "metadata": dict(metadata) if isinstance(metadata, Mapping) else {},
         },
         lock_key=str(cache_path),

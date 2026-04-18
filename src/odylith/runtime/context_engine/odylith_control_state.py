@@ -27,30 +27,37 @@ _PROCESS_TIMING_APPEND_COUNTS: dict[str, int] = {}
 
 
 def runtime_root(*, repo_root: Path) -> Path:
+    """Return the mutable runtime directory that stores control-state artifacts."""
     return (Path(repo_root).resolve() / ".odylith" / "runtime").resolve()
 
 
 def state_path(*, repo_root: Path) -> Path:
+    """Return the primary JSON control-state path."""
     return (runtime_root(repo_root=repo_root) / STATE_FILENAME).resolve()
 
 
 def state_js_path(*, repo_root: Path) -> Path:
+    """Return the optional browser-probe companion asset path."""
     return (runtime_root(repo_root=repo_root) / STATE_JS_FILENAME).resolve()
 
 
 def events_path(*, repo_root: Path) -> Path:
+    """Return the append-only runtime event log path."""
     return (runtime_root(repo_root=repo_root) / EVENTS_FILENAME).resolve()
 
 
 def timings_path(*, repo_root: Path) -> Path:
+    """Return the append-only runtime timings log path."""
     return (runtime_root(repo_root=repo_root) / TIMINGS_FILENAME).resolve()
 
 
 def read_state(*, repo_root: Path) -> dict[str, Any]:
+    """Load the current JSON control-state payload from disk."""
     return odylith_context_cache.read_json_object(state_path(repo_root=repo_root))
 
 
 def _render_state_js(*, payload: Mapping[str, Any]) -> str:
+    """Render the browser-readable control-state assignment snippet."""
     return (
         f"window[{json.dumps(STATE_JS_GLOBAL_NAME, ensure_ascii=False)}] = "
         f"{json.dumps(dict(payload), sort_keys=True, ensure_ascii=False)};\n"
@@ -58,6 +65,7 @@ def _render_state_js(*, payload: Mapping[str, Any]) -> str:
 
 
 def _should_write_state_js(*, repo_root: Path) -> bool:
+    """Return whether this repo posture should publish the JS probe asset."""
     from odylith.install.manager import PRODUCT_REPO_ROLE, product_repo_role
     from odylith.install.state import load_install_state
 
@@ -70,6 +78,7 @@ def _should_write_state_js(*, repo_root: Path) -> bool:
 
 
 def ensure_state_js_probe_asset(*, repo_root: Path) -> Path | None:
+    """Refresh or remove the JS probe asset to match the current repo posture."""
     resolved_root = Path(repo_root).resolve()
     js_path = state_js_path(repo_root=resolved_root)
     if not _should_write_state_js(repo_root=resolved_root):
@@ -88,6 +97,7 @@ def ensure_state_js_probe_asset(*, repo_root: Path) -> Path | None:
 
 
 def write_state(*, repo_root: Path, payload: Mapping[str, Any]) -> None:
+    """Write the JSON state payload and keep the JS companion in sync."""
     resolved_root = Path(repo_root).resolve()
     resolved_payload = dict(payload)
     json_path = state_path(repo_root=resolved_root)
@@ -119,6 +129,7 @@ def append_event(
     version: str = "",
     ts_iso: str = "",
 ) -> None:
+    """Append one structured runtime event row to the JSONL event log."""
     target = events_path(repo_root=repo_root)
     target.parent.mkdir(parents=True, exist_ok=True)
     row = {
@@ -136,6 +147,7 @@ def append_event(
 
 
 def _load_jsonl_rows(path: Path) -> list[dict[str, Any]]:
+    """Load structured JSONL rows while skipping malformed lines."""
     if not path.is_file():
         return []
     rows: list[dict[str, Any]] = []
@@ -157,6 +169,7 @@ def _load_jsonl_rows(path: Path) -> list[dict[str, Any]]:
 
 
 def _write_jsonl_rows(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
+    """Atomically rewrite a JSONL file when the rendered content changed."""
     rendered = "".join(json.dumps(dict(item), sort_keys=True, ensure_ascii=False) + "\n" for item in rows)
     existing = path.read_text(encoding="utf-8") if path.is_file() else ""
     if existing == rendered:
@@ -178,6 +191,7 @@ def append_timing(
     row: Mapping[str, Any],
     retention_limit: int = _TIMING_RETENTION_LIMIT,
 ) -> None:
+    """Append a timing row and compact the file when it grows beyond soft limits."""
     target = timings_path(repo_root=repo_root)
     target.parent.mkdir(parents=True, exist_ok=True)
     lock_key = str(target)
@@ -208,6 +222,7 @@ def load_timing_rows(
     repo_root: Path,
     limit: int = 24,
 ) -> list[dict[str, Any]]:
+    """Load recent timing rows ordered by timestamp descending."""
     rows = _load_jsonl_rows(timings_path(repo_root=repo_root))
     indexed = list(enumerate(rows))
     indexed.sort(
@@ -225,6 +240,7 @@ def summarize_timings(
     repo_root: Path,
     limit: int = 24,
 ) -> dict[str, Any]:
+    """Summarize recent timing rows for lightweight runtime diagnostics."""
     rows = load_timing_rows(repo_root=repo_root, limit=limit)
     aggregates: dict[tuple[str, str], dict[str, Any]] = {}
     recent: list[dict[str, Any]] = []
