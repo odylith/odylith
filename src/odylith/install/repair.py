@@ -1,3 +1,5 @@
+"""Repair orchestration for managed runtime and project asset drift."""
+
 from __future__ import annotations
 
 import contextlib

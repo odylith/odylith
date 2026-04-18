@@ -5,11 +5,8 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any, Mapping, Sequence
 
-
-def _host():
-    from odylith.runtime.surfaces import compass_dashboard_runtime as host
-
-    return host
+from odylith.runtime.surfaces import compass_dashboard_base as compass_base
+from odylith.runtime.surfaces import compass_transaction_runtime
 
 
 def _build_execution_focus_payload(
@@ -19,12 +16,6 @@ def _build_execution_focus_payload(
     active_window_minutes: int,
     recent_window_minutes: int,
 ) -> dict[str, Any]:
-    host = _host()
-    _DEFAULT_ACTIVE_WINDOW_MINUTES = host._DEFAULT_ACTIVE_WINDOW_MINUTES
-    _DEFAULT_RECENT_FOCUS_WINDOW_MINUTES = host._DEFAULT_RECENT_FOCUS_WINDOW_MINUTES
-    _split_source_vs_generated_files = host._split_source_vs_generated_files
-    _parse_iso_ts = host._parse_iso_ts
-    _safe_iso = host._safe_iso
     active_window = dt.timedelta(minutes=max(1, active_window_minutes))
     recent_window = dt.timedelta(minutes=max(1, recent_window_minutes))
     score_weights: dict[str, int] = {
@@ -66,7 +57,9 @@ def _build_execution_focus_payload(
             if source:
                 source_counts[source] = source_counts.get(source, 0) + 1
 
-        source_files, generated_files = _split_source_vs_generated_files(row.get("files", []))
+        source_files, generated_files = compass_transaction_runtime._split_source_vs_generated_files(
+            row.get("files", [])
+        )
         implementation_signal_count = sum(
             int(kind_counts.get(kind, 0) or 0) for kind in implementation_signal_kinds
         )
@@ -98,8 +91,8 @@ def _build_execution_focus_payload(
             )
         )
 
-        end_ts = _parse_iso_ts(str(row.get("end_ts_iso", "")).strip())
-        last_event_ts = end_ts or _parse_iso_ts(str(row.get("start_ts_iso", "")).strip())
+        end_ts = compass_base._parse_iso_ts(str(row.get("end_ts_iso", "")).strip())
+        last_event_ts = end_ts or compass_base._parse_iso_ts(str(row.get("start_ts_iso", "")).strip())
         event_age = (now - last_event_ts) if last_event_ts is not None else None
         is_active = bool(event_age is not None and event_age <= active_window)
         is_recent = bool(event_age is not None and event_age <= recent_window)
@@ -250,7 +243,7 @@ def _build_execution_focus_payload(
                 continue
             if latest is None or ts > latest:
                 latest = ts
-        return _safe_iso(latest) if latest else ""
+        return compass_base._safe_iso(latest) if latest else ""
 
     def _select_focus_row(
         rows: Sequence[Mapping[str, Any]],
@@ -364,7 +357,7 @@ def _build_execution_focus_payload(
             for token in row.get("files", [])
             if str(token).strip()
         ]
-        source_files, generated_files = _split_source_vs_generated_files(files)
+        source_files, generated_files = compass_transaction_runtime._split_source_vs_generated_files(files)
         ordered_files = source_files + generated_files
         return {
             "is_active": _is_active(row),

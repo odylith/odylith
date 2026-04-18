@@ -1,3 +1,5 @@
+"""Integrity hashing and drift detection for managed runtimes."""
+
 from __future__ import annotations
 
 from contextlib import suppress

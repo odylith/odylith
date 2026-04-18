@@ -1,3 +1,5 @@
+"""Release asset discovery, verification, and download helpers."""
+
 from __future__ import annotations
 
 import hashlib

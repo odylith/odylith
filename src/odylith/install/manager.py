@@ -1,3 +1,5 @@
+"""Install, upgrade, and runtime management entrypoints for Odylith."""
+
 from __future__ import annotations
 
 import contextlib

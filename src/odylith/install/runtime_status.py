@@ -1,3 +1,5 @@
+"""Install and runtime status models exposed to operators."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

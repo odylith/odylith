@@ -1,3 +1,5 @@
+"""Host-adapter contract for surfaced agent capabilities."""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass

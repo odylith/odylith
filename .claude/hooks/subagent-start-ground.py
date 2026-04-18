@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Claude subagent-start hook that injects grounded context."""
+
 from __future__ import annotations
 
 import json

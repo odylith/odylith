@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Claude stop hook that records bounded subagent closeout events."""
+
 from __future__ import annotations
 
 from pathlib import Path

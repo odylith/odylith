@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Claude post-edit hook that refreshes governed surfaces when needed."""
 
 from __future__ import annotations
 

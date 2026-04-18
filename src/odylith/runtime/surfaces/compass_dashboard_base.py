@@ -382,6 +382,134 @@ def _safe_iso(ts: dt.datetime) -> str:
     return ts.astimezone(_COMPASS_TZ).isoformat(timespec="seconds")
 
 
+def _event_public_payload(event: Mapping[str, Any]) -> dict[str, Any]:
+    ts = event.get("ts")
+    ts_iso = str(event.get("ts_iso", "")).strip()
+    if not ts_iso and isinstance(ts, dt.datetime):
+        ts_iso = _safe_iso(ts)
+    return {
+        "id": str(event.get("id", "")).strip(),
+        "kind": str(event.get("kind", "")).strip(),
+        "ts_iso": ts_iso,
+        "summary": str(event.get("summary", "")).strip(),
+        "author": str(event.get("author", "")).strip(),
+        "sha": str(event.get("sha", "")).strip(),
+        "workstreams": [
+            str(item).strip()
+            for item in event.get("workstreams", [])
+            if str(item).strip()
+        ],
+        "files": [
+            str(item).strip()
+            for item in event.get("files", [])
+            if str(item).strip()
+        ][:64],
+        "source": str(event.get("source", "")).strip(),
+        "session_id": str(event.get("session_id", "")).strip(),
+        "transaction_id": str(event.get("transaction_id", "")).strip(),
+        "transaction_seq": event.get("transaction_seq"),
+        "transaction_boundary": str(event.get("transaction_boundary", "")).strip(),
+        "context": str(event.get("context", "")).strip(),
+        "headline_hint": str(event.get("headline_hint", "")).strip(),
+        "proof_lane": str(event.get("proof_lane", "")).strip(),
+        "proof_fingerprint": str(event.get("proof_fingerprint", "")).strip(),
+        "proof_phase": str(event.get("proof_phase", "")).strip(),
+        "evidence_tier": str(event.get("evidence_tier", "")).strip(),
+        "proof_status": str(event.get("proof_status", "")).strip(),
+        "work_category": str(event.get("work_category", "")).strip(),
+        "deployment_truth": dict(event.get("deployment_truth", {}))
+        if isinstance(event.get("deployment_truth"), Mapping)
+        else {},
+    }
+
+
+def _truncate_sentence(text: str, *, limit: int) -> str:
+    token = " ".join(str(text or "").split()).strip()
+    if not token:
+        return ""
+    if len(token) <= limit:
+        return token
+    if limit <= 4:
+        return token[:limit]
+    hard_limit = max(1, limit - 3)
+    boundary = token.rfind(" ", 0, hard_limit + 1)
+    if boundary < int(hard_limit * 0.6):
+        boundary = hard_limit
+    clipped = token[:boundary].rstrip(" ,;:-")
+    if not clipped:
+        clipped = token[:hard_limit].rstrip()
+    return f"{clipped}..."
+
+
+def _clip_sentence(text: str, *, limit: int = 160) -> str:
+    token = " ".join(str(text or "").split()).strip()
+    if not token:
+        return ""
+    return _truncate_sentence(token, limit=limit)
+
+
+def _narrative_excerpt(text: str, *, max_sentences: int = 1, max_chars: int = 220) -> str:
+    token = " ".join(str(text or "").split()).strip()
+    if not token:
+        return ""
+    sentences = re.split(r"(?<=[.!?])\s+", token)
+    chosen: list[str] = []
+    current_len = 0
+    for sentence in sentences:
+        part = sentence.strip()
+        if not part:
+            continue
+        projected = current_len + (1 if chosen else 0) + len(part)
+        if chosen and projected > max_chars:
+            break
+        if not chosen and len(part) > max_chars:
+            return _truncate_sentence(part, limit=max_chars)
+        chosen.append(part)
+        current_len = projected
+        if len(chosen) >= max_sentences:
+            break
+    if chosen:
+        return " ".join(chosen)
+    return _truncate_sentence(token, limit=max_chars)
+
+
+def _normalize_sentence(text: str) -> str:
+    return " ".join(str(text or "").split()).strip()
+
+
+def _humanize_commit_subject(summary: str) -> str:
+    token = _normalize_sentence(summary).replace("`", "")
+    if not token:
+        return ""
+    token = _CONVENTIONAL_COMMIT_PREFIX_RE.sub("", token).strip()
+    lowered = token.lower()
+    replacements: tuple[tuple[str, str], ...] = (
+        ("add ", "added "),
+        ("fix ", "fixed "),
+        ("update ", "updated "),
+        ("refactor ", "refactored "),
+        ("remove ", "removed "),
+        ("improve ", "improved "),
+        ("align ", "aligned "),
+        ("implement ", "implemented "),
+        ("make ", "made "),
+    )
+    for prefix, replacement in replacements:
+        if lowered.startswith(prefix):
+            return f"{replacement}{token[len(prefix):].strip()}"
+    return token
+
+
+def _humanize_execution_event_summary(*, kind: str, summary: str) -> str:
+    token = _normalize_sentence(summary).rstrip(".;")
+    if not token:
+        return ""
+    if kind == "commit":
+        token = _humanize_commit_subject(token)
+    token = token.replace("`", "")
+    return _narrative_excerpt(token, max_sentences=1, max_chars=220).strip()
+
+
 def _parse_date(token: str) -> dt.date | None:
     raw = str(token or "").strip()
     if not _DATE_RE.fullmatch(raw):

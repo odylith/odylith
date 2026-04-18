@@ -1,3 +1,5 @@
+"""Managed guidance and agent asset templates for installed repositories."""
+
 from __future__ import annotations
 
 import re

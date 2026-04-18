@@ -1,3 +1,5 @@
+"""Tar archive safety checks for Odylith release extraction."""
+
 from __future__ import annotations
 
 import tarfile

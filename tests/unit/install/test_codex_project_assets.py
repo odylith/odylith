@@ -10,6 +10,28 @@ LIVE_CLAUDE_ROOT = REPO_ROOT / ".claude"
 LIVE_CODEX_ROOT = REPO_ROOT / ".codex"
 LIVE_SKILLS_ROOT = REPO_ROOT / ".agents" / "skills"
 PROJECT_ROOT_BUNDLE = REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "project-root"
+INSTALL_AND_CONTRACT_MODULES = (
+    REPO_ROOT / "src" / "odylith" / "install" / "__init__.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "agents.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "archive_safety.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "manager.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "migration_audit.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "paths.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "python_env.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "release_assets.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "repair.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "runtime.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "runtime_integrity.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "runtime_status.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "runtime_tree_policy.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "state.py",
+    REPO_ROOT / "src" / "odylith" / "contracts" / "__init__.py",
+    REPO_ROOT / "src" / "odylith" / "contracts" / "host_adapter.py",
+    REPO_ROOT / "src" / "odylith" / "contracts" / "plan_v1.py",
+    REPO_ROOT / "src" / "odylith" / "contracts" / "route_v1.py",
+    REPO_ROOT / "src" / "odylith" / "cli.py",
+    REPO_ROOT / "src" / "odylith" / "bundle" / "__init__.py",
+)
 CODEX_COMMAND_SKILLS = {
     "odylith-start/SKILL.md",
     "odylith-context/SKILL.md",
@@ -46,6 +68,26 @@ def test_live_claude_project_assets_match_bundle_mirror_inventory() -> None:
     bundled = _managed_files(PROJECT_ROOT_BUNDLE / ".claude")
 
     assert live == bundled
+
+
+def test_live_claude_hook_scripts_match_bundle_mirror_content() -> None:
+    live_hooks = LIVE_CLAUDE_ROOT / "hooks"
+    bundle_hooks = PROJECT_ROOT_BUNDLE / ".claude" / "hooks"
+
+    live_hook_names = {path.name for path in live_hooks.glob("*.py")}
+    bundled_hook_names = {path.name for path in bundle_hooks.glob("*.py")}
+    assert live_hook_names == bundled_hook_names
+
+    for hook_name in sorted(live_hook_names):
+        assert (live_hooks / hook_name).read_text(encoding="utf-8") == (
+            bundle_hooks / hook_name
+        ).read_text(encoding="utf-8")
+
+
+def test_install_and_contract_entry_modules_start_with_docstrings() -> None:
+    for path in INSTALL_AND_CONTRACT_MODULES:
+        text = path.read_text(encoding="utf-8").lstrip()
+        assert text.startswith('"""'), f"module docstring missing: {path.relative_to(REPO_ROOT)}"
 
 
 def test_codex_project_config_uses_verified_contract_keys() -> None:

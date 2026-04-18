@@ -9,11 +9,7 @@ import re
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-
-def _host():
-    from odylith.runtime.surfaces import compass_dashboard_runtime as host
-
-    return host
+from odylith.runtime.surfaces import compass_dashboard_base as compass_base
 
 
 def _transaction_scope_phrase(workstreams: Sequence[str]) -> str:
@@ -26,7 +22,7 @@ def _transaction_scope_phrase(workstreams: Sequence[str]) -> str:
 
 
 def _is_generated_narrative_file(path: str) -> bool:
-    token = _host()._normalize_repo_token(path)
+    token = compass_base._normalize_repo_token(path)
     return _is_generated_narrative_token(token)
 
 
@@ -69,9 +65,8 @@ def _is_generated_narrative_token(token: str) -> bool:
 def _split_source_vs_generated_files_cached(files: tuple[str, ...]) -> tuple[tuple[str, ...], tuple[str, ...]]:
     source: list[str] = []
     generated: list[str] = []
-    normalize_repo_token = _host()._normalize_repo_token
     for raw in files:
-        token = normalize_repo_token(str(raw))
+        token = compass_base._normalize_repo_token(str(raw))
         if not token:
             continue
         if _is_generated_narrative_token(token):
@@ -91,7 +86,7 @@ def _split_source_vs_generated_files(files: Sequence[str]) -> tuple[list[str], l
 
 
 def _local_change_surface_label(path: str) -> str:
-    token = _host()._normalize_repo_token(path)
+    token = compass_base._normalize_repo_token(path)
     lower = token.lower()
     if not lower:
         return "code"
@@ -163,12 +158,11 @@ def _local_change_headline_phrase(
     local_events: Sequence[Mapping[str, Any]],
     files_count: int,
 ) -> str:
-    normalize_repo_token = _host()._normalize_repo_token
     file_tokens: list[str] = []
     action_tokens: list[str] = []
     for row in local_events:
         for value in row.get("files", []):
-            token = normalize_repo_token(str(value))
+            token = compass_base._normalize_repo_token(str(value))
             if token:
                 file_tokens.append(token)
         summary = str(row.get("summary", "")).strip()
@@ -231,21 +225,18 @@ def _local_change_headline_phrase(
 
 
 def _is_generic_transaction_headline(text: str) -> bool:
-    normalize_sentence = _host()._normalize_sentence
-    token = normalize_sentence(text).strip().rstrip(".")
+    token = compass_base._normalize_sentence(text).strip().rstrip(".")
     if not token:
         return True
-    return bool(_host()._GENERIC_TX_HEADLINE_RE.fullmatch(token.lower()))
+    return bool(compass_base._GENERIC_TX_HEADLINE_RE.fullmatch(token.lower()))
 
 
 def _select_transaction_headline_hint(tx_events: Sequence[Mapping[str, Any]]) -> str:
-    narrative_excerpt = _host()._narrative_excerpt
-    max_chars = _host()._TX_HEADLINE_MAX_CHARS
     for row in tx_events:
-        hint = narrative_excerpt(
+        hint = compass_base._narrative_excerpt(
             str(row.get("headline_hint", "")).strip(),
             max_sentences=1,
-            max_chars=max_chars,
+            max_chars=compass_base._TX_HEADLINE_MAX_CHARS,
         ).strip().rstrip(".")
         if not hint:
             continue
@@ -256,20 +247,15 @@ def _select_transaction_headline_hint(tx_events: Sequence[Mapping[str, Any]]) ->
 
 
 def _plan_update_headline(*, summary: str, scope: str) -> str:
-    host = _host()
-    normalize_sentence = host._normalize_sentence
-    plan_kickoff_re = host._PLAN_KICKOFF_RE
-    plan_checklist_progress_re = host._PLAN_CHECKLIST_PROGRESS_RE
-
-    token = normalize_sentence(summary).strip().rstrip(".")
+    token = compass_base._normalize_sentence(summary).strip().rstrip(".")
     lowered = token.lower()
     if not token:
         return f"Plan updated {scope}".strip() if scope else "Plan updated"
 
-    if plan_kickoff_re.search(lowered):
+    if compass_base._PLAN_KICKOFF_RE.search(lowered):
         return f"Plan kickoff {scope}".strip() if scope else "Plan kickoff"
 
-    match = plan_checklist_progress_re.search(token)
+    match = compass_base._PLAN_CHECKLIST_PROGRESS_RE.search(token)
     if match:
         done = int(str(match.group("done")).strip())
         total = int(str(match.group("total")).strip())
@@ -294,8 +280,11 @@ def _plan_update_headline(*, summary: str, scope: str) -> str:
 
 
 def _lineage_transaction_headline(*, summaries: Sequence[str], scope: str) -> str:
-    normalize_sentence = _host()._normalize_sentence
-    lowered = " ".join(normalize_sentence(text).lower() for text in summaries if str(text).strip())
+    lowered = " ".join(
+        compass_base._normalize_sentence(text).lower()
+        for text in summaries
+        if str(text).strip()
+    )
     if not lowered:
         return ""
     if any(token in lowered for token in ("reopen", "re-open", "reopened", "successor")):
@@ -316,20 +305,14 @@ def _build_transaction_headline(
     workstreams: Sequence[str],
     files_count: int,
 ) -> str:
-    host = _host()
-    narrative_excerpt = host._narrative_excerpt
-    max_chars = host._TX_HEADLINE_MAX_CHARS
-    humanize_execution_event_summary = host._humanize_execution_event_summary
-    clip_sentence = host._clip_sentence
-
     headline_hint = _select_transaction_headline_hint(tx_events)
     if headline_hint:
         return headline_hint
 
-    context = narrative_excerpt(
+    context = compass_base._narrative_excerpt(
         tx_context,
         max_sentences=1,
-        max_chars=max_chars,
+        max_chars=compass_base._TX_HEADLINE_MAX_CHARS,
     ).strip().rstrip(".")
     if context:
         return context
@@ -353,22 +336,31 @@ def _build_transaction_headline(
         rows = by_kind.get(kind, [])
         if not rows:
             return ""
-        return humanize_execution_event_summary(
+        return compass_base._humanize_execution_event_summary(
             kind=kind,
             summary=str(rows[0].get("summary", "")).strip(),
         ).strip().rstrip(".")
 
     implementation_summary = _summary_for("implementation")
     if implementation_summary:
-        return clip_sentence(implementation_summary, limit=max_chars).rstrip(".")
+        return compass_base._clip_sentence(
+            implementation_summary,
+            limit=compass_base._TX_HEADLINE_MAX_CHARS,
+        ).rstrip(".")
 
     decision_summary = _summary_for("decision")
     if decision_summary:
-        return clip_sentence(f"Decision: {decision_summary}", limit=max_chars).rstrip(".")
+        return compass_base._clip_sentence(
+            f"Decision: {decision_summary}",
+            limit=compass_base._TX_HEADLINE_MAX_CHARS,
+        ).rstrip(".")
 
     statement_summary = _summary_for("statement")
     if statement_summary:
-        return clip_sentence(statement_summary, limit=max_chars).rstrip(".")
+        return compass_base._clip_sentence(
+            statement_summary,
+            limit=compass_base._TX_HEADLINE_MAX_CHARS,
+        ).rstrip(".")
 
     local_change_rows = by_kind.get("local_change", [])
     if local_change_rows:
@@ -378,14 +370,20 @@ def _build_transaction_headline(
         )
         if local_phrase:
             if scope:
-                return clip_sentence(
+                return compass_base._clip_sentence(
                     f"{local_phrase} {scope}",
-                    limit=max_chars,
+                    limit=compass_base._TX_HEADLINE_MAX_CHARS,
                 ).rstrip(".")
-            return clip_sentence(local_phrase, limit=max_chars).rstrip(".")
+            return compass_base._clip_sentence(
+                local_phrase,
+                limit=compass_base._TX_HEADLINE_MAX_CHARS,
+            ).rstrip(".")
         local_summary = _summary_for("local_change")
         if local_summary:
-            return clip_sentence(local_summary, limit=max_chars).rstrip(".")
+            return compass_base._clip_sentence(
+                local_summary,
+                limit=compass_base._TX_HEADLINE_MAX_CHARS,
+            ).rstrip(".")
 
     if by_kind.get("plan_completion"):
         if scope:
@@ -398,7 +396,10 @@ def _build_transaction_headline(
 
     commit_summary = _summary_for("commit")
     if commit_summary:
-        return clip_sentence(commit_summary, limit=max_chars).rstrip(".")
+        return compass_base._clip_sentence(
+            commit_summary,
+            limit=compass_base._TX_HEADLINE_MAX_CHARS,
+        ).rstrip(".")
 
     for bug_kind, bug_label in (
         ("bug_watch", "Critical bug watch"),
@@ -417,17 +418,20 @@ def _build_transaction_headline(
         return fallback
 
     if tx_events:
-        fallback = humanize_execution_event_summary(
+        fallback = compass_base._humanize_execution_event_summary(
             kind=str(tx_events[0].get("kind", "")).strip(),
             summary=str(tx_events[0].get("summary", "")).strip(),
         ).strip()
         if fallback:
-            return clip_sentence(fallback, limit=max_chars).rstrip(".")
+            return compass_base._clip_sentence(
+                fallback,
+                limit=compass_base._TX_HEADLINE_MAX_CHARS,
+            ).rstrip(".")
     return "Execution update"
 
 
 def _is_transaction_support_file(path: str, *, repo_root: Path | None = None) -> bool:
-    token = _host()._normalize_repo_token(path, repo_root=repo_root)
+    token = compass_base._normalize_repo_token(path, repo_root=repo_root)
     if not token:
         return False
     return (
@@ -456,12 +460,11 @@ def _transaction_shadow_facts(
         if kind:
             kind_counts[kind] = kind_counts.get(kind, 0) + 1
 
-    parse_iso_ts = _host()._parse_iso_ts
     tx_id = str(row.get("transaction_id", "")).strip()
     session_id = str(row.get("session_id", "")).strip()
     explicit_transaction = bool(tx_id and not tx_id.startswith("txn:"))
     auto_global = not session_id and tx_id.startswith("txn:global:auto-global-")
-    end_ts = parse_iso_ts(str(row.get("end_ts_iso", "")).strip())
+    end_ts = compass_base._parse_iso_ts(str(row.get("end_ts_iso", "")).strip())
     workstreams = {
         str(token).strip()
         for token in row.get("workstreams", [])
@@ -603,11 +606,6 @@ def _build_prompt_transactions(
     if not events:
         return []
 
-    host = _host()
-    compass_tz = host._COMPASS_TZ
-    parse_iso_ts = host._parse_iso_ts
-    safe_iso = host._safe_iso
-    event_public_payload = host._event_public_payload
     split_delta = dt.timedelta(minutes=max(1, inactivity_minutes))
     grouped: list[dict[str, Any]] = []
     explicit_index: dict[tuple[str, str], dict[str, Any]] = {}
@@ -621,7 +619,7 @@ def _build_prompt_transactions(
             ts = dt.datetime.min.replace(tzinfo=dt.timezone.utc)
         seq_token = row.get("transaction_seq")
         seq = int(seq_token) if isinstance(seq_token, int) else 0
-        return ts.astimezone(compass_tz), seq, str(row.get("id", "")).strip()
+        return ts.astimezone(compass_base._COMPASS_TZ), seq, str(row.get("id", "")).strip()
 
     def _new_group(*, session_id: str, transaction_id: str, ts: dt.datetime) -> dict[str, Any]:
         nonlocal auto_idx
@@ -899,8 +897,8 @@ def _build_prompt_transactions(
                 "id": str(group.get("group_id", "")).strip(),
                 "transaction_id": tx_id,
                 "session_id": str(group.get("session_id", "")).strip(),
-                "start_ts_iso": safe_iso(start_ts),
-                "end_ts_iso": safe_iso(end_ts),
+                "start_ts_iso": compass_base._safe_iso(start_ts),
+                "end_ts_iso": compass_base._safe_iso(end_ts),
                 "headline": headline,
                 "context": tx_context,
                 "event_count": len(tx_events),
@@ -911,7 +909,7 @@ def _build_prompt_transactions(
                 "explicit_closed": bool(group.get("explicit_end")),
                 "events": [
                     {
-                        **event_public_payload(event),
+                        **compass_base._event_public_payload(event),
                         "workstreams": _event_related_workstream_list(event),
                     }
                     for event in tx_events
@@ -922,7 +920,7 @@ def _build_prompt_transactions(
     payloads = _compact_shadowed_auto_transactions(payloads, repo_root=repo_root)
 
     def _payload_sort_key(row: Mapping[str, Any]) -> tuple[dt.datetime, str]:
-        parsed = parse_iso_ts(str(row.get("end_ts_iso", "")).strip())
+        parsed = compass_base._parse_iso_ts(str(row.get("end_ts_iso", "")).strip())
         if parsed is None:
             parsed = dt.datetime.min.replace(tzinfo=dt.timezone.utc)
         return parsed, str(row.get("id", "")).strip()

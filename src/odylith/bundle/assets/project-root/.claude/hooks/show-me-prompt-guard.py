@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Claude prompt hook that routes show-me capability requests."""
+
 from __future__ import annotations
 
 import json

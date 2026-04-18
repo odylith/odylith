@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Claude prompt hook that enriches prompts with local Odylith context."""
+
 from __future__ import annotations
 
 import json

@@ -1,3 +1,5 @@
+"""Runtime tree filtering rules for cleanup and integrity checks."""
+
 from __future__ import annotations
 
 from pathlib import Path

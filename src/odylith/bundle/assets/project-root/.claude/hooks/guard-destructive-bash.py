@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Claude hook that blocks destructive Bash commands."""
+
 from __future__ import annotations
 
 import json

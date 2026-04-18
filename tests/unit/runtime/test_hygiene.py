@@ -712,6 +712,10 @@ def test_selected_runtime_extracts_do_not_rebind_host_modules() -> None:
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_runtime_signals.py",
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_subtasks_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "backlog_rich_text.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "render_backlog_ui_html_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_execution_focus_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_transaction_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_window_update_index.py",
     )
     for path in paths:

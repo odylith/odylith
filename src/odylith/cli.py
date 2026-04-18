@@ -1,3 +1,5 @@
+"""Odylith CLI entrypoint and command dispatch surface."""
+
 from __future__ import annotations
 
 import argparse

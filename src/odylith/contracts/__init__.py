@@ -1,3 +1,5 @@
+"""Typed route and plan contracts shared across hosts."""
+
 from odylith.contracts.host_adapter import AgentHostAdapter
 from odylith.contracts.plan_v1 import AgentPlanStep, AgentPlanV1
 from odylith.contracts.route_v1 import AgentRouteV1

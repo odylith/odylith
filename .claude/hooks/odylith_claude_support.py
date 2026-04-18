@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Shared helper utilities for Claude project hooks."""
+
 from __future__ import annotations
 
 import datetime as dt

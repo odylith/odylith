@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Claude session-start hook that grounds Odylith context."""
+
 from __future__ import annotations
 
 import json

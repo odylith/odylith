@@ -5,23 +5,28 @@ from __future__ import annotations
 import html
 import json
 from pathlib import Path
+import re
 from typing import Any, Mapping
 
+from odylith.runtime.governance import workstream_inference
 from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
 
-
-def _host():
-    from odylith.runtime.surfaces import render_backlog_ui as host
-
-    return host
+_TRACEABILITY_SECTION_NAME = "Traceability"
+_TRACEABILITY_BUCKETS: tuple[str, ...] = (
+    "Runbooks",
+    "Developer Docs",
+    "Code References",
+)
+_TRACEABILITY_PATH_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)\)")
+_TRACEABILITY_PATH_CODE_RE = re.compile(r"`([^`\n]+)`")
+_TRACEABILITY_CHECKBOX_PREFIX_RE = re.compile(r"^\[(?:x|X| )\]\s*")
 
 
 def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
-    host = _host()
-    normalized = host.workstream_inference.normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
+    normalized = workstream_inference.normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
     collapsed = str(normalized or "").strip().strip(".,;:")
     if not collapsed or " " in collapsed or "<" in collapsed or ">" in collapsed:
         return ""
@@ -35,13 +40,12 @@ def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
 
 
 def _extract_traceability_path_tokens(text: str) -> list[str]:
-    host = _host()
     tokens: list[str] = []
-    for match in host._TRACEABILITY_PATH_LINK_RE.finditer(text):  # noqa: SLF001
+    for match in _TRACEABILITY_PATH_LINK_RE.finditer(text):
         token = str(match.group(1)).strip()
         if token:
             tokens.append(token)
-    for match in host._TRACEABILITY_PATH_CODE_RE.finditer(text):  # noqa: SLF001
+    for match in _TRACEABILITY_PATH_CODE_RE.finditer(text):
         token = str(match.group(1)).strip()
         if token:
             tokens.append(token)
@@ -57,17 +61,16 @@ def _collect_plan_traceability_paths(
     repo_root: Path,
     sections: list[tuple[str, list[str]]],
 ) -> dict[str, list[str]]:
-    host = _host()
     raw_traceability_lines: list[str] = []
     for title, lines in sections:
-        if title.strip().lower() == host._TRACEABILITY_SECTION_NAME.lower():  # noqa: SLF001
+        if title.strip().lower() == _TRACEABILITY_SECTION_NAME.lower():
             raw_traceability_lines = lines
             break
     if not raw_traceability_lines:
         return {}
 
     bucket: str | None = None
-    grouped: dict[str, list[str]] = {label: [] for label in host._TRACEABILITY_BUCKETS}  # noqa: SLF001
+    grouped: dict[str, list[str]] = {label: [] for label in _TRACEABILITY_BUCKETS}
     for line in raw_traceability_lines:
         stripped = line.strip()
         if stripped.startswith("### "):
@@ -81,7 +84,7 @@ def _collect_plan_traceability_paths(
         if not stripped.lstrip().startswith("- "):
             continue
         body = stripped.lstrip()[2:].strip()
-        body = host._TRACEABILITY_CHECKBOX_PREFIX_RE.sub("", body).strip()  # noqa: SLF001
+        body = _TRACEABILITY_CHECKBOX_PREFIX_RE.sub("", body).strip()
         for token in _extract_traceability_path_tokens(body):
             normalized = _normalize_traceability_path(repo_root=repo_root, token=token)
             if normalized:
