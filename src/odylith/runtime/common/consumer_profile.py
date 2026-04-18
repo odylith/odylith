@@ -1,3 +1,11 @@
+"""Canonical helpers for loading and classifying repo-local consumer profiles.
+
+This module centralizes how Odylith discovers the repo-specific truth roots and
+write policy that govern runtime behavior. The helpers here deliberately keep
+the profile shape small and predictable because many runtime surfaces depend on
+them during startup and hot-path reads.
+"""
+
 from __future__ import annotations
 
 import json
@@ -132,10 +140,12 @@ LEGACY_PRODUCT_PREFIX_TARGETS: tuple[tuple[str, str], ...] = (
     ("templates/tooling_dashboard/", "odylith/registry/source/components/dashboard/CURRENT_SPEC.md"),
     ("contracts/specs/skills", "odylith/registry/source/components/dashboard/CURRENT_SPEC.md"),
 )
+_PROFILE_SCALAR_KEYS = ("version", "consumer_id")
 _PROCESS_CONSUMER_PROFILE_CACHE: dict[str, tuple[tuple[Any, ...], dict[str, Any]]] = {}
 
 
 def _consumer_profile_cache_signature(*, repo_root: Path) -> tuple[Any, ...]:
+    """Describe the inputs that decide whether the cached profile is still valid."""
     root = Path(repo_root).resolve()
     path = consumer_profile_path(repo_root=root)
     if path.is_file():
@@ -161,6 +171,7 @@ def _consumer_profile_cache_signature(*, repo_root: Path) -> tuple[Any, ...]:
 
 
 def _copy_consumer_profile(profile: Mapping[str, Any]) -> dict[str, Any]:
+    """Normalize arbitrary profile-like mappings into the canonical payload shape."""
     return {
         "version": str(profile.get("version", "")).strip(),
         "consumer_id": str(profile.get("consumer_id", "")).strip(),
@@ -191,6 +202,7 @@ def _copy_consumer_profile(profile: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _clear_consumer_profile_cache(*, repo_root: Path | None = None) -> None:
+    """Drop the process-local profile cache for one repo or for every repo."""
     if repo_root is None:
         _PROCESS_CONSUMER_PROFILE_CACHE.clear()
         return
@@ -198,10 +210,12 @@ def _clear_consumer_profile_cache(*, repo_root: Path | None = None) -> None:
 
 
 def consumer_profile_path(*, repo_root: Path) -> Path:
+    """Return the canonical on-disk path for the repo's consumer profile."""
     return (Path(repo_root).resolve() / ".odylith" / "consumer-profile.json").resolve()
 
 
 def _resolve_token(*, repo_root: Path, token: str) -> Path:
+    """Resolve profile tokens relative to the repo root when they are not absolute."""
     path = Path(str(token or "").strip())
     if path.is_absolute():
         return path.resolve()
@@ -209,10 +223,12 @@ def _resolve_token(*, repo_root: Path, token: str) -> Path:
 
 
 def _path_exists(*, repo_root: Path, token: str) -> bool:
+    """Report whether a profile token currently resolves to an existing path."""
     return _resolve_token(repo_root=repo_root, token=token).exists()
 
 
 def _is_public_odylith_repo(*, repo_root: Path) -> bool:
+    """Detect the public Odylith product repo layout."""
     root = Path(repo_root).resolve()
     return (
         (root / "src" / "odylith").is_dir()
@@ -222,6 +238,7 @@ def _is_public_odylith_repo(*, repo_root: Path) -> bool:
 
 
 def _resolve_repo_root_for_profile(repo_root: Path | None = None) -> Path | None:
+    """Infer the repo root for profile lookups when guidance says the cwd is safe."""
     if repo_root is not None:
         return Path(repo_root).resolve()
     cwd = Path.cwd().resolve()
@@ -233,10 +250,16 @@ def _resolve_repo_root_for_profile(repo_root: Path | None = None) -> Path | None
 
 
 def legacy_truth_aliases(*, repo_root: Path | None = None, profile: Mapping[str, Any] | None = None) -> dict[str, str]:
+    """Return the shipped alias map for legacy truth-path references.
+
+    The arguments are accepted for call-site compatibility with older helper
+    signatures even though the current alias table is static.
+    """
     return dict(LEGACY_PRODUCT_SPEC_PATH_ALIASES)
 
 
 def _legacy_product_token_alias(token: str) -> str:
+    """Canonicalize legacy bundle and script-path tokens onto current truth roots."""
     normalized = str(token or "").strip().replace("\\", "/")
     # Strip exactly one leading ``./`` prefix. ``str.lstrip("./")`` is a
     # broken idiom that strips every leading ``.`` or ``/`` character and
@@ -263,6 +286,7 @@ def _legacy_product_token_alias(token: str) -> str:
 
 
 def canonical_truth_token(token: str, *, repo_root: Path | None = None) -> str:
+    """Normalize a truth token into the canonical repo-relative form Odylith uses."""
     normalized = str(token or "").strip().replace("\\", "/")
     if normalized.startswith("./"):
         normalized = normalized[2:]
@@ -272,6 +296,7 @@ def canonical_truth_token(token: str, *, repo_root: Path | None = None) -> str:
 
 
 def truth_root_tokens(*, repo_root: Path) -> dict[str, str]:
+    """Return the configured truth-root tokens with empty values removed."""
     profile = load_consumer_profile(repo_root=repo_root)
     return {
         str(key): str(value).strip().strip("/")
@@ -286,6 +311,7 @@ def truth_path_kind(
     repo_root: Path,
     truth_roots: Mapping[str, Any] | None = None,
 ) -> str:
+    """Classify a truth token as a component spec, forensics artifact, or runbook."""
     normalized = canonical_truth_token(token, repo_root=repo_root).strip().strip("/")
     if not normalized:
         return ""
@@ -322,18 +348,22 @@ def truth_path_kind(
 
 
 def is_component_spec_path(token: str, *, repo_root: Path) -> bool:
+    """Return whether the token resolves to a component spec surface."""
     return truth_path_kind(token, repo_root=repo_root) == "component_spec"
 
 
 def is_component_forensics_path(token: str, *, repo_root: Path) -> bool:
+    """Return whether the token resolves to a component forensics artifact."""
     return truth_path_kind(token, repo_root=repo_root) == "component_forensics"
 
 
 def is_runbook_path(token: str, *, repo_root: Path) -> bool:
+    """Return whether the token resolves to a runbook surface."""
     return truth_path_kind(token, repo_root=repo_root) == "runbook"
 
 
 def _default_runbooks_root(*, repo_root: Path) -> str:
+    """Choose the default runbooks root for the current repo layout."""
     root = Path(repo_root).resolve()
     if _is_public_odylith_repo(repo_root=root):
         return "odylith"
@@ -354,6 +384,7 @@ def _default_runbooks_root(*, repo_root: Path) -> str:
 
 
 def _normalize_policy_bool(value: Any, *, default: bool) -> bool:
+    """Interpret a permissive set of truthy and falsy profile tokens."""
     if isinstance(value, bool):
         return value
     token = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
@@ -365,6 +396,7 @@ def _normalize_policy_bool(value: Any, *, default: bool) -> bool:
 
 
 def _default_odylith_write_policy(*, repo_root: Path) -> dict[str, Any]:
+    """Return the shipped Odylith mutation policy for the repo type."""
     root = Path(repo_root).resolve()
     if _is_public_odylith_repo(repo_root=root):
         return {
@@ -384,6 +416,7 @@ def _normalize_odylith_write_policy(
     defaults: Mapping[str, Any],
     overrides: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
+    """Merge write-policy overrides while keeping the policy shape stable."""
     default_mode = str(defaults.get("odylith_fix_mode", "")).strip() or "feedback_only"
     raw_mode = (
         str(overrides.get("odylith_fix_mode", "")).strip()
@@ -424,6 +457,7 @@ def _normalize_odylith_write_policy(
 
 
 def default_consumer_profile(*, repo_root: Path) -> dict[str, Any]:
+    """Build the default consumer profile for the given repository root."""
     root = Path(repo_root).resolve()
     return {
         "version": PROFILE_VERSION,
@@ -444,12 +478,22 @@ def default_consumer_profile(*, repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _load_profile_payload(path: Path) -> Mapping[str, Any] | None:
+    """Load a consumer-profile payload when the file is readable JSON."""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, Mapping) else None
+
+
 def _normalize_truth_roots(
     *,
     repo_root: Path,
     defaults: Mapping[str, Any],
     overrides: Mapping[str, Any] | None,
 ) -> dict[str, str]:
+    """Merge truth-root overrides and fall back to default paths when safer."""
     merged = {str(key): str(value) for key, value in defaults.items() if str(value).strip()}
     if isinstance(overrides, Mapping):
         for key, value in overrides.items():
@@ -470,7 +514,59 @@ def _normalize_truth_roots(
     return merged
 
 
+def _normalize_surface_roots(
+    *,
+    defaults: Mapping[str, Any],
+    overrides: Mapping[str, Any] | None,
+) -> dict[str, str]:
+    """Merge surface-root overrides while ignoring empty replacements."""
+    merged = {str(key): str(value) for key, value in defaults.items() if str(value).strip()}
+    if isinstance(overrides, Mapping):
+        merged.update({str(key): str(value) for key, value in overrides.items() if str(value).strip()})
+    return merged
+
+
+def _apply_profile_overrides(
+    *,
+    repo_root: Path,
+    profile: dict[str, Any],
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Apply payload overrides onto a default profile in one place."""
+    for key in _PROFILE_SCALAR_KEYS:
+        value = str(payload.get(key, "")).strip()
+        if value:
+            profile[key] = value
+    profile["truth_roots"] = _normalize_truth_roots(
+        repo_root=repo_root,
+        defaults=dict(profile.get("truth_roots", {})),
+        overrides=payload.get("truth_roots") if isinstance(payload.get("truth_roots"), Mapping) else None,
+    )
+    profile["surface_roots"] = _normalize_surface_roots(
+        defaults=dict(profile.get("surface_roots", {})),
+        overrides=payload.get("surface_roots") if isinstance(payload.get("surface_roots"), Mapping) else None,
+    )
+    profile["odylith_write_policy"] = _normalize_odylith_write_policy(
+        defaults=dict(profile.get("odylith_write_policy", {})),
+        overrides=payload.get("odylith_write_policy") if isinstance(payload.get("odylith_write_policy"), Mapping) else None,
+    )
+    return profile
+
+
+def _cache_profile(
+    *,
+    cache_key: str,
+    signature: tuple[Any, ...],
+    profile: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Store a normalized profile in the process cache and return a fresh copy."""
+    cached_profile = _copy_consumer_profile(profile)
+    _PROCESS_CONSUMER_PROFILE_CACHE[cache_key] = (signature, cached_profile)
+    return _copy_consumer_profile(cached_profile)
+
+
 def _load_consumer_profile_from_process_cache(*, repo_root: Path) -> dict[str, Any]:
+    """Load the on-disk consumer profile with a lightweight process-local cache."""
     root = Path(repo_root).resolve()
     cache_key = str(root)
     signature = _consumer_profile_cache_signature(repo_root=root)
@@ -479,40 +575,25 @@ def _load_consumer_profile_from_process_cache(*, repo_root: Path) -> dict[str, A
         return _copy_consumer_profile(cached[1])
     path = consumer_profile_path(repo_root=root)
     if not path.is_file():
-        profile = default_consumer_profile(repo_root=root)
-        _PROCESS_CONSUMER_PROFILE_CACHE[cache_key] = (signature, _copy_consumer_profile(profile))
-        return _copy_consumer_profile(profile)
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        profile = default_consumer_profile(repo_root=root)
-        _PROCESS_CONSUMER_PROFILE_CACHE[cache_key] = (signature, _copy_consumer_profile(profile))
-        return _copy_consumer_profile(profile)
-    if not isinstance(payload, Mapping):
-        profile = default_consumer_profile(repo_root=root)
-        _PROCESS_CONSUMER_PROFILE_CACHE[cache_key] = (signature, _copy_consumer_profile(profile))
-        return _copy_consumer_profile(profile)
+        return _cache_profile(
+            cache_key=cache_key,
+            signature=signature,
+            profile=default_consumer_profile(repo_root=root),
+        )
+    payload = _load_profile_payload(path)
+    if payload is None:
+        return _cache_profile(
+            cache_key=cache_key,
+            signature=signature,
+            profile=default_consumer_profile(repo_root=root),
+        )
     profile = default_consumer_profile(repo_root=root)
-    profile.update({k: v for k, v in payload.items() if k in {"version", "consumer_id"}})
-    defaults_truth_roots = dict(profile.get("truth_roots", {}))
-    profile["truth_roots"] = _normalize_truth_roots(
-        repo_root=root,
-        defaults=defaults_truth_roots,
-        overrides=payload.get("truth_roots") if isinstance(payload.get("truth_roots"), Mapping) else None,
-    )
-    if isinstance(payload.get("surface_roots"), Mapping):
-        merged = dict(profile.get("surface_roots", {}))
-        merged.update({str(k): str(v) for k, v in payload["surface_roots"].items() if str(v).strip()})
-        profile["surface_roots"] = merged
-    profile["odylith_write_policy"] = _normalize_odylith_write_policy(
-        defaults=dict(profile.get("odylith_write_policy", {})),
-        overrides=payload.get("odylith_write_policy") if isinstance(payload.get("odylith_write_policy"), Mapping) else None,
-    )
-    _PROCESS_CONSUMER_PROFILE_CACHE[cache_key] = (signature, _copy_consumer_profile(profile))
-    return _copy_consumer_profile(profile)
+    _apply_profile_overrides(repo_root=root, profile=profile, payload=payload)
+    return _cache_profile(cache_key=cache_key, signature=signature, profile=profile)
 
 
 def load_consumer_profile(*, repo_root: Path) -> dict[str, Any]:
+    """Load the repo's consumer profile, reusing the active governed sync session when present."""
     root = Path(repo_root).resolve()
     try:
         from odylith.runtime.governance import sync_session as governed_sync_session
@@ -531,36 +612,15 @@ def load_consumer_profile(*, repo_root: Path) -> dict[str, Any]:
 
 
 def write_consumer_profile(*, repo_root: Path, payload: Mapping[str, Any] | None = None) -> Path:
+    """Write the canonical consumer profile to disk, merging provided overrides."""
     root = Path(repo_root).resolve()
     profile = default_consumer_profile(repo_root=root)
     path = consumer_profile_path(repo_root=root)
     effective_payload: Mapping[str, Any] | None = payload
     if effective_payload is None and path.is_file():
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            existing = None
-        if isinstance(existing, Mapping):
-            effective_payload = existing
+        effective_payload = _load_profile_payload(path)
     if isinstance(effective_payload, Mapping):
-        for key in ("version", "consumer_id"):
-            if str(effective_payload.get(key, "")).strip():
-                profile[key] = str(effective_payload[key]).strip()
-        profile["truth_roots"] = _normalize_truth_roots(
-            repo_root=root,
-            defaults=dict(profile.get("truth_roots", {})),
-            overrides=effective_payload.get("truth_roots") if isinstance(effective_payload.get("truth_roots"), Mapping) else None,
-        )
-        if isinstance(effective_payload.get("surface_roots"), Mapping):
-            merged = dict(profile.get("surface_roots", {}))
-            merged.update({str(k): str(v) for k, v in effective_payload["surface_roots"].items() if str(v).strip()})
-            profile["surface_roots"] = merged
-        profile["odylith_write_policy"] = _normalize_odylith_write_policy(
-            defaults=dict(profile.get("odylith_write_policy", {})),
-            overrides=effective_payload.get("odylith_write_policy")
-            if isinstance(effective_payload.get("odylith_write_policy"), Mapping)
-            else None,
-        )
+        _apply_profile_overrides(repo_root=root, profile=profile, payload=effective_payload)
     path.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_text(path, json.dumps(profile, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     _clear_consumer_profile_cache(repo_root=root)
@@ -568,12 +628,14 @@ def write_consumer_profile(*, repo_root: Path, payload: Mapping[str, Any] | None
 
 
 def truth_root_path(*, repo_root: Path, key: str) -> Path:
+    """Resolve a configured truth root into an absolute filesystem path."""
     profile = load_consumer_profile(repo_root=repo_root)
     token = str(dict(profile.get("truth_roots", {})).get(key, "")).strip()
     return ((Path(repo_root).resolve() / token) if token and not Path(token).is_absolute() else Path(token)).resolve()
 
 
 def surface_root_path(*, repo_root: Path, key: str) -> Path:
+    """Resolve a configured surface root into an absolute filesystem path."""
     profile = load_consumer_profile(repo_root=repo_root)
     token = str(dict(profile.get("surface_roots", {})).get(key, "")).strip()
     return ((Path(repo_root).resolve() / token) if token and not Path(token).is_absolute() else Path(token)).resolve()

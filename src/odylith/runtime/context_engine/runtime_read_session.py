@@ -39,6 +39,7 @@ _ACTIVE_RUNTIME_READ_SESSION: ContextVar["RuntimeReadSession | None"] = ContextV
 
 
 def runtime_cache_budget_policy() -> CacheBudgetPolicy:
+    """Return the process-wide cache budget policy, detecting it once lazily."""
     global _CACHE_POLICY
     if _CACHE_POLICY is None:
         _CACHE_POLICY = CacheBudgetPolicy.detect()
@@ -46,6 +47,7 @@ def runtime_cache_budget_policy() -> CacheBudgetPolicy:
 
 
 def shared_process_hot_cache() -> ByteBudgetedSegmentedCache:
+    """Return the shared process-local hot-path cache."""
     global _SHARED_PROCESS_HOT_CACHE
     if _SHARED_PROCESS_HOT_CACHE is None:
         policy = runtime_cache_budget_policy()
@@ -63,6 +65,7 @@ class NamespacedCacheView(MutableMapping[Any, Any]):
         self.namespace = str(namespace).strip() or "default"
 
     def _wrap(self, key: Any) -> tuple[str, Any]:
+        """Attach this view's namespace to a cache key."""
         return (self.namespace, key)
 
     def __getitem__(self, key: Any) -> Any:
@@ -74,37 +77,47 @@ class NamespacedCacheView(MutableMapping[Any, Any]):
     def __delitem__(self, key: Any) -> None:
         del shared_process_hot_cache()[self._wrap(key)]
 
+    def _matching_wrapped_keys(self) -> list[tuple[str, Any]]:
+        """Return the wrapped keys currently owned by this namespace."""
+        return [wrapped for wrapped in shared_process_hot_cache() if wrapped[0] == self.namespace]
+
     def __iter__(self) -> Iterator[Any]:
-        for namespace, key in shared_process_hot_cache():
-            if namespace == self.namespace:
-                yield key
+        """Iterate the unwrapped keys that belong to this namespace."""
+        for _namespace, key in self._matching_wrapped_keys():
+            yield key
 
     def __len__(self) -> int:
-        return sum(1 for _ in self.__iter__())
+        """Return the number of cached entries in this namespace."""
+        return len(self._matching_wrapped_keys())
 
     def get(self, key: Any, default: Any = None) -> Any:
+        """Return a cached value from this namespace when present."""
         return shared_process_hot_cache().get(self._wrap(key), default)
 
-    def pop(self, key: Any, default: Any = None) -> Any:
+    def pop(self, key: Any, default: Any = _MISSING) -> Any:
+        """Remove one key from this namespace using normal mapping semantics."""
         wrapped = self._wrap(key)
         cache = shared_process_hot_cache()
-        if default is None:
+        if default is _MISSING:
             return cache.pop(wrapped)
         return cache.pop(wrapped, default)
 
     def clear(self) -> None:
+        """Remove every cached entry in this namespace only."""
         cache = shared_process_hot_cache()
-        keys = [wrapped for wrapped in cache if wrapped[0] == self.namespace]
-        for wrapped in keys:
+        for wrapped in self._matching_wrapped_keys():
             cache.pop(wrapped, None)
 
 
 def shared_process_cache_view(namespace: str) -> NamespacedCacheView:
+    """Return a namespace-scoped facade over the shared process cache."""
     return NamespacedCacheView(namespace=namespace)
 
 
 @dataclass(slots=True)
 class RuntimeReadSession:
+    """Command-scoped cache and fingerprint container for related runtime reads."""
+
     repo_root: Path
     requested_scope: str = "reasoning"
     cache_policy: CacheBudgetPolicy = field(default_factory=runtime_cache_budget_policy)
@@ -113,6 +126,7 @@ class RuntimeReadSession:
     _cache: ByteBudgetedSegmentedCache = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
+        """Normalize inputs and provision the session-local cache."""
         self.repo_root = Path(self.repo_root).resolve()
         scope = str(self.requested_scope or "reasoning").strip().lower() or "reasoning"
         self.requested_scope = scope
@@ -122,6 +136,7 @@ class RuntimeReadSession:
         )
 
     def matches_repo(self, repo_root: Path) -> bool:
+        """Report whether the session is anchored to the given repository root."""
         return Path(repo_root).resolve() == self.repo_root
 
     def get_or_compute(
@@ -131,6 +146,7 @@ class RuntimeReadSession:
         key: str,
         builder: Callable[[], _T],
     ) -> _T:
+        """Return a session-local cached value or build and store it."""
         composite_key = (str(namespace).strip(), str(key).strip())
         cached = self._cache.get(composite_key, _MISSING)
         if cached is not _MISSING:
@@ -140,10 +156,12 @@ class RuntimeReadSession:
         return value
 
     def clear(self) -> None:
+        """Discard all session-local cached values."""
         self._cache.clear()
 
 
 def active_runtime_read_session() -> RuntimeReadSession | None:
+    """Return the currently active runtime read session, if one is bound."""
     return _ACTIVE_RUNTIME_READ_SESSION.get()
 
 
@@ -153,6 +171,7 @@ def activate_runtime_read_session(
     repo_root: Path,
     requested_scope: str = "reasoning",
 ) -> Iterator[RuntimeReadSession]:
+    """Bind a fresh runtime read session for the duration of a context block."""
     session = RuntimeReadSession(
         repo_root=repo_root,
         requested_scope=requested_scope,

@@ -17,18 +17,22 @@ from typing import Iterable
 
 
 def _live_surface_root(*, repo_root: Path) -> Path:
+    """Return the checked-in live surface root in the product repo."""
     return (Path(repo_root).resolve() / "odylith").resolve()
 
 
 def source_bundle_root(*, repo_root: Path) -> Path:
+    """Return the source-owned bundle mirror root."""
     return (Path(repo_root).resolve() / "src" / "odylith" / "bundle" / "assets" / "odylith").resolve()
 
 
 def _bundle_mirror_enabled(*, repo_root: Path) -> bool:
+    """Return whether the source bundle mirror exists in this repo layout."""
     return source_bundle_root(repo_root=repo_root).is_dir()
 
 
 def _live_relative_path(*, repo_root: Path, live_path: Path) -> Path:
+    """Return the live path relative to the checked-in surface root."""
     live_root = _live_surface_root(repo_root=repo_root)
     resolved_live = Path(live_path).resolve()
     try:
@@ -38,14 +42,17 @@ def _live_relative_path(*, repo_root: Path, live_path: Path) -> Path:
 
 
 def bundle_mirror_path(*, repo_root: Path, live_path: Path) -> Path:
+    """Return the mirrored bundle path for one live surface file."""
     return (source_bundle_root(repo_root=repo_root) / _live_relative_path(repo_root=repo_root, live_path=live_path)).resolve()
 
 
 def bundle_mirror_dir(*, repo_root: Path, live_dir: Path) -> Path:
+    """Return the mirrored bundle directory for one live surface directory."""
     return (source_bundle_root(repo_root=repo_root) / _live_relative_path(repo_root=repo_root, live_path=live_dir)).resolve()
 
 
 def _write_bytes_if_changed(target: Path, content: bytes) -> None:
+    """Write a file only when the bytes actually changed."""
     if target.is_file() and target.read_bytes() == content:
         return
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -53,6 +60,7 @@ def _write_bytes_if_changed(target: Path, content: bytes) -> None:
 
 
 def sync_live_paths(*, repo_root: Path, live_paths: Iterable[Path]) -> tuple[Path, ...]:
+    """Mirror the given live files into the source bundle when enabled."""
     root = Path(repo_root).resolve()
     if not _bundle_mirror_enabled(repo_root=root):
         return ()
@@ -68,6 +76,7 @@ def sync_live_paths(*, repo_root: Path, live_paths: Iterable[Path]) -> tuple[Pat
 
 
 def sync_live_glob(*, repo_root: Path, live_dir: Path, pattern: str) -> tuple[Path, ...]:
+    """Mirror a glob of live files and prune stale mirrored siblings."""
     root = Path(repo_root).resolve()
     if not _bundle_mirror_enabled(repo_root=root):
         return ()

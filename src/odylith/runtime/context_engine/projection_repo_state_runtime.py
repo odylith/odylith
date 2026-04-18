@@ -1,3 +1,11 @@
+"""Stable repo-state tokens for projection cache invalidation.
+
+Projection reads should reuse cached work when the repository state is
+effectively unchanged, but the invalidation signal has to notice both git head
+movement and meaningful workspace edits. This module builds a compact token for
+that purpose and keeps a short process-local TTL cache around it.
+"""
+
 from __future__ import annotations
 
 from functools import lru_cache
@@ -17,6 +25,7 @@ _PROCESS_REPO_STATE_TOKEN_CACHE: dict[str, tuple[float, str, str]] = {}
 
 @lru_cache(maxsize=64)
 def _git_dir(repo_root_token: str) -> Path | None:
+    """Resolve the git directory for a repo root token, including gitdir files."""
     root = Path(repo_root_token).resolve()
     dot_git = root / ".git"
     if dot_git.is_dir():
@@ -40,6 +49,7 @@ def _git_dir(repo_root_token: str) -> Path | None:
 
 
 def _read_first_line(path: Path) -> str:
+    """Return the first line of a file or an empty string on read failure."""
     try:
         return path.read_text(encoding="utf-8").splitlines()[0].strip()
     except (OSError, IndexError):
@@ -47,6 +57,7 @@ def _read_first_line(path: Path) -> str:
 
 
 def _packed_ref_oid(*, git_dir: Path, ref_token: str) -> str:
+    """Resolve one ref from `packed-refs` when it is not present as a loose ref."""
     packed_refs_path = git_dir / "packed-refs"
     if not packed_refs_path.is_file():
         return ""
@@ -65,6 +76,7 @@ def _packed_ref_oid(*, git_dir: Path, ref_token: str) -> str:
 
 
 def _git_head_oid_subprocess(*, repo_root: Path) -> str:
+    """Fallback to `git rev-parse HEAD` when direct gitdir reads are unavailable."""
     root = Path(repo_root).resolve()
     try:
         completed = subprocess.run(
@@ -79,6 +91,7 @@ def _git_head_oid_subprocess(*, repo_root: Path) -> str:
 
 
 def _git_head_oid(*, repo_root: Path) -> str:
+    """Resolve the current HEAD object id using cheap filesystem reads first."""
     root = Path(repo_root).resolve()
     git_dir = _git_dir(str(root))
     if git_dir is not None:
@@ -98,6 +111,7 @@ def _git_head_oid(*, repo_root: Path) -> str:
 
 
 def workspace_activity_fingerprint(*, repo_root: Path) -> str:
+    """Fingerprint meaningful changed workspace artifacts for projection invalidation."""
     root = Path(repo_root).resolve()
     rows: list[dict[str, Any]] = []
     for raw in governance.collect_git_changed_paths(repo_root=root):
@@ -115,6 +129,7 @@ def workspace_activity_fingerprint(*, repo_root: Path) -> str:
 
 
 def projection_repo_state_token(*, repo_root: Path) -> str:
+    """Return the current repo-state token, reusing the sync-session cache when active."""
     root = Path(repo_root).resolve()
     try:
         from odylith.runtime.governance import sync_session as governed_sync_session
@@ -134,6 +149,7 @@ def projection_repo_state_token(*, repo_root: Path) -> str:
 
 
 def _projection_repo_state_token_uncached(*, repo_root: Path) -> str:
+    """Build the repo-state token without consulting the governed sync session."""
     root = Path(repo_root).resolve()
     cache_key = str(root)
     head_oid = _git_head_oid(repo_root=root)
@@ -154,6 +170,7 @@ def _projection_repo_state_token_uncached(*, repo_root: Path) -> str:
 
 
 def clear_projection_repo_state_cache(*, repo_root: Path | None = None) -> None:
+    """Clear the short-lived process cache for one repo or for all repos."""
     if repo_root is None:
         _PROCESS_REPO_STATE_TOKEN_CACHE.clear()
         return

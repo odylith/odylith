@@ -96,10 +96,12 @@ _EXECUTION_PROFILE_RUNTIME_FIELDS_BY_HOST: dict[str, dict[str, tuple[str, str]]]
 
 
 def normalize_token(value: Any) -> str:
+    """Normalize free-form text into the contract's canonical token shape."""
     return " ".join(str(value or "").split()).strip().lower().replace("-", "_").replace(" ", "_")
 
 
 def canonical_execution_profile(value: Any) -> str:
+    """Resolve canonical execution-profile names and their legacy aliases."""
     token = normalize_token(value)
     if not token:
         return ""
@@ -109,6 +111,7 @@ def canonical_execution_profile(value: Any) -> str:
 
 
 def execution_profile_aliases(value: Any) -> tuple[str, ...]:
+    """Return the legacy aliases that map onto the canonical profile."""
     canonical = canonical_execution_profile(value)
     if not canonical:
         return ()
@@ -121,6 +124,7 @@ def execution_profile_runtime_fields(
     host_runtime: Any = "",
     host_capabilities: Mapping[str, Any] | None = None,
 ) -> tuple[str, str]:
+    """Resolve the model and reasoning tier for a profile on the active host."""
     canonical = canonical_execution_profile(value)
     if not canonical:
         return "", ""
@@ -138,6 +142,7 @@ def execution_profile_runtime_fields(
 
 
 def canonical_stream_token(value: Any) -> str:
+    """Resolve legacy stream paths onto the canonical agent stream path."""
     token = str(value or "").strip().replace("\\", "/")
     if not token:
         return AGENT_STREAM_PATH
@@ -145,6 +150,7 @@ def canonical_stream_token(value: Any) -> str:
 
 
 def candidate_stream_tokens(value: Any = "") -> tuple[str, ...]:
+    """Return the ordered stream-path candidates to probe for an agent ledger."""
     requested = str(value or "").strip().replace("\\", "/")
     canonical = canonical_stream_token(requested)
     candidates: list[str] = []
@@ -159,6 +165,7 @@ def candidate_stream_tokens(value: Any = "") -> tuple[str, ...]:
 
 
 def resolve_agent_stream_path(*, repo_root: Path, value: Any = "") -> Path:
+    """Resolve the best existing agent stream path under the repo root."""
     root = Path(repo_root).resolve()
     requested = str(value or "").strip()
     if requested:
@@ -173,11 +180,13 @@ def resolve_agent_stream_path(*, repo_root: Path, value: Any = "") -> Path:
 
 
 def is_agent_hot_path_profile(value: Any) -> bool:
+    """Return whether the profile token names the canonical agent hot path."""
     token = normalize_token(value)
     return token == AGENT_HOT_PATH_PROFILE or token in LEGACY_AGENT_HOT_PATH_PROFILES
 
 
 def canonical_delivery_profile(value: Any) -> str:
+    """Normalize delivery profile names while preserving unknown future tokens."""
     token = normalize_token(value)
     if not token:
         return ""
@@ -187,14 +196,17 @@ def canonical_delivery_profile(value: Any) -> str:
 
 
 def default_event_metadata() -> tuple[str, str]:
+    """Return the default author and source fields for agent timeline events."""
     return DEFAULT_AGENT_AUTHOR, DEFAULT_AGENT_SOURCE
 
 
 def normalize_session_token(value: Any) -> str:
+    """Normalize host-provided session identifiers for ledger-safe use."""
     return _SESSION_TOKEN_RE.sub("-", str(value or "").strip()).strip("-")
 
 
 def default_host_session_id(*, environ: Mapping[str, str] | None = None) -> str:
+    """Return the best available host session id from the environment."""
     env = environ or os.environ
     for key in _HOST_SESSION_ENV_KEYS:
         token = normalize_session_token(env.get(key, ""))
@@ -213,6 +225,7 @@ def default_host_session_id(*, environ: Mapping[str, str] | None = None) -> str:
 
 
 def fallback_session_token(value: Any = "", *, pid: int | None = None) -> str:
+    """Return a stable session token even when the host exposes no session id."""
     token = normalize_session_token(value)
     if token:
         return token
@@ -220,6 +233,7 @@ def fallback_session_token(value: Any = "", *, pid: int | None = None) -> str:
 
 
 def timeline_event_id(*, kind: Any, index: Any, ts_iso: Any) -> str:
+    """Build the canonical timeline event id used by agent stream ledgers."""
     normalized_kind = normalize_token(kind) or "event"
     normalized_index = str(index if index is not None else "").strip() or "0"
     normalized_ts = str(ts_iso or "").strip()

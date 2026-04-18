@@ -55,10 +55,12 @@ VISIBILITY_FAMILIES: tuple[str, ...] = (
 
 
 def normalize_string(value: Any) -> str:
+    """Collapse internal whitespace and trim a scalar value."""
     return " ".join(str(value or "").split()).strip()
 
 
 def normalize_block_string(value: Any) -> str:
+    """Normalize multiline display text while preserving intentional blank lines."""
     text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
     rows: list[str] = []
     blank_run = 0
@@ -76,10 +78,12 @@ def normalize_block_string(value: Any) -> str:
 
 
 def normalize_token(value: Any) -> str:
+    """Normalize free-form text into a lowercase underscore token."""
     return normalize_string(value).lower().replace(" ", "_").replace("-", "_")
 
 
 def strip_live_boundary(value: Any) -> str:
+    """Remove the surrounding live-delivery fence when it is present."""
     text = normalize_block_string(value)
     if text.startswith(f"{LIVE_BOUNDARY}\n") and text.endswith(f"\n{LIVE_BOUNDARY}"):
         return normalize_block_string(text[len(LIVE_BOUNDARY) + 1 : -(len(LIVE_BOUNDARY) + 1)])
@@ -87,6 +91,7 @@ def strip_live_boundary(value: Any) -> str:
 
 
 def wrap_live_boundary(value: Any) -> str:
+    """Wrap text in the live-delivery fence used by visible interventions."""
     text = strip_live_boundary(value)
     if not text:
         return ""
@@ -94,14 +99,17 @@ def wrap_live_boundary(value: Any) -> str:
 
 
 def event_requires_live_boundary(row: Mapping[str, Any]) -> bool:
+    """Return whether this event kind must render inside the live fence."""
     return normalize_token(row.get("kind")) in LIVE_BOUNDARY_REQUIRED_KINDS
 
 
 def event_display_text(row: Mapping[str, Any]) -> str:
+    """Return the preferred human-visible display text for an event."""
     return normalize_block_string(row.get("display_markdown")) or normalize_block_string(row.get("display_plain"))
 
 
 def event_canonical_display_text(row: Mapping[str, Any]) -> str:
+    """Return the display text normalized to the canonical visible shape."""
     display = event_display_text(row)
     if not display:
         return ""
@@ -113,6 +121,7 @@ def event_canonical_display_text(row: Mapping[str, Any]) -> str:
 
 
 def _display_fingerprint(value: Any) -> str:
+    """Build a stable fingerprint for normalized display content."""
     display = strip_live_boundary(value)
     if not display:
         return ""
@@ -121,6 +130,7 @@ def _display_fingerprint(value: Any) -> str:
 
 
 def event_confirmation_key(row: Mapping[str, Any]) -> str:
+    """Build the stable key used to confirm an event's visible delivery."""
     display = event_display_text(row) or normalize_string(row.get("summary"))
     display_fingerprint = _display_fingerprint(display)
     kind = normalize_token(row.get("kind")) or "event"
@@ -135,6 +145,7 @@ def event_confirmation_key(row: Mapping[str, Any]) -> str:
 
 
 def event_host_family(row: Mapping[str, Any]) -> str:
+    """Infer the host family from explicit metadata or legacy render surfaces."""
     host = normalize_token(row.get("host_family"))
     if host:
         return host
@@ -147,6 +158,7 @@ def event_host_family(row: Mapping[str, Any]) -> str:
 
 
 def event_visibility_family(row: Mapping[str, Any]) -> str:
+    """Classify the event into the high-level visible intervention families."""
     label_text = " ".join(
         normalize_string(row.get(field)).lower()
         for field in ("display_markdown", "display_plain", "summary")
@@ -169,29 +181,35 @@ def event_visibility_family(row: Mapping[str, Any]) -> str:
     return "other"
 
 
+def _normalized_delivery_state(row: Mapping[str, Any]) -> tuple[str, str]:
+    """Return the normalized delivery status and channel for one event row."""
+    return normalize_token(row.get("delivery_status")), normalize_token(row.get("delivery_channel"))
+
+
 def event_visible(row: Mapping[str, Any]) -> bool:
-    status = normalize_token(row.get("delivery_status"))
-    channel = normalize_token(row.get("delivery_channel"))
+    """Return whether the ledger says the event reached a visible surface."""
+    status, channel = _normalized_delivery_state(row)
     return status in VISIBLE_DELIVERY_STATUSES or channel in VISIBLE_DELIVERY_CHANNELS
 
 
 def event_chat_confirmed(row: Mapping[str, Any]) -> bool:
-    status = normalize_token(row.get("delivery_status"))
-    channel = normalize_token(row.get("delivery_channel"))
+    """Return whether assistant chat delivery is explicitly confirmed."""
+    status, channel = _normalized_delivery_state(row)
     return status == "assistant_chat_confirmed" or channel == "assistant_chat_transcript"
 
 
 def event_requires_chat_confirmation(row: Mapping[str, Any]) -> bool:
+    """Return whether the event has fallback content waiting for chat confirmation."""
     if event_visible(row):
         return False
-    status = normalize_token(row.get("delivery_status"))
-    channel = normalize_token(row.get("delivery_channel"))
+    status, channel = _normalized_delivery_state(row)
     if status not in CHAT_CONFIRMATION_STATUSES and channel not in CHAT_CONFIRMATION_CHANNELS:
         return False
     return bool(normalize_string(row.get("display_markdown")) or normalize_string(row.get("display_plain")))
 
 
 def event_needs_chat_confirmation(row: Mapping[str, Any]) -> bool:
+    """Return whether a visible-family event still needs assistant confirmation."""
     if event_chat_confirmed(row):
         return False
     if event_visibility_family(row) not in {"ambient", "intervention", "assist", "teaser"}:
@@ -200,10 +218,10 @@ def event_needs_chat_confirmation(row: Mapping[str, Any]) -> bool:
 
 
 def delivery_is_visible(*, channel: Any = "", status: Any = "") -> bool:
-    return (
-        normalize_token(status) in VISIBLE_DELIVERY_STATUSES
-        or normalize_token(channel) in VISIBLE_DELIVERY_CHANNELS
-    )
+    """Return whether a raw delivery channel or status implies visibility."""
+    normalized_status = normalize_token(status)
+    normalized_channel = normalize_token(channel)
+    return normalized_status in VISIBLE_DELIVERY_STATUSES or normalized_channel in VISIBLE_DELIVERY_CHANNELS
 
 
 def proof_status_from_counts(
@@ -213,6 +231,7 @@ def proof_status_from_counts(
     unconfirmed_count: int,
     static_ready: bool = True,
 ) -> str:
+    """Summarize the current proof posture from ledger counts."""
     visible = int(visible_count)
     chat_confirmed = int(chat_confirmed_count)
     unconfirmed = int(unconfirmed_count)
@@ -232,6 +251,7 @@ def proof_status_from_counts(
 
 
 def proof_status_from_snapshot(snapshot: Mapping[str, Any], *, static_ready: bool = True) -> str:
+    """Derive the proof posture directly from a ledger snapshot payload."""
     return proof_status_from_counts(
         visible_count=int(snapshot.get("visible_event_count") or 0),
         chat_confirmed_count=int(snapshot.get("chat_confirmed_event_count") or 0),

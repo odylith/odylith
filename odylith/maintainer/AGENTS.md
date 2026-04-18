@@ -37,6 +37,20 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   engineering prevails over complex engineering when the outcome is the same.
   Default to modular, robust, reliable, reusable designs that stay long-term
   optimal.
+- For substantive maintainer coding, scan the bound repo slice deeply enough
+  to understand the surrounding contracts, adjacent modules, shared helpers,
+  existing validation, and nearby call sites before editing. Do not patch from
+  a one-file skim when the real behavior lives across the slice.
+- Treat AI slop as a regression in this maintainer lane. Avoid placeholder
+  abstractions, duplicated wrappers, speculative helper layers, generic filler
+  comments, and names or structure that hide the real contract instead of
+  clarifying it.
+- Add or tighten inline code documentation when it materially improves local
+  understanding of non-obvious invariants, state transitions, pressure cases,
+  or boundary assumptions, but do not carpet-bomb obvious code with comment
+  noise.
+- The maintainer coding bar is sensible, readable code that stays reusable,
+  robust, and reliable under extension, debugging, and retry pressure.
 - Odylith's managed runtime may still edit any product-repo files; the lane
   distinction is about execution and validation posture, not file-edit
   authority.

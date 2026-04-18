@@ -49,6 +49,13 @@ def test_namespaced_cache_view_clears_only_its_namespace() -> None:
     right.clear()
 
 
+def test_namespaced_cache_view_pop_honors_explicit_none_default() -> None:
+    view = runtime_read_session.shared_process_cache_view("pop_default_test")
+    view.clear()
+
+    assert view.pop("missing", None) is None
+
+
 def test_activate_runtime_read_session_clears_low_ram_session_cache(tmp_path: Path) -> None:
     policy = CacheBudgetPolicy(
         mode="low_ram",

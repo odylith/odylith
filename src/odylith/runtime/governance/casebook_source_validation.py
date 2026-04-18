@@ -27,6 +27,8 @@ _PLACEHOLDER_RE = re.compile(
 
 @dataclass(frozen=True)
 class CasebookSourceIssue:
+    """One fail-closed validation issue found in a Casebook source record."""
+
     path: Path
     line: int
     field: str
@@ -34,6 +36,7 @@ class CasebookSourceIssue:
     message: str
 
     def as_dict(self, *, repo_root: Path) -> dict[str, Any]:
+        """Return a JSON-serializable representation of the issue."""
         return {
             "path": _display_path(repo_root=repo_root, path=self.path),
             "line": self.line,
@@ -43,6 +46,7 @@ class CasebookSourceIssue:
         }
 
     def render(self, *, repo_root: Path) -> str:
+        """Render the issue in a CLI-friendly single-line format."""
         value_suffix = f" value={self.value!r}" if self.value else ""
         return (
             f"{_display_path(repo_root=repo_root, path=self.path)}:{self.line}: "
@@ -52,15 +56,19 @@ class CasebookSourceIssue:
 
 @dataclass(frozen=True)
 class CasebookSourceValidationResult:
+    """Result payload for a full Casebook source validation pass."""
+
     repo_root: Path
     records_checked: int
     issues: tuple[CasebookSourceIssue, ...]
 
     @property
     def passed(self) -> bool:
+        """Return whether the validation pass found no issues."""
         return not self.issues
 
     def as_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable representation of the validation result."""
         return {
             "passed": self.passed,
             "records_checked": self.records_checked,
@@ -70,6 +78,7 @@ class CasebookSourceValidationResult:
 
 
 def normalize_reproducibility_token(value: str | Sequence[str] | None) -> str:
+    """Normalize a reproducibility field into the compact canonical token shape."""
     token = _normalize_scalar(value)
     if not token:
         return ""
@@ -79,11 +88,13 @@ def normalize_reproducibility_token(value: str | Sequence[str] | None) -> str:
 
 
 def reproducibility_token_is_valid(value: str | Sequence[str] | None) -> bool:
+    """Return whether the reproducibility field is a single accepted token."""
     token = _normalize_scalar(value)
     return bool(token) and _REPRODUCIBILITY_TOKEN_RE.fullmatch(token) is not None and not _looks_placeholder(token)
 
 
 def iter_casebook_bug_markdown_paths(*, repo_root: Path) -> tuple[Path, ...]:
+    """Return the Casebook markdown records that participate in source validation."""
     bugs_root = (Path(repo_root).resolve() / CASEBOOK_BUGS_RELATIVE).resolve()
     if not bugs_root.is_dir():
         return ()
@@ -97,6 +108,7 @@ def iter_casebook_bug_markdown_paths(*, repo_root: Path) -> tuple[Path, ...]:
 
 
 def validate_casebook_sources(*, repo_root: Path) -> CasebookSourceValidationResult:
+    """Validate every Casebook markdown record under the repo root."""
     root = Path(repo_root).resolve()
     paths = iter_casebook_bug_markdown_paths(repo_root=root)
     issues: list[CasebookSourceIssue] = []
@@ -114,6 +126,7 @@ def print_casebook_source_validation_report(
     *,
     stream: Any | None = None,
 ) -> None:
+    """Render the validation result as a human-readable CLI report."""
     target = stream if stream is not None else sys.stdout
     if result.passed:
         print("casebook source validation passed", file=target)
@@ -127,18 +140,31 @@ def print_casebook_source_validation_report(
 
 
 def validate_or_report(*, repo_root: Path, stream: Any | None = None) -> int:
+    """Validate Casebook records, print the report, and return the CLI exit code."""
     result = validate_casebook_sources(repo_root=repo_root)
     print_casebook_source_validation_report(result, stream=stream)
     return 0 if result.passed else 2
 
 
+def _issue(*, path: Path, line: int, field: str, value: str, message: str) -> CasebookSourceIssue:
+    """Build one validation issue with the canonical payload shape."""
+    return CasebookSourceIssue(
+        path=path,
+        line=line,
+        field=field,
+        value=value,
+        message=message,
+    )
+
+
 def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
+    """Validate one Casebook markdown record and return every issue found."""
     issues: list[CasebookSourceIssue] = []
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except OSError as exc:
         return [
-            CasebookSourceIssue(
+            _issue(
                 path=path,
                 line=1,
                 field="file",
@@ -153,7 +179,7 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
             matches.append((index, str(match.group("value") or "").strip()))
     if not matches:
         return [
-            CasebookSourceIssue(
+            _issue(
                 path=path,
                 line=1,
                 field="Reproducibility",
@@ -164,7 +190,7 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
     if len(matches) > 1:
         for line_number, value in matches[1:]:
             issues.append(
-                CasebookSourceIssue(
+                _issue(
                     path=path,
                     line=line_number,
                     field="Reproducibility",
@@ -175,7 +201,7 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
     line_number, value = matches[0]
     if not reproducibility_token_is_valid(value):
         issues.append(
-            CasebookSourceIssue(
+            _issue(
                 path=path,
                 line=line_number,
                 field="Reproducibility",
@@ -187,11 +213,13 @@ def _validate_casebook_bug_file(path: Path) -> list[CasebookSourceIssue]:
 
 
 def _looks_placeholder(value: str) -> bool:
+    """Return whether a token is clearly placeholder text rather than evidence."""
     token = str(value or "").strip()
     return bool(token) and _PLACEHOLDER_RE.fullmatch(token) is not None
 
 
 def _normalize_scalar(value: str | Sequence[str] | None) -> str:
+    """Normalize scalar or list-like input into compact text for validation."""
     if value is None:
         return ""
     if isinstance(value, str):
@@ -202,6 +230,7 @@ def _normalize_scalar(value: str | Sequence[str] | None) -> str:
 
 
 def _display_path(*, repo_root: Path, path: Path) -> str:
+    """Render a path relative to the repo root when possible."""
     try:
         return path.resolve().relative_to(repo_root.resolve()).as_posix()
     except ValueError:
@@ -209,6 +238,7 @@ def _display_path(*, repo_root: Path, path: Path) -> str:
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Parse CLI arguments for Casebook source validation."""
     parser = argparse.ArgumentParser(
         prog="odylith casebook validate",
         description="Validate Casebook markdown source records before rendering.",
@@ -219,6 +249,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """CLI entrypoint for Casebook source validation."""
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).expanduser().resolve()
     result = validate_casebook_sources(repo_root=repo_root)

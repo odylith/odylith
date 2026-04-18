@@ -39,6 +39,8 @@ _POP_MISSING = object()
 
 @dataclass(frozen=True, slots=True)
 class MemoryStats:
+    """Observed memory totals captured from the current host."""
+
     total_bytes: int | None
     available_bytes: int | None
     source: str
@@ -47,6 +49,8 @@ class MemoryStats:
 
 @dataclass(frozen=True, slots=True)
 class CacheBudgetPolicy:
+    """Derived cache budgets for the current machine posture."""
+
     mode: str
     low_ram: bool
     memory: MemoryStats
@@ -55,6 +59,7 @@ class CacheBudgetPolicy:
 
     @classmethod
     def detect(cls) -> "CacheBudgetPolicy":
+        """Infer the cache-budget posture from the host's available memory."""
         memory = detect_memory_stats()
         low_ram = (
             not memory.detected
@@ -80,6 +85,7 @@ class CacheBudgetPolicy:
 
 
 def detect_memory_stats() -> MemoryStats:
+    """Probe the current host for total and available memory."""
     total_bytes, available_bytes, source = _sysconf_memory_bytes()
     if total_bytes is not None or available_bytes is not None:
         return MemoryStats(
@@ -105,6 +111,7 @@ def detect_memory_stats() -> MemoryStats:
 
 
 def _sysconf_memory_bytes() -> tuple[int | None, int | None, str]:
+    """Read memory information from POSIX `sysconf` when available."""
     page_size = _sysconf_int("SC_PAGE_SIZE") or _sysconf_int("SC_PAGESIZE")
     total_pages = _sysconf_int("SC_PHYS_PAGES")
     avail_pages = _sysconf_int("SC_AVPHYS_PAGES")
@@ -116,6 +123,7 @@ def _sysconf_memory_bytes() -> tuple[int | None, int | None, str]:
 
 
 def _sysconf_int(name: str) -> int | None:
+    """Best-effort wrapper around `os.sysconf` for integer values."""
     try:
         return int(os.sysconf(name))
     except (AttributeError, OSError, TypeError, ValueError):
@@ -123,6 +131,7 @@ def _sysconf_int(name: str) -> int | None:
 
 
 def _darwin_memory_bytes() -> tuple[int | None, int | None, str]:
+    """Read memory information from Darwin-specific tooling."""
     if sys.platform != "darwin":
         return (None, None, "")
     total_bytes = _sysctl_int("hw.memsize")
@@ -166,6 +175,7 @@ def _darwin_memory_bytes() -> tuple[int | None, int | None, str]:
 
 
 def _sysctl_int(key: str) -> int | None:
+    """Read a single integer-valued sysctl key."""
     output = _run_command(["sysctl", "-n", key])
     if not output:
         return None
@@ -176,6 +186,7 @@ def _sysctl_int(key: str) -> int | None:
 
 
 def _run_command(argv: list[str]) -> str:
+    """Run a short-lived subprocess and return trimmed stdout on success."""
     try:
         completed = subprocess.run(
             argv,
@@ -192,11 +203,13 @@ def _run_command(argv: list[str]) -> str:
 
 
 def estimate_object_size_bytes(value: Any, *, max_depth: int = 4) -> int:
+    """Approximate the resident size of a Python object graph."""
     seen: set[int] = set()
     return _estimate(value, seen=seen, depth=max_depth)
 
 
 def _estimate(value: Any, *, seen: set[int], depth: int) -> int:
+    """Recursively estimate object size while avoiding repeated references."""
     if depth < 0:
         return 0
     object_id = id(value)
@@ -222,6 +235,8 @@ def _estimate(value: Any, *, seen: set[int], depth: int) -> int:
 
 @dataclass(slots=True)
 class _CacheEntry:
+    """Cache resident carrying the stored value and its estimated byte cost."""
+
     key: Any
     value: Any
     size_bytes: int
@@ -260,6 +275,7 @@ class ByteBudgetedSegmentedCache(MutableMapping[Any, Any]):
 
     @property
     def current_bytes(self) -> int:
+        """Return the cache's current estimated resident size."""
         return int(self._bytes)
 
     def __getitem__(self, key: Any) -> Any:
@@ -275,6 +291,7 @@ class ByteBudgetedSegmentedCache(MutableMapping[Any, Any]):
         self.set_with_size(key, value, size_bytes=size_bytes)
 
     def set_with_size(self, key: Any, value: Any, *, size_bytes: int) -> bool:
+        """Insert or update an entry when the caller already knows its byte size."""
         normalized_size = max(0, int(size_bytes))
         if self.max_bytes <= 0 or normalized_size > self.max_bytes:
             self.pop(key, None)
@@ -320,6 +337,7 @@ class ByteBudgetedSegmentedCache(MutableMapping[Any, Any]):
         return len(self._protected) + len(self._probation)
 
     def get(self, key: Any, default: Any = None) -> Any:
+        """Return a cached value and treat the lookup as an access hit."""
         entry = self._lookup_entry(key)
         if entry is None:
             return default
@@ -328,6 +346,7 @@ class ByteBudgetedSegmentedCache(MutableMapping[Any, Any]):
         return entry.value
 
     def pop(self, key: Any, default: Any = _POP_MISSING) -> Any:
+        """Remove and return one cache entry."""
         if key in self._protected:
             entry = self._protected.pop(key)
             self._bytes -= entry.size_bytes
@@ -341,17 +360,20 @@ class ByteBudgetedSegmentedCache(MutableMapping[Any, Any]):
         raise KeyError(key)
 
     def clear(self) -> None:
+        """Drop every cached entry and reset the accounted byte total."""
         self._probation.clear()
         self._protected.clear()
         self._bytes = 0
 
     def _lookup_entry(self, key: Any) -> _CacheEntry | None:
+        """Return the resident entry from either segment without mutating state."""
         entry = self._protected.get(key)
         if entry is not None:
             return entry
         return self._probation.get(key)
 
     def _record_access(self, key: Any) -> None:
+        """Increment the compact frequency sketch for the given key."""
         for depth in range(self._sketch_depth):
             index = hash((depth, key)) % self._sketch_width
             bucket = self._sketch[depth][index]
@@ -359,12 +381,14 @@ class ByteBudgetedSegmentedCache(MutableMapping[Any, Any]):
                 self._sketch[depth][index] = bucket + 1
 
     def _estimate_frequency(self, key: Any) -> int:
+        """Estimate how frequently a key has been seen by the admission sketch."""
         return min(
             self._sketch[depth][hash((depth, key)) % self._sketch_width]
             for depth in range(self._sketch_depth)
         )
 
     def _admit_new_entry(self, *, key: Any, size_bytes: int) -> bool:
+        """Decide whether a new entry is worth admitting under pressure."""
         if self._bytes + size_bytes <= self.max_bytes:
             return True
         victim = self._oldest_probation_key()
@@ -375,12 +399,15 @@ class ByteBudgetedSegmentedCache(MutableMapping[Any, Any]):
         return incoming_freq >= victim_freq
 
     def _protected_byte_budget(self) -> int:
+        """Return the target byte budget for the protected segment."""
         return int(self.max_bytes * self.protected_ratio)
 
     def _probation_byte_budget(self) -> int:
+        """Return the target byte budget for the probation segment."""
         return max(0, self.max_bytes - self._protected_byte_budget())
 
     def _promote_on_hit(self, key: Any) -> None:
+        """Promote a probation resident into the protected segment after a hit."""
         if key in self._protected:
             self._protected.move_to_end(key)
             return
@@ -396,16 +423,19 @@ class ByteBudgetedSegmentedCache(MutableMapping[Any, Any]):
         self._evict_probation_until_budget()
 
     def _oldest_probation_key(self) -> Any | None:
+        """Return the oldest probation key, if any."""
         for token in self._probation:
             return token
         return None
 
     def _evict_probation_until_budget(self) -> None:
+        """Trim probation entries until the segment fits its byte budget."""
         while self._segment_bytes(self._probation) > self._probation_byte_budget() and self._probation:
             _key, entry = self._probation.popitem(last=False)
             self._bytes -= entry.size_bytes
 
     def _evict_while_over_budget(self, *, incoming_key: Any) -> None:
+        """Evict entries until total resident bytes are back under budget."""
         while self._bytes > self.max_bytes:
             victim_key = self._oldest_probation_key()
             if victim_key is not None and victim_key != incoming_key:
@@ -429,10 +459,12 @@ class ByteBudgetedSegmentedCache(MutableMapping[Any, Any]):
 
     @staticmethod
     def _segment_bytes(entries: OrderedDict[Any, _CacheEntry]) -> int:
+        """Sum the tracked resident bytes for one cache segment."""
         return sum(entry.size_bytes for entry in entries.values())
 
 
 def scaled_cache_budget_bytes(*, base_budget_bytes: int, numerator: int, denominator: int = 100) -> int:
+    """Scale a base cache budget while enforcing a small practical floor."""
     if denominator <= 0:
         raise ValueError("denominator must be positive")
     return max(256 * 1024, int(base_budget_bytes * max(0, numerator) / denominator))
