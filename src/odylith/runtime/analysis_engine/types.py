@@ -45,6 +45,8 @@ class ComponentSuggestion:
     n_modules: int = 0
     n_inbound: int = 0
     n_outbound: int = 0
+    member_paths: tuple[str, ...] = ()
+    evidence: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

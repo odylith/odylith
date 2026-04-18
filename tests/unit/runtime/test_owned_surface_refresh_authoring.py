@@ -170,6 +170,26 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
             "operation_label": "Component register",
         }
     ]
+    registry_path = tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    entry = registry["components"][0]
+    assert entry["what_it_is"] == (
+        "Logical component registered through `odylith component register` "
+        "with `src/odylith/runtime/governance` as its initial evidence anchor."
+    )
+    assert "path prefixes seed evidence" in entry["why_tracked"]
+    spec_path = (
+        tmp_path
+        / "odylith"
+        / "registry"
+        / "source"
+        / "components"
+        / "registry-refresh"
+        / "CURRENT_SPEC.md"
+    )
+    spec_text = spec_path.read_text(encoding="utf-8")
+    assert "**Logical boundary**" in spec_text
+    assert "**Evidence anchor**: `src/odylith/runtime/governance`" in spec_text
 
 
 def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeypatch) -> None:

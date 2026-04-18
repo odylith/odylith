@@ -298,8 +298,8 @@ def _suggest_grounded_diagrams(
     if cross_edges:
         top_pair = cross_edges.most_common(1)[0]
         (comp_a, comp_b), edge_count = top_pair
-        label_a = next((c.label for c in components if c.component_id == comp_a), comp_a)
-        label_b = next((c.label for c in components if c.component_id == comp_b), comp_b)
+        label_a = next((c.label for c in lookup_components if c.component_id == comp_a), comp_a)
+        label_b = next((c.label for c in lookup_components if c.component_id == comp_b), comp_b)
         diagrams.append(DiagramSuggestion(
             slug=f"{repo_slug}-{comp_a}-{comp_b}-dependency",
             title=f"{label_a} \u2194 {label_b} Dependency Map",
@@ -386,15 +386,22 @@ def format_text(result: ShowResult) -> str:
     if result.components:
         has_any = True
         n = len(result.components)
-        lines.append(f"### Registry candidates - {n} boundar{'ies' if n != 1 else 'y'}")
+        lines.append(f"### Registry candidates - {n} logical component{'s' if n != 1 else ''}")
         lines.append("")
         for comp in result.components:
             posture = result.component_postures.get(comp.component_id)
             metric = _short_metric(comp, posture)
-            scope = f" around `{comp.path}`" if comp.path else ""
             lines.append(f"- **{comp.label}**: {metric}.")
-            lines.append(f"  Creates: a Registry ownership boundary{scope}.")
-            lines.append(_prompt_line(f"Create the {comp.label} Registry boundary."))
+            if comp.path:
+                lines.append(
+                    f"  Defines: a logical Registry component; `{comp.path}` is evidence, not the boundary itself."
+                )
+            else:
+                lines.append("  Defines: a logical Registry component from scan evidence.")
+            evidence = _component_evidence(comp)
+            if evidence:
+                lines.append(f"  Evidence: {evidence}")
+            lines.append(_prompt_line(f"Define the {comp.label} Registry component."))
         lines.append("")
 
     # --- Workstreams ---
@@ -458,7 +465,7 @@ def format_text(result: ShowResult) -> str:
 def _creation_summary(result: ShowResult) -> str:
     items: list[str] = []
     if result.components:
-        items.append(_count_phrase(len(result.components), "Registry boundary", "Registry boundaries"))
+        items.append(_count_phrase(len(result.components), "Registry component", "Registry components"))
     if result.workstreams:
         items.append(_count_phrase(len(result.workstreams), "Radar workstream", "Radar workstreams"))
     if result.diagrams:
@@ -472,9 +479,11 @@ def _best_first_move(result: ShowResult) -> list[str]:
     if result.components:
         comp = result.components[0]
         metric = _short_metric(comp, result.component_postures.get(comp.component_id))
-        lines = [f"Best first move: **{comp.label} Registry boundary**."]
-        lines.append(f"Why: {metric}; ownership here gives future changes a safer anchor.")
-        lines.append(_prompt_line(f"Create the {comp.label} Registry boundary."))
+        lines = [f"Best first move: **{comp.label} Registry component**."]
+        lines.append(
+            f"Why: {metric}; defining this logical boundary gives future changes a safer ownership anchor."
+        )
+        lines.append(_prompt_line(f"Define the {comp.label} Registry component."))
         return lines
     if result.diagrams:
         diagram = result.diagrams[0]
@@ -523,14 +532,33 @@ def _inline_code(value: str) -> str:
     return str(value).replace("`", "'")
 
 
+def _component_evidence(comp: ComponentSuggestion) -> str:
+    evidence = [str(item).strip() for item in comp.evidence if str(item).strip()]
+    if not evidence:
+        if comp.path and comp.n_modules:
+            evidence.append(f"{comp.n_modules} source files anchored at `{comp.path}`")
+        elif comp.path:
+            evidence.append(f"anchor path `{comp.path}`")
+        if comp.n_inbound:
+            evidence.append(_import_count(comp.n_inbound, "inbound"))
+        if comp.n_outbound:
+            evidence.append(_import_count(comp.n_outbound, "outbound"))
+    return "; ".join(evidence[:4]) + ("." if evidence else "")
+
+
+def _import_count(count: int, direction: str) -> str:
+    noun = "import" if count == 1 else "imports"
+    return f"{count} {direction} {noun}"
+
+
 def _teaching_prompts(result: ShowResult) -> list[str]:
     prompts: list[str] = []
     if result.components:
         first = result.components[0]
-        prompt = f"Create the {first.label} Registry boundary."
-        prompts.append(f"- One boundary: `{_inline_code(prompt)}`")
+        prompt = f"Define the {first.label} Registry component."
+        prompts.append(f"- One component: `{_inline_code(prompt)}`")
         if len(result.components) > 1:
-            prompts.append("- All boundaries: `Create all Registry candidates from this Odylith show output.`")
+            prompts.append("- All components: `Define all Registry candidates from this Odylith show output.`")
     if result.workstreams:
         first = result.workstreams[0]
         prompt = f"Open a Radar workstream for {first.title}."
@@ -599,6 +627,8 @@ def format_json(result: ShowResult) -> str:
                 "label": c.label,
                 "path": c.path,
                 "description": c.description,
+                "member_paths": list(c.member_paths),
+                "evidence": list(c.evidence),
                 "n_modules": c.n_modules,
                 "n_inbound": c.n_inbound,
                 "n_outbound": c.n_outbound,

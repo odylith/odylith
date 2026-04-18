@@ -1,15 +1,17 @@
 """Component boundary discovery from import graph topology.
 
-Groups source artifacts into components using directory structure, filename
-prefix frequency analysis, and graph-based merging. Ranks components by
-import centrality and computes software engineering metrics.
+Groups source artifacts into logical component candidates using directory
+structure, filename prefix frequency analysis, and graph-based merging. Ranks
+components by import centrality and keeps the concrete member files as evidence
+so virtual filename buckets never become authoritative Registry paths.
 
-No domain-specific knowledge — works on any codebase.
+No product-specific knowledge - works on any codebase.
 """
 
 from __future__ import annotations
 
 from collections import Counter
+import re
 from pathlib import Path
 
 from odylith.runtime.analysis_engine.types import (
@@ -20,6 +22,33 @@ from odylith.runtime.analysis_engine.types import (
     slugify,
 )
 from odylith.runtime.analysis_engine.repo_analysis import infer_label
+
+
+_STRUCTURAL_NAME_TOKENS = frozenset({
+    "src",
+    "lib",
+    "libs",
+    "pkg",
+    "packages",
+    "app",
+    "apps",
+    "runtime",
+    "core",
+    "common",
+    "shared",
+    "util",
+    "utils",
+    "helper",
+    "helpers",
+    "base",
+    "main",
+    "default",
+    "internal",
+    "index",
+    "init",
+    "__init__",
+})
+_NAME_TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9]+")
 
 
 # ---------------------------------------------------------------------------
@@ -276,6 +305,7 @@ def _build_component_suggestions(
     """Build ranked component suggestions with software engineering metrics."""
     skip = {"__root__", "__external__"}
     seen_labels: set[str] = set()
+    seen_ids: set[str] = set()
 
     ranked = sorted(
         ((n, a) for n, a in groups.items() if n not in skip and not n.startswith("__")),
@@ -288,20 +318,31 @@ def _build_component_suggestions(
             continue
 
         path_parts = comp_name.split("/")
-        rel_path = f"{module_prefix}/{comp_name}" if module_prefix else comp_name
-        meaningful_parts = [p for p in path_parts if p and p.lower() not in ("core", "")]
-        comp_id = slugify(meaningful_parts[-1] if meaningful_parts else comp_name)
+        member_paths = tuple(sorted(a.path for a in comp_arts))
+        rel_path = _common_anchor_path(member_paths)
 
         label = _label_from_path_parts(path_parts)
         if label in seen_labels:
+            meaningful_parts = [p for p in path_parts if p and p.lower() not in ("core", "")]
             disambig = ""
             for part in reversed(meaningful_parts):
                 candidate = humanize(part)
                 if candidate.lower() != label.lower() and candidate.lower() not in label.lower():
                     disambig = candidate
                     break
-            label = f"{disambig} {label}" if disambig else humanize(" ".join(meaningful_parts)) if meaningful_parts else f"{label} ({comp_id})"
+            if disambig:
+                label = f"{disambig} {label}"
+            elif meaningful_parts:
+                label = humanize(" ".join(meaningful_parts))
+            else:
+                label = f"{label} ({comp_name})"
         seen_labels.add(label)
+        comp_id = slugify(label)
+        if comp_id in seen_ids:
+            comp_id = slugify(f"{label} {path_parts[-1] if path_parts else comp_name}")
+        if comp_id in seen_ids:
+            comp_id = slugify(f"{label} {len(seen_ids) + 1}")
+        seen_ids.add(comp_id)
 
         n_mod = len(comp_arts)
         n_in, n_out, n_int = inbound[comp_name], outbound[comp_name], internal[comp_name]
@@ -309,12 +350,85 @@ def _build_component_suggestions(
         cohesion = n_int / max(n_in + n_out + n_int, 1)
 
         desc = _build_description(n_mod, n_in, n_out, n_int, instability, cohesion)
+        evidence = _build_evidence(
+            anchor_path=rel_path,
+            member_paths=member_paths,
+            n_in=n_in,
+            n_out=n_out,
+        )
         components.append(ComponentSuggestion(
             component_id=comp_id, label=label, path=rel_path,
             description=desc, n_modules=n_mod, n_inbound=n_in, n_outbound=n_out,
+            member_paths=member_paths, evidence=evidence,
         ))
 
     return components
+
+
+def _common_anchor_path(member_paths: tuple[str, ...]) -> str:
+    """Return a real common file or directory path for the grouped artifacts."""
+    if not member_paths:
+        return ""
+    if len(member_paths) == 1:
+        return member_paths[0]
+
+    directories = [path.split("/")[:-1] for path in member_paths if path]
+    if not directories:
+        return member_paths[0]
+
+    common: list[str] = []
+    for column in zip(*directories):
+        first = column[0]
+        if all(part == first for part in column):
+            common.append(first)
+            continue
+        break
+    if common:
+        return "/".join(common)
+    first_parts = member_paths[0].split("/")
+    return first_parts[0] if first_parts else member_paths[0]
+
+
+def _build_evidence(
+    *,
+    anchor_path: str,
+    member_paths: tuple[str, ...],
+    n_in: int,
+    n_out: int,
+) -> tuple[str, ...]:
+    """Summarize why this is a candidate without turning paths into the contract."""
+    evidence: list[str] = []
+    if member_paths:
+        evidence.append(f"{len(member_paths)} source files anchored at `{anchor_path}`")
+    terms = _top_name_tokens(anchor_path=anchor_path, member_paths=member_paths)
+    if terms:
+        evidence.append(f"module names emphasize {', '.join(terms[:4])}")
+    if n_in:
+        evidence.append(_import_count(n_in, "inbound"))
+    if n_out:
+        evidence.append(_import_count(n_out, "outbound"))
+    return tuple(evidence)
+
+
+def _import_count(count: int, direction: str) -> str:
+    noun = "import" if count == 1 else "imports"
+    return f"{count} {direction} {noun}"
+
+
+def _top_name_tokens(*, anchor_path: str, member_paths: tuple[str, ...]) -> list[str]:
+    counts: Counter[str] = Counter()
+    for path in member_paths:
+        evidence_path = path
+        if anchor_path and path.startswith(anchor_path.rstrip("/") + "/"):
+            evidence_path = path[len(anchor_path.rstrip("/")) + 1:]
+        parts = Path(evidence_path).with_suffix("").parts
+        for part in parts:
+            for match in _NAME_TOKEN_RE.findall(part.replace("_", " ").replace("-", " ")):
+                token = match.lower()
+                if token in _STRUCTURAL_NAME_TOKENS or len(token) < 3:
+                    continue
+                counts[token] += 1
+    return [humanize(token) for token, _count in counts.most_common(6)]
 
 
 def _label_from_path_parts(parts: list[str]) -> str:

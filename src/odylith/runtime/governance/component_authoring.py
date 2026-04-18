@@ -71,6 +71,7 @@ def _build_registry_entry(
     path: str,
     kind: str,
 ) -> dict[str, Any]:
+    anchor_phrase = f" with `{path}` as its initial evidence anchor" if path else ""
     return {
         "component_id": component_id,
         "name": label,
@@ -83,8 +84,14 @@ def _build_registry_entry(
         "diagrams": [],
         "owner": "product",
         "status": "active",
-        "what_it_is": f"Component boundary around `{path}` registered through `odylith component register`.",
-        "why_tracked": f"Registered so agent sessions can see {label} as a named governance boundary.",
+        "what_it_is": (
+            f"Logical component registered through `odylith component register`"
+            f"{anchor_phrase}."
+        ),
+        "why_tracked": (
+            f"Registered so agent sessions can see {label} as a named ownership boundary; "
+            "path prefixes seed evidence and can be tightened as the contract becomes clearer."
+        ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
         "sources": ["detected"],
         "subcomponents": [],
@@ -98,22 +105,28 @@ def _build_spec_template(
     path: str,
     kind: str,
 ) -> str:
+    overview_anchor = (
+        f"It is initially anchored by `{path}`."
+        if path
+        else "It is initially anchored by maintainer review."
+    )
     return f"""# {label}
 
 ## Overview
 
 {label} is a `{kind}` component registered through `odylith component register`.
-It owns `{path}`.
+{overview_anchor}
 
 ## Boundary
 
-- **Primary path**: `{path}`
+- **Logical boundary**: TBD - define the runtime contract, public API, or ownership rule.
+- **Evidence anchor**: `{path}`
 - **Kind**: {kind}
 - **Status**: active
 
 ## Contract
 
-TBD — define the runtime contract, public API, or ownership boundary for this component.
+TBD - define the runtime contract, public API, or ownership boundary for this component.
 
 ## Dependencies
 
