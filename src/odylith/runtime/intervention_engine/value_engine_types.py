@@ -8,6 +8,8 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.intervention_engine import visibility_contract
+
 
 VALUE_ENGINE_VERSION = "intervention-value-engine.v1"
 RUNTIME_POSTURE = "deterministic_utility_v1"
@@ -33,29 +35,9 @@ MIN_PUBLISHABLE_DUPLICATE_CASES = 20
 MIN_PUBLISHABLE_VISIBILITY_CASES = 10
 
 
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_block_string(value: Any) -> str:
-    text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
-    rows: list[str] = []
-    blank_run = 0
-    for raw_line in text.split("\n"):
-        line = str(raw_line).rstrip()
-        if not line.strip():
-            blank_run += 1
-            if blank_run > 1:
-                continue
-            rows.append("")
-            continue
-        blank_run = 0
-        rows.append(line)
-    return "\n".join(rows).strip()
-
-
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
+_normalize_string = visibility_contract.normalize_string
+_normalize_block_string = visibility_contract.normalize_block_string
+_normalize_token = visibility_contract.normalize_token
 
 
 def _normalize_float(value: Any) -> float:
@@ -69,8 +51,7 @@ def _clamp(value: float, *, low: float = 0.0, high: float = 1.0) -> float:
     return max(low, min(high, value))
 
 
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+_mapping = visibility_contract.mapping_copy
 
 
 def _sequence(value: Any) -> list[Any]:

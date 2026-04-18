@@ -58,20 +58,10 @@ class VisibleInterventionDecision:
         }
 
 
-def _normalize_string(value: Any) -> str:
-    return visibility_contract.normalize_string(value)
-
-
-def _normalize_token(value: Any) -> str:
-    return visibility_contract.normalize_token(value)
-
-
-def _normalize_block_string(value: Any) -> str:
-    return visibility_contract.normalize_block_string(value)
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+_normalize_string = visibility_contract.normalize_string
+_normalize_token = visibility_contract.normalize_token
+_normalize_block_string = visibility_contract.normalize_block_string
+_mapping = visibility_contract.mapping_copy
 
 
 def _hash_payload(value: Any) -> str:
@@ -82,13 +72,7 @@ def _hash_payload(value: Any) -> str:
     return hashlib.sha256(encoded).hexdigest()[:16]
 
 
-def _parts(*values: str) -> str:
-    rows: list[str] = []
-    for value in values:
-        token = _normalize_block_string(value)
-        if token and token not in rows:
-            rows.append(token)
-    return "\n\n".join(rows).strip()
+_parts = visibility_contract.join_blocks
 
 
 def _operator_reports_visibility_failure(*, prompt: str, summary: str) -> bool:

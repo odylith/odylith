@@ -7,15 +7,12 @@ from typing import Sequence
 
 from odylith.runtime.intervention_engine.contract import CaptureAction
 from odylith.runtime.intervention_engine.contract import GovernanceFact
+from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import voice_contract
 
 
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
+_normalize_string = visibility_contract.normalize_string
+_normalize_token = visibility_contract.normalize_token
 
 
 def _sentence(value: Any) -> str:
@@ -33,8 +30,7 @@ def _sentence_token(value: Any) -> str:
     return _normalize_token(_strip_terminal_punctuation(value))
 
 
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+_mapping = visibility_contract.mapping_copy
 
 
 @dataclass(frozen=True)

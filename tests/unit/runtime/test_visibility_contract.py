@@ -81,3 +81,19 @@ def test_visibility_contract_proof_status_from_counts() -> None:
         == "degraded"
     )
 
+
+def test_visibility_contract_normalizes_string_lists_with_deduping_and_limits() -> None:
+    assert visibility_contract.normalize_string_list(["  B-001  ", "B-001", "", "CB-104"]) == [
+        "B-001",
+        "CB-104",
+    ]
+    assert visibility_contract.normalize_string_list(["one", "two", "three"], limit=2) == ["one", "two"]
+    assert visibility_contract.normalize_string_list(" single ") == ["single"]
+
+
+def test_visibility_contract_mapping_copy_and_join_blocks_are_stable() -> None:
+    payload = {"key": "value"}
+
+    assert visibility_contract.mapping_copy(payload) == {"key": "value"}
+    assert visibility_contract.mapping_copy(None) == {}
+    assert visibility_contract.join_blocks(" first ", "\n\nfirst\n", "second") == "first\n\nsecond"

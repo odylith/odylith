@@ -22,6 +22,7 @@ from odylith.runtime.intervention_engine import continuity_runtime
 from odylith.runtime.intervention_engine import moment_runtime
 from odylith.runtime.intervention_engine import signal_kernel
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import voice
 from odylith.runtime.intervention_engine import voice_contract
 
@@ -117,27 +118,9 @@ _TITLE_STOPWORDS: frozenset[str] = _STOPWORDS.union(
 )
 
 
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
-
-
-def _normalize_string_list(value: Any) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        token = _normalize_string(value)
-        return [token] if token else []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = _normalize_string(item)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
+_normalize_string = visibility_contract.normalize_string
+_normalize_token = visibility_contract.normalize_token
+_normalize_string_list = visibility_contract.normalize_string_list
 
 
 def _load_json(path: Path) -> dict[str, Any]:

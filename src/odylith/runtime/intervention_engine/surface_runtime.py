@@ -14,48 +14,16 @@ from odylith.runtime.intervention_engine import visibility_replay
 LIVE_BOUNDARY = visibility_contract.LIVE_BOUNDARY
 
 
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_block_string(value: Any) -> str:
-    text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
-    rows: list[str] = []
-    blank_run = 0
-    for raw_line in text.split("\n"):
-        line = str(raw_line).rstrip()
-        if not line.strip():
-            blank_run += 1
-            if blank_run > 1:
-                continue
-            rows.append("")
-            continue
-        blank_run = 0
-        rows.append(line)
-    return "\n".join(rows).strip()
+_normalize_string = visibility_contract.normalize_string
+_normalize_block_string = visibility_contract.normalize_block_string
 
 
 def wrap_live_text(value: Any) -> str:
     return visibility_contract.wrap_live_boundary(value)
 
 
-def _normalize_string_list(value: Any) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        token = _normalize_string(value)
-        return [token] if token else []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = _normalize_string(item)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+_normalize_string_list = visibility_contract.normalize_string_list
+_mapping = visibility_contract.mapping_copy
 
 
 def _ref_rows(kind: str, values: Sequence[str]) -> list[dict[str, str]]:

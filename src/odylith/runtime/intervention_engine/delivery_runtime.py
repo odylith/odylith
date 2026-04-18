@@ -11,20 +11,15 @@ from typing import Sequence
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import operator_readout
 from odylith.runtime.governance import proof_state
+from odylith.runtime.intervention_engine import visibility_contract
 
 
 _DELIVERY_ARTIFACT_RELATIVE_PATH = Path("odylith/runtime/delivery_intelligence.v4.json")
 _DELIVERY_SIGNAL_CACHE: dict[str, tuple[int, dict[str, Any]]] = {}
 
 
-def _normalize_string(value: Any) -> str:
-    """Normalize arbitrary values into stable single-line strings."""
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_token(value: Any) -> str:
-    """Normalize values into lowercase token form for comparisons and ids."""
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
+_normalize_string = visibility_contract.normalize_string
+_normalize_token = visibility_contract.normalize_token
 
 
 def _dedupe_strings(values: Sequence[str]) -> list[str]:
@@ -42,10 +37,7 @@ def _dedupe_strings(values: Sequence[str]) -> list[str]:
 
 def _normalize_string_list(value: Any) -> list[str]:
     """Normalize a list-ish input into a de-duplicated string list."""
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return _dedupe_strings([str(token) for token in value])
-    token = _normalize_string(value)
-    return [token] if token else []
+    return visibility_contract.normalize_string_list(value)
 
 
 def _normalize_surface_list(value: Any) -> list[str]:
@@ -71,9 +63,7 @@ def _normalize_proof_refs(value: Any) -> list[dict[str, Any]]:
     ][:4]
 
 
-def _mapping_copy(value: Any) -> dict[str, Any]:
-    """Return a mutable mapping copy when the input behaves like a mapping."""
-    return dict(value) if isinstance(value, Mapping) else {}
+_mapping_copy = visibility_contract.mapping_copy
 
 
 def _normalize_ladder_signal(raw_signal: Any) -> dict[str, Any]:

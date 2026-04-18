@@ -69,7 +69,6 @@ def warm_projections(
     delivery_intelligence_engine = host.delivery_intelligence_engine
     odylith_architecture_mode = host.odylith_architecture_mode
     SCHEMA_VERSION = host.SCHEMA_VERSION
-    """Build or refresh local projections and return a summary."""
 
     def _compatible_projection_scopes(requested_scope: str) -> tuple[str, ...]:
         return odylith_memory_backend.compatible_projection_scopes(requested_scope=requested_scope)

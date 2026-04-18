@@ -21,34 +21,14 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
-from odylith.runtime.intervention_engine import alignment_context
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
-from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import claude_host_shared
+from odylith.runtime.surfaces import host_intervention_support
 
 
 _ANCHOR_RE = re.compile(r"\b(?:B|CB|D)-\d{3,}\b")
-
-
-def _alignment_mapping(alignment: Mapping[str, Any], key: str) -> Mapping[str, Any]:
-    value = alignment.get(key)
-    return value if isinstance(value, Mapping) else {}
-
-
-def _alignment_list(alignment: Mapping[str, Any], key: str) -> list[Any]:
-    value = alignment.get(key)
-    return value if isinstance(value, list) else []
-
-
-def _parts(*values: str) -> str:
-    rows: list[str] = []
-    for value in values:
-        token = str(value or "").strip()
-        if token and token not in rows:
-            rows.append(token)
-    return "\n\n".join(rows).strip()
 
 
 def _context_summary(output: str, ref: str) -> str:
@@ -92,37 +72,13 @@ def _prompt_conversation_bundle(
     bundle_override: Mapping[str, Any] | None = None,
     intervention_bundle_override: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    if isinstance(bundle_override, Mapping):
-        return dict(bundle_override)
-    if isinstance(intervention_bundle_override, Mapping):
-        return {"intervention_bundle": dict(intervention_bundle_override)}
-    root = Path(repo_root).expanduser().resolve()
-    alignment = alignment_context.build_host_alignment_context(
-        repo_root=root,
+    return host_intervention_support.build_prompt_conversation_bundle(
+        repo_root=repo_root,
         host_family="claude",
-        turn_phase="prompt_submit",
+        prompt=prompt,
         session_id=session_id,
-        prompt_excerpt=prompt,
-    )
-    observation = intervention_surface_runtime.observation_envelope(
-        host_family="claude",
-        turn_phase="prompt_submit",
-        session_id=session_id,
-        prompt_excerpt=prompt,
-        workstreams=_alignment_list(alignment, "workstreams"),
-        components=_alignment_list(alignment, "components"),
-        bugs=_alignment_list(alignment, "bugs"),
-        diagrams=_alignment_list(alignment, "diagrams"),
-        context_packet_summary=_alignment_mapping(alignment, "context_packet"),
-        execution_engine_summary=_alignment_mapping(alignment, "execution_engine_summary"),
-        memory_summary=_alignment_mapping(alignment, "memory_summary"),
-        tribunal_summary=_alignment_mapping(alignment, "tribunal_summary"),
-        visibility_summary=_alignment_mapping(alignment, "visibility_summary"),
-        delivery_snapshot=_alignment_mapping(alignment, "delivery_snapshot"),
-    )
-    return conversation_surface.build_conversation_bundle(
-        repo_root=root,
-        observation=observation,
+        bundle_override=bundle_override,
+        intervention_bundle_override=intervention_bundle_override,
     )
 
 
@@ -165,7 +121,7 @@ def render_prompt_context(
                 parts.append(_context_summary(completed.stdout or "", ref))
     if live_text:
         parts.append(live_text)
-    return "\n\n".join(part for part in parts if part).strip()
+    return host_intervention_support.join_sections(*parts)
 
 
 def render_prompt_system_message(
@@ -176,36 +132,13 @@ def render_prompt_system_message(
     conversation_bundle_override: Mapping[str, Any] | None = None,
     intervention_bundle_override: Mapping[str, Any] | None = None,
 ) -> str:
-    bundle = _prompt_conversation_bundle(
+    return host_intervention_support.render_prompt_system_message(
         repo_root=repo_root,
+        host_family="claude",
         prompt=prompt,
         session_id=session_id,
-        bundle_override=conversation_bundle_override,
+        conversation_bundle_override=conversation_bundle_override,
         intervention_bundle_override=intervention_bundle_override,
-    )
-    decision = host_surface_runtime.visible_intervention_decision(
-        repo_root=repo_root,
-        bundle=bundle,
-        host_family="claude",
-        turn_phase="prompt_submit",
-        session_id=session_id,
-        include_proposal=False,
-        include_closeout=False,
-    )
-    replay = visibility_replay.replayable_chat_markdown(
-        repo_root=repo_root,
-        host_family="claude",
-        session_id=session_id,
-        include_assist=False,
-        include_teaser=False,
-    )
-    if replay:
-        return replay
-    return decision.visible_markdown or conversation_surface.render_live_text(
-        bundle,
-        markdown=False,
-        include_proposal=False,
-        prefer_ambient_over_teaser=True,
     )
 
 
@@ -261,7 +194,11 @@ def main(argv: list[str] | None = None) -> int:
         session_id=session_id,
         conversation_bundle_override=bundle,
     )
-    summary = _parts(replay, summary) if replay else decision.developer_context or summary
+    summary = (
+        host_intervention_support.join_sections(replay, summary)
+        if replay
+        else decision.developer_context or summary
+    )
     system_message = replay or decision.visible_markdown or system_message
     if decision.visible_markdown or decision.developer_context:
         host_surface_runtime.append_visible_intervention_events(

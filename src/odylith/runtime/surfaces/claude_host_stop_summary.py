@@ -27,43 +27,7 @@ from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import claude_host_shared
-
-
-_LIVE_BLOCK_LABELS: tuple[str, ...] = (
-    "Odylith Observation:",
-    "Odylith Proposal:",
-    "Odylith Insight:",
-    "Odylith History:",
-    "Odylith Risks:",
-)
-
-
-def _looks_like_teaser_live_text(value: str) -> bool:
-    text = str(value or "").strip()
-    if not text:
-        return False
-    if any(label in text for label in _LIVE_BLOCK_LABELS):
-        return False
-    return "Odylith" in text
-
-
-def _parts(*values: str) -> str:
-    rows: list[str] = []
-    for value in values:
-        token = str(value or "").strip()
-        if token and token not in rows:
-            rows.append(token)
-    return "\n\n".join(rows).strip()
-
-
-def _merge_replay_with_closeout(*, replay: str, closeout_text: str) -> str:
-    visible_replay = str(replay or "").strip()
-    closeout = str(closeout_text or "").strip()
-    if not visible_replay:
-        return closeout
-    if not closeout or "Odylith Assist:" in visible_replay or "**Odylith Assist:**" in visible_replay:
-        return visible_replay
-    return _parts(visible_replay, closeout)
+from odylith.runtime.surfaces import host_intervention_support
 
 
 def _stop_intervention_bundle(
@@ -139,7 +103,9 @@ def render_stop_summary(
         include_assist=False,
         include_teaser=True,
     )
-    if recovered_live_text and (not live_text or _looks_like_teaser_live_text(live_text)):
+    if recovered_live_text and (
+        not live_text or host_intervention_support.looks_like_teaser_live_text(live_text)
+    ):
         live_text = recovered_live_text
     closeout_text = conversation_surface.render_closeout_text(
         bundle,
@@ -149,7 +115,7 @@ def render_stop_summary(
         token = str(part or "").strip()
         if token and token not in parts:
             parts.append(token)
-    return "\n\n".join(parts).strip()
+    return host_intervention_support.join_sections(*parts)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -216,7 +182,7 @@ def main(argv: list[str] | None = None) -> int:
         else ""
     )
     rendered = (
-        _merge_replay_with_closeout(replay=replay, closeout_text=closeout_text)
+        host_intervention_support.merge_replay_with_closeout(replay=replay, closeout_text=closeout_text)
         if replay
         else decision.visible_markdown
         if decision is not None

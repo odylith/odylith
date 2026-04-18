@@ -12,15 +12,12 @@ from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import bug_authoring
 from odylith.runtime.governance import component_authoring
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+_normalize_string = visibility_contract.normalize_string
+_mapping = visibility_contract.mapping_copy
 
 
 def _required_text_payload(payload: Mapping[str, Any], *, keys: Sequence[str], surface: str) -> dict[str, str]:

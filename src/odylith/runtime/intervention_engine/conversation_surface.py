@@ -52,33 +52,10 @@ _AMBIENT_TOKEN_STOPWORDS = frozenset(
 )
 
 
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_block_string(value: Any) -> str:
-    text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
-    rows: list[str] = []
-    blank_run = 0
-    for raw_line in text.split("\n"):
-        line = str(raw_line).rstrip()
-        if not line.strip():
-            blank_run += 1
-            if blank_run > 1:
-                continue
-            rows.append("")
-            continue
-        blank_run = 0
-        rows.append(line)
-    return "\n".join(rows).strip()
-
-
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+_normalize_string = visibility_contract.normalize_string
+_normalize_block_string = visibility_contract.normalize_block_string
+_normalize_token = visibility_contract.normalize_token
+_mapping = visibility_contract.mapping_copy
 
 
 def _sentence(value: Any) -> str:

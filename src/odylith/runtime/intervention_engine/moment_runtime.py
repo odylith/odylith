@@ -1,23 +1,16 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.intervention_engine.contract import GovernanceFact
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
+from odylith.runtime.intervention_engine import visibility_contract
 
 
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+_normalize_string = visibility_contract.normalize_string
+_normalize_token = visibility_contract.normalize_token
+_mapping = visibility_contract.mapping_copy
 
 
 def _has_refs(fact: GovernanceFact) -> bool:

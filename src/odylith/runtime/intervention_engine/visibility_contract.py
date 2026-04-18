@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 from typing import Mapping
+from typing import Sequence
 
 VISIBLE_DELIVERY_STATUSES: frozenset[str] = frozenset(
     {
@@ -82,6 +83,30 @@ def normalize_token(value: Any) -> str:
     return normalize_string(value).lower().replace(" ", "_").replace("-", "_")
 
 
+def normalize_string_list(value: Any, *, limit: int | None = None) -> list[str]:
+    """Normalize scalar or sequence input into a deduplicated string list."""
+    cap = None if limit is None else max(1, int(limit))
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        token = normalize_string(value)
+        return [token] if token else []
+    rows: list[str] = []
+    seen: set[str] = set()
+    for item in value:
+        token = normalize_string(item)
+        if not token or token in seen:
+            continue
+        seen.add(token)
+        rows.append(token)
+        if cap is not None and len(rows) >= cap:
+            break
+    return rows
+
+
+def mapping_copy(value: Any) -> dict[str, Any]:
+    """Return a mutable plain-dict copy when the input behaves like a mapping."""
+    return dict(value) if isinstance(value, Mapping) else {}
+
+
 def strip_live_boundary(value: Any) -> str:
     """Remove the surrounding live-delivery fence when it is present."""
     text = normalize_block_string(value)
@@ -96,6 +121,16 @@ def wrap_live_boundary(value: Any) -> str:
     if not text:
         return ""
     return f"{LIVE_BOUNDARY}\n\n{text}\n\n{LIVE_BOUNDARY}"
+
+
+def join_blocks(*values: Any) -> str:
+    """Join unique normalized text blocks with one blank line between them."""
+    rows: list[str] = []
+    for value in values:
+        token = normalize_block_string(value)
+        if token and token not in rows:
+            rows.append(token)
+    return "\n\n".join(rows).strip()
 
 
 def event_requires_live_boundary(row: Mapping[str, Any]) -> bool:

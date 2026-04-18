@@ -7,9 +7,9 @@ import json
 from pathlib import Path
 from typing import Any
 from typing import Mapping
-from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.intervention_engine import visibility_contract
 
 
 _INTERVENTION_EVENT_KINDS: frozenset[str] = frozenset(
@@ -36,43 +36,9 @@ _PENDING_PROPOSAL_CACHE: dict[tuple[tuple[str, int, int], int], dict[str, Any]] 
 _STREAM_PATH_CACHE: dict[tuple[str, str], Path] = {}
 
 
-def _normalize_string(value: Any) -> str:
-    """Normalize arbitrary values into stable single-line comparison tokens."""
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_block_string(value: Any) -> str:
-    """Normalize multi-line markdown/plaintext while preserving paragraph breaks."""
-    text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
-    rows: list[str] = []
-    blank_run = 0
-    for raw_line in text.split("\n"):
-        line = str(raw_line).rstrip()
-        if not line.strip():
-            blank_run += 1
-            if blank_run > 1:
-                continue
-            rows.append("")
-            continue
-        blank_run = 0
-        rows.append(line)
-    return "\n".join(rows).strip()
-
-
-def _normalize_string_list(value: Any) -> list[str]:
-    """Normalize a list-ish input into a de-duplicated string list."""
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        token = _normalize_string(value)
-        return [token] if token else []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = _normalize_string(item)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
+_normalize_string = visibility_contract.normalize_string
+_normalize_block_string = visibility_contract.normalize_block_string
+_normalize_string_list = visibility_contract.normalize_string_list
 
 
 def _json_safe_mapping(value: Any) -> dict[str, Any]:

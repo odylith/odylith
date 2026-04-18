@@ -8,31 +8,12 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
-
-def _normalize_string(value: Any) -> str:
-    """Collapse internal whitespace and trim a scalar value."""
-    return " ".join(str(value or "").split()).strip()
+from odylith.runtime.intervention_engine import visibility_contract
 
 
-def _normalize_string_list(value: Any) -> list[str]:
-    """Normalize scalar or sequence input into a deduplicated string list."""
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        rows: list[str] = []
-        seen: set[str] = set()
-        for item in value:
-            token = _normalize_string(item)
-            if not token or token in seen:
-                continue
-            seen.add(token)
-            rows.append(token)
-        return rows
-    token = _normalize_string(value)
-    return [token] if token else []
-
-
-def _normalize_mapping(value: Any) -> dict[str, Any]:
-    """Return a plain dict when the input is mapping-like."""
-    return dict(value) if isinstance(value, Mapping) else {}
+_normalize_string = visibility_contract.normalize_string
+_normalize_string_list = visibility_contract.normalize_string_list
+_normalize_mapping = visibility_contract.mapping_copy
 
 
 def _normalize_ref_list(value: Any) -> list[dict[str, str]]:

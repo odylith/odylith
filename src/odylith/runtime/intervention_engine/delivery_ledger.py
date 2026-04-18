@@ -5,33 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 from typing import Mapping
-from typing import Sequence
 
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import visibility_contract
 
 
-def _normalize_string(value: Any) -> str:
-    return visibility_contract.normalize_string(value)
-
-
-def _normalize_token(value: Any) -> str:
-    return visibility_contract.normalize_token(value)
-
-
-def _normalize_string_list(value: Any) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        token = _normalize_string(value)
-        return [token] if token else []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = _normalize_string(item)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
+_normalize_string = visibility_contract.normalize_string
+_normalize_token = visibility_contract.normalize_token
+_normalize_string_list = visibility_contract.normalize_string_list
 
 
 def _compact_event(row: Mapping[str, Any]) -> dict[str, Any]:

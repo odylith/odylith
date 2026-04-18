@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
-from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visibility_contract
 
 _CONTINUITY_CACHE: dict[tuple[tuple[str, int, int], str, str, str, int], dict[str, Any]] = {}
 _VISIBLE_DELIVERY_STATUSES = {
@@ -24,25 +24,8 @@ _VISIBLE_DELIVERY_CHANNELS = {
 }
 
 
-def _normalize_string(value: Any) -> str:
-    """Collapse arbitrary values into stable single-line comparison tokens."""
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_string_list(value: Any) -> list[str]:
-    """Normalize a list-ish value into a de-duplicated list of non-empty strings."""
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        token = _normalize_string(value)
-        return [token] if token else []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = _normalize_string(item)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
+_normalize_string = visibility_contract.normalize_string
+_normalize_string_list = visibility_contract.normalize_string_list
 
 
 def _signature_token(value: Any) -> str:
@@ -50,9 +33,7 @@ def _signature_token(value: Any) -> str:
     return "|".join(_normalize_string_list(value))
 
 
-def _mapping(value: Any) -> dict[str, Any]:
-    """Return a mutable mapping copy when the input behaves like a mapping."""
-    return dict(value) if isinstance(value, Mapping) else {}
+_mapping = visibility_contract.mapping_copy
 
 
 def _event_kind(event: Mapping[str, Any]) -> str:

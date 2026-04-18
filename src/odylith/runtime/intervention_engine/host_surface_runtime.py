@@ -10,44 +10,14 @@ from odylith.runtime.intervention_engine import alignment_context
 from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
+from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 
 
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_block_string(value: Any) -> str:
-    text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
-    rows: list[str] = []
-    blank_run = 0
-    for raw_line in text.split("\n"):
-        line = str(raw_line).rstrip()
-        if not line.strip():
-            blank_run += 1
-            if blank_run > 1:
-                continue
-            rows.append("")
-            continue
-        blank_run = 0
-        rows.append(line)
-    return "\n".join(rows).strip()
-
-
-def _normalize_string_list(value: Any) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        token = _normalize_string(value)
-        return [token] if token else []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = _normalize_string(item)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
+_normalize_string = visibility_contract.normalize_string
+_normalize_block_string = visibility_contract.normalize_block_string
+_normalize_string_list = visibility_contract.normalize_string_list
 
 
 def _summary_validation_signals(summary: str, *, turn_phase: str) -> list[str]:
@@ -74,8 +44,7 @@ def _summary_validation_signals(summary: str, *, turn_phase: str) -> list[str]:
     return [text[:160]]
 
 
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+_mapping = visibility_contract.mapping_copy
 
 
 def normalized_session_id(value: Any, *, host_family: str = "") -> str:
