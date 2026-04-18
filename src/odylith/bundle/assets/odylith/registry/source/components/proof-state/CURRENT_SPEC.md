@@ -1,4 +1,11 @@
 # Proof State
+
+## Adaptive Agent Operating Character Contract
+- Proof State owns the Honesty facet. Character decisions must distinguish
+  code-only, preview-only, validator-backed, hosted-proof, benchmark-proof,
+  and release-proof claims before allowing stronger completion language.
+- False proof clearance, false visible-UX claims, and public product claims
+  without benchmark proof are release-blocking failures for v0.1.11.
 Last updated: 2026-04-09
 
 

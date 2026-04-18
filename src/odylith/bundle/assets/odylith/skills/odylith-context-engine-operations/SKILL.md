@@ -23,6 +23,12 @@ Use this skill when the task is about packet choice, daemon health, warmup postu
 - if the final handoff benefits from naming Odylith, use at most one short `Odylith Assist:` line; prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance IDs inline only when they actually changed, name affected governance-contract IDs from bounded request or packet truth when no governed file moved, frame the edge against `odylith_off` or the broader unguided path when the evidence supports it, and back it with concrete observed counts, measured deltas, or validation outcomes while keeping it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Silence is better than filler.
 - keep widening fail-closed when `selection_state` is weak or `full_scan_recommended=true`
 - preserve retained routing data when handing off to orchestration
+- For Guidance Behavior slices, read the compact `guidance_behavior_summary`
+  as packet availability evidence only. It may carry case ids, fingerprints,
+  runtime-layer wiring, and validator commands across Context Engine,
+  Execution Engine, Memory Contracts, intervention evidence, and Tribunal
+  readouts, but the full validator still runs explicitly with
+  `./.odylith/bin/odylith validate guidance-behavior --repo-root .`.
 - reserve explicit `serve` for intentionally warm repeated loops
 - Keep delivery-intelligence and shell refresh deterministic when the persisted Tribunal reasoning artifact is missing; explicit provider-backed reasoning belongs to dedicated reasoning and briefing flows, not the refresh hot path.
 - When shared projection/compiler/backend reuse is in play, verify the
@@ -46,6 +52,7 @@ Use this skill when the task is about packet choice, daemon health, warmup postu
 ./.odylith/bin/odylith context-engine --repo-root . session-brief --working-tree --working-tree-scope session --session-id <id> --claim-path <path>
 ./.odylith/bin/odylith context-engine --repo-root . benchmark --json
 ./.odylith/bin/odylith context-engine --repo-root . serve --watcher-backend auto
+./.odylith/bin/odylith validate guidance-behavior --repo-root .
 ```
 
 ## Rules

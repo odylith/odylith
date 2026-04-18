@@ -1,8 +1,24 @@
 # Odylith Context Engine
+
+## Adaptive Agent Operating Character Contract
+- Context Engine owns the Attention facet. It supplies truth, ambiguity,
+  anchors, workstream/component refs, proof posture, cached priors, and compact
+  `character_summary` inputs when relevant.
+- Packet construction may use Tier 0 and bounded Tier 1 local evidence only.
+  It must not run the full character validator, call host/provider models,
+  spawn subagents, expand projections, run broad scans, or execute benchmarks
+  on packet hot paths.
+- Host and lane are compact summary fields, not a reason to widen packets:
+  Codex, Claude, dev, dogfood, and consumer posture must resolve from local
+  metadata or caller input, then flow into Character without model calls.
+- Benchmark packets for Guidance Behavior and Agent Operating Character carry
+  the B-110 workstream anchor when measuring the v0.1.11 character program,
+  so Context/Execution adoption metrics can distinguish real ambiguity from a
+  missing program tag.
 Last updated: 2026-04-17
 
 
-Last updated (UTC): 2026-04-17
+Last updated (UTC): 2026-04-18
 
 ## Purpose
 Odylith Context Engine is the deterministic local grounding runtime for the
@@ -25,6 +41,10 @@ claims, and optionally materializes faster local and remote retrieval layers.
 - Compact packet summaries consumed by the visible intervention value engine.
   The Context Engine supplies local source evidence and anchors; it does not
   choose visible Odylith block labels or selector thresholds.
+- Compact Guidance Behavior summaries on relevant packets. The Context Engine
+  may attach corpus status, case counts, failed check ids, fingerprints, and
+  validator commands; it must not run full guidance validation on the live
+  packet hot path.
 
 ### The Context Engine does not own
 - Authoritative repo truth. It compiles truth; it does not replace it.
@@ -103,6 +123,11 @@ Public entrypoint: `odylith context-engine`
   summaries, bootstrap packets, hot-path packets, context dossiers, and
   runtime surfaces should consume that shared snapshot instead of locally
   deriving policy posture.
+- When a packet is guidance-behavior-relevant, packet builders attach the
+  compact `guidance_behavior_summary` first and the handshake carries its
+  validator command as recommended validation. The summary remains a compact
+  evidence payload; full validation is explicit proof work, not automatic
+  packet construction.
 - Snapshot cost diagnostics are intentionally lightweight and comparative:
   snapshot duration, snapshot token estimate, runtime-contract token estimate,
   handshake token estimate, total payload token estimate, reuse status, and
@@ -183,7 +208,8 @@ Operational guidance lives in
   Component index, registry snapshot, and registry-detail projection reads.
 - `odylith_context_engine_packet_summary_runtime.py`
   Packet-summary extraction and compact bootstrap-packet readback, including
-  turn-context, target-resolution, and presentation-policy carry-through.
+  turn-context, target-resolution, presentation-policy, and
+  guidance-behavior summary carry-through.
 - `odylith_context_engine_packet_session_runtime.py`
   Session-brief and bootstrap packet assembly, including first-turn intake and
   lane-aware target resolution.
@@ -200,7 +226,8 @@ Operational guidance lives in
   Final compact packet shaping, prompt trimming, and workstream context
   compaction.
 - `tooling_context_packet_builder.py`
-  Shared packet finalization and packet metrics.
+  Shared packet finalization, packet metrics, and relevant guidance-behavior
+  summary attachment.
 - `tooling_context_retrieval.py`
   Evidence retrieval and miss-recovery shaping.
 - `tooling_context_routing.py`
@@ -538,6 +565,7 @@ evidence is missing or drifting.
 - `odylith context-engine --repo-root . doctor`
 - `pytest -q tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py tests/unit/install/test_repair.py`
 - `python -m pytest -q tests/unit/runtime/test_tooling_guidance_catalog.py tests/unit/runtime/test_tooling_context_retrieval_guidance.py`
+- `odylith validate guidance-behavior --repo-root .`
 - `odylith context-engine --repo-root . benchmark --limit 5`
 - `odylith sync --repo-root . --check-only`
 
@@ -545,6 +573,15 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-17 · Implementation:** B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate agent-operating-character and validate guidance-behavior passed, quick agent_operating_character report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.
+  - Scope: B-110
+  - Evidence: odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md +3 more
+- **2026-04-17 · Implementation:** B-110 adaptive character hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged character benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
+  - Scope: B-110
+  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md
+- **2026-04-17 · Implementation:** B-110 adaptive Agent Operating Character source-local proof landed: zero-credit validator, guidance-behavior validator, quick benchmark family selection, and character quick benchmark are green; pinned dogfood runtime proof remains blocked by managed runtime drift.
+  - Scope: B-110, B-111, B-112, B-113
+  - Evidence: odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md +2 more
 - **2026-04-16 · Implementation:** Context Engine and Execution Engine alignment hardened stale snapshot handling across packet summaries, router assessment, remediator execution, and benchmark proof with fail-closed canonical execution-engine identity checks; runtime, integration, registry, backlog, atlas, sync, and diff hygiene validation passed.
   - Scope: B-099
   - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py +3 more
@@ -554,12 +591,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
   - Scope: B-099, B-100
   - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
-- **2026-03-23 · Decision:** Successor created: B-280 reopens B-279 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
-- **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
-- **2026-03-18 · Decision:** Successor created: B-220 reopens B-219 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -572,3 +603,6 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-10: Added structured turn-intake carry-through so session packets can preserve `turn_context`, lane-fenced target resolution, and presentation policy across consumer and maintainer lanes. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
 - 2026-04-16: Added the Context Engine and Execution Engine alignment program and hard-cut the handoff to canonical `execution-engine` identity so stale execution identifiers fail closed before packet route readiness. (Plan: [B-099](odylith/radar/radar.html?view=plan&workstream=B-099), [B-100](odylith/radar/radar.html?view=plan&workstream=B-100))
 - 2026-04-16: Added handshake `v1`, shared compact snapshot reuse, Execution Engine cost diagnostics, and Codex/Claude semantic parity proof for the Context Engine to Execution Engine boundary. (Plan: [B-101](odylith/radar/radar.html?view=plan&workstream=B-101), [B-102](odylith/radar/radar.html?view=plan&workstream=B-102), [B-103](odylith/radar/radar.html?view=plan&workstream=B-103))
+- 2026-04-17: Added compact Guidance Behavior summary propagation for relevant packets and packet summaries, including validator-command handoff to the Execution Engine and preservation for the intervention value engine without running full guidance validation in live packet construction. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-17: Extended the compact Guidance Behavior packet summary with the platform end-to-end contract so Context Engine packets can carry benchmark/eval and host-lane mirror proof availability without repo-wide scans, provider calls, or full validation on the hot path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Added the Guidance Behavior `hot_path_efficiency` contract: deterministic validator summaries now prevent adaptive session/full-scan widening, skip runtime projection warmup, avoid projection-store opens for no-projection guidance packets, and keep unanchored proof-state resolution out of delivery-intelligence reads. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)

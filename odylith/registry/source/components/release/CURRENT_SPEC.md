@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-04-09
+Last updated: 2026-04-17
 
 
 Last updated (UTC): 2026-04-09
@@ -423,7 +423,12 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- No synchronized requirement or contract signals yet.
+- **2026-04-17 · Implementation:** Implemented and hardened B-126 conditional release-targeted backlog authoring with --release selector preflight, batch release events, queued-status preservation, Radar/Compass refresh reporting, and focused QA coverage.
+  - Scope: B-126
+  - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, src/odylith/runtime/governance/backlog_authoring.py +3 more
+- **2026-04-17 · Decision:** Queued B-126 Conditional Release-Targeted Backlog Authoring for v0.1.12 next release targeting; status remains queued and implementation is intentionally deferred out of the v0.1.11 lane.
+  - Scope: B-126
+  - Evidence: odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl
 <!-- registry-requirements:end -->
 
 ## Feature History

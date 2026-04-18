@@ -1,5 +1,5 @@
 ---
 name: odylith-query
-description: Search the local Odylith projection store after concrete anchors already exist.
+description: Use when concrete anchors already exist and the local Odylith projection store needs search.
 ---
 @../../../odylith/skills/odylith-query/SKILL.md

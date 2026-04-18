@@ -70,29 +70,48 @@ Users in live chats who need Odylith Observation, Proposal, Risks, History, and 
 Make the visibility broker consume selected value-engine options, prove chat visibility, repair missing live rulers, and keep Assist outside ruled live blocks.
 
 ## Proposed Solution
-Create the workstream for Host Visibility Integration And Ruler Canonicalization and refine the exact implementation plan during execution.
+Make the visibility broker consume the selected value-engine options and own
+delivery proof for Codex, Claude, manual fallback, prompt/checkpoint replay,
+Stop recovery, status probes, and tests. Generated hidden payloads remain
+non-success until visible fallback or exact assistant transcript confirmation
+proves the user could see the Odylith text.
 
 ## Scope
-- Define and land the bounded work for Host Visibility Integration And Ruler Canonicalization.
-- Keep the first implementation wave narrow and test-backed.
+- Separate ledger-visible fallback from strict assistant transcript proof.
+- Replay pending hidden, manual-visible, best-effort, and Stop-continuation
+  blocks until exact `assistant_chat_confirmed` proof exists.
+- Repair missing top/bottom rulers for live Ambient, Observation, and Proposal
+  blocks instead of dropping otherwise useful signals.
+- Keep `Odylith Assist` closeout-owned and outside the ruled live block.
+- Preserve same-block behavior across Codex and Claude while honoring each
+  host's actual transport limits.
 
 ## Non-Goals
-- Do not widen this queued workstream into unrelated product cleanup.
+- Do not pretend Codex native desktop apply/exec hooks are covered when the
+  exposed hook schema is Bash-only.
+- Do not count hidden `systemMessage` or `additionalContext` as chat-visible
+  product proof.
 
 ## Risks
-- The title may need refinement once the implementation owner confirms the exact boundary.
+- Duplicate fallback replay can become noisy if confirmation keys ignore the
+  rendered block text or collapse distinct same-label ambient propositions.
 
 ## Dependencies
-- No explicit dependency recorded yet; confirm related workstreams before implementation starts.
+- B-106 selected options and proposition identities.
+- Compass intervention stream delivery metadata.
+- Host prompt, post-tool, Stop, visible-intervention, and status surfaces.
 
 ## Success Metrics
 Codex and Claude consume the same selected options; hidden systemMessage/additionalContext never count as proof; Stop recovery replays unseen live blocks before Assist; ruled block tests pass.
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Host-visible tests prove hidden payloads do not count as proof, fallback
+  output replays until exact assistant confirmation, same-label distinct blocks
+  confirm independently, and Assist stays outside live rulers.
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- Ship as the v0.1.11 visibility contract for existing sessions via direct
+  visible fallback and for fresh sessions via reloaded host guidance/hooks.
 
 ## Why Now
 This slice is active enough that it should exist as explicit backlog truth now.
@@ -101,16 +120,25 @@ This slice is active enough that it should exist as explicit backlog truth now.
 Odylith should never claim success from hidden hook JSON; earned live blocks render visibly with canonical rulers while Assist stays at the final closeout.
 
 ## Impacted Components
-- `odylith`
+- `governance-intervention-engine`
+- `compass`
+- `odylith-chatter`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- Delivery proof states distinguish generated/fallback-ready,
+  ledger-visible, pending confirmation, and `assistant_chat_confirmed`.
+- Visible replay output is a shared read model consumed by prompt,
+  checkpoint, status, manual fallback, and Stop surfaces.
 
 ## Migration/Compatibility
-- No migration impact recorded yet.
+- v0.1.11 ledger migration infers legacy visible-family rows from
+  `render_surface` and promotes fallback-visible rows once when exact
+  assistant transcript proof appears.
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- Exercise Codex and Claude prompt, post-tool, visible-intervention, status,
+  Stop, and transcript-confirmation paths against the same selected block set.
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- The remaining release question is live host reload proof, not core delivery
+  semantics.

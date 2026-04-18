@@ -22,6 +22,8 @@ CODEX_COMMAND_SKILLS = {
     "odylith-compass-refresh/SKILL.md",
     "odylith-casebook-bug-capture/SKILL.md",
     "odylith-casebook-bug-preflight/SKILL.md",
+    "odylith-guidance-behavior/SKILL.md",
+    "odylith-agent-operating-character/SKILL.md",
 }
 
 

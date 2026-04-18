@@ -7,6 +7,7 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
+from odylith.runtime.intervention_engine import alignment_evidence
 
 
 _WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
@@ -265,8 +266,8 @@ def build_signal_profile(
     memory = _mapping(session_memory)
     prompt_surface = _joined_prompt_surface(observation)
     changed_paths = _normalize_string_list(observation.changed_paths)
-    packet_summary = _mapping(observation.packet_summary)
-    target_refs = list(observation.active_target_refs)
+    packet_summary = alignment_evidence.merged_packet_summary(observation)
+    target_refs = alignment_evidence.active_target_refs(observation)
     for key, kind in (("workstreams", "workstream"), ("bugs", "bug"), ("diagrams", "diagram"), ("components", "component")):
         for token in _normalize_string_list(packet_summary.get(key)):
             target_refs.append({"kind": kind, "id": token, "path": "", "label": token})
@@ -289,7 +290,8 @@ def build_signal_profile(
                 "label": _normalize_string(row.get("label")) or item_id,
             }
         )
-    prompt_with_paths = " ".join([prompt_surface, *changed_paths]).strip()
+    alignment_text = alignment_evidence.alignment_signal_text(observation)
+    prompt_with_paths = " ".join([prompt_surface, *changed_paths, alignment_text]).strip()
     workstream_ids = _ref_ids(deduped_target_refs, kind="workstream")
     bug_ids = _ref_ids(deduped_target_refs, kind="bug")
     component_ids = _ref_ids(deduped_target_refs, kind="component")
@@ -309,6 +311,7 @@ def build_signal_profile(
         ]
     semantic_rows = semantic_signature(
         prompt_surface,
+        alignment_text,
         " ".join(changed_paths),
         " ".join(f"{row['kind']} {row['id']}" for row in deduped_target_refs),
     )
@@ -402,6 +405,9 @@ def build_signal_profile(
         evidence_classes.append("changed_paths")
     if deduped_target_refs:
         evidence_classes.append("packet")
+    for evidence_class in alignment_evidence.runtime_evidence_classes(observation):
+        if evidence_class not in evidence_classes:
+            evidence_classes.append(evidence_class)
     novelty_score = max(0, 76 - dimensions["continuity"] + (8 if governed_path_pressure <= 0 else 0))
     session_repeat_penalty = 20 if had_recent_card else 10 if same_signature_recent else 0
     session_escalation_bonus = 14 if had_recent_teaser and changed_paths else 0

@@ -1,4 +1,12 @@
 # Tribunal
+
+## Adaptive Agent Operating Character Contract
+- Tribunal owns the Judgment facet. Repeated, ambiguous, costly, or false
+  allow/block pressure becomes a Tribunal candidate with rival explanations and
+  discriminating next checks.
+- Tribunal may promote a pattern into doctrine, tool affordance, skill
+  guidance, benchmark case, or Casebook bug. It is not the hot path and must
+  not run provider reasoning for ordinary character decisions.
 Last updated: 2026-04-17
 
 
@@ -22,6 +30,10 @@ plus one bounded correction packet per case.
   engine with precomputed risk, causal, and discriminating-next-check signals.
   Tribunal supplies structured diagnosis evidence; it does not decide whether
   a visible Odylith block should render.
+- The shape of Tribunal-ready signals consumed downstream. Guidance Behavior
+  runtime may emit a compact Tribunal-ready signal for intervention evidence,
+  but that signal must remain precomputed evidence unless a real Tribunal pass
+  is explicitly invoked elsewhere.
 
 ### Tribunal does not own
 - Executing corrective action. That belongs to the caller and Remediator.
@@ -32,6 +44,9 @@ plus one bounded correction packet per case.
 - Live signal selection or chat-visible proof. The Governance Intervention
   Engine may consume cached Tribunal summaries in the hot path, but provider
   Tribunal calls are forbidden inside live visibility checks.
+- Guidance Behavior validation. Tribunal may be referenced by the compact
+  `tribunal_signal`, but the validator and corpus remain owned by the
+  governance validation runtime.
 - Next-action admissibility. Execution Engine consumes diagnosis as one
   evidence input, but Tribunal does not decide whether the intended command is
   procedurally allowed.
@@ -235,6 +250,11 @@ outputs may be consumed by downstream narration contracts such as
 truth. That consumption must never trigger a fresh Tribunal pass during normal
 agent execution.
 
+Guidance Behavior summaries follow the same rule. Their `tribunal_signal`
+payload is a compact, downstream-readable diagnosis cue; it must not be treated
+as permission to run provider-backed Tribunal reasoning inside prompt,
+checkpoint, Stop, or visibility-status hot paths.
+
 ## Guardrails
 - Provider output never bypasses grounded evidence.
 - Candidate selection is intentionally capped. Tribunal diagnoses the most
@@ -285,3 +305,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-07: Clarified and shipped the downstream contract that lets `odylith-chatter` consume precomputed Tribunal-backed case and systemic-brief truth without invoking live Tribunal during ordinary narration. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-08: Moved Tribunal fully out of `runtime/evaluation` into `src/odylith/runtime/reasoning/`, removed the legacy eval-path module, and hardened sync-owned Atlas and delivery-intelligence references plus regression guards so governed surfaces track the new package boundary without compatibility shims. (Plan: [B-061](odylith/radar/radar.html?view=plan&workstream=B-061))
 - 2026-04-09: Clarified the product boundary that Tribunal diagnoses why a posture exists, while Execution Engine decides whether the next move is admissible. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-17: Documented the Guidance Behavior runtime's Tribunal-ready signal as precomputed downstream evidence for the intervention engine, not a live Tribunal invocation or provider-backed hot-path dependency. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-17: Clarified that the Guidance Behavior Tribunal-ready signal now travels with the platform end-to-end contract, letting downstream evidence reference benchmark/eval and host-lane proof posture without invoking Tribunal or expanding context on the live path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)

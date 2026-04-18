@@ -18,6 +18,10 @@ from odylith.runtime.context_engine.surface_projection_fingerprint import (
 
 _MANIFEST_PATH = Path(".odylith/runtime/latency-cache/surface-refresh-dag.v1.json")
 _VERSION = "v1"
+_REGISTRY_RENDERER_INPUTS = (
+    Path("src/odylith/runtime/surfaces/render_registry_dashboard.py"),
+    Path("src/odylith/runtime/surfaces/registry_forensic_evidence_ui.py"),
+)
 
 
 def can_reuse_surface_refresh(
@@ -122,6 +126,9 @@ def surface_input_fingerprint(*, repo_root: Path, surface: str, atlas_sync: bool
                 "surface": token,
                 "components": odylith_context_cache.fingerprint_tree(specs_root),
                 "manifest": odylith_context_cache.fingerprint_paths([manifest_path]),
+                "renderer": odylith_context_cache.fingerprint_paths(
+                    [root / relative_path for relative_path in _REGISTRY_RENDERER_INPUTS]
+                ),
                 "delivery": odylith_context_cache.path_signature(
                     root / "odylith/runtime/delivery_intelligence.v4.json",
                 ),

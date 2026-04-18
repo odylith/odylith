@@ -295,6 +295,7 @@ for governance_command in (
     "auto-promote-workstream-phase",
     "sync-component-spec-requirements",
     "version-truth",
+    "validate-guidance-behavior",
     "validate-guidance-portability",
     "validate-plan-traceability",
     "intervention-preview",
@@ -346,6 +347,27 @@ for wave_command in (
             "handler": "_cmd_wave",
             "check": lambda args, root, command=wave_command: getattr(args, "repo_root", "") == str(root)
             and getattr(args, "wave_command", "") == command,
+        }
+    )
+
+
+for character_command, character_extra in (
+    ("status", []),
+    ("check", ["--intent-file", "intent.txt"]),
+    ("explain", ["--decision-id", "character:fixture"]),
+):
+    _HANDLER_CASES.append(
+        {
+            "path": ("character", character_command),
+            "argv": lambda root, command=character_command, extra=character_extra: [
+                "character",
+                command,
+                f"--repo-root={root}",
+                *extra,
+            ],
+            "handler": "_cmd_character",
+            "check": lambda args, root, command=character_command: getattr(args, "repo_root", "") == str(root)
+            and getattr(args, "character_command", "") == command,
         }
     )
 
@@ -561,6 +583,20 @@ _DOWNSTREAM_ARGV_CASES = [
         "path": ("validate", "component-registry-contract"),
         "argv": lambda root: ["validate", "component-registry-contract", f"--repo-root={root}"],
         "target_obj": cli.validate_component_registry_contract,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
+        "path": ("validate", "agent-operating-character"),
+        "argv": lambda root: ["validate", "agent-operating-character", f"--repo-root={root}"],
+        "target_obj": cli.validate_agent_operating_character,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
+        "path": ("validate", "guidance-behavior"),
+        "argv": lambda root: ["validate", "guidance-behavior", f"--repo-root={root}"],
+        "target_obj": cli.validate_guidance_behavior,
         "target_attr": "main",
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },

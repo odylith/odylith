@@ -9,6 +9,7 @@ from odylith.runtime.context_engine import odylith_context_engine_hot_path_packe
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import path_bundle_codec
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bindings
+from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.governance import proof_state as proof_state_runtime
 
 def bind(host: Any) -> None:
@@ -47,6 +48,13 @@ def _compact_bootstrap_or_brief_hot_path_context_packet(
         }.items()
         if value not in ("", [], {}, None)
     }
+    guidance_behavior_summary = guidance_behavior_runtime.summary_from_sources(
+        context_packet,
+        payload,
+        limit=6,
+    )
+    if guidance_behavior_summary:
+        compact_context_packet["guidance_behavior_summary"] = guidance_behavior_summary
 
     compact_anchors: dict[str, Any] = {}
     if anchor_quality and anchor_quality != "non_shared":

@@ -1,5 +1,5 @@
 ---
 name: odylith-sync
-description: Refresh the governed Odylith surfaces for the files changed in this task.
+description: Use when changed files need governed Odylith surfaces refreshed.
 ---
 @../../../odylith/skills/odylith-sync/SKILL.md

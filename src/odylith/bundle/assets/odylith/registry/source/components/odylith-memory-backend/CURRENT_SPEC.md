@@ -1,4 +1,12 @@
 # Odylith Memory Backend
+
+## Adaptive Agent Operating Character Contract
+- Memory Backend stores and replays compact character practice events without
+  widening into transcript archives. Session memory may nudge a current turn;
+  durable priors require validation, benchmark evidence, or Tribunal doctrine.
+- Retention classes include `hot_recent`, `durable_practice`,
+  `casebook_failure`, `benchmark_pressure`, `tribunal_doctrine_candidate`, and
+  `noise_suppressed`, with decay and suppression preserved.
 Last updated: 2026-04-13
 
 

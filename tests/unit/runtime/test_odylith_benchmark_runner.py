@@ -849,6 +849,10 @@ def test_run_benchmarks_supports_family_filtered_shards(
     assert report["benchmark_profile"] == "proof"
     assert report["selection_strategy"] == "manual_selection"
     assert report["selection"]["family_filters"] == ["daemon_security", "docs_code_closeout", "release_publication"]
+    assert report["selection_family_filters"] == ["daemon_security", "docs_code_closeout", "release_publication"]
+    assert isinstance(report["hard_quality_gate_cleared"], bool)
+    assert report["hard_gate_cleared"] is report["hard_quality_gate_cleared"]
+    assert isinstance(report["hard_gate_failures"], list)
     assert report["selection"]["shard_count"] == 2
     assert report["selection"]["shard_index"] == 2
     assert report["latest_eligible"] is False
@@ -5578,8 +5582,9 @@ def test_live_corpus_workstream_ids_exist_in_repo_truth() -> None:
         "B-078",
         "B-100",
         "B-101",
-        "B-102",
-    }
+            "B-102",
+            "B-110",
+        }
 
 
 def test_select_impacted_diagrams_prefers_direct_benchmark_proof_lane() -> None:
@@ -7661,13 +7666,21 @@ def test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff() -> N
     assert context_packet["packet_quality"] == {
         "rc": "low",
         "i": "analysis",
-        "cd": "medium",
+        "cd": "low",
         "rr": "none",
         "cr": "narrowing",
         "ap": "broad_guarded",
     }
-    assert context_packet["retrieval_plan"]["selected_counts"] == "g2"
+    assert context_packet["retrieval_plan"]["selected_counts"] == "g1"
     assert context_packet["retrieval_plan"]["guidance_coverage"] == "direct"
+    assert context_packet["guidance_behavior_summary"]["status"] == "available"
+    assert context_packet["guidance_behavior_summary"]["guidance_surface_contract"]["hosts"] == ["codex", "claude"]
+    assert context_packet["guidance_behavior_summary"]["platform_contract"]["domains"] == [
+        "benchmark_eval",
+        "host_lane_bundle_mirrors",
+        "hot_path_efficiency",
+    ]
+    assert context_packet["guidance_behavior_summary"]["hot_path_contract"]["provider_calls"] is False
     assert context_packet["route"] == {
         "narrowing_required": True,
         "b": "guarded_narrowing",

@@ -12,6 +12,12 @@
 - Keep Odylith-derived commentary ambient by default. If routing or topology produces a real non-obvious point, weave it into the update first and reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels for the rare cases that truly earn them.
 - In the final handoff, one short `Odylith Assist:` line is optional if the routed or local result has concrete observed counts, measured deltas, or validation outcomes worth naming. Prefer `**Odylith Assist:**` when Markdown formatting is available. Lead with the user win, link updated governance IDs inline only when they actually changed, name affected governance-contract IDs from bounded request or packet truth when no governed file moved, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual, not promotional. Silence is better than filler, so omit it when there is no clear user-facing delta.
 - Every delegated task needs an owner, goal, validation expectation, and termination condition.
+- Adaptive Agent Operating Character keeps coordination adaptive rather than
+  posture-rigid. Broad delegation is a deterministic hard-law violation until
+  the route is bounded with owner, goal, expected output, stop condition,
+  owned scope, validation expectation, and closeout state. Character checks
+  may rank routing affordances, but they must not spawn subagents or spend
+  host model credits to classify pressure.
 - When a grounded slice touches a hand-maintained source file that is already
   beyond policy thresholds, keep the delegated or local plan aligned with
   [CODING_STANDARDS.md](./CODING_STANDARDS.md): refactor-first, bounded, and
@@ -40,6 +46,14 @@
 - Conservative parallelism is intentional: read-only analysis may fan out, disjoint writes may fan out narrowly, and shared-write or adjudication-heavy slices stay serial or local.
 - Close delegated agents after integration unless an immediate same-scope follow-up is already queued; `waiting on instruction` is an idle state that requires main-thread action.
 - Do not treat desktop UI controls as proof of the delegated runtime pair; the prompt body must carry the requested `model` and `reasoning_effort` explicitly.
+- The `guidance-bounded-delegation-contract` pressure case is the reusable
+  guardrail for broad delegation requests. If a task cannot state owner, goal,
+  expected output, termination condition, and validation expectation, it is
+  not ready for routed native spawn yet. Narrow locally or keep the work in
+  the main thread rather than emitting vague leaves.
+- When a guidance behavior summary supplies a case-scoped validator command,
+  carry that command into the leaf validation expectation. Do not replace
+  specific pressure proof with an unqualified "run tests" instruction.
 
 ## Bounded Leaf Routing
 - Use `odylith subagent-router` only after the slice is already bounded and grounded.

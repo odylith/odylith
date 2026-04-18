@@ -7,6 +7,11 @@
 - The supported operator contract is the `odylith` CLI.
 - Use `odylith sync`, `odylith context-engine`, `odylith benchmark`, `odylith compass ...`, and `odylith atlas ...` as the public workflow.
 - Do not default back to removed local wrapper modules when the CLI already owns the surface.
+- Adaptive Agent Operating Character exposes only local deterministic agent
+  tooling in v0.1.11: `odylith character status`, `odylith character check`,
+  `odylith character explain`, and
+  `odylith validate agent-operating-character`. Benchmark proof stays under
+  `odylith benchmark`; do not create a separate public proof lane.
 
 ## Project-Root Host Assets
 - Odylith's managed project-root host assets are now split by host family:
@@ -78,6 +83,11 @@
   `Odylith Assist` and stay to one short labeled line. Proposal should look
   like a short ruled block with one calm lead line beginning `Odylith Proposal:`,
   a few bullets, and one quiet confirmation line.
+- Adaptive Character feeds this voice layer only when visible value is earned.
+  Passing checks stay silent, nudges need a concrete recovery action,
+  Observations need evidence the user benefits now, and visible claims require
+  `intervention-status`, transcript confirmation, or direct
+  `visible-intervention` fallback.
 - The same intervention moment must keep one stable session-local identity
   across prompt, stop, and edit/bash checkpoints. Do not let a later hook
   make the same moment feel like a fresh branded interruption just because it
@@ -254,6 +264,24 @@
 - Odylith is the observer/control-plane surface: it owns signal intake, cheap correlation, queue ranking, approval state, clearance state, and the final operator-facing shell/CLI surface.
 - Tribunal is the reasoning engine beneath Odylith: it turns ranked scopes into dossiers, runs actors, adjudicates disagreement, and emits one maintainer brief plus systemic context.
 - Remediator compiles an adjudicated prescription into a bounded correction packet when the action is reviewable, allowlisted, validated, and reversible.
+- Guidance Behavior is a cross-layer proof contract, not a separate runtime
+  island. Context Engine attaches the compact summary, Execution Engine turns
+  it into recommended validation, Memory Contracts preserve the compact
+  summary, the intervention engine converts material failures into one
+  supported fact, Tribunal consumes the precomputed signal, and benchmark
+  proof stays on the existing quick `guidance_behavior` family path.
+- The same validator owns the platform end-to-end contract:
+  `odylith_guidance_behavior_platform_end_to_end.v1` proves benchmark/eval
+  wiring, Codex and Claude skill/command mirrors, installed consumer bundle
+  assets, install guidance, live/source-bundle byte parity, and hot-path
+  efficiency point to the same proof path. Do not treat benchmark, host
+  guidance, bundle, or latency surfaces as separate green islands.
+- This path must stay low-latency and high-signal across consumer, pinned
+  dogfood, and detached `source-local` lanes. Live hooks may read compact
+  availability evidence; explicit validation owns full proof. The hot path
+  must not widen into session/full scans, open the projection store, read the
+  delivery ledger, or probe host capabilities when the compact deterministic
+  validator summary already establishes the local guidance proof path.
 - Canonical Odylith runtime artifacts are:
   - `odylith/runtime/posture.v4.json`
   - `odylith/runtime/reasoning.v4.json`

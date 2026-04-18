@@ -704,7 +704,7 @@ def _run_command(
 def _run_callable_with_heartbeat(
     *,
     label: str,
-    callable_: Callable[[], int],
+    callable_: Callable[[], Any],
 ) -> int:
     started_at = time.perf_counter()
     context = copy_context()
@@ -712,7 +712,7 @@ def _run_callable_with_heartbeat(
 
     def _runner() -> None:
         try:
-            result = int(context.run(callable_) or 0)
+            result = _coerce_callable_step_result(context.run(callable_))
         except BaseException as exc:  # pragma: no cover - re-raised on caller thread
             result_queue.put((exc, None))
         else:
@@ -733,6 +733,35 @@ def _run_callable_with_heartbeat(
         if error is not None:
             raise error
         return int(result or 0)
+
+
+def _coerce_callable_step_result(result: Any) -> int:
+    if result is None:
+        return 0
+    if isinstance(result, bool):
+        return 0 if result else 1
+    if isinstance(result, int):
+        return int(result)
+    if isinstance(result, Mapping):
+        for key in ("returncode", "return_code", "exit_code", "rc"):
+            if key in result:
+                try:
+                    return int(result.get(key) or 0)
+                except (TypeError, ValueError):
+                    return 1
+        for key in ("success", "passed", "ok"):
+            if key in result and isinstance(result.get(key), bool):
+                return 0 if bool(result.get(key)) else 1
+        status = str(result.get("outcome") or result.get("status") or "").strip().lower()
+        if status in {"passed", "pass", "ok", "success", "succeeded", "completed", "queued"}:
+            return 0
+        if status in {"failed", "fail", "error", "errored", "blocked"}:
+            return 1
+        return 1
+    try:
+        return int(result or 0)
+    except (TypeError, ValueError):
+        return 1
 
 
 @contextlib.contextmanager
@@ -1583,8 +1612,9 @@ def _run_dashboard_refresh_step(
         if isinstance(action_result, Mapping):
             state = action_result.get("state")
             state_map = dict(state) if isinstance(state, Mapping) else {}
+            rc = _coerce_callable_step_result(action_result)
             return {
-                "rc": int(action_result.get("rc", 0) or 0),
+                "rc": rc,
                 "fallback_used": False,
                 "status": str(action_result.get("status", "")).strip() or "passed",
                 "next_command": (
@@ -1594,7 +1624,7 @@ def _run_dashboard_refresh_step(
                 ),
                 "failed_step": "",
             }
-        rc = int(action_result or 0)
+        rc = _coerce_callable_step_result(action_result)
         return {
             "rc": rc,
             "fallback_used": False,
@@ -2534,6 +2564,40 @@ def build_sync_execution_plan(
         change_watch_paths=("odylith/runtime/delivery_intelligence.v4.json",),
         followup_steps_on_change=tuple(final_delivery_followups),
     )
+    final_registry_truth_followups: list[ExecutionStep] = []
+    if bool(getattr(impact, "atlas", False)):
+        final_registry_truth_followups.extend(
+            [
+                _execution_step(
+                    "Refresh Atlas review fingerprints after final Registry forensics settle.",
+                    command=_atlas_auto_update_command(
+                        repo_root=repo_root,
+                        changed_paths=(),
+                        force=True,
+                        impact_mode="full",
+                        runtime_mode=runtime_mode,
+                    ),
+                    mutation_classes=("repo_owned_truth", "generated_surfaces"),
+                    paths=("odylith/atlas/source/catalog/diagrams.v1.json",),
+                    next_command_on_failure=sync_failure_command,
+                ),
+                _execution_step(
+                    "Render Atlas after final Registry forensic freshness settles.",
+                    command=_atlas_render_command(
+                        repo_root=repo_root,
+                        check_only=False,
+                        changed_paths=(),
+                        force=True,
+                        impact_mode="full",
+                        runtime_mode=runtime_mode,
+                    ),
+                    mutation_classes=("generated_surfaces",),
+                    paths=_surface_render_outputs("atlas"),
+                    next_command_on_failure=sync_failure_command,
+                ),
+            ]
+        )
+    final_registry_truth_followups.append(final_delivery_stabilization_step)
     steps.extend(post_registry_truth_steps)
     steps.append(
         _execution_step(
@@ -2563,7 +2627,7 @@ def build_sync_execution_plan(
                 paths=("odylith/registry/source/components/",),
                 next_command_on_failure=sync_failure_command,
                 change_watch_paths=("odylith/registry/source/components/",),
-                followup_steps_on_change=(final_delivery_stabilization_step,),
+                followup_steps_on_change=tuple(final_registry_truth_followups),
             )
         )
     notes = [

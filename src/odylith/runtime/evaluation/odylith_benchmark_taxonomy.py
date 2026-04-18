@@ -80,6 +80,8 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
             "broad_shared_scope",
             "context_engine_grounding",
             "execution_engine",
+            "guidance_behavior",
+            "agent_operating_character",
             "exact_path_ambiguity",
             "exact_anchor_recall",
             "explicit_workstream",

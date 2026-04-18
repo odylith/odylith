@@ -80,6 +80,12 @@ host observation points. The engine should:
 - attach delivery metadata to the same Compass intervention events so Codex
   and Claude can report whether Teaser/Ambient, Observation, Proposal, and
   Assist are armed or recently visible-ready without a second status store
+- carry Guidance Behavior Enhancements through the shared runtime evidence
+  path: relevant Context Engine packets attach a compact guidance-behavior
+  summary, Execution Engine snapshots expose the validator command as
+  recommended validation, Memory Contracts preserve the compact summary, and
+  intervention alignment treats material guidance failures as one supported
+  proposition instead of noisy chatter
 - let final `Odylith Assist` name the affected workstream, component, diagram,
   or bug IDs from bounded request, packet, target-ref, or changed-path truth
   while only calling records updated when changed-path evidence proves it
@@ -101,6 +107,10 @@ host observation points. The engine should:
 - CLI-first preview and apply flows for supported governed writes.
 - Registry, Atlas, Radar, Compass, and maintainer guidance updates that make
   the observation/proposal UX part of governed product truth.
+- Guidance Behavior runtime integration across Context Engine, Execution
+  Engine, Memory Contracts, Governance Intervention Engine, Tribunal-ready
+  signal shaping, and benchmark validation without adding provider calls or
+  full repo scans to live selection.
 
 ## Non-Goals
 - User-selectable voice packs in this release.
@@ -174,10 +184,17 @@ host observation points. The engine should:
 - Host-hidden Ambient Highlight, Observation, and Proposal beats can replay
   through Stop's one-shot continuation path before Assist, so the visible
   product experience does not collapse into Assist-only closeouts.
+- Guidance behavior pressure cases influence the same value decision when
+  material, stay quiet when passing, and remain provable through
+  `odylith validate guidance-behavior` instead of being treated as detached
+  governance paperwork.
 
 ## Validation
 - Focused runtime tests for the shared engine and both host integrations pass.
 - CLI coverage for preview and apply stays green.
+- `odylith validate guidance-behavior --repo-root .` proves the guidance
+  behavior corpus, benchmark-family integration, runtime layer contract, and
+  bundle mirror are aligned.
 - Radar, Registry, Atlas, and plan traceability validators pass on the touched
   slice.
 - Atlas diagram `D-038` renders and matches the shipped topology.
@@ -205,7 +222,11 @@ surface, and the brand contract must be governed as rigorously as the runtime.
 - `governance-intervention-engine`
 - `odylith-chatter`
 - `compass`
-- `execution-governance`
+- `odylith-context-engine`
+- `execution-engine`
+- `odylith-memory-contracts`
+- `tribunal`
+- `benchmark`
 
 ## Interface Changes
 - New shared `ObservationEnvelope`, `GovernanceFact`,
@@ -220,6 +241,11 @@ surface, and the brand contract must be governed as rigorously as the runtime.
   - `capture_proposed`
   - `capture_applied`
   - `capture_declined`
+- New compact guidance-behavior summary fields flowing through packet,
+  handshake, memory, intervention evidence, Tribunal-ready signal, and
+  benchmark validation contracts.
+- New validator lane:
+  `odylith validate guidance-behavior`.
 
 ## Migration/Compatibility
 - Cross-host shared core is mandatory in v1.
@@ -242,6 +268,10 @@ surface, and the brand contract must be governed as rigorously as the runtime.
 - Keep tests proving unseen Ambient, Observation, and Proposal events from
   prompt/checkpoint lanes can recover through the same Stop visibility
   mechanism as Assist.
+- Keep regression tests proving guidance behavior summaries remain compact,
+  relevant, provider-free, preserved through memory packets, reflected in
+  Execution Engine validation commands, and converted to at most one material
+  intervention fact.
 
 ## Open Questions
 - Which update and reopen helper paths should be promoted from preview-only to

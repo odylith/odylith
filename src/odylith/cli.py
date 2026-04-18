@@ -46,6 +46,7 @@ _CONTEXT_ENGINE_MODULE = "odylith.runtime.context_engine.odylith_context_engine"
 _VERSION_TRUTH_MODULE = "odylith.runtime.governance.version_truth"
 _BENCHMARK_COMPARE_MODULE = "odylith.runtime.evaluation.benchmark_compare"
 _PROGRAM_WAVE_AUTHORING_MODULE = "odylith.runtime.governance.program_wave_authoring"
+_CHARACTER_CLI_MODULE = "odylith.runtime.character.cli"
 _MAINTAINER_LANE_STATUS_MODULE = "odylith.runtime.governance.maintainer_lane_status"
 _BACKLOG_AUTHORING_MODULE = "odylith.runtime.governance.backlog_authoring"
 _COMPASS_LOG_MODULE = "odylith.runtime.common.log_compass_timeline_event"
@@ -62,6 +63,7 @@ _GOVERNANCE_COMMAND_MODULES = {
     "reconcile-plan-workstream-binding": "odylith.runtime.governance.reconcile_plan_workstream_binding",
     "auto-promote-workstream-phase": "odylith.runtime.governance.auto_promote_workstream_phase",
     "sync-component-spec-requirements": "odylith.runtime.governance.sync_component_spec_requirements",
+    "validate-guidance-behavior": "odylith.runtime.governance.validate_guidance_behavior",
     "validate-guidance-portability": "odylith.runtime.governance.validate_guidance_portability",
     "validate-plan-traceability": "odylith.runtime.governance.validate_plan_traceability_contract",
     "intervention-preview": "odylith.runtime.intervention_engine.cli",
@@ -72,6 +74,8 @@ _VALIDATE_COMMAND_MODULES = {
     "casebook-source": _CASEBOOK_SOURCE_VALIDATION_MODULE,
     "component-registry": "odylith.runtime.governance.validate_component_registry_contract",
     "component-registry-contract": "odylith.runtime.governance.validate_component_registry_contract",
+    "agent-operating-character": "odylith.runtime.governance.validate_agent_operating_character",
+    "guidance-behavior": "odylith.runtime.governance.validate_guidance_behavior",
     "guidance-portability": "odylith.runtime.governance.validate_guidance_portability",
     "plan-risk-mitigation": "odylith.runtime.governance.validate_plan_risk_mitigation_contract",
     "plan-risk-mitigation-contract": "odylith.runtime.governance.validate_plan_risk_mitigation_contract",
@@ -196,6 +200,10 @@ reconcile_plan_workstream_binding = _register_lazy_module("odylith.runtime.gover
 auto_promote_workstream_phase = _register_lazy_module("odylith.runtime.governance.auto_promote_workstream_phase")
 sync_component_spec_requirements = _register_lazy_module("odylith.runtime.governance.sync_component_spec_requirements")
 version_truth = _register_lazy_module(_VERSION_TRUTH_MODULE)
+validate_guidance_behavior = _register_lazy_module("odylith.runtime.governance.validate_guidance_behavior")
+validate_agent_operating_character = _register_lazy_module(
+    "odylith.runtime.governance.validate_agent_operating_character"
+)
 validate_guidance_portability = _register_lazy_module("odylith.runtime.governance.validate_guidance_portability")
 validate_plan_traceability_contract = _register_lazy_module("odylith.runtime.governance.validate_plan_traceability_contract")
 backlog_authoring = _register_lazy_module(_BACKLOG_AUTHORING_MODULE)
@@ -1393,6 +1401,26 @@ def _cmd_wave(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_character(args: argparse.Namespace) -> int:
+    forwarded: list[str] = []
+    if args.character_command == "check":
+        forwarded.extend(["--intent-file", str(args.intent_file)])
+        if str(getattr(args, "host", "")).strip():
+            forwarded.extend(["--host", str(args.host)])
+        if str(getattr(args, "lane", "")).strip():
+            forwarded.extend(["--lane", str(args.lane)])
+    elif args.character_command == "explain":
+        forwarded.extend(["--decision-id", str(args.decision_id)])
+    if bool(getattr(args, "as_json", False)):
+        forwarded.append("--json")
+    return _module_attr(_CHARACTER_CLI_MODULE, "run_character")(
+        ensure_repo_root_args(
+            repo_root=args.repo_root,
+            argv=[str(args.character_command).strip(), *forwarded],
+        )
+    )
+
+
 def _cmd_validate(args: argparse.Namespace) -> int:
     if args.validate_command == "version-truth":
         forwarded = ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded)
@@ -1930,6 +1958,10 @@ def build_parser() -> argparse.ArgumentParser:
         ("sync-component-spec-requirements", "Sync mapped Compass requirement evidence into component living specs."),
         ("version-truth", "Validate that generated Odylith version files match pyproject."),
         (
+            "validate-guidance-behavior",
+            "Validate guidance behavior pressure cases and high-risk guidance contracts.",
+        ),
+        (
             "validate-guidance-portability",
             "Validate maintained guidance for portable Python and pytest invocation patterns.",
         ),
@@ -2056,10 +2088,12 @@ def build_parser() -> argparse.ArgumentParser:
     validate = subparsers.add_parser("validate", help="Run Odylith governance and contract validators.")
     validate_subparsers = validate.add_subparsers(dest="validate_command", required=True)
     for command, help_text in (
+        ("agent-operating-character", "Validate Adaptive Agent Operating Character contracts and hot-path budgets."),
         ("backlog-contract", "Validate Radar backlog and plan linkage contracts."),
         ("casebook-source", "Validate Casebook markdown source records before rendering."),
         ("component-registry", "Validate Registry component inventory contracts."),
         ("component-registry-contract", "Validate Registry component inventory contracts."),
+        ("guidance-behavior", "Validate guidance behavior pressure cases and high-risk guidance contracts."),
         ("guidance-portability", "Validate maintained guidance for portable Python and pytest invocation patterns."),
         ("plan-risk-mitigation", "Validate technical-plan risk and mitigation sections."),
         ("plan-risk-mitigation-contract", "Validate technical-plan risk and mitigation sections."),
@@ -2071,6 +2105,22 @@ def build_parser() -> argparse.ArgumentParser:
         child_parser = validate_subparsers.add_parser(command, help=help_text)
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
         child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    character = subparsers.add_parser("character", help="Inspect Adaptive Agent Operating Character state.")
+    character_subparsers = character.add_subparsers(dest="character_command", required=True)
+    character_status = character_subparsers.add_parser("status", help="Show local character readiness and budget posture.")
+    character_status.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    character_status.add_argument("--json", action="store_true", dest="as_json", help="Render status as JSON.")
+    character_check = character_subparsers.add_parser("check", help="Evaluate a proposed move locally.")
+    character_check.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    character_check.add_argument("--intent-file", required=True, help="File containing the proposed agent move.")
+    character_check.add_argument("--host", default="codex", help="Host family, for example codex or claude.")
+    character_check.add_argument("--lane", default="dev", help="Execution lane.")
+    character_check.add_argument("--json", action="store_true", dest="as_json", help="Render decision as JSON.")
+    character_explain = character_subparsers.add_parser("explain", help="Explain a prior character decision.")
+    character_explain.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    character_explain.add_argument("--decision-id", required=True, help="Decision id to explain.")
+    character_explain.add_argument("--json", action="store_true", dest="as_json", help="Render explanation as JSON.")
 
     context_engine = subparsers.add_parser("context-engine", help="Run Odylith Context Engine commands.")
     context_engine.add_argument("--repo-root", default=".", help="Consumer repository root.")
@@ -2284,6 +2334,7 @@ def main(argv: list[str] | None = None) -> int:
                 "auto-promote-workstream-phase",
                 "sync-component-spec-requirements",
                 "version-truth",
+                "validate-guidance-behavior",
                 "validate-guidance-portability",
                 "validate-plan-traceability",
             }:
@@ -2585,6 +2636,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_program(args)
     if args.command == "wave":
         return _cmd_wave(args)
+    if args.command == "character":
+        return _cmd_character(args)
     if args.command == "governance":
         return _cmd_governance(args)
     if args.command == "validate":

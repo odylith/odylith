@@ -1780,43 +1780,206 @@ initSharedQuickTooltips();
       `;
     }
 
-    function renderTimeline(row) {
-      const events = row && Array.isArray(row.timeline) ? row.timeline : [];
-      const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
-      timelineCountEl.textContent = `${events.length} events`;
-      if (!events.length) {
-        timelineEl.innerHTML = "";
-        return;
-      }
-      timelineEl.innerHTML = events.map((event) => {
-        const workstreams = Array.isArray(event.workstreams) ? event.workstreams : [];
-        const artifacts = Array.isArray(event.artifacts) ? event.artifacts : [];
-        const wsPills = workstreams.length
-          ? workstreams.map((ws) => linkChip({
-              label: ws,
-              href: hrefRadar(ws),
-              tone: "tone-gov",
-              tooltip: `Workstream ${ws}. Open Radar context.`,
-            })).join("")
-          : '<span class="label">No scope</span>';
+    const FORENSIC_DIGEST_WORKSTREAM_LIMIT = 4;
+    const FORENSIC_DIGEST_ARTIFACT_LIMIT = 2;
 
-        const artifactLinks = artifacts.length
-          ? artifacts.map((item) => `<a class="artifact" href="${escapeHtml(item.href || item.path || "")}" target="_top" data-tooltip="Artifact evidence path for this event.">${escapeHtml(item.path || "artifact")}</a>`).join("")
-          : '<span class="artifact">No artifacts</span>';
+    function forensicEventCountLabel(count) {
+      const value = Number(count || 0);
+      return `${value} ${pluralize(value, "event", "events")}`;
+    }
 
-        return `
-          <li class="event">
-            <div class="event-top">
-              <span class="label" data-tooltip="Codex stream event kind.">${escapeHtml(eventKindLabel(event.kind))}</span>
-              <span class="label" data-tooltip="Component-link confidence for this event.">confidence: ${escapeHtml(event.confidence || "none")}</span>
-              <span>${escapeHtml(event.ts_iso || "")}</span>
+    function forensicEvidenceEvents(row) {
+      return row && Array.isArray(row.timeline) ? row.timeline : [];
+    }
+
+    function forensicEventTimestamp(event) {
+      return String(event && event.ts_iso || "").trim();
+    }
+
+    function forensicNewestEvent(events) {
+      const rows = Array.isArray(events) ? events : [];
+      return rows.reduce((newest, event) => {
+        if (!newest) return event;
+        return forensicEventTimestamp(event) > forensicEventTimestamp(newest) ? event : newest;
+      }, null);
+    }
+
+    function forensicCoverageMetric(coverage, key) {
+      const value = Number(coverage && coverage[key] || 0);
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function forensicCoverageStrip(events, forensicCoverage) {
+      const facts = [
+        ["Events", events.length],
+        ["Explicit", forensicCoverageMetric(forensicCoverage, "explicit_event_count")],
+        ["Path matches", forensicCoverageMetric(forensicCoverage, "recent_path_match_count")],
+        ["Workstream evidence", forensicCoverageMetric(forensicCoverage, "mapped_workstream_evidence_count")],
+        ["Spec history", forensicCoverageMetric(forensicCoverage, "spec_history_event_count")],
+      ];
+      return `
+        <div class="forensic-coverage-strip" aria-label="Forensic coverage counts">
+          ${facts.map(([label, value]) => `
+            <div class="forensic-stat">
+              <p class="forensic-stat-label">${escapeHtml(label)}</p>
+              <p class="forensic-stat-value">${escapeHtml(String(value))}</p>
             </div>
-            <p class="event-summary">${escapeHtml(event.summary || "(no summary)")}</p>
-            <div class="inline">${wsPills}</div>
-            <div class="artifact-list">${artifactLinks}</div>
-          </li>
-        `;
-      }).join("");
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function forensicWorkstreamLink(workstream) {
+      const token = String(workstream || "").trim();
+      if (!token) return "";
+      return `<a class="forensic-workstream-chip" href="${escapeHtml(hrefRadar(token))}" target="_top" data-tooltip="Workstream ${escapeHtml(token)}. Open Radar context.">${escapeHtml(token)}</a>`;
+    }
+
+    function forensicArtifactLink(item) {
+      const path = String(item && item.path || "").trim();
+      const href = String(item && (item.href || item.path) || "").trim();
+      if (!path && !href) return "";
+      return `<a class="artifact" href="${escapeHtml(href || path)}" target="_top" data-tooltip="Artifact evidence path for this event.">${escapeHtml(path || "artifact")}</a>`;
+    }
+
+    function forensicOverflowLabel(count, noun) {
+      const value = Number(count || 0);
+      if (value <= 0) return "";
+      return `<span class="label">+${escapeHtml(String(value))} ${escapeHtml(pluralize(value, noun, `${noun}s`))}</span>`;
+    }
+
+    function forensicArtifactOverflowDisclosure(items, overflow) {
+      const value = Number(overflow || 0);
+      if (value <= 0 || !Array.isArray(items) || !items.length) return "";
+      return `
+        <details class="forensic-artifact-disclosure">
+          <summary class="forensic-artifact-overflow-summary" data-tooltip="Show hidden artifact evidence paths.">+${escapeHtml(String(value))} ${escapeHtml(pluralize(value, "artifact", "artifacts"))}</summary>
+          <div class="forensic-artifact-disclosure-panel artifact-list">
+            ${items.map(forensicArtifactLink).filter(Boolean).join("")}
+          </div>
+        </details>
+      `;
+    }
+
+    function forensicLimitedWorkstreams(workstreams, limit = FORENSIC_DIGEST_WORKSTREAM_LIMIT) {
+      const tokens = [];
+      const seen = new Set();
+      (Array.isArray(workstreams) ? workstreams : []).forEach((workstream) => {
+        const token = String(workstream || "").trim();
+        if (!token || seen.has(token)) return;
+        seen.add(token);
+        tokens.push(token);
+      });
+      const visible = tokens.slice(0, limit);
+      const overflow = Math.max(0, tokens.length - visible.length);
+      return {
+        count: tokens.length,
+        html: [
+          ...visible.map(forensicWorkstreamLink),
+          forensicOverflowLabel(overflow, "workstream"),
+        ].filter(Boolean).join(""),
+      };
+    }
+
+    function forensicLimitedArtifacts(artifacts, limit = FORENSIC_DIGEST_ARTIFACT_LIMIT) {
+      const rows = [];
+      const seen = new Set();
+      (Array.isArray(artifacts) ? artifacts : []).forEach((item) => {
+        const path = String(item && item.path || item && item.href || "").trim();
+        if (!path || seen.has(path)) return;
+        seen.add(path);
+        rows.push(item);
+      });
+      const visible = rows.slice(0, limit);
+      const hidden = rows.slice(limit);
+      const overflow = Math.max(0, rows.length - visible.length);
+      return {
+        count: rows.length,
+        html: [
+          ...visible.map(forensicArtifactLink),
+          forensicArtifactOverflowDisclosure(hidden, overflow),
+        ].filter(Boolean).join(""),
+      };
+    }
+
+    function forensicEvidenceGroups(events) {
+      const groups = [];
+      const byKind = new Map();
+      (Array.isArray(events) ? events : []).forEach((event) => {
+        const kind = String(event && event.kind || "unknown").trim().toLowerCase() || "unknown";
+        if (!byKind.has(kind)) {
+          const group = { kind, count: 0, latest: event, workstreams: [], artifacts: [] };
+          byKind.set(kind, group);
+          groups.push(group);
+        }
+        const group = byKind.get(kind);
+        group.count += 1;
+        if (!group.latest || forensicEventTimestamp(event) > forensicEventTimestamp(group.latest)) {
+          group.latest = event;
+        }
+        group.workstreams.push(...(Array.isArray(event.workstreams) ? event.workstreams : []));
+        group.artifacts.push(...(Array.isArray(event.artifacts) ? event.artifacts : []));
+      });
+      return groups;
+    }
+
+    function renderForensicTokenRow(workstreams, artifacts, options = {}) {
+      const workstreamLimit = Number(options.workstreamLimit || FORENSIC_DIGEST_WORKSTREAM_LIMIT);
+      const artifactLimit = Number(options.artifactLimit || FORENSIC_DIGEST_ARTIFACT_LIMIT);
+      const workstreamPreview = forensicLimitedWorkstreams(workstreams, workstreamLimit);
+      const artifactPreview = forensicLimitedArtifacts(artifacts, artifactLimit);
+      const html = [workstreamPreview.html, artifactPreview.html].filter(Boolean).join("");
+      return html ? `<div class="forensic-token-row">${html}</div>` : "";
+    }
+
+    function renderForensicLatestEvent(event) {
+      if (!event) {
+        return '<article class="forensic-latest"><p class="empty">No mapped forensic events are attached yet.</p></article>';
+      }
+      return `
+        <article class="forensic-latest">
+          <div class="forensic-row-top">
+            <span class="label" data-tooltip="Codex stream event kind.">${escapeHtml(eventKindLabel(event.kind))}</span>
+            <span class="label" data-tooltip="Component-link confidence for this event.">confidence: ${escapeHtml(event.confidence || "none")}</span>
+            <span class="label">${escapeHtml(event.ts_iso || "No timestamp")}</span>
+          </div>
+          <p class="forensic-summary">${escapeHtml(event.summary || "(no summary)")}</p>
+          ${renderForensicTokenRow(event.workstreams, event.artifacts)}
+        </article>
+      `;
+    }
+
+    function renderForensicGroups(events) {
+      const groups = forensicEvidenceGroups(events);
+      if (!groups.length) return "";
+      return `
+        <div class="forensic-evidence-list">
+          ${groups.map((group) => `
+            <article class="forensic-group-row">
+              <div class="forensic-row-top">
+                <span class="label">${escapeHtml(eventKindLabel(group.kind))}</span>
+                <span class="label">${escapeHtml(forensicEventCountLabel(group.count))}</span>
+              </div>
+              <p class="forensic-summary">${escapeHtml(group.latest && group.latest.summary || "(no summary)")}</p>
+              ${renderForensicTokenRow(group.workstreams, group.artifacts)}
+            </article>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderTimeline(row) {
+      const events = forensicEvidenceEvents(row);
+      const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
+      const latestEvent = forensicNewestEvent(events);
+      timelineCountEl.textContent = forensicEventCountLabel(events.length);
+      timelineEl.innerHTML = `
+        <section class="forensic-digest">
+          ${forensicCoverageStrip(events, forensicCoverage)}
+          ${renderForensicLatestEvent(latestEvent)}
+          ${renderForensicGroups(events)}
+        </section>
+      `;
     }
 
     async function renderSelectedComponent(selectedId, filtered) {

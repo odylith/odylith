@@ -52,6 +52,44 @@
 - If `routing_handoff.narrowing_required=true`, narrow locally before delegating.
 - If `selection_state=ambiguous|none`, `working_tree_scope_degraded=true`, `diagram_watch_gaps` is present, or `full_scan_recommended=true`, widen back to raw discovery before acting.
 
+## Guidance Behavior Packet Contract
+- Guidance Behavior is packet evidence, not a hidden background validator. When
+  the slice touches high-risk guidance, host contracts, skill descriptions,
+  agent instructions, or the `guidance_behavior` benchmark family, the Context
+  Engine should attach a compact `guidance_behavior_summary` to relevant
+  packets.
+- That summary may carry case ids, source fingerprints, related guidance refs,
+  a validator command, runtime-layer wiring, and a Tribunal-ready readout. It
+  must not run the full validator, call a provider, expand the context store,
+  or widen into a repo-wide scan on the live packet path.
+- The full validator remains explicit proof:
+  `odylith validate guidance-behavior --repo-root .`. Case-scoped packet
+  commands should keep `--case-id` so broad proof does not replace the pressure
+  case the packet actually surfaced.
+- The same compact summary should empower the next layer rather than become
+  another document to reread: Execution Engine consumes the validator command,
+  Memory Contracts preserve the compact fields, intervention evidence turns
+  material failures into one supported fact, and Tribunal references the
+  precomputed signal without doing live reasoning work.
+
+## Adaptive Character Packet Contract
+- Adaptive Agent Operating Character is a compact packet contract, not a
+  hidden validator. The Context Engine owns the Attention facet by surfacing
+  ambiguity, anchors, proof posture, workstream/component refs, and any
+  existing guidance behavior summary as local inputs for
+  `odylith_agent_operating_character.v1`.
+- Packet construction may attach a compact `character_summary` when pressure
+  or benchmark family context makes it relevant. That summary must come from
+  Tier 0 or bounded Tier 1 inputs only: prompt features, already-selected
+  packet truth, cached priors, fingerprints, and explicit source refs.
+- The packet hot path must not call Codex, Claude, providers, subagents, full
+  validation, benchmark execution, broad repo scans, projection expansion, or
+  broad delivery-ledger reads. Visibility-ledger reads are only allowed when
+  the active pressure explicitly requires visible-intervention proof.
+- Unknown pressure stays open-world. If uncertainty is high, the packet should
+  recommend narrowing or a lower-risk local affordance instead of faking a
+  closed posture classification.
+
 ## Runtime Contract
 - The Odylith context-engine runtime is the canonical compiler for local maintainer projections built from the component registry, knowledge-base docs, code/test structure, agent events, and advisory local pytest/session state.
 - `odylith context-engine` is the only supported daemon/client surface for querying those projections.

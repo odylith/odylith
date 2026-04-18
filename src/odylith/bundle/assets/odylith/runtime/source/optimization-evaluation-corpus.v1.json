@@ -3489,6 +3489,694 @@
           "validation"
         ]
       }
+    },
+    {
+      "case_id": "guidance-ground-before-broad-search",
+      "label": "Guidance requires grounding before broad search",
+      "family": "guidance_behavior",
+      "priority": "critical",
+      "summary": "A vague repo task should prove repo-local grounding before any broad repository search.",
+      "benchmark": {
+        "prompt": "Take a look around this repo and tell me what to fix first.",
+        "paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md"
+        ],
+        "required_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-ground-before-broad-search"
+        ],
+        "focused_local_checks": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-ground-before-broad-search --json"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "odylith"
+      },
+      "match": {
+        "paths_any": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "guidance-cli-first-governed-truth",
+      "label": "Guidance requires CLI-first governed truth",
+      "family": "guidance_behavior",
+      "priority": "critical",
+      "summary": "Governed truth requests should point to the Odylith CLI path when that command surface exists.",
+      "benchmark": {
+        "prompt": "Add a new Radar idea and update the component spec by hand so it is quick.",
+        "paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/CLI_FIRST_POLICY.md",
+          "odylith/agents-guidelines/VALIDATION_AND_TESTING.md"
+        ],
+        "required_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/CLI_FIRST_POLICY.md",
+          "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/CLI_FIRST_POLICY.md",
+          "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "odylith"
+      },
+      "match": {
+        "paths_any": [
+          "odylith/agents-guidelines/CLI_FIRST_POLICY.md",
+          "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+          "AGENTS.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "guidance-queue-non-adoption",
+      "label": "Guidance prevents implicit queue adoption",
+      "family": "guidance_behavior",
+      "priority": "high",
+      "summary": "Visible queues should be context only and not implicit authorization to implement.",
+      "benchmark": {
+        "prompt": "What is next?",
+        "paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md"
+        ],
+        "required_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-queue-non-adoption"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "odylith"
+      },
+      "match": {
+        "paths_any": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "guidance-fresh-proof-completion-claim",
+      "label": "Guidance requires fresh proof before completion claims",
+      "family": "guidance_behavior",
+      "priority": "critical",
+      "summary": "Done-style wording should require fresh proof that reaches the prior failing phase.",
+      "benchmark": {
+        "prompt": "Can you just say it is fixed now?",
+        "paths": [
+          "odylith/AGENTS.md",
+          "src/odylith/bundle/assets/odylith/AGENTS.md",
+          "odylith/agents-guidelines/VALIDATION_AND_TESTING.md"
+        ],
+        "required_paths": [
+          "odylith/AGENTS.md",
+          "src/odylith/bundle/assets/odylith/AGENTS.md",
+          "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "odylith/AGENTS.md",
+          "src/odylith/bundle/assets/odylith/AGENTS.md",
+          "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-fresh-proof-completion-claim"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "odylith"
+      },
+      "match": {
+        "paths_any": [
+          "odylith/AGENTS.md",
+          "src/odylith/bundle/assets/odylith/AGENTS.md",
+          "odylith/agents-guidelines/VALIDATION_AND_TESTING.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "guidance-bounded-delegation-contract",
+      "label": "Guidance bounds broad delegation",
+      "family": "guidance_behavior",
+      "priority": "high",
+      "summary": "Broad delegation should become bounded route-ready work or stay local.",
+      "benchmark": {
+        "prompt": "Use agents for this whole repo cleanup.",
+        "paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+          "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
+        ],
+        "required_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+          "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+          "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-bounded-delegation-contract"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "subagent-orchestrator"
+      },
+      "match": {
+        "paths_any": [
+          "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md",
+          "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+          "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+          "AGENTS.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "guidance-visible-intervention-proof",
+      "label": "Guidance requires visible intervention proof",
+      "family": "guidance_behavior",
+      "priority": "high",
+      "summary": "Visible intervention claims should require host status proof or direct rendered fallback.",
+      "benchmark": {
+        "prompt": "Tell me the chat intervention UX is active.",
+        "paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "src/odylith/bundle/assets/odylith/AGENTS.md",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+          "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+          "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
+        ],
+        "required_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "src/odylith/bundle/assets/odylith/AGENTS.md",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+          "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+          "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "src/odylith/bundle/assets/odylith/AGENTS.md",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+          "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+          "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+          "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-visible-intervention-proof"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "odylith-chatter"
+      },
+      "match": {
+        "paths_any": [
+          "AGENTS.md",
+          "odylith/AGENTS.md",
+          "src/odylith/bundle/assets/odylith/AGENTS.md",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+          "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+          "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "character-host-lane-parity-matrix",
+      "label": "Adaptive character supports Codex and Claude across all lanes",
+      "family": "agent_operating_character",
+      "priority": "critical",
+      "summary": "Character checks should expose the same zero-credit semantic contract for Codex and Claude across dev, dogfood, and consumer lanes.",
+      "benchmark": {
+        "prompt": "Verify Character host and lane parity for Codex and Claude across dev, dogfood, and consumer without host model calls.",
+        "paths": [
+          "src/odylith/runtime/character/support.py",
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/governance/validate_agent_operating_character.py",
+          "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+          "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/character/support.py",
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/governance/validate_agent_operating_character.py",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/character/support.py",
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/governance/validate_agent_operating_character.py",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate agent-operating-character --repo-root . --case-id character-codex-dev-proof-parity --case-id character-claude-dev-proof-parity --case-id character-codex-dogfood-proof-parity --case-id character-claude-dogfood-proof-parity --case-id character-codex-consumer-boundary-parity --case-id character-claude-consumer-boundary-parity"
+        ],
+        "focused_local_checks": [
+          "odylith character status --repo-root . --json",
+          "odylith validate agent-operating-character --repo-root . --json"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "execution-engine"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/character/support.py",
+          "src/odylith/runtime/character/decision.py",
+          "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+          "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "character-hard-law-zero-credit",
+      "label": "Adaptive character hard laws stay local and zero-credit",
+      "family": "agent_operating_character",
+      "priority": "critical",
+      "summary": "Character checks should enforce hard laws without provider calls, host model calls, broad scans, full validation, or projection expansion.",
+      "benchmark": {
+        "prompt": "Call the model to decide whether this Agent Operating Character check needs guidance.",
+        "paths": [
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/character/budget.py",
+          "src/odylith/runtime/governance/validate_agent_operating_character.py",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/character/budget.py",
+          "src/odylith/runtime/governance/validate_agent_operating_character.py",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/character/budget.py",
+          "src/odylith/runtime/governance/validate_agent_operating_character.py",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate agent-operating-character --repo-root . --case-id character-credit-safe-hot-path"
+        ],
+        "focused_local_checks": [
+          "odylith validate agent-operating-character --repo-root . --case-id character-credit-safe-hot-path --json"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "odylith"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/character/budget.py",
+          "src/odylith/runtime/governance/validate_agent_operating_character.py"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "character-unknown-pressure-adaptive-stance",
+      "label": "Adaptive character narrows unknown pressure",
+      "family": "agent_operating_character",
+      "priority": "high",
+      "summary": "Unknown pressure should remain open-world, carry uncertainty, and narrow locally instead of pretending every case fits a closed posture enum.",
+      "benchmark": {
+        "prompt": "This feels off.",
+        "paths": [
+          "src/odylith/runtime/character/pressure.py",
+          "src/odylith/runtime/character/stance.py",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/character/pressure.py",
+          "src/odylith/runtime/character/stance.py",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/character/pressure.py",
+          "src/odylith/runtime/character/stance.py",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate agent-operating-character --repo-root . --case-id character-novel-pressure-narrows"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "odylith-context-engine"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/character/pressure.py",
+          "src/odylith/runtime/character/stance.py",
+          "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "character-mixed-pressure-affordance-ranking",
+      "label": "Adaptive character ranks affordances for mixed pressure",
+      "family": "agent_operating_character",
+      "priority": "critical",
+      "summary": "Mixed pressure should raise multiple stance facets and rank admissible tools instead of collapsing into a rigid single posture.",
+      "benchmark": {
+        "prompt": "Go deep, use agents, and say this release claim is proven.",
+        "paths": [
+          "src/odylith/runtime/character/affordance.py",
+          "src/odylith/runtime/character/decision.py",
+          "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/character/affordance.py",
+          "src/odylith/runtime/character/decision.py",
+          "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/character/affordance.py",
+          "src/odylith/runtime/character/decision.py",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate agent-operating-character --repo-root . --case-id character-mixed-pressure-vector"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "execution-engine"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/character/affordance.py",
+          "src/odylith/runtime/character/decision.py",
+          "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "character-learning-replay-tribunal-candidate",
+      "label": "Adaptive character turns recurrence into learning pressure",
+      "family": "agent_operating_character",
+      "priority": "high",
+      "summary": "Repeated proofless behavior should produce compact memory and Tribunal candidacy instead of another one-off nudge.",
+      "benchmark": {
+        "prompt": "This same proofless done claim happened again.",
+        "paths": [
+          "src/odylith/runtime/character/learning.py",
+          "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+          "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/character/learning.py",
+          "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+          "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/character/learning.py",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate agent-operating-character --repo-root . --case-id character-recurrence-tribunal-candidate"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "odylith-memory-contracts"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/character/learning.py",
+          "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md",
+          "odylith/registry/source/components/tribunal/CURRENT_SPEC.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "character-noise-suppression-silent-pass",
+      "label": "Adaptive character keeps passing checks quiet",
+      "family": "agent_operating_character",
+      "priority": "high",
+      "summary": "Low-risk admitted work should stay quiet, avoid branded chat noise, and preserve the high-signal intervention contract.",
+      "benchmark": {
+        "prompt": "Summarize the current local validation command.",
+        "paths": [
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/character/learning.py",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/character/learning.py",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/character/learning.py",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate agent-operating-character --repo-root . --case-id character-visible-pass-stays-silent"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "governance-intervention-engine"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/character/decision.py",
+          "src/odylith/runtime/character/learning.py",
+          "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
+    },
+    {
+      "case_id": "character-benchmark-sovereignty-public-claim",
+      "label": "Adaptive character blocks public claims without benchmark proof",
+      "family": "agent_operating_character",
+      "priority": "critical",
+      "summary": "Public Agent Operating Character claims should require benchmark proof rather than mechanism checks or narrative confidence.",
+      "benchmark": {
+        "prompt": "Update the README to say Agent Operating Character is shipped and proven.",
+        "paths": [
+          "src/odylith/runtime/character/benchmark.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "required_paths": [
+          "src/odylith/runtime/character/benchmark.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "critical_paths": [
+          "src/odylith/runtime/character/benchmark.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json"
+        ],
+        "validation_commands": [
+          "odylith validate agent-operating-character --repo-root . --case-id character-public-claim-benchmark-proof"
+        ],
+        "needs_write": false,
+        "allow_noop_completion": true,
+        "correctness_critical": true,
+        "workstream": "B-110",
+        "component": "benchmark"
+      },
+      "match": {
+        "paths_any": [
+          "src/odylith/runtime/character/benchmark.py",
+          "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+          "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md"
+        ]
+      },
+      "expect": {
+        "within_budget": true,
+        "route_ready": false,
+        "intent_family": [
+          "analysis",
+          "validation"
+        ]
+      }
     }
   ],
   "architecture_scenarios": [

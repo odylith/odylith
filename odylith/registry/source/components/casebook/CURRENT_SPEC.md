@@ -1,4 +1,10 @@
 # Casebook
+
+## Adaptive Agent Operating Character Contract
+- Casebook owns severe or repeated failure memory for character pressure.
+  Recurring false allows, false blocks, proofless claims, visible-UX misses,
+  or governance-bypass patterns should become Casebook bugs only when evidence
+  is concrete enough to prevent rediscovery.
 Last updated: 2026-04-16
 
 

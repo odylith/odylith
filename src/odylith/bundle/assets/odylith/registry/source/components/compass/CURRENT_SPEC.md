@@ -1,4 +1,11 @@
 # Compass
+
+## Adaptive Agent Operating Character Contract
+- Compass owns compact execution memory for character work. It may project
+  high-signal practice events, validation outcomes, benchmark proof status,
+  and release-gate posture, but should suppress weak character noise.
+- Compass entries should preserve workstream ids B-110 through B-117 and the
+  benchmark gates that feed future session priors.
 Last updated: 2026-04-17
 
 
@@ -45,6 +52,11 @@ standup-level summary should be.
   calibration posture, and visibility proof state to those intervention
   events. Compass projects that compact decision log; it does not recompute
   relevance or decide chat visibility locally.
+- Guidance Behavior runtime summaries may appear only as compact event or
+  packet evidence: status, validation status, failed check ids, fingerprints,
+  validator command, and Tribunal-ready signal. Compass may project that proof
+  posture but must not run the guidance validator or infer chat-visible
+  intervention success from hidden payloads.
 - That pending-proposal read model is UX-bearing, not just a counter. It must
   preserve prompt-rooted context plus rich proposal display payloads and status
   so downstream shells and future surfaces can render the same delightful
@@ -702,3 +714,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Added intervention and proposal audit events plus derived pending proposal state so Compass can show the `Odylith Observation` / `Odylith Proposal` lifecycle without inventing a second source of truth. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Hardened Compass pending proposal state so it preserves prompt-rooted context, proposal status, and rich proposal markdown from the intervention lifecycle events instead of collapsing the UX into terse pending-summary strings. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-16: Extended intervention stream truth with ambient/Assist delivery kinds plus delivery metadata so `intervention-status` can prove recent visible-ready behavior without creating a second host-local status store. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
+- 2026-04-17: Documented compact Guidance Behavior proof posture as projected evidence only: Compass may show validator status, failed check ids, fingerprints, and Tribunal-ready signal, while validation execution and chat-visible proof remain owned by the guidance validator and intervention visibility broker. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)

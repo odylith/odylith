@@ -353,6 +353,57 @@
       ]
     },
     {
+      "chunk_id": "guidance-behavior-cross-layer-proof",
+      "note_kind": "guidance",
+      "canonical_source": "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+      "chunk_path": "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+      "title": "Guidance Behavior Cross-Layer Proof",
+      "section": "Product Validation Expectations",
+      "summary": "Use the Guidance Behavior validator and quick benchmark family to prove grounding, CLI-first governed truth, queue non-adoption, fresh proof claims, bounded delegation, and visible-intervention proof across Codex, Claude, consumer, dogfood, and source-local lanes.",
+      "tags": [
+        "guidance-behavior",
+        "benchmark",
+        "host-parity",
+        "validation"
+      ],
+      "task_families": [
+        "validation",
+        "benchmark",
+        "agent-guidance",
+        "orchestration"
+      ],
+      "risk_class": "critical",
+      "component_affinity": [
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-contracts",
+        "governance-intervention-engine",
+        "tribunal",
+        "benchmark"
+      ],
+      "path_prefixes": [
+        "odylith/agents-guidelines/",
+        "odylith/skills/",
+        ".agents/skills/",
+        ".claude/",
+        "odylith/runtime/source/",
+        "src/odylith/runtime/governance/"
+      ],
+      "path_refs": [
+        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+      ],
+      "workstreams": [
+        "B-096",
+        "B-108",
+        "B-109"
+      ]
+    },
+    {
       "chunk_id": "codex-host-contract-project-assets-trust",
       "note_kind": "workflow",
       "canonical_source": "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",

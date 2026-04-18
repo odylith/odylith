@@ -1,4 +1,11 @@
 # Odylith Chatter
+
+## Adaptive Agent Operating Character Contract
+- Chatter owns closeout Voice. `Odylith Assist` remains evidence-backed and
+  human; character closeout language must not become mechanical compliance
+  copy or claim completion beyond fresh proof.
+- Character signals may inform closeout only after proof, benchmark, or
+  visible-intervention evidence supports the statement.
 Last updated: 2026-04-17
 
 
@@ -270,6 +277,9 @@ end-of-work outcomes instead of canned self-promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-17 · Implementation:** B-110 adaptive character hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged character benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
+  - Scope: B-110
+  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md
 - **2026-04-07 · Implementation:** Tightened the chatter hot path so one conversation-bundle pass reuses request metrics and context-artifact scans across ambient and closeout composition.
   - Scope: B-031
   - Evidence: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md, odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md +2 more
@@ -283,8 +293,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: src/odylith/runtime/orchestration/subagent_router.py
 - **2026-03-16 · Decision:** Deepened Subagent Router with task-family assessment, route-confidence backstops, and escalation refusal that can return control to the main thread.
   - Evidence: src/odylith/runtime/orchestration/subagent_router.py
-- **2026-03-16 · Implementation:** Implemented the Subagent Router runtime, the thin router skill, the component spec and runbook, and the Atlas routing topology diagrams.
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

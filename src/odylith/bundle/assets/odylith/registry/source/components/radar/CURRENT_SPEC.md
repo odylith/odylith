@@ -1,5 +1,11 @@
 # Radar
-Last updated: 2026-04-16
+
+## Adaptive Agent Operating Character Contract
+- Radar owns public workstream accountability for B-110 and child workstreams
+  B-111 through B-117. The surface should show the umbrella, execution waves,
+  release target `release-0-1-11`, and proof gates without turning character
+  into noisy task theater.
+Last updated: 2026-04-17
 
 
 Last updated (UTC): 2026-04-15
@@ -287,6 +293,12 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-17 · Implementation:** B-110 aggressive QA hardened visible-proof command handling, transcript-safe practice memory, malformed counter validation, and structured refresh result coercion.
+  - Scope: B-110
+  - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md, src/odylith/runtime/character/laws.py +7 more
+- **2026-04-17 · Decision:** Queued B-126 Conditional Release-Targeted Backlog Authoring for v0.1.12 next release targeting; status remains queued and implementation is intentionally deferred out of the v0.1.11 lane.
+  - Scope: B-126
+  - Evidence: odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl
 - **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
   - Scope: B-099, B-100
   - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
@@ -296,10 +308,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
 - **2026-03-23 · Decision:** Successor created: B-276 reopens B-275 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
-- **2026-03-20 · Decision:** Successor created: B-266 reopens B-265 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/casebook/CURRENT_SPEC.md +1 more
-- **2026-03-20 · Decision:** Successor created: B-258 reopens B-256 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

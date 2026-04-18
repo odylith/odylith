@@ -167,7 +167,9 @@ def main(argv: list[str] | None = None) -> int:
         if bundle
         else None
     )
+    governance_status = _normalize_string(governance_result.get("systemMessage"))
     developer_context = decision.developer_context if decision is not None else ""
+    developer_context = _parts(governance_status, developer_context)
     live_intervention = decision.visible_markdown if decision is not None else ""
     replay = visibility_replay.replayable_chat_markdown(
         repo_root=repo_root,
@@ -191,7 +193,7 @@ def main(argv: list[str] | None = None) -> int:
         developer_context=developer_context,
         system_message=host_surface_runtime.compose_checkpoint_system_message(
             live_intervention=live_intervention,
-            governance_status=_normalize_string(governance_result.get("systemMessage")),
+            governance_status=governance_status,
         ),
     )
     if payload_out:

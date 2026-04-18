@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 
 from odylith.runtime.governance import backlog_authoring
+from odylith.runtime.governance import release_planning_authoring
+from odylith.runtime.governance import release_planning_contract
 
 
 _SECTIONS = (
@@ -157,6 +159,53 @@ def _seed_backlog_repo(root: Path) -> Path:
     return backlog_index
 
 
+def _seed_release_registry(root: Path, *, terminal_next: bool = False) -> Path:
+    releases_root = root / "odylith" / "radar" / "source" / "releases"
+    releases_root.mkdir(parents=True, exist_ok=True)
+    (releases_root / "releases.v1.json").write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "updated_utc": "2026-03-30",
+                "aliases": {
+                    "current": "release-0-1-11",
+                    **({} if terminal_next else {"next": "release-0-1-12"}),
+                },
+                "releases": [
+                    {
+                        "release_id": "release-0-1-11",
+                        "status": "active",
+                        "version": "0.1.11",
+                        "tag": "v0.1.11",
+                        "name": "",
+                        "notes": "",
+                        "created_utc": "2026-03-30",
+                        "shipped_utc": "",
+                        "closed_utc": "",
+                    },
+                    {
+                        "release_id": "release-0-1-12",
+                        "status": "closed" if terminal_next else "planning",
+                        "version": "0.1.12",
+                        "tag": "v0.1.12",
+                        "name": "",
+                        "notes": "",
+                        "created_utc": "2026-03-30",
+                        "shipped_utc": "",
+                        "closed_utc": "2026-03-31" if terminal_next else "",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    events_path = releases_root / "release-assignment-events.v1.jsonl"
+    events_path.write_text("", encoding="utf-8")
+    return events_path
+
+
 def test_backlog_create_dry_run_batch_is_non_mutating_and_deterministic(tmp_path: Path, capsys) -> None:
     backlog_index = _seed_backlog_repo(tmp_path)
     ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas"
@@ -237,6 +286,273 @@ def test_backlog_create_writes_queued_item_and_updates_index(tmp_path: Path) -> 
     assert "### B-102 (rank 1)" in index_text
     assert "Review checkpoint: 2026-04-15." in index_text
     assert "Last updated (UTC): " in index_text
+
+
+def test_backlog_create_without_release_does_not_touch_release_assignments(tmp_path: Path, monkeypatch, capsys) -> None:
+    _seed_backlog_repo(tmp_path)
+    events_path = _seed_release_registry(tmp_path)
+    baseline_events = events_path.read_text(encoding="utf-8")
+    refresh_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        backlog_authoring.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **kwargs: refresh_calls.append(dict(kwargs)),
+    )
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Queue only backlog item",
+            *_grounded_backlog_args(),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["created_ids"] == ["B-102"]
+    assert payload["release_target"]["release_id"] == "none"
+    assert payload["queued_status_preserved"] is True
+    assert payload["refresh"]["radar"]["status"] == "passed"
+    assert payload["refresh"]["compass"]["status"] == "not_requested"
+    assert events_path.read_text(encoding="utf-8") == baseline_events
+    assert refresh_calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surface": "radar",
+            "operation_label": "Backlog create",
+        }
+    ]
+
+
+def test_backlog_create_release_next_creates_events_for_all_created_ids(tmp_path: Path, monkeypatch, capsys) -> None:
+    _seed_backlog_repo(tmp_path)
+    events_path = _seed_release_registry(tmp_path)
+    refresh_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        backlog_authoring.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **kwargs: refresh_calls.append(dict(kwargs)),
+    )
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "First release targeted item",
+            "--title",
+            "Second release targeted item",
+            *_grounded_backlog_args(),
+            "--release",
+            "next",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    event_documents, event_errors = release_planning_contract.load_assignment_event_documents(path=events_path)
+
+    assert rc == 0
+    assert event_errors == []
+    assert payload["created_ids"] == ["B-102", "B-103"]
+    assert payload["release_target"]["selector"] == "next"
+    assert payload["release_target"]["release_id"] == "release-0-1-12"
+    assert [row["workstream_id"] for row in payload["release_target"]["events"]] == ["B-102", "B-103"]
+    assert [(row["workstream_id"], row["release_id"]) for row in event_documents] == [
+        ("B-102", "release-0-1-12"),
+        ("B-103", "release-0-1-12"),
+    ]
+    for created_id in ("B-102", "B-103"):
+        created_path = next((tmp_path / "odylith" / "radar" / "source" / "ideas").rglob(f"*{created_id.lower()}*"), None)
+        if created_path is None:
+            created_path = next(
+                path
+                for path in (tmp_path / "odylith" / "radar" / "source" / "ideas").rglob("*.md")
+                if f"idea_id: {created_id}" in path.read_text(encoding="utf-8")
+            )
+        assert "status: queued" in created_path.read_text(encoding="utf-8")
+    assert refresh_calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surface": "radar",
+            "operation_label": "Backlog create",
+        },
+        {
+            "repo_root": tmp_path.resolve(),
+            "surface": "compass",
+            "operation_label": "Backlog create release targeting",
+        },
+    ]
+    assert payload["refresh"]["radar"]["status"] == "passed"
+    assert payload["refresh"]["compass"]["status"] == "passed"
+
+
+def test_release_targeted_backlog_items_appear_in_release_show_next(tmp_path: Path, monkeypatch, capsys) -> None:
+    _seed_backlog_repo(tmp_path)
+    _seed_release_registry(tmp_path)
+    monkeypatch.setattr(backlog_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **kwargs: None)
+
+    assert (
+        backlog_authoring.main(
+            [
+                "--repo-root",
+                str(tmp_path),
+                "--title",
+                "Show next release item",
+                *_grounded_backlog_args(),
+                "--release",
+                "next",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    assert release_planning_authoring.main(["--repo-root", str(tmp_path), "show", "next", "--json"]) == 0
+    show_payload = json.loads(capsys.readouterr().out)
+
+    assert show_payload["release"]["release_id"] == "release-0-1-12"
+    assert show_payload["release"]["active_workstreams"] == ["B-102"]
+    assert show_payload["active_workstreams"] == ["B-102"]
+
+
+def test_backlog_create_release_accepts_explicit_release_id_selector(tmp_path: Path, monkeypatch, capsys) -> None:
+    _seed_backlog_repo(tmp_path)
+    events_path = _seed_release_registry(tmp_path)
+    monkeypatch.setattr(backlog_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **kwargs: None)
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Explicit release target item",
+            *_grounded_backlog_args(),
+            "--release",
+            "release-0-1-12",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    event_documents, event_errors = release_planning_contract.load_assignment_event_documents(path=events_path)
+
+    assert rc == 0
+    assert event_errors == []
+    assert payload["release_target"]["selector"] == "release-0-1-12"
+    assert payload["release_target"]["release_id"] == "release-0-1-12"
+    assert [(row["workstream_id"], row["release_id"]) for row in event_documents] == [("B-102", "release-0-1-12")]
+
+
+def test_backlog_create_release_dry_run_reports_target_without_mutating(tmp_path: Path, monkeypatch, capsys) -> None:
+    backlog_index = _seed_backlog_repo(tmp_path)
+    events_path = _seed_release_registry(tmp_path)
+    baseline_index = backlog_index.read_text(encoding="utf-8")
+    baseline_events = events_path.read_text(encoding="utf-8")
+    monkeypatch.setattr(
+        backlog_authoring.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("dry-run must not refresh surfaces")),
+    )
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Dry run release targeted item",
+            *_grounded_backlog_args(),
+            "--release",
+            "next",
+            "--dry-run",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["created_ids"] == ["B-102"]
+    assert payload["release_target"]["release_id"] == "release-0-1-12"
+    assert [row["workstream_id"] for row in payload["release_target"]["events"]] == ["B-102"]
+    assert payload["refresh"]["radar"]["status"] == "skipped"
+    assert payload["refresh"]["compass"]["status"] == "skipped"
+    assert backlog_index.read_text(encoding="utf-8") == baseline_index
+    assert events_path.read_text(encoding="utf-8") == baseline_events
+    assert not any(
+        "Dry run release targeted item" in path.read_text(encoding="utf-8")
+        for path in (tmp_path / "odylith" / "radar" / "source" / "ideas").rglob("*.md")
+    )
+
+
+def test_backlog_create_invalid_release_selector_fails_before_partial_write(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    backlog_index = _seed_backlog_repo(tmp_path)
+    events_path = _seed_release_registry(tmp_path)
+    baseline_index = backlog_index.read_text(encoding="utf-8")
+    baseline_events = events_path.read_text(encoding="utf-8")
+    baseline_files = sorted(path.relative_to(tmp_path).as_posix() for path in tmp_path.rglob("*.md"))
+    monkeypatch.setattr(
+        backlog_authoring.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("invalid release must fail before refresh")),
+    )
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Invalid release target item",
+            *_grounded_backlog_args(),
+            "--release",
+            "missing-release",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 2
+    assert "selector `missing-release` did not match any release" in output
+    assert backlog_index.read_text(encoding="utf-8") == baseline_index
+    assert events_path.read_text(encoding="utf-8") == baseline_events
+    assert sorted(path.relative_to(tmp_path).as_posix() for path in tmp_path.rglob("*.md")) == baseline_files
+
+
+def test_backlog_create_terminal_release_selector_fails_before_partial_write(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    backlog_index = _seed_backlog_repo(tmp_path)
+    events_path = _seed_release_registry(tmp_path, terminal_next=True)
+    baseline_index = backlog_index.read_text(encoding="utf-8")
+    baseline_events = events_path.read_text(encoding="utf-8")
+    monkeypatch.setattr(
+        backlog_authoring.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("terminal release must fail before refresh")),
+    )
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Closed release target item",
+            *_grounded_backlog_args(),
+            "--release",
+            "release-0-1-12",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 2
+    assert "cannot add workstreams to terminal release `release-0-1-12`" in output
+    assert backlog_index.read_text(encoding="utf-8") == baseline_index
+    assert events_path.read_text(encoding="utf-8") == baseline_events
 
 
 def test_backlog_create_rejects_non_governed_backlog_index_override(tmp_path: Path, capsys) -> None:

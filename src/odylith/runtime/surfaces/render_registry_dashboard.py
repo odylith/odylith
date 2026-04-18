@@ -18,6 +18,7 @@ from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import registry_forensic_evidence_ui
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.governance import delivery_intelligence_engine
 from odylith.runtime.governance import component_registry_intelligence as registry
@@ -963,70 +964,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .empty {
       margin: 0;
     }
-    .timeline-head {
-      border-bottom: 1px solid var(--line);
-      padding: 12px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-    .timeline {
-      margin: 0;
-      list-style: none;
-      padding: 12px 14px 14px;
-      display: grid;
-      gap: 12px;
-      background: linear-gradient(180deg, #ffffff, #fcfeff);
-      min-width: 0;
-    }
-    .event {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #ffffff;
-      padding: 11px;
-      display: grid;
-      gap: 8px;
-      min-width: 0;
-    }
-    .event > * {
-      min-width: 0;
-    }
-    .event-top {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-    }
-    .event-summary {
-      margin: 0;
-      overflow-wrap: anywhere;
-    }
-    .artifact-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      min-width: 0;
-      max-width: 100%;
-    }
-    .artifact {
-      display: inline-flex;
-      align-items: flex-start;
-      border: 1px solid #d4e2f7;
-      border-radius: 8px;
-      min-height: 28px;
-      padding: 6px 10px;
-      text-decoration: none;
-      background: #f5f9ff;
-      box-sizing: border-box;
-      min-width: 0;
-      max-width: 100%;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-      line-height: 1.3;
-      flex: 0 1 auto;
-    }
+    __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_CSS__
     .diagnostics {
       border: 1px solid var(--warn-line);
       border-radius: 10px;
@@ -1152,11 +1090,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
         <section class="detail-panel">
           <div id="detail" class="detail-shell"></div>
-        <div id="chronology-anchor" class="timeline-head">
-          <span>Forensic Evidence</span>
-          <span id="timelineCount">0 events</span>
-        </div>
-        <ul id="timeline" class="timeline"></ul>
+        __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_MARKUP__
       </section>
     </section>
   </main>
@@ -2784,44 +2718,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       `;
     }
 
-    function renderTimeline(row) {
-      const events = row && Array.isArray(row.timeline) ? row.timeline : [];
-      const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
-      timelineCountEl.textContent = `${events.length} events`;
-      if (!events.length) {
-        timelineEl.innerHTML = "";
-        return;
-      }
-      timelineEl.innerHTML = events.map((event) => {
-        const workstreams = Array.isArray(event.workstreams) ? event.workstreams : [];
-        const artifacts = Array.isArray(event.artifacts) ? event.artifacts : [];
-        const wsPills = workstreams.length
-          ? workstreams.map((ws) => linkChip({
-              label: ws,
-              href: hrefRadar(ws),
-              tone: "tone-gov",
-              tooltip: `Workstream ${ws}. Open Radar context.`,
-            })).join("")
-          : '<span class="label">No scope</span>';
-
-        const artifactLinks = artifacts.length
-          ? artifacts.map((item) => `<a class="artifact" href="${escapeHtml(item.href || item.path || "")}" target="_top" data-tooltip="Artifact evidence path for this event.">${escapeHtml(item.path || "artifact")}</a>`).join("")
-          : '<span class="artifact">No artifacts</span>';
-
-        return `
-          <li class="event">
-            <div class="event-top">
-              <span class="label" data-tooltip="Codex stream event kind.">${escapeHtml(eventKindLabel(event.kind))}</span>
-              <span class="label" data-tooltip="Component-link confidence for this event.">confidence: ${escapeHtml(event.confidence || "none")}</span>
-              <span>${escapeHtml(event.ts_iso || "")}</span>
-            </div>
-            <p class="event-summary">${escapeHtml(event.summary || "(no summary)")}</p>
-            <div class="inline">${wsPills}</div>
-            <div class="artifact-list">${artifactLinks}</div>
-          </li>
-        `;
-      }).join("");
-    }
+    __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__
 
     async function renderSelectedComponent(selectedId, filtered) {
       const selectedSummary = filtered.find((row) => String(row.component_id || "").toLowerCase() === String(selectedId || "").toLowerCase()) || null;
@@ -2945,7 +2842,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             ".spec-doc p",
             ".spec-doc ul",
             ".spec-doc li",
-            ".event-summary",
         ),
     )
     detail_identity_css = dashboard_ui_primitives.detail_identity_typography_css(
@@ -3180,12 +3076,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
                 gap_px=6,
             ),
             dashboard_ui_primitives.button_typography_css(
-                selector=".artifact",
-                color="#31547a",
-                size_px=12,
-                line_height=1.0,
-            ),
-            dashboard_ui_primitives.button_typography_css(
                 selector=".diagnostics > summary",
                 color="#8a4b00",
                 size_px=12,
@@ -3207,12 +3097,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
                 color="var(--muted)",
                 size_px=13,
                 line_height=1.4,
-            ),
-            dashboard_ui_primitives.supporting_copy_typography_css(
-                selector=".event-top",
-                color="var(--muted)",
-                size_px=12,
-                line_height=1.0,
             ),
             dashboard_ui_primitives.supporting_copy_typography_css(
                 selector=".diag-item",
@@ -3255,6 +3139,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_TOOLTIP_SURFACE__", tooltip_surface_css)
         .replace("__ODYLITH_REGISTRY_QUICK_TOOLTIP_RUNTIME__", tooltip_runtime_js)
         .replace("__ODYLITH_REGISTRY_CONTENT_COPY__", content_copy_css)
+        .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_CSS__", registry_forensic_evidence_ui.css())
+        .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_MARKUP__", registry_forensic_evidence_ui.markup())
+        .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__", registry_forensic_evidence_ui.runtime_js())
         .replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
         .replace("__DATA__", data_json)
     )

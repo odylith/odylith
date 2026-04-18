@@ -296,6 +296,16 @@ def build_session_brief(
         )
         else []
     )
+    impact_summary = _impact_summary_payload(impact)
+    impact_commands = (
+        [str(token).strip() for token in impact_summary.get("recommended_commands", []) if str(token).strip()]
+        if isinstance(impact_summary.get("recommended_commands"), list)
+        else []
+    )
+    hint_commands = [str(token).strip() for token in validation_command_hints if str(token).strip()]
+    impact_recommended_commands = _dedupe_strings([*impact_commands, *hint_commands])
+    if impact_recommended_commands:
+        impact_summary["recommended_commands"] = impact_recommended_commands
     payload = {
         "session": session_state,
         "changed_paths": effective_paths,
@@ -314,7 +324,7 @@ def build_session_brief(
         "selection_confidence": str(selection.get("confidence", "")).strip(),
         "candidate_workstreams": impact.get("candidate_workstreams", []),
         "workstream_selection": packet_selection,
-        "impact": _impact_summary_payload(impact),
+        "impact": impact_summary,
         "workstream_context": (
             _compact_context_dossier(
                 dossier,

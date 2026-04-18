@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
+from odylith.runtime.evaluation import odylith_benchmark_prompt_family_rules
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+from odylith.runtime.evaluation import odylith_benchmark_taxonomy
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -135,6 +138,8 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "stateful_bug_recovery",
         "external_dependency_recovery",
         "destructive_scope_control",
+        "guidance_behavior",
+        "agent_operating_character",
     }.issubset(families)
     assert {
         "consumer-install-upgrade-runtime-contract",
@@ -181,6 +186,18 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "resource-closure-destructive-subset-blocking",
         "codex-bash-guard-destructive-command-blocking",
         "claude-bash-guard-destructive-command-blocking",
+        "guidance-ground-before-broad-search",
+        "guidance-cli-first-governed-truth",
+        "guidance-queue-non-adoption",
+        "guidance-fresh-proof-completion-claim",
+        "guidance-bounded-delegation-contract",
+        "guidance-visible-intervention-proof",
+        "character-hard-law-zero-credit",
+        "character-unknown-pressure-adaptive-stance",
+        "character-mixed-pressure-affordance-ranking",
+        "character-learning-replay-tribunal-candidate",
+        "character-noise-suppression-silent-pass",
+        "character-benchmark-sovereignty-public-claim",
     }.issubset(scenario_ids)
     assert {
         "architecture-release-install-runtime-boundary",
@@ -195,6 +212,246 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
     ]
     assert "odylith/registry/source/components/odylith/CURRENT_SPEC.md" in release_boundary_required_paths
     assert "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md" not in release_boundary_required_paths
+
+
+def test_guidance_behavior_family_filter_selects_only_guidance_cases() -> None:
+    scenarios = _load_normalized()
+    selection = runner._resolve_benchmark_scenario_selection(  # noqa: SLF001
+        all_scenarios=scenarios,
+        benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
+        families=["guidance_behavior"],
+    )
+    selected = selection["scenarios"]
+    selected_ids = {str(row.get("scenario_id", "")).strip() for row in selected}
+
+    assert selection["selection_strategy"] == "manual_selection"
+    assert selection["selected_families"] == {"guidance_behavior"}
+    assert len(selected) == 6
+    assert all(str(row.get("family", "")).strip() == "guidance_behavior" for row in selected)
+    assert selected_ids == {
+        "guidance-ground-before-broad-search",
+        "guidance-cli-first-governed-truth",
+        "guidance-queue-non-adoption",
+        "guidance-fresh-proof-completion-claim",
+        "guidance-bounded-delegation-contract",
+        "guidance-visible-intervention-proof",
+    }
+
+
+def test_guidance_behavior_family_is_curated_low_latency_and_taxonomized() -> None:
+    assert odylith_benchmark_prompt_family_rules.family_zero_support_doc_expansion("guidance_behavior") is True
+    assert odylith_benchmark_prompt_family_rules.family_uses_curated_doc_overrides("guidance_behavior") is True
+    assert odylith_benchmark_prompt_family_rules.family_anchors_all_required_docs("guidance_behavior") is True
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path="odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json",
+            family="guidance_behavior",
+        )
+        == 0
+    )
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path="src/odylith/runtime/governance/validate_guidance_behavior.py",
+            family="guidance_behavior",
+        )
+        == 1
+    )
+    assert odylith_benchmark_taxonomy.family_group_label("guidance_behavior") == "Grounding / Orchestration Control"
+
+    profile = odylith_context_engine_hot_path_delivery_runtime._impact_family_profile(  # noqa: SLF001
+        hot_path=True,
+        family_hint="guidance_behavior",
+    )
+
+    assert profile["allow_miss_recovery"] is False
+    assert profile["include_notes"] is False
+    assert profile["include_bugs"] is False
+    assert profile["include_code_neighbors"] is False
+    assert profile["include_components"] is False
+    assert profile["include_diagrams"] is False
+    assert profile["include_tests"] is False
+    assert profile["include_workstreams"] is False
+    assert (
+        runner._profile_uses_live_public_modes_for_selection(  # noqa: SLF001
+            profile="quick",
+            selected_families=["guidance_behavior"],
+        )
+        is False
+    )
+    assert (
+        runner._profile_uses_live_public_modes_for_selection(  # noqa: SLF001
+            profile="quick",
+            selected_families=["execution_engine"],
+        )
+        is True
+    )
+    assert runner._cache_profiles_for_selection(  # noqa: SLF001
+        profile="quick",
+        selected_families=["guidance_behavior"],
+        cache_profiles=["warm"],
+        explicit_cache_profile_selection=False,
+    ) == ["cold"]
+    assert runner._cache_profiles_for_selection(  # noqa: SLF001
+        profile="quick",
+        selected_families=["guidance_behavior"],
+        cache_profiles=["warm"],
+        explicit_cache_profile_selection=True,
+    ) == ["warm"]
+
+
+def test_agent_operating_character_family_filter_selects_only_character_cases() -> None:
+    scenarios = _load_normalized()
+    selection = runner._resolve_benchmark_scenario_selection(  # noqa: SLF001
+        all_scenarios=scenarios,
+        benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
+        families=["agent_operating_character"],
+    )
+    selected = selection["scenarios"]
+    selected_ids = {str(row.get("scenario_id", "")).strip() for row in selected}
+
+    assert selection["selection_strategy"] == "manual_selection"
+    assert selection["selected_families"] == {"agent_operating_character"}
+    assert len(selected) == 7
+    assert all(str(row.get("family", "")).strip() == "agent_operating_character" for row in selected)
+    assert selected_ids == {
+        "character-host-lane-parity-matrix",
+        "character-hard-law-zero-credit",
+        "character-unknown-pressure-adaptive-stance",
+        "character-mixed-pressure-affordance-ranking",
+        "character-learning-replay-tribunal-candidate",
+        "character-noise-suppression-silent-pass",
+        "character-benchmark-sovereignty-public-claim",
+    }
+
+
+def test_agent_operating_character_family_is_credit_safe_and_taxonomized() -> None:
+    assert odylith_benchmark_prompt_family_rules.family_zero_support_doc_expansion("agent_operating_character") is True
+    assert odylith_benchmark_prompt_family_rules.family_uses_curated_doc_overrides("agent_operating_character") is True
+    assert odylith_benchmark_prompt_family_rules.family_anchors_all_required_docs("agent_operating_character") is True
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path="odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",
+            family="agent_operating_character",
+        )
+        == 0
+    )
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path="src/odylith/runtime/governance/validate_agent_operating_character.py",
+            family="agent_operating_character",
+        )
+        == 0
+    )
+    assert odylith_benchmark_taxonomy.family_group_label("agent_operating_character") == "Grounding / Orchestration Control"
+    profile = odylith_context_engine_hot_path_delivery_runtime._impact_family_profile(  # noqa: SLF001
+        hot_path=True,
+        family_hint="agent_operating_character",
+    )
+
+    assert profile["allow_miss_recovery"] is False
+    assert profile["include_notes"] is False
+    assert profile["include_bugs"] is False
+    assert profile["include_code_neighbors"] is False
+    assert profile["include_components"] is False
+    assert profile["include_diagrams"] is False
+    assert profile["include_tests"] is False
+    assert profile["include_workstreams"] is False
+    assert (
+        runner._profile_uses_live_public_modes_for_selection(  # noqa: SLF001
+            profile="quick",
+            selected_families=["agent_operating_character"],
+        )
+        is False
+    )
+    assert runner._cache_profiles_for_selection(  # noqa: SLF001
+        profile="quick",
+        selected_families=["agent_operating_character"],
+        cache_profiles=["warm"],
+        explicit_cache_profile_selection=False,
+    ) == ["cold"]
+
+
+def test_guidance_behavior_validator_summary_prevents_hot_path_widening() -> None:
+    payload = {
+        "full_scan_recommended": True,
+        "route_ready": False,
+        "routing_confidence": "low",
+        "context_packet": {
+            "full_scan_recommended": True,
+            "route": {"narrowing_required": True},
+            "packet_quality": {"rc": "low", "i": "analysis"},
+            "retrieval_plan": {"selected_counts": "g1"},
+            "guidance_behavior_summary": {
+                "family": "guidance_behavior",
+                "status": "available",
+                "validator_command": "odylith validate guidance-behavior --repo-root .",
+            },
+        },
+    }
+
+    assert (
+        odylith_context_engine_hot_path_delivery_runtime._hot_path_auto_escalation_trigger(  # noqa: SLF001
+            packet_kind="impact",
+            family_hint="guidance_behavior",
+            payload=payload,
+        )
+        == ""
+    )
+    assert (
+        odylith_context_engine_hot_path_delivery_runtime._should_escalate_hot_path_to_session_brief(  # noqa: SLF001
+            payload=payload,
+            family_hint="guidance_behavior",
+            workstream_hint="",
+            validation_command_hints=["odylith validate guidance-behavior --repo-root ."],
+        )
+        == (False, [])
+    )
+    assert (
+        odylith_context_engine_hot_path_delivery_runtime._hot_path_selected_validation_count(payload)  # noqa: SLF001
+        == 1
+    )
+
+
+def test_guidance_behavior_observed_paths_include_runtime_summary_sources() -> None:
+    paths = runner._observed_packet_paths(  # noqa: SLF001
+        {
+            "context_packet": {
+                "guidance_behavior_summary": {
+                    "source_refs": [
+                        "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+                    ],
+                    "related_guidance_refs": ["AGENTS.md"],
+                    "runtime_layer_contract": {
+                        "source_refs": [
+                            "src/odylith/runtime/context_engine/execution_engine_handshake.py"
+                        ]
+                    },
+                }
+            }
+        }
+    )
+
+    assert "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json" in paths
+    assert "AGENTS.md" in paths
+    assert "src/odylith/runtime/context_engine/execution_engine_handshake.py" not in paths
+
+
+def test_agent_operating_character_observed_paths_include_corpus_summary_source() -> None:
+    paths = runner._observed_packet_paths(  # noqa: SLF001
+        {
+            "context_packet": {
+                "character_summary": {
+                    "source_refs": [
+                        "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",
+                        "src/odylith/runtime/character",
+                    ],
+                }
+            }
+        }
+    )
+
+    assert "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json" in paths
+    assert "src/odylith/runtime/character" not in paths
 
 
 def test_benchmark_corpus_meets_seriousness_floor() -> None:

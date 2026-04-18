@@ -1,5 +1,5 @@
 ---
 name: odylith-session-brief
-description: Build a concise session brief from current Odylith state.
+description: Use when current Odylith state needs a concise session brief.
 ---
 @../../../odylith/skills/odylith-session-brief/SKILL.md

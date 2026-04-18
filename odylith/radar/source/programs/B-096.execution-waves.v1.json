@@ -5,8 +5,8 @@
     {
       "wave_id": "W1",
       "label": "Visible Intervention Value Engine Governance Binding",
-      "status": "active",
-      "summary": "Visible Intervention Value Engine Governance Binding",
+      "status": "complete",
+      "summary": "Binds B-096, child waves, v0.1.11 release assignment, CB-122, CB-123, Registry, Atlas, Radar, Casebook, Compass, and source plan truth to the deterministic value-engine contract.",
       "depends_on": [],
       "primary_workstreams": [
         "B-105"
@@ -24,8 +24,8 @@
     {
       "wave_id": "W2",
       "label": "Visible Intervention Proposition Engine",
-      "status": "planned",
-      "summary": "Visible Intervention Proposition Engine",
+      "status": "complete",
+      "summary": "Ships the proposition-first deterministic value engine, hard gates, duplicate/conflict graph, adaptive budget, decision log, and Guidance Behavior evidence plus platform-contract handoff.",
       "depends_on": [
         "W1"
       ],
@@ -45,8 +45,8 @@
     {
       "wave_id": "W3",
       "label": "Host Visibility Integration And Ruler Canonicalization",
-      "status": "planned",
-      "summary": "Host Visibility Integration And Ruler Canonicalization",
+      "status": "complete",
+      "summary": "Centralizes chat-visible proof, transcript replay, ruler repair, host parity, Stop recovery, and Assist closeout separation.",
       "depends_on": [
         "W2"
       ],
@@ -66,8 +66,8 @@
     {
       "wave_id": "W4",
       "label": "Intervention Adjudication Corpus And Advisory Benchmark",
-      "status": "planned",
-      "summary": "Intervention Adjudication Corpus And Advisory Benchmark",
+      "status": "complete",
+      "summary": "Adds governed bootstrap/advisory selector evidence plus guidance_behavior benchmark, guidance-surface validation, platform end-to-end proof, live/source-bundle parity checks, and hot-path efficiency gates while keeping calibration non-publishable.",
       "depends_on": [
         "W3"
       ],
@@ -87,8 +87,8 @@
     {
       "wave_id": "W5",
       "label": "v0.1.11 Visible Intervention Release Proof",
-      "status": "planned",
-      "summary": "v0.1.11 Visible Intervention Release Proof",
+      "status": "active",
+      "summary": "Collects final runtime, guidance-behavior runtime, platform end-to-end, live/source-bundle parity, hot-path efficiency, host/lane surface, migration, host-visible, generated-surface, governance, browser, sync, and diff-hygiene proof for v0.1.11.",
       "depends_on": [
         "W4"
       ],

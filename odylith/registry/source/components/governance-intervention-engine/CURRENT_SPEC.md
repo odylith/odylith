@@ -1,8 +1,24 @@
 # Governance Intervention Engine
-Last updated: 2026-04-17
+
+## Adaptive Agent Operating Character Contract
+- Governance Intervention Engine owns live Voice. Character decisions can
+  become visible only when they create immediate user value: concise nudges
+  need a recovery action, Observations need useful evidence, Proposals need a
+  bounded next move, and passing checks stay silent.
+- Character supplies evidence, recovery affordances, visibility proof needs,
+  and owner-surface metadata only. It must not template final Observation,
+  Proposal, or Assist copy; the intervention and chatter layers keep the human
+  voice live, evidence-shaped, and non-mechanical.
+- Visible-intervention claims require `intervention-status`, transcript
+  confirmation, or direct rendered fallback.
+- Open-world Character pressure such as "stop templating voice" or "make the
+  platform seamless" may rank voice or integration inspection affordances, but
+  it must still stay silent when no hard law is violated and no immediate
+  user-visible value is earned.
+Last updated: 2026-04-18
 
 
-Last updated (UTC): 2026-04-17
+Last updated (UTC): 2026-04-18
 
 ## Purpose
 Governance Intervention Engine is Odylith's shared conversation-observation
@@ -70,6 +86,23 @@ claiming ML calibration.
 - The bootstrap intervention-value adjudication corpus and advisory selector
   report, including provenance and density gates that keep calibration loading
   disabled unless the artifact is explicitly publishable.
+- Material Guidance Behavior contract evidence once it has already been
+  compacted by the governance runtime. Passing guidance behavior stays quiet;
+  failed, malformed, or unavailable guidance behavior can become one
+  high-signal supported proposition through `alignment_evidence.py`.
+- Compact Guidance Behavior platform-contract evidence. The intervention path
+  consumes the same summary that proves benchmark/eval wiring, host mirrors,
+  consumer bundle assets, and install guidance instead of deriving separate
+  relevance or visibility policy locally.
+- Material Agent Operating Character evidence from `alignment_evidence.py`.
+  Passing Character checks stay quiet. Failed, malformed, or unavailable
+  Character summaries can become one supported invariant with a concrete local
+  recovery command, but they do not bypass the intervention value engine or
+  render canned Character copy.
+- Adaptive Character voice pressure is evidence for inspection, not permission
+  to generate fixed posture language. If Character admits the move, the live
+  intervention path remains silent unless the value engine independently earns
+  a visible Observation or Proposal from current evidence.
 - Duplicate suppression keyed to the active session and prior Compass
   intervention lifecycle events.
 - Proposal assembly across Radar, Registry, Atlas, and Casebook, including the
@@ -163,6 +196,13 @@ claiming ML calibration.
   artifacts and precomputed delivery intelligence; it must not invoke provider
   calls, full context-store expansion, or repo-wide search while deciding
   chat visibility.
+- `src/odylith/runtime/intervention_engine/alignment_evidence.py`
+  Reusable hot-path evidence normalizer for the intervention engine. It merges
+  legacy packet summaries with Context Engine packet summaries, folds compact
+  session-memory evidence into stream-derived memory, gates empty runtime
+  summaries out of evidence scoring, extracts material Execution Engine,
+  Tribunal, guidance-behavior, and visibility-ledger facts, and returns one
+  bounded target/ref model for signal scoring and repo-truth lookup.
 - `src/odylith/runtime/intervention_engine/conversation_runtime.py`
   Shared ambient-signal selection, closeout Assist composition, and
   conversation-bundle assembly for subagent orchestration plus host-adoption
@@ -734,3 +774,9 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-17: Split fallback-visible delivery from strict assistant transcript proof in `intervention-status`: manual/best-effort/Stop continuation rows now report as ledger-visible but unconfirmed, status renders family visibility ratios for Teaser diagnostics, Ambient, Observation/Proposal, and Assist, exact assistant messages can promote fallback-visible events once, and legacy visible rows infer host family from `render_surface` during v0.1.11 migration. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bugs: `CB-122`, `CB-123`)
 - 2026-04-17: Centralized intervention visibility semantics in `visibility_contract.py` so delivery ledger, visibility broker, status, alignment context, and ambient dedupe share one definition of host inference, visible family, ledger-visible, chat-confirmed, pending confirmation, and proof-status states. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bugs: `CB-122`, `CB-123`)
 - 2026-04-17: Added shared transcript replay for true chat visibility: pending hidden, manual-visible, best-effort, and Stop-continuation blocks now replay as exact ruled Markdown through prompt/checkpoint fallback, `visible-intervention`, `intervention-status`, and Stop until `assistant_chat_confirmed` proves the assistant transcript contains the block. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bugs: `CB-122`, `CB-123`)
+- 2026-04-17: Added `alignment_evidence.py` so Context Engine packets, Execution Engine recovery constraints, compact session memory, Tribunal scope/case signals, and delivery-ledger proof feed one bounded intervention evidence model. Empty runtime summaries no longer inflate weak prompts, while material alignment facts can shape the same value-engine decision without repo-wide search or context-store expansion. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bugs: `CB-122`, `CB-123`)
+- 2026-04-17: Integrated Guidance Behavior summaries into the intervention evidence cone: passing summaries remain non-chatty, failed/malformed/unavailable guidance behavior becomes one supported `guidance_behavior_contract` fact, and the same value-engine path consumes it without provider calls, repo-wide scans, or context-store expansion. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Added the Guidance Behavior platform end-to-end contract to the compact evidence cone so benchmark/eval wiring, Codex and Claude host mirrors, consumer bundle assets, and install guidance empower the same intervention decision without hot-path validation or provider calls. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Extended the Guidance Behavior platform contract with live/source-bundle byte-parity checks so intervention evidence, host guidance, benchmark corpora, and governed program/spec truth cannot silently diverge between source-local, dogfood, and consumer lanes. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-18: Wired Adaptive Agent Operating Character into the alignment evidence cone as local evidence, not scripted voice: passing checks remain silent, contract failures become a single high-signal invariant with recovery affordance, and the live intervention value engine still owns whether and how anything is shown. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-18: Tightened Character/Intervention boundary QA so proof-gathering commands such as `intervention-status` and `visible-intervention` stay silent admissible local actions, while actual visible-UX claims still require ledger proof, transcript confirmation, or rendered fallback evidence. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))

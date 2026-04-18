@@ -70,29 +70,63 @@ Maintainers deciding whether Odylith-visible signals are precise, useful, low-no
 Create a governed adjudication corpus with provenance, density gates, deterministic evaluation, and reports that separate advisory selector metrics from odylith_on outcome proof.
 
 ## Proposed Solution
-Create the workstream for Intervention Adjudication Corpus And Advisory Benchmark and refine the exact implementation plan during execution.
+Maintain governed corpora and advisory reports that make signal-quality claims
+honest. The intervention-value corpus records provenance, adjudicator,
+rationale, duplicate groups, expected selections, must-suppress propositions,
+visibility expectation, and calibration-counting eligibility. The guidance
+behavior corpus is a separate benchmark family for high-risk guidance pressure
+cases and validates its own runtime layer contract. The deterministic
+guidance-behavior validator also proves the guidance-surface contract across
+Codex, Claude, installed skills, command shims, and consumer/pinned-dogfood/
+source-local lane instructions so benchmark proof and host guidance do not
+split.
 
 ## Scope
-- Define and land the bounded work for Intervention Adjudication Corpus And Advisory Benchmark.
-- Keep the first implementation wave narrow and test-backed.
+- Keep synthetic and bootstrap cases useful for regression but excluded from
+  publishable calibration quality.
+- Report selector metrics as mechanism evidence, not full `odylith_on` outcome
+  proof.
+- Add the `guidance_behavior` benchmark family, corpus mirror, validator
+  command, and runtime-layer validation so guidance behavior proof is
+  measurable without provider calls.
+- Add guidance-surface validation for host and lane instructions, including
+  Codex `spawn_agent`, Claude Task-tool subagents, installed skills, and the
+  consumer/dogfood/source-local proof path.
+- Keep benchmark isolation aware of both live and bundle corpus mirrors.
 
 ## Non-Goals
-- Do not widen this queued workstream into unrelated product cleanup.
+- Do not publicize precision, recall, or calibration claims from sparse
+  synthetic seed cases.
+- Do not merge guidance behavior cases into the intervention-value calibration
+  corpus; they prove a different contract.
 
 ## Risks
-- The title may need refinement once the implementation owner confirms the exact boundary.
+- A real report can still mislead if it collapses synthetic regression rows,
+  guidance pressure cases, and non-synthetic intervention adjudication into one
+  headline metric.
 
 ## Dependencies
-- No explicit dependency recorded yet; confirm related workstreams before implementation starts.
+- B-106 value-engine decisions.
+- CB-123 calibration/provenance overclaim guardrail.
+- Benchmark taxonomy and isolation contracts.
 
 ## Success Metrics
-Corpus validation rejects missing provenance, contradictory labels, and synthetic calibration counting; advisory report includes precision, recall, duplicate rate, visibility recall, no-output accuracy, p95 latency, quality_state, and publishable flag.
+Corpus validation rejects missing provenance, contradictory labels, and synthetic calibration counting; advisory report includes precision, recall, duplicate rate, visibility recall, no-output accuracy, p95 latency, quality_state, and publishable flag; guidance-behavior benchmark reports expose the selected family filter and hard-gate posture at top level for quick release-proof reads.
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Corpus validation rejects missing provenance, contradictory labels,
+  synthetic calibration counting, stale bundle mirrors, and under-density
+  publish attempts.
+- `odylith validate guidance-behavior --repo-root . --json` passes and proves
+  corpus, benchmark-family, bundle mirror, runtime-layer integration, and
+  host/lane guidance-surface alignment.
+- `odylith benchmark --profile quick --family guidance_behavior --json`
+  selects only the guidance-behavior family and reports hard-gate status
+  without creating a separate public proof lane.
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- Ship bootstrap/advisory reports in v0.1.11; keep calibration loading disabled
+  until non-synthetic density gates pass.
 
 ## Why Now
 This slice is active enough that it should exist as explicit backlog truth now.
@@ -101,16 +135,25 @@ This slice is active enough that it should exist as explicit backlog truth now.
 Odylith should be brutally honest about signal quality: bootstrap cases catch regressions, real adjudication earns calibration later, and synthetic data never counts toward public precision claims.
 
 ## Impacted Components
-- `odylith`
+- `governance-intervention-engine`
+- `benchmark`
+- `odylith-context-engine`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- New governed corpus:
+  `odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json`.
+- New validation command:
+  `odylith validate guidance-behavior`.
+- Benchmark taxonomy includes the `guidance_behavior` family.
 
 ## Migration/Compatibility
-- No migration impact recorded yet.
+- Guidance behavior corpus mirrors must ship with the source bundle; missing or
+  stale mirrors are validation failures.
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- Test corpus provenance, benchmark family taxonomy, isolation allowlists,
+  bundle mirror sync, runtime-layer token checks, and advisory report fields.
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- Publishable calibration remains deferred until the real adjudicated data
+  density gates are met.

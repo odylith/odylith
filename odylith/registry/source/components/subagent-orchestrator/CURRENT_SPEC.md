@@ -1,4 +1,12 @@
 # Subagent Orchestrator
+
+## Adaptive Agent Operating Character Contract
+- Subagent Orchestrator owns routed Coordination execution. Foreman-style UX
+  labels are benchmark vocabulary; runtime admissibility requires owner, goal,
+  expected output, stop condition, owned scope, validation expectation, and
+  closeout state before delegation proceeds.
+- Route-ready outputs must remain host-general across Codex and Claude while
+  preserving host capability differences in adapter fields only.
 Last updated: 2026-04-09
 
 

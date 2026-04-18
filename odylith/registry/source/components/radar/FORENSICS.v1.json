@@ -27,16 +27,18 @@
     "D-030",
     "D-031",
     "D-028",
-    "D-029"
+    "D-029",
+    "D-039",
+    "D-038"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 65,
-    "mapped_workstream_evidence_count": 32,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 77,
+    "mapped_workstream_evidence_count": 44,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 65
+    "timeline_event_count": 78
   },
   "name": "Radar",
   "path_prefixes": [
@@ -46,6 +48,669 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/character/benchmark.py",
+        "src/odylith/runtime/character/signals.py",
+        "src/odylith/runtime/character/support.py"
+      ],
+      "confidence": "high",
+      "event_index": 262,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate agent-operating-character and validate guidance-behavior passed, quick agent_operating_character report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.",
+      "ts_iso": "2026-04-17T20:20:18-07:00",
+      "workstreams": [
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md"
+      ],
+      "confidence": "high",
+      "event_index": 261,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "B-110 adaptive character hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged character benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.",
+      "ts_iso": "2026-04-17T20:06:43-07:00",
+      "workstreams": [
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md"
+      ],
+      "confidence": "high",
+      "event_index": 260,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "B-110 final browser QA rerun exposed and fixed Compass fixture voice fragility: fake narrator now normalizes governed phrases into plain maintainer wording before standup validation. Exact failing test passed, then final browser matrix passed 158 with 1 skipped after the final governed surface refresh.",
+      "ts_iso": "2026-04-17T19:25:34-07:00",
+      "workstreams": [
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-host-visibility-integration-and-ruler-canonicalization.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-intervention-adjudication-corpus-and-advisory-benchmark.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-v0-1-11-visible-intervention-release-proof.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-proposition-engine.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-value-engine-governance-binding.md",
+        "odylith/radar/source/programs/B-096.execution-waves.v1.json",
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-benchmark-sovereignty.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-governance-alignment.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-learning-spine.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-runtime-and-budget-kernel.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-subsystem-integration.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-surfaces-and-release-proof.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-tooling-and-host-parity.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-17-agent-operating-character-with-learning-spine.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md",
+        "odylith/radar/source/programs/B-110.execution-waves.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 277,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md, odylith/radar/source/ideas/2026-04/2026-04-17-host-visibility-integration-and-ruler-canonicalization.md +26 more",
+      "ts_iso": "2026-04-17T19:10:58-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md"
+      ],
+      "confidence": "high",
+      "event_index": 259,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "B-110 aggressive QA closeout: agent-operating-character validator passed 19 cases with platform integration green and zero hot-path provider/model calls; guidance-behavior validator passed 6 cases and 11 checks; quick benchmarks passed hard gates for agent_operating_character report 70fd94f9eaa6b982 and guidance_behavior report 5ca4596788ef9804; browser regression matrix passed 158 with 1 skipped.",
+      "ts_iso": "2026-04-17T19:10:12-07:00",
+      "workstreams": [
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/character/laws.py",
+        "src/odylith/runtime/character/memory.py",
+        "src/odylith/runtime/character/pressure.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/governance/validate_agent_operating_character.py",
+        "tests/unit/runtime/test_agent_operating_character.py",
+        "tests/unit/runtime/test_sync_cli_compat.py",
+        "tests/unit/runtime/test_validate_agent_operating_character.py"
+      ],
+      "confidence": "high",
+      "event_index": 258,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "B-110 aggressive QA hardened visible-proof command handling, transcript-safe practice memory, malformed counter validation, and structured refresh result coercion.",
+      "ts_iso": "2026-04-17T18:55:55-07:00",
+      "workstreams": [
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md"
+      ],
+      "confidence": "high",
+      "event_index": 257,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "B-110 final QA recorded post-sync validators, quick benchmark family proof, and full browser surface regression for Adaptive Agent Operating Character hardening.",
+      "ts_iso": "2026-04-17T18:12:15-07:00",
+      "workstreams": [
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/character/proof.py",
+        "src/odylith/runtime/character/voice.py",
+        "src/odylith/runtime/governance/validate_agent_operating_character.py"
+      ],
+      "confidence": "high",
+      "event_index": 256,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "B-110 hardening connected Adaptive Agent Operating Character proof obligations, live-voice evidence shaping, platform integration validation, and zero-credit benchmark metrics across Execution, Intervention, Memory, and Benchmark.",
+      "ts_iso": "2026-04-17T18:05:11-07:00",
+      "workstreams": [
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+        "src/odylith/runtime/governance/backlog_authoring.py",
+        "src/odylith/runtime/governance/release_planning_authoring.py",
+        "tests/unit/runtime/test_backlog_authoring.py",
+        "tests/unit/test_cli.py"
+      ],
+      "confidence": "high",
+      "event_index": 255,
+      "explicit_components": [
+        "compass",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implemented and hardened B-126 conditional release-targeted backlog authoring with --release selector preflight, batch release events, queued-status preservation, Radar/Compass refresh reporting, and focused QA coverage.",
+      "ts_iso": "2026-04-17T17:46:59-07:00",
+      "workstreams": [
+        "B-126"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+      ],
+      "confidence": "high",
+      "event_index": 254,
+      "explicit_components": [
+        "compass",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "compass",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Queued B-126 Conditional Release-Targeted Backlog Authoring for v0.1.12 next release targeting; status remains queued and implementation is intentionally deferred out of the v0.1.11 lane.",
+      "ts_iso": "2026-04-17T17:28:12-07:00",
+      "workstreams": [
+        "B-126"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/odylith-adaptive-agent-operating-character-loop.mmd",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md"
+      ],
+      "confidence": "high",
+      "event_index": 253,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "B-110 source-local closure proof passed after governed sync: character and guidance validators, quick benchmark families, focused unit/CLI tests, 78 browser regressions, and sync check-only are green; full release proof remains gated on pinned dogfood runtime repair and matched proof benchmark.",
+      "ts_iso": "2026-04-17T16:27:58-07:00",
+      "workstreams": [
+        "B-110",
+        "B-111",
+        "B-112",
+        "B-113",
+        "B-114",
+        "B-115",
+        "B-116",
+        "B-117"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/character/contract.py",
+        "src/odylith/runtime/governance/validate_agent_operating_character.py"
+      ],
+      "confidence": "high",
+      "event_index": 252,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "B-110 adaptive Agent Operating Character source-local proof landed: zero-credit validator, guidance-behavior validator, quick benchmark family selection, and character quick benchmark are green; pinned dogfood runtime proof remains blocked by managed runtime drift.",
+      "ts_iso": "2026-04-17T16:17:00-07:00",
+      "workstreams": [
+        "B-110",
+        "B-111",
+        "B-112",
+        "B-113",
+        "B-114",
+        "B-115",
+        "B-116"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 251,
+      "explicit_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-contracts",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-contracts",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Updated v0.1.11 governance truth for B-096 so Guidance Behavior summaries, Context Engine, Execution Engine, Memory Contracts, Tribunal-ready evidence, the intervention value engine, benchmark validation, Atlas, Registry, Radar, Casebook, and Compass describe one low-latency visible-intervention contract.",
+      "ts_iso": "2026-04-17T13:31:40-07:00",
+      "workstreams": [
+        "B-096"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "low",
@@ -396,11 +1061,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -420,11 +1089,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -445,12 +1118,16 @@
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-contracts",
         "radar",
-        "registry"
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
@@ -470,11 +1147,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -495,12 +1176,16 @@
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-contracts",
         "radar",
-        "registry"
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
@@ -520,11 +1205,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -545,12 +1234,16 @@
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-contracts",
         "radar",
-        "registry"
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
@@ -570,11 +1263,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -595,12 +1292,16 @@
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-contracts",
         "radar",
-        "registry"
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
@@ -620,11 +1321,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -645,12 +1350,16 @@
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-contracts",
         "radar",
-        "registry"
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
@@ -670,11 +1379,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -695,12 +1408,16 @@
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-contracts",
         "radar",
-        "registry"
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
@@ -720,11 +1437,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -778,12 +1499,16 @@
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-contracts",
         "radar",
-        "registry"
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
@@ -803,11 +1528,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -828,12 +1557,16 @@
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-contracts",
         "radar",
-        "registry"
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
@@ -853,11 +1586,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -878,12 +1615,16 @@
       "kind": "capture_proposed",
       "mapped_components": [
         "atlas",
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
+        "odylith-memory-contracts",
         "radar",
-        "registry"
+        "registry",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
@@ -903,11 +1644,15 @@
       ],
       "kind": "intervention_card",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": true,
       "summary": "Radar already has a governed slice for B-096.",
@@ -1055,12 +1800,16 @@
       ],
       "kind": "decision",
       "mapped_components": [
+        "benchmark",
         "compass",
+        "execution-engine",
         "governance-intervention-engine",
         "odylith",
         "odylith-chatter",
         "odylith-context-engine",
-        "radar"
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
       ],
       "meaningful": false,
       "summary": "Plan binding: advanced B-096 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
@@ -1847,6 +2596,9 @@
     "B-072",
     "B-079",
     "B-071",
-    "B-091"
+    "B-091",
+    "B-110",
+    "B-109",
+    "B-105"
   ]
 }

@@ -787,6 +787,7 @@ def _trim_common_hot_path_context_packet(
     )
     if retrieval_plan_payload:
         ambiguity_class = str(retrieval_plan_payload.get("ambiguity_class", "")).strip()
+        has_guidance_behavior_summary = isinstance(compact.get("guidance_behavior_summary"), Mapping)
         retrieval_plan_payload.pop("selected_domains", None)
         selected_counts_payload = _decode_compact_selected_counts(
             retrieval_plan_payload.get("selected_counts")
@@ -801,7 +802,11 @@ def _trim_common_hot_path_context_packet(
             retrieval_plan_payload.pop("guidance_coverage", None)
         if not route_ready and str(retrieval_plan_payload.get("evidence_consensus", "")).strip() in {"", "none", "mixed"}:
             retrieval_plan_payload.pop("evidence_consensus", None)
-        if packet_kind == "impact" and not route_ready and ambiguity_class in {"no_candidates", "low_signal", "selection_ambiguous"}:
+        if (
+            (packet_kind == "impact" or (not packet_kind and not has_guidance_behavior_summary))
+            and not route_ready
+            and ambiguity_class in {"no_candidates", "low_signal", "selection_ambiguous"}
+        ):
             retrieval_plan_payload.pop("selected_counts", None)
         if not route_ready and ambiguity_class in {"no_candidates", "low_signal", "selection_ambiguous"}:
             retrieval_plan_payload.pop("precision_score", None)

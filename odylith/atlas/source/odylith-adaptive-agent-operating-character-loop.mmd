@@ -1,0 +1,38 @@
+flowchart LR
+    intent["Agent intent"]
+    pressure["Local pressure observations"]
+    stance["Adaptive stance vector"]
+    laws["Deterministic hard laws"]
+    tools["Ranked tool affordances"]
+    action["Admissible action"]
+    proof["Proof and claim strength"]
+    learning["Compact learning event"]
+    benchmark["Benchmark evidence"]
+    priors["Updated priors"]
+
+    context["Context Engine\nAttention"]
+    execution["Execution Engine\nRestraint"]
+    tooling["Agent Tooling\nAgency"]
+    memory["Memory Substrate\nLearning"]
+    intervention["Intervention Engine + Chatter\nVoice"]
+    tribunal["Tribunal\nJudgment"]
+    surfaces["Surface DAGs\nAccountability"]
+
+    intent --> pressure --> stance --> laws --> tools --> action --> proof --> learning --> benchmark --> priors --> pressure
+
+    context --> pressure
+    pressure --> context
+    laws --> execution
+    stance --> execution
+    tools --> tooling
+    learning --> memory
+    memory --> stance
+    stance --> intervention
+    learning --> tribunal
+    tribunal --> priors
+    proof --> surfaces
+    benchmark --> surfaces
+    surfaces --> memory
+
+    laws -. "zero provider and host model calls on hot path" .-> action
+    benchmark -. "public claims require matched proof" .-> proof

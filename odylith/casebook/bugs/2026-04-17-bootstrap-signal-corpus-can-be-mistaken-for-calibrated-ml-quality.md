@@ -14,7 +14,7 @@
 
 - Impact: If bootstrap or synthetic selector cases are reported as calibrated ML quality, Odylith can overclaim precision and spend brand trust on an unproven signal selector.
 
-- Components Affected: governance-intervention-engine
+- Components Affected: governance-intervention-engine, benchmark, odylith-context-engine
 
 - Environment(s): v0.1.11 maintainer implementation of the visible intervention value engine under B-096.
 
@@ -42,7 +42,7 @@
 
 - Root Cause: A block-first ranker direction conflated executable regression coverage with calibrated ML quality before enough real transcript adjudication existed.
 
-- Solution: Ship proposition-first value_engine.py, governed corpus provenance, density gates, advisory reports, adversarial evidence gates, and a runtime migration that removes signal-ranker artifacts instead of preserving compatibility.
+- Solution: Ship proposition-first value_engine.py, governed corpus provenance, density gates, advisory reports, adversarial evidence gates, a runtime migration that removes signal-ranker artifacts instead of preserving compatibility, and a separate guidance-behavior validation corpus that proves high-risk guidance behavior without counting as intervention calibration.
 
 - Rollback/Forward Fix: Forward-fix only for v0.1.11; remove stale ranker artifacts and keep runtime calibration disabled until publishable=true.
 
@@ -54,9 +54,9 @@
 
 - Preflight Checks: Check for existing Casebook bugs, confirm B-096 owns the intervention contract, and verify corpus quality_state remains bootstrap before claiming selector metrics.
 
-- Regression Tests Added: tests/unit/runtime/test_intervention_value_engine.py, tests/unit/runtime/test_intervention_value_engine_benchmark.py, tests/unit/runtime/test_intervention_conversation_surface.py, tests/integration/runtime/test_intervention_visibility_browser.py, tests/unit/install/test_value_engine_migration.py
+- Regression Tests Added: tests/unit/runtime/test_intervention_value_engine.py, tests/unit/runtime/test_intervention_value_engine_benchmark.py, tests/unit/runtime/test_intervention_conversation_surface.py, tests/integration/runtime/test_intervention_visibility_browser.py, tests/unit/install/test_value_engine_migration.py, tests/unit/runtime/test_validate_guidance_behavior.py, tests/unit/runtime/test_intervention_alignment_evidence.py
 
-- Monitoring Updates: Advisory report exposes corpus_quality_state, calibration_publishable, duplicate rate, visibility recall, precision, recall, must-suppress accuracy, origin counts, calibration-counted case count, and latency. Runtime selection decisions also expose hard-gated count, evidence-gated count, pruned candidate count, conflict graph size, enumerated subset count, selected utility, and selector latency. Intervention stream events carry compact selected/suppressed value-decision metadata with evidence fingerprints and preserve it through assistant chat confirmation. Selector latency coverage now includes cached subset enumeration and ambient prefilter/render-call caps, so speed improvements cannot quietly trade away duplicate or support gates. Browser coverage now asserts D-038 describes the proposition ledger, conflict graph, subset optimizer, visibility broker, ruled renderer, and bootstrap adjudication report rather than the older block-first summary.
+- Monitoring Updates: Advisory report exposes corpus_quality_state, calibration_publishable, duplicate rate, visibility recall, precision, recall, must-suppress accuracy, origin counts, calibration-counted case count, and latency. Runtime selection decisions also expose hard-gated count, evidence-gated count, pruned candidate count, conflict graph size, enumerated subset count, selected utility, and selector latency. Intervention stream events carry compact selected/suppressed value-decision metadata with evidence fingerprints and preserve it through assistant chat confirmation. Selector latency coverage now includes cached subset enumeration and ambient prefilter/render-call caps, so speed improvements cannot quietly trade away duplicate or support gates. Browser coverage now asserts D-038 describes the proposition ledger, conflict graph, subset optimizer, visibility broker, ruled renderer, and bootstrap adjudication report rather than the older block-first summary. Guidance behavior monitoring now has an explicit `guidance_behavior` corpus, validator command, benchmark-family integration, bundle mirror check, runtime-layer contract check, and compact Tribunal-ready signal so guidance pressure cases cannot be mislabeled as calibrated visible-intervention training data.
 
 - Version/Build: v0.1.11
 
@@ -68,3 +68,5 @@
 
 - Code References: - src/odylith/runtime/intervention_engine/value_engine.py
 - odylith/runtime/source/intervention-value-adjudication-corpus.v1.json
+- src/odylith/runtime/governance/validate_guidance_behavior.py
+- odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json

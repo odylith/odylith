@@ -1,0 +1,151 @@
+{
+  "umbrella_id": "B-110",
+  "version": "v1",
+  "waves": [
+    {
+      "wave_id": "W1",
+      "label": "Adaptive Character Governance Alignment",
+      "status": "active",
+      "summary": "Bind B-110 and child slices to v0.1.11, update source governance, Registry, Atlas, AGENTS, guidelines, skills, Compass, and release targeting before runtime implementation.",
+      "depends_on": [],
+      "primary_workstreams": [
+        "B-111"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-111",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+          "label": "Governance alignment gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W2",
+      "label": "Adaptive Character Runtime And Budget Kernel",
+      "status": "planned",
+      "summary": "Add the local character runtime package, deterministic hard laws, open-world pressure observations, stance vector inference, ranked affordances, and runtime budget enforcement.",
+      "depends_on": [
+        "W1"
+      ],
+      "primary_workstreams": [
+        "B-112"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-112",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+          "label": "Runtime and budget kernel gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W3",
+      "label": "Adaptive Character Learning Spine",
+      "status": "planned",
+      "summary": "Add compact learning events, retention tiers, recurrence fingerprints, noise suppression, and benchmark/Tribunal promotion hooks.",
+      "depends_on": [
+        "W2"
+      ],
+      "primary_workstreams": [
+        "B-113"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-113",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+          "label": "Learning spine gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W4",
+      "label": "Adaptive Character Subsystem Integration",
+      "status": "planned",
+      "summary": "Connect Context, Execution, Proof State, Memory, Router, Orchestrator, Intervention, Chatter, Tribunal, and surfaces through compact character contracts.",
+      "depends_on": [
+        "W3"
+      ],
+      "primary_workstreams": [
+        "B-114"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-114",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+          "label": "Subsystem integration gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W5",
+      "label": "Adaptive Character Tooling And Host Parity",
+      "status": "planned",
+      "summary": "Add character CLI commands, shared skill, Codex and Claude shims, and lane parity without host-model calls on hot character paths.",
+      "depends_on": [
+        "W4"
+      ],
+      "primary_workstreams": [
+        "B-115"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-115",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+          "label": "Tooling and host parity gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W6",
+      "label": "Adaptive Character Benchmark Sovereignty",
+      "status": "planned",
+      "summary": "Add the agent_operating_character benchmark family, adaptive replay and novelty suites, latency and credit metrics, and publication guards while keeping guidance_behavior green.",
+      "depends_on": [
+        "W5"
+      ],
+      "primary_workstreams": [
+        "B-116"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-116",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+          "label": "Benchmark sovereignty gate"
+        }
+      ]
+    },
+    {
+      "wave_id": "W7",
+      "label": "Adaptive Character Surfaces And Release Proof",
+      "status": "planned",
+      "summary": "Refresh governed surfaces, run browser checks, restore pinned dogfood before shipped-runtime claims, and block public claims until full proof passes.",
+      "depends_on": [
+        "W6"
+      ],
+      "primary_workstreams": [
+        "B-117"
+      ],
+      "carried_workstreams": [],
+      "in_band_workstreams": [],
+      "gate_refs": [
+        {
+          "workstream_id": "B-117",
+          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+          "label": "Surfaces and release proof gate"
+        }
+      ]
+    }
+  ]
+}

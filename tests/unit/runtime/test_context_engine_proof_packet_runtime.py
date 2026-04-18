@@ -96,6 +96,35 @@ def test_packet_summary_from_compact_payload_exposes_proof_state_fields() -> Non
     assert summary["execution_engine_validation_archetype"] == "recover"
 
 
+def test_packet_summary_preserves_guidance_behavior_runtime_signal() -> None:
+    summary = store._packet_summary_from_bootstrap_payload(  # noqa: SLF001
+        {
+            "context_packet_state": "compact",
+            "context_packet": {
+                "packet_state": "compact",
+                "route": {},
+                "packet_quality": {"i": "analysis"},
+                "guidance_behavior_summary": {
+                    "contract": "odylith_guidance_behavior_runtime_summary.v1",
+                    "family": "guidance_behavior",
+                    "status": "failed",
+                    "validation_status": "failed",
+                    "case_count": 1,
+                    "critical_or_high_case_count": 1,
+                    "failed_check_ids": ["visible_intervention_proof"],
+                    "validator_command": "odylith validate guidance-behavior --repo-root .",
+                },
+            },
+        }
+    )
+
+    assert summary["guidance_behavior_summary"]["family"] == "guidance_behavior"
+    assert summary["guidance_behavior_status"] == "failed"
+    assert summary["guidance_behavior_validation_status"] == "failed"
+    assert summary["guidance_behavior_case_count"] == 1
+    assert summary["guidance_behavior_failed_check_ids"] == ["visible_intervention_proof"]
+
+
 def test_packet_expectations_support_proof_state_contract_fields() -> None:
     matched, details = store._packet_satisfies_evaluation_expectations(  # noqa: SLF001
         {

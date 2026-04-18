@@ -225,6 +225,80 @@ def test_adaptive_packet_preserves_selector_diagnostics_from_custom_mapping(monk
     }
 
 
+def test_adaptive_guidance_behavior_packet_skips_runtime_warmup(monkeypatch) -> None:
+    observed_skip_flags: list[bool] = []
+
+    def _fake_build_impact_report(**kwargs):  # noqa: ANN001
+        observed_skip_flags.append(bool(kwargs.get("skip_runtime_warmup")))
+        return {
+            "context_packet_state": "compact",
+            "context_packet": {
+                "packet_state": "compact",
+                "route": {},
+                "packet_quality": {"i": "analysis"},
+                "guidance_behavior_summary": {
+                    "family": "guidance_behavior",
+                    "validator_command": "odylith validate guidance-behavior --repo-root .",
+                },
+            },
+        }
+
+    monkeypatch.setattr(packet_adaptive_runtime, "build_impact_report", _fake_build_impact_report)
+    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_auto_escalation_trigger", lambda **_kwargs: "")
+    monkeypatch.setattr(
+        packet_adaptive_runtime,
+        "_should_escalate_hot_path_to_session_brief",
+        lambda **_kwargs: (False, []),
+    )
+    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_route_ready", lambda _payload: True)
+    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_full_scan_recommended", lambda _payload: False)
+    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_routing_confidence", lambda _payload: "medium")
+    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_payload_is_compact", lambda _payload: True)
+    monkeypatch.setattr(
+        packet_adaptive_runtime,
+        "_update_compact_hot_path_runtime_packet",
+        lambda **kwargs: dict(kwargs["payload"]),
+    )
+
+    packet_adaptive_runtime.build_adaptive_coding_packet(
+        repo_root=Path("."),
+        changed_paths=["odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"],
+        runtime_mode="standalone",
+        family_hint="guidance_behavior",
+    )
+    packet_adaptive_runtime.build_adaptive_coding_packet(
+        repo_root=Path("."),
+        changed_paths=["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+        runtime_mode="standalone",
+        family_hint="execution_engine",
+    )
+
+    assert observed_skip_flags == [True, False]
+
+
+def test_guidance_behavior_impact_packet_avoids_projection_connection(monkeypatch, tmp_path: Path) -> None:
+    def _unexpected_projection_connection(_root):  # noqa: ANN001
+        raise AssertionError("guidance behavior hot path should not open projection store")
+
+    monkeypatch.setattr(store, "_connect", _unexpected_projection_connection)
+
+    payload = store.build_impact_report(
+        repo_root=tmp_path,
+        changed_paths=["odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"],
+        runtime_mode="standalone",
+        delivery_profile="agent_hot_path",
+        family_hint="guidance_behavior",
+        validation_command_hints=["odylith validate guidance-behavior --repo-root ."],
+        skip_runtime_warmup=True,
+    )
+
+    assert payload["context_packet"]["packet_quality"]["i"] == "analysis"
+    assert (
+        payload["context_packet"]["execution_engine_handshake"]["route_readiness"]["full_scan_recommended"]
+        is False
+    )
+
+
 def test_compact_impact_packet_keeps_benchmark_reviewer_guide_once(monkeypatch) -> None:
     monkeypatch.setattr(
         hot_path_finalize_runtime,

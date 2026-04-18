@@ -17,6 +17,7 @@ from odylith.runtime.intervention_engine.contract import GovernanceFact
 from odylith.runtime.intervention_engine.contract import InterventionBundle
 from odylith.runtime.intervention_engine.contract import InterventionCandidate
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
+from odylith.runtime.intervention_engine import alignment_evidence
 from odylith.runtime.intervention_engine import continuity_runtime
 from odylith.runtime.intervention_engine import moment_runtime
 from odylith.runtime.intervention_engine import signal_kernel
@@ -185,27 +186,6 @@ def _contains_any(text: str, hints: Sequence[str]) -> bool:
 _REPO_TRUTH_CACHE: dict[tuple[str, tuple[Any, ...]], dict[str, Any]] = {}
 
 
-def _ref_ids(target_refs: Sequence[Mapping[str, str]], *, kind: str) -> list[str]:
-    rows: list[str] = []
-    seen: set[str] = set()
-    wanted = _normalize_token(kind)
-    for row in target_refs:
-        if not isinstance(row, Mapping):
-            continue
-        if _normalize_token(row.get("kind")) != wanted:
-            continue
-        token = _normalize_string(row.get("id"))
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
-
-
-def _signal_profile(observation: ObservationEnvelope) -> dict[str, Any]:
-    return signal_kernel.build_signal_profile(observation=observation)
-
-
 def _path_signature(path: Path) -> tuple[str, int, int]:
     try:
         stat = path.stat()
@@ -320,37 +300,6 @@ def _repo_truth(repo_root: Path) -> dict[str, Any]:
     return payload
 
 
-def _target_refs_from_observation(observation: ObservationEnvelope) -> list[dict[str, str]]:
-    rows = list(observation.active_target_refs)
-    prompt_surface = _joined_prompt_surface(observation)
-    for token in _explicit_ids(prompt_surface, _WORKSTREAM_RE):
-        rows.append({"kind": "workstream", "id": token, "path": "", "label": token})
-    for token in _explicit_ids(prompt_surface, _BUG_RE):
-        rows.append({"kind": "bug", "id": token, "path": "", "label": token})
-    for token in _explicit_ids(prompt_surface, _DIAGRAM_RE):
-        rows.append({"kind": "diagram", "id": token, "path": "", "label": token})
-    packet_summary = dict(observation.packet_summary)
-    for key, kind in (("workstreams", "workstream"), ("bugs", "bug"), ("diagrams", "diagram"), ("components", "component")):
-        for token in _normalize_string_list(packet_summary.get(key)):
-            rows.append({"kind": kind, "id": token, "path": "", "label": token})
-    deduped: list[dict[str, str]] = []
-    seen: set[tuple[str, str, str]] = set()
-    for row in rows:
-        key = (_normalize_token(row.get("kind")), _normalize_string(row.get("id")), _normalize_string(row.get("path")))
-        if key in seen:
-            continue
-        seen.add(key)
-        deduped.append(
-            {
-                "kind": _normalize_token(row.get("kind")),
-                "id": _normalize_string(row.get("id")),
-                "path": _normalize_string(row.get("path")),
-                "label": _normalize_string(row.get("label")) or _normalize_string(row.get("id")),
-            }
-        )
-    return deduped
-
-
 def _path_components(*, changed_paths: Sequence[str], components: Mapping[str, Any]) -> list[str]:
     matched: set[str] = set()
     trie = component_registry._build_component_path_prefix_trie(  # noqa: SLF001
@@ -431,7 +380,7 @@ def _repo_lookup(
     ws_index = dict(repo_truth.get("ws_index", {}))
     bug_rows = dict(repo_truth.get("bug_rows", {}))
     workstream_rows = dict(repo_truth.get("workstream_rows", {}))
-    target_refs = _target_refs_from_observation(observation)
+    target_refs = alignment_evidence.active_target_refs(observation)
     workstream_ids = {
         ref["id"]
         for ref in target_refs
@@ -1083,7 +1032,7 @@ def _enriched_observation_payload(
             ),
         ]
     )
-    packet_summary = dict(payload.get("packet_summary", {})) if isinstance(payload.get("packet_summary"), Mapping) else {}
+    packet_summary = alignment_evidence.merged_packet_summary(observation)
     if _normalize_string_list(lookup.get("workstream_ids")) and not _normalize_string_list(packet_summary.get("workstreams")):
         packet_summary["workstreams"] = _normalize_string_list(lookup.get("workstream_ids"))
     if _normalize_string_list(lookup.get("bug_ids")) and not _normalize_string_list(packet_summary.get("bugs")):
@@ -1104,9 +1053,12 @@ def _enriched_observation_payload(
 
 def build_intervention_bundle(*, repo_root: Path, observation: Mapping[str, Any]) -> dict[str, Any]:
     normalized_observation = ObservationEnvelope.from_mapping(observation)
-    session_memory = stream_state.session_memory_snapshot(
-        repo_root=repo_root,
-        session_id=normalized_observation.session_id,
+    session_memory = alignment_evidence.merged_session_memory(
+        observation=normalized_observation,
+        stream_memory=stream_state.session_memory_snapshot(
+            repo_root=repo_root,
+            session_id=normalized_observation.session_id,
+        ),
     )
     signal_profile = signal_kernel.build_signal_profile(
         observation=normalized_observation,
@@ -1122,7 +1074,13 @@ def build_intervention_bundle(*, repo_root: Path, observation: Mapping[str, Any]
         observation=normalized_observation,
         lookup=lookup,
     )
-    facts = _collect_facts(observation=normalized_observation, lookup=lookup, evidence_classes=evidence)
+    facts = alignment_evidence.merge_governance_facts(
+        _collect_facts(observation=normalized_observation, lookup=lookup, evidence_classes=evidence),
+        alignment_evidence.governance_facts_from_alignment(
+            observation=normalized_observation,
+            evidence_classes=evidence,
+        ),
+    )
     moment = moment_runtime.select_moment(
         observation=normalized_observation,
         facts=facts,

@@ -344,9 +344,6 @@ def native_spawn_execution_ready(
     governed_surface_sync_required: bool = False,
     host_runtime: str = "",
 ) -> bool:
-    resolved_host_runtime = host_runtime_contract.resolve_host_runtime(host_runtime)
-    if not host_runtime_contract.native_spawn_supported(resolved_host_runtime, default_when_unknown=False):
-        return False
     if not route_ready or full_scan_recommended or narrowing_required or not within_budget:
         return False
     if str(delegate_preference or "").strip() != "delegate":
@@ -355,6 +352,9 @@ def native_spawn_execution_ready(
         str(token or "").strip()
         for token in (model, reasoning_effort, agent_role, selection_mode)
     ):
+        return False
+    resolved_host_runtime = host_runtime_contract.resolve_host_runtime(host_runtime)
+    if not host_runtime_contract.native_spawn_supported(resolved_host_runtime, default_when_unknown=False):
         return False
     return bool(
         selected_test_count > 0
@@ -1528,12 +1528,31 @@ def build_routing_handoff(
     if not compact_bootstrap_handoff:
         utility_profile_handoff["retained_signal_count"] = _int_value(utility_profile.get("retained_signal_count"))
         utility_profile_handoff["density_per_1k_tokens"] = float(utility_profile.get("density_per_1k_tokens", 0.0) or 0.0)
-    resolved_host_runtime = host_runtime_contract.resolve_host_runtime(
-        final_payload.get("host_runtime"),
+    delegate_preference = str(execution_profile_payload.get("delegate_preference", "")).strip()
+    model = str(execution_profile_payload.get("model", "")).strip()
+    reasoning_effort = str(execution_profile_payload.get("reasoning_effort", "")).strip()
+    agent_role = str(execution_profile_payload.get("agent_role", "")).strip()
+    selection_mode = str(execution_profile_payload.get("selection_mode", "")).strip()
+    native_spawn_probe_needed = bool(
+        route_ready
+        and not bool(final_payload.get("full_scan_recommended"))
+        and not bool(narrowing_guidance.get("required"))
+        and bool(packet_quality_payload.get("within_budget"))
+        and delegate_preference == "delegate"
+        and all((model, reasoning_effort, agent_role, selection_mode))
     )
-    native_spawn_supported = host_runtime_contract.native_spawn_supported(
-        resolved_host_runtime,
-        default_when_unknown=False,
+    resolved_host_runtime = (
+        host_runtime_contract.resolve_host_runtime(final_payload.get("host_runtime"))
+        if native_spawn_probe_needed
+        else str(final_payload.get("host_runtime", "")).strip()
+    )
+    native_spawn_supported = (
+        host_runtime_contract.native_spawn_supported(
+            resolved_host_runtime,
+            default_when_unknown=False,
+        )
+        if native_spawn_probe_needed
+        else False
     )
     packet_quality_handoff = {
         "context_richness": str(packet_quality_payload.get("context_richness", "")).strip(),
@@ -1595,11 +1614,11 @@ def build_routing_handoff(
             full_scan_recommended=bool(final_payload.get("full_scan_recommended")),
             narrowing_required=bool(narrowing_guidance.get("required")),
             within_budget=bool(packet_quality_payload.get("within_budget")),
-            delegate_preference=str(execution_profile_payload.get("delegate_preference", "")).strip(),
-            model=str(execution_profile_payload.get("model", "")).strip(),
-            reasoning_effort=str(execution_profile_payload.get("reasoning_effort", "")).strip(),
-            agent_role=str(execution_profile_payload.get("agent_role", "")).strip(),
-            selection_mode=str(execution_profile_payload.get("selection_mode", "")).strip(),
+            delegate_preference=delegate_preference,
+            model=model,
+            reasoning_effort=reasoning_effort,
+            agent_role=agent_role,
+            selection_mode=selection_mode,
             selected_test_count=len([row for row in tests if isinstance(row, Mapping)]),
             selected_command_count=len([str(token).strip() for token in commands if str(token).strip()]),
             selected_doc_count=len([str(token).strip() for token in docs if str(token).strip()]),
@@ -1764,8 +1783,11 @@ def build_routing_handoff(
         1 if bool(packet_quality_payload.get("within_budget")) else 0,
         1 if utility_signal_score >= 3 else 0,
     )
-    resolved_host_capabilities = host_runtime_contract.resolve_host_capabilities(
-        final_payload.get("host_runtime"),
+    execution_profile_probe_needed = bool(not bool(narrowing_guidance.get("required")) and route_ready)
+    resolved_host_capabilities = (
+        host_runtime_contract.resolve_host_capabilities(final_payload.get("host_runtime"))
+        if execution_profile_probe_needed
+        else {}
     )
     resolved_host_runtime = str(resolved_host_capabilities.get("host_runtime", "")).strip()
     native_spawn_supported = bool(resolved_host_capabilities.get("supports_native_spawn"))

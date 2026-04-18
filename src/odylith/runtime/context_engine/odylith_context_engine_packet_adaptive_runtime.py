@@ -51,6 +51,7 @@ def build_adaptive_coding_packet(
         workstream_hint=workstream_hint,
         validation_command_hints=validation_command_hints,
         retain_hot_path_internal_context=retain_impact_internal_context,
+        skip_runtime_warmup=family == "guidance_behavior",
     )
     initial_trigger = _hot_path_auto_escalation_trigger(
         packet_kind="impact",

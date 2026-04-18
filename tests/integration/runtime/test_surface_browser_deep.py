@@ -38,6 +38,17 @@ from tests.integration.runtime.surface_browser_test_support import (
 
 class _CompassProvider:
     _PATH_LIKE_RE = re.compile(r"`?(?:\.?/)?(?:\.odylith|odylith|src|tests|docs|skills|agents-guidelines)/[A-Za-z0-9._/\-]+`?")
+    _VOICE_REPLACEMENTS: tuple[tuple[re.Pattern[str], str], ...] = (
+        (re.compile(r"\bcenter\s+of\s+gravity\b", re.IGNORECASE), "main focus"),
+        (re.compile(r"\blive\s+pressure\s+point\b", re.IGNORECASE), "active issue"),
+        (re.compile(r"\bpressure\s+point\b", re.IGNORECASE), "issue"),
+        (re.compile(r"\bless\s+muddy(?:\s+now)?\b", re.IGNORECASE), "clearer"),
+        (re.compile(r"\bmuddy\s+now\b", re.IGNORECASE), "unclear"),
+        (re.compile(r"\bslippery\b", re.IGNORECASE), "unstable"),
+        (re.compile(r"\btop\s+lane\b", re.IGNORECASE), "primary lane"),
+        (re.compile(r"\bsharpest\s+live\s+issue\b", re.IGNORECASE), "most concrete issue"),
+        (re.compile(r"\breal\s+footing\b", re.IGNORECASE), "clear evidence"),
+    )
 
     def __init__(self) -> None:
         self.calls = 0
@@ -109,6 +120,8 @@ class _CompassProvider:
         if mode == "freshness" and ":" in text and text.lower().startswith("freshness signal is"):
             _prefix, text = text.split(":", 1)
             text = text.strip()
+        for pattern, replacement in cls._VOICE_REPLACEMENTS:
+            text = pattern.sub(replacement, text)
         if ", which " in text:
             text = text.split(", which ", 1)[0].strip()
         if "; " in text:

@@ -1,6 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-17
+Last updated (UTC): 2026-04-18
 ## Active Plans
 
 | Plan | Status | Created | Updated | Backlog |
@@ -41,6 +41,15 @@ Last updated (UTC): 2026-04-17
 | `odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md` | In progress | 2026-04-16 | 2026-04-16 | `B-102` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md` | In progress | 2026-04-16 | 2026-04-16 | `B-103` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md` | In progress | 2026-04-16 | 2026-04-16 | `B-104` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-110` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-111` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-112` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-113` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-114` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-115` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-116` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-117` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md` | In progress | 2026-04-18 | 2026-04-18 | `B-126` |
 
 ## Parked Plans
 

@@ -3,6 +3,20 @@
 ## CLI-First Non-Negotiable
 - CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
 
+## Shared Character Contract
+- Adaptive Agent Operating Character is host-semantic, not Claude-specific.
+  Claude may surface `.claude/skills/odylith-agent-operating-character` and
+  `.claude/commands/odylith-agent-operating-character.md`, but pressure
+  observation, stance, hard-law, affordance, learning, validation, and
+  benchmark decisions must come from the shared local runtime. Claude hooks,
+  capability probes, and Task-tool subagents must not spend host model credits
+  to classify character pressure.
+- Character support is proven as a host/lane matrix, not a Claude-only happy
+  path: Codex and Claude must share the same semantic contract across dev,
+  pinned dogfood, and consumer lanes. Claude model aliases resolve to the
+  Claude adapter family, but the Character decision remains local and
+  model-agnostic.
+
 ## Claude Project-Asset Surface
 - Claude Code can load repo-scoped project assets from `.claude/`, including
   `.claude/CLAUDE.md`, `.claude/settings.json`, `.claude/commands/*.md`,
@@ -203,6 +217,20 @@
   different narration temperature for those blocks. The Observation/Proposal
   markdown contract is the same shared product surface Codex uses across
   detached `source-local`, pinned dogfood, and consumer lanes.
+- Guidance Behavior proof on Claude follows the same shared contract as Codex:
+  run `odylith validate guidance-behavior --repo-root .` for deterministic
+  pressure-case proof, keep `guidance_behavior_summary` compact on live packet
+  paths, and use case-scoped validator commands when a packet names one
+  pressure case.
+- Claude guidance behavior must stay in the shared platform contract. The
+  `/odylith-guidance-behavior` command, `.claude/skills/odylith-guidance-behavior/`
+  shim, bundled consumer mirrors, install guidance, and benchmark/eval family
+  are validated together by `odylith_guidance_behavior_platform_end_to_end.v1`;
+  do not add a Claude-only proof phrase, command family, or hidden-success rule.
+- For the bounded delegation pressure case, Claude leaves still use Task-tool
+  subagents plus checked-in `.claude/agents/`. Preserve the routed owner,
+  goal, expected output, termination condition, and validation expectation in
+  the Task prompt instead of broadening it into an open-ended review.
 - Statusline rendering runs through the CLI-backed
   `./.odylith/bin/odylith claude statusline --repo-root .` command, called
   from `.claude/statusline.sh`.
@@ -223,6 +251,7 @@
   - `/odylith-registry-validate`
   - `/odylith-registry-sync-specs`
   - `/odylith-compatibility`
+  - `/odylith-guidance-behavior`
   - `/odylith-plan`
   - `/odylith-handoff`
   - `/odylith-case`

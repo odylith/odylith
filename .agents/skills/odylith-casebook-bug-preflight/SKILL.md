@@ -1,5 +1,5 @@
 ---
 name: odylith-casebook-bug-preflight
-description: Check Odylith Casebook bug prerequisites before creating or updating a bug record.
+description: Use when an Odylith Casebook bug create or update needs prerequisite checks.
 ---
 @../../../odylith/skills/odylith-casebook-bug-preflight/SKILL.md

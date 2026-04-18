@@ -147,6 +147,8 @@ def _impact_family_profile(
         "daemon_security",
         "execution_engine",
         "governed_surface_sync",
+        "guidance_behavior",
+        "agent_operating_character",
         "install_upgrade_runtime",
         "live_proof_discipline",
     }
@@ -159,6 +161,8 @@ def _impact_family_profile(
         "exact_anchor_recall",
         "execution_engine",
         "explicit_workstream",
+        "guidance_behavior",
+        "agent_operating_character",
         "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
@@ -175,6 +179,8 @@ def _impact_family_profile(
         "orchestration_intelligence",
         "retrieval_miss_recovery",
         "explicit_workstream",
+        "guidance_behavior",
+        "agent_operating_character",
         "governed_surface_sync",
         "live_proof_discipline",
         "release_publication",
@@ -192,6 +198,8 @@ def _impact_family_profile(
         "orchestration_intelligence",
         "retrieval_miss_recovery",
         "explicit_workstream",
+        "guidance_behavior",
+        "agent_operating_character",
         "governed_surface_sync",
         "live_proof_discipline",
         "release_publication",
@@ -205,6 +213,8 @@ def _impact_family_profile(
         "exact_anchor_recall",
         "governed_surface_sync",
         "execution_engine",
+        "guidance_behavior",
+        "agent_operating_character",
         "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
@@ -217,6 +227,8 @@ def _impact_family_profile(
         "exact_path_ambiguity",
         "execution_engine",
         "explicit_workstream",
+        "guidance_behavior",
+        "agent_operating_character",
         "install_upgrade_runtime",
         "live_proof_discipline",
         "daemon_security",
@@ -237,6 +249,8 @@ def _impact_family_profile(
         "exact_anchor_recall",
         "exact_path_ambiguity",
         "explicit_workstream",
+        "guidance_behavior",
+        "agent_operating_character",
         "install_upgrade_runtime",
         "agent_activation",
         "live_proof_discipline",
@@ -257,6 +271,8 @@ def _impact_family_profile(
         "exact_anchor_recall",
         "explicit_workstream",
         "governed_surface_sync",
+        "guidance_behavior",
+        "agent_operating_character",
         "install_upgrade_runtime",
         "live_proof_discipline",
         "orchestration_feedback",
@@ -268,6 +284,8 @@ def _impact_family_profile(
         "cross_file_feature",
         "dashboard_surface",
         "exact_anchor_recall",
+        "guidance_behavior",
+        "agent_operating_character",
         "orchestration_feedback",
         "orchestration_intelligence",
         "retrieval_miss_recovery",
@@ -364,6 +382,27 @@ def _hot_path_packet_rank(payload: Mapping[str, Any]) -> tuple[int, int, int, in
         precision_score,
     )
 
+def _hot_path_guidance_behavior_summary(payload: Mapping[str, Any]) -> dict[str, Any]:
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
+    if isinstance(payload.get("guidance_behavior_summary"), Mapping):
+        return dict(payload.get("guidance_behavior_summary", {}))
+    if isinstance(context_packet.get("guidance_behavior_summary"), Mapping):
+        return dict(context_packet.get("guidance_behavior_summary", {}))
+    return {}
+
+def _hot_path_guidance_behavior_validator_available(
+    *,
+    family_hint: str,
+    payload: Mapping[str, Any],
+) -> bool:
+    if _normalize_family_hint(family_hint) != "guidance_behavior":
+        return False
+    summary = _hot_path_guidance_behavior_summary(payload)
+    return bool(
+        str(summary.get("validator_command", "")).strip()
+        or _normalized_string_list(summary.get("case_validation_commands"))
+    )
+
 def _hot_path_auto_escalation_trigger(
     *,
     packet_kind: str,
@@ -373,6 +412,8 @@ def _hot_path_auto_escalation_trigger(
     family = _normalize_family_hint(family_hint)
     context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
     full_scan_recommended = bool(payload.get("full_scan_recommended") or context_packet.get("full_scan_recommended"))
+    if _hot_path_guidance_behavior_validator_available(family_hint=family_hint, payload=payload):
+        return ""
     if full_scan_recommended:
         return "full_scan_recommended"
     if family in _HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES or _hot_path_dashboard_surface_like(
@@ -420,12 +461,14 @@ def _hot_path_can_hold_local_narrowing_without_full_scan(
     family_hint: str,
     payload: Mapping[str, Any],
 ) -> bool:
+    if _hot_path_guidance_behavior_validator_available(family_hint=family_hint, payload=payload):
+        return True
     if not _hot_path_dashboard_surface_like(family_hint=family_hint, payload=payload):
         return False
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
     if _hot_path_full_scan_recommended(payload):
         return False
     packet_metrics = dict(payload.get("packet_metrics", {})) if isinstance(payload.get("packet_metrics"), Mapping) else {}
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
     if not _compact_hot_path_payload_within_budget(
         payload=payload,
         context_packet=context_packet,
@@ -470,9 +513,17 @@ def _hot_path_selected_validation_count(payload: Mapping[str, Any]) -> int:
         else {}
     )
     selected_counts = _decode_compact_selected_counts(retrieval_plan.get("selected_counts"))
-    return max(0, int(selected_counts.get("tests", 0) or 0)) + max(
-        0,
-        int(selected_counts.get("commands", 0) or 0),
+    guidance_summary = _hot_path_guidance_behavior_summary(payload)
+    guidance_validation_count = 1 if (
+        str(guidance_summary.get("validator_command", "")).strip()
+        or _normalized_string_list(guidance_summary.get("case_validation_commands"))
+    ) else 0
+    return max(
+        guidance_validation_count,
+        max(0, int(selected_counts.get("tests", 0) or 0)) + max(
+            0,
+            int(selected_counts.get("commands", 0) or 0),
+        ),
     )
 
 def _hot_path_route_ready(payload: Mapping[str, Any]) -> bool:
@@ -514,6 +565,8 @@ def _should_escalate_hot_path_to_session_brief(
 ) -> tuple[bool, list[str]]:
     family = _normalize_family_hint(family_hint)
     if family in _HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES:
+        return False, []
+    if _hot_path_guidance_behavior_validator_available(family_hint=family_hint, payload=payload):
         return False, []
     if _hot_path_dashboard_surface_like(family_hint=family_hint, payload=payload):
         return False, []

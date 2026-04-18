@@ -13,6 +13,8 @@ _ZERO_SUPPORT_DOC_EXPANSION_FAMILIES = frozenset(
         "exact_anchor_recall",
         "explicit_workstream",
         "governed_surface_sync",
+        "guidance_behavior",
+        "agent_operating_character",
         "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
@@ -117,6 +119,46 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
         if "/casebook/bugs/" in lowered or "/technical-plans/" in lowered:
             return 1
         if lowered.endswith("/delivery_intelligence.v4.json"):
+            return 2
+        return 4
+    if normalized_family == "guidance_behavior":
+        if lowered == "agents.md" or lowered.endswith("/agents.md"):
+            return 0
+        if lowered.endswith("/guidance-behavior-evaluation-corpus.v1.json"):
+            return 0
+        if lowered.endswith("/validate_guidance_behavior.py"):
+            return 1
+        if lowered.endswith("/cli_first_policy.md"):
+            return 1
+        if lowered.endswith("/components/subagent-orchestrator/current_spec.md"):
+            return 1
+        if ".agents/skills/" in lowered and lowered.endswith("/skill.md"):
+            return 2
+        return 4
+    if normalized_family == "agent_operating_character":
+        if lowered.endswith("/agent-operating-character-evaluation-corpus.v1.json"):
+            return 0
+        if lowered.endswith("/validate_agent_operating_character.py"):
+            return 0
+        if lowered.startswith("src/odylith/runtime/character/") or "/src/odylith/runtime/character/" in lowered:
+            return 1
+        if lowered == "agents.md" or lowered.endswith("/agents.md"):
+            return 1
+        if lowered.endswith("/components/benchmark/current_spec.md"):
+            return 1
+        if lowered.endswith("/components/execution-engine/current_spec.md"):
+            return 1
+        if lowered.endswith("/components/odylith-context-engine/current_spec.md"):
+            return 1
+        if lowered.endswith("/components/odylith-memory-contracts/current_spec.md"):
+            return 1
+        if lowered.endswith("/components/tribunal/current_spec.md"):
+            return 1
+        if lowered.endswith("/agents-guidelines/validation_and_testing.md"):
+            return 2
+        if lowered.endswith("/agents-guidelines/odylith_context_engine.md"):
+            return 2
+        if lowered.endswith("/skill.md") and "odylith-agent-operating-character" in lowered:
             return 2
         return 4
     if normalized_family == "cross_surface_governance_sync":

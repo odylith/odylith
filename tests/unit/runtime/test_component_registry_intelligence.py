@@ -316,6 +316,14 @@ def test_normalize_workspace_activity_path_skips_deindexed_missing_casebook_bug(
     assert normalized == ""
 
 
+def test_workspace_activity_ignores_atlas_catalog_freshness_churn(tmp_path: Path) -> None:
+    source_catalog = "odylith/atlas/source/catalog/diagrams.v1.json"
+    bundled_catalog = "src/odylith/bundle/assets/odylith/atlas/source/catalog/diagrams.v1.json"
+
+    assert not registry.is_meaningful_workspace_artifact(source_catalog, repo_root=tmp_path)
+    assert not registry.is_meaningful_workspace_artifact(bundled_catalog, repo_root=tmp_path)
+
+
 def test_collect_recent_workspace_paths_dedupes_bundle_source_mirror_aliases(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001

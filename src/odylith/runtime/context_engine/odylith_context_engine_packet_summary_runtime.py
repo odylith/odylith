@@ -10,6 +10,8 @@ from odylith.runtime.context_engine import odylith_context_engine_hot_path_packe
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import odylith_context_engine_packet_runtime_bindings
 from odylith.runtime.execution_engine import runtime_surface_governance
+from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.governance import proof_state as proof_state_runtime
 
 def bind(host: Any) -> None:
@@ -24,6 +26,19 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
         dict(context_packet.get("optimization", {}))
         if isinstance(context_packet.get("optimization"), Mapping)
         else {}
+    )
+    evidence_pack = dict(payload.get("evidence_pack", {})) if isinstance(payload.get("evidence_pack"), Mapping) else {}
+    guidance_behavior_summary = guidance_behavior_runtime.summary_from_sources(
+        payload,
+        context_packet,
+        evidence_pack,
+        limit=6,
+    )
+    character_summary = character_runtime.summary_from_sources(
+        payload,
+        context_packet,
+        evidence_pack,
+        limit=6,
     )
     packet_quality = packet_quality_codec.expand_packet_quality(
         dict(payload.get("packet_quality", {}))
@@ -326,6 +341,20 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
         "packet_kind": packet_kind,
         "selection_state": selection_state,
         "packet_state": packet_state,
+        "guidance_behavior_summary": guidance_behavior_summary,
+        "character_summary": character_summary,
+        "character_status": str(character_summary.get("status", "")).strip(),
+        "character_validation_status": str(character_summary.get("validation_status", "")).strip(),
+        "character_case_count": int(character_summary.get("case_count", 0) or 0),
+        "guidance_behavior_status": str(guidance_behavior_summary.get("status", "")).strip(),
+        "guidance_behavior_validation_status": str(guidance_behavior_summary.get("validation_status", "")).strip(),
+        "guidance_behavior_case_count": int(guidance_behavior_summary.get("case_count", 0) or 0),
+        "guidance_behavior_critical_or_high_case_count": int(
+            guidance_behavior_summary.get("critical_or_high_case_count", 0) or 0
+        ),
+        "guidance_behavior_failed_check_ids": _normalized_string_list(
+            guidance_behavior_summary.get("failed_check_ids")
+        ),
         "estimated_bytes": int(packet_metrics.get("estimated_bytes", 0) or 0),
         "estimated_tokens": int(packet_metrics.get("estimated_tokens", 0) or 0),
         "within_budget": within_budget,

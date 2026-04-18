@@ -618,11 +618,16 @@ def _scenario_required_paths_for_live_prompt(
 ) -> list[str]:
     if not isinstance(scenario, Mapping):
         return []
+    family = str(scenario.get("family", "")).strip()
     changed = {str(token).strip() for token in changed_paths if str(token).strip()}
     return [
         token
         for token in _dedupe_strings(_normalized_string_list(scenario.get("required_paths")))
         if token not in changed
+        or (
+            family == "agent_operating_character"
+            and str(token).strip().lower().endswith("/agent-operating-character-evaluation-corpus.v1.json")
+        )
     ]
 
 
@@ -632,6 +637,7 @@ def _required_support_docs_for_live_prompt(
     changed_paths: Sequence[str],
     limit: int,
 ) -> list[str]:
+    family = str((scenario or {}).get("family", "")).strip()
     changed = {str(token).strip() for token in changed_paths if str(token).strip()}
     bounded_limit = max(0, int(limit or 0))
     if bounded_limit == 0:
@@ -643,9 +649,16 @@ def _required_support_docs_for_live_prompt(
     candidates = [
         token
         for token in _dedupe_strings(required_paths)
-        if token not in changed and not _looks_like_code_anchor(token) and not _skip_support_doc_candidate(token)
+        if (
+            token not in changed
+            or (
+                family == "agent_operating_character"
+                and str(token).strip().lower().endswith("/agent-operating-character-evaluation-corpus.v1.json")
+            )
+        )
+        and not _looks_like_code_anchor(token)
+        and not _skip_support_doc_candidate(token)
     ]
-    family = str((scenario or {}).get("family", "")).strip()
     return sorted(
         candidates,
         key=lambda token: (
@@ -948,6 +961,11 @@ def supplement_live_prompt_payload(
                 payload["boundary_hints"] = _dedupe_strings(boundary_hints)
             payload["strict_boundary"] = True
             return payload
+        if family == "agent_operating_character" and scenario_required_paths:
+            payload = _set_context_anchor_explicit_paths(
+                payload,
+                explicit_paths=scenario_required_paths,
+            )
         if existing_docs:
             payload["docs"] = existing_docs
         return payload

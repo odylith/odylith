@@ -1,7 +1,34 @@
 # Execution Engine
-Last updated: 2026-04-17
 
-Last updated (UTC): 2026-04-17
+## Adaptive Agent Operating Character Contract
+- Execution Engine owns the Restraint facet. It consumes character hard-law
+  results and stance vectors as admissibility inputs, including CLI-first
+  governed truth, fresh-proof completion, visible proof, queue non-adoption,
+  bounded delegation, benchmark public-claim proof, consumer mutation guard,
+  and explicit model-credit authorization.
+- Denials must include the nearest admissible action whenever possible so the
+  agent can recover locally instead of stalling or spending host model credits.
+- Runtime surface governance may carry compact Character summaries and
+  validator commands as local admissibility evidence. This path must not run
+  full validation, widen repo scans, or probe host capability when the local
+  Character or Guidance Behavior summary is already sufficient.
+- The `odylith_agent_operating_character_host_lane_support.v1` matrix is an
+  Execution Engine contract input: Codex maps to routed spawn, Claude maps to
+  Task-tool subagents, dev maps to source-local maintainer work, dogfood maps
+  to pinned shipped-runtime proof, and consumer maps to diagnose-and-handoff by
+  default for Odylith product mutations.
+- Character hard-law outcomes must come from the shared Character policy
+  contract, not duplicated Execution-side law lists. Execution consumes the
+  resulting block/defer/admit decision, forbidden moves, stance vector, and
+  nearest admissible action.
+- Character signal handling is negation-aware and surface-aware. Execution must
+  admit preventive discipline work such as "do not spawn subagents" or "zero
+  host model calls", must admit allowed authored governance work without
+  CLI-writer evidence, and must still defer/block the corresponding unsafe
+  moves when they are actually requested.
+Last updated: 2026-04-18
+
+Last updated (UTC): 2026-04-18
 
 ## Registry Identity
 
@@ -49,6 +76,18 @@ The answer is not prose advice. The answer is a structured payload made of:
 - compact summary fields consumed by the visible intervention value engine as
   timing, actionability, validation, closure, recover, and visibility-need
   evidence
+- recommended validation commands sourced from compact Guidance Behavior
+  summaries when the Context Engine packet proves that guidance behavior is in
+  scope
+- recommended Character validation commands sourced from compact Agent
+  Operating Character summaries, with zero-credit local proof carried as
+  posture evidence rather than as host-model inference
+- adaptive Character affordances such as integration-contract inspection,
+  live-voice surface inspection, learning-feedback-loop inspection, and small
+  admissible change plus validation when no hard law is violated
+- public-claim proof distinction: proof execution remains an admissible action
+  while README/release-note/published shipped claims remain blocked until
+  benchmark proof exists
 
 The runtime is intentionally policy-first. It does not call tools. It does not
 mutate files. It does not own the host's transport. It gives the caller a
@@ -125,6 +164,8 @@ the compact summary as diagnostic fields.
   memory
 - validation-matrix synthesis
 - compact execution-engine summaries for runtime surfaces
+- guidance-behavior validator command carry-through as a recommended
+  validation obligation, without running guidance validation inline
 - runtime reuse metadata for governed sync sessions
 - local and serial lane guards for delegation and parallel fan-out
 - thin execution-wave authoring hooks that write the canonical wave contract
@@ -339,6 +380,8 @@ It:
 - evaluates primary and nearby action admissibility
 - derives the frontier
 - emits compact summary fields for surfaces and guards
+- appends the compact guidance-behavior validator command to recommended
+  commands when the packet summary carries one
 
 This adapter is intentionally deterministic and no-op quiet. Adding a field to
 the snapshot means updating compact summaries and affected surface tests
@@ -755,3 +798,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-16: Cut the Registry and benchmark contract over to `execution-engine` as the only accepted component id, removed compatibility aliases, and kept the detailed runtime contract for admissibility, frontier, closure, receipts, validation, host profile, and guard behavior. (Plan: [B-100](odylith/radar/radar.html?view=plan&workstream=B-100))
 - 2026-04-16: Added handshake `v1` and compact snapshot reuse across Context Engine packet builders and packet summaries; added snapshot duration plus token-cost diagnostics to the execution benchmark family. (Plan: [B-101](odylith/radar/radar.html?view=plan&workstream=B-101), Plan: [B-103](odylith/radar/radar.html?view=plan&workstream=B-103))
 - 2026-04-16: Added paired Codex and Claude semantic parity proof and Claude execution benchmark scenarios for route-ready and wait/resume lanes while keeping host differences behind `ExecutionHostProfile`. (Plan: [B-102](odylith/radar/radar.html?view=plan&workstream=B-102))
+- 2026-04-17: Added Guidance Behavior validator-command carry-through to Context Engine handshakes and runtime-surface governance snapshots so guidance pressure proof travels with recommended validation while full validation stays outside the hot path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-17: Preserved Guidance Behavior platform-contract summary in Execution Engine handshakes and runtime-surface recommendations so benchmark/eval and host-lane mirror proof are available as validation posture without changing live execution policy. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Hardened Guidance Behavior narrowing snapshots so they preserve validator-command recommendations without probing host capabilities until a route-ready delegate path can use the host profile, keeping Codex and Claude semantics shared while cutting avoidable hot-path latency. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-18: Connected Adaptive Agent Operating Character summaries into runtime-surface governance so hard-law and stance evidence can shape admissibility and recommended recovery commands locally, while host probes, full validation, and model-credit spending stay out of the hot path. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))

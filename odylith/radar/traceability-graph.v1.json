@@ -3196,12 +3196,21 @@
           "next"
         ],
         "active_workstreams": [
-          "B-070"
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
         ],
         "completed_workstreams": [],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 1,
+        "active_workstream_count": 10,
         "completed_workstream_count": 0
       },
       "release_history": [
@@ -4141,7 +4150,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4163,7 +4180,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4256,7 +4273,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4278,7 +4303,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4369,7 +4394,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4391,7 +4424,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4520,7 +4553,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4542,7 +4583,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4643,7 +4684,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4665,7 +4714,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4875,7 +4924,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -4897,7 +4954,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -4990,7 +5047,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -5012,7 +5077,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5182,7 +5247,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -5204,7 +5277,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5291,7 +5364,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -5313,7 +5394,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5452,7 +5533,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -5474,7 +5563,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5569,7 +5658,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -5591,7 +5688,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5692,7 +5789,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -5714,7 +5819,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5818,7 +5923,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -5840,7 +5953,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -5943,7 +6056,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -5965,7 +6086,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -6069,7 +6190,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -6091,7 +6220,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -6189,7 +6318,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -6211,7 +6348,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -6241,7 +6378,7 @@
           "umbrella_id": "B-096",
           "wave_id": "W1",
           "wave_label": "Visible Intervention Value Engine Governance Binding",
-          "wave_status": "active",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
         }
@@ -6311,7 +6448,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -6333,7 +6478,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -6363,7 +6508,7 @@
           "umbrella_id": "B-096",
           "wave_id": "W2",
           "wave_label": "Visible Intervention Proposition Engine",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
         }
@@ -6433,7 +6578,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -6455,7 +6608,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -6485,7 +6638,7 @@
           "umbrella_id": "B-096",
           "wave_id": "W3",
           "wave_label": "Host Visibility Integration And Ruler Canonicalization",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
         }
@@ -6555,7 +6708,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -6577,7 +6738,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -6607,7 +6768,7 @@
           "umbrella_id": "B-096",
           "wave_id": "W4",
           "wave_label": "Intervention Adjudication Corpus And Advisory Benchmark",
-          "wave_status": "planned",
+          "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
         }
@@ -6679,7 +6840,15 @@
           "B-106",
           "B-107",
           "B-108",
-          "B-109"
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
         ],
         "completed_workstreams": [
           "B-061",
@@ -6701,7 +6870,7 @@
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 20,
+        "active_workstream_count": 28,
         "completed_workstream_count": 16
       },
       "release_history": [
@@ -6731,11 +6900,1758 @@
           "umbrella_id": "B-096",
           "wave_id": "W5",
           "wave_label": "v0.1.11 Visible Intervention Release Proof",
-          "wave_status": "planned",
+          "wave_status": "active",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-096.execution-waves.v1.json"
         }
       ]
+    },
+    {
+      "idea_id": "B-110",
+      "title": "Adaptive Agent Operating Character, Credit-Safe And Benchmark-Proved",
+      "status": "implementation",
+      "workstream_type": "umbrella",
+      "workstream_parent": "",
+      "workstream_children": [
+        "B-111",
+        "B-112",
+        "B-113",
+        "B-114",
+        "B-115",
+        "B-116",
+        "B-117"
+      ],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-039"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-agent-operating-character-with-learning-spine.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 28,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-110",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T22:36:13Z",
+          "note": "v0.1.11 final alignment: adaptive Agent Operating Character, credit-safe hot path, learning spine, and benchmark sovereignty.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-111",
+      "title": "Adaptive Character Governance Alignment",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-110",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-governance-alignment.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 28,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-111",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T22:37:41Z",
+          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-110",
+          "wave_id": "W1",
+          "wave_label": "Adaptive Character Governance Alignment",
+          "wave_status": "active",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-112",
+      "title": "Adaptive Character Runtime And Budget Kernel",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-110",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-runtime-and-budget-kernel.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 28,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-112",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T22:37:42Z",
+          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-110",
+          "wave_id": "W2",
+          "wave_label": "Adaptive Character Runtime And Budget Kernel",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-113",
+      "title": "Adaptive Character Learning Spine",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-110",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-learning-spine.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 28,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-113",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T22:37:43Z",
+          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-110",
+          "wave_id": "W3",
+          "wave_label": "Adaptive Character Learning Spine",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-114",
+      "title": "Adaptive Character Subsystem Integration",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-110",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-subsystem-integration.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 28,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-114",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T22:37:43Z",
+          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-110",
+          "wave_id": "W4",
+          "wave_label": "Adaptive Character Subsystem Integration",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-115",
+      "title": "Adaptive Character Tooling And Host Parity",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-110",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-tooling-and-host-parity.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 28,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-115",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T22:37:44Z",
+          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-110",
+          "wave_id": "W5",
+          "wave_label": "Adaptive Character Tooling And Host Parity",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-116",
+      "title": "Adaptive Character Benchmark Sovereignty",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-110",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-benchmark-sovereignty.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 28,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-116",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T22:37:44Z",
+          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-110",
+          "wave_id": "W6",
+          "wave_label": "Adaptive Character Benchmark Sovereignty",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-117",
+      "title": "Adaptive Character Surfaces And Release Proof",
+      "status": "implementation",
+      "workstream_type": "child",
+      "workstream_parent": "B-110",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-surfaces-and-release-proof.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-11",
+      "active_release": {
+        "release_id": "release-0-1-11",
+        "status": "active",
+        "version": "0.1.11",
+        "tag": "v0.1.11",
+        "name": "",
+        "inherited_name": "Proof Without Drift",
+        "effective_name": "0.1.11",
+        "display_label": "0.1.11",
+        "notes": "",
+        "created_utc": "2026-04-08",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-083",
+          "B-084",
+          "B-085",
+          "B-087",
+          "B-088",
+          "B-092",
+          "B-093",
+          "B-096",
+          "B-097",
+          "B-099",
+          "B-100",
+          "B-101",
+          "B-102",
+          "B-103",
+          "B-104",
+          "B-105",
+          "B-106",
+          "B-107",
+          "B-108",
+          "B-109",
+          "B-110",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116",
+          "B-117"
+        ],
+        "completed_workstreams": [
+          "B-061",
+          "B-062",
+          "B-063",
+          "B-066",
+          "B-067",
+          "B-068",
+          "B-069",
+          "B-072",
+          "B-073",
+          "B-074",
+          "B-075",
+          "B-076",
+          "B-077",
+          "B-078",
+          "B-079",
+          "B-082"
+        ],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 28,
+        "completed_workstream_count": 16
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-117",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-17T22:37:45Z",
+          "note": "B-110 child slice for v0.1.11 Adaptive Agent Operating Character.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": [
+        {
+          "umbrella_id": "B-110",
+          "wave_id": "W7",
+          "wave_label": "Adaptive Character Surfaces And Release Proof",
+          "wave_status": "planned",
+          "role": "primary",
+          "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
+        }
+      ]
+    },
+    {
+      "idea_id": "B-118",
+      "title": "v0.1.12 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-118",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-18T00:10:48Z",
+          "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-119",
+      "title": "v0.1.12 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-119",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-18T00:10:48Z",
+          "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-120",
+      "title": "v0.1.12 Governed Harness: Governed Harness Manifest Contract",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-120",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-18T00:10:49Z",
+          "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-121",
+      "title": "v0.1.12 Governed Harness: Admissibility Guardrails And Approval Policy",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-121",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-18T00:10:49Z",
+          "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-122",
+      "title": "v0.1.12 Governed Harness: Harness Receipts, Tracing, And Resumable Proof",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-122",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-18T00:10:50Z",
+          "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-123",
+      "title": "v0.1.12 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-123",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-18T00:10:50Z",
+          "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-124",
+      "title": "v0.1.12 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-124",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-18T00:10:51Z",
+          "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-125",
+      "title": "v0.1.12 Governed Harness: Release Publication, Docs, And Benchmark Closure",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-125",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-18T00:10:51Z",
+          "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-126",
+      "title": "Conditional Release-Targeted Backlog Authoring",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-12",
+      "active_release": {
+        "release_id": "release-0-1-12",
+        "status": "planning",
+        "version": "0.1.12",
+        "tag": "v0.1.12",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.12",
+        "display_label": "0.1.12",
+        "notes": "",
+        "created_utc": "2026-04-09",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "next"
+        ],
+        "active_workstreams": [
+          "B-070",
+          "B-118",
+          "B-119",
+          "B-120",
+          "B-121",
+          "B-122",
+          "B-123",
+          "B-124",
+          "B-125",
+          "B-126"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 10,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-126",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-18T00:28:02Z",
+          "note": "Target queued v0.1.12 governance-authoring ergonomics slice for conditional release-targeted backlog creation while preserving queued status.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -6775,7 +8691,15 @@
         "B-106",
         "B-107",
         "B-108",
-        "B-109"
+        "B-109",
+        "B-110",
+        "B-111",
+        "B-112",
+        "B-113",
+        "B-114",
+        "B-115",
+        "B-116",
+        "B-117"
       ],
       "completed_workstreams": [
         "B-061",
@@ -6797,7 +8721,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 20,
+      "active_workstream_count": 28,
       "completed_workstream_count": 16
     },
     {
@@ -6817,12 +8741,21 @@
         "next"
       ],
       "active_workstreams": [
-        "B-070"
+        "B-070",
+        "B-118",
+        "B-119",
+        "B-120",
+        "B-121",
+        "B-122",
+        "B-123",
+        "B-124",
+        "B-125",
+        "B-126"
       ],
       "completed_workstreams": [],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 1,
+      "active_workstream_count": 10,
       "completed_workstream_count": 0
     }
   ],
@@ -6863,7 +8796,15 @@
         "B-106",
         "B-107",
         "B-108",
-        "B-109"
+        "B-109",
+        "B-110",
+        "B-111",
+        "B-112",
+        "B-113",
+        "B-114",
+        "B-115",
+        "B-116",
+        "B-117"
       ],
       "completed_workstreams": [
         "B-061",
@@ -6885,7 +8826,7 @@
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 20,
+      "active_workstream_count": 28,
       "completed_workstream_count": 16
     },
     "next": {
@@ -6905,12 +8846,21 @@
         "next"
       ],
       "active_workstreams": [
-        "B-070"
+        "B-070",
+        "B-118",
+        "B-119",
+        "B-120",
+        "B-121",
+        "B-122",
+        "B-123",
+        "B-124",
+        "B-125",
+        "B-126"
       ],
       "completed_workstreams": [],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 1,
+      "active_workstream_count": 10,
       "completed_workstream_count": 0
     }
   },
@@ -6950,7 +8900,15 @@
       "B-106",
       "B-107",
       "B-108",
-      "B-109"
+      "B-109",
+      "B-110",
+      "B-111",
+      "B-112",
+      "B-113",
+      "B-114",
+      "B-115",
+      "B-116",
+      "B-117"
     ],
     "completed_workstreams": [
       "B-061",
@@ -6972,7 +8930,7 @@
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 20,
+    "active_workstream_count": 28,
     "completed_workstream_count": 16
   },
   "next_release": {
@@ -6992,18 +8950,27 @@
       "next"
     ],
     "active_workstreams": [
-      "B-070"
+      "B-070",
+      "B-118",
+      "B-119",
+      "B-120",
+      "B-121",
+      "B-122",
+      "B-123",
+      "B-124",
+      "B-125",
+      "B-126"
     ],
     "completed_workstreams": [],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 1,
+    "active_workstream_count": 10,
     "completed_workstream_count": 0
   },
   "release_summary": {
     "release_count": 2,
     "alias_count": 2,
-    "active_assignment_count": 21
+    "active_assignment_count": 38
   },
   "execution_programs": [
     {
@@ -7159,8 +9126,8 @@
         {
           "wave_id": "W1",
           "label": "Visible Intervention Value Engine Governance Binding",
-          "status": "active",
-          "summary": "Visible Intervention Value Engine Governance Binding",
+          "status": "complete",
+          "summary": "Binds B-096, child waves, v0.1.11 release assignment, CB-122, CB-123, Registry, Atlas, Radar, Casebook, Compass, and source plan truth to the deterministic value-engine contract.",
           "depends_on": [],
           "primary_workstreams": [
             "B-105"
@@ -7178,8 +9145,8 @@
         {
           "wave_id": "W2",
           "label": "Visible Intervention Proposition Engine",
-          "status": "planned",
-          "summary": "Visible Intervention Proposition Engine",
+          "status": "complete",
+          "summary": "Ships the proposition-first deterministic value engine, hard gates, duplicate/conflict graph, adaptive budget, decision log, and Guidance Behavior evidence plus platform-contract handoff.",
           "depends_on": [
             "W1"
           ],
@@ -7199,8 +9166,8 @@
         {
           "wave_id": "W3",
           "label": "Host Visibility Integration And Ruler Canonicalization",
-          "status": "planned",
-          "summary": "Host Visibility Integration And Ruler Canonicalization",
+          "status": "complete",
+          "summary": "Centralizes chat-visible proof, transcript replay, ruler repair, host parity, Stop recovery, and Assist closeout separation.",
           "depends_on": [
             "W2"
           ],
@@ -7220,8 +9187,8 @@
         {
           "wave_id": "W4",
           "label": "Intervention Adjudication Corpus And Advisory Benchmark",
-          "status": "planned",
-          "summary": "Intervention Adjudication Corpus And Advisory Benchmark",
+          "status": "complete",
+          "summary": "Adds governed bootstrap/advisory selector evidence plus guidance_behavior benchmark, guidance-surface validation, platform end-to-end proof, live/source-bundle parity checks, and hot-path efficiency gates while keeping calibration non-publishable.",
           "depends_on": [
             "W3"
           ],
@@ -7241,8 +9208,8 @@
         {
           "wave_id": "W5",
           "label": "v0.1.11 Visible Intervention Release Proof",
-          "status": "planned",
-          "summary": "v0.1.11 Visible Intervention Release Proof",
+          "status": "active",
+          "summary": "Collects final runtime, guidance-behavior runtime, platform end-to-end, live/source-bundle parity, hot-path efficiency, host/lane surface, migration, host-visible, generated-surface, governance, browser, sync, and diff-hygiene proof for v0.1.11.",
           "depends_on": [
             "W4"
           ],
@@ -7366,6 +9333,158 @@
               "workstream_id": "B-104",
               "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
               "label": "Execution Alignment Release Proof and Governance Closure gate"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "umbrella_id": "B-110",
+      "version": "v1",
+      "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json",
+      "waves": [
+        {
+          "wave_id": "W1",
+          "label": "Adaptive Character Governance Alignment",
+          "status": "active",
+          "summary": "Bind B-110 and child slices to v0.1.11, update source governance, Registry, Atlas, AGENTS, guidelines, skills, Compass, and release targeting before runtime implementation.",
+          "depends_on": [],
+          "primary_workstreams": [
+            "B-111"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-111",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "label": "Governance alignment gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W2",
+          "label": "Adaptive Character Runtime And Budget Kernel",
+          "status": "planned",
+          "summary": "Add the local character runtime package, deterministic hard laws, open-world pressure observations, stance vector inference, ranked affordances, and runtime budget enforcement.",
+          "depends_on": [
+            "W1"
+          ],
+          "primary_workstreams": [
+            "B-112"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-112",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "label": "Runtime and budget kernel gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W3",
+          "label": "Adaptive Character Learning Spine",
+          "status": "planned",
+          "summary": "Add compact learning events, retention tiers, recurrence fingerprints, noise suppression, and benchmark/Tribunal promotion hooks.",
+          "depends_on": [
+            "W2"
+          ],
+          "primary_workstreams": [
+            "B-113"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-113",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "label": "Learning spine gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W4",
+          "label": "Adaptive Character Subsystem Integration",
+          "status": "planned",
+          "summary": "Connect Context, Execution, Proof State, Memory, Router, Orchestrator, Intervention, Chatter, Tribunal, and surfaces through compact character contracts.",
+          "depends_on": [
+            "W3"
+          ],
+          "primary_workstreams": [
+            "B-114"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-114",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "label": "Subsystem integration gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W5",
+          "label": "Adaptive Character Tooling And Host Parity",
+          "status": "planned",
+          "summary": "Add character CLI commands, shared skill, Codex and Claude shims, and lane parity without host-model calls on hot character paths.",
+          "depends_on": [
+            "W4"
+          ],
+          "primary_workstreams": [
+            "B-115"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-115",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "label": "Tooling and host parity gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W6",
+          "label": "Adaptive Character Benchmark Sovereignty",
+          "status": "planned",
+          "summary": "Add the agent_operating_character benchmark family, adaptive replay and novelty suites, latency and credit metrics, and publication guards while keeping guidance_behavior green.",
+          "depends_on": [
+            "W5"
+          ],
+          "primary_workstreams": [
+            "B-116"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-116",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "label": "Benchmark sovereignty gate"
+            }
+          ]
+        },
+        {
+          "wave_id": "W7",
+          "label": "Adaptive Character Surfaces And Release Proof",
+          "status": "planned",
+          "summary": "Refresh governed surfaces, run browser checks, restore pinned dogfood before shipped-runtime claims, and block public claims until full proof passes.",
+          "depends_on": [
+            "W6"
+          ],
+          "primary_workstreams": [
+            "B-117"
+          ],
+          "carried_workstreams": [],
+          "in_band_workstreams": [],
+          "gate_refs": [
+            {
+              "workstream_id": "B-117",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "label": "Surfaces and release proof gate"
             }
           ]
         }
@@ -8137,6 +10256,125 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-v0-1-11-visible-intervention-release-proof.md"
     },
     {
+      "id": "B-110",
+      "type": "workstream",
+      "label": "Adaptive Agent Operating Character, Credit-Safe And Benchmark-Proved",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-agent-operating-character-with-learning-spine.md"
+    },
+    {
+      "id": "B-111",
+      "type": "workstream",
+      "label": "Adaptive Character Governance Alignment",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-governance-alignment.md"
+    },
+    {
+      "id": "B-112",
+      "type": "workstream",
+      "label": "Adaptive Character Runtime And Budget Kernel",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-runtime-and-budget-kernel.md"
+    },
+    {
+      "id": "B-113",
+      "type": "workstream",
+      "label": "Adaptive Character Learning Spine",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-learning-spine.md"
+    },
+    {
+      "id": "B-114",
+      "type": "workstream",
+      "label": "Adaptive Character Subsystem Integration",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-subsystem-integration.md"
+    },
+    {
+      "id": "B-115",
+      "type": "workstream",
+      "label": "Adaptive Character Tooling And Host Parity",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-tooling-and-host-parity.md"
+    },
+    {
+      "id": "B-116",
+      "type": "workstream",
+      "label": "Adaptive Character Benchmark Sovereignty",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-benchmark-sovereignty.md"
+    },
+    {
+      "id": "B-117",
+      "type": "workstream",
+      "label": "Adaptive Character Surfaces And Release Proof",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-surfaces-and-release-proof.md"
+    },
+    {
+      "id": "B-118",
+      "type": "workstream",
+      "label": "v0.1.12 Governed Harness: Agent SDK Control Plane And Deep Benchmark Proof",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-agent-sdk-control-plane-and-deep-benchmark-proof.md"
+    },
+    {
+      "id": "B-119",
+      "type": "workstream",
+      "label": "v0.1.12 Governed Harness: Deep Benchmark Coverage Matrix And Baseline Proof",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-deep-benchmark-coverage-matrix-and-baseline-proof.md"
+    },
+    {
+      "id": "B-120",
+      "type": "workstream",
+      "label": "v0.1.12 Governed Harness: Governed Harness Manifest Contract",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-governed-harness-manifest-contract.md"
+    },
+    {
+      "id": "B-121",
+      "type": "workstream",
+      "label": "v0.1.12 Governed Harness: Admissibility Guardrails And Approval Policy",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-admissibility-guardrails-and-approval-policy.md"
+    },
+    {
+      "id": "B-122",
+      "type": "workstream",
+      "label": "v0.1.12 Governed Harness: Harness Receipts, Tracing, And Resumable Proof",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-harness-receipts-tracing-and-resumable-proof.md"
+    },
+    {
+      "id": "B-123",
+      "type": "workstream",
+      "label": "v0.1.12 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md"
+    },
+    {
+      "id": "B-124",
+      "type": "workstream",
+      "label": "v0.1.12 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md"
+    },
+    {
+      "id": "B-125",
+      "type": "workstream",
+      "label": "v0.1.12 Governed Harness: Release Publication, Docs, And Benchmark Closure",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md"
+    },
+    {
+      "id": "B-126",
+      "type": "workstream",
+      "label": "Conditional Release-Targeted Backlog Authoring",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md"
+    },
+    {
       "id": "artifact:.github/workflows/release.yml",
       "type": "artifact",
       "label": ".github/workflows/release.yml",
@@ -8613,6 +10851,13 @@
       "file": "odylith/atlas/source/odylith-conversation-observation-and-governed-proposal-flow.mmd"
     },
     {
+      "id": "diagram:D-039",
+      "type": "diagram",
+      "label": "Adaptive Agent Operating Character Loop",
+      "diagram_id": "D-039",
+      "file": "odylith/atlas/source/odylith-adaptive-agent-operating-character-loop.mmd"
+    },
+    {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -9073,6 +11318,18 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md"
     },
     {
       "id": "release:release-0-1-11",
@@ -12058,6 +14315,176 @@
       "source": "B-109",
       "target": "release:release-0-1-11",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-110",
+      "target": "B-111",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-110",
+      "target": "B-112",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-110",
+      "target": "B-113",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-110",
+      "target": "B-114",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-110",
+      "target": "B-115",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-110",
+      "target": "B-116",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-110",
+      "target": "B-117",
+      "edge_type": "parent_child"
+    },
+    {
+      "source": "B-110",
+      "target": "diagram:D-039",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-110",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-110",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-111",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-111",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-112",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-112",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-113",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-113",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-114",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-114",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-115",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-115",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-116",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-116",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-117",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-117",
+      "target": "release:release-0-1-11",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-118",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-119",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-120",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-121",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-122",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-123",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-124",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-125",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
+    },
+    {
+      "source": "B-126",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-126",
+      "target": "release:release-0-1-12",
+      "edge_type": "active_release"
     }
   ],
   "coverage": {
@@ -12823,6 +15250,125 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-110": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-111": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-112": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-113": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-114": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-115": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-116": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-117": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-118": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-119": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-120": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-121": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-122": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-123": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-124": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-125": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-126": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -12874,15 +15420,15 @@
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 109,
+    "workstream_count": 126,
     "release_count": 2,
-    "active_release_assignment_count": 21,
-    "execution_program_count": 3,
-    "execution_wave_count": 16,
-    "node_count": 256,
-    "edge_count": 591,
+    "active_release_assignment_count": 38,
+    "execution_program_count": 4,
+    "execution_wave_count": 23,
+    "node_count": 276,
+    "edge_count": 625,
     "warning_count": 4,
     "warning_item_count": 4
   },
-  "generated_utc": "2026-04-17 06:34:43Z"
+  "generated_utc": "2026-04-18 00:41:59Z"
 }

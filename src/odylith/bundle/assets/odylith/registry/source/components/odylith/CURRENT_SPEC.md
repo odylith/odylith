@@ -1,4 +1,22 @@
 # Odylith
+
+## Adaptive Agent Operating Character Contract
+- For v0.1.11, Odylith owns Adaptive Agent Operating Character as a platform
+  contract: local pressure observations, deterministic hard laws, adaptive
+  stance facets, ranked affordances, credit-safe budgets, compact learning,
+  Tribunal promotion, and benchmark sovereignty. The contract ids are
+  `odylith_agent_operating_character.v1`,
+  `odylith_agent_operating_character_learning.v1`, and
+  `odylith_agent_operating_character_runtime_budget.v1`.
+- The public command surface is `odylith character status/check/explain`,
+  `odylith validate agent-operating-character --repo-root .`, and the existing
+  `odylith benchmark --family agent_operating_character` path. Character hot
+  paths are deterministic and must not spend host model or provider credits.
+- The host/lane support contract is
+  `odylith_agent_operating_character_host_lane_support.v1`: Codex and Claude
+  are first-class host families, dev/dogfood/consumer are first-class lanes,
+  and host model aliases resolve to adapter families without turning Character
+  classification into a model-consuming path.
 Last updated: 2026-04-15
 
 
@@ -615,6 +633,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Propagated that owned-surface quick-refresh contract across repo-root guidance, consumer guidance, bundled docs, Codex shims, and Claude helper commands so dev, dogfood, and consumer lanes all teach the same single-surface refresh commands instead of a stale `dashboard refresh --surfaces <surface>` hop. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-14: Tightened that quick-update lane again so explicit truth-only selective sync slices skip the runtime governance-packet planner and broad backlog preflight when the changed paths already determine the owned surfaces, source-truth bundle mirroring stays scoped to the explicit files instead of rescanning git, and single-surface Radar/Registry/Casebook refreshes stay on the in-process runtime fast path when the local LanceDB/Tantivy backend is ready. The same-day source-local proof came back at `radar refresh: 1.78s` wall, `registry refresh: 5.03s` wall, `casebook refresh: 1.67s` warm wall, `atlas refresh --atlas-sync: 0.35s` wall, and a four-surface selective sync at `6.9s` sync-reported / `7.33s` wall while the memory backend still reported `ready: true`. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-14: Added a low-RAM-aware command-scoped `RuntimeReadSession`, one shared byte-budgeted process cache for hot runtime facts, an incremental `odylith show` import-graph manifest under `.odylith/runtime/latency-cache/`, fingerprint-gated no-op dashboard refresh reuse, and a shared Claude/Codex SessionStart stale-brief queue so repeated reads and refreshes stop widening into redundant work while the same LanceDB/Tantivy and surface-freshness invariants stay intact. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-18: Hardened the governed sync executor after B-110 QA exposed a structured-refresh return bug: callable sync steps now coerce pass/fail/queued dictionaries into explicit exit status, preserve queued refreshes as non-failures, and fail closed on malformed counters or failed structured payloads. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
 - 2026-04-14: Hardened the Codex post-bash governed-refresh lane so command-scoped selective sync stays exact under dirty worktrees, rename/move operations, shell control and redirection tails, and explicit inline `python -c` / `node -e` file-write one-liners, while Claude preserved the direct exact-path `PostToolUse` lane as the parity reference. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-14: Re-profiled the old worst-row CLI lanes on the live source-local runtime and confirmed the earlier screenshot-class latency is stale: `dashboard refresh` now measures `7.75s` cold / `0.98s` warm, `context-engine warmup` `5.00s` cold / `1.47s` warm, `show` `1.03s` cold / `0.53s` warm, `governance-slice` `0.89s`, `query` `1.45s` cold / `1.37s` warm, `context-engine query` `1.40s` cold / `1.32s` warm, and `claude session-start` `1.96s` cold / `2.14s` warm. `impact` remains the main cold-path outlier at `5.65s` cold / `1.90s` warm. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-14: Narrowed the repo-root Codex skill surface to explicit command shims for the high-frequency CLI lane so routine governance upkeep defaults back to `AGENTS.md`, the launcher, and truthful help instead of a mirrored specialist skill stack. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))

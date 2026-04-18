@@ -538,6 +538,145 @@ def _select_registry_deep_link_chip_for_style_audit(page):  # noqa: ANN001
     raise AssertionError("expected a Registry detail with at least one deep-link chip")
 
 
+def _select_registry_forensic_digest_stress_component(page):  # noqa: ANN001
+    registry = page.frame_locator("#frame-registry")
+    registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+    registry.locator('button[data-component="odylith"]').click()
+    registry.locator('button[data-component="odylith"].active').wait_for(timeout=15000)
+    registry.locator("#timeline .forensic-digest").wait_for(timeout=15000)
+    return registry
+
+
+def _registry_forensic_digest_layout(registry) -> dict[str, object]:  # noqa: ANN001
+    return registry.locator("#timeline").evaluate(
+        """(node) => {
+            const documentElement = node.ownerDocument.documentElement;
+            const timelineCount = String(node.ownerDocument.querySelector("#timelineCount")?.textContent || "");
+            const rows = Array.from(node.querySelectorAll(".forensic-token-row")).map((row) => {
+              const text = row.textContent || "";
+              const workstreamOverflow = Number((text.match(/\\+(\\d+) workstreams/) || [null, "0"])[1]);
+              return {
+                workstreams: row.querySelectorAll(".forensic-workstream-chip").length,
+                artifacts: row.querySelectorAll(":scope > .artifact").length,
+                hiddenArtifacts: row.querySelectorAll(".forensic-artifact-disclosure-panel .artifact").length,
+                workstreamOverflow,
+                text,
+              };
+            });
+            const overflowLabels = rows.flatMap((row) => row.text.match(/\\+\\d+ (?:workstreams|artifacts)/g) || []);
+            const visibleWorkstreamCounts = rows.map((row) => row.workstreams);
+            const visibleArtifactCounts = rows.map((row) => row.artifacts);
+            const visibleNodeOverflow = Array.from(
+              node.querySelectorAll(".forensic-summary, .artifact, .forensic-row-top, .forensic-token-row")
+            ).some((child) => child.scrollWidth > child.clientWidth + 1);
+            return {
+              timelineText: node.textContent || "",
+              eventCount: Number((timelineCount.match(/\\d+/) || ["0"])[0]),
+              rawDetails: node.querySelectorAll(".forensic-raw-log, .forensic-raw-events").length,
+              artifactDisclosureCount: node.querySelectorAll(".forensic-artifact-disclosure").length,
+              hiddenArtifactCount: Math.max(0, ...rows.map((row) => row.hiddenArtifacts)),
+              maxVisibleWorkstreams: Math.max(0, ...visibleWorkstreamCounts),
+              maxVisibleArtifacts: Math.max(0, ...visibleArtifactCounts),
+              maxLinkedWorkstreams: Math.max(0, ...rows.map((row) => row.workstreams + row.workstreamOverflow)),
+              overflowLabels,
+              documentOverflow: documentElement.scrollWidth > documentElement.clientWidth + 1,
+              visibleNodeOverflow,
+            };
+        }"""
+    )
+
+
+def _assert_registry_forensic_digest_keeps_default_view_compact(  # noqa: ANN001
+    base_url: str,
+    context,
+) -> None:
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=registry&component=odylith", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    registry = _select_registry_forensic_digest_stress_component(page)
+    registry.locator("#chronology-anchor").scroll_into_view_if_needed()
+    layout = _registry_forensic_digest_layout(registry)
+
+    assert int(layout["eventCount"]) >= 9, "expected a high-volume evidence component for the digest audit"
+    assert int(layout["maxLinkedWorkstreams"]) >= 50, "expected many linked workstreams behind digest overflow"
+    assert int(layout["rawDetails"]) == 0, "raw event logs should not be exposed in the Registry UI"
+    assert "Raw event log" not in str(layout["timelineText"])
+    assert "No scope" not in str(layout["timelineText"])
+    assert "No artifacts" not in str(layout["timelineText"])
+    assert int(layout["maxVisibleWorkstreams"]) <= 4
+    assert int(layout["maxVisibleArtifacts"]) <= 2
+    assert int(layout["artifactDisclosureCount"]) > 0, "artifact overflow should be expandable"
+    assert int(layout["hiddenArtifactCount"]) > 0, "artifact disclosure should retain hidden artifact links"
+    assert layout["overflowLabels"], "high-volume evidence should render compact overflow labels"
+    assert layout["documentOverflow"] is False
+    assert layout["visibleNodeOverflow"] is False
+
+    workstream_style = _workstream_button_style(registry, "#timeline .forensic-workstream-chip")
+    assert workstream_style["fontSize"] == "12px"
+    assert workstream_style["fontWeight"] == "500"
+    assert workstream_style["paddingTop"] == "1px"
+    assert workstream_style["paddingRight"] == "8px"
+    assert workstream_style["paddingBottom"] == "1px"
+    assert workstream_style["paddingLeft"] == "8px"
+
+    artifact_style = _deep_link_button_style(registry, "#timeline .artifact")
+    assert artifact_style["fontSize"] == "11px"
+    assert artifact_style["fontWeight"] == "700"
+    assert artifact_style["paddingTop"] == "4px"
+    assert artifact_style["paddingRight"] == "12px"
+    assert artifact_style["paddingBottom"] == "4px"
+    assert artifact_style["paddingLeft"] == "12px"
+    assert artifact_style["borderRadius"] == "999px"
+
+    artifact_disclosure_style = _deep_link_button_style(registry, "#timeline .forensic-artifact-overflow-summary")
+    assert artifact_disclosure_style["fontSize"] == "11px"
+    assert artifact_disclosure_style["fontWeight"] == "700"
+    assert artifact_disclosure_style["paddingTop"] == "4px"
+    assert artifact_disclosure_style["paddingRight"] == "12px"
+    assert artifact_disclosure_style["paddingBottom"] == "4px"
+    assert artifact_disclosure_style["paddingLeft"] == "12px"
+    assert artifact_disclosure_style["borderRadius"] == "999px"
+
+    artifact_disclosure = registry.locator("#timeline .forensic-artifact-disclosure").first
+    hidden_artifacts = artifact_disclosure.locator(".forensic-artifact-disclosure-panel .artifact")
+    assert hidden_artifacts.count() > 0
+    assert hidden_artifacts.first.is_visible() is False
+    artifact_disclosure.locator("summary").click()
+    hidden_artifacts.first.wait_for(state="visible", timeout=15000)
+    assert artifact_disclosure.evaluate("node => node.open") is True
+    expanded_layout = _registry_forensic_digest_layout(registry)
+    assert int(expanded_layout["maxVisibleArtifacts"]) <= 2
+    assert expanded_layout["documentOverflow"] is False
+    assert expanded_layout["visibleNodeOverflow"] is False
+
+    coverage_style = _governance_kpi_style(
+        registry,
+        "#timeline .forensic-stat",
+        ".forensic-stat-label",
+        ".forensic-stat-value",
+    )
+    assert coverage_style["cardPaddingTop"] == "10px"
+    assert coverage_style["cardPaddingRight"] == "12px"
+    assert coverage_style["cardPaddingBottom"] == "10px"
+    assert coverage_style["cardPaddingLeft"] == "12px"
+    assert coverage_style["cardBorderRadius"] == "12px"
+    assert coverage_style["labelFontSize"] == "12px"
+    assert coverage_style["labelTextTransform"] == "uppercase"
+    assert coverage_style["valueFontSize"] == "23px"
+    assert coverage_style["valueFontWeight"] == "700"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_registry_forensic_digest_keeps_default_view_compact_in_browser(browser_context) -> None:  # noqa: ANN001
+    _assert_registry_forensic_digest_keeps_default_view_compact(*browser_context)
+
+
+def test_registry_forensic_digest_keeps_default_view_compact_in_compact_browser(compact_browser_context) -> None:  # noqa: ANN001
+    _assert_registry_forensic_digest_keeps_default_view_compact(*compact_browser_context)
+
+
 def _select_casebook_deep_link_chip_for_style_audit(page):  # noqa: ANN001
     casebook = page.frame_locator("#frame-casebook")
     rows = casebook.locator("button.bug-row")

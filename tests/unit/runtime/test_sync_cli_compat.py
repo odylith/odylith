@@ -272,6 +272,67 @@ def test_run_callable_with_heartbeat_preserves_active_sync_session(tmp_path: Pat
     assert seen_repo_roots == [str(tmp_path.resolve())]
 
 
+def test_run_callable_with_heartbeat_accepts_status_mapping_results() -> None:
+    rc = sync_workstream_artifacts._run_callable_with_heartbeat(  # noqa: SLF001
+        label="mapping-step",
+        callable_=lambda: {"outcome": "passed"},
+    )
+
+    assert rc == 0
+
+
+def test_run_callable_with_heartbeat_accepts_queued_mapping_results() -> None:
+    rc = sync_workstream_artifacts._run_callable_with_heartbeat(  # noqa: SLF001
+        label="mapping-step",
+        callable_=lambda: {"status": "queued"},
+    )
+
+    assert rc == 0
+
+
+def test_run_callable_with_heartbeat_fails_closed_for_failed_mapping_results() -> None:
+    rc = sync_workstream_artifacts._run_callable_with_heartbeat(  # noqa: SLF001
+        label="mapping-step",
+        callable_=lambda: {"status": "failed"},
+    )
+
+    assert rc == 1
+
+
+def test_dashboard_refresh_action_mapping_failure_without_rc_fails_closed(tmp_path: Path) -> None:
+    step = sync_workstream_artifacts.ExecutionStep(
+        label="Structured failure",
+        action=lambda: {"status": "failed"},
+    )
+
+    result = sync_workstream_artifacts._run_dashboard_refresh_step(  # noqa: SLF001
+        repo_root=tmp_path,
+        step=step,
+        runtime_mode="auto",
+        run_impl=lambda **_kwargs: 0,
+    )
+
+    assert result["rc"] == 1
+    assert result["status"] == "failed"
+
+
+def test_dashboard_refresh_action_mapping_queue_is_non_failure(tmp_path: Path) -> None:
+    step = sync_workstream_artifacts.ExecutionStep(
+        label="Structured queue",
+        action=lambda: {"status": "queued"},
+    )
+
+    result = sync_workstream_artifacts._run_dashboard_refresh_step(  # noqa: SLF001
+        repo_root=tmp_path,
+        step=step,
+        runtime_mode="auto",
+        run_impl=lambda **_kwargs: 0,
+    )
+
+    assert result["rc"] == 0
+    assert result["status"] == "queued"
+
+
 def test_generated_surface_steps_export_sync_forced_rebuild_env() -> None:
     step = sync_workstream_artifacts.ExecutionStep(
         label="Render Radar",
@@ -1032,6 +1093,40 @@ def test_sync_changed_source_truth_bundle_mirrors_updates_runtime_source_corpus(
     assert mirror_path.read_text(encoding="utf-8") == "{\"version\": \"v1\", \"scenarios\": [\"fresh\"]}\n"
 
 
+def test_sync_changed_source_truth_bundle_mirrors_updates_guidance_behavior_corpus(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo_root = tmp_path
+    live_path = repo_root / "odylith" / "runtime" / "source" / "guidance-behavior-evaluation-corpus.v1.json"
+    mirror_path = (
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "runtime"
+        / "source"
+        / "guidance-behavior-evaluation-corpus.v1.json"
+    )
+    live_path.parent.mkdir(parents=True, exist_ok=True)
+    mirror_path.parent.mkdir(parents=True, exist_ok=True)
+    live_path.write_text("{\"version\": \"guidance_behavior_evaluation_corpus.v1\", \"cases\": [\"fresh\"]}\n", encoding="utf-8")
+    mirror_path.write_text("{\"version\": \"guidance_behavior_evaluation_corpus.v1\", \"cases\": [\"stale\"]}\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        sync_workstream_artifacts.governance,
+        "collect_git_changed_paths",
+        lambda *, repo_root: ("odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json",),
+    )
+
+    rc = sync_workstream_artifacts._sync_changed_source_truth_bundle_mirrors(repo_root=repo_root)  # noqa: SLF001
+
+    assert rc == 0
+    assert mirror_path.read_text(encoding="utf-8") == "{\"version\": \"guidance_behavior_evaluation_corpus.v1\", \"cases\": [\"fresh\"]}\n"
+
+
 def test_sync_changed_source_truth_bundle_mirrors_scopes_to_explicit_paths_without_git_scan(
     tmp_path: Path,
     monkeypatch,
@@ -1283,7 +1378,7 @@ def test_build_sync_execution_plan_validates_radar_for_backlog_only_selective_sl
     assert "Render Radar without widening into the full governance sync pipeline." in labels
 
 
-def test_build_sync_execution_plan_final_registry_reconcile_triggers_delivery_stabilization(tmp_path: Path) -> None:
+def test_build_sync_execution_plan_final_registry_reconcile_settles_atlas_before_delivery(tmp_path: Path) -> None:
     plan = sync_workstream_artifacts.build_sync_execution_plan(
         repo_root=tmp_path,
         args=SimpleNamespace(
@@ -1316,8 +1411,14 @@ def test_build_sync_execution_plan_final_registry_reconcile_triggers_delivery_st
 
     assert final_registry_step.change_watch_paths == ("odylith/registry/source/components/",)
     assert final_registry_step.followup_steps_on_change
-    assert final_registry_step.followup_steps_on_change[0].label == "Refresh delivery intelligence after final Registry truth settles."
-    assert final_registry_step.followup_steps_on_change[0].followup_steps_on_change
+    followup_labels = [step.label for step in final_registry_step.followup_steps_on_change]
+
+    assert followup_labels[:3] == [
+        "Refresh Atlas review fingerprints after final Registry forensics settle.",
+        "Render Atlas after final Registry forensic freshness settles.",
+        "Refresh delivery intelligence after final Registry truth settles.",
+    ]
+    assert final_registry_step.followup_steps_on_change[2].followup_steps_on_change
 
 
 def test_execute_plan_runs_change_followups_only_when_watched_inputs_mutate(tmp_path: Path) -> None:

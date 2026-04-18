@@ -670,6 +670,98 @@ def test_build_session_brief_hot_path_requests_unfinalized_impact(monkeypatch, t
     assert captured["finalize_packet"] is False
 
 
+def test_build_session_brief_hot_path_preserves_guidance_behavior_contract(monkeypatch, tmp_path: Path) -> None:
+    def _fake_build_impact_report(**kwargs):  # noqa: ANN001
+        return {
+            "changed_paths": list(kwargs.get("changed_paths", [])),
+            "explicit_paths": list(kwargs.get("changed_paths", [])),
+            "candidate_workstreams": [],
+            "workstream_selection": {"state": "none", "reason": "narrow first"},
+            "selection_state": "none",
+            "selection_reason": "narrow first",
+            "selection_confidence": "low",
+            "context_packet_state": "gated_ambiguous",
+            "components": [],
+            "diagrams": [],
+            "docs": [],
+            "recommended_commands": [],
+            "recommended_tests": [],
+            "engineering_notes": {},
+            "miss_recovery": {},
+            "truncation": {},
+            "full_scan_recommended": False,
+            "full_scan_reason": "",
+            "fallback_scan": {},
+        }
+
+    guidance_summary = {
+        "contract": "odylith_guidance_behavior_runtime_summary.v1",
+        "family": "guidance_behavior",
+        "status": "available",
+        "validation_status": "not_run",
+        "case_count": 6,
+        "validator_command": "odylith validate guidance-behavior --repo-root .",
+        "runtime_layer_contract": {
+            "contract": "odylith_guidance_behavior_runtime_layers.v1",
+            "layers": [
+                "context_engine",
+                "execution_engine",
+                "memory_substrate",
+                "intervention_engine",
+                "tribunal",
+            ],
+            "hot_path": {"summary_only": True, "provider_calls": False},
+        },
+    }
+    captured_summary_kwargs: dict[str, object] = {}
+
+    monkeypatch.setattr(session_packet_runtime, "build_impact_report", _fake_build_impact_report)
+
+    def _fake_summary_for_packet(**kwargs):  # noqa: ANN001
+        captured_summary_kwargs.update(kwargs)
+        return dict(guidance_summary)
+
+    monkeypatch.setattr(
+        session_packet_runtime.tooling_context_packet_builder.guidance_behavior_runtime,
+        "summary_for_packet",
+        _fake_summary_for_packet,
+    )
+
+    payload = session_packet_runtime.build_session_brief(
+        repo_root=tmp_path,
+        changed_paths=["src/odylith/runtime/governance/validate_guidance_behavior.py"],
+        runtime_mode="local",
+        delivery_profile="agent_hot_path",
+        family_hint="guidance_behavior",
+        validation_command_hints=[
+            "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth"
+        ],
+    )
+
+    context_packet = dict(payload.get("context_packet", {}))
+    summary = dict(context_packet.get("guidance_behavior_summary", {}))
+    recommended_validation = dict(
+        dict(context_packet.get("execution_engine_handshake", {})).get("recommended_validation", {})
+    )
+
+    assert summary["status"] == "available"
+    assert summary["runtime_layer_contract"]["layers"] == [
+        "context_engine",
+        "execution_engine",
+        "memory_substrate",
+        "intervention_engine",
+        "tribunal",
+    ]
+    assert recommended_validation["guidance_behavior_status"] == "available"
+    assert list(captured_summary_kwargs["recommended_commands"]) == [
+        "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth"
+    ]
+    assert payload["recommended_commands"] == [
+        "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth",
+        guidance_summary["validator_command"],
+    ]
+
+
 def test_build_governance_slice_hot_path_requests_unfinalized_impact(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
     detail_levels: list[str] = []

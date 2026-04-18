@@ -1,5 +1,5 @@
 ---
 name: odylith-doctor
-description: Verify or repair the current Odylith install.
+description: Use when the current Odylith install needs verification or an approved repair.
 ---
 @../../../odylith/skills/odylith-doctor/SKILL.md

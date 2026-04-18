@@ -52,3 +52,70 @@ def test_execution_engine_snapshot_helper_fail_closes_nested_stale_snapshot_iden
     assert compact["snapshot_reuse_status"] == "fail_closed_identity"
     assert compact["identity_status"] == "blocked_noncanonical_target"
     assert compact["target_component_status"] == "blocked_noncanonical_execution_engine"
+
+
+def test_execution_engine_handshake_carries_guidance_behavior_validator_command() -> None:
+    command = "odylith validate guidance-behavior --repo-root ."
+
+    handshake = execution_engine_handshake.normalize_execution_engine_handshake(
+        payload={
+            "packet_kind": "governance_slice",
+            "guidance_behavior_summary": {
+                "family": "guidance_behavior",
+                "status": "available",
+                "validation_status": "not_run",
+                "validator_command": command,
+            },
+        },
+        context_packet={
+            "route": {"route_ready": True},
+        },
+    )
+
+    assert command in handshake["recommended_validation"]["recommended_commands"]
+    assert handshake["recommended_validation"]["guidance_behavior_status"] == "available"
+    assert handshake["recommended_validation"]["guidance_behavior_validation_status"] == "not_run"
+
+
+def test_execution_engine_handshake_reads_guidance_behavior_from_context_packet() -> None:
+    command = "odylith validate guidance-behavior --repo-root ."
+
+    handshake = execution_engine_handshake.normalize_execution_engine_handshake(
+        payload={"packet_kind": "governance_slice"},
+        context_packet={
+            "route": {"route_ready": True},
+            "guidance_behavior_summary": {
+                "family": "guidance_behavior",
+                "status": "failed",
+                "validation_status": "failed",
+                "validator_command": command,
+            },
+        },
+    )
+
+    assert command in handshake["recommended_validation"]["recommended_commands"]
+    assert handshake["recommended_validation"]["guidance_behavior_status"] == "failed"
+    assert handshake["recommended_validation"]["guidance_behavior_validation_status"] == "failed"
+
+
+def test_execution_engine_handshake_carries_character_validator_command() -> None:
+    command = "odylith validate agent-operating-character --repo-root ."
+
+    handshake = execution_engine_handshake.normalize_execution_engine_handshake(
+        payload={
+            "packet_kind": "governance_slice",
+            "character_summary": {
+                "family": "agent_operating_character",
+                "status": "available",
+                "validation_status": "not_run",
+                "validator_command": command,
+            },
+        },
+        context_packet={
+            "route": {"route_ready": True},
+        },
+    )
+
+    assert command in handshake["recommended_validation"]["recommended_commands"]
+    assert handshake["recommended_validation"]["character_status"] == "available"
+    assert handshake["recommended_validation"]["character_validation_status"] == "not_run"

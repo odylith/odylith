@@ -13,6 +13,16 @@
 - Host-specific guidance belongs only where a native host capability is real,
   locally supported, and materially reduces hops compared with the shared CLI
   path.
+- Adaptive Agent Operating Character is host-semantic, not Codex-specific.
+  Codex may surface `.agents/skills/odylith-agent-operating-character`, but
+  pressure observation, stance, hard-law, affordance, learning, validation, and
+  benchmark decisions must come from the shared local runtime. Codex hooks,
+  compatibility probes, and routed subagents must not spend host model credits
+  to classify character pressure.
+- Character support is proven as a host/lane matrix, not a Codex-only happy
+  path: Codex and Claude must share the same semantic contract across dev,
+  pinned dogfood, and consumer lanes. Codex model aliases resolve to the Codex
+  adapter family, but the Character decision remains local and model-agnostic.
 
 ## Codex Project-Asset Surface
 - Codex CLI can load repo-scoped project assets from `.codex/` plus repo-scoped
@@ -197,6 +207,20 @@
   colder host-specific voice for those blocks. The Observation/Proposal
   markdown contract is shared with Claude and remains consistent across
   detached `source-local`, pinned dogfood, and consumer lanes.
+- Guidance Behavior proof on Codex follows the same shared contract as Claude:
+  run `odylith validate guidance-behavior --repo-root .` for deterministic
+  pressure-case proof, keep `guidance_behavior_summary` compact on live packet
+  paths, and use case-scoped validator commands when a packet names one
+  pressure case.
+- Codex guidance behavior must stay in the shared platform contract. The
+  `.agents/skills/odylith-guidance-behavior/` shim, bundled consumer skill
+  mirror, install guidance, and benchmark/eval family are validated together by
+  `odylith_guidance_behavior_platform_end_to_end.v1`; do not add a Codex-only
+  proof phrase, command family, or hidden-success rule.
+- For the bounded delegation pressure case, routed Codex leaves still use the
+  current `spawn_agent` contract. Do not claim `.codex/agents/*.toml` is
+  selected by `spawn_agent`; preserve the emitted owner, goal, expected output,
+  termination condition, and validation expectation in the spawned prompt.
 - Codex does not have project-scoped slash commands, so Odylith uses
   `.agents/skills/` command-skills instead of trying to fake a
   `.codex/commands/` surface.
@@ -211,6 +235,7 @@
   - `$odylith-doctor`
   - `$odylith-compass-log`
   - `$odylith-compass-refresh`
+  - `$odylith-guidance-behavior`
 - Common consumer-lane fast paths should be one direct CLI hop:
   - `./.odylith/bin/odylith bug capture --help`
   - `./.odylith/bin/odylith backlog create --help`

@@ -1,4 +1,10 @@
 # Dashboard
+
+## Adaptive Agent Operating Character Contract
+- Dashboard owns high-signal operator status only. Character posture,
+  benchmark proof, and release-gate indicators may surface when useful, but
+  passing checks should stay quiet and no dashboard claim should imply shipped
+  behavior before pinned dogfood and benchmark proof exist.
 Last updated: 2026-04-17
 
 
@@ -353,6 +359,7 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 - 2026-04-17: Remembered the Compass Programs card-shape contract in Dashboard governance so visible program records stay as release-like inner cards rather than borderless rows inside the outer Programs container. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-18: Hardened dashboard refresh structured-result handling so queued child refreshes remain non-failures, failed structured refresh payloads without an explicit `rc` fail closed, and selective sync no longer crashes or falsely passes when Compass or Radar refresh actions return dictionaries. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
 - 2026-03-26: Bound the shell host to Odylith's own product-governance records so the public repo can render and audit its own surface boundary. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-03-27: Added self-host posture payload fields so the shell can expose product-repo dogfood and release posture without inventing a second status model. (Plan: [B-004](odylith/radar/radar.html?view=plan&workstream=B-004))
 - 2026-04-07: Clarified the shell freshness contract so Compass owns its normal stale-runtime disclosure in-frame, the shell reserves status cards for failure-only or cross-surface posture, and the recovery dock no longer carries per-surface `Show status` reopen buttons. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

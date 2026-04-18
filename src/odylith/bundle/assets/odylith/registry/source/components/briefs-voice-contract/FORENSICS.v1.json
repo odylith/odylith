@@ -9,10 +9,10 @@
     "empty_reasons": [],
     "explicit_event_count": 3,
     "mapped_workstream_evidence_count": 2,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 3
+    "timeline_event_count": 4
   },
   "name": "Briefs Voice Contract",
   "path_prefixes": [
@@ -24,9 +24,25 @@
   "spec_ref": "odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifacts": [
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md"
+      ],
+      "confidence": "high",
+      "event_index": 265,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "briefs-voice-contract"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+      "ts_iso": "2026-04-17T15:59:59-07:00",
+      "workstreams": []
+    },
+    {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 683,
+      "event_index": 249,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",
@@ -132,7 +148,7 @@
     {
       "artifacts": [],
       "confidence": "high",
-      "event_index": 659,
+      "event_index": 247,
       "explicit_components": [
         "governance-intervention-engine",
         "odylith-context-engine",

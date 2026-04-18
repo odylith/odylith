@@ -113,6 +113,7 @@ def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
     assert "--product-view" in output
     assert "--success-metrics" in output
     assert "--priority" in output
+    assert "--release" in output
     assert "--dry-run" in output
     assert "--json" in output
 
@@ -1150,6 +1151,151 @@ def test_validate_guidance_portability_dispatches_fast_path(monkeypatch, tmp_pat
     assert captured["argv"] == ["--repo-root", str(tmp_path)]
 
 
+def test_validate_guidance_behavior_dispatches_fast_path(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_validate_main(argv: list[str]) -> int:
+        captured["argv"] = list(argv)
+        return 0
+
+    monkeypatch.setattr(cli.validate_guidance_behavior, "main", fake_validate_main)
+
+    rc = cli.main(
+        [
+            "validate",
+            "guidance-behavior",
+            "--repo-root",
+            str(tmp_path),
+            "--case-id",
+            "guidance-a",
+            "--json",
+        ]
+    )
+
+    assert rc == 0
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "--case-id", "guidance-a", "--json"]
+
+
+def test_validate_agent_operating_character_dispatches_fast_path(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_validate_main(argv: list[str]) -> int:
+        captured["argv"] = list(argv)
+        return 0
+
+    monkeypatch.setattr(cli.validate_agent_operating_character, "main", fake_validate_main)
+
+    rc = cli.main(
+        [
+            "validate",
+            "agent-operating-character",
+            "--repo-root",
+            str(tmp_path),
+            "--case-id",
+            "character-credit-safe-hot-path",
+            "--json",
+        ]
+    )
+
+    assert rc == 0
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "--case-id",
+        "character-credit-safe-hot-path",
+        "--json",
+    ]
+
+
+def test_character_check_dispatches_to_shared_cli(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    class _CharacterModule:
+        @staticmethod
+        def run_character(argv: list[str]) -> int:
+            captured["argv"] = list(argv)
+            return 7
+
+    real_module_handle = cli._module_handle  # noqa: SLF001
+    monkeypatch.setattr(
+        cli,
+        "_module_handle",
+        lambda module_name: _CharacterModule if module_name == "odylith.runtime.character.cli" else real_module_handle(module_name),
+    )
+    intent = tmp_path / "intent.txt"
+    intent.write_text("Say it is fixed now.", encoding="utf-8")
+
+    rc = cli.main(
+        [
+            "character",
+            "check",
+            "--repo-root",
+            str(tmp_path),
+            "--intent-file",
+            str(intent),
+            "--host",
+            "codex",
+            "--json",
+        ]
+    )
+
+    assert rc == 7
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "check",
+        "--intent-file",
+        str(intent),
+        "--host",
+        "codex",
+        "--lane",
+        "dev",
+        "--json",
+    ]
+
+
+def test_character_status_and_explain_dispatch_to_shared_cli(monkeypatch, tmp_path: Path) -> None:
+    captured: list[list[str]] = []
+
+    class _CharacterModule:
+        @staticmethod
+        def run_character(argv: list[str]) -> int:
+            captured.append(list(argv))
+            return 0
+
+    real_module_handle = cli._module_handle  # noqa: SLF001
+    monkeypatch.setattr(
+        cli,
+        "_module_handle",
+        lambda module_name: _CharacterModule if module_name == "odylith.runtime.character.cli" else real_module_handle(module_name),
+    )
+
+    assert cli.main(["character", "status", "--repo-root", str(tmp_path), "--json"]) == 0
+    assert cli.main(
+        [
+            "character",
+            "explain",
+            "--repo-root",
+            str(tmp_path),
+            "--decision-id",
+            "character:codex:dev:abc",
+            "--json",
+        ]
+    ) == 0
+
+    assert captured == [
+        ["--repo-root", str(tmp_path), "status", "--json"],
+        [
+            "--repo-root",
+            str(tmp_path),
+            "explain",
+            "--decision-id",
+            "character:codex:dev:abc",
+            "--json",
+        ],
+    ]
+
+
 def test_validate_version_truth_dispatches_check_mode(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
 
@@ -1666,6 +1812,22 @@ def test_governance_validate_guidance_portability_dispatch_accepts_plain_forward
     rc = cli.main(["governance", "validate-guidance-portability", "--repo-root", str(tmp_path), "--check-only"])
     assert rc == 252
     assert captured["argv"] == ["--repo-root", str(tmp_path), "--check-only"]
+
+
+def test_governance_validate_guidance_behavior_dispatch_accepts_plain_forwarded_flags(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 251
+
+    monkeypatch.setattr(cli.validate_guidance_behavior, "main", fake_main)
+    rc = cli.main(["governance", "validate-guidance-behavior", "--repo-root", str(tmp_path), "--case-id", "guidance-a"])
+    assert rc == 251
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "--case-id", "guidance-a"]
 
 
 def test_governance_validate_plan_traceability_dispatch_accepts_plain_forwarded_flags(

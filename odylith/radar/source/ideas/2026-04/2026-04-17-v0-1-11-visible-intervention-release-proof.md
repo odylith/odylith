@@ -70,29 +70,50 @@ Odylith maintainers and downstream users who need the released intervention UX t
 Tie focused tests, migration checks, Atlas renders, Registry validation, Casebook/Radar validation, and Compass status into one release-proof wave.
 
 ## Proposed Solution
-Create the workstream for v0.1.11 Visible Intervention Release Proof and refine the exact implementation plan during execution.
+Close v0.1.11 only after the runtime, migration, host visibility, guidance
+behavior integration, benchmark/corpus proof, Registry specs, Atlas diagrams,
+Radar records, Casebook records, Compass log, generated dashboards, and bundle
+mirrors all agree. Release proof must name skipped coverage explicitly instead
+of letting green source tests imply chat-visible product success. Guidance
+Behavior release proof includes both runtime-layer alignment and
+guidance-surface alignment across Codex, Claude, installed skills, command
+shims, and consumer/pinned-dogfood/source-local lane instructions.
 
 ## Scope
-- Define and land the bounded work for v0.1.11 Visible Intervention Release Proof.
-- Keep the first implementation wave narrow and test-backed.
+- Focused runtime and host-visible regression for value selection,
+  transcript replay, visibility status, and Assist closeout ownership.
+- Guidance behavior validator and runtime-layer contract proof.
+- Guidance behavior host/lane guidance-surface contract proof.
+- Governance refresh across Radar, Registry, Atlas, Casebook, Compass, shell,
+  and source bundle mirrors.
+- Final hygiene: py_compile, selective sync, rendered Atlas checks, and
+  `git diff --check`.
 
 ## Non-Goals
-- Do not widen this queued workstream into unrelated product cleanup.
+- Do not claim live deployed chat proof from source-local tests alone.
+- Do not close B-096 until new or reloaded host sessions prove visibility or
+  direct fallback Markdown is rendered in the active chat.
 
 ## Risks
-- The title may need refinement once the implementation owner confirms the exact boundary.
+- Governance can look current because generated surfaces refreshed while source
+  workstreams, specs, or Casebook records still omit the new contract.
 
 ## Dependencies
-- No explicit dependency recorded yet; confirm related workstreams before implementation starts.
+- B-105 through B-108.
+- Release assignment for `release-0-1-11`.
+- CB-122 and CB-123.
 
 ## Success Metrics
-Focused runtime, host-visible, install migration, corpus, benchmark report, Registry, Casebook, Radar, Atlas, py_compile, sync, and git diff checks pass with any skipped coverage explicitly named.
+Focused runtime, host-visible, install migration, corpus, benchmark report, Registry, Casebook, Radar, Atlas, py_compile, sync, guidance-surface contract, and git diff checks pass with any skipped coverage explicitly named.
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Run focused intervention runtime, host-visible, transcript replay,
+  benchmark/corpus, guidance behavior, guidance-surface, Casebook, Registry,
+  Radar, Atlas, Compass, py_compile, sync, browser, and diff hygiene checks.
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- Keep this wave active until release proof differentiates source-local code
+  proof, generated dashboard proof, and fresh host chat visibility proof.
 
 ## Why Now
 This slice is active enough that it should exist as explicit backlog truth now.
@@ -101,16 +122,31 @@ This slice is active enough that it should exist as explicit backlog truth now.
 Odylith should leave v0.1.11 with visible intervention value as proven mechanism evidence, not a half-integrated runtime experiment.
 
 ## Impacted Components
-- `odylith`
+- `governance-intervention-engine`
+- `odylith-context-engine`
+- `execution-engine`
+- `odylith-memory-contracts`
+- `tribunal`
+- `benchmark`
+- `compass`
+- `radar`
+- `registry`
+- `atlas`
+- `casebook`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- Release proof consumes the v0.1.11 value-engine, visibility, guidance
+  behavior, and migration contracts as one acceptance bundle.
 
 ## Migration/Compatibility
-- No migration impact recorded yet.
+- v0.1.10 to v0.1.11 migration must cut hard to the value-engine and
+  guidance-behavior corpus contracts; stale ranker or missing corpus mirrors
+  block release proof.
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- Include both source-local runtime tests and headless/generated-surface checks
+  so governance and UI proof cannot drift.
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- Remaining open item is fresh/reloaded Codex and Claude session proof before
+  the release can claim live chat-visible activation.

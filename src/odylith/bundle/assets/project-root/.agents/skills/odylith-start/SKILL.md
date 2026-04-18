@@ -1,5 +1,5 @@
 ---
 name: odylith-start
-description: Run the repo-local Odylith startup contract for the current task.
+description: Use when a task needs repo-local Odylith startup grounding.
 ---
 @../../../odylith/skills/odylith-start/SKILL.md

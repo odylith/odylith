@@ -15,4 +15,12 @@ Use this skill when the task is about delegation planning, execution ownership, 
 - delegate only bounded work, and only spawn native subagents on hosts where Odylith has validated native spawn support
 - prefer emitted `single_leaf`, `serial_batch`, or `parallel_batch` contracts over manual fanout decisions once Odylith has a route-ready slice
 - keep validation and stop conditions explicit
+- For guidance-bounded-delegation-contract pressure, every delegated leaf must
+  preserve owner, goal, expected output, termination condition, and validation
+  expectation. If the route cannot make those fields concrete, stay local or
+  narrow the slice before delegating.
+- When guidance behavior proof is part of the task, include
+  `./.odylith/bin/odylith validate guidance-behavior --repo-root .` or the
+  case-scoped validator command in the validation expectation instead of
+  relying on a generic "looks done" closeout.
 - Both Codex and Claude Code are validated Odylith delegation hosts; Codex executes routed leaves through `spawn_agent`, while Claude Code executes the same bounded orchestration plan through Task-tool subagents and the checked-in `.claude/` project assets

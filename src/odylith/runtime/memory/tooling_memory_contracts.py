@@ -7,6 +7,8 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.consumer_profile import canonical_truth_token
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.governance import guidance_behavior_runtime
 
 
 _ALLOWLIST_SOURCE_PREFIXES: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -798,6 +800,14 @@ def build_context_packet(
     execution_profile = execution_profile_mapping(
         routing_handoff.get("odylith_execution_profile") or routing_handoff.get("execution_profile")
     )
+    guidance_behavior_summary = guidance_behavior_runtime.summary_from_sources(
+        payload,
+        limit=max(limit, 6),
+    )
+    character_summary = character_runtime.summary_from_sources(
+        payload,
+        limit=max(limit, 6),
+    )
     contract_policy = _compact_contract_policy(summary_only=summary_only)
     if summary_only:
         selected_counts = _mapping_value(retrieval_plan.get("selected_counts"))
@@ -812,6 +822,8 @@ def build_context_packet(
             },
             "packet_kind": str(packet_kind or "").strip(),
             "packet_state": str(packet_state or "").strip(),
+            **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
+            **({"character_summary": character_summary} if character_summary else {}),
             "selection_state": str(payload.get("selection_state", "")).strip()
             or str(retrieval_plan.get("selection_state", "")).strip(),
             "full_scan_recommended": bool(payload.get("full_scan_recommended")),
@@ -953,6 +965,8 @@ def build_context_packet(
         },
         "packet_kind": str(packet_kind or "").strip(),
         "packet_state": str(packet_state or "").strip(),
+        **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
+        **({"character_summary": character_summary} if character_summary else {}),
         "selection_state": str(payload.get("selection_state", "")).strip()
         or str(retrieval_plan.get("selection_state", "")).strip(),
         "full_scan_recommended": bool(payload.get("full_scan_recommended")),
@@ -1160,6 +1174,14 @@ def build_evidence_pack(
         adaptive_packet_profile=adaptive_packet_profile,
         summary_only=summary_only,
     )
+    guidance_behavior_summary = guidance_behavior_runtime.summary_from_sources(
+        payload,
+        limit=max(limit, 6),
+    )
+    character_summary = character_runtime.summary_from_sources(
+        payload,
+        limit=max(limit, 6),
+    )
     contract_policy = _compact_contract_policy(summary_only=summary_only)
     if summary_only:
         return {
@@ -1167,6 +1189,8 @@ def build_evidence_pack(
             "version": "v1",
             "packet_kind": str(packet_kind or "").strip(),
             "packet_state": str(packet_state or "").strip(),
+            **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
+            **({"character_summary": character_summary} if character_summary else {}),
             "selection_state": selection_state,
             "full_scan_recommended": bool(payload.get("full_scan_recommended")),
             "full_scan_reason": str(payload.get("full_scan_reason", "")).strip(),
@@ -1201,6 +1225,8 @@ def build_evidence_pack(
         "version": "v1",
         "packet_kind": str(packet_kind or "").strip(),
         "packet_state": str(packet_state or "").strip(),
+        **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
+        **({"character_summary": character_summary} if character_summary else {}),
         "selection_state": selection_state,
         "full_scan_recommended": bool(payload.get("full_scan_recommended")),
         "full_scan_reason": str(payload.get("full_scan_reason", "")).strip(),

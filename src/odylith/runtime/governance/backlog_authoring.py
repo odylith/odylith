@@ -11,6 +11,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import owned_surface_refresh
+from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 _WORKSTREAM_RE = re.compile(r"^B-(\d{3,})$")
@@ -75,6 +76,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--founder-override", action="store_true")
     parser.add_argument("--override-note", default="")
     parser.add_argument("--override-review-date", default="")
+    parser.add_argument(
+        "--release",
+        default="",
+        help="Optional release selector such as `next` or `release-0-1-12` for the newly created queued records.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--json", action="store_true", dest="as_json")
     return parser.parse_args(argv)
@@ -606,12 +612,28 @@ def create_queued_backlog_items(
         "backlog_index": str(backlog_index_path.resolve()),
         "backlog_index_text": updated_index_text,
         "idea_files": {str(path.resolve()): text for path, text in new_text_by_path.items()},
+        "_candidate_idea_specs": mutable_ideas,
     }
+
+
+def _release_assignment_note(*, selector: str) -> str:
+    return (
+        "Target newly created queued backlog record(s) from "
+        f"`odylith backlog create --release {str(selector).strip()}`."
+    )
+
+
+def _refresh_status(*, surface: str, status: str, detail: str = "") -> dict[str, str]:
+    payload = {"surface": surface, "status": status}
+    if str(detail).strip():
+        payload["detail"] = str(detail).strip()
+    return payload
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
+    release_selector = str(args.release or "").strip()
     try:
         backlog_index_path, ideas_root = _resolve_governed_radar_paths(
             repo_root=repo_root,
@@ -625,29 +647,98 @@ def main(argv: Sequence[str] | None = None) -> int:
             titles=tuple(str(title) for title in args.titles),
             args=args,
         )
+        release_targeting = None
+        if release_selector:
+            release_targeting = release_planning_authoring.add_workstreams_to_release(
+                repo_root=repo_root,
+                workstream_ids=[str(item["idea_id"]) for item in result["created"]],
+                selector=release_selector,
+                note=_release_assignment_note(selector=release_selector),
+                idea_specs=result["_candidate_idea_specs"],
+                dry_run=True,
+            )
     except ValueError as exc:
         print(str(exc))
         return 2
+
+    radar_refresh = _refresh_status(
+        surface="radar",
+        status="skipped" if bool(args.dry_run) else "pending",
+        detail="dry-run" if bool(args.dry_run) else "",
+    )
+    compass_refresh = _refresh_status(
+        surface="compass",
+        status="skipped" if release_selector else "not_requested",
+        detail="dry-run" if bool(args.dry_run) and release_selector else "",
+    )
 
     if not bool(args.dry_run):
         for raw_path, text in result["idea_files"].items():
             Path(raw_path).write_text(str(text), encoding="utf-8")
         backlog_index_path.write_text(str(result["backlog_index_text"]), encoding="utf-8")
+        if release_selector:
+            try:
+                release_targeting = release_planning_authoring.add_workstreams_to_release(
+                    repo_root=repo_root,
+                    workstream_ids=[str(item["idea_id"]) for item in result["created"]],
+                    selector=release_selector,
+                    note=_release_assignment_note(selector=release_selector),
+                    idea_specs=result["_candidate_idea_specs"],
+                    dry_run=False,
+                )
+            except ValueError as exc:
+                print(f"Backlog create wrote queued records, but release targeting failed unexpectedly: {exc}")
+                return 1
         try:
             owned_surface_refresh.raise_for_failed_refresh(
                 repo_root=repo_root,
                 surface="radar",
                 operation_label="Backlog create",
             )
+            radar_refresh = _refresh_status(surface="radar", status="passed")
         except RuntimeError as exc:
             print(str(exc))
             return 1
+        if release_selector:
+            try:
+                owned_surface_refresh.raise_for_failed_refresh(
+                    repo_root=repo_root,
+                    surface="compass",
+                    operation_label="Backlog create release targeting",
+                )
+                compass_refresh = _refresh_status(surface="compass", status="passed")
+            except RuntimeError as exc:
+                print(str(exc))
+                return 1
+
+    release_payload = {
+        "selector": release_selector,
+        "release_id": "none",
+        "display_label": "none",
+        "events": [],
+    }
+    if release_targeting is not None:
+        release_row = release_targeting.get("release", {})
+        release_payload = {
+            "selector": release_selector,
+            "release_id": str(release_row.get("release_id", "")).strip(),
+            "display_label": str(release_row.get("display_label", "")).strip(),
+            "events": release_targeting.get("events", []),
+            "event_log_path": release_targeting.get("event_log_path", ""),
+        }
 
     if bool(args.as_json):
         payload = {
             "created": result["created"],
+            "created_ids": [str(item["idea_id"]) for item in result["created"]],
             "backlog_index": result["backlog_index"],
             "dry_run": bool(args.dry_run),
+            "release_target": release_payload,
+            "queued_status_preserved": True,
+            "refresh": {
+                "radar": radar_refresh,
+                "compass": compass_refresh,
+            },
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
@@ -656,4 +747,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         for item in result["created"]:
             print(f"- {item['idea_id']}: {item['title']} -> {item['idea_path']}")
         print(f"- backlog_index: {result['backlog_index']}")
+        print(f"- created_ids: {', '.join(str(item['idea_id']) for item in result['created'])}")
+        print(f"- release_target: {release_payload['release_id'] or 'none'}")
+        print("- queued_status_preserved: yes")
+        print(f"- radar_refresh: {radar_refresh['status']}")
+        print(f"- compass_refresh: {compass_refresh['status']}")
     return 0

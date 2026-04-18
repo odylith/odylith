@@ -1130,10 +1130,25 @@ def build_impact_report(
                 )
             return payload
         stage_timings["runtime_warmup"] = _elapsed_stage_ms(stage_started)
-    connection = _connect(root)
+    projection_connection_required = bool(
+        family_profile.get("prefer_explicit_component")
+        or family_profile.get("prefer_explicit_workstream")
+        or family_profile.get("include_components", True)
+        or family_profile.get("include_diagrams", True)
+        or family_profile.get("include_workstreams", True)
+        or family_profile.get("include_notes", True)
+        or family_profile.get("include_code_neighbors", True)
+        or family_profile.get("include_tests", True)
+        or family_profile.get("include_bugs", True)
+    )
+    connection = _connect(root) if projection_connection_required else None
     try:
         stage_started = time.perf_counter()
-        judgment_workstream_hint = _load_judgment_workstream_hint(repo_root=root, changed_paths=normalized)
+        judgment_workstream_hint = (
+            _load_judgment_workstream_hint(repo_root=root, changed_paths=normalized)
+            if bool(family_profile.get("include_workstreams", True)) or bool(family_profile.get("prefer_explicit_workstream"))
+            else {}
+        )
         impacted_diagrams = (
             select_impacted_diagrams(
                 repo_root=root,
@@ -1490,4 +1505,5 @@ def build_impact_report(
             )
         return _record_and_return(payload, component_count=len(components))
     finally:
-        connection.close()
+        if connection is not None:
+            connection.close()

@@ -1,22 +1,22 @@
-%% Reviewed 2026-04-17 for B-096, CB-122, CB-123, and v0.1.11 to show the proposition-first visible intervention value engine and proposition-native voice composition replacing the block-first signal-ranker and moment-kind phrase-bank paths: evidence intake -> proposition ledger -> hard gates -> value features -> conflict graph and subset optimizer -> visibility broker -> ruled renderer -> Compass decision log and adjudication report.
+%% Reviewed 2026-04-17 for B-096, CB-122, CB-123, and v0.1.11 to show the proposition-first visible intervention value engine, Guidance Behavior evidence handoff, compact alignment evidence adapter, and proposition-native voice composition replacing the block-first signal-ranker and moment-kind phrase-bank paths: evidence intake -> proposition ledger -> hard gates -> value features -> conflict graph and subset optimizer -> visibility broker -> ruled renderer -> Compass decision log and adjudication report.
 flowchart LR
     User["Live conversation turn<br/>prompt + assistant summary + edit or bash checkpoint"] --> Hosts
-    Packet["Grounded packet + delivery truth<br/>context packet summary + active refs + lane context"] --> Alignment
-    RuntimeTruth["Execution + memory + Tribunal truth<br/>execution snapshot + session stream + adjudication signals"] --> Alignment
+    Packet["Grounded packet + delivery truth<br/>context packet summary + active refs + lane context<br/>guidance_behavior_summary when relevant"] --> Alignment
+    RuntimeTruth["Execution + memory + Tribunal truth<br/>execution snapshot + session stream + adjudication signals<br/>Guidance Behavior validator posture"] --> Alignment
     History["Governed source truth<br/>Radar + Registry + Atlas + Casebook"] --> Core
     Stream["Compass stream history<br/>dedupe + pending proposal lifecycle"] --> Alignment
     Stream --> Core
-    Alignment["alignment_context hot path<br/>compact Context packet + Execution summary<br/>session memory + delivery ledger + Tribunal summary<br/>no provider calls or repo-wide search"] --> Envelope
+    Alignment["alignment_context + alignment_evidence hot path<br/>merged Context packet + compact Execution summary<br/>session memory + delivery ledger<br/>Guidance Behavior + Tribunal summary<br/>material gates, no provider calls or repo-wide search"] --> Envelope
 
     subgraph Hosts["Host adapters"]
         Codex["Codex hooks<br/>prompt context + stop summary<br/>Bash post-tool checkpoint"]
         Claude["Claude hooks<br/>prompt context + prompt teaser<br/>stop + post-edit + post-bash checkpoint"]
     end
 
-    Codex --> Envelope["ObservationEnvelope<br/>host_family + session_id + turn_phase<br/>prompt_excerpt + assistant_summary<br/>changed_paths + packet/context summary<br/>execution + memory + Tribunal + visibility summaries<br/>delivery_snapshot + active_target_refs"]
+    Codex --> Envelope["ObservationEnvelope<br/>host_family + session_id + turn_phase<br/>prompt_excerpt + assistant_summary<br/>changed_paths + packet/context summary<br/>execution + memory + Guidance Behavior<br/>Tribunal + visibility summaries<br/>delivery_snapshot + active_target_refs"]
     Claude --> Envelope
 
-    Envelope --> Intake["Evidence intake<br/>Context packet + Execution snapshot<br/>memory/session stream + Tribunal summary<br/>Casebook/Radar/Registry/Atlas anchors<br/>host delivery ledger"]
+    Envelope --> Intake["Evidence intake<br/>Context packet + Execution snapshot<br/>memory/session stream + Guidance Behavior summary<br/>Tribunal summary + Casebook/Radar/Registry/Atlas anchors<br/>host delivery ledger"]
 
     subgraph Facts["Fact classes"]
         HistoryFact["history"]
@@ -31,6 +31,8 @@ flowchart LR
     Intake --> Invariant
     Intake --> Topology
     Intake --> Opportunity
+    Intake --> GuidanceFact["guidance_behavior_contract<br/>only failed/malformed/unavailable summaries<br/>passing summaries stay quiet"]
+    GuidanceFact --> Propositions
     Intake --> Propositions["SignalProposition ledger<br/>claim text + support state<br/>anchors + semantic signature<br/>duplicate key + evidence fingerprints"]
     Propositions --> HardGates["Hard gates<br/>unsupported/stale/contradictory<br/>generated-only + hidden-only<br/>duplicate semantic proposition<br/>proposal restatement"]
     HardGates --> Features["InterventionValueFeatures<br/>correctness x positive value<br/>materiality + actionability + novelty<br/>timing + user need + visibility need<br/>minus interruption + redundancy + uncertainty + brand risk"]
@@ -67,7 +69,7 @@ flowchart LR
     Status --> Chat
     Core --> DecisionLog["Compass decision log<br/>selected + suppressed propositions<br/>semantic conflicts + feature values + utility<br/>evidence fingerprints + duplicate groups + proof state"]
     DecisionLog --> Events
-    Corpus["Adjudication corpus<br/>bootstrap quality state<br/>synthetic cases do not count for calibration<br/>real transcript density gates for publishable=true"] --> Benchmark
+    Corpus["Adjudication corpora<br/>intervention-value bootstrap quality state<br/>guidance_behavior pressure cases<br/>synthetic cases do not count for calibration<br/>real transcript density gates for publishable=true"] --> Benchmark
     Broker --> Benchmark["Value/visibility regression harness<br/>Codex + Claude transcript probes<br/>hidden payload is never success<br/>p95 selector latency <= 15 ms"]
     ChatProbe --> Benchmark
 

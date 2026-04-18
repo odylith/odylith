@@ -70,29 +70,54 @@ Operators using Codex and Claude who need high-value Odylith observations withou
 Build the proposition ledger, hard gates, deterministic utility features, conflict graph, subset selector, and compact decision log as the v0.1.11 core.
 
 ## Proposed Solution
-Create the workstream for Visible Intervention Proposition Engine and refine the exact implementation plan during execution.
+Ship the proposition-first value engine under
+`src/odylith/runtime/intervention_engine/`: evidence/proposition/value
+contracts, deterministic utility scoring, evidence and freshness hard gates,
+semantic duplicate collapse, proposal dependency checks, adaptive live budget,
+bounded subset enumeration, and compact selected/suppressed decision logging.
+The old block-first signal-ranker direction is removed from the shipped
+runtime posture.
 
 ## Scope
-- Define and land the bounded work for Visible Intervention Proposition Engine.
-- Keep the first implementation wave narrow and test-backed.
+- Convert ambient, Observation, and Proposal candidates into
+  `SignalProposition` options before label selection.
+- Select from proposition utility and conflict constraints, not from a single
+  hand-tuned block threshold.
+- Keep hot-path inputs local and compact: packet summaries, execution
+  snapshots, memory/session summaries, Tribunal/delivery summaries, and
+  governed anchors.
+- Carry material Guidance Behavior summary failures as one evidence-qualified
+  contract proposition without letting passing summaries create visible noise.
 
 ## Non-Goals
-- Do not widen this queued workstream into unrelated product cleanup.
+- Do not ship runtime adaptive learning, provider-backed embeddings, or
+  ML-calibrated threshold claims in v0.1.11.
+- Do not add broad repo search or context-store expansion to live selection.
 
 ## Risks
-- The title may need refinement once the implementation owner confirms the exact boundary.
+- A fast selector can still hurt the brand if it accepts unsupported facts,
+  duplicates propositions across labels, or lets producer-supplied confidence
+  inflate weak evidence. Those are hard gates, not post-render cleanup.
 
 ## Dependencies
-- No explicit dependency recorded yet; confirm related workstreams before implementation starts.
+- B-105 governance binding.
+- Context Engine, Execution Engine, memory, Tribunal, and delivery-ledger
+  summaries as compact evidence providers.
 
 ## Success Metrics
 The value-engine package owns proposition contracts, hard gates, adaptive budget, duplicate collapse, proposal dependency checks, and p95 selector latency at or below 15 ms in focused tests, with contracts/scoring, selection, and corpus/reporting split into focused modules instead of one oversized runtime file.
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Value-engine unit and benchmark tests prove duplicate visible proposition
+  rate `0.0`, visibility-failure recall `1.0` for explicit invisibility
+  cases, suppressed weak/unsupported/stale/hidden/generated evidence, and
+  p95 selector latency at or below the v0.1.11 target.
+- Intervention alignment evidence tests prove Guidance Behavior summaries only
+  become visible facts when material.
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- Land behind the v0.1.11 forward contract and keep calibration artifact
+  loading disabled unless the governed corpus becomes publishable.
 
 ## Why Now
 This slice is active enough that it should exist as explicit backlog truth now.
@@ -101,16 +126,28 @@ This slice is active enough that it should exist as explicit backlog truth now.
 Odylith should surface the smallest high-value set of true, timely, distinct propositions that materially improve the user's next move.
 
 ## Impacted Components
-- `odylith`
+- `governance-intervention-engine`
+- `odylith-context-engine`
+- `execution-engine`
+- `odylith-memory-contracts`
+- `tribunal`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- New value-engine contracts:
+  `SignalEvidence`, `SignalProposition`, `InterventionValueFeatures`,
+  `VisibleInterventionOption`, and `VisibleSignalSelectionDecision`.
+- Decision log now carries selected/suppressed proposition ids, duplicate
+  groups, utility, suppression reasons, proof posture, and latency summary.
 
 ## Migration/Compatibility
-- No migration impact recorded yet.
+- v0.1.10 signal-ranker artifacts migrate to the v0.1.11 value-engine corpus
+  and migration ledger; no compatibility shim preserves the misleading API.
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- Test adversarial no-evidence high scores, weak-evidence confidence ceilings,
+  duplicate keys that disagree with semantic signatures, same-label distinct
+  ambient stacking, exact Proposal restatements, and candidate floods.
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- Later releases can add calibrated weights after enough adjudicated
+  non-synthetic data exists; v0.1.11 runtime stays deterministic.

@@ -145,6 +145,62 @@ def test_native_spawn_execution_ready_succeeds_for_claude_host_when_all_gates_pa
     ) is True
 
 
+def test_native_spawn_execution_ready_avoids_host_probe_when_delegate_gates_fail(monkeypatch) -> None:
+    from odylith.runtime.common import host_runtime as host_runtime_contract
+
+    def _unexpected_native_spawn_probe(*_args, **_kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("host capability probe should not run before cheap delegate gates")
+
+    monkeypatch.setattr(host_runtime_contract, "native_spawn_supported", _unexpected_native_spawn_probe)
+
+    assert routing.native_spawn_execution_ready(
+        route_ready=True,
+        full_scan_recommended=False,
+        narrowing_required=False,
+        within_budget=True,
+        delegate_preference="local",
+        model="",
+        reasoning_effort="",
+        agent_role="",
+        selection_mode="",
+        selected_command_count=1,
+        host_runtime="",
+    ) is False
+
+
+def test_build_routing_handoff_avoids_host_probe_when_delegate_gates_fail(monkeypatch) -> None:
+    from odylith.runtime.common import host_runtime as host_runtime_contract
+
+    def _unexpected_native_spawn_probe(*_args, **_kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("routing handoff should not probe host capabilities for non-delegate packets")
+
+    monkeypatch.setattr(host_runtime_contract, "native_spawn_supported", _unexpected_native_spawn_probe)
+
+    handoff = routing.build_routing_handoff(
+        packet_kind="impact",
+        packet_state="gated_ambiguous",
+        retrieval_plan={"anchor_paths": ["AGENTS.md"], "has_non_shared_anchor": True},
+        packet_quality={
+            "within_budget": True,
+            "routing_confidence": "low",
+            "ambiguity_class": "no_candidates",
+            "guidance_coverage": "none",
+            "intent_profile": {"family": "analysis"},
+            "validation_pressure": {"score": 1},
+            "actionability": {"score": 1},
+            "evidence_quality": {"score": 1},
+        },
+        final_payload={
+            "changed_paths": ["AGENTS.md"],
+            "recommended_commands": ["odylith validate guidance-behavior --repo-root ."],
+            "narrowing_guidance": {"required": True},
+        },
+    )
+
+    assert handoff["packet_quality"]["native_spawn_supported"] is False
+    assert handoff["packet_quality"]["native_spawn_ready"] is False
+
+
 def test_native_spawn_execution_ready_fails_closed_for_unknown_host(monkeypatch) -> None:
     from odylith.runtime.common import host_runtime as host_runtime_contract
 

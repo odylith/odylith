@@ -53,6 +53,8 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import path_bundle_codec
+from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.orchestration import subagent_orchestrator
 from odylith.runtime.orchestration import subagent_router as leaf_router
 
@@ -106,6 +108,7 @@ _MODE_ALIASES = {
 _VALID_MODES = frozenset((*DEFAULT_MODES, *DIAGNOSTIC_CONTROL_MODES, *_MODE_ALIASES.keys()))
 DEFAULT_CACHE_PROFILES: tuple[str, ...] = ("warm", "cold")
 _VALID_CACHE_PROFILES = frozenset({"warm", "cold"})
+_LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "agent_operating_character"})
 _MIN_BENCHMARK_RUNTIME_FREE_BYTES = 256 * 1024 * 1024
 _RUNTIME_POSTURE_MANAGED_HELPER_ENV = "ODYLITH_BENCHMARK_RUNTIME_POSTURE_MANAGED_HELPER"
 _VALID_PACKET_SOURCES = frozenset({"adaptive", "impact", "governance_slice", "session_brief", "bootstrap_session"})
@@ -3710,6 +3713,27 @@ def _observed_packet_paths(payload: Mapping[str, Any]) -> list[str]:
         if isinstance(value, list):
             rows.extend(path_bundle_codec.expand_path_rows(value))
     context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
+    guidance_behavior_summary = guidance_behavior_runtime.summary_from_sources(payload, context_packet, limit=6)
+    if guidance_behavior_summary:
+        related_refs = guidance_behavior_summary.get("related_guidance_refs", [])
+        if isinstance(related_refs, list):
+            rows.extend(path_bundle_codec.expand_path_rows(related_refs))
+        source_refs = guidance_behavior_summary.get("source_refs", [])
+        if isinstance(source_refs, list):
+            rows.extend(
+                path
+                for path in path_bundle_codec.expand_path_rows(source_refs)
+                if path.endswith("guidance-behavior-evaluation-corpus.v1.json")
+            )
+    character_summary = character_runtime.summary_from_sources(payload, context_packet, limit=6)
+    if character_summary:
+        source_refs = character_summary.get("source_refs", [])
+        if isinstance(source_refs, list):
+            rows.extend(
+                path
+                for path in path_bundle_codec.expand_path_rows(source_refs)
+                if path.endswith("agent-operating-character-evaluation-corpus.v1.json")
+            )
     anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), Mapping) else {}
     for key in ("changed_paths", "explicit_paths"):
         value = anchors.get(key, [])
@@ -4435,6 +4459,35 @@ def _is_live_public_mode(mode: str) -> bool:
 
 def _benchmark_profile_uses_live_public_modes(profile: str) -> bool:
     return str(profile).strip() in {BENCHMARK_PROFILE_QUICK, BENCHMARK_PROFILE_PROOF}
+
+
+def _profile_uses_live_public_modes_for_selection(
+    *,
+    profile: str,
+    selected_families: Sequence[str],
+) -> bool:
+    families = {str(token).strip() for token in selected_families if str(token).strip()}
+    if str(profile).strip() == BENCHMARK_PROFILE_QUICK and families and families.issubset(_LOCAL_ONLY_QUICK_FAMILIES):
+        return False
+    return _benchmark_profile_uses_live_public_modes(profile)
+
+
+def _cache_profiles_for_selection(
+    *,
+    profile: str,
+    selected_families: Sequence[str],
+    cache_profiles: Sequence[str],
+    explicit_cache_profile_selection: bool,
+) -> list[str]:
+    families = {str(token).strip() for token in selected_families if str(token).strip()}
+    if (
+        not explicit_cache_profile_selection
+        and str(profile).strip() == BENCHMARK_PROFILE_QUICK
+        and families
+        and families.issubset(_LOCAL_ONLY_QUICK_FAMILIES)
+    ):
+        return ["cold"]
+    return [str(token).strip() for token in cache_profiles if str(token).strip()]
 
 
 def _dedupe_path_strings(values: Sequence[str]) -> list[str]:
@@ -8629,6 +8682,13 @@ def run_benchmarks(
     scenarios = [dict(row) for row in selection_state.get("scenarios", [])]
     if not scenarios:
         raise ValueError("No benchmark scenarios matched the requested selection.")
+    normalized_cache_profiles = _cache_profiles_for_selection(
+        profile=normalized_profile,
+        selected_families=sorted(selected_families),
+        cache_profiles=normalized_cache_profiles,
+        explicit_cache_profile_selection=explicit_cache_profile_selection,
+    )
+    primary_cache_profile = _primary_cache_profile(normalized_cache_profiles)
     generated_utc = _utc_now()
     report_id = _benchmark_report_id(
         generated_utc=generated_utc,
@@ -8644,9 +8704,13 @@ def run_benchmarks(
         and normalized_cache_profiles == list(DEFAULT_CACHE_PROFILES)
         and normalized_modes == list(DEFAULT_MODES)
     )
+    profile_uses_live_public_modes = _profile_uses_live_public_modes_for_selection(
+        profile=normalized_profile,
+        selected_families=sorted(selected_families),
+    )
     comparison_contract = (
         LIVE_COMPARISON_CONTRACT
-        if _benchmark_profile_uses_live_public_modes(normalized_profile)
+        if profile_uses_live_public_modes
         else DIAGNOSTIC_COMPARISON_CONTRACT
     )
     total_results = len(scenarios) * len(normalized_modes) * len(normalized_cache_profiles)
@@ -8739,7 +8803,7 @@ def run_benchmarks(
                 _prepare_benchmark_runtime_cache(repo_root=root, cache_profile=cache_profile)
                 scenario_reports: list[dict[str, Any]] = []
                 mode_rows: dict[str, list[dict[str, Any]]] = {mode: [] for mode in normalized_modes}
-                use_live_public_modes = _benchmark_profile_uses_live_public_modes(normalized_profile)
+                use_live_public_modes = profile_uses_live_public_modes
                 for scenario_index, scenario in enumerate(scenarios, start=1):
                     scenario_report = {
                         "cache_profile": cache_profile,
@@ -9233,6 +9297,19 @@ def run_benchmarks(
                 "robustness_summary": robustness_summary,
                 "status": str(acceptance.get("status", "")).strip() or "unknown",
                 "acceptance": acceptance,
+                "selection_family_filters": sorted(selected_families),
+                "hard_quality_gate_cleared": bool(acceptance.get("hard_quality_gate_cleared")),
+                "hard_gate_cleared": bool(acceptance.get("hard_quality_gate_cleared")),
+                "hard_gate_failures": [
+                    str(token).strip()
+                    for token in acceptance.get("hard_gate_failures", [])
+                    if isinstance(acceptance.get("hard_gate_failures"), list) and str(token).strip()
+                ],
+                "hard_gate_failure_labels": [
+                    str(token).strip()
+                    for token in acceptance.get("hard_gate_failure_labels", [])
+                    if isinstance(acceptance.get("hard_gate_failure_labels"), list) and str(token).strip()
+                ],
                 "report_id": report_id,
             }
             report["published_summary"] = compact_report_summary(report)

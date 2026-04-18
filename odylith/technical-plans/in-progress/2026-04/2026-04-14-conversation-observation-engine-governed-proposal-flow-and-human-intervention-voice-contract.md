@@ -60,6 +60,23 @@ Assumptions:
 - The advanced fast-path algorithm is two-stage: first a cheap semantic
   prefilter decides whether this turn has governed signal at all; only then
   may repo-truth lookup, dedupe, and proposal assembly run.
+- Guidance Behavior Enhancements are part of the v0.1.11 evidence cone, not a
+  side validator. Relevant packets carry a compact guidance-behavior summary,
+  Execution Engine snapshots reuse its validator command, Memory Contracts
+  preserve the compact summary, intervention evidence treats material failures
+  as one high-signal contract fact, and the Tribunal-ready signal remains
+  precomputed.
+- Guidance Behavior is also a shipped guidance-surface contract. The
+  deterministic validator must prove that Codex guidance, Claude guidance,
+  installed command/skill shims, product guidance, and consumer/dogfood/
+  source-local lane instructions all point to the same CLI-first proof path.
+- The validator now includes
+  `odylith_guidance_behavior_platform_end_to_end.v1`: benchmark/eval wiring,
+  host skill and command mirrors, bundled consumer assets, and install guidance
+  are checked as one platform contract instead of separate green islands.
+  Live `odylith/` guidance/spec/corpus truth and shipped source-bundle mirrors
+  must also be byte-identical, so consumer, dogfood, and source-local lanes do
+  not drift after a maintainer-only edit.
 - Rich reasoning signature and stable continuity identity are separate on
   purpose. The engine may reason from more evidence as a moment matures, but
   teaser, Observation, and Proposal should still feel like one evolving
@@ -88,6 +105,10 @@ Constraints:
 - Candidate floods are bounded before optimization: the selector prunes to the
   top evidence-qualified candidates, enumerates only a small independent-set
   space, and logs pruned/eligible counts so latency regressions are visible.
+- Guidance-behavior validation must stay off the live hot path. Prompt,
+  packet, memory, intervention, and status lanes may read only the compact
+  summary, fingerprints, case ids, failed check ids, and validator command; the
+  full validator runs as explicit proof, not as inline signal selection.
 - Missing live rulers are repaired into canonical ruled Markdown; they are not
   a reason to drop a good supported signal. Assist is never wrapped in the
   live ruled block.
@@ -198,6 +219,11 @@ Related Bugs:
       headlines/details and action rationales should drive claim,
       consequence, and next-step copy; moment kind should not choose a canned
       sentence family.
+- [ ] Guidance behavior only becomes product behavior when the same compact
+      summary and explicit validator travel through Context Engine, Execution
+      Engine, Memory Contracts, Governance Intervention Engine,
+      Tribunal-ready evidence, benchmark reports, host contracts, installed
+      skills, and consumer-lane guidance.
 
 ## Must-Ship
 - [x] Add `src/odylith/runtime/intervention_engine/` as a first-class shared
@@ -343,6 +369,34 @@ Related Bugs:
       visible rows infer host family from `render_surface`, and exact assistant
       transcript probes can promote fallback-visible events once without
       duplicating confirmations.
+- [x] Wire Guidance Behavior Enhancements through the same low-latency evidence
+      cone: Context Engine attaches `guidance_behavior_summary` only for
+      relevant packets, Execution Engine carries the validator command as
+      recommended validation, Memory Contracts preserve the compact summary in
+      context/evidence packets, intervention alignment records
+      `guidance_behavior_contract` only when material, and the Tribunal-ready
+      signal is precomputed without provider calls or repo-wide scans.
+- [x] Add a reusable guidance-surface contract check so
+      `odylith validate guidance-behavior` also proves Codex, Claude,
+      installed skills, command shims, and consumer/dogfood/source-local lane
+      guidance are aligned with the same CLI-first validator and quick
+      benchmark proof path.
+- [x] Add a platform end-to-end contract check so benchmark/eval wiring,
+      Codex and Claude skill/command mirrors, bundled consumer assets, and
+      install guidance all stay aligned with the same Guidance Behavior proof
+      path without running provider calls, repo-wide scans, or full validation
+      on live packet hot paths.
+- [x] Harden Guidance Behavior bundle parity: the platform contract now fails
+      stale live/source-bundle mirrors for guidance docs, host shims, skills,
+      governed program/spec truth, and benchmark corpora instead of accepting
+      token-present but lane-stale assets.
+- [x] Add the `hot_path_efficiency` platform contract domain: Guidance
+      Behavior packets now suppress adaptive session/full-scan widening when
+      the deterministic validator summary is present, skip runtime projection
+      warmup, avoid projection-store opens for no-projection families, avoid
+      delivery-intelligence reads for unanchored packets, and defer host
+      capability probes until a route-ready delegate path can actually use
+      them.
 
 ## Defer
 - [ ] User-selectable voice packs or per-repo voice overrides.
@@ -420,6 +474,17 @@ Related Bugs:
       accounting.
 - [x] Live blocks are canonicalized with top and bottom rulers; Assist remains
       closeout-owned and outside the ruled live block.
+- [x] Guidance Behavior Enhancements now feed Context Engine, Execution
+      Engine, Memory Contracts, Governance Intervention Engine, Tribunal-ready
+      signal shaping, and benchmark validation as one reusable contract instead
+      of a detached validator.
+- [x] Guidance Behavior Enhancements now also feed host and lane guidance:
+      Codex `spawn_agent` prompts, Claude Task-tool subagents, consumer
+      installed skills, pinned dogfood, and source-local maintainer mode all
+      converge on the same validator command and bounded-delegation fields.
+- [x] Guidance Behavior platform proof now covers benchmark/eval integration,
+      host skill and command mirrors, consumer bundle assets, and install
+      guidance through `odylith_guidance_behavior_platform_end_to_end.v1`.
 - [x] Chatter, Compass, host contracts, Registry specs, Atlas, and maintainer
       guidance all describe the same observation/proposal UX and voice rules.
 - [x] Agent guidance now explicitly forbids demoing Observation or Proposal UX
@@ -483,6 +548,17 @@ Related Bugs:
 - [ ] [AGENTS.md](/Users/freedom/code/odylith/AGENTS.md)
 - [ ] [src/odylith/install/agents.py](/Users/freedom/code/odylith/src/odylith/install/agents.py)
 - [ ] [tests/unit/runtime/](/Users/freedom/code/odylith/tests/unit/runtime)
+- [ ] [guidance_behavior_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/guidance_behavior_runtime.py)
+- [ ] [guidance_behavior_runtime_contracts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/guidance_behavior_runtime_contracts.py)
+- [ ] [guidance_behavior_guidance_contracts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/guidance_behavior_guidance_contracts.py)
+- [ ] [guidance_behavior_platform_contracts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/guidance_behavior_platform_contracts.py)
+- [ ] [guidance_behavior_benchmark_contracts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/guidance_behavior_benchmark_contracts.py)
+- [ ] [validate_guidance_behavior.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/validate_guidance_behavior.py)
+- [ ] [guidance-behavior-evaluation-corpus.v1.json](/Users/freedom/code/odylith/odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json)
+- [ ] [odylith-guidance-behavior skill](/Users/freedom/code/odylith/odylith/skills/odylith-guidance-behavior/SKILL.md)
+- [ ] [Codex guidance behavior skill shim](/Users/freedom/code/odylith/.agents/skills/odylith-guidance-behavior/SKILL.md)
+- [ ] [Claude guidance behavior command](/Users/freedom/code/odylith/.claude/commands/odylith-guidance-behavior.md)
+- [ ] [alignment_evidence.py](/Users/freedom/code/odylith/src/odylith/runtime/intervention_engine/alignment_evidence.py)
 
 ## Rollout
 1. Bind `B-096` and child waves `B-105` through `B-109` to v0.1.11.
@@ -504,6 +580,10 @@ Related Bugs:
 - **consumer pinned-runtime**: gains the experience on upgrade; the guidance
   and voice contract must stay stable enough that the shipped product does not
   suddenly sound mechanical in downstream repos.
+- Guidance Behavior proof must work in all three lanes: source-local proves the
+  unreleased validator and benchmark, pinned dogfood proves the shipped
+  runtime, and consumer pinned-runtime receives the same command/skill guidance
+  through installed bundle assets.
 
 ## Validation
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_engine.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_prompt_context.py`
@@ -674,3 +754,30 @@ Related Bugs:
       tests/unit/runtime/test_claude_host_stop_summary.py
       tests/unit/runtime/test_intervention_visibility_broker.py`
       (`141 passed`).
+- [x] Guidance Behavior end-to-end integration proof:
+      `odylith validate guidance-behavior --repo-root . --json` passed,
+      `py_compile` passed for the touched
+      guidance/context/execution/memory/intervention modules, and focused
+      runtime regression over guidance behavior, packet summaries, execution
+      handshakes, memory contracts, intervention alignment evidence,
+      visibility broker/performance, CLI, sync compatibility, and benchmark
+      isolation passed (`326 passed`).
+- [x] Guidance Behavior guidance-surface hardening proof:
+      `odylith validate guidance-behavior --repo-root . --json` passed with
+      `6` cases, `11` guidance checks,
+      `0` failed check ids, and critical/high severity counts preserved;
+      the new platform end-to-end check proved `benchmark_eval`,
+      `host_lane_bundle_mirrors`, and `hot_path_efficiency` domains plus
+      live/source-bundle byte parity for the shipped guidance surfaces;
+      `odylith benchmark --repo-root . --profile quick --family
+      guidance_behavior --no-write-report --json` selected only
+      `guidance_behavior`, ran `6` scenarios, and cleared the hard gate;
+      focused validator/install/benchmark regression passed
+      (`224 passed`).
+- [x] Guidance Behavior hot-path efficiency proof:
+      `odylith benchmark --repo-root . --profile quick --family
+      guidance_behavior --no-write-report --json` selected `6` guidance
+      scenarios, used only `impact` packets for Odylith ON, reported
+      `odylith_requires_widening_rate=0.0`, cleared hard and secondary
+      guardrails with no advisory failures, and measured Odylith ON packet
+      timing at `median=5.712 ms`, `avg=5.999 ms`, `p95=7.463 ms`.

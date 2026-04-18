@@ -306,6 +306,55 @@ def test_execution_engine_snapshot_carries_turn_target_and_presentation_policy()
     assert summary["execution_engine_surface_fast_lane"] is True
 
 
+def test_execution_engine_snapshot_treats_guidance_behavior_validator_as_validation_command() -> None:
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
+        {
+            "packet_kind": "governance_slice",
+            "guidance_behavior_summary": {
+                "family": "guidance_behavior",
+                "status": "available",
+                "validation_status": "not_run",
+                "validator_command": (
+                    "odylith validate guidance-behavior --repo-root ."
+                ),
+            },
+            "context_packet": {
+                "packet_kind": "governance_slice",
+                "route": {"route_ready": True},
+            },
+        }
+    )
+
+    assert "commands" in snapshot["contract"]["validation_plan"]
+
+
+def test_execution_engine_guidance_behavior_narrowing_snapshot_avoids_host_probe(monkeypatch) -> None:
+    def _unexpected_host_probe(*_args, **_kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("guidance behavior narrowing snapshots should not probe host capabilities")
+
+    monkeypatch.setattr(runtime_surface_governance, "detect_execution_host_profile", _unexpected_host_probe)
+
+    snapshot = runtime_surface_governance.build_packet_execution_engine_snapshot(
+        {
+            "packet_kind": "impact",
+            "guidance_behavior_summary": {
+                "family": "guidance_behavior",
+                "status": "available",
+                "validator_command": "odylith validate guidance-behavior --repo-root .",
+            },
+            "context_packet": {
+                "packet_kind": "impact",
+                "packet_state": "gated_ambiguous",
+                "route": {"route_ready": False, "narrowing_required": True},
+            },
+        }
+    )
+
+    assert snapshot["contract"]["host_profile"]["host_family"] == "unknown"
+    assert snapshot["contract"]["host_profile"]["supports_native_spawn"] is False
+    assert "commands" in snapshot["contract"]["validation_plan"]
+
+
 def test_runtime_lane_policy_blocks_consumer_lane_without_writable_targets() -> None:
     guard = runtime_lane_policy.delegation_guard(
         {

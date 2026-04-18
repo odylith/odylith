@@ -76,7 +76,8 @@ def test_main_refreshes_governance_for_governed_edit(monkeypatch, tmp_path: Path
     assert "odylith/radar/source/queued.md" in args
     assert timeout == 180
     payload = json.loads(capsys.readouterr().out)
-    assert "Odylith governance refresh completed" in payload["systemMessage"]
+    assert "**Odylith Observation:**" in payload["systemMessage"]
+    assert "Odylith governance refresh completed" in payload["additionalContext"]
 
 
 def test_main_skips_non_governed_edits_silently(monkeypatch, tmp_path: Path, capsys) -> None:

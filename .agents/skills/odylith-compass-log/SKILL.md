@@ -1,5 +1,5 @@
 ---
 name: odylith-compass-log
-description: Append a bounded execution note into Compass.
+description: Use when a bounded execution note needs to be appended into Compass.
 ---
 @../../../odylith/skills/odylith-compass-log/SKILL.md

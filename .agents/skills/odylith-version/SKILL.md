@@ -1,5 +1,5 @@
 ---
 name: odylith-version
-description: Inspect the pinned, active, and locally available Odylith versions.
+description: Use when pinned, active, and locally available Odylith versions need inspection.
 ---
 @../../../odylith/skills/odylith-version/SKILL.md

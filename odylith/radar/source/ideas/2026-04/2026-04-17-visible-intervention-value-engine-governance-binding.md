@@ -70,29 +70,50 @@ Odylith maintainers and operators who need Radar, Casebook, Registry, Atlas, and
 Bind the program, release, Casebook recurrence, and technical plan so the implementation has one governed execution spine.
 
 ## Proposed Solution
-Create the workstream for Visible Intervention Value Engine Governance Binding and refine the exact implementation plan during execution.
+Bind B-096 to the v0.1.11 execution-wave program, release assignment,
+technical plan, CB-122 visible-chat recurrence, CB-123 calibration-overclaim
+risk, Registry component specs, Atlas D-038/D-002 topology, and Compass
+execution log. Governance must say the runtime is proposition-first
+`deterministic_utility_v1`, not ML-calibrated signal ranking.
 
 ## Scope
-- Define and land the bounded work for Visible Intervention Value Engine Governance Binding.
-- Keep the first implementation wave narrow and test-backed.
+- Keep B-096 as the umbrella and B-105 through B-109 as child waves.
+- Update source truth first, then regenerate Radar, Registry, Atlas, Casebook,
+  Compass, and bundle mirrors through governed refresh/sync.
+- Ensure the active plan, workstreams, Casebook, Registry, Atlas, and release
+  assignment all name the same v0.1.11 contract.
+- Carry Guidance Behavior Enhancements into the same governance spine when
+  they feed the visible intervention evidence cone.
+- Treat Guidance Behavior host/lane instructions as governed surface truth:
+  Codex, Claude, installed command/skill shims, consumer pinned-runtime,
+  pinned dogfood, and source-local maintainer mode must converge on the same
+  CLI-first validator and quick benchmark proof path.
 
 ## Non-Goals
 - Do not widen this queued workstream into unrelated product cleanup.
 
 ## Risks
-- The title may need refinement once the implementation owner confirms the exact boundary.
+- Source records can drift into implementation-scaffold prose while generated
+  dashboards look current. This wave is not complete until the source records
+  are grounded and the generated surfaces are refreshed from them.
 
 ## Dependencies
-- No explicit dependency recorded yet; confirm related workstreams before implementation starts.
+- B-096 active technical plan.
+- Existing release assignment for `release-0-1-11`.
+- CB-122 and CB-123 as the trust and provenance bug anchors.
 
 ## Success Metrics
-B-096 is an execution-wave umbrella; v0.1.11 release assignment includes the work; CB-122 and the calibration-overclaim bug point at the forward fix; backlog validation passes.
+B-096 is an execution-wave umbrella; v0.1.11 release assignment includes the work; CB-122 and the calibration-overclaim bug point at the forward fix; Guidance Behavior host/lane proof is governed under the same plan; backlog validation passes.
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Backlog, plan-traceability, Casebook, Registry, Atlas, Compass, and sync
+  validation pass after the source updates.
+- `git diff --check` passes after generated surface refresh.
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- Keep this wave active until source truth and rendered governance surfaces
+  agree on B-096, child workstreams, v0.1.11 release binding, and the
+  deterministic value-engine posture.
 
 ## Why Now
 This slice is active enough that it should exist as explicit backlog truth now.
@@ -101,16 +122,26 @@ This slice is active enough that it should exist as explicit backlog truth now.
 Odylith should protect trust by making the visible intervention value engine explicit in governance before code and surface claims drift.
 
 ## Impacted Components
-- `odylith`
+- `governance-intervention-engine`
+- `compass`
+- `radar`
+- `casebook`
+- `registry`
+- `atlas`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- No runtime API is owned by this wave; it owns the governance binding for the
+  v0.1.11 runtime API and proof posture.
 
 ## Migration/Compatibility
-- No migration impact recorded yet.
+- Backward compatibility is intentionally cut for the old block-first
+  signal-ranker narrative. Governance describes the v0.1.11 forward contract
+  plus the v0.1.10-to-v0.1.11 migration lane.
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- Treat governance validation as source-truth proof: the source records must
+  validate before rendered dashboards or bundle mirrors are trusted.
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- No open governance-binding question remains for v0.1.11; remaining risk is
+  release proof freshness.

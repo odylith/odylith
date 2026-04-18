@@ -727,3 +727,112 @@ def test_duplicate_aware_lookup_prefers_existing_records_over_new_duplicates(tmp
     assert actions[("atlas", "review_refresh")]["target_id"] == "D-321"
     assert actions[("casebook", "reopen")]["target_id"] == "CB-321"
     assert bundle["proposal"]["apply_supported"] is False
+
+
+def test_context_packet_summary_feeds_engine_without_legacy_packet_summary(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    observation = surface_runtime.observation_envelope(
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="session-context-summary",
+        prompt_excerpt="Keep this implementation pass tightly governed.",
+        context_packet_summary={
+            "packet_kind": "governance_slice",
+            "packet_state": "route_ready",
+            "workstreams": ["B-096"],
+            "components": ["governance-intervention-engine"],
+            "bugs": ["CB-122"],
+            "diagrams": ["D-038"],
+            "anchors": {
+                "workstreams": ["B-096"],
+                "components": ["governance-intervention-engine"],
+                "bugs": ["CB-122"],
+                "diagrams": ["D-038"],
+            },
+            "route": {"route_ready": True, "narrowing_required": False},
+        },
+    )
+
+    bundle = engine.build_intervention_bundle(repo_root=tmp_path, observation=observation)
+    refs = {
+        (row["kind"], row["id"])
+        for row in bundle["observation"]["active_target_refs"]
+    }
+    fact_kinds = {row["kind"] for row in bundle["facts"]}
+
+    assert ("workstream", "B-096") in refs
+    assert ("component", "governance-intervention-engine") in refs
+    assert ("bug", "CB-122") in refs
+    assert ("diagram", "D-038") in refs
+    assert {"governance_truth", "history", "topology"} <= fact_kinds
+    assert bundle["candidate"]["stage"] == "card"
+
+
+def test_execution_memory_tribunal_and_visibility_summaries_feed_same_intervention_decision(
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+    observation = surface_runtime.observation_envelope(
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="session-alignment-stack",
+        prompt_excerpt="Diagnose why visible Odylith blocks still are not trustworthy.",
+        context_packet_summary={
+            "packet_kind": "governance_slice",
+            "packet_state": "visibility_recovery",
+            "components": ["governance-intervention-engine", "execution-engine", "tribunal"],
+            "workstreams": ["B-096"],
+        },
+        execution_engine_summary={
+            "execution_engine_present": True,
+            "execution_engine_next_move": "recover.current_blocker",
+            "execution_engine_blocker": "chat-visible proof is still pending",
+            "execution_engine_target_component_ids": ["execution-engine"],
+        },
+        memory_summary={
+            "recent_event_count": 3,
+            "recent_card_signatures": ["visibility|chat|proof"],
+            "visibility_complaint": True,
+        },
+        tribunal_summary={
+            "scope_signals": [
+                {
+                    "scope_type": "component",
+                    "scope_id": "governance-intervention-engine",
+                    "scope_label": "Governance Intervention Engine",
+                    "operator_readout": {
+                        "severity": "p0",
+                        "issue": "Generated hook payloads are still not chat-visible proof.",
+                        "action": "Replay the exact Odylith Markdown until transcript confirmation lands.",
+                    },
+                }
+            ],
+            "case_queue": [
+                {
+                    "id": "CB-122",
+                    "headline": "Intervention hooks report ready while chat sees zero visible Odylith beats",
+                    "brief": "Hidden hook payloads must not satisfy the product contract.",
+                }
+            ],
+        },
+        visibility_summary={
+            "chat_visible_proof": "pending_confirmation",
+            "unconfirmed_event_count": 2,
+        },
+    )
+
+    bundle = engine.build_intervention_bundle(repo_root=tmp_path, observation=observation)
+    headlines = [row["headline"] for row in bundle["facts"]]
+    refs = {
+        (row["kind"], row["id"])
+        for row in bundle["observation"]["active_target_refs"]
+    }
+
+    assert ("component", "execution-engine") in refs
+    assert ("component", "tribunal") in refs
+    assert ("bug", "CB-122") in refs
+    assert any("Execution Engine has an active recovery constraint" in row for row in headlines)
+    assert any("Tribunal already has CB-122" in row for row in headlines)
+    assert any("Delivery ledger still has Odylith blocks awaiting chat confirmation" in row for row in headlines)
+    assert "execution_engine_snapshot" in bundle["facts"][0]["evidence_classes"]
+    assert bundle["candidate"]["stage"] == "card"
