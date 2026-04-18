@@ -7,7 +7,9 @@ import pytest
 from tests.integration.runtime.surface_browser_test_support import (
     _assert_clean_page,
     _atlas_total,
+    _first_non_default_option,
     _new_page,
+    _wait_for_locator_count,
     _wait_for_compass_brief_state,
     _wait_for_shell_query_param,
     browser_context,
@@ -16,35 +18,6 @@ from tests.integration.runtime.surface_browser_test_support import (
 
 def _normalize_token(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", str(value).strip().lower())
-
-
-def _first_non_default_option(frame, selector: str, excluded: set[str] | None = None) -> str:  # noqa: ANN001
-    excluded_tokens = {"all", ""}
-    if excluded:
-        excluded_tokens |= {str(token) for token in excluded}
-    options = frame.locator(f"{selector} option").evaluate_all(
-        """nodes => nodes
-          .map((node) => String(node.value || "").trim())
-          .filter((token) => token.length > 0)
-        """
-    )
-    for token in options:
-        if token not in excluded_tokens:
-            return str(token)
-    return ""
-
-
-def _wait_for_locator_count(page, frame_selector: str, locator_selector: str, expected: int) -> None:  # noqa: ANN001
-    page.wait_for_function(
-        """({ frameSelector, locatorSelector, expected }) => {
-            const frame = document.querySelector(frameSelector);
-            const doc = frame && frame.contentDocument;
-            if (!doc) return false;
-            return doc.querySelectorAll(locatorSelector).length === expected;
-        }""",
-        arg={"frameSelector": frame_selector, "locatorSelector": locator_selector, "expected": expected},
-        timeout=15000,
-    )
 
 
 def test_radar_filter_audit_accepts_compact_ids_and_normalized_titles(browser_context) -> None:  # noqa: ANN001

@@ -42,7 +42,7 @@ workstream_depends_on:
 
 workstream_blocks: 
 
-related_diagram_ids: 
+related_diagram_ids: D-040
 
 workstream_reopens: 
 

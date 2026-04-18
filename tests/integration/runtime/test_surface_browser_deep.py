@@ -20,14 +20,22 @@ from odylith.runtime.surfaces import render_tooling_dashboard as tooling_dashboa
 from tests.integration.runtime.surface_browser_test_support import (
     _REPO_ROOT,
     _assert_clean_page,
+    _assert_single_visible_pane,
     _assert_compass_live_state,
     _browser,
     _static_server,
     _atlas_total,
     _click_visible,
     _compass_brief_metadata,
+    _first_filter_value_with_results,
+    _first_non_default_option,
     _new_page,
+    _open_radar_topology_relations,
+    _reset_select_to_first_option,
     _select_radar_row_with_link,
+    _select_radar_workstream,
+    _wait_for_locator_count,
+    _wait_for_radar_detail_id,
     _wait_for_compass_brief_state,
     _wait_for_shell_query_param,
     _wait_for_shell_tab,
@@ -471,41 +479,9 @@ def _rewrite_fixture_workstream_status(fixture_root, *, idea_id: str, status: st
     raise AssertionError(f"missing idea fixture for {idea_id}")
 
 
-def _pane_hidden(page, frame_selector: str) -> bool:  # noqa: ANN001
-    return bool(page.locator(frame_selector).evaluate("node => Boolean(node.hidden)"))
-
-
-def _assert_single_visible_pane(page, active_frame_selector: str) -> None:  # noqa: ANN001
-    panes = (
-        "#frame-radar",
-        "#frame-registry",
-        "#frame-casebook",
-        "#frame-atlas",
-        "#frame-compass",
-    )
-    visible = [selector for selector in panes if not _pane_hidden(page, selector)]
-    assert visible == [active_frame_selector]
-
-
 def _render_tooling_shell_fixture(fixture_root) -> None:  # noqa: ANN001
     rc = tooling_dashboard_renderer.main(["--repo-root", str(fixture_root), "--output", "odylith/index.html"])
     assert rc == 0
-
-
-def _first_non_default_option(frame, selector: str, excluded: set[str] | None = None) -> str:  # noqa: ANN001
-    excluded_tokens = {"all", ""}
-    if excluded:
-        excluded_tokens |= {str(token) for token in excluded}
-    options = frame.locator(f"{selector} option").evaluate_all(
-        """nodes => nodes
-          .map((node) => (node.value || "").trim())
-          .filter((token) => token.length > 0)
-        """
-    )
-    for token in options:
-        if token not in excluded_tokens:
-            return str(token)
-    return ""
 
 
 def _first_scope_option_with_scoped_brief(frame, *, window_token: str) -> str:  # noqa: ANN001
@@ -524,31 +500,6 @@ def _first_scope_option_with_scoped_brief(frame, *, window_token: str) -> str:  
         if str(scope_id) in option_set and isinstance(brief, dict) and str(brief.get("fingerprint", "")).strip():
             return str(scope_id)
     return _first_non_default_option(frame, "#scope-select", excluded={""})
-
-
-def _first_filter_value_with_results(frame, selector: str, item_selector: str) -> tuple[str, int]:  # noqa: ANN001
-    options = frame.locator(f"{selector} option").evaluate_all(
-        """nodes => nodes
-          .map((node) => (node.value || "").trim())
-          .filter((token) => token.length > 0 && token !== "all")
-        """
-    )
-    for token in options:
-        frame.locator(selector).select_option(token)
-        count = frame.locator(item_selector).count()
-        if count > 0:
-            return str(token), count
-    return "", 0
-
-
-def _reset_select_to_first_option(frame, selector: str) -> None:  # noqa: ANN001
-    values = frame.locator(f"{selector} option").evaluate_all(
-        """nodes => nodes
-          .map((node) => (node.value || ""))
-        """
-    )
-    assert values, f"expected at least one option for {selector}"
-    frame.locator(selector).select_option(str(values[0]))
 
 
 def _select_registry_component_with_detail_actions(registry) -> tuple[str, str]:  # noqa: ANN001
@@ -583,49 +534,6 @@ def _select_radar_row_with_cross_surface_links(radar) -> str:  # noqa: ANN001
         if registry_links.count() and diagram_links.count():
             return idea_id
     raise AssertionError("expected a Radar workstream with both Registry and Atlas detail links")
-
-
-def _reset_radar_filters(radar) -> None:  # noqa: ANN001
-    radar.locator("#query").fill("")
-    for selector in ("#section", "#phase", "#activity", "#lane", "#priority"):
-        radar.locator(selector).select_option("all")
-
-
-def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
-    _reset_radar_filters(radar)
-    radar.locator("#query").fill(idea_id)
-    radar.locator(f'button[data-idea-id="{idea_id}"]').wait_for(timeout=15000)
-    radar.locator(f'button[data-idea-id="{idea_id}"]').first.click()
-    _wait_for_radar_detail_id(radar, idea_id)
-    radar.locator("#query").fill("")
-    _wait_for_radar_detail_id(radar, idea_id)
-
-
-def _wait_for_radar_detail_id(radar, idea_id: str) -> None:  # noqa: ANN001
-    radar.locator(f'button[data-idea-id="{idea_id}"].active').wait_for(timeout=15000)
-    radar.locator("#detail .detail-title").wait_for(timeout=15000)
-    radar.locator("#detail").filter(has_text=idea_id).wait_for(timeout=15000)
-
-
-def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
-    panel = radar.locator("#detail details.topology-relations-panel").first
-    panel.wait_for(timeout=15000)
-    if panel.get_attribute("open") is None:
-        panel.evaluate("node => { node.open = true; }")
-    panel.locator(".topology-relations").wait_for(timeout=15000)
-
-
-def _wait_for_locator_count(page, frame_selector: str, locator_selector: str, expected: int) -> None:  # noqa: ANN001
-    page.wait_for_function(
-        """({ frameSelector, locatorSelector, expected }) => {
-            const frame = document.querySelector(frameSelector);
-            const doc = frame && frame.contentDocument;
-            if (!doc) return false;
-            return doc.querySelectorAll(locatorSelector).length === expected;
-        }""",
-        arg={"frameSelector": frame_selector, "locatorSelector": locator_selector, "expected": expected},
-        timeout=15000,
-    )
 
 
 def test_shell_tab_matrix_keeps_single_visible_pane_in_compact_viewport(compact_browser_context) -> None:  # noqa: ANN001

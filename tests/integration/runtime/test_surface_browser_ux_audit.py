@@ -13,6 +13,7 @@ from tests.integration.runtime.surface_browser_test_support import (
     _assert_registry_selection,
     _extract_query_param,
     _new_page,
+    _open_radar_topology_relations,
     _wait_for_compass_ready,
     _wait_for_shell_query_param,
     _wait_for_shell_tab,
@@ -198,14 +199,6 @@ def _collect_compass_component_actions(compass, *, limit: int = 3) -> list[dict[
         if len(actions) >= limit:
             break
     return actions
-
-
-def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
-    panel = radar.locator("#detail details.topology-relations-panel").first
-    panel.wait_for(timeout=15000)
-    if panel.get_attribute("open") is None:
-        panel.evaluate("node => { node.open = true; }")
-    panel.locator(".topology-relations").wait_for(timeout=15000)
 
 
 def test_radar_b048_brutal_topology_and_surface_link_audit(browser_context) -> None:  # noqa: ANN001

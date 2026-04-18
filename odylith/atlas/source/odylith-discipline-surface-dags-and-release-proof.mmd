@@ -1,0 +1,95 @@
+%% Reviewed 2026-04-18 for B-117 to expand the D-039 "Surface DAGs" node into the concrete governed-surface refresh and release-proof contract.
+flowchart TB
+    discipline["Odylith Discipline state<br/>hard laws + stance + receipts"]
+    releaseTarget["B-117 release accountability"]
+
+    subgraph truth["Governed source truth"]
+        runtimeSrc["Delivery intelligence + surface projection inputs"]
+        radarSrc["Radar ideas + technical plans"]
+        registrySrc["Registry manifest + component specs"]
+        casebookSrc["Casebook bug markdown + bug index source"]
+        atlasSrc["Atlas catalog + Mermaid source"]
+    end
+
+    subgraph planner["Refresh planner and reuse gates"]
+        select["Selective sync or owned-surface refresh"]
+        order["Surface order<br/>Compass -> Radar -> Atlas -> Registry -> Casebook -> tooling_shell"]
+        fingerprint["Surface fingerprint DAG<br/>input + output fingerprints"]
+        reuse{"Outputs reusable?"}
+        stable["Reuse current rendered bytes<br/>no rewrite"]
+        workers["Per-surface workers<br/>parallel fan-out when 2+ surfaces are selected"]
+    end
+
+    subgraph surfaces["Governed surface DAGs"]
+        compassDag["Compass DAG<br/>runtime facts -> current snapshot -> compass.html"]
+        radarDag["Radar DAG<br/>ideas + plans -> traceability -> radar.html"]
+        atlasChoice{"Atlas refresh mode?"}
+        atlasSync["Atlas auto-update<br/>catalog review markers + svg/png render"]
+        atlasRender["Atlas render-only<br/>atlas.html from current catalog truth"]
+        atlasDag["Atlas outputs<br/>svg/png + atlas.html"]
+        registryDag["Registry DAG<br/>specs + manifest + delivery -> registry.html"]
+        casebookGuard["Casebook validation + index refresh"]
+        casebookDag["Casebook DAG<br/>validated index -> casebook.html"]
+        shellDag["Shell DAG<br/>delivery + Radar/Compass payloads -> index.html"]
+    end
+
+    subgraph proof["Release-proof closure"]
+        syncCheck["Selective sync + sync --check-only"]
+        validators["Discipline + guidance-behavior validators"]
+        browser["Surface browser matrix<br/>Compass / Radar / Atlas / Registry / Casebook / shell"]
+        benchmarks["Agent-operating-character + guidance-behavior benchmarks"]
+        close["Public accountability<br/>release claim allowed"]
+    end
+
+    discipline --> runtimeSrc
+    discipline --> validators
+    discipline --> benchmarks
+    radarSrc --> radarDag
+    registrySrc --> registryDag
+    casebookSrc --> casebookGuard
+    atlasSrc --> atlasChoice
+
+    select --> order --> fingerprint
+    fingerprint --> reuse
+    reuse -- yes --> stable
+    reuse -- no --> workers
+
+    workers --> compassDag
+    workers --> radarDag
+    workers --> atlasChoice
+    workers --> registryDag
+    workers --> casebookGuard
+    workers --> shellDag
+
+    runtimeSrc --> compassDag
+    runtimeSrc --> radarDag
+    runtimeSrc --> registryDag
+    runtimeSrc --> shellDag
+
+    atlasChoice -- "--atlas-sync" --> atlasSync --> atlasDag
+    atlasChoice -- "render only" --> atlasRender --> atlasDag
+
+    casebookGuard --> casebookDag
+    compassDag --> shellDag
+    radarDag --> shellDag
+
+    atlasDag --> syncCheck
+    radarDag --> syncCheck
+    registryDag --> syncCheck
+    casebookDag --> syncCheck
+
+    compassDag --> browser
+    radarDag --> browser
+    atlasDag --> browser
+    registryDag --> browser
+    casebookDag --> browser
+    shellDag --> browser
+
+    validators --> close
+    benchmarks --> close
+    syncCheck --> close
+    browser --> close
+
+    atlasSync -. "Only Atlas refresh may mutate tracked diagram truth" .-> releaseTarget
+    shellDag -. "Shell wrapper alone does not make Compass fresh" .-> releaseTarget
+    close --> releaseTarget

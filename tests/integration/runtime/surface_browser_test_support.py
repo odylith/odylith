@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import threading
+import traceback
 from typing import Iterator
 from urllib.parse import parse_qs, urlparse
 
@@ -24,7 +25,7 @@ _LOCAL_COMPASS_HISTORY_JSON_RE = re.compile(
     r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/history/(?:index|\d{4}-\d{2}-\d{2})\.v1\.json(?:[?#].*)?$"
 )
 _LOCAL_COMPASS_RUNTIME_JSON_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/current\.v1\.json(?:[?#].*)?$"
+    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/current\.v1\.(?:json|js)(?:[?#].*)?$"
 )
 _LOCAL_COMPASS_SOURCE_TRUTH_JSON_RE = re.compile(
     r"^http://127\.0\.0\.1:\d+/odylith/compass/compass-source-truth\.v1\.json(?:[?#].*)?$"
@@ -184,6 +185,7 @@ def _extract_query_param(href: str, key: str) -> str:
 
 
 def _casebook_index_counts() -> tuple[int, int]:
+    """Return the open-case count and total case count from the Casebook index."""
     text = (_REPO_ROOT / "odylith" / "casebook" / "bugs" / "INDEX.md").read_text(encoding="utf-8")
     section = ""
     open_total = 0
@@ -198,13 +200,59 @@ def _casebook_index_counts() -> tuple[int, int]:
             continue
         if not section or not line.startswith("| "):
             continue
-        if line.startswith("| Date |") or line.startswith("| --- |"):
+        if line.startswith("| Bug ID |") or line.startswith("| Date |") or line.startswith("| --- |"):
             continue
         if section == "open":
             open_total += 1
         elif section == "closed":
             closed_total += 1
     return open_total, open_total + closed_total
+
+
+def _assert_casebook_counts(casebook, *, expected_open_total: int, expected_total_cases: int) -> None:  # noqa: ANN001
+    """Assert the visible Casebook counters and row count stay aligned."""
+    assert casebook.locator("#kpiOpenTotal").inner_text().strip() == str(expected_open_total)
+    assert casebook.locator("#kpiTotalCases").inner_text().strip() == str(expected_total_cases)
+    assert casebook.locator("button.bug-row").count() == expected_total_cases
+    assert casebook.locator("#listMeta").inner_text().strip() == f"Visible: {expected_total_cases}"
+
+
+def _pane_hidden(page, frame_selector: str) -> bool:  # noqa: ANN001
+    """Return whether a shell iframe pane is currently hidden."""
+    return bool(page.locator(frame_selector).evaluate("node => Boolean(node.hidden)"))
+
+
+def _assert_single_visible_pane(page, active_frame_selector: str) -> None:  # noqa: ANN001
+    """Assert the shell hides every iframe pane except the active one."""
+    panes = (
+        "#frame-radar",
+        "#frame-registry",
+        "#frame-casebook",
+        "#frame-atlas",
+        "#frame-compass",
+    )
+    visible = [selector for selector in panes if not _pane_hidden(page, selector)]
+    assert visible == [active_frame_selector]
+
+
+def _run_in_browser_thread(callback) -> None:  # noqa: ANN001
+    """Run a browser proof in a worker thread and forward any failure with traceback."""
+    error: dict[str, object] = {}
+
+    def _worker() -> None:
+        try:
+            callback()
+        except BaseException as exc:  # pragma: no cover - assertion forwarding
+            error["exc"] = exc
+            error["traceback"] = traceback.format_exc()
+
+    thread = threading.Thread(target=_worker, daemon=True)
+    thread.start()
+    thread.join(timeout=60)
+    if thread.is_alive():  # pragma: no cover - defensive timeout guard
+        raise TimeoutError("browser proof thread did not finish within 60 seconds")
+    if "exc" in error:
+        raise AssertionError(str(error.get("traceback") or error["exc"])) from error["exc"]
 
 
 def _select_radar_row_with_link(
@@ -241,6 +289,50 @@ def _locator_appears(locator, *, timeout: int = 1000) -> bool:  # noqa: ANN001
     return False
 
 
+def _first_non_default_option(frame, selector: str, excluded: set[str] | None = None) -> str:  # noqa: ANN001
+    """Return the first non-default select option value, excluding explicit tokens."""
+    excluded_tokens = {"all", ""}
+    if excluded:
+        excluded_tokens |= {str(token) for token in excluded}
+    options = frame.locator(f"{selector} option").evaluate_all(
+        """nodes => nodes
+          .map((node) => String(node.value || "").trim())
+          .filter((token) => token.length > 0)
+        """
+    )
+    for token in options:
+        if token not in excluded_tokens:
+            return str(token)
+    return ""
+
+
+def _first_filter_value_with_results(frame, selector: str, item_selector: str) -> tuple[str, int]:  # noqa: ANN001
+    """Return the first filter option that leaves at least one visible result."""
+    options = frame.locator(f"{selector} option").evaluate_all(
+        """nodes => nodes
+          .map((node) => String(node.value || "").trim())
+          .filter((token) => token.length > 0 && token !== "all")
+        """
+    )
+    for token in options:
+        frame.locator(selector).select_option(token)
+        count = frame.locator(item_selector).count()
+        if count > 0:
+            return str(token), count
+    return "", 0
+
+
+def _reset_select_to_first_option(frame, selector: str) -> None:  # noqa: ANN001
+    """Reset a select control back to its first defined option value."""
+    values = frame.locator(f"{selector} option").evaluate_all(
+        """nodes => nodes
+          .map((node) => String(node.value || ""))
+        """
+    )
+    assert values, f"expected at least one option for {selector}"
+    frame.locator(selector).select_option(str(values[0]))
+
+
 def _select_radar_workstream_with_detail_selector(
     page,
     *,
@@ -264,6 +356,35 @@ def _select_radar_workstream_with_detail_selector(
         if _locator_appears(radar.locator(f"#detail {detail_selector}"), timeout=selector_timeout):
             return radar, idea_id
     raise AssertionError(failure_message)
+
+
+def _wait_for_radar_detail_id(radar, idea_id: str) -> None:  # noqa: ANN001
+    """Wait for the Radar detail pane to settle on the requested workstream id."""
+    radar.locator(f'button[data-idea-id="{idea_id}"].active').wait_for(timeout=15000)
+    radar.locator("#detail .detail-title").wait_for(timeout=15000)
+    radar.locator("#detail").filter(has_text=idea_id).wait_for(timeout=15000)
+
+
+def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
+    """Expand the Radar topology-relations panel if it is present but still closed."""
+    panel = radar.locator("#detail details.topology-relations-panel").first
+    panel.wait_for(timeout=15000)
+    if panel.get_attribute("open") is None:
+        panel.evaluate("node => { node.open = true; }")
+    panel.locator(".topology-relations").wait_for(timeout=15000)
+
+
+def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
+    """Focus one Radar workstream by id while clearing filters that would hide it."""
+    radar.locator("#query").fill("")
+    for selector in ("#section", "#phase", "#activity", "#lane", "#priority"):
+        radar.locator(selector).select_option("all")
+    radar.locator("#query").fill(idea_id)
+    radar.locator(f'button[data-idea-id="{idea_id}"]').wait_for(timeout=15000)
+    radar.locator(f'button[data-idea-id="{idea_id}"]').first.click()
+    _wait_for_radar_detail_id(radar, idea_id)
+    radar.locator("#query").fill("")
+    _wait_for_radar_detail_id(radar, idea_id)
 
 
 def _select_registry_component_with_detail_selector(
@@ -290,6 +411,20 @@ def _select_registry_component_with_detail_selector(
         if _locator_appears(registry.locator(f"#detail {detail_selector}"), timeout=selector_timeout):
             return registry, component_id
     raise AssertionError(failure_message)
+
+
+def _wait_for_locator_count(page, frame_selector: str, locator_selector: str, expected: int) -> None:  # noqa: ANN001
+    """Wait until a frame document exposes an exact locator count."""
+    page.wait_for_function(
+        """({ frameSelector, locatorSelector, expected }) => {
+            const frame = document.querySelector(frameSelector);
+            const doc = frame && frame.contentDocument;
+            if (!doc) return false;
+            return doc.querySelectorAll(locatorSelector).length === expected;
+        }""",
+        arg={"frameSelector": frame_selector, "locatorSelector": locator_selector, "expected": expected},
+        timeout=15000,
+    )
 
 
 def _select_casebook_bug_with_detail_selector(
@@ -504,6 +639,19 @@ def _atlas_owner_workstreams(atlas) -> list[str]:  # noqa: ANN001
           .map((node) => (node.textContent || "").trim())
           .filter((token) => token.length > 0)
         """
+    )
+
+
+def _atlas_related_workstreams(atlas) -> list[str]:  # noqa: ANN001
+    """Return the distinct workstreams linked across Atlas detail sections."""
+    return atlas.locator(
+        "#ownerWorkstreamLinks a.workstream-pill-link, "
+        "#activeWorkstreamLinks a.workstream-pill-link, "
+        "#historicalWorkstreamLinks a.workstream-pill-link"
+    ).evaluate_all(
+        """nodes => Array.from(new Set(nodes
+          .map((node) => (node.textContent || "").trim())
+          .filter((token) => token.length > 0)))"""
     )
 
 

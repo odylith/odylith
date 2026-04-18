@@ -1,73 +1,42 @@
 from __future__ import annotations
 
-import contextlib
 from datetime import datetime
 from datetime import timezone
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import re
 import shutil
-import threading
-import traceback
-from typing import Iterator
 from urllib.parse import quote
 
-import pytest
 from tests.integration.runtime.surface_browser_test_support import (
+    _assert_atlas_selection,
+    _assert_casebook_counts,
+    _assert_casebook_selection,
+    _assert_clean_page,
+    _assert_compass_live_state,
+    _assert_compass_selection,
+    _assert_radar_selection,
+    _assert_registry_selection,
+    _atlas_related_workstreams,
+    _atlas_selected_diagram,
+    _atlas_total,
+    _atlas_workstream_filter_value,
+    _atlas_workstream_options,
+    _browser,
+    browser_context,
+    _casebook_index_counts,
     _click_visible,
-    _extract_query_param,
+    _collect_sample_tokens,
+    _new_page,
+    _run_in_browser_thread,
     _select_radar_row_with_link,
+    _static_server,
     _wait_for_shell_query_param,
     _wait_for_shell_tab,
 )
 
-playwright_sync = pytest.importorskip("playwright.sync_api")
-
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_LOCAL_SURFACE_HTML_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/(radar|registry|casebook|atlas|compass)/[^?#]+\.html(?:[?#].*)?$"
-)
-_LOCAL_COMPASS_RUNTIME_CURRENT_RE = re.compile(
-    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/current\.v1\.(?:json|js)(?:[?#].*)?$"
-)
-
-
-@contextlib.contextmanager
-def _static_server(*, root: Path) -> Iterator[str]:
-    class _QuietHandler(SimpleHTTPRequestHandler):
-        def __init__(self, *args, **kwargs):  # noqa: ANN002, ANN003
-            super().__init__(*args, directory=str(root), **kwargs)
-
-        def copyfile(self, source, outputfile) -> None:  # noqa: ANN001
-            with contextlib.suppress(BrokenPipeError, ConnectionResetError):
-                super().copyfile(source, outputfile)
-
-        def log_message(self, format: str, *args) -> None:  # noqa: A003, ANN001
-            return
-
-    server = ThreadingHTTPServer(("127.0.0.1", 0), _QuietHandler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    try:
-        yield f"http://127.0.0.1:{server.server_port}"
-    finally:
-        server.shutdown()
-        server.server_close()
-        thread.join(timeout=5)
-
-
-def _browser() -> Iterator[tuple[object, object]]:
-    with playwright_sync.sync_playwright() as pw:
-        try:
-            browser = pw.chromium.launch(headless=True)
-        except Exception as exc:  # pragma: no cover - environment-specific
-            pytest.skip(f"Playwright Chromium is not installed: {exc}")
-        try:
-            yield pw, browser
-        finally:
-            browser.close()
 
 
 def _ready_compass_fixture_root(tmp_path: Path) -> Path:
@@ -146,196 +115,6 @@ def _write_compass_fixture_runtime_payloads(
         source_truth_path.write_text(json.dumps(source_truth_payload, indent=2) + "\n", encoding="utf-8")
 
 
-@pytest.fixture(scope="module")
-def browser_context() -> Iterator[tuple[str, object]]:
-    with _static_server(root=_REPO_ROOT) as base_url:
-        for _pw, browser in _browser():
-            context = browser.new_context(viewport={"width": 1440, "height": 1100})
-            try:
-                yield base_url, context
-            finally:
-                context.close()
-
-
-def _run_in_browser_thread(callback) -> None:  # noqa: ANN001
-    error: dict[str, object] = {}
-
-    def _worker() -> None:
-        try:
-            callback()
-        except BaseException as exc:  # pragma: no cover - assertion forwarding
-            error["exc"] = exc
-            error["traceback"] = traceback.format_exc()
-
-    thread = threading.Thread(target=_worker, daemon=True)
-    thread.start()
-    thread.join(timeout=60)
-    if thread.is_alive():  # pragma: no cover - defensive timeout guard
-        raise TimeoutError("browser proof thread did not finish within 60 seconds")
-    if "exc" in error:
-        raise AssertionError(str(error.get("traceback") or error["exc"])) from error["exc"]
-
-
-def _new_page(context) -> tuple[object, list[str], list[str]]:  # noqa: ANN001
-    page = context.new_page()
-    console_errors: list[str] = []
-    page_errors: list[str] = []
-    failed_requests: list[str] = []
-    bad_responses: list[str] = []
-
-    def _on_console(message) -> None:  # noqa: ANN001
-        if message.type == "error":
-            console_errors.append(message.text)
-
-    def _on_page_error(error) -> None:  # noqa: ANN001
-        page_errors.append(str(error))
-
-    def _on_request_failed(request) -> None:  # noqa: ANN001
-        url = str(getattr(request, "url", "") or "")
-        if not url or url.startswith(("about:", "data:", "blob:")):
-            return
-        resource_type = str(getattr(request, "resource_type", "") or "").strip().lower()
-        failure = getattr(request, "failure", None)
-        error_text = ""
-        if callable(failure):
-            payload = failure() or {}
-            if isinstance(payload, dict):
-                error_text = str(payload.get("errorText") or "").strip()
-        lowered_error = error_text.lower()
-        if (
-            resource_type == "document"
-            and _LOCAL_SURFACE_HTML_RE.match(url)
-            and (not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error)
-        ):
-            return
-        if _LOCAL_COMPASS_RUNTIME_CURRENT_RE.match(url) and (
-            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
-        ):
-            return
-        failed_requests.append(f"{request.method} {url} {error_text}".strip())
-
-    def _on_response(response) -> None:  # noqa: ANN001
-        url = str(getattr(response, "url", "") or "")
-        if not url.startswith("http://127.0.0.1:"):
-            return
-        status = int(getattr(response, "status", 0) or 0)
-        if status >= 400:
-            bad_responses.append(f"{status} {url}")
-
-    page.on("console", _on_console)
-    page.on("pageerror", _on_page_error)
-    page.on("requestfailed", _on_request_failed)
-    page.on("response", _on_response)
-    return page, console_errors, page_errors, failed_requests, bad_responses
-
-
-def _assert_clean_page(
-    page,
-    console_errors: list[str],
-    page_errors: list[str],
-    failed_requests: list[str],
-    bad_responses: list[str],
-) -> None:  # noqa: ANN001
-    assert console_errors == [], f"console errors: {console_errors}"
-    assert page_errors == [], f"page errors: {page_errors}"
-    assert failed_requests == [], f"request failures: {failed_requests}"
-    assert bad_responses == [], f"http error responses: {bad_responses}"
-    page.close()
-
-
-def _casebook_index_counts() -> tuple[int, int]:
-    text = (_REPO_ROOT / "odylith" / "casebook" / "bugs" / "INDEX.md").read_text(encoding="utf-8")
-    section = ""
-    open_total = 0
-    closed_total = 0
-    for raw_line in text.splitlines():
-        line = raw_line.strip()
-        if line == "## Open Bugs":
-            section = "open"
-            continue
-        if line == "## Closed Bugs":
-            section = "closed"
-            continue
-        if not section or not line.startswith("| "):
-            continue
-        if (
-            line.startswith("| Bug ID |")
-            or line.startswith("| Date |")
-            or line.startswith("| --- |")
-        ):
-            continue
-        if section == "open":
-            open_total += 1
-        elif section == "closed":
-            closed_total += 1
-    return open_total, open_total + closed_total
-
-
-def _assert_casebook_counts(casebook, *, expected_open_total: int, expected_total_cases: int) -> None:  # noqa: ANN001
-    assert casebook.locator("#kpiOpenTotal").inner_text().strip() == str(expected_open_total)
-    assert casebook.locator("#kpiTotalCases").inner_text().strip() == str(expected_total_cases)
-    assert casebook.locator("button.bug-row").count() == expected_total_cases
-    assert casebook.locator("#listMeta").inner_text().strip() == f"Visible: {expected_total_cases}"
-
-
-def _collect_sample_tokens(page, base_url: str) -> dict[str, str]:  # noqa: ANN001
-    response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
-    assert response is not None and response.ok
-    radar = page.frame_locator("#frame-radar")
-    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar_workstream, component_id, _component_href = _select_radar_row_with_link(
-        radar,
-        "a.chip-registry-component",
-        "expected a Radar workstream with a registry deeplink",
-        query_key="component",
-    )
-
-    _atlas_row_workstream, diagram_id, diagram_href = _select_radar_row_with_link(
-        radar,
-        "a.chip-topology-diagram",
-        "expected a Radar workstream with an atlas deeplink",
-        query_key="diagram",
-    )
-    atlas_workstream = _extract_query_param(diagram_href, "workstream")
-
-    response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
-    assert response is not None and response.ok
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
-    bug_route = str(casebook.locator("button.bug-row").first.get_attribute("data-bug") or "").strip()
-    assert bug_route, "expected casebook bug route"
-
-    response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
-    assert response is not None and response.ok
-    compass = page.frame_locator("#frame-compass")
-    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-    compass_workstream = compass.locator("a.ws-id-btn").first.inner_text().strip()
-    assert re.fullmatch(r"B-\d{3,}", compass_workstream), compass_workstream
-
-    return {
-        "radar_workstream": radar_workstream,
-        "registry_component": component_id,
-        "atlas_workstream": atlas_workstream,
-        "atlas_diagram": diagram_id,
-        "casebook_bug": bug_route,
-        "compass_workstream": compass_workstream,
-    }
-
-
-def _assert_radar_selection(page, workstream: str) -> None:  # noqa: ANN001
-    assert page.locator("#tab-radar").get_attribute("aria-selected") == "true"
-    radar = page.frame_locator("#frame-radar")
-    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=workstream).wait_for(timeout=15000)
-
-
-def _assert_registry_selection(page, component_id: str) -> None:  # noqa: ANN001
-    assert page.locator("#tab-registry").get_attribute("aria-selected") == "true"
-    registry = page.frame_locator("#frame-registry")
-    registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
-    registry.locator(f'button[data-component="{component_id}"].active').wait_for(timeout=15000)
-
-
 def test_registry_detail_hides_default_live_status_card(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -360,122 +139,6 @@ def test_registry_detail_hides_default_live_status_card(browser_context) -> None
     assert "Truthful claim:" not in detail_text
     assert "Deployment truth:" not in detail_text
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
-
-
-def _assert_atlas_selection(page, *, workstream: str, diagram_id: str) -> None:  # noqa: ANN001
-    assert page.locator("#tab-atlas").get_attribute("aria-selected") == "true"
-    atlas = page.frame_locator("#frame-atlas")
-    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
-    atlas.locator("#diagramId", has_text=diagram_id).wait_for(timeout=15000)
-    if workstream:
-        _wait_for_shell_query_param(page, tab="atlas", key="workstream", value=workstream)
-    else:
-        _wait_for_shell_tab(page, "atlas")
-        page.wait_for_function(
-            """() => {
-                try {
-                  const url = new URL(window.location.href);
-                  return !url.searchParams.has("workstream");
-                } catch (_error) {
-                  return false;
-                }
-            }""",
-            timeout=15000,
-        )
-
-
-def _atlas_total(atlas) -> int:  # noqa: ANN001
-    return int(atlas.locator("#statTotal").inner_text().strip())
-
-
-def _atlas_workstream_filter_value(atlas) -> str:  # noqa: ANN001
-    return atlas.locator("#workstreamFilter").input_value().strip()
-
-
-def _atlas_selected_diagram(atlas) -> str:  # noqa: ANN001
-    return atlas.locator("#diagramId").inner_text().strip()
-
-
-def _atlas_owner_workstreams(atlas) -> list[str]:  # noqa: ANN001
-    return atlas.locator("#ownerWorkstreamLinks a.workstream-pill-link").evaluate_all(
-        """nodes => nodes
-          .map((node) => (node.textContent || "").trim())
-          .filter((token) => token.length > 0)
-        """
-    )
-
-
-def _atlas_related_workstreams(atlas) -> list[str]:  # noqa: ANN001
-    return atlas.locator(
-        "#ownerWorkstreamLinks a.workstream-pill-link, "
-        "#activeWorkstreamLinks a.workstream-pill-link, "
-        "#historicalWorkstreamLinks a.workstream-pill-link"
-    ).evaluate_all(
-        """nodes => Array.from(new Set(nodes
-          .map((node) => (node.textContent || "").trim())
-          .filter((token) => token.length > 0)))"""
-    )
-
-
-def _atlas_workstream_options(atlas) -> list[str]:  # noqa: ANN001
-    return atlas.locator("#workstreamFilter option").evaluate_all(
-        """nodes => nodes
-          .map((node) => (node.value || "").trim())
-          .filter((token) => token.length > 0)
-        """
-    )
-
-
-def _assert_casebook_selection(page, bug_route: str) -> None:  # noqa: ANN001
-    assert page.locator("#tab-casebook").get_attribute("aria-selected") == "true"
-    casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
-    casebook.locator(f'button.bug-row.active[data-bug="{bug_route}"]').wait_for(timeout=15000)
-    casebook.locator("#detailPane .detail-title").wait_for(timeout=15000)
-
-
-def _assert_compass_selection(page, *, workstream: str, window_token: str) -> None:  # noqa: ANN001
-    assert page.locator("#tab-compass").get_attribute("aria-selected") == "true"
-    compass = page.frame_locator("#frame-compass")
-    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-    compass.locator(f'button[data-window="{window_token}"].active').wait_for(timeout=15000)
-    compass.locator("#scope-pill", has_text=workstream).wait_for(timeout=15000)
-    compass.get_by_role("heading", name="Standup Brief").wait_for(timeout=15000)
-
-
-def _compass_kpi_value(compass, label: str) -> int:  # noqa: ANN001
-    raw = compass.locator(".stat").evaluate_all(
-        """(nodes, targetLabel) => {
-          const match = nodes.find((node) => {
-            const labelNode = node.querySelector(".kpi-label");
-            return ((labelNode && labelNode.textContent) || "").trim() === targetLabel;
-          });
-          const valueNode = match ? match.querySelector(".kpi-value") : null;
-          return ((valueNode && valueNode.textContent) || "").trim();
-        }""",
-        label,
-    )
-    match = re.search(r"\d+", str(raw))
-    assert match, f"expected numeric Compass KPI for {label!r}, got {raw!r}"
-    return int(match.group(0))
-
-
-def _assert_compass_live_state(compass, *, window_token: str) -> None:  # noqa: ANN001
-    compass.locator(f'button[data-window="{window_token}"].active').wait_for(timeout=15000)
-    compass.get_by_role("heading", name="Standup Brief").wait_for(timeout=15000)
-    brief_chip = ""
-    if compass.locator("#digest-list .standup-brief-chip").count():
-        brief_chip = compass.locator("#digest-list .standup-brief-chip").first.inner_text().strip().lower()
-    brief_notice = ""
-    if compass.locator("#digest-list .brief-status-title").count():
-        brief_notice = compass.locator("#digest-list .brief-status-title").first.inner_text().strip().lower()
-    assert "last known good cache" not in brief_chip
-    assert "stale last known good" not in brief_notice
-    assert _compass_kpi_value(compass, "Critical Risks") >= 0
-    assert compass.locator("#risk-list .risk, #risk-list .empty").count() > 0
-    assert compass.locator(
-        "#timeline .tx-card, #timeline .empty, #timeline .timeline-day-title, #timeline .hour-empty"
-    ).count() > 0
 
 
 def test_surface_entrypoints_redirect_into_shell_and_load_requested_surface(browser_context) -> None:  # noqa: ANN001
@@ -1435,6 +1098,134 @@ def test_invalid_surface_routes_fall_back_to_valid_detail_selection(browser_cont
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
     compass.locator('button[data-window="48h"].active').wait_for(timeout=15000)
     compass.locator("#scope-pill", has_text="Global").wait_for(timeout=15000)
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_shell_unknown_tab_self_heals_to_radar_selection(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    tokens = _collect_sample_tokens(page, base_url)
+
+    response = page.goto(
+        base_url + f"/odylith/index.html?tab=not-a-tab&workstream={quote(tokens['radar_workstream'], safe='')}",
+        wait_until="domcontentloaded",
+    )
+    assert response is not None and response.ok
+    page.wait_for_url(
+        re.compile(rf".*/odylith/index\.html\?tab=radar(&.*)?workstream={re.escape(tokens['radar_workstream'])}(&.*|$)"),
+        timeout=15000,
+    )
+    _assert_radar_selection(page, tokens["radar_workstream"])
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_invalid_window_and_date_queries_are_dropped_on_load(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    tokens = _collect_sample_tokens(page, base_url)
+
+    response = page.goto(
+        base_url
+        + f"/odylith/index.html?tab=compass&scope={quote(tokens['compass_workstream'], safe='')}"
+        + "&window=999h&date=tomorrow&audit_day=banana",
+        wait_until="domcontentloaded",
+    )
+    assert response is not None and response.ok
+    page.wait_for_function(
+        """({ scope }) => {
+            try {
+              const url = new URL(window.location.href);
+              return url.pathname.endsWith("/odylith/index.html")
+                && url.searchParams.get("tab") === "compass"
+                && url.searchParams.get("scope") === scope
+                && !url.searchParams.has("window")
+                && !url.searchParams.has("date")
+                && !url.searchParams.has("audit_day");
+            } catch (_error) {
+              return false;
+            }
+        }""",
+        arg={"scope": tokens["compass_workstream"]},
+        timeout=15000,
+    )
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    compass.locator("#scope-pill", has_text=tokens["compass_workstream"]).wait_for(timeout=15000)
+    compass.locator('button[data-window].active').first.wait_for(timeout=15000)
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_casebook_invalid_sort_query_reverts_to_default_sort(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    tokens = _collect_sample_tokens(page, base_url)
+
+    response = page.goto(
+        base_url
+        + f"/odylith/index.html?tab=casebook&bug={quote(tokens['casebook_bug'], safe='')}"
+        + "&sort=sideways",
+        wait_until="domcontentloaded",
+    )
+    assert response is not None and response.ok
+    page.wait_for_function(
+        """({ bug }) => {
+            try {
+              const url = new URL(window.location.href);
+              return url.pathname.endsWith("/odylith/index.html")
+                && url.searchParams.get("tab") === "casebook"
+                && url.searchParams.get("bug") === bug
+                && !url.searchParams.has("sort");
+            } catch (_error) {
+              return false;
+            }
+        }""",
+        arg={"bug": tokens["casebook_bug"]},
+        timeout=15000,
+    )
+    _assert_casebook_selection(page, tokens["casebook_bug"])
+    casebook = page.frame_locator("#frame-casebook")
+    assert casebook.locator("#sortFilter").input_value() == "newest"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_atlas_compact_diagram_route_is_canonicalized(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    tokens = _collect_sample_tokens(page, base_url)
+    compact_diagram = tokens["atlas_diagram"].replace("-", "")
+    route = (
+        base_url
+        + (
+            f"/odylith/index.html?tab=atlas&diagram={quote(compact_diagram, safe='')}"
+            if not tokens["atlas_workstream"]
+            else (
+                f"/odylith/index.html?tab=atlas&workstream={quote(tokens['atlas_workstream'], safe='')}"
+                f"&diagram={quote(compact_diagram, safe='')}"
+            )
+        )
+    )
+
+    response = page.goto(route, wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    page.wait_for_function(
+        """({ diagram }) => {
+            try {
+              const url = new URL(window.location.href);
+              return url.pathname.endsWith("/odylith/index.html")
+                && url.searchParams.get("tab") === "atlas"
+                && url.searchParams.get("diagram") === diagram;
+            } catch (_error) {
+              return false;
+            }
+        }""",
+        arg={"diagram": tokens["atlas_diagram"]},
+        timeout=15000,
+    )
+    _assert_atlas_selection(page, workstream=tokens["atlas_workstream"], diagram_id=tokens["atlas_diagram"])
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

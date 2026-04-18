@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import subprocess
+
 from odylith.runtime.governance import delivery_intelligence_engine as engine
 from odylith.runtime.governance import delivery_intelligence_refresh as refresh
 from odylith.runtime.governance import delivery_intelligence_support as support
@@ -102,6 +104,15 @@ def test_delivery_registry_watch_paths_ignore_forensics_sidecars(tmp_path: Path)
     assert all("FORENSICS.v1.json" not in path for path in watched_paths)
     assert support.registry_delivery_watched_paths(tmp_path) == watched_paths
     assert refresh._registry_delivery_watched_paths(tmp_path) == watched_paths  # noqa: SLF001
+
+
+def test_delivery_support_current_local_head_returns_empty_on_git_failure(monkeypatch, tmp_path: Path) -> None:
+    def _raise(*_args, **_kwargs):  # noqa: ANN202
+        raise subprocess.CalledProcessError(1, ["git"])
+
+    monkeypatch.setattr(subprocess, "run", _raise)
+
+    assert support.current_local_head(tmp_path) == ""
 
 
 def test_delivery_intelligence_main_skips_rebuild_when_inputs_are_unchanged(

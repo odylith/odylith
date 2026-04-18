@@ -446,11 +446,29 @@ def _governance_kpi_style(locator, card_selector: str, label_selector: str, valu
 
 
 def _select_radar_workstream_chip_for_style_audit(page):  # noqa: ANN001
+    radar = page.frame_locator("#frame-radar")
+    preferred_idea_id = "B-048"
+    preferred_button = radar.locator(f'button[data-idea-id="{preferred_idea_id}"]').first
+    if preferred_button.count():
+        preferred_button.click()
+        _wait_for_shell_query_param(page, tab="radar", key="workstream", value=preferred_idea_id)
+        radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=preferred_idea_id).wait_for(timeout=15000)
+        if _open_radar_topology_relations_for_style_audit(radar):
+            chips = radar.locator("#detail button.execution-wave-chip-link, #detail button.entity-id-chip")
+            if chips.count():
+                chips.first.wait_for(timeout=15000)
+                return radar
+
     radar, _idea_id = _select_radar_workstream_with_detail_selector(
         page,
-        detail_selector="button.execution-wave-chip-link, button.entity-id-chip",
-        failure_message="expected a Radar detail with at least one rendered workstream chip",
+        detail_selector="details.topology-relations-panel",
+        failure_message="expected a Radar detail with a topology relations panel for workstream chip style audit",
+        selector_timeout=5000,
     )
+    assert _open_radar_topology_relations_for_style_audit(radar), "expected a Radar topology relations panel"
+    chips = radar.locator("#detail button.execution-wave-chip-link, #detail button.entity-id-chip")
+    chips.first.wait_for(timeout=15000)
+    assert chips.count() > 0, "expected a Radar detail with at least one rendered workstream chip"
     return radar
 
 
