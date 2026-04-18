@@ -1,3 +1,5 @@
+"""Helpers for loading the authored Odylith release-notes markdown records."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

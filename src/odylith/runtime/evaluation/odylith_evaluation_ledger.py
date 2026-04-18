@@ -20,6 +20,8 @@ from pathlib import Path
 import tempfile
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping_value
 from odylith.runtime.context_engine import odylith_context_cache
 
 
@@ -48,14 +50,6 @@ def _normalize_string(value: Any) -> str:
 def _normalize_token(value: Any) -> str:
     return _normalize_string(value).lower().replace(" ", "_")
 
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
-
-
 def _float_value(value: Any) -> float:
     try:
         return float(value or 0.0)
@@ -72,11 +66,6 @@ def _bool_value(value: Any) -> bool:
     if token in {"0", "false", "no", "off"}:
         return False
     return bool(value)
-
-
-def _mapping_value(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
-
 
 def _string_list(value: Any, *, limit: int | None = None) -> list[str]:
     if not isinstance(value, list):

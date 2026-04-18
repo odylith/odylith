@@ -4,33 +4,32 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, load_casebook_bug_id_from_markdown, resolve_casebook_bug_id
 
 
-def _host():
-    from odylith.runtime.context_engine import odylith_context_engine_store as host
-
-    return host
-
-
 def _archive_files(root: Path) -> list[Path]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     if not root.is_dir():
         return []
-    return sorted(path for path in root.glob(host._ARCHIVE_GLOB) if path.is_file())  # noqa: SLF001
+    return sorted(
+        path for path in root.glob(odylith_context_engine_store._ARCHIVE_GLOB) if path.is_file()  # noqa: SLF001
+    )
 
 
 def _collect_markdown_sections(path: Path) -> dict[str, list[str]]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     if not path.is_file():
         return {}
     sections: dict[str, list[str]] = {}
     current: str | None = None
     for raw in path.read_text(encoding="utf-8").splitlines():
-        match = host._HEADER_RE.match(raw)  # noqa: SLF001
+        match = odylith_context_engine_store._HEADER_RE.match(raw)  # noqa: SLF001
         if match:
             current = str(match.group(1)).strip()
             sections.setdefault(current, [])
@@ -41,7 +40,8 @@ def _collect_markdown_sections(path: Path) -> dict[str, list[str]]:
 
 
 def _parse_markdown_table(lines: Sequence[str]) -> tuple[list[str], list[dict[str, str]]]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     headers: list[str] = []
     rows: list[dict[str, str]] = []
     started = False
@@ -55,7 +55,7 @@ def _parse_markdown_table(lines: Sequence[str]) -> tuple[list[str], list[dict[st
                 rows.append(dict(zip(headers, cells, strict=True)))
                 pending_row = ""
             continue
-        if not host._TABLE_ROW_RE.match(line):  # noqa: SLF001
+        if not odylith_context_engine_store._TABLE_ROW_RE.match(line):  # noqa: SLF001
             if started and line.startswith("|"):
                 cells = [cell.strip() for cell in line.split("|")[1:-1]]
                 if len(cells) != len(headers):
@@ -69,7 +69,7 @@ def _parse_markdown_table(lines: Sequence[str]) -> tuple[list[str], list[dict[st
         cells = [cell.strip() for cell in line.split("|")[1:-1]]
         if not cells:
             continue
-        if all(host.re.fullmatch(r"-+", token or "") for token in cells):  # noqa: SLF001
+        if all(re.fullmatch(r"-+", token or "") for token in cells):
             continue
         if not started:
             headers = cells
@@ -83,28 +83,32 @@ def _parse_markdown_table(lines: Sequence[str]) -> tuple[list[str], list[dict[st
 
 
 def _parse_link_target(cell: str) -> str:
-    return _host().backlog_contract._parse_link_target(cell) or ""  # noqa: SLF001
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    return odylith_context_engine_store.backlog_contract._parse_link_target(cell) or ""  # noqa: SLF001
 
 
 def _load_idea_specs(*, repo_root: Path) -> dict[str, backlog_contract.IdeaSpec]:
-    host = _host()
-    ideas_root = host._radar_source_root(repo_root=repo_root) / "ideas"  # noqa: SLF001
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    ideas_root = odylith_context_engine_store._radar_source_root(repo_root=repo_root) / "ideas"  # noqa: SLF001
     if not ideas_root.is_dir():
         return {}
     specs: dict[str, backlog_contract.IdeaSpec] = {}
     for path in sorted(ideas_root.rglob("*.md")):
-        spec = host.backlog_contract._parse_idea_spec(path)  # noqa: SLF001
+        spec = odylith_context_engine_store.backlog_contract._parse_idea_spec(path)  # noqa: SLF001
         idea_id = str(spec.metadata.get("idea_id", "")).strip().upper()
-        if host._WORKSTREAM_ID_RE.fullmatch(idea_id):  # noqa: SLF001
+        if odylith_context_engine_store._WORKSTREAM_ID_RE.fullmatch(idea_id):  # noqa: SLF001
             specs[idea_id] = spec
     return specs
 
 
 def _load_backlog_projection(*, repo_root: Path) -> dict[str, Any]:
-    host = _host()
-    index_path = host._radar_source_root(repo_root=repo_root) / "INDEX.md"  # noqa: SLF001
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    index_path = odylith_context_engine_store._radar_source_root(repo_root=repo_root) / "INDEX.md"  # noqa: SLF001
     if index_path.is_file():
-        snapshot = host.backlog_contract.load_backlog_index_snapshot(index_path)
+        snapshot = odylith_context_engine_store.backlog_contract.load_backlog_index_snapshot(index_path)
     else:
         snapshot = {
             "updated_utc": "",
@@ -116,18 +120,30 @@ def _load_backlog_projection(*, repo_root: Path) -> dict[str, Any]:
         }
     archive_dir = index_path.parent / "archive"
     finished_rows = list(
-        host.backlog_contract.rows_as_mapping(section=snapshot.get("finished", {}), expected_headers=host._BACKLOG_HEADERS)  # noqa: SLF001
+        odylith_context_engine_store.backlog_contract.rows_as_mapping(  # noqa: SLF001
+            section=snapshot.get("finished", {}),
+            expected_headers=odylith_context_engine_store._BACKLOG_HEADERS,
+        )
     )
     parked_rows = list(
-        host.backlog_contract.rows_as_mapping(section=snapshot.get("parked", {}), expected_headers=host._BACKLOG_HEADERS)  # noqa: SLF001
+        odylith_context_engine_store.backlog_contract.rows_as_mapping(  # noqa: SLF001
+            section=snapshot.get("parked", {}),
+            expected_headers=odylith_context_engine_store._BACKLOG_HEADERS,
+        )
     )
     for archive_path in _archive_files(archive_dir):
-        archive_snapshot = host.backlog_contract.load_backlog_index_snapshot(archive_path)
+        archive_snapshot = odylith_context_engine_store.backlog_contract.load_backlog_index_snapshot(archive_path)
         finished_rows.extend(
-            host.backlog_contract.rows_as_mapping(section=archive_snapshot.get("finished", {}), expected_headers=host._BACKLOG_HEADERS)  # noqa: SLF001
+            odylith_context_engine_store.backlog_contract.rows_as_mapping(  # noqa: SLF001
+                section=archive_snapshot.get("finished", {}),
+                expected_headers=odylith_context_engine_store._BACKLOG_HEADERS,
+            )
         )
         parked_rows.extend(
-            host.backlog_contract.rows_as_mapping(section=archive_snapshot.get("parked", {}), expected_headers=host._BACKLOG_HEADERS)  # noqa: SLF001
+            odylith_context_engine_store.backlog_contract.rows_as_mapping(  # noqa: SLF001
+                section=archive_snapshot.get("parked", {}),
+                expected_headers=odylith_context_engine_store._BACKLOG_HEADERS,
+            )
         )
     rationale_map: dict[str, list[str]] = {}
     for key, payload in (snapshot.get("reorder_sections", {}) or {}).items():
@@ -136,8 +152,14 @@ def _load_backlog_projection(*, repo_root: Path) -> dict[str, Any]:
         rationale_map[str(key)] = bullets
     return {
         "updated_utc": str(snapshot.get("updated_utc", "")).strip(),
-        "active": host.backlog_contract.rows_as_mapping(section=snapshot.get("active", {}), expected_headers=host._BACKLOG_HEADERS),  # noqa: SLF001
-        "execution": host.backlog_contract.rows_as_mapping(section=snapshot.get("execution", {}), expected_headers=host._BACKLOG_HEADERS),  # noqa: SLF001
+        "active": odylith_context_engine_store.backlog_contract.rows_as_mapping(  # noqa: SLF001
+            section=snapshot.get("active", {}),
+            expected_headers=odylith_context_engine_store._BACKLOG_HEADERS,
+        ),
+        "execution": odylith_context_engine_store.backlog_contract.rows_as_mapping(  # noqa: SLF001
+            section=snapshot.get("execution", {}),
+            expected_headers=odylith_context_engine_store._BACKLOG_HEADERS,
+        ),
         "finished": finished_rows,
         "parked": parked_rows,
         "rationale_map": rationale_map,
@@ -145,15 +167,16 @@ def _load_backlog_projection(*, repo_root: Path) -> dict[str, Any]:
 
 
 def _load_plan_projection(*, repo_root: Path) -> dict[str, list[dict[str, str]]]:
-    host = _host()
-    index_path = host._technical_plans_root(repo_root=repo_root) / "INDEX.md"  # noqa: SLF001
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    index_path = odylith_context_engine_store._technical_plans_root(repo_root=repo_root) / "INDEX.md"  # noqa: SLF001
     sections = _collect_markdown_sections(index_path)
     active_rows: list[dict[str, str]] = []
     parked_rows: list[dict[str, str]] = []
     done_rows: list[dict[str, str]] = []
     for title, lines in sections.items():
         headers, rows = _parse_markdown_table(lines)
-        if tuple(headers) != host._PLAN_HEADERS:  # noqa: SLF001
+        if tuple(headers) != odylith_context_engine_store._PLAN_HEADERS:  # noqa: SLF001
             continue
         normalized = title.strip().lower()
         if normalized == "active plans":
@@ -170,21 +193,28 @@ def _load_plan_projection(*, repo_root: Path) -> dict[str, list[dict[str, str]]]
 
 
 def _load_bug_projection(*, repo_root: Path) -> list[dict[str, str]]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     rows: list[dict[str, str]] = []
-    casebook_bugs_root = host._casebook_bugs_root(repo_root=repo_root)  # noqa: SLF001
+    casebook_bugs_root = odylith_context_engine_store._casebook_bugs_root(repo_root=repo_root)  # noqa: SLF001
     candidates = [casebook_bugs_root / "INDEX.md", *(_archive_files(casebook_bugs_root / "archive"))]
     for path in candidates:
         sections = _collect_markdown_sections(path)
         matched = False
         for _title, lines in sections.items():
             headers, section_rows = _parse_markdown_table(lines)
-            if tuple(headers) in {host._BUG_HEADERS, host._BUG_LEGACY_HEADERS}:  # noqa: SLF001
+            if tuple(headers) in {
+                odylith_context_engine_store._BUG_HEADERS,
+                odylith_context_engine_store._BUG_LEGACY_HEADERS,
+            }:  # noqa: SLF001
                 rows.extend(_normalize_bug_projection_rows(repo_root=repo_root, index_path=path, rows=section_rows))
                 matched = True
         if not matched and path.is_file():
             headers, section_rows = _parse_markdown_table(path.read_text(encoding="utf-8").splitlines())
-            if tuple(headers) in {host._BUG_HEADERS, host._BUG_LEGACY_HEADERS}:  # noqa: SLF001
+            if tuple(headers) in {
+                odylith_context_engine_store._BUG_HEADERS,
+                odylith_context_engine_store._BUG_LEGACY_HEADERS,
+            }:  # noqa: SLF001
                 rows.extend(_normalize_bug_projection_rows(repo_root=repo_root, index_path=path, rows=section_rows))
     return rows
 
@@ -195,7 +225,8 @@ def _normalize_bug_projection_rows(
     index_path: Path,
     rows: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, str]]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     normalized: list[dict[str, str]] = []
     index_path_token = index_path.relative_to(repo_root).as_posix()
     for row in rows:
@@ -204,7 +235,7 @@ def _normalize_bug_projection_rows(
         if _is_bug_placeholder_row(row):
             continue
         payload = {str(key): str(value) for key, value in row.items()}
-        payload["Status"] = host.canonicalize_bug_status(payload.get("Status", ""))
+        payload["Status"] = odylith_context_engine_store.canonicalize_bug_status(payload.get("Status", ""))
         link_target = _parse_link_target(str(payload.get("Link", "")))
         normalized_link = _normalize_bug_link_target(
             repo_root=repo_root,
@@ -232,13 +263,14 @@ def _normalize_bug_projection_rows(
 
 
 def _normalize_bug_link_target(*, repo_root: Path, index_path: Path, link_target: str) -> str:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     token = str(link_target or "").strip()
     if not token:
         return ""
     candidate = Path(token)
     repo_root_resolved = repo_root.resolve()
-    bug_root = host.truth_root_path(repo_root=repo_root_resolved, key="casebook_bugs")
+    bug_root = odylith_context_engine_store.truth_root_path(repo_root=repo_root_resolved, key="casebook_bugs")
     try:
         bug_root_token = bug_root.relative_to(repo_root_resolved).as_posix()
     except ValueError:
@@ -262,13 +294,14 @@ def _normalize_bug_link_target(*, repo_root: Path, index_path: Path, link_target
 
 
 def _is_bug_placeholder_row(row: Mapping[str, Any]) -> bool:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     date = str(row.get("Date", "")).strip()
     title = str(row.get("Title", "")).strip()
     severity = str(row.get("Severity", "")).strip()
     status = str(row.get("Status", "")).strip()
     link_target = _parse_link_target(str(row.get("Link", "")))
-    if date and not host._BUG_DATE_RE.fullmatch(date):  # noqa: SLF001
+    if date and not odylith_context_engine_store._BUG_DATE_RE.fullmatch(date):  # noqa: SLF001
         return True
     for token in (title, severity, status, link_target):
         if "<" in token and ">" in token:
@@ -288,8 +321,9 @@ def _raw_text(path: Path) -> str:
 
 
 def _load_codex_event_projection(*, repo_root: Path) -> list[dict[str, Any]]:
-    host = _host()
-    stream_path = host._compass_stream_path(repo_root=repo_root)  # noqa: SLF001
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    stream_path = odylith_context_engine_store._compass_stream_path(repo_root=repo_root)  # noqa: SLF001
     if not stream_path.is_file():
         return []
     rows: list[dict[str, Any]] = []
@@ -313,12 +347,12 @@ def _load_codex_event_projection(*, repo_root: Path) -> list[dict[str, Any]]:
         workstreams = [
             str(token).strip().upper()
             for token in payload.get("workstreams", [])
-            if host._WORKSTREAM_ID_RE.fullmatch(str(token).strip().upper())  # noqa: SLF001
+            if odylith_context_engine_store._WORKSTREAM_ID_RE.fullmatch(str(token).strip().upper())  # noqa: SLF001
         ] if isinstance(payload.get("workstreams"), list) else []
         artifacts = [
-            host._normalize_repo_token(str(token).strip(), repo_root=repo_root)  # noqa: SLF001
+            odylith_context_engine_store._normalize_repo_token(str(token).strip(), repo_root=repo_root)  # noqa: SLF001
             for token in payload.get("artifacts", [])
-            if host._normalize_repo_token(str(token).strip(), repo_root=repo_root)  # noqa: SLF001
+            if odylith_context_engine_store._normalize_repo_token(str(token).strip(), repo_root=repo_root)  # noqa: SLF001
         ] if isinstance(payload.get("artifacts"), list) else []
         components = [
             str(token).strip()
@@ -350,16 +384,17 @@ def _load_codex_event_projection(*, repo_root: Path) -> list[dict[str, Any]]:
 
 
 def _load_traceability_projection(*, repo_root: Path) -> list[dict[str, str]]:
-    host = _host()
-    path = host._traceability_graph_path(repo_root=repo_root)  # noqa: SLF001
-    payload = host.odylith_context_cache.read_json_object(path)
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    path = odylith_context_engine_store._traceability_graph_path(repo_root=repo_root)  # noqa: SLF001
+    payload = odylith_context_engine_store.odylith_context_cache.read_json_object(path)
     rows: list[dict[str, str]] = []
     workstreams = payload.get("workstreams", []) if isinstance(payload.get("workstreams"), list) else []
     for workstream in workstreams:
         if not isinstance(workstream, Mapping):
             continue
         idea_id = str(workstream.get("idea_id", "")).strip().upper()
-        if not host._WORKSTREAM_ID_RE.fullmatch(idea_id):  # noqa: SLF001
+        if not odylith_context_engine_store._WORKSTREAM_ID_RE.fullmatch(idea_id):  # noqa: SLF001
             continue
         plan_path = str(workstream.get("promoted_to_plan", "")).strip()
         if plan_path:
@@ -381,7 +416,7 @@ def _load_traceability_projection(*, repo_root: Path) -> list[dict[str, str]]:
             "workstream_merged_into",
         ):
             token = str(workstream.get(relation, "")).strip().upper()
-            if host._WORKSTREAM_ID_RE.fullmatch(token):  # noqa: SLF001
+            if odylith_context_engine_store._WORKSTREAM_ID_RE.fullmatch(token):  # noqa: SLF001
                 rows.append(
                     {
                         "source_kind": "workstream",
@@ -408,12 +443,12 @@ def _load_traceability_projection(*, repo_root: Path) -> list[dict[str, str]]:
             for raw in values:
                 token = str(raw).strip()
                 if relation == "related_diagram_ids":
-                    if not host._DIAGRAM_ID_RE.fullmatch(token):  # noqa: SLF001
+                    if not odylith_context_engine_store._DIAGRAM_ID_RE.fullmatch(token):  # noqa: SLF001
                         continue
                     target_kind = "diagram"
                 else:
                     token = token.upper()
-                    if not host._WORKSTREAM_ID_RE.fullmatch(token):  # noqa: SLF001
+                    if not odylith_context_engine_store._WORKSTREAM_ID_RE.fullmatch(token):  # noqa: SLF001
                         continue
                     target_kind = "workstream"
                 rows.append(
@@ -466,7 +501,7 @@ def _load_traceability_projection(*, repo_root: Path) -> list[dict[str, str]]:
 
 
 def _load_release_projection(*, repo_root: Path) -> dict[str, Any]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
     from odylith.runtime.governance import release_truth_runtime
 
     release_view, workstream_status_by_id, _errors = release_truth_runtime.load_release_view_from_source(
@@ -516,7 +551,7 @@ def _load_release_projection(*, repo_root: Path) -> dict[str, Any]:
         if not isinstance(workstream, Mapping):
             continue
         idea_id = str(workstream.get("idea_id", "")).strip().upper()
-        if not host._WORKSTREAM_ID_RE.fullmatch(idea_id):  # noqa: SLF001
+        if not odylith_context_engine_store._WORKSTREAM_ID_RE.fullmatch(idea_id):  # noqa: SLF001
             continue
         active_release = workstream.get("active_release", {})
         active_release_aliases = (
@@ -595,9 +630,10 @@ def _load_release_projection(*, repo_root: Path) -> dict[str, Any]:
 
 
 def _load_diagram_projection(*, repo_root: Path) -> list[dict[str, Any]]:
-    host = _host()
-    path = host._atlas_catalog_path(repo_root=repo_root)  # noqa: SLF001
-    payload = host.odylith_context_cache.read_json_object(path)
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
+    path = odylith_context_engine_store._atlas_catalog_path(repo_root=repo_root)  # noqa: SLF001
+    payload = odylith_context_engine_store.odylith_context_cache.read_json_object(path)
     diagrams = payload.get("diagrams", [])
     rows: list[dict[str, Any]] = []
     if not isinstance(diagrams, list):
@@ -606,7 +642,7 @@ def _load_diagram_projection(*, repo_root: Path) -> list[dict[str, Any]]:
         if not isinstance(item, Mapping):
             continue
         diagram_id = str(item.get("diagram_id", "")).strip().upper()
-        if not host._DIAGRAM_ID_RE.fullmatch(diagram_id):  # noqa: SLF001
+        if not odylith_context_engine_store._DIAGRAM_ID_RE.fullmatch(diagram_id):  # noqa: SLF001
             continue
         source_mmd = str(item.get("source_mmd", "")).strip()
         source_mmd_path = repo_root / source_mmd if source_mmd and not Path(source_mmd).is_absolute() else Path(source_mmd)
@@ -621,7 +657,11 @@ def _load_diagram_projection(*, repo_root: Path) -> list[dict[str, Any]]:
                 "source_mmd": source_mmd,
                 "source_svg": str(item.get("source_svg", "")).strip(),
                 "source_png": str(item.get("source_png", "")).strip(),
-                "source_mmd_hash": host.odylith_context_cache.fingerprint_paths([source_mmd_path.resolve()]) if source_mmd_path.is_file() else "",
+                "source_mmd_hash": (
+                    odylith_context_engine_store.odylith_context_cache.fingerprint_paths([source_mmd_path.resolve()])  # noqa: SLF001
+                    if source_mmd_path.is_file()
+                    else ""
+                ),
                 "summary": str(item.get("summary", "")).strip(),
                 "watch_paths": [
                     str(token).strip()

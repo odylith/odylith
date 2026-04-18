@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.context_engine import turn_context_runtime
 from odylith.runtime.context_engine import tooling_context_routing as routing
 
@@ -27,14 +28,6 @@ def _pick_retained_docs(final_payload: Mapping[str, Any], retrieval_plan: Mappin
 def _retained_retrieval_plan(final_payload: Mapping[str, Any], retrieval_plan: Mapping[str, Any]) -> Mapping[str, Any]:
     candidate = final_payload.get("retrieval_plan", {})
     return candidate if isinstance(candidate, Mapping) else retrieval_plan
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
-
 
 def _score_level(score: int) -> str:
     clamped = max(0, min(4, int(score)))

@@ -33,6 +33,7 @@ import uuid
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as compass_timeline
+from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.evaluation import odylith_evaluation_ledger
@@ -1004,13 +1005,6 @@ def _context_signal_score(value: Any) -> int:
     if token in {"very_high", "max", "maximum", "full"}:
         return 4
     return 0
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
 
 
 def _dedupe_strings(values: Sequence[str]) -> list[str]:

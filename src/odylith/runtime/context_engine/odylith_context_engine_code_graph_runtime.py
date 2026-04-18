@@ -7,12 +7,6 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 
-def _host():
-    from odylith.runtime.context_engine import odylith_context_engine_store as host
-
-    return host
-
-
 def _python_module_name(*, rel_path: str, source_root: str, module_root: str) -> str:
     relative = Path(rel_path).relative_to(source_root)
     parts = list(relative.parts)
@@ -28,9 +22,10 @@ def _python_module_name(*, rel_path: str, source_root: str, module_root: str) ->
 
 
 def _collect_python_module_index(repo_root: Path) -> dict[str, str]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     rows: dict[str, str] = {}
-    for rel_root, module_root in host._PYTHON_GRAPH_ROOTS:  # noqa: SLF001
+    for rel_root, module_root in odylith_context_engine_store._PYTHON_GRAPH_ROOTS:  # noqa: SLF001
         root = repo_root / rel_root
         if not root.is_dir():
             continue
@@ -89,11 +84,14 @@ def _parse_python_artifact(
     module_name: str,
     module_index: Mapping[str, str],
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     path = repo_root / rel_path
-    source = host._raw_text(path)  # noqa: SLF001
+    source = odylith_context_engine_store._raw_text(path)  # noqa: SLF001
     imports: set[str] = set()
-    contract_refs = set(host._extract_path_refs(text=source, repo_root=repo_root))  # noqa: SLF001
+    contract_refs = set(
+        odylith_context_engine_store._extract_path_refs(text=source, repo_root=repo_root)  # noqa: SLF001
+    )
     try:
         tree = ast.parse(source or "", filename=rel_path)
     except SyntaxError:
@@ -128,7 +126,9 @@ def _parse_python_artifact(
                 if target_module and target_module in module_index:
                     imports.add(module_index[target_module])
         elif isinstance(node, ast.Constant) and isinstance(node.value, str):
-            contract_refs.update(host._extract_path_refs(text=str(node.value), repo_root=repo_root))  # noqa: SLF001
+            contract_refs.update(
+                odylith_context_engine_store._extract_path_refs(text=str(node.value), repo_root=repo_root)  # noqa: SLF001
+            )
     edges: list[dict[str, Any]] = []
     for target_path in sorted(imports):
         edges.append(
@@ -140,7 +140,7 @@ def _parse_python_artifact(
             }
         )
     for target_path in sorted(contract_refs):
-        if target_path.startswith(host._CONTRACT_PATH_PREFIXES):  # noqa: SLF001
+        if target_path.startswith(odylith_context_engine_store._CONTRACT_PATH_PREFIXES):  # noqa: SLF001
             edges.append(
                 {
                     "source_path": rel_path,
@@ -156,7 +156,9 @@ def _parse_python_artifact(
             "layer": module_name.split(".", 1)[0] if module_name else "",
             "imports": sorted(imports),
             "contract_refs": sorted(
-                path_ref for path_ref in contract_refs if path_ref.startswith(host._CONTRACT_PATH_PREFIXES)  # noqa: SLF001
+                path_ref
+                for path_ref in contract_refs
+                if path_ref.startswith(odylith_context_engine_store._CONTRACT_PATH_PREFIXES)  # noqa: SLF001
             ),
             "metadata": {},
         },
@@ -183,9 +185,10 @@ def _module_command_to_path(
 
 
 def _relation_for_target_path(target_path: str) -> str:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     normalized = str(target_path or "").strip()
-    if normalized.startswith(host._CONTRACT_PATH_PREFIXES):  # noqa: SLF001
+    if normalized.startswith(odylith_context_engine_store._CONTRACT_PATH_PREFIXES):  # noqa: SLF001
         return "references_contract"
     if normalized.startswith("tests/"):
         return "runs_test"
@@ -197,7 +200,8 @@ def _load_make_artifacts(
     repo_root: Path,
     module_index: Mapping[str, str],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     artifacts: list[dict[str, Any]] = []
     edges: list[dict[str, Any]] = []
     candidates = [repo_root / "Makefile"]
@@ -215,7 +219,7 @@ def _load_make_artifacts(
         for raw in path.read_text(encoding="utf-8").splitlines():
             line = str(raw).rstrip()
             stripped = line.strip()
-            match = host._MAKE_TARGET_RE.match(line)  # noqa: SLF001
+            match = odylith_context_engine_store._MAKE_TARGET_RE.match(line)  # noqa: SLF001
             if match is not None:
                 current_target = str(match.group(1) or "").strip()
                 if current_target and not current_target.startswith(".") and "%" not in current_target and "/" not in current_target:
@@ -223,8 +227,10 @@ def _load_make_artifacts(
                 continue
             if not current_target or not stripped or stripped.startswith("#"):
                 continue
-            path_refs = set(host._extract_path_refs(text=stripped, repo_root=repo_root))  # noqa: SLF001
-            for module_token in host._PYTHON_MODULE_COMMAND_RE.findall(stripped):  # noqa: SLF001
+            path_refs = set(
+                odylith_context_engine_store._extract_path_refs(text=stripped, repo_root=repo_root)  # noqa: SLF001
+            )
+            for module_token in odylith_context_engine_store._PYTHON_MODULE_COMMAND_RE.findall(stripped):  # noqa: SLF001
                 resolved = _module_command_to_path(
                     repo_root=repo_root,
                     module_token=str(module_token),
@@ -279,12 +285,16 @@ def _doc_source_paths(*, repo_root: Path) -> list[Path]:
 
 
 def _load_doc_relationship_edges(*, repo_root: Path) -> list[dict[str, Any]]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     edges: list[dict[str, Any]] = []
     for path in _doc_source_paths(repo_root=repo_root):
         rel_path = path.relative_to(repo_root).as_posix()
         relation = "runbook_covers_code" if rel_path.startswith("docs/runbooks/") else "documents_code"
-        for target_path in host._extract_path_refs(text=host._raw_text(path), repo_root=repo_root):  # noqa: SLF001
+        for target_path in odylith_context_engine_store._extract_path_refs(  # noqa: SLF001
+            text=odylith_context_engine_store._raw_text(path),  # noqa: SLF001
+            repo_root=repo_root,
+        ):
             target_relation = _relation_for_target_path(target_path)
             edges.append(
                 {
@@ -356,7 +366,8 @@ def _load_code_graph(
     connection: Any | None = None,
     trace_rows: Sequence[Mapping[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    host = _host()
+    from odylith.runtime.context_engine import odylith_context_engine_store
+
     module_index = _collect_python_module_index(repo_root)
     artifacts: list[dict[str, Any]] = []
     edges: list[dict[str, Any]] = []
@@ -379,4 +390,4 @@ def _load_code_graph(
         edges.extend(_load_traceability_doc_code_edges(connection))
     else:
         raise RuntimeError("traceability rows or connection required for code graph compilation")
-    return artifacts, host._dedupe_code_edges(edges)  # noqa: SLF001
+    return artifacts, odylith_context_engine_store._dedupe_code_edges(edges)  # noqa: SLF001

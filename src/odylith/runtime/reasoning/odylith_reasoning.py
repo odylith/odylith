@@ -182,6 +182,33 @@ class StructuredReasoningProfile:
     reasoning_effort: str = ""
 
 
+class _ProviderRequestStateMixin:
+    """Track provider request metadata and the latest failure outcome."""
+
+    last_failure_code: str
+    last_failure_detail: str
+    last_request_model: str
+    last_request_reasoning_effort: str
+
+    def _initialize_request_state(self) -> None:
+        self.last_failure_code = ""
+        self.last_failure_detail = ""
+        self.last_request_model = ""
+        self.last_request_reasoning_effort = ""
+
+    def _clear_failure(self) -> None:
+        self.last_failure_code = ""
+        self.last_failure_detail = ""
+
+    def _record_failure(self, code: str, detail: str) -> None:
+        self.last_failure_code = str(code or "").strip()
+        self.last_failure_detail = str(detail or "").strip()
+
+    def _record_request(self, *, model: Any, reasoning_effort: Any) -> None:
+        self.last_request_model = str(model or "").strip()
+        self.last_request_reasoning_effort = str(reasoning_effort or "").strip().lower()
+
+
 def reasoning_config_path(*, repo_root: Path) -> Path:
     """Return the local-only persisted Odylith reasoning config path."""
 
@@ -661,7 +688,7 @@ def _resolved_request_timeout_seconds(value: Any, *, default: float) -> float:
     return float(token)
 
 
-class OpenAICompatibleReasoningProvider:
+class OpenAICompatibleReasoningProvider(_ProviderRequestStateMixin):
     """Call an OpenAI-compatible chat-completions endpoint using JSON schema output."""
 
     def __init__(
@@ -676,23 +703,14 @@ class OpenAICompatibleReasoningProvider:
         self._api_key = str(api_key or "").strip()
         self._model = str(model or "").strip()
         self._timeout_seconds = float(timeout_seconds)
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-        self.last_request_model = ""
-        self.last_request_reasoning_effort = ""
-
-    def _clear_failure(self) -> None:
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _record_failure(self, code: str, detail: str) -> None:
-        self.last_failure_code = str(code or "").strip()
-        self.last_failure_detail = str(detail or "").strip()
+        self._initialize_request_state()
 
     def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
         request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
-        self.last_request_model = request_model
-        self.last_request_reasoning_effort = str(getattr(request, "reasoning_effort", "")).strip().lower()
+        self._record_request(
+            model=request_model,
+            reasoning_effort=getattr(request, "reasoning_effort", ""),
+        )
         if not self._base_url or not self._api_key or not request_model:
             self._record_failure(
                 "unavailable",
@@ -797,7 +815,7 @@ class OpenAICompatibleReasoningProvider:
         return self.generate_structured(request=_default_tribunal_request(prompt_payload=prompt_payload))
 
 
-class CodexCliReasoningProvider:
+class CodexCliReasoningProvider(_ProviderRequestStateMixin):
     """Call the local Codex CLI in non-interactive schema-constrained mode."""
 
     def __init__(
@@ -814,20 +832,7 @@ class CodexCliReasoningProvider:
         self._model = str(model or "").strip()
         self._timeout_seconds = float(timeout_seconds)
         self._reasoning_effort = str(reasoning_effort or "").strip().lower() or "high"
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-        self.last_request_model = ""
-        self.last_request_reasoning_effort = ""
-        self.last_request_model = ""
-        self.last_request_reasoning_effort = ""
-
-    def _clear_failure(self) -> None:
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _record_failure(self, code: str, detail: str) -> None:
-        self.last_failure_code = str(code or "").strip()
-        self.last_failure_detail = str(detail or "").strip()
+        self._initialize_request_state()
 
     def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
         if not shutil.which(self._codex_bin):
@@ -837,8 +842,7 @@ class CodexCliReasoningProvider:
             _normalize_string(getattr(request, "reasoning_effort", ""), default=self._reasoning_effort)
         )
         request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
-        self.last_request_model = request_model
-        self.last_request_reasoning_effort = reasoning_effort
+        self._record_request(model=request_model, reasoning_effort=reasoning_effort)
         timeout_seconds = _resolved_request_timeout_seconds(
             getattr(request, "timeout_seconds", 0.0),
             default=self._timeout_seconds,
@@ -927,7 +931,7 @@ class CodexCliReasoningProvider:
         return self.generate_structured(request=_default_tribunal_request(prompt_payload=prompt_payload))
 
 
-class AnthropicDirectReasoningProvider:
+class AnthropicDirectReasoningProvider(_ProviderRequestStateMixin):
     """Call the Anthropic Messages API directly via httpx — no CLI subprocess overhead."""
 
     _DEFAULT_MODEL = "claude-haiku-4-5"
@@ -947,18 +951,7 @@ class AnthropicDirectReasoningProvider:
         self._model = str(model or "").strip() or self._DEFAULT_MODEL
         self._timeout_seconds = float(timeout_seconds) if timeout_seconds and float(timeout_seconds) > 0 else self._DEFAULT_TIMEOUT
         self._reasoning_effort = str(reasoning_effort or "").strip().lower()
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-        self.last_request_model = ""
-        self.last_request_reasoning_effort = ""
-
-    def _clear_failure(self) -> None:
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _record_failure(self, code: str, detail: str) -> None:
-        self.last_failure_code = str(code or "").strip()
-        self.last_failure_detail = str(detail or "").strip()
+        self._initialize_request_state()
 
     def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
         try:
@@ -970,11 +963,10 @@ class AnthropicDirectReasoningProvider:
             self._record_failure("unavailable", "Anthropic API key is not configured.")
             return None
         request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
-        self.last_request_model = request_model
         reasoning_effort = _normalize_string(
             getattr(request, "reasoning_effort", ""), default=self._reasoning_effort
         )
-        self.last_request_reasoning_effort = reasoning_effort
+        self._record_request(model=request_model, reasoning_effort=reasoning_effort)
         timeout_seconds = _resolved_request_timeout_seconds(
             getattr(request, "timeout_seconds", 0.0),
             default=self._timeout_seconds,
@@ -1050,7 +1042,7 @@ class AnthropicDirectReasoningProvider:
         return self.generate_structured(request=_default_tribunal_request(prompt_payload=prompt_payload))
 
 
-class ClaudeCliReasoningProvider:
+class ClaudeCliReasoningProvider(_ProviderRequestStateMixin):
     """Call the local Claude Code CLI in print-mode schema-constrained mode."""
 
     def __init__(
@@ -1067,16 +1059,7 @@ class ClaudeCliReasoningProvider:
         self._model = str(model or "").strip()
         self._timeout_seconds = float(timeout_seconds)
         self._reasoning_effort = str(reasoning_effort or "").strip().lower() or "high"
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _clear_failure(self) -> None:
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _record_failure(self, code: str, detail: str) -> None:
-        self.last_failure_code = str(code or "").strip()
-        self.last_failure_detail = str(detail or "").strip()
+        self._initialize_request_state()
 
     def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
         resolved_claude_bin = resolve_claude_bin(self._claude_bin)
@@ -1087,8 +1070,7 @@ class ClaudeCliReasoningProvider:
             _normalize_string(getattr(request, "reasoning_effort", ""), default=self._reasoning_effort)
         )
         request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
-        self.last_request_model = request_model
-        self.last_request_reasoning_effort = reasoning_effort
+        self._record_request(model=request_model, reasoning_effort=reasoning_effort)
         timeout_seconds = _resolved_request_timeout_seconds(
             getattr(request, "timeout_seconds", 0.0),
             default=self._timeout_seconds,

@@ -10,6 +10,8 @@ from typing import Any, Mapping, Sequence
 
 from pathlib import Path
 
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping_value
 from odylith.runtime.common.consumer_profile import (
     PUBLIC_PRODUCT_RUNBOOK_PATHS,
     canonical_truth_token,
@@ -296,13 +298,6 @@ def _set_path(payload: dict[str, Any], path: Sequence[str], value: Any) -> None:
     current[path[-1]] = value
 
 
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
-
-
 def _string_list(value: Any) -> list[str]:
     if not isinstance(value, list):
         return []
@@ -315,10 +310,6 @@ def _string_list(value: Any) -> list[str]:
         seen.add(token)
         rows.append(token)
     return rows
-
-
-def _mapping_value(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _history_value(item: Mapping[str, Any]) -> dict[str, Any]:

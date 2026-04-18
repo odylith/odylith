@@ -5,13 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.evaluation import odylith_benchmark_runner
 from odylith.runtime.context_engine import odylith_context_engine_store
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
-
 
 def _string(value: Any) -> str:
     return str(value or "").strip()

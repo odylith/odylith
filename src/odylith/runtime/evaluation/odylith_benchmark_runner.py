@@ -39,6 +39,7 @@ import tomllib
 from typing import Any, Iterator, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_isolation
@@ -2457,10 +2458,6 @@ def _dedupe_strings(values: Sequence[Any]) -> list[str]:
         seen.add(token)
         rows.append(token)
     return rows
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _deep_merge_mapping(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str, Any]:

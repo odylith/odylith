@@ -7,12 +7,6 @@ from typing import Any
 from typing import Sequence
 
 
-def _host():
-    from odylith.runtime.orchestration import subagent_orchestrator as host
-
-    return host
-
-
 def _slice_prompt(
     request: OrchestrationRequest,
     *,
@@ -22,16 +16,15 @@ def _slice_prompt(
     role: str,
     include_coordination: bool,
 ) -> str:
-    host = _host()
-    OrchestrationMode = host.OrchestrationMode
+    from odylith.runtime.orchestration import subagent_orchestrator
 
     scope = ", ".join(paths) if paths else "the grounded bounded scope"
     route_time = not include_coordination
     coordination_note = ""
     if include_coordination:
         coordination_note = {
-            OrchestrationMode.PARALLEL_BATCH: "This slice is parallel-safe and disjoint from the other leaves.",
-            OrchestrationMode.SERIAL_BATCH: "This slice is ordered; wait for its dependencies before integrating results.",
+            subagent_orchestrator.OrchestrationMode.PARALLEL_BATCH: "This slice is parallel-safe and disjoint from the other leaves.",
+            subagent_orchestrator.OrchestrationMode.SERIAL_BATCH: "This slice is ordered; wait for its dependencies before integrating results.",
         }.get(mode, "Keep the work strictly bounded to this slice.")
     if not needs_write:
         body = f"Review only {scope} for this request: {request.prompt}"
@@ -222,14 +215,12 @@ def _prompt_contract_lines(subtask: SubtaskSlice) -> list[str]:
 
 
 def _spawn_task_message(subtask: SubtaskSlice, *, task_prompt: str) -> str:
-    host = _host()
-    _normalize_multiline_string = host._normalize_multiline_string
-    leaf_router = host.leaf_router
+    from odylith.runtime.orchestration import subagent_orchestrator
 
-    return leaf_router._build_host_message(  # noqa: SLF001
+    return subagent_orchestrator.leaf_router._build_host_message(  # noqa: SLF001
         subtask.route_runtime_banner_lines,
         subtask.prompt_contract_lines,
-        ["TASK", _normalize_multiline_string(task_prompt)],
+        ["TASK", subagent_orchestrator._normalize_multiline_string(task_prompt)],  # noqa: SLF001
     )
 
 
@@ -297,25 +288,27 @@ def _build_subtasks(
     mode: OrchestrationMode,
     groups: Sequence[Sequence[str]],
 ) -> list[SubtaskSlice]:
-    host = _host()
-    OrchestrationMode = host.OrchestrationMode
-    SubtaskSlice = host.SubtaskSlice
-    _new_slice_id = host._new_slice_id
-    _scope_role = host._scope_role
-    _execution_group_kind = host._execution_group_kind
+    from odylith.runtime.orchestration import subagent_orchestrator
 
     ordered_groups = [list(group) for group in groups if group or request.prompt]
     subtasks: list[SubtaskSlice] = []
     planned_ids: list[tuple[str, str]] = []
     previous_id = ""
     for index, paths in enumerate(ordered_groups, start=1):
-        slice_id = _new_slice_id(index)
-        role = _scope_role(paths, needs_write=request.needs_write)
-        execution_group_kind = _execution_group_kind(paths, needs_write=request.needs_write)
+        slice_id = subagent_orchestrator._new_slice_id(index)  # noqa: SLF001
+        role = subagent_orchestrator._scope_role(paths, needs_write=request.needs_write)  # noqa: SLF001
+        execution_group_kind = subagent_orchestrator._execution_group_kind(  # noqa: SLF001
+            paths,
+            needs_write=request.needs_write,
+        )
         dependency_ids: list[str] = []
-        if mode is OrchestrationMode.SERIAL_BATCH and previous_id:
+        if mode is subagent_orchestrator.OrchestrationMode.SERIAL_BATCH and previous_id:
             dependency_ids = [previous_id]
-        elif mode is OrchestrationMode.PARALLEL_BATCH and request.needs_write and execution_group_kind == "support":
+        elif (
+            mode is subagent_orchestrator.OrchestrationMode.PARALLEL_BATCH
+            and request.needs_write
+            and execution_group_kind == "support"
+        ):
             primary_ids = [planned_id for planned_id, group_kind in planned_ids if group_kind == "primary"]
             if primary_ids:
                 dependency_ids = list(primary_ids)
@@ -329,7 +322,7 @@ def _build_subtasks(
         planned_ids.append((slice_id, execution_group_kind))
         deliverables = _slice_deliverables(request, paths=paths, needs_write=request.needs_write, role=role)
         subtasks.append(
-            SubtaskSlice(
+            subagent_orchestrator.SubtaskSlice(
                 id=slice_id,
                 prompt=_slice_prompt(
                     request,
@@ -366,7 +359,10 @@ def _build_subtasks(
                 escalation_allowed=True,
             )
         )
-    default_role = _scope_role(request.candidate_paths, needs_write=request.needs_write)
+    default_role = subagent_orchestrator._scope_role(  # noqa: SLF001
+        request.candidate_paths,
+        needs_write=request.needs_write,
+    )
     deliverables = _slice_deliverables(
         request,
         paths=request.candidate_paths,
@@ -374,11 +370,14 @@ def _build_subtasks(
         role=default_role,
     )
     return subtasks or [
-        SubtaskSlice(
-            id=_new_slice_id(1),
+        subagent_orchestrator.SubtaskSlice(
+            id=subagent_orchestrator._new_slice_id(1),  # noqa: SLF001
             prompt=request.prompt,
             route_prompt=request.prompt,
-            execution_group_kind=_execution_group_kind(request.candidate_paths, needs_write=request.needs_write),
+            execution_group_kind=subagent_orchestrator._execution_group_kind(  # noqa: SLF001
+                request.candidate_paths,
+                needs_write=request.needs_write,
+            ),
             scope_role=default_role,
             task_kind=_slice_task_kind(request, role=default_role),
             phase=_slice_phase(request, role=default_role),

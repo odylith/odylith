@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping_value
 from odylith.runtime.character import runtime as character_runtime
 from odylith.runtime.evaluation import odylith_ablation
 from odylith.runtime.context_engine import odylith_context_cache
@@ -23,10 +25,6 @@ from odylith.runtime.governance import proof_state
 
 _PROCESS_HOT_PATH_PACKET_QUALITY_CACHE: dict[str, dict[str, Any]] = {}
 _PROCESS_HOT_PATH_ROUTING_HANDOFF_CACHE: dict[str, dict[str, Any]] = {}
-
-
-def _mapping_value(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _mapping_rows(value: Any) -> list[dict[str, Any]]:
@@ -244,13 +242,6 @@ def _packet_proof_state(
         if key in scope_lookup and isinstance(scope_lookup[key], Mapping)
     ]
     return proof_state.resolve_scope_collection_proof_state(candidate_scopes)
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
 
 
 def _odylith_switch_snapshot(*, repo_root: Path) -> dict[str, Any]:

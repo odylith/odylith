@@ -704,3 +704,38 @@ def test_context_engine_runtime_extracts_do_not_rebind_store_hosts() -> None:
         text = path.read_text(encoding="utf-8")
         assert "def _host():" not in text, f"store-host shim resurfaced in {path.relative_to(ROOT)}"
         assert "host = _host()" not in text, f"store-host rebinding resurfaced in {path.relative_to(ROOT)}"
+
+
+def test_selected_runtime_extracts_do_not_rebind_host_modules() -> None:
+    paths = (
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_code_graph_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_runtime_signals.py",
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_subtasks_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_window_update_index.py",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "def _host():" not in text, f"host shim resurfaced in {path.relative_to(ROOT)}"
+        assert "host = _host()" not in text, f"host rebinding resurfaced in {path.relative_to(ROOT)}"
+
+
+def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
+    local_helper_bans = {
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "execution_engine_handshake.py": ("def _mapping(",),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_runtime_surface_summary.py": ("def _mapping(",),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_quality.py": ("def _int_value(",),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_retrieval.py": ("def _int_value(",),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_routing.py": ("def _int_value(",),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_budgeting.py": ("def _int_value(", "def _mapping_value("),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_builder.py": ("def _int_value(", "def _mapping_value("),
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py": ("def _mapping(",),
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_evaluation_ledger.py": ("def _int_value(", "def _mapping_value("),
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py": ("def _int_value(",),
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router.py": ("def _int_value(",),
+    }
+    for path, banned_fragments in local_helper_bans.items():
+        text = path.read_text(encoding="utf-8")
+        assert "from odylith.runtime.common.value_coercion import " in text
+        for fragment in banned_fragments:
+            assert fragment not in text, f"duplicate coercion helper resurfaced in {path.relative_to(ROOT)}: {fragment}"

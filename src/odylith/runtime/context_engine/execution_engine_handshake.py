@@ -8,6 +8,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.execution_engine import runtime_surface_governance
 from odylith.runtime.character import runtime as character_runtime
@@ -22,11 +23,6 @@ NONCANONICAL_EXECUTION_ENGINE_COMPONENT_IDS = frozenset(
         "execution_governance",
     }
 )
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
-
 
 def _string(value: Any) -> str:
     return str(value or "").strip()

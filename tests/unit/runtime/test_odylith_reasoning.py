@@ -1606,3 +1606,52 @@ def test_codex_cli_provider_generate_structured_falls_back_to_stdout_when_output
     )
 
     assert result == {"ok": True}
+
+
+def test_reasoning_providers_initialize_and_track_request_state(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    openai_provider = odylith_reasoning.OpenAICompatibleReasoningProvider(
+        base_url="https://example.invalid",
+        api_key="secret",
+        model="tribunal-editor",
+        timeout_seconds=2.0,
+    )
+    assert openai_provider.last_failure_code == ""
+    assert openai_provider.last_failure_detail == ""
+    assert openai_provider.last_request_model == ""
+    assert openai_provider.last_request_reasoning_effort == ""
+
+    monkeypatch.setattr(
+        odylith_reasoning.urllib.request,
+        "urlopen",
+        lambda request, timeout: _FakeResponse(json.dumps({"choices": [{"message": {"content": '{"ok":true}'}}]})),  # noqa: ARG005
+    )
+    result = openai_provider.generate_structured(
+        request=odylith_reasoning.StructuredReasoningRequest(
+            system_prompt="custom prompt",
+            schema_name="schema",
+            output_schema={"type": "object"},
+            prompt_payload={"case": "B-061"},
+            model="gpt-5.4",
+            reasoning_effort="medium",
+        )
+    )
+    assert result == {"ok": True}
+    assert openai_provider.last_failure_code == ""
+    assert openai_provider.last_failure_detail == ""
+    assert openai_provider.last_request_model == "gpt-5.4"
+    assert openai_provider.last_request_reasoning_effort == "medium"
+
+    codex_provider = odylith_reasoning.CodexCliReasoningProvider(
+        repo_root=tmp_path,
+        codex_bin="codex",
+        model="gpt-5.4",
+        timeout_seconds=2.0,
+        reasoning_effort="high",
+    )
+    assert codex_provider.last_failure_code == ""
+    assert codex_provider.last_failure_detail == ""
+    assert codex_provider.last_request_model == ""
+    assert codex_provider.last_request_reasoning_effort == ""

@@ -33,6 +33,7 @@ import uuid
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as compass_timeline
+from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.execution_engine import runtime_lane_policy
 from odylith.runtime.context_engine import odylith_context_engine_store as odylith_store
@@ -491,13 +492,6 @@ def _execution_profile_mapping(value: Any) -> dict[str, Any]:
     profile["model"] = selected.model
     profile["reasoning_effort"] = selected.reasoning_effort
     return profile
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
 
 
 def _float_value(value: Any) -> float:

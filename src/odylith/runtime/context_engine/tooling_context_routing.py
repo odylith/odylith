@@ -7,6 +7,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import host_runtime as host_runtime_contract
+from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.context_engine import governance_signal_codec
 
 
@@ -27,14 +28,6 @@ def _truncate(text: str, *, max_chars: int = 140) -> str:
     if len(normalized) <= max_chars:
         return normalized
     return normalized[: max(0, max_chars - 1)].rstrip() + "…"
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
-
 
 def _normalized_string_list(value: Any) -> list[str]:
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):

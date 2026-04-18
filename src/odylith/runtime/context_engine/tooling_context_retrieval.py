@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.common.consumer_profile import (
     canonical_truth_token,
     truth_path_kind,
@@ -66,14 +67,6 @@ def _string_list(value: Any) -> list[str]:
     if not isinstance(value, list):
         return []
     return _dedupe_strings([str(item) for item in value])
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
-
 
 def _path_prefix_match(path_ref: str, prefix: str) -> bool:
     path_token = str(path_ref or "").strip().strip("/")

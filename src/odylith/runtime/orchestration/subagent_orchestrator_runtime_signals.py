@@ -9,12 +9,6 @@ from typing import Sequence
 from odylith.runtime.execution_engine import runtime_lane_policy
 
 
-def _host():
-    from odylith.runtime.orchestration import subagent_orchestrator as host
-
-    return host
-
-
 def _adaptive_batch_mode(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
@@ -23,7 +17,8 @@ def _adaptive_batch_mode(
     groups: Sequence[Sequence[str]],
     tuning: TuningState,
 ) -> tuple[OrchestrationMode, list[str]]:
-    host = _host()
+    from odylith.runtime.orchestration import subagent_orchestrator as host
+
     OrchestrationMode = host.OrchestrationMode
     ParallelSafetyClass = host.ParallelSafetyClass
     _mode_reliability_summary = host._mode_reliability_summary
@@ -502,7 +497,8 @@ def _subtask_context_signals(
     mode: OrchestrationMode,
     all_subtasks: Sequence[SubtaskSlice],
 ) -> dict[str, Any]:
-    host = _host()
+    from odylith.runtime.orchestration import subagent_orchestrator as host
+
     OrchestrationMode = host.OrchestrationMode
     _normalize_context_signals = host._normalize_context_signals
     _nested_mapping = host._nested_mapping
