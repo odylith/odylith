@@ -9,13 +9,19 @@ import tarfile
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from odylith.install import runtime, runtime_integrity, runtime_tree_policy
 from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_SCHEMA_VERSION,
     MANAGED_RUNTIME_VERIFICATION_SCHEMA_VERSION,
     MANAGED_PYTHON_VERSION,
     managed_runtime_platform_by_slug,
+    require_managed_runtime_platform,
+    supported_feature_pack_ids,
+    supported_platform_labels,
     supported_managed_runtime_platforms,
+    supported_platform_slugs,
 )
 
 
@@ -1143,6 +1149,17 @@ def test_switch_runtime_rejects_target_outside_versions(tmp_path: Path) -> None:
 def test_supported_managed_runtime_platforms_pin_upstream_sha256() -> None:
     for runtime_platform in supported_managed_runtime_platforms():
         assert len(runtime_platform.upstream_asset_sha256) == 64
+
+
+def test_managed_runtime_catalog_helpers_match_supported_definitions() -> None:
+    assert supported_platform_slugs() == tuple(item.slug for item in supported_managed_runtime_platforms())
+    assert supported_platform_labels() == [item.display_name for item in supported_managed_runtime_platforms()]
+    assert "odylith-context-engine-memory" in supported_feature_pack_ids()
+
+
+def test_require_managed_runtime_platform_reports_supported_labels() -> None:
+    with pytest.raises(ValueError, match="unsupported Odylith managed runtime platform; supported platforms:"):
+        require_managed_runtime_platform(system_name="Plan9", machine_name="mips64")
 
 
 def test_install_release_runtime_reuses_existing_verified_runtime(monkeypatch, tmp_path: Path) -> None:

@@ -25,11 +25,11 @@ from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_ROOT_NAME,
     MANAGED_RUNTIME_SCHEMA_VERSION,
     ManagedRuntimePlatform,
-    detect_managed_runtime_platform,
     managed_runtime_feature_pack_by_id,
     managed_runtime_platform_by_slug,
-    supported_managed_runtime_feature_packs,
-    supported_managed_runtime_platforms,
+    require_managed_runtime_platform,
+    supported_feature_pack_ids,
+    supported_platform_slugs,
 )
 from odylith.install.paths import repo_runtime_paths
 from odylith.install.python_env import scrubbed_python_env
@@ -270,10 +270,7 @@ def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") 
 
 def download_verified_release(*, repo_root: str | Path, repo: str, version: str = "latest") -> VerifiedRelease:
     release = fetch_release(repo_root=repo_root, repo=repo, version=version)
-    runtime_platform = detect_managed_runtime_platform()
-    if runtime_platform is None:
-        supported = ", ".join(candidate.display_name for candidate in supported_managed_runtime_platforms())
-        raise ValueError(f"unsupported Odylith managed runtime platform; supported platforms: {supported}")
+    runtime_platform = require_managed_runtime_platform()
     cache_dir = release_cache_dir(repo_root=repo_root, version=release.version)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -417,10 +414,7 @@ def download_verified_feature_pack(
     pack_id: str = CONTEXT_ENGINE_FEATURE_PACK_ID,
 ) -> VerifiedFeaturePack:
     release = fetch_release(repo_root=repo_root, repo=repo, version=version)
-    runtime_platform = detect_managed_runtime_platform()
-    if runtime_platform is None:
-        supported = ", ".join(candidate.display_name for candidate in supported_managed_runtime_platforms())
-        raise ValueError(f"unsupported Odylith managed runtime platform; supported platforms: {supported}")
+    runtime_platform = require_managed_runtime_platform()
     cache_dir = release_cache_dir(repo_root=repo_root, version=release.version)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -844,7 +838,7 @@ def _validate_manifest(*, manifest: dict[str, Any], release: ReleaseInfo, repo: 
     supported_platforms = manifest.get("supported_platforms")
     if not isinstance(supported_platforms, list) or not supported_platforms:
         raise ValueError("release manifest supported_platforms must be a non-empty array")
-    expected_supported_platforms = {candidate.slug for candidate in supported_managed_runtime_platforms()}
+    expected_supported_platforms = set(supported_platform_slugs())
     observed_supported_platforms = {str(platform_slug or "").strip() for platform_slug in supported_platforms}
     if observed_supported_platforms != expected_supported_platforms:
         raise ValueError(
@@ -862,7 +856,7 @@ def _validate_manifest(*, manifest: dict[str, Any], release: ReleaseInfo, repo: 
     if feature_packs and not isinstance(feature_packs, dict):
         raise ValueError("release manifest feature_packs must be an object")
     if isinstance(feature_packs, dict):
-        supported_pack_ids = {candidate.pack_id for candidate in supported_managed_runtime_feature_packs()}
+        supported_pack_ids = set(supported_feature_pack_ids())
         for pack_id, details in feature_packs.items():
             resolved_pack_id = str(pack_id or "").strip()
             if resolved_pack_id not in supported_pack_ids:

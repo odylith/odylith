@@ -556,7 +556,7 @@ def test_download_verified_release_validates_manifest_and_signed_assets(monkeypa
     monkeypatch.setattr(release_assets, "_validate_runtime_bundle_archive", lambda **kwargs: None)
     monkeypatch.setattr(
         release_assets,
-        "detect_managed_runtime_platform",
+        "require_managed_runtime_platform",
         lambda: managed_runtime_platform_by_slug("darwin-arm64"),
     )
 
@@ -633,6 +633,10 @@ def test_validate_manifest_rejects_partial_supported_platform_matrix() -> None:
             "odylith-1.2.3-py3-none-any.whl.sigstore.json": release_assets.ReleaseAsset("odylith-1.2.3-py3-none-any.whl.sigstore.json", "https://example.invalid/odylith.whl.sigstore.json"),
             "odylith-runtime-darwin-arm64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-darwin-arm64.tar.gz", "https://example.invalid/odylith-runtime-darwin-arm64.tar.gz"),
             "odylith-runtime-darwin-arm64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-darwin-arm64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-darwin-arm64.tar.gz.sigstore.json"),
+            "odylith-runtime-linux-arm64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-linux-arm64.tar.gz", "https://example.invalid/odylith-runtime-linux-arm64.tar.gz"),
+            "odylith-runtime-linux-arm64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-linux-arm64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-linux-arm64.tar.gz.sigstore.json"),
+            "odylith-runtime-linux-x86_64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-linux-x86_64.tar.gz", "https://example.invalid/odylith-runtime-linux-x86_64.tar.gz"),
+            "odylith-runtime-linux-x86_64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-linux-x86_64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-linux-x86_64.tar.gz.sigstore.json"),
         },
     )
     manifest = {
@@ -719,6 +723,58 @@ def test_validate_manifest_rejects_missing_odylith_wheel_metadata() -> None:
     }
 
     with pytest.raises(ValueError, match="missing Odylith wheel metadata"):
+        release_assets._validate_manifest(  # noqa: SLF001
+            manifest=manifest,
+            release=release,
+            repo="odylith/odylith",
+        )
+
+
+def test_validate_manifest_rejects_unsupported_feature_pack_id() -> None:
+    release = release_assets.ReleaseInfo(
+        version="1.2.3",
+        tag="v1.2.3",
+        assets={
+            "release-manifest.json": release_assets.ReleaseAsset("release-manifest.json", "https://example.invalid/release-manifest.json"),
+            "release-manifest.json.sigstore.json": release_assets.ReleaseAsset("release-manifest.json.sigstore.json", "https://example.invalid/release-manifest.json.sigstore.json"),
+            "build-provenance.v1.json": release_assets.ReleaseAsset("build-provenance.v1.json", "https://example.invalid/build-provenance.v1.json"),
+            "build-provenance.v1.json.sigstore.json": release_assets.ReleaseAsset("build-provenance.v1.json.sigstore.json", "https://example.invalid/build-provenance.v1.json.sigstore.json"),
+            "odylith.sbom.spdx.json": release_assets.ReleaseAsset("odylith.sbom.spdx.json", "https://example.invalid/odylith.sbom.spdx.json"),
+            "odylith.sbom.spdx.json.sigstore.json": release_assets.ReleaseAsset("odylith.sbom.spdx.json.sigstore.json", "https://example.invalid/odylith.sbom.spdx.json.sigstore.json"),
+            "odylith-1.2.3-py3-none-any.whl": release_assets.ReleaseAsset("odylith-1.2.3-py3-none-any.whl", "https://example.invalid/odylith.whl"),
+            "odylith-1.2.3-py3-none-any.whl.sigstore.json": release_assets.ReleaseAsset("odylith-1.2.3-py3-none-any.whl.sigstore.json", "https://example.invalid/odylith.whl.sigstore.json"),
+            "odylith-runtime-darwin-arm64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-darwin-arm64.tar.gz", "https://example.invalid/odylith-runtime-darwin-arm64.tar.gz"),
+            "odylith-runtime-darwin-arm64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-darwin-arm64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-darwin-arm64.tar.gz.sigstore.json"),
+            "odylith-runtime-linux-arm64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-linux-arm64.tar.gz", "https://example.invalid/odylith-runtime-linux-arm64.tar.gz"),
+            "odylith-runtime-linux-arm64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-linux-arm64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-linux-arm64.tar.gz.sigstore.json"),
+            "odylith-runtime-linux-x86_64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-linux-x86_64.tar.gz", "https://example.invalid/odylith-runtime-linux-x86_64.tar.gz"),
+            "odylith-runtime-linux-x86_64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-linux-x86_64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-linux-x86_64.tar.gz.sigstore.json"),
+        },
+    )
+    manifest = {
+        "schema_version": "odylith-release-manifest.v1",
+        "version": "1.2.3",
+        "tag": "v1.2.3",
+        "repo": "odylith/odylith",
+        "repo_schema_version": 1,
+        "migration_required": False,
+        "supported_platforms": ["darwin-arm64", "linux-arm64", "linux-x86_64"],
+        "assets": {
+            "odylith-1.2.3-py3-none-any.whl": {"sha256": "wheel"},
+            "odylith-runtime-darwin-arm64.tar.gz": {"sha256": "runtime"},
+            "odylith-runtime-linux-arm64.tar.gz": {"sha256": "runtime"},
+            "odylith-runtime-linux-x86_64.tar.gz": {"sha256": "runtime"},
+        },
+        "feature_packs": {
+            "unsupported-pack": {
+                "assets": {
+                    "darwin-arm64": "unsupported-pack-darwin-arm64.tar.gz",
+                }
+            }
+        },
+    }
+
+    with pytest.raises(ValueError, match="unsupported managed runtime feature pack"):
         release_assets._validate_manifest(  # noqa: SLF001
             manifest=manifest,
             release=release,

@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from odylith.install.fs import display_path
+
 CASEBOOK_BUGS_RELATIVE = Path("odylith/casebook/bugs")
 REPRODUCIBILITY_HELP = (
     "one compact token such as High, Medium, Low, Always, Intermittent, or Consistent"
@@ -38,7 +40,7 @@ class CasebookSourceIssue:
     def as_dict(self, *, repo_root: Path) -> dict[str, Any]:
         """Return a JSON-serializable representation of the issue."""
         return {
-            "path": _display_path(repo_root=repo_root, path=self.path),
+            "path": display_path(repo_root=repo_root, path=self.path),
             "line": self.line,
             "field": self.field,
             "value": self.value,
@@ -49,7 +51,7 @@ class CasebookSourceIssue:
         """Render the issue in a CLI-friendly single-line format."""
         value_suffix = f" value={self.value!r}" if self.value else ""
         return (
-            f"{_display_path(repo_root=repo_root, path=self.path)}:{self.line}: "
+            f"{display_path(repo_root=repo_root, path=self.path)}:{self.line}: "
             f"{self.field}: {self.message}{value_suffix}"
         )
 
@@ -227,14 +229,6 @@ def _normalize_scalar(value: str | Sequence[str] | None) -> str:
     if isinstance(value, (bytes, bytearray)):
         return value.decode("utf-8", errors="ignore").strip()
     return "\n".join(str(item).strip() for item in value if str(item).strip()).strip()
-
-
-def _display_path(*, repo_root: Path, path: Path) -> str:
-    """Render a path relative to the repo root when possible."""
-    try:
-        return path.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return path.as_posix()
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:

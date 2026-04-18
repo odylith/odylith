@@ -176,6 +176,29 @@ def detect_managed_runtime_platform(
     return None
 
 
+def require_managed_runtime_platform(
+    *,
+    system_name: str | None = None,
+    machine_name: str | None = None,
+) -> ManagedRuntimePlatform:
+    """Return the current supported platform or raise a clear operator-facing error."""
+    runtime_platform = detect_managed_runtime_platform(system_name=system_name, machine_name=machine_name)
+    if runtime_platform is not None:
+        return runtime_platform
+    supported = ", ".join(supported_platform_labels())
+    raise ValueError(f"unsupported Odylith managed runtime platform; supported platforms: {supported}")
+
+
+def supported_platform_slugs() -> tuple[str, ...]:
+    """Return the canonical slug tokens for supported managed-runtime platforms."""
+    return tuple(candidate.slug for candidate in SUPPORTED_MANAGED_RUNTIME_PLATFORMS)
+
+
+def supported_feature_pack_ids() -> tuple[str, ...]:
+    """Return the canonical ids for supported managed-runtime feature packs."""
+    return tuple(candidate.pack_id for candidate in SUPPORTED_MANAGED_RUNTIME_FEATURE_PACKS)
+
+
 def managed_runtime_site_packages_roots(runtime_root: Path | None) -> tuple[Path, ...]:
     """Return the existing site-packages roots under one managed runtime."""
     if runtime_root is None or not runtime_root.exists():
