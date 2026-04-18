@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Sequence
 
 from odylith.runtime.governance import owned_surface_refresh
+from odylith.runtime.surfaces import surface_path_helpers
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -46,13 +47,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Create odylith/atlas/source/<slug>.mmd from template if it does not exist",
     )
     return parser.parse_args(argv)
-
-
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token).strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
 
 
 def _parse_components(tokens: list[str]) -> list[dict[str, str]]:
@@ -94,7 +88,7 @@ def _unique(values: list[str]) -> list[str]:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    catalog_path = _resolve(repo_root, args.catalog)
+    catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.catalog)
 
     if not catalog_path.is_file():
         print(f"FAILED: catalog not found: {catalog_path}")
@@ -164,7 +158,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"added: {diagram_id} ({slug})")
 
     if args.create_source_if_missing:
-        source_path = _resolve(repo_root, source_mmd)
+        source_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
         if source_path.exists():
             print(f"source exists: {source_path}")
         else:

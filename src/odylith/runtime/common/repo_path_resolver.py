@@ -61,4 +61,27 @@ class RepoPathResolver:
         return href
 
 
-__all__ = ["RepoPathResolver"]
+def resolve_repo_path(*, repo_root: Path, value: str | Path) -> Path:
+    """Resolve one repo-relative or absolute path token against `repo_root`."""
+
+    return RepoPathResolver(repo_root=repo_root).resolve(value)
+
+
+def display_repo_path(*, repo_root: Path, value: str | Path) -> str:
+    """Render one path token relative to the repo root when possible."""
+
+    return RepoPathResolver(repo_root=repo_root).repo_path(value)
+
+
+def relative_href(*, repo_root: Path, output_path: Path, value: str | Path) -> str:
+    """Render a browser-friendly href from `output_path` to `value`."""
+
+    return RepoPathResolver(repo_root=repo_root, output_path=output_path).href(value)
+
+
+__all__ = [
+    "RepoPathResolver",
+    "display_repo_path",
+    "relative_href",
+    "resolve_repo_path",
+]

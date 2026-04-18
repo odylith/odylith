@@ -4,6 +4,7 @@ from pathlib import Path
 
 from odylith.runtime.governance import delivery_intelligence_engine as engine
 from odylith.runtime.governance import delivery_intelligence_refresh as refresh
+from odylith.runtime.governance import delivery_intelligence_support as support
 
 
 def test_change_vector_treats_registry_component_dossiers_as_specs() -> None:
@@ -99,6 +100,7 @@ def test_delivery_registry_watch_paths_ignore_forensics_sidecars(tmp_path: Path)
     assert "odylith/registry/source/component_registry.v1.json" in watched_paths
     assert "odylith/registry/source/components/odylith/CURRENT_SPEC.md" in watched_paths
     assert all("FORENSICS.v1.json" not in path for path in watched_paths)
+    assert support.registry_delivery_watched_paths(tmp_path) == watched_paths
     assert refresh._registry_delivery_watched_paths(tmp_path) == watched_paths  # noqa: SLF001
 
 

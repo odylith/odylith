@@ -24,7 +24,9 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import diagram_freshness
 from odylith.runtime.common import generated_refresh_guard
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.surfaces import mermaid_worker_session as _mermaid_worker_session
+from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces.mermaid_worker_session import MermaidDiagramValidationError
 from odylith.runtime.surfaces.mermaid_worker_session import _MermaidWorkerSession
 
@@ -120,14 +122,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, token: str) -> Path:
-    raw = str(token or "").strip()
-    path = Path(raw)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def _command_env() -> dict[str, str]:
     env = os.environ.copy()
     raw_pythonpath = str(env.get("PYTHONPATH", "")).strip()
@@ -141,10 +135,7 @@ def _command_env() -> dict[str, str]:
 
 
 def _as_repo_path(repo_root: Path, target: Path) -> str:
-    try:
-        return target.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return str(target.resolve())
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=target)
 
 
 def _git_changed_paths(*, repo_root: Path, args: list[str]) -> list[str]:
@@ -356,7 +347,7 @@ def _current_watch_fingerprints(
     return diagram_freshness.watched_path_fingerprints(
         repo_root=repo_root,
         watched_paths=tuple(watch_paths),
-        resolve_path=lambda token: _resolve(repo_root, token),
+        resolve_path=lambda token: surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token),
         cache=cache,
     )
 
@@ -368,7 +359,7 @@ def _newest_watch_path(*, repo_root: Path, watch_paths: Sequence[str], cache: di
         token = str(raw or "").strip()
         if not token:
             continue
-        target = _resolve(repo_root, token)
+        target = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token)
         current_mtime = _max_mtime(target, cache=cache)
         if current_mtime > newest_mtime:
             newest_mtime = current_mtime
@@ -408,9 +399,9 @@ def _diagram_needs_render(
     source_png = str(item.get("source_png", "")).strip()
     if not source_mmd or not source_svg or not source_png:
         return True
-    source_mmd_path = _resolve(repo_root, source_mmd)
-    source_svg_path = _resolve(repo_root, source_svg)
-    source_png_path = _resolve(repo_root, source_png)
+    source_mmd_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
+    source_svg_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_svg)
+    source_png_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_png)
     if not source_mmd_path.is_file() or not source_svg_path.is_file() or not source_png_path.is_file():
         return True
     current_render_fingerprint = fingerprint_cache.mermaid_render_fingerprint(source_mmd_path)
@@ -443,7 +434,7 @@ def _classify_diagram_items(
         source_png = str(item.get("source_png", "")).strip()
         if not source_mmd or not source_svg or not source_png:
             raise RuntimeError(f"{diagram_id}: missing source paths (mmd/svg/png)")
-        source_mmd_path = _resolve(repo_root, source_mmd)
+        source_mmd_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
         if not source_mmd_path.is_file():
             raise RuntimeError(f"{diagram_id}: source mmd missing: {source_mmd}")
         impacted_items.append(item)
@@ -505,7 +496,7 @@ def _select_stale_diagram_indexes(
                 for path in watch_paths
             )
         elif source_mmd:
-            source_mmd_path = _resolve(repo_root, source_mmd)
+            source_mmd_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
             mmd_mtime = _max_mtime(source_mmd_path, cache=mtime_cache)
             newest_watch_mtime, _newest_watch_path_token = _newest_watch_path(
                 repo_root=repo_root,
@@ -674,7 +665,7 @@ def _print_failure_summary(*, elapsed: float, error: Exception) -> None:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    catalog_path = _resolve(repo_root, args.catalog)
+    catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.catalog)
 
     if not catalog_path.is_file():
         print(f"FAILED: catalog missing: {catalog_path}")
@@ -747,7 +738,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_paths = [
             catalog_path,
             *(
-                _resolve(repo_root, str(path).strip())
+                surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(path).strip())
                 for item in provisional_classification.impacted_items
                 for path in (
                     str(item.get("source_svg", "")).strip(),
@@ -759,9 +750,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not args.skip_render_catalog:
             output_paths.extend(
                 (
-                    _resolve(repo_root, "odylith/atlas/atlas.html"),
-                    _resolve(repo_root, "odylith/atlas/mermaid-payload.v1.js"),
-                    _resolve(repo_root, "odylith/atlas/mermaid-app.v1.js"),
+                    surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/atlas/atlas.html"),
+                    surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/atlas/mermaid-payload.v1.js"),
+                    surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/atlas/mermaid-app.v1.js"),
                 )
             )
         skip_rebuild, _input_fingerprint, _cached = generated_refresh_guard.should_skip_rebuild(
@@ -866,7 +857,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_paths = [
             catalog_path,
             *(
-                _resolve(repo_root, str(path).strip())
+                surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(path).strip())
                 for item in classification.impacted_items
                 for path in (
                     str(item.get("source_svg", "")).strip(),
@@ -878,9 +869,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if not args.skip_render_catalog:
             output_paths.extend(
                 (
-                    _resolve(repo_root, "odylith/atlas/atlas.html"),
-                    _resolve(repo_root, "odylith/atlas/mermaid-payload.v1.js"),
-                    _resolve(repo_root, "odylith/atlas/mermaid-app.v1.js"),
+                    surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/atlas/atlas.html"),
+                    surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/atlas/mermaid-payload.v1.js"),
+                    surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/atlas/mermaid-app.v1.js"),
                 )
             )
         for item in classification.impacted_items:
@@ -894,7 +885,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 cli_version=args.mermaid_cli_version,
             )
         for item in classification.impacted_items:
-            source_mmd_path = _resolve(repo_root, str(item.get("source_mmd", "")).strip())
+            source_mmd_path = surface_path_helpers.resolve_repo_path(
+                repo_root=repo_root,
+                token=str(item.get("source_mmd", "")).strip(),
+            )
             watch_paths = [
                 PurePosixPath(str(token or "").strip()).as_posix()
                 for token in item.get("change_watch_paths", [])

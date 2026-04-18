@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import owned_surface_refresh
@@ -87,14 +88,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _repo_relative_posix(*, repo_root: Path, path: Path) -> str:
-    return path.resolve().relative_to(repo_root.resolve()).as_posix()
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=path)
 
 
 def _backlog_link(*, repo_root: Path, path: Path, label: str) -> str:

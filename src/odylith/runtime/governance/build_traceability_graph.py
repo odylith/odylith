@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.common.consumer_profile import canonical_truth_token
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import release_planning_view_model
@@ -45,18 +46,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    raw = str(token or "").strip()
-    path = Path(raw)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _as_repo_path(repo_root: Path, path: Path) -> str:
-    try:
-        return path.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return str(path.resolve())
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=path)
 
 
 def _split_ids(raw: str, *, pattern: re.Pattern[str]) -> list[str]:

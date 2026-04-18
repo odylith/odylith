@@ -13,7 +13,6 @@ import argparse
 import datetime as dt
 from dataclasses import replace
 import json
-import os
 from pathlib import Path
 import re
 from typing import Any, Callable, Mapping, Sequence
@@ -28,6 +27,7 @@ from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.governance import delivery_intelligence_engine  # Backward-compatible test monkeypatch surface.
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.common import diagram_freshness
 from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.common.repo_path_resolver import RepoPathResolver
@@ -123,24 +123,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, value: str) -> Path:
-    raw = str(value or "").strip()
-    path = Path(raw)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def _as_repo_path(repo_root: Path, target: Path) -> str:
-    try:
-        return target.relative_to(repo_root).as_posix()
-    except ValueError:
-        return str(target)
-
-
-def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
+    return RepoPathResolver(repo_root=repo_root).repo_path(target)
 
 
 def _load_component_index(
@@ -294,7 +278,11 @@ def _validate_related_paths(
         if not token:
             errors.append(f"{context}: `{field}` contains empty path value")
             continue
-        target = resolve_path(token) if resolve_path is not None else _resolve(repo_root, token)
+        target = (
+            resolve_path(token)
+            if resolve_path is not None
+            else surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token)
+        )
         if not target.exists():
             errors.append(f"{context}: `{field}` path does not exist: {token}")
             continue
@@ -397,7 +385,11 @@ def _newest_watch_path(
     newest_time = 0.0
     newest_path = ""
     for raw in watch_paths:
-        target = resolve_path(raw) if resolve_path is not None else _resolve(repo_root, raw)
+        target = (
+            resolve_path(raw)
+            if resolve_path is not None
+            else surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=raw)
+        )
         score = _max_mtime(target, cache=mtime_cache)
         if score > newest_time:
             newest_time = score
@@ -3139,9 +3131,9 @@ def _selected_freshness_gate(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    catalog_path = _resolve(repo_root, args.catalog)
-    output_path = _resolve(repo_root, args.output)
-    traceability_graph_path = _resolve(repo_root, args.traceability_graph)
+    catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.catalog)
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
+    traceability_graph_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.traceability_graph)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="mermaid")
     output_paths = [
@@ -3252,7 +3244,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     brand_head_html = brand_assets.render_brand_head_html(repo_root=repo_root, output_path=output_path)
 
     if not args.check_only:
-        tooling_base_href = _as_href(output_path, _resolve(repo_root, "odylith/index.html"))
+        tooling_base_href = surface_path_helpers.relative_href(
+            output_path=output_path,
+            target=surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/index.html"),
+        )
         html = _render_html(
             diagrams=diagrams,
             stats=stats,

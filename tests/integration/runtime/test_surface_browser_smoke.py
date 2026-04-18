@@ -1231,6 +1231,65 @@ def test_shell_direct_query_routes_restore_selected_context_after_reload(browser
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def test_shell_direct_query_routes_restore_selected_context_after_tab_round_trip(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    tokens = _collect_sample_tokens(page, base_url)
+
+    routes = (
+        (
+            base_url + f"/odylith/index.html?tab=radar&workstream={quote(tokens['radar_workstream'], safe='')}",
+            "#tab-casebook",
+            "#tab-radar",
+            lambda: _assert_radar_selection(page, tokens["radar_workstream"]),
+        ),
+        (
+            base_url + f"/odylith/index.html?tab=registry&component={quote(tokens['registry_component'], safe='')}",
+            "#tab-radar",
+            "#tab-registry",
+            lambda: _assert_registry_selection(page, tokens["registry_component"]),
+        ),
+        (
+            base_url
+            + (
+                f"/odylith/index.html?tab=atlas&diagram={quote(tokens['atlas_diagram'], safe='')}"
+                if not tokens["atlas_workstream"]
+                else (
+                    f"/odylith/index.html?tab=atlas&workstream={quote(tokens['atlas_workstream'], safe='')}"
+                    f"&diagram={quote(tokens['atlas_diagram'], safe='')}"
+                )
+            ),
+            "#tab-compass",
+            "#tab-atlas",
+            lambda: _assert_atlas_selection(page, workstream=tokens["atlas_workstream"], diagram_id=tokens["atlas_diagram"]),
+        ),
+        (
+            base_url + f"/odylith/index.html?tab=casebook&bug={quote(tokens['casebook_bug'], safe='')}",
+            "#tab-radar",
+            "#tab-casebook",
+            lambda: _assert_casebook_selection(page, tokens["casebook_bug"]),
+        ),
+        (
+            base_url
+            + f"/odylith/index.html?tab=compass&scope={quote(tokens['compass_workstream'], safe='')}"
+            + "&window=48h&date=live",
+            "#tab-radar",
+            "#tab-compass",
+            lambda: _assert_compass_selection(page, workstream=tokens["compass_workstream"], window_token="48h"),
+        ),
+    )
+
+    for route, detour_tab, return_tab, assertion in routes:
+        response = page.goto(route, wait_until="domcontentloaded")
+        assert response is not None and response.ok
+        assertion()
+        page.locator(detour_tab).click()
+        page.locator(return_tab).click()
+        assertion()
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_standalone_surface_entrypoints_preserve_query_state_into_shell(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -1275,6 +1334,107 @@ def test_standalone_surface_entrypoints_preserve_query_state_into_shell(browser_
         assertion()
         failed_requests.clear()
         bad_responses.clear()
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_standalone_surface_entrypoints_restore_query_state_after_shell_reload(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    tokens = _collect_sample_tokens(page, base_url)
+
+    routes = (
+        (
+            f"/odylith/radar/radar.html?workstream={quote(tokens['radar_workstream'], safe='')}",
+            re.compile(rf".*/odylith/index\.html\?tab=radar(&.*)?workstream={re.escape(tokens['radar_workstream'])}(&.*|$)"),
+            lambda: _assert_radar_selection(page, tokens["radar_workstream"]),
+        ),
+        (
+            f"/odylith/registry/registry.html?component={quote(tokens['registry_component'], safe='')}",
+            re.compile(rf".*/odylith/index\.html\?tab=registry(&.*)?component={re.escape(tokens['registry_component'])}(&.*|$)"),
+            lambda: _assert_registry_selection(page, tokens["registry_component"]),
+        ),
+        (
+            (
+                f"/odylith/atlas/atlas.html?diagram={quote(tokens['atlas_diagram'], safe='')}"
+                if not tokens["atlas_workstream"]
+                else f"/odylith/atlas/atlas.html?workstream={quote(tokens['atlas_workstream'], safe='')}&diagram={quote(tokens['atlas_diagram'], safe='')}"
+            ),
+            re.compile(rf".*/odylith/index\.html\?tab=atlas(&.*)?diagram={re.escape(tokens['atlas_diagram'])}(&.*|$)"),
+            lambda: _assert_atlas_selection(page, workstream=tokens["atlas_workstream"], diagram_id=tokens["atlas_diagram"]),
+        ),
+        (
+            f"/odylith/casebook/casebook.html?bug={quote(tokens['casebook_bug'], safe='')}",
+            re.compile(rf".*/odylith/index\.html\?tab=casebook(&.*)?bug={re.escape(quote(tokens['casebook_bug'], safe=''))}(&.*|$)"),
+            lambda: _assert_casebook_selection(page, tokens["casebook_bug"]),
+        ),
+        (
+            f"/odylith/compass/compass.html?scope={quote(tokens['compass_workstream'], safe='')}&window=48h&date=live",
+            re.compile(rf".*/odylith/index\.html\?tab=compass(&.*)?scope={re.escape(tokens['compass_workstream'])}(&.*)?window=48h(&.*|$)"),
+            lambda: _assert_compass_selection(page, workstream=tokens["compass_workstream"], window_token="48h"),
+        ),
+    )
+
+    for route, pattern, assertion in routes:
+        response = page.goto(base_url + route, wait_until="domcontentloaded")
+        assert response is not None and response.ok, route
+        page.wait_for_url(pattern, timeout=15000)
+        assertion()
+        page.reload(wait_until="domcontentloaded")
+        assertion()
+        failed_requests.clear()
+        bad_responses.clear()
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_invalid_surface_routes_fall_back_to_valid_detail_selection(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+
+    invalid_radar = "B-999999"
+    response = page.goto(base_url + f"/odylith/index.html?tab=radar&workstream={invalid_radar}", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    radar = page.frame_locator("#frame-radar")
+    radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    radar_active = radar.locator("button[data-idea-id].active")
+    radar_active.wait_for(timeout=15000)
+    radar_active_id = str(radar_active.first.get_attribute("data-idea-id") or "").strip()
+    assert radar_active_id and radar_active_id != invalid_radar
+    radar.locator('#detail [data-kpi="workstream-id"] .v', has_text=radar_active_id).wait_for(timeout=15000)
+
+    invalid_component = "does-not-exist"
+    response = page.goto(base_url + f"/odylith/index.html?tab=registry&component={invalid_component}", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    registry = page.frame_locator("#frame-registry")
+    registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+    registry_active = registry.locator("button[data-component].active")
+    registry_active.wait_for(timeout=15000)
+    registry_active_id = str(registry_active.first.get_attribute("data-component") or "").strip()
+    assert registry_active_id and registry_active_id != invalid_component
+    registry.locator("#detail .component-name").wait_for(timeout=15000)
+
+    invalid_bug = "missing-bug-route"
+    response = page.goto(base_url + f"/odylith/index.html?tab=casebook&bug={invalid_bug}", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+    casebook = page.frame_locator("#frame-casebook")
+    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook_active = casebook.locator("button.bug-row.active")
+    casebook_active.wait_for(timeout=15000)
+    casebook_active_bug = str(casebook_active.first.get_attribute("data-bug") or "").strip()
+    assert casebook_active_bug and casebook_active_bug != invalid_bug
+    casebook.locator("#detailPane .detail-title").wait_for(timeout=15000)
+    _wait_for_shell_query_param(page, tab="casebook", key="bug", value=casebook_active_bug)
+
+    response = page.goto(
+        base_url + "/odylith/index.html?tab=compass&scope=B-999999&window=48h&date=live",
+        wait_until="domcontentloaded",
+    )
+    assert response is not None and response.ok
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    compass.locator('button[data-window="48h"].active').wait_for(timeout=15000)
+    compass.locator("#scope-pill", has_text="Global").wait_for(timeout=15000)
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

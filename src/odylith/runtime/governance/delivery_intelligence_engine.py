@@ -20,7 +20,6 @@ import datetime as dt
 import json
 from pathlib import Path
 import re
-import subprocess
 from typing import Any, Iterable, Mapping, Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as registry
@@ -31,10 +30,13 @@ from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common import generated_refresh_guard
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import tribunal_engine
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
+from odylith.runtime.governance.delivery_intelligence_support import current_local_head as _current_local_head
+from odylith.runtime.governance.delivery_intelligence_support import registry_delivery_watched_paths as _registry_delivery_watched_paths
 from odylith.runtime.governance import workstream_inference
 
 DEFAULT_OUTPUT_PATH = "odylith/runtime/delivery_intelligence.v4.json"
@@ -83,34 +85,9 @@ _EXCLUDED_WORKSTREAM_STATUSES: frozenset[str] = frozenset({"queued", "parked"})
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve one delivery-intelligence path token against the repo root."""
 
-
-def _current_local_head(repo_root: Path) -> str:
-    try:
-        completed = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return ""
-    return str(completed.stdout or "").strip()
-
-
-def _registry_delivery_watched_paths(repo_root: Path) -> tuple[str, ...]:
-    root = Path(repo_root).resolve()
-    specs_root = (root / "odylith" / "registry" / "source" / "components").resolve()
-    current_specs = sorted(
-        str(path.relative_to(root))
-        for path in specs_root.glob("*/CURRENT_SPEC.md")
-        if path.is_file()
-    )
-    return ("odylith/registry/source/component_registry.v1.json", *current_specs)
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -2901,7 +2878,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         metadata={"generated_utc": str(payload.get("generated_utc", "")).strip()},
     )
     if wrote_output:
-        print(f"wrote delivery intelligence artifact: {output_path.relative_to(repo_root)}")
+        print(
+            "wrote delivery intelligence artifact: "
+            f"{repo_path_resolver.display_repo_path(repo_root=repo_root, value=output_path)}"
+        )
     else:
         print("delivery intelligence artifact is current")
     return 0

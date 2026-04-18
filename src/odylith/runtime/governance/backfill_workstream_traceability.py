@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.context_engine import odylith_context_cache
@@ -112,18 +113,11 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, value: str) -> Path:
-    token = str(value or "").strip()
-    path = Path(token)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=value)
 
 
 def _as_repo_path(repo_root: Path, target: Path) -> str:
-    try:
-        return target.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return str(target.resolve())
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=target)
 
 
 def _split_ids(raw: str, *, pattern: re.Pattern[str]) -> list[str]:

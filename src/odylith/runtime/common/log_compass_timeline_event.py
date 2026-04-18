@@ -21,6 +21,7 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance.proof_state.contract import DEPLOYMENT_TRUTH_FIELDS
@@ -144,10 +145,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve one timeline path token against the repo root."""
+
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _normalize_summary(raw: str) -> str:
@@ -178,11 +178,7 @@ def _normalize_artifact_token(*, repo_root: Path, raw: str) -> str:
         return ""
     path = Path(token)
     if path.is_absolute():
-        try:
-            rel = path.resolve().relative_to(repo_root.resolve())
-            return rel.as_posix()
-        except ValueError:
-            return path.resolve().as_posix()
+        return repo_path_resolver.display_repo_path(repo_root=repo_root, value=path.resolve())
     if token.startswith("./"):
         return token[2:]
     return token

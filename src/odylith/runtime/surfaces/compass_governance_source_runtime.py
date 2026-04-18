@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 from typing import Mapping
 
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import execution_wave_view_model
@@ -18,10 +19,7 @@ _DIAGRAM_ID_RE = re.compile(r"^D-\d{3,}$")
 
 
 def _as_repo_path(*, repo_root: Path, path: Path) -> str:
-    try:
-        return path.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return path.resolve().as_posix()
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=path)
 
 
 def _normalized_token(value: Any) -> str:

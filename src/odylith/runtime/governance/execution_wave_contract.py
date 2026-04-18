@@ -18,6 +18,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence
 
+from odylith.runtime.common import repo_path_resolver
+
 EXECUTION_MODEL_FIELD = "execution_model"
 EXECUTION_MODEL_STANDARD = "standard"
 EXECUTION_MODEL_UMBRELLA_WAVES = "umbrella_waves"
@@ -122,10 +124,7 @@ def program_path(*, repo_root: Path, umbrella_id: str) -> Path:
 
 
 def _as_repo_path(*, repo_root: Path, path: Path) -> str:
-    try:
-        return path.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return path.resolve().as_posix()
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=path)
 
 
 def _normalize_repo_path(*, repo_root: Path, token: str) -> str:

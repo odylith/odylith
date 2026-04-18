@@ -8,6 +8,7 @@ from typing import Sequence
 
 from odylith.runtime.surfaces import compass_dashboard_runtime
 from odylith.runtime.surfaces import render_compass_dashboard
+from odylith.runtime.surfaces import surface_path_helpers
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -35,17 +36,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
-    runtime_dir = _resolve(repo_root, str(args.runtime_dir))
+    runtime_dir = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.runtime_dir))
 
     try:
         restored, already_active, pins_path = compass_dashboard_runtime.restore_archived_history_dates(

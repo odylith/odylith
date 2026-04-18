@@ -20,6 +20,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.common import log_compass_timeline_event as timeline_logger
@@ -58,10 +59,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve one reconciler path token against the repo root."""
+
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _replace_metadata_value(text: str, *, key: str, value: str) -> str:

@@ -12,7 +12,6 @@ import argparse
 import datetime as dt
 from importlib import import_module
 import json
-import os
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 from zoneinfo import ZoneInfo
@@ -27,6 +26,7 @@ from odylith.runtime.surfaces import compass_standup_brief_narrator
 from odylith.runtime.surfaces import compass_standup_brief_voice_validation
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 
 DEFAULT_HISTORY_RETENTION_DAYS = 15
 _DEFAULT_ACTIVE_WINDOW_MINUTES = 15
@@ -40,19 +40,6 @@ _EXPORT_MODULES = (
 CompassProgressCallback = Callable[[str, Mapping[str, Any] | None], None]
 
 
-def _resolve(repo_root: Path, value: str) -> Path:
-    token = str(value or "").strip()
-    path = Path(token)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
-def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
-
-
 def _file_version_token(path: Path) -> str:
     if not path.exists():
         return ""
@@ -60,7 +47,7 @@ def _file_version_token(path: Path) -> str:
 
 
 def _versioned_href(*, output_path: Path, target: Path) -> str:
-    href = _as_href(output_path, target)
+    href = surface_path_helpers.relative_href(output_path=output_path, target=target)
     return dashboard_surface_bundle.append_query_param(
         href=href,
         name="v",
@@ -1068,7 +1055,7 @@ def render_compass_artifacts(
         "runtime_json_href": _versioned_href(output_path=output_path, target=current_json_path),
         "runtime_js_href": _versioned_href(output_path=output_path, target=current_js_path),
         "runtime_history_js_href": _versioned_href(output_path=output_path, target=history_js_path),
-        "runtime_history_base_href": _as_href(output_path, history_index_path.parent),
+        "runtime_history_base_href": surface_path_helpers.relative_href(output_path=output_path, target=history_index_path.parent),
         "history_index_href": _versioned_href(output_path=output_path, target=history_index_path),
         "consumer_truth_roots": dict(load_consumer_profile(repo_root=repo_root).get("truth_roots", {})),
         "brand_head_html": brand_assets.render_brand_head_html(repo_root=repo_root, output_path=output_path),
@@ -1146,14 +1133,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
 
-    output_path = _resolve(repo_root, args.output)
-    runtime_dir = _resolve(repo_root, args.runtime_dir)
-    backlog_index_path = _resolve(repo_root, args.backlog_index)
-    plan_index_path = _resolve(repo_root, args.plan_index)
-    bugs_index_path = _resolve(repo_root, args.bugs_index)
-    traceability_graph_path = _resolve(repo_root, args.traceability_graph)
-    mermaid_catalog_path = _resolve(repo_root, args.mermaid_catalog)
-    codex_stream_path = _resolve(repo_root, args.agent_stream)
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
+    runtime_dir = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.runtime_dir)
+    backlog_index_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.backlog_index)
+    plan_index_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.plan_index)
+    bugs_index_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.bugs_index)
+    traceability_graph_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.traceability_graph)
+    mermaid_catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.mermaid_catalog)
+    codex_stream_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.agent_stream)
 
     errors = _validate_render_inputs(
         backlog_index_path=backlog_index_path,

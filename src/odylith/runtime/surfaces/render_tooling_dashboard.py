@@ -28,6 +28,7 @@ from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import shell_onboarding
 from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces import tooling_dashboard_surface_status
 from odylith.runtime.surfaces import tooling_dashboard_runtime_builder
 from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
@@ -75,14 +76,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, value: str) -> Path:
-    raw = str(value or "").strip()
-    path = Path(raw)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def _refresh_guard_watched_paths(
     *,
     surface_paths: tooling_dashboard_runtime_builder.ToolingDashboardSurfacePaths,
@@ -106,11 +99,6 @@ def _refresh_guard_watched_paths(
         "src/odylith/runtime/evaluation",
         "src/odylith/runtime/surfaces",
     )
-
-
-def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
 
 
 def _humanize_repo_name(name: str) -> str:
@@ -380,7 +368,7 @@ def _build_live_refresh_payload(
         "enabled": True,
         "mode": "passive_runtime_probe",
         "policy_id": policy_id,
-        "state_href": _as_href(
+        "state_href": surface_path_helpers.relative_href(
             output_path=output_path,
             target=odylith_context_engine_store.state_js_path(repo_root=repo_root),
         ),
@@ -403,12 +391,12 @@ def _build_live_refresh_payload(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    output_path = _resolve(repo_root, args.output)
-    radar_path = _resolve(repo_root, args.radar)
-    atlas_path = _resolve(repo_root, args.atlas)
-    compass_path = _resolve(repo_root, args.compass)
-    registry_path = _resolve(repo_root, args.registry)
-    casebook_path = _resolve(repo_root, args.casebook)
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
+    radar_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.radar)
+    atlas_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.atlas)
+    compass_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.compass)
+    registry_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.registry)
+    casebook_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.casebook)
     surface_paths = tooling_dashboard_runtime_builder.ToolingDashboardSurfacePaths(
         output_path=output_path,
         radar_path=radar_path,

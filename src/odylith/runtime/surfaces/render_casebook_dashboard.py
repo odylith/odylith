@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -22,6 +21,7 @@ from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.context_engine import odylith_context_cache
@@ -47,13 +47,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def _refresh_guard_watched_paths() -> tuple[str, ...]:
     return (
         "odylith/casebook/bugs",
@@ -65,11 +58,6 @@ def _refresh_guard_watched_paths() -> tuple[str, ...]:
         "src/odylith/runtime/governance",
         "src/odylith/runtime/surfaces",
     )
-
-
-def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
 
 
 def _chunk_casebook_items(
@@ -180,18 +168,11 @@ def _build_payload(
         return f"../index.html{dashboard_shell_links.shell_href(tab=tab, **params)}"
 
     def _path_links(paths: Sequence[Any]) -> list[dict[str, str]]:
-        links: list[dict[str, str]] = []
-        for raw in paths:
-            path = str(raw).strip()
-            if not path:
-                continue
-            target = _resolve(repo_root, path)
-            links.append(
-                {
-                    "path": path,
-                    "href": _as_href(output_path, target) if target.exists() else "",
-                }
-            )
+        links = surface_path_helpers.path_links(
+            repo_root=repo_root,
+            output_path=output_path,
+            values=[str(raw).strip() for raw in paths if str(raw).strip()],
+        )
         return _dedupe_rows_by_signature(
             rows=links,
             signature_fields=("path", "href"),
@@ -250,8 +231,12 @@ def _build_payload(
         bug_key = str(row.get("bug_key", "")).strip()
         source_href = ""
         if source_path:
-            source_target = _resolve(repo_root, source_path)
-            source_href = _as_href(output_path, source_target) if source_target.is_file() else ""
+            source_target = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_path)
+            source_href = (
+                surface_path_helpers.relative_href(output_path=output_path, target=source_target)
+                if source_target.is_file()
+                else ""
+            )
         workstreams = [str(token).strip() for token in row.get("workstreams", []) if str(token).strip()]
         deduped_workstreams: list[str] = []
         seen_workstreams: set[str] = set()
@@ -288,8 +273,12 @@ def _build_payload(
             spec_ref = str(match.get("spec_ref", "")).strip()
             spec_href = ""
             if spec_ref:
-                spec_target = _resolve(repo_root, spec_ref)
-                spec_href = _as_href(output_path, spec_target) if spec_target.is_file() else ""
+                spec_target = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=spec_ref)
+                spec_href = (
+                    surface_path_helpers.relative_href(output_path=output_path, target=spec_target)
+                    if spec_target.is_file()
+                    else ""
+                )
             component_links.append(
                 {
                     "component_id": component_id,
@@ -2446,7 +2435,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).resolve()
-    output_path = _resolve(repo_root, str(args.output))
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.output))
     validation = casebook_source_validation.validate_casebook_sources(repo_root=repo_root)
     if not validation.passed:
         casebook_source_validation.print_casebook_source_validation_report(validation)

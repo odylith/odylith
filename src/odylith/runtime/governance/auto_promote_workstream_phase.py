@@ -23,6 +23,7 @@ from typing import Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as timeline_logger
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference as ws_inference
 
@@ -48,10 +49,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, value: str) -> Path:
-    path = Path(str(value or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve one promotion path token against the repo root."""
+
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=value)
 
 
 def _parse_ts(raw: str) -> dt.datetime | None:

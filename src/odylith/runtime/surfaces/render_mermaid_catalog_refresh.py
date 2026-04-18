@@ -9,6 +9,7 @@ from typing import Sequence
 from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 
 _ATLAS_RENDER_GUARD_NAMESPACE = "generated-refresh-guards"
 _ATLAS_RENDER_GUARD_KEY = "atlas-render"
@@ -62,18 +63,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, value: str) -> Path:
-    raw = str(value or "").strip()
-    path = Path(raw)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    output_path = _resolve(repo_root, args.output)
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
     if not args.check_only and not args.diagram_id:
         bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="mermaid")
         output_paths = [

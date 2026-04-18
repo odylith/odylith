@@ -9,16 +9,14 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 
 _GENERATED_SURFACE_GUARD_NAMESPACE = "generated-refresh-guards"
 _SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV = "ODYLITH_SYNC_SKIP_GENERATED_REFRESH_GUARD"
 
 
 def _resolved_live_path(*, repo_root: Path, value: str | Path) -> Path:
-    path = Path(value)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    return surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(value))
 
 
 def _unique_paths(values: Sequence[Path]) -> tuple[Path, ...]:

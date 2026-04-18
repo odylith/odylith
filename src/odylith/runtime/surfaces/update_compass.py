@@ -20,6 +20,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as timeline_logger
 from odylith.runtime.surfaces import compass_refresh_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
+from odylith.runtime.surfaces import surface_path_helpers
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -155,13 +156,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def _normalize_messages(values: Sequence[str]) -> list[str]:
     normalized: list[str] = []
     seen: set[str] = set()
@@ -186,12 +180,12 @@ def _event_requests(args: argparse.Namespace) -> list[tuple[str, str]]:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
-    stream_path = _resolve(repo_root, str(args.stream))
+    stream_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.stream))
     manifest_token = str(args.manifest).strip()
     manifest_path = (
         timeline_logger.component_registry.default_manifest_path(repo_root=repo_root)
         if manifest_token == timeline_logger.component_registry.DEFAULT_MANIFEST_PATH
-        else _resolve(repo_root, manifest_token)
+        else surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=manifest_token)
     )
 
     requests = _event_requests(args)
@@ -223,8 +217,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 author=str(args.author),
                 source=str(args.source),
                 manifest_path=manifest_path,
-                catalog_path=_resolve(repo_root, str(args.catalog)),
-                ideas_root=_resolve(repo_root, str(args.ideas_root)),
+                catalog_path=surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.catalog)),
+                ideas_root=surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.ideas_root)),
                 session_id=str(args.session_id),
                 transaction_id=str(args.transaction_id),
                 transaction_seq=seq_value,

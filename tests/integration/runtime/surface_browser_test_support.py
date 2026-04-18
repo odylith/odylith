@@ -23,6 +23,9 @@ _LOCAL_SURFACE_HTML_RE = re.compile(
 _LOCAL_COMPASS_HISTORY_JSON_RE = re.compile(
     r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/history/(?:index|\d{4}-\d{2}-\d{2})\.v1\.json(?:[?#].*)?$"
 )
+_LOCAL_COMPASS_RUNTIME_JSON_RE = re.compile(
+    r"^http://127\.0\.0\.1:\d+/odylith/compass/runtime/current\.v1\.json(?:[?#].*)?$"
+)
 _LOCAL_COMPASS_SOURCE_TRUTH_JSON_RE = re.compile(
     r"^http://127\.0\.0\.1:\d+/odylith/compass/compass-source-truth\.v1\.json(?:[?#].*)?$"
 )
@@ -119,6 +122,10 @@ def _new_page(context) -> tuple[object, list[str], list[str], list[str], list[st
         ):
             return
         if _LOCAL_COMPASS_HISTORY_JSON_RE.match(url) and (
+            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
+        ):
+            return
+        if _LOCAL_COMPASS_RUNTIME_JSON_RE.match(url) and (
             not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
         ):
             return

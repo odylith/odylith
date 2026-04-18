@@ -24,6 +24,7 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.surfaces import compass_refresh_runtime
+from odylith.runtime.surfaces import surface_path_helpers
 
 _DEFAULT_INTERVAL_SECONDS = 25
 _DAEMON_WAIT_TIMEOUT_SECONDS = 60.0
@@ -57,15 +58,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def _path_fingerprint(repo_root: Path, token: str) -> str:
-    path = _resolve(repo_root, token)
+    path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token)
     if path.is_dir():
         return odylith_context_cache.fingerprint_tree(path, glob="*")
     return odylith_context_cache.fingerprint_paths([path])

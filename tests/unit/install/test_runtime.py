@@ -17,6 +17,7 @@ from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_VERIFICATION_SCHEMA_VERSION,
     MANAGED_PYTHON_VERSION,
     managed_runtime_platform_by_slug,
+    managed_runtime_site_packages_roots,
     require_managed_runtime_platform,
     supported_feature_pack_ids,
     supported_platform_labels,
@@ -1160,6 +1161,23 @@ def test_managed_runtime_catalog_helpers_match_supported_definitions() -> None:
 def test_require_managed_runtime_platform_reports_supported_labels() -> None:
     with pytest.raises(ValueError, match="unsupported Odylith managed runtime platform; supported platforms:"):
         require_managed_runtime_platform(system_name="Plan9", machine_name="mips64")
+
+
+def test_require_managed_runtime_platform_accepts_machine_aliases() -> None:
+    assert require_managed_runtime_platform(system_name="Darwin", machine_name="AARCH64").slug == "darwin-arm64"
+    assert require_managed_runtime_platform(system_name="Linux", machine_name="AMD64").slug == "linux-x86_64"
+
+
+def test_managed_runtime_site_packages_roots_collects_known_layouts_without_duplicates(tmp_path: Path) -> None:
+    runtime_root = tmp_path / "runtime"
+    lib_site_packages = runtime_root / "lib" / "python3.13" / "site-packages"
+    direct_site_packages = runtime_root / "site-packages"
+    lib_site_packages.mkdir(parents=True)
+    direct_site_packages.mkdir(parents=True)
+
+    observed = managed_runtime_site_packages_roots(runtime_root)
+
+    assert observed == (lib_site_packages, direct_site_packages)
 
 
 def test_install_release_runtime_reuses_existing_verified_runtime(monkeypatch, tmp_path: Path) -> None:

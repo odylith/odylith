@@ -8,7 +8,6 @@ dashboard renderer.
 from __future__ import annotations
 
 import html
-import os
 import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -16,6 +15,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 from odylith.runtime.governance import operator_readout
+from odylith.runtime.surfaces import surface_path_helpers
 
 _WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
 _DIAGRAM_RE = re.compile(r"\bD-\d{3,}\b")
@@ -161,8 +161,7 @@ def surface_href(
 
 
 def _relative_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
+    return surface_path_helpers.relative_href(output_path=output_path, target=target)
 
 
 def linkify_shell_text(

@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -18,11 +17,13 @@ from typing import Any, Iterable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import plan_progress
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference as ws_inference
+from odylith.runtime.surfaces import surface_path_helpers
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _CHECKBOX_RE = re.compile(r"^\s*-\s*\[(?P<mark>[xX ])\]\s+(?P<body>.+?)\s*$")
@@ -100,23 +101,19 @@ _COMPASS_TZ = ZoneInfo(_COMPASS_TIMEZONE)
 
 
 def _resolve(repo_root: Path, value: str) -> Path:
-    token = str(value or "").strip()
-    path = Path(token)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Backward-compatible wrapper over the shared surface path resolver."""
 
-
-def _as_repo_path(repo_root: Path, target: Path) -> str:
-    try:
-        return target.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return target.as_posix()
+    return surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=value)
 
 
 def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
+    """Backward-compatible wrapper for legacy Compass helper consumers."""
+
+    return surface_path_helpers.relative_href(output_path=output_path, target=target)
+
+
+def _as_repo_path(repo_root: Path, target: Path) -> str:
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=target)
 
 
 def _read_text(path: Path) -> str:
@@ -654,7 +651,7 @@ def _should_skip_publishable_activity_path(
 
 
 def _load_casebook_index_paths(repo_root: Path) -> set[str]:
-    index_path = _resolve(repo_root, "odylith/casebook/bugs/INDEX.md")
+    index_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/casebook/bugs/INDEX.md")
     if not index_path.is_file():
         return set()
     try:
@@ -689,7 +686,7 @@ def _should_skip_deleted_casebook_bug(
         return False
     if token in live_casebook_bug_paths:
         return False
-    return not _resolve(repo_root, token).exists()
+    return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
 
 
 def _is_deindexed_missing_casebook_bug_path(
@@ -703,7 +700,7 @@ def _is_deindexed_missing_casebook_bug_path(
         return False
     if token in live_casebook_bug_paths:
         return False
-    return not _resolve(repo_root, token).exists()
+    return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
 
 
 def _should_skip_internal_runtime_artifact(path: str) -> bool:
@@ -726,7 +723,7 @@ def _should_skip_deleted_legacy_bug_path(
         return False
     if not (repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md").is_file():
         return False
-    return not _resolve(repo_root, token).exists()
+    return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
 
 
 def _contains_retired_surface_marker(text: str) -> bool:
@@ -806,7 +803,7 @@ def _local_change_event_ts(
 ) -> dt.datetime:
     token = str(path or "").strip()
     if token:
-        resolved = _resolve(repo_root, token)
+        resolved = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token)
         ts = _file_mtime(resolved)
         if isinstance(ts, dt.datetime):
             return ts

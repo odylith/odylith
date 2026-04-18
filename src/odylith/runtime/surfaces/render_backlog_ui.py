@@ -13,7 +13,6 @@ import argparse
 import datetime as dt
 import html
 import json
-import os
 from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
@@ -21,6 +20,7 @@ from urllib.parse import quote
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import derivation_provenance
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_time
@@ -33,6 +33,7 @@ from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import render_backlog_ui_payload_runtime
 from odylith.runtime.surfaces import render_backlog_ui_html_runtime
 from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.governance import execution_wave_view_model
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.governance import plan_progress
@@ -140,14 +141,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve_path(*, repo_root: Path, value: str) -> Path:
-    token = str(value or "").strip()
-    path = Path(token)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def _refresh_guard_watched_paths(*, index_path: Path) -> tuple[Path | str, ...]:
     return (
         index_path,
@@ -164,20 +157,22 @@ def _refresh_guard_watched_paths(*, index_path: Path) -> tuple[Path | str, ...]:
     )
 
 
+def _resolve_path(*, repo_root: Path, value: str) -> Path:
+    """Backward-compatible wrapper over the shared surface path resolver."""
+
+    return surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=value)
+
+
 def _as_relative_href(*, output_path: Path, target: Path) -> str:
-    try:
-        rel = target.relative_to(output_path.parent)
-    except ValueError:
-        rel = Path(target)
-    return rel.as_posix()
+    """Backward-compatible wrapper over the shared relative href helper."""
+
+    return surface_path_helpers.relative_href(output_path=output_path, target=target)
 
 
 def _as_portable_relative_href(*, output_path: Path, target: Path) -> str:
-    try:
-        rel = os.path.relpath(str(target), start=str(output_path.parent))
-        return Path(rel).as_posix()
-    except ValueError:
-        return str(target)
+    """Backward-compatible wrapper for backlog detail pages and payload helpers."""
+
+    return surface_path_helpers.portable_relative_href(output_path=output_path, token=str(target))
 
 
 def _slug_token(value: str) -> str:
@@ -192,7 +187,10 @@ def _radar_route_href(
     workstream_id: str,
     view: str | None = None,
 ) -> str:
-    base_href = _as_portable_relative_href(output_path=source_output_path, target=target_output_path)
+    base_href = surface_path_helpers.portable_relative_href(
+        output_path=source_output_path,
+        token=str(target_output_path),
+    )
     workstream = str(workstream_id or "").strip()
     if not workstream:
         return base_href
@@ -355,11 +353,7 @@ def _collect_plan_traceability_paths(
 
 
 def _as_repo_path(*, repo_root: Path, target: Path) -> str:
-    try:
-        rel = target.relative_to(repo_root)
-        return rel.as_posix()
-    except ValueError:
-        return str(target)
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=target)
 
 
 def _extract_sections_from_markdown(path: Path) -> dict[str, str]:
@@ -678,9 +672,9 @@ def _render_html(*, payload: dict[str, object]) -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    index_path = _resolve_path(repo_root=repo_root, value=args.index)
-    output_path = _resolve_path(repo_root=repo_root, value=args.output)
-    standalone_pages_path = _resolve_path(repo_root=repo_root, value=args.standalone_pages)
+    index_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.index)
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
+    standalone_pages_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.standalone_pages)
     skip_rebuild, input_fingerprint, cached_metadata, bundle_paths, _output_paths = (
         generated_surface_refresh_guards.should_skip_surface_rebuild(
             repo_root=repo_root,

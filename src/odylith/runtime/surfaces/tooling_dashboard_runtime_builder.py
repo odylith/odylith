@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from collections.abc import Mapping
 
 from odylith.runtime.surfaces import dashboard_surface_bundle
+from odylith.runtime.surfaces import surface_path_helpers
 
 
 @dataclass(frozen=True)
@@ -34,12 +34,6 @@ def _shell_repo_name(*, repo_root: Path) -> str:
     if (root / "src" / "odylith").is_dir() and (root / "odylith").is_dir() and (root / "pyproject.toml").is_file():
         return "odylith"
     return str(root.name).strip()
-
-
-def _as_href(*, output_path: Path, target: Path) -> str:
-    """Build a relative href from the dashboard output to another surface."""
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
 
 
 def _rendered_surface_files(*, surface_html: Path) -> list[Path]:
@@ -77,7 +71,7 @@ def _surface_version_token(*, surface_html: Path) -> str:
 
 def _versioned_surface_href(*, output_path: Path, target: Path) -> str:
     """Append a cache-busting version token to one linked surface href."""
-    href = _as_href(output_path=output_path, target=target)
+    href = surface_path_helpers.relative_href(output_path=output_path, target=target)
     version = _surface_version_token(surface_html=target)
     return dashboard_surface_bundle.append_query_param(href=href, name="v", value=version)
 

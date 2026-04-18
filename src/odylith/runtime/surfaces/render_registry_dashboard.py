@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -20,6 +19,7 @@ from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import registry_forensic_evidence_ui
 from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.governance import delivery_intelligence_engine
 from odylith.runtime.governance import component_registry_intelligence as registry
 from odylith.runtime.surfaces import dashboard_time
@@ -84,13 +84,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def _refresh_guard_watched_paths(
     *,
     manifest_path: Path,
@@ -110,46 +103,6 @@ def _refresh_guard_watched_paths(
         "src/odylith/runtime/governance",
         "src/odylith/runtime/surfaces",
     )
-
-
-def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
-
-
-def _as_portable_href(output_path: Path, token: str) -> str:
-    path = Path(str(token or "").strip())
-    if not path:
-        return ""
-    rel = os.path.relpath(str(path), start=str(output_path.parent))
-    return Path(rel).as_posix()
-
-
-def _path_link(
-    *,
-    repo_root: Path,
-    output_path: Path,
-    token: str,
-) -> dict[str, str]:
-    target = _resolve(repo_root, token)
-    href = _as_href(output_path, target) if target.exists() else _as_portable_href(output_path, token)
-    return {
-        "path": str(token or "").strip(),
-        "href": href,
-    }
-
-
-def _path_links(
-    *,
-    repo_root: Path,
-    output_path: Path,
-    values: Sequence[str],
-) -> list[dict[str, str]]:
-    return [
-        _path_link(repo_root=repo_root, output_path=output_path, token=token)
-        for token in values
-        if str(token or "").strip()
-    ]
 
 
 def _display_spec_markdown(markdown: str) -> str:
@@ -277,11 +230,15 @@ def _build_payload(
                 ],
             ),
         )
-        spec_target = _resolve(repo_root, entry.spec_ref) if entry.spec_ref else None
+        spec_target = (
+            surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=entry.spec_ref)
+            if entry.spec_ref
+            else None
+        )
         spec_href = (
-            _as_href(output_path, spec_target)
-            if spec_target is not None and spec_target.exists()
-            else _as_portable_href(output_path, entry.spec_ref)
+            surface_path_helpers.relative_href(output_path=output_path, target=spec_target)
+            if spec_target is not None
+            else ""
         )
         spec_snapshot = spec_snapshot_lookup.get(component_id)
         if not isinstance(spec_snapshot, registry.ComponentSpecSnapshot):
@@ -292,10 +249,11 @@ def _build_payload(
             )
         timeline_rows: list[dict[str, Any]] = []
         for event in timelines.get(component_id, []):
-            artifacts = _path_links(
+            artifacts = surface_path_helpers.path_links(
                 repo_root=repo_root,
                 output_path=output_path,
                 values=event.artifacts,
+                allow_missing=True,
             )
             timeline_rows.append(
                 {
@@ -332,15 +290,17 @@ def _build_payload(
                 "spec_last_updated": spec_snapshot.last_updated,
                 "spec_feature_history": list(spec_snapshot.feature_history),
                 "spec_markdown": _display_spec_markdown(spec_snapshot.markdown),
-                "spec_runbooks": _path_links(
+                "spec_runbooks": surface_path_helpers.path_links(
                     repo_root=repo_root,
                     output_path=output_path,
                     values=component_traceability.get(component_id, {}).get("runbooks", []),
+                    allow_missing=True,
                 ),
-                "spec_developer_docs": _path_links(
+                "spec_developer_docs": surface_path_helpers.path_links(
                     repo_root=repo_root,
                     output_path=output_path,
                     values=component_traceability.get(component_id, {}).get("developer_docs", []),
+                    allow_missing=True,
                 ),
                 "skill_trigger_tiers": spec_snapshot.skill_trigger_tiers,
                 "skill_trigger_structure": spec_snapshot.skill_trigger_structure,
@@ -3150,17 +3110,17 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
-    output_path = _resolve(repo_root, str(args.output))
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.output))
 
     manifest_token = str(args.manifest).strip()
     manifest_path = (
         registry.default_manifest_path(repo_root=repo_root)
         if manifest_token == registry.DEFAULT_MANIFEST_PATH
-        else _resolve(repo_root, manifest_token)
+        else surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=manifest_token)
     )
-    catalog_path = _resolve(repo_root, str(args.catalog))
-    ideas_root = _resolve(repo_root, str(args.ideas_root))
-    stream_path = _resolve(repo_root, str(args.stream))
+    catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.catalog))
+    ideas_root = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.ideas_root))
+    stream_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.stream))
     skip_rebuild, input_fingerprint, cached_metadata, bundle_paths, _output_paths = (
         generated_surface_refresh_guards.should_skip_surface_rebuild(
             repo_root=repo_root,

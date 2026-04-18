@@ -34,6 +34,7 @@ from typing import Any, Iterable, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.common.consumer_profile import is_component_forensics_path
 from odylith.runtime.common.consumer_profile import truth_root_path
@@ -352,10 +353,9 @@ def _cached_component_index_payload(
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve manifest and traceability path tokens against the repo root."""
+
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _manifest_spec_ref_signatures(*, repo_root: Path, manifest_path: Path) -> list[dict[str, Any]]:
@@ -386,10 +386,7 @@ def _manifest_spec_ref_signatures(*, repo_root: Path, manifest_path: Path) -> li
             continue
         resolved = _resolve(repo_root, spec_ref)
         exists = resolved.is_file()
-        try:
-            repo_path = resolved.relative_to(repo_root).as_posix()
-        except ValueError:
-            repo_path = str(resolved)
+        repo_path = repo_path_resolver.display_repo_path(repo_root=repo_root, value=resolved)
         signatures.append(
             {
                 "component_id": normalize_component_id(str(raw.get("component_id", "")).strip()) or spec_ref,

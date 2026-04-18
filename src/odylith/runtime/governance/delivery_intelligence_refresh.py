@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-import subprocess
 from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import generated_refresh_guard
+from odylith.runtime.common import repo_path_resolver
+from odylith.runtime.governance.delivery_intelligence_support import current_local_head as _current_local_head
+from odylith.runtime.governance.delivery_intelligence_support import registry_delivery_watched_paths as _registry_delivery_watched_paths
 
 DEFAULT_OUTPUT_PATH = "odylith/runtime/delivery_intelligence.v4.json"
 DEFAULT_CONTROL_POSTURE_PATH = "odylith/runtime/control-posture.v4.json"
@@ -31,34 +33,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve one refresh path token against the repo root."""
 
-
-def _current_local_head(repo_root: Path) -> str:
-    try:
-        completed = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return ""
-    return str(completed.stdout or "").strip()
-
-
-def _registry_delivery_watched_paths(repo_root: Path) -> tuple[str, ...]:
-    root = Path(repo_root).resolve()
-    specs_root = (root / "odylith" / "registry" / "source" / "components").resolve()
-    current_specs = sorted(
-        str(path.relative_to(root))
-        for path in specs_root.glob("*/CURRENT_SPEC.md")
-        if path.is_file()
-    )
-    return ("odylith/registry/source/component_registry.v1.json", *current_specs)
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def main(argv: Sequence[str] | None = None) -> int:

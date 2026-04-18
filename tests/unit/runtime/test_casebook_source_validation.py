@@ -34,6 +34,11 @@ def _write_bug(path: Path, *, reproducibility: str = "High") -> None:
     )
 
 
+def _write_bug_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
 def test_casebook_source_validation_accepts_compact_reproducibility(tmp_path: Path) -> None:
     _write_bug(tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-compact.md")
 
@@ -58,6 +63,115 @@ def test_casebook_source_validation_rejects_prose_reproducibility(tmp_path: Path
     assert result.issues[0].field == "Reproducibility"
     assert result.issues[0].line == 9
     assert "one compact token" in result.issues[0].message
+
+
+def test_casebook_source_validation_rejects_missing_reproducibility_field(tmp_path: Path) -> None:
+    _write_bug_text(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-missing.md",
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Status: Open",
+                "",
+                "- Created: 2026-04-16",
+                "",
+                "- Severity: P1",
+                "",
+                "- Type: Product",
+                "",
+                "- Description: Example source validation bug.",
+                "",
+            ]
+        )
+        + "\n",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert len(result.issues) == 1
+    assert result.issues[0].message == "missing required Casebook bug field"
+
+
+def test_casebook_source_validation_rejects_duplicate_reproducibility_fields(tmp_path: Path) -> None:
+    _write_bug_text(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-duplicate.md",
+        "\n".join(
+            [
+                "- Bug ID: CB-001",
+                "",
+                "- Status: Open",
+                "",
+                "- Created: 2026-04-16",
+                "",
+                "- Severity: P1",
+                "",
+                "- Reproducibility: High",
+                "",
+                "- Reproducibility: Low",
+                "",
+                "- Type: Product",
+                "",
+                "- Description: Example source validation bug.",
+                "",
+            ]
+        )
+        + "\n",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert len(result.issues) == 1
+    assert result.issues[0].message == "duplicate Casebook bug field"
+    assert result.issues[0].value == "Low"
+
+
+def test_casebook_source_validation_rejects_placeholder_reproducibility_token(tmp_path: Path) -> None:
+    _write_bug(
+        tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-placeholder.md",
+        reproducibility="TBD",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+
+    assert not result.passed
+    assert len(result.issues) == 1
+    assert result.issues[0].value == "TBD"
+    assert "one compact token" in result.issues[0].message
+
+
+def test_casebook_source_validation_issue_payloads_use_repo_relative_paths(tmp_path: Path) -> None:
+    bug_path = tmp_path / "odylith" / "casebook" / "bugs" / "2026-04-16-invalid.md"
+    _write_bug(
+        bug_path,
+        reproducibility="High: reproduced from the dashboard screenshot.",
+    )
+
+    result = casebook_source_validation.validate_casebook_sources(repo_root=tmp_path)
+    issue = result.issues[0]
+
+    assert issue.as_dict(repo_root=tmp_path)["path"] == "odylith/casebook/bugs/2026-04-16-invalid.md"
+    assert issue.render(repo_root=tmp_path).startswith("odylith/casebook/bugs/2026-04-16-invalid.md:9:")
+
+
+def test_normalize_reproducibility_token_handles_sequences_and_bytes() -> None:
+    assert casebook_source_validation.normalize_reproducibility_token(["always"]) == "Always"
+    assert casebook_source_validation.normalize_reproducibility_token(b"medium") == "Medium"
+    assert not casebook_source_validation.reproducibility_token_is_valid("pending")
+
+
+def test_iter_casebook_bug_markdown_paths_skips_guidance_and_index_files(tmp_path: Path) -> None:
+    bugs_root = tmp_path / "odylith" / "casebook" / "bugs"
+    _write_bug(bugs_root / "2026-04-16-valid.md")
+    _write_bug_text(bugs_root / "AGENTS.md", "# guidance\n")
+    _write_bug_text(bugs_root / "CLAUDE.md", "# guidance\n")
+    _write_bug_text(bugs_root / "INDEX.md", "# index\n")
+
+    paths = casebook_source_validation.iter_casebook_bug_markdown_paths(repo_root=tmp_path)
+
+    assert [path.name for path in paths] == ["2026-04-16-valid.md"]
 
 
 def test_casebook_validate_cli_reports_invalid_source(tmp_path: Path, capsys) -> None:
