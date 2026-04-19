@@ -28,6 +28,9 @@
 - Consumer repos may be Python, TypeScript, JavaScript, Go, Rust, Java,
   shell, SQL, or mixed-language; the language changes, the anti-slop bar does
   not.
+- Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
+  semantics deliberately and prove the touched contract on the real toolchain
+  or surface that owns it.
 - Routed Claude leaves inherit the same anti-slop contract. Do not use
   Task-tool subagents, `.claude/commands/`, `.claude/agents/`, or
   `.claude/skills/` as a place to hide duplicate helpers, fake wrappers,
@@ -38,6 +41,9 @@
 - Do not use Claude memory bridges, hook payload formatters, statusline
   helpers, slash-command shims, or agent templates as escape hatches for
   softer anti-slop rules.
+- Do not use compatibility wrappers, lazy proxies, facade accessors, or
+  mirror-only indirection inside Claude-only assets to keep an old owner alive
+  after nominal extraction.
 - Do not soften the anti-slop rule in Claude-only assets. If a Claude-specific
   divergence is necessary, document the concrete host capability reason and
   prove parity against the shared contract.
@@ -48,6 +54,8 @@
   or lane-wide anti-slop claims, rerun the requested structural inventory for
   the claimed scope and pair it with fresh behavior proof for the touched
   slice.
+- Guidance-only hardening without updated tests, validators, or mirror-content
+  checks is incomplete.
 - When one host tightens the anti-slop bar, update the other host contract,
   shared guidance, install-generated guidance, skills, and shipped mirrors in
   the same change.

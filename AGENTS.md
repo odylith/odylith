@@ -16,7 +16,7 @@ Paths under `odylith/` follow `odylith/AGENTS.md`.
 - `odylith backlog create` is fail-closed and must receive grounded Problem, Customer, Opportunity, Product View, and Success Metrics text; never create or accept a title-only, placeholder, or boilerplate Radar workstream.
 - For quick visibility after a narrow truth change, rerender only the owned surface: `odylith radar refresh`, `odylith registry refresh`, `odylith casebook refresh`, `odylith atlas refresh`, or `odylith compass refresh`. Use `odylith compass deep-refresh` when you also want brief settlement. Keep `odylith sync` as the broader governance and correctness lane.
 - Keep the default operating lane shared across Codex and Claude Code: repo-root guidance, the repo-local launcher, truthful `odylith ... --help`, and the grounded governance workflow should mean the same thing on both hosts. Add host-specific tips only when the host exposes a real native capability that materially reduces hops.
-- Treat AI slop as a regression. Apply that bar across any language and across runtime code, hooks, prompts, docs, config, templates, generators, and managed assets. Apply it to any codebase or project surface: services, libraries, apps, CLIs, infra glue, scripts, docs, prompts, hooks, templates, config, and generated assets all count. No transitional states: do not replace one slop class with another, move ownership not just file boundaries, and do not treat a shared helper or kernel as a cleanup ornament. Partial shared-kernel adoption is still incomplete; if a shared helper or kernel lands, the touched callers must adopt it or the pass is incomplete. Do not call a slop cleanup complete just because the first smell disappeared; if the replacement smell still exists in the touched slice, the pass is incomplete. When the user asks for repo-wide or lane-wide anti-slop hardening, update guidance, skills, install-generated guidance, host contracts, mirrors, and enforcement tests together; prose-only hardening is incomplete. Repo-wide or lane-wide anti-slop claims require two proof layers: fresh behavior proof for the touched slice and a fresh structural inventory for the claimed scope. One does not substitute for the other. Use `odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` and `odylith/skills/odylith-code-hygiene-guard/SKILL.md` when quality pressure is high.
+- Treat AI slop as a regression. Apply that bar across any language and across runtime code, hooks, prompts, docs, config, templates, generators, and managed assets. Apply it to any codebase or project surface: services, libraries, apps, CLIs, infra glue, scripts, docs, prompts, hooks, templates, config, and generated assets all count. Structural cleanup is not permission to drift behavior, UX, or UI; preserve semantics deliberately and prove the touched contract on the real toolchain or surface that owns it. No transitional states: do not replace one slop class with another, move ownership not just file boundaries, do not hide the old owner behind compatibility wrappers, lazy proxies, facade accessors, or mirror-only indirection, and do not treat a shared helper or kernel as a cleanup ornament. Partial shared-kernel adoption is still incomplete; if a shared helper or kernel lands, the touched callers must adopt it or the pass is incomplete. Do not call a slop cleanup complete just because the first smell disappeared; if the replacement smell still exists in the touched slice, the pass is incomplete. When the user asks for repo-wide or lane-wide anti-slop hardening, update guidance, skills, install-generated guidance, host contracts, mirrors, and enforcement tests together; prose-only hardening is incomplete. Guidance-only hardening without updated tests, validators, or mirror-content checks is incomplete. Repo-wide or lane-wide anti-slop claims require two proof layers: fresh behavior proof for the touched slice and a fresh structural inventory for the claimed scope. One does not substitute for the other. For shared hot paths, user-visible flows, or high-risk structural moves, land characterization or contract-focused tests before or alongside the refactor. Use `odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` and `odylith/skills/odylith-code-hygiene-guard/SKILL.md` when quality pressure is high.
 - For guidance behavior pressure cases, use `odylith validate guidance-behavior --repo-root .` for deterministic proof and `odylith benchmark --profile quick --family guidance_behavior` for benchmark-family proof. Compact packet summaries only prove the proof path is available; fresh validation still requires the explicit command.
 - Odylith Discipline is the v0.1.11 shared Codex/Claude behavior contract: hard laws are deterministic, runtime pressure is open-world, stance is local and credit-safe, passing checks stay quiet, and durable learning requires validator, benchmark, or Tribunal/governance proof. Use `odylith discipline status/check/explain`, `odylith validate discipline --repo-root .`, and `odylith benchmark --profile quick --family discipline --no-write-report --json`; none of those discipline hot paths may call host models, providers, subagents, broad scans, full validation, or projection expansion.
 - A plain `Odylith, show me what you can do` request is the advisory `odylith show` repo-capability demo. It is not a request to prove intervention UX, diagnose install posture, run `start`, run `doctor`, or explain missing launcher state. Use the first available show command and print stdout only.
@@ -197,6 +197,9 @@ Odylith is a product repo, not a host repo.
   and generated assets all count.
 - Apply that bar across runtime code, hooks, prompts, docs, config,
   templates, generators, and managed assets, regardless of language.
+- Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
+  semantics deliberately and prove the touched contract on the real toolchain
+  or surface that owns it.
 - Do not ship fake modularization. `def _host()` plus a wall of rebound private
   host symbols is banned.
 - Do not replace that shim with `bind(host)`, `_HOST_BIND_NAMES`, generic
@@ -205,6 +208,8 @@ Odylith is a product repo, not a host repo.
 - No transitional states. Do not replace one slop class with alias walls,
   `_store()` shims, compatibility wrappers, kernel ornaments, or host-mirror
   drift.
+- Do not hide the old owner behind compatibility wrappers, lazy proxies,
+  facade accessors, or mirror-only indirection after a nominal extraction.
 - Move ownership, not just file boundaries.
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
@@ -224,12 +229,17 @@ Odylith is a product repo, not a host repo.
 - New or materially rewritten runtime Python modules must carry a truthful
   module docstring.
 - Every anti-slop cleanup must add or update enforcement tests.
+- For shared hot paths, user-visible flows, or high-risk structural moves,
+  land characterization or contract-focused tests before or alongside the
+  refactor instead of relying on post hoc confidence.
 - When you tighten the anti-slop bar in one lane, propagate it across shared
   guidance, host contracts, install-generated guidance, skills, and shipped
   mirrors in the same change.
 - When the user asks for repo-wide or lane-wide anti-slop hardening, update
   the guidance, skills, install-generated guidance, host contracts, mirrors,
   and enforcement tests together; prose-only hardening is incomplete.
+- Guidance-only hardening without updated tests, validators, or mirror-content
+  checks is incomplete.
 - Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
   behavior proof for the touched slice and a fresh structural inventory for
   the claimed scope. One does not substitute for the other.

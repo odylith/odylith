@@ -2,17 +2,50 @@
 
 from __future__ import annotations
 
-from typing import Any
-from typing import Mapping
-from typing import Sequence
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.consumer_profile import load_consumer_profile
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime as packet_adaptive_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
+from odylith.runtime.context_engine import odylith_context_engine_store as odylith_store
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.intervention_engine import conversation_runtime
+from odylith.runtime.orchestration import subagent_router as leaf_router
+from odylith.runtime.orchestration.subagent_orchestrator_support import _ARCHITECTURE_GROUNDING_KEYWORDS
+from odylith.runtime.orchestration.subagent_orchestrator_support import _CODEX_HOT_PATH_PROFILE
+from odylith.runtime.orchestration.subagent_orchestrator_support import _GOVERNANCE_GROUNDING_KEYWORDS
+from odylith.runtime.orchestration.subagent_orchestrator_support import _clamp_confidence
+from odylith.runtime.orchestration.subagent_orchestrator_support import _compact_selection_state_parts
+from odylith.runtime.orchestration.subagent_orchestrator_support import _dedupe_strings
+from odylith.runtime.orchestration.subagent_orchestrator_support import _execution_profile_mapping
+from odylith.runtime.orchestration.subagent_orchestrator_support import _extract_context_signals_payload
+from odylith.runtime.orchestration.subagent_orchestrator_support import _mapping_lookup
+from odylith.runtime.orchestration.subagent_orchestrator_support import _merge_context_signals
+from odylith.runtime.orchestration.subagent_orchestrator_support import _nested_mapping
+from odylith.runtime.orchestration.subagent_orchestrator_support import _normalize_context_signals
+from odylith.runtime.orchestration.subagent_orchestrator_support import _normalize_list
+from odylith.runtime.orchestration.subagent_orchestrator_support import _normalized_rate
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_component_ids
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_diagram_watch_gap_count
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_full_scan_recommended
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_paths
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_route_ready
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_routing_confidence
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_selection_state
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_workstreams
+from odylith.runtime.orchestration.subagent_orchestrator_support import _payload_packet_kind
+from odylith.runtime.orchestration.subagent_orchestrator_support import _request_has_odylith_seeds
+from odylith.runtime.orchestration.subagent_orchestrator_support import _request_seed_paths
+
+if TYPE_CHECKING:
+    from odylith.runtime.orchestration.subagent_orchestrator import OrchestrationDecision
+    from odylith.runtime.orchestration.subagent_orchestrator import OrchestrationRequest
+    from odylith.runtime.orchestration.subagent_orchestrator import SubtaskSlice
 
 
 def _first_present(*values: Any) -> Any:
@@ -35,44 +68,6 @@ def _bool_value(value: Any) -> bool:
     if token in {"", "0", "false", "no", "off"}:
         return False
     return bool(value)
-
-
-def bind(host_module: Any) -> None:
-    globals().update({
-        "OrchestrationRequest": getattr(host_module, "OrchestrationRequest"),
-        "OrchestrationDecision": getattr(host_module, "OrchestrationDecision"),
-        "SubtaskSlice": getattr(host_module, "SubtaskSlice"),
-        "leaf_router": getattr(host_module, "leaf_router"),
-        "odylith_store": getattr(host_module, "odylith_store"),
-        "_normalize_string": getattr(host_module, "_normalize_string"),
-        "_normalize_token": getattr(host_module, "_normalize_token"),
-        "_normalize_list": getattr(host_module, "_normalize_list"),
-        "_normalize_context_signals": getattr(host_module, "_normalize_context_signals"),
-        "_extract_context_signals_payload": getattr(host_module, "_extract_context_signals_payload"),
-        "_dedupe_strings": getattr(host_module, "_dedupe_strings"),
-        "_mapping_lookup": getattr(host_module, "_mapping_lookup"),
-        "_nested_mapping": getattr(host_module, "_nested_mapping"),
-        "_execution_profile_mapping": getattr(host_module, "_execution_profile_mapping"),
-        "_int_value": getattr(host_module, "_int_value"),
-        "_normalized_rate": getattr(host_module, "_normalized_rate"),
-        "_request_seed_paths": getattr(host_module, "_request_seed_paths"),
-        "_request_has_odylith_seeds": getattr(host_module, "_request_has_odylith_seeds"),
-        "_payload_packet_kind": getattr(host_module, "_payload_packet_kind"),
-        "_merge_context_signals": getattr(host_module, "_merge_context_signals"),
-        "_clamp_confidence": getattr(host_module, "_clamp_confidence"),
-        "_compact_selection_state_parts": getattr(host_module, "_compact_selection_state_parts"),
-        "_odylith_payload_full_scan_recommended": getattr(host_module, "_odylith_payload_full_scan_recommended"),
-        "_odylith_payload_diagram_watch_gap_count": getattr(host_module, "_odylith_payload_diagram_watch_gap_count"),
-        "_odylith_payload_selection_state": getattr(host_module, "_odylith_payload_selection_state"),
-        "_odylith_payload_routing_confidence": getattr(host_module, "_odylith_payload_routing_confidence"),
-        "_odylith_payload_route_ready": getattr(host_module, "_odylith_payload_route_ready"),
-        "_odylith_payload_paths": getattr(host_module, "_odylith_payload_paths"),
-        "_odylith_payload_workstreams": getattr(host_module, "_odylith_payload_workstreams"),
-        "_odylith_payload_component_ids": getattr(host_module, "_odylith_payload_component_ids"),
-        "_CODEX_HOT_PATH_PROFILE": getattr(host_module, "_CODEX_HOT_PATH_PROFILE"),
-        "_ARCHITECTURE_GROUNDING_KEYWORDS": getattr(host_module, "_ARCHITECTURE_GROUNDING_KEYWORDS"),
-        "_GOVERNANCE_GROUNDING_KEYWORDS": getattr(host_module, "_GOVERNANCE_GROUNDING_KEYWORDS"),
-    })
 
 
 def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -303,7 +298,8 @@ def _request_with_consumer_write_policy(
     )
     if merged_signals == request.context_signals:
         return request
-    return OrchestrationRequest(
+    request_cls = request.__class__
+    return request_cls(
         prompt=request.prompt,
         acceptance_criteria=list(request.acceptance_criteria),
         candidate_paths=list(request.candidate_paths),
@@ -858,7 +854,8 @@ def _auto_ground_request_with_odylith(
             }
         },
     )
-    return OrchestrationRequest(
+    request_cls = request.__class__
+    return request_cls(
         prompt=request.prompt,
         acceptance_criteria=list(request.acceptance_criteria),
         candidate_paths=_dedupe_strings([*request.candidate_paths, *_odylith_payload_paths(payload)]),

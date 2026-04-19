@@ -28,6 +28,9 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Apply that bar to any codebase or project surface in this lane as well:
   services, libraries, apps, CLIs, infra glue, scripts, docs, prompts, hooks,
   templates, config, and generated assets all count.
+- Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
+  semantics deliberately and prove the touched contract on the real toolchain
+  or surface that owns it.
 - When strengthening anti-slop policy in maintainer mode, push the shared
   contract into the consumer-safe guidance, shared skill, and shipped bundle
   mirrors in the same change so Codex and Claude consumer lanes inherit the
@@ -36,6 +39,8 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   with another, do not treat a shared helper or kernel as a cleanup ornament,
   and do not let Codex-only or Claude-only project assets drift into softer
   anti-slop rules than the shared contract.
+- Do not hide the old owner behind compatibility wrappers, lazy proxies,
+  facade accessors, or mirror-only indirection after a nominal extraction.
 - Partial shared-kernel adoption is still incomplete in this lane as well. If
   a shared helper or kernel lands, the touched callers must adopt it or the
   pass is incomplete.
@@ -45,6 +50,8 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
   behavior proof for the touched slice and a fresh structural inventory for
   the claimed scope. One does not substitute for the other.
+- Guidance-only hardening without updated tests, validators, or mirror-content
+  checks is incomplete.
 - For explicit deep anti-slop or decomposition passes in maintainer mode, use
   `skills/fail-closed-code-hygiene/` so the pass fails closed on remaining
   shims, duplicate helper clones, mirror drift, and missing proof.

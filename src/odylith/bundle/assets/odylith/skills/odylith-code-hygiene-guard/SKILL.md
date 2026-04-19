@@ -12,6 +12,9 @@ language changes, the anti-slop bar does not.
 Apply that bar to any codebase or project surface: services, libraries, apps,
 CLIs, infra glue, scripts, docs, prompts, hooks, templates, config, and
 generated assets all count.
+Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
+semantics deliberately and prove the touched contract on the real toolchain or
+surface that owns it.
 
 No transitional states. Do not replace one slop class with another. Move
 ownership, not just file boundaries.
@@ -42,6 +45,8 @@ ownership, not just file boundaries.
 - Do not treat a shared helper or kernel as a cleanup ornament. If it lands,
   adopt it in the touched slice or leave a bounded follow-up tied to the same
   slop class.
+- Do not hide the old owner behind compatibility wrappers, lazy proxies,
+  facade accessors, or mirror-only indirection after a nominal extraction.
 - Partial shared-kernel adoption is still incomplete. If a shared helper or
   kernel lands, the touched callers must adopt it or the pass is incomplete.
 - If a touched hand-maintained source file is already above `1200` LOC,
@@ -87,6 +92,9 @@ ownership, not just file boundaries.
 
 ## Required Proof
 - Every anti-slop cleanup must add or update enforcement tests.
+- For shared hot paths, user-visible flows, or high-risk structural moves,
+  land characterization or contract-focused tests before or alongside the
+  refactor instead of relying on post hoc confidence.
 - Run the focused regression suite for the touched slice.
 - When the user asks for repo-wide or lane-wide anti-slop hardening, update
   guidance, skills, install-generated guidance, host contracts, mirrors, and
@@ -104,6 +112,8 @@ ownership, not just file boundaries.
 - Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
   behavior proof for the touched slice and a fresh structural inventory for
   the claimed scope. One does not substitute for the other.
+- Guidance-only hardening without updated tests, validators, or mirror-content
+  checks is incomplete.
 - If the change touches shared runtime hot paths, run the full runtime suite.
 - If the change touches browser-proved surfaces, run the full headless browser
   matrix.

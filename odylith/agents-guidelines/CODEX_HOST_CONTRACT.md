@@ -35,6 +35,9 @@
 - Consumer repos may be Python, TypeScript, JavaScript, Go, Rust, Java,
   shell, SQL, or mixed-language; the language changes, the anti-slop bar does
   not.
+- Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
+  semantics deliberately and prove the touched contract on the real toolchain
+  or surface that owns it.
 - Routed Codex leaves inherit the same anti-slop contract. Do not use
   `spawn_agent`, `.agents/skills/`, or `.codex/` project assets as a place to
   hide duplicate helpers, fake wrappers, giant phase-mixed handlers, or
@@ -44,6 +47,9 @@
 - Do not use Codex memory scaffolds, hook payload formatters, statusline or
   checkpoint helpers, or agent templates as escape hatches for softer
   anti-slop rules.
+- Do not use compatibility wrappers, lazy proxies, facade accessors, or
+  mirror-only indirection inside Codex-only assets to keep an old owner alive
+  after nominal extraction.
 - Do not soften the anti-slop rule in Codex-only assets. If a Codex-specific
   divergence is necessary, document the concrete host capability reason and
   prove parity against the shared contract.
@@ -54,6 +60,8 @@
   or lane-wide anti-slop claims, rerun the requested structural inventory for
   the claimed scope and pair it with fresh behavior proof for the touched
   slice.
+- Guidance-only hardening without updated tests, validators, or mirror-content
+  checks is incomplete.
 - When one host tightens the anti-slop bar, update the other host contract,
   shared guidance, install-generated guidance, skills, and shipped mirrors in
   the same change.

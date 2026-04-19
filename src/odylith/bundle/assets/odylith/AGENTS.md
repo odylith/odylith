@@ -69,11 +69,16 @@ Scope: applies to Odylith paths under `odylith/`.
   Apply that same bar to any codebase or project surface: services,
   libraries, apps, CLIs, infra glue, scripts, docs, prompts, hooks,
   templates, config, and generated assets all count.
+  Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
+  semantics deliberately and prove the touched contract on the real toolchain
+  or surface that owns it.
   No transitional states: do not replace one slop class with another, do not
   treat a shared helper or kernel as a cleanup ornament, and move ownership,
   not just file boundaries. When one lane or host tightens the anti-slop bar,
   propagate it through shared guidance, host contracts, install-generated
   guidance, skills, and shipped mirrors in the same change.
+  Do not hide the old owner behind compatibility wrappers, lazy proxies,
+  facade accessors, or mirror-only indirection after a nominal extraction.
   Partial shared-kernel adoption is still incomplete; if a shared helper or
   kernel lands, the touched callers must adopt it or the pass is incomplete.
   Do not call a slop cleanup complete just because the first smell
@@ -84,7 +89,10 @@ Scope: applies to Odylith paths under `odylith/`.
   prose-only hardening is incomplete. Repo-wide or lane-wide anti-slop claims
   require two proof layers: fresh behavior proof for the touched slice and a
   fresh structural inventory for the claimed scope. One does not substitute
-  for the other.
+  for the other. Guidance-only hardening without updated tests, validators, or
+  mirror-content checks is incomplete. For shared hot paths, user-visible
+  flows, or high-risk structural moves, land characterization or
+  contract-focused tests before or alongside the refactor.
   Use
   `agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` and
   `skills/odylith-code-hygiene-guard/SKILL.md` when quality pressure is high.

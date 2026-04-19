@@ -831,6 +831,18 @@ def test_subagent_router_runtime_policy_no_longer_uses_bind_shims() -> None:
         assert "globals().update(" not in text, f"router globals injection resurfaced in {path.relative_to(ROOT)}"
 
 
+def test_subagent_orchestrator_runtime_no_longer_uses_bind_shims() -> None:
+    paths = (
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py",
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_odylith_runtime.py",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "def bind(" not in text, f"orchestrator bind shim resurfaced in {path.relative_to(ROOT)}"
+        assert "globals().update(" not in text, f"orchestrator globals injection resurfaced in {path.relative_to(ROOT)}"
+        assert ".bind(sys.modules[__name__])" not in text, f"orchestrator host bind call resurfaced in {path.relative_to(ROOT)}"
+
+
 def test_context_engine_runtime_extracts_do_not_rebind_store_hosts() -> None:
     paths = (
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_compiler_runtime.py",

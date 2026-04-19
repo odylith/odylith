@@ -38,6 +38,9 @@
 - Apply that bar to any codebase or project surface: services, libraries,
   apps, CLIs, infra glue, scripts, docs, prompts, hooks, templates, config,
   and generated assets all count.
+- Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
+  semantics deliberately and prove the touched contract on the real toolchain
+  or surface that owns it.
 - No transitional states. Do not replace one slop class with another.
 - Move ownership, not just file boundaries.
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
@@ -47,6 +50,8 @@
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
   shared owner is appropriate.
+- Do not hide the old owner behind compatibility wrappers, lazy proxies,
+  facade accessors, or mirror-only indirection after a nominal extraction.
 - Do not treat a shared helper or kernel as a cleanup ornament. If a new owner
   lands, adopt it in the touched slice or leave a bounded follow-up tied to
   the same slop class.
@@ -70,12 +75,17 @@
 - New or materially rewritten runtime Python modules must carry a truthful
   module docstring.
 - Every anti-slop cleanup must add or update enforcement tests.
+- For shared hot paths, user-visible flows, or high-risk structural moves,
+  land characterization or contract-focused tests before or alongside the
+  refactor instead of relying on post hoc confidence.
 - When the anti-slop rule changes, propagate it across shared guidance, host
   contracts, install-generated guidance, skills, and shipped mirrors in the
   same change.
 - When the user asks for repo-wide or lane-wide anti-slop hardening, update
   guidance, skills, install-generated guidance, host contracts, mirrors, and
   enforcement tests together; prose-only hardening is incomplete.
+- Guidance-only hardening without updated tests, validators, or mirror-content
+  checks is incomplete.
 - Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
   behavior proof for the touched slice and a fresh structural inventory for
   the claimed scope. One does not substitute for the other.

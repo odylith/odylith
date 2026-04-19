@@ -1,8 +1,8 @@
 # Anti-Slop And Decomposition
 
 ## Purpose
-- This guide exists to stop AI-assisted authoring from degrading Odylith's
-  source tree.
+- This guide exists to stop AI-assisted authoring from degrading the current
+  repo or project tree.
 - Treat AI slop as a regression.
 - Do not dismiss it as an aesthetic complaint.
 - Use this guide when the slice shows duplicate helper churn, fake
@@ -17,6 +17,9 @@
 - Consumer repos may be Python, TypeScript, JavaScript, Go, Rust, Java,
   shell, SQL, or mixed-language; the language changes, the anti-slop bar does
   not.
+- Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
+  semantics deliberately and prove the touched contract on the real toolchain
+  or surface that owns it.
 
 ## Language-Agnostic Slop Inventory
 - Treat fake seams, duplicate helpers, giant phase-mixed functions, mirror
@@ -47,6 +50,8 @@
 - Do not treat a shared helper or kernel as a cleanup ornament. If the shared
   owner lands, adopt it in the touched slice or leave an explicit bounded
   follow-up tied to the same slop class.
+- Do not hide the old owner behind compatibility wrappers, lazy proxies,
+  facade accessors, or mirror-only indirection after a nominal extraction.
 - Do not hide transitional slop behind compatibility wrappers, alias walls,
   partial migrations, or host-only copies once the real owner exists.
 - Partial shared-kernel adoption is still incomplete. If a shared helper or
@@ -71,6 +76,9 @@
   shared owner is appropriate.
 - Do not use partial shared-kernel adoption as proof of cleanup. A new shared
   owner that only a minority of the touched callers adopt is an incomplete pass.
+- Do not use compatibility wrappers, lazy proxies, facade accessors, or
+  mirror-only indirection to keep the old owner alive after nominal
+  extraction.
 - Do not soften the anti-slop rule on one host, one lane, or one generated
   asset surface while claiming the shared contract stayed intact.
 - Do not keep host-mirror files near-identical when a shared helper, shared
@@ -119,6 +127,9 @@
 
 ## Proof Obligations
 - Every anti-slop cleanup must add or update enforcement tests.
+- For shared hot paths, user-visible flows, or high-risk structural moves,
+  land characterization or contract-focused tests before or alongside the
+  refactor instead of relying on post hoc confidence.
 - When introducing a shared helper, update the touched duplicates in the same
   slice or leave an explicit bounded follow-up plan.
 - When guidance, skills, or bundled docs change, update the shipped mirrors in
@@ -132,6 +143,8 @@
 - Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
   behavior proof for the touched slice and a fresh structural inventory for
   the claimed scope. One does not substitute for the other.
+- Guidance-only hardening without updated tests, validators, or mirror-content
+  checks is incomplete.
 - In consumer repos, prove consumer-owned code with the consumer repo's own
   language toolchain, tests, linters, build checks, and formatter or type
   checks where applicable. Odylith narrows the slice; the consumer repo still
@@ -166,6 +179,9 @@
 - If you remove a fake seam and replace it with an alias wall, the pass is
   still incomplete. Remove the local alias wall or move that logic behind a
   real owner before closeout.
+- If you remove a fake seam and replace it with a compatibility wrapper, lazy
+  proxy, facade accessor, or mirror-only indirection, the pass is still
+  incomplete. Move the real owner instead.
 - If a touched change updates guidance or skills that ship through bundle
   mirrors or install-managed assets, refresh those mirrors in the same change
   and prove them with tests instead of assuming they stayed aligned.
