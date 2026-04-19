@@ -10,9 +10,6 @@ from odylith.runtime.governance import proof_state
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.governance.proof_state import resolver as proof_state_resolver
 
-projection_entity.bind(context_engine_store.__dict__)
-projection_backlog.bind(context_engine_store.__dict__)
-
 
 def _write_casebook_bug(
     repo_root: Path,

@@ -2,18 +2,28 @@
 
 from __future__ import annotations
 
+def _store():
+    from odylith.runtime.context_engine import odylith_context_engine_store as store
+
+    return store
+
+
 from typing import Any
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_support
 from odylith.runtime.governance import release_planning_contract
-from odylith.runtime.context_engine import odylith_context_engine_projection_runtime_bindings
 
-def bind(host: Any) -> None:
-    odylith_context_engine_projection_runtime_bindings.bind_projection_runtime(globals(), host)
+_connect = odylith_context_engine_projection_search_runtime._connect
+_warm_runtime = odylith_context_engine_projection_search_runtime._warm_runtime
+_odylith_ablation_active = odylith_context_engine_runtime_learning_runtime._odylith_ablation_active
+record_runtime_timing = odylith_context_engine_runtime_support.record_runtime_timing
 
 def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
     if kind == "workstream":
-        metadata = json.loads(str(row["metadata_json"] or "{}"))
+        metadata = _store().json.loads(str(row["metadata_json"] or "{}"))
         return {
             "kind": "workstream",
             "entity_id": str(row["idea_id"]),
@@ -24,13 +34,13 @@ def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
             "priority": str(row["priority"]),
             "promoted_to_plan": str(row["promoted_to_plan"]),
             "idea_file": str(row["idea_file"]),
-            "metadata": metadata if isinstance(metadata, Mapping) else {},
+            "metadata": metadata if isinstance(metadata, _store().Mapping) else {},
         }
     if kind == "plan":
         return {
             "kind": "plan",
             "entity_id": str(row["plan_path"]),
-            "title": Path(str(row["plan_path"])).name,
+            "title": _store().Path(str(row["plan_path"])).name,
             "status": str(row["status"]),
             "path": str(row["source_path"]),
             "section": str(row["section"]),
@@ -39,7 +49,7 @@ def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
             "backlog": str(row["backlog"]),
         }
     if kind == "release":
-        metadata = json.loads(str(row["metadata_json"] or "{}"))
+        metadata = _store().json.loads(str(row["metadata_json"] or "{}"))
         return {
             "kind": "release",
             "entity_id": str(row["release_id"]),
@@ -49,9 +59,9 @@ def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
             "version": str(row.get("version", "")),
             "tag": str(row.get("tag", "")),
             "effective_name": str(row.get("effective_name", "")),
-            "aliases": _json_list(str(row.get("aliases_json", ""))),
-            "active_workstreams": _json_list(str(row.get("active_workstreams_json", ""))),
-            "metadata": metadata if isinstance(metadata, Mapping) else {},
+            "aliases": _store()._json_list(str(row.get("aliases_json", ""))),
+            "active_workstreams": _store()._json_list(str(row.get("active_workstreams_json", ""))),
+            "metadata": metadata if isinstance(metadata, _store().Mapping) else {},
         }
     if kind == "bug":
         bug_id = str(row.get("bug_id", "")).strip()
@@ -66,10 +76,10 @@ def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
             "path": str(row["link_target"] or row["source_path"]),
             "date": str(row["date"]),
             "severity": str(row["severity"]),
-            "components": _parse_component_tokens(str(row["components"])),
+            "components": _store()._parse_component_tokens(str(row["components"])),
         }
     if kind == "diagram":
-        metadata = json.loads(str(row["metadata_json"] or "{}"))
+        metadata = _store().json.loads(str(row["metadata_json"] or "{}"))
         return {
             "kind": "diagram",
             "entity_id": str(row["diagram_id"]),
@@ -79,10 +89,10 @@ def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
             "slug": str(row["slug"]),
             "owner": str(row["owner"]),
             "summary": str(row["summary"]),
-            "metadata": metadata if isinstance(metadata, Mapping) else {},
+            "metadata": metadata if isinstance(metadata, _store().Mapping) else {},
         }
     if kind == "component":
-        metadata = json.loads(str(row["metadata_json"] or "{}"))
+        metadata = _store().json.loads(str(row["metadata_json"] or "{}"))
         return {
             "kind": "component",
             "entity_id": str(row["component_id"]),
@@ -90,13 +100,13 @@ def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
             "status": str(row["status"]),
             "path": str(row["spec_ref"]),
             "owner": str(row["owner"]),
-            "aliases": _json_list(str(row["aliases_json"])),
-            "workstreams": _json_list(str(row["workstreams_json"])),
-            "diagrams": _json_list(str(row["diagrams_json"])),
-            "metadata": metadata if isinstance(metadata, Mapping) else {},
+            "aliases": _store()._json_list(str(row["aliases_json"])),
+            "workstreams": _store()._json_list(str(row["workstreams_json"])),
+            "diagrams": _store()._json_list(str(row["diagrams_json"])),
+            "metadata": metadata if isinstance(metadata, _store().Mapping) else {},
         }
-    if kind in _ENGINEERING_NOTE_KIND_SET:
-        metadata = json.loads(str(row["metadata_json"] or "{}"))
+    if kind in _store()._ENGINEERING_NOTE_KIND_SET:
+        metadata = _store().json.loads(str(row["metadata_json"] or "{}"))
         return {
             "kind": kind,
             "entity_id": str(row["note_id"]),
@@ -106,13 +116,13 @@ def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
             "owner": str(row["owner"]),
             "section": str(row["section"]),
             "summary": str(row["summary"]),
-            "components": _json_list(str(row["components_json"])),
-            "workstreams": _json_list(str(row["workstreams_json"])),
-            "path_refs": _json_list(str(row["path_refs_json"])),
-            "metadata": metadata if isinstance(metadata, Mapping) else {},
+            "components": _store()._json_list(str(row["components_json"])),
+            "workstreams": _store()._json_list(str(row["workstreams_json"])),
+            "path_refs": _store()._json_list(str(row["path_refs_json"])),
+            "metadata": metadata if isinstance(metadata, _store().Mapping) else {},
         }
     if kind == "test":
-        metadata = json.loads(str(row["metadata_json"] or "{}"))
+        metadata = _store().json.loads(str(row["metadata_json"] or "{}"))
         return {
             "kind": "test",
             "entity_id": str(row["test_id"]),
@@ -120,9 +130,9 @@ def _entity_from_row(*, kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
             "status": "",
             "path": str(row["test_path"]),
             "node_id": str(row["node_id"]),
-            "markers": _json_list(str(row["markers_json"])),
-            "target_paths": _json_list(str(row["target_paths_json"])),
-            "metadata": metadata if isinstance(metadata, Mapping) else {},
+            "markers": _store()._json_list(str(row["markers_json"])),
+            "target_paths": _store()._json_list(str(row["target_paths_json"])),
+            "metadata": metadata if isinstance(metadata, _store().Mapping) else {},
         }
     raise ValueError(f"unsupported entity kind: {kind}")
 
@@ -132,7 +142,7 @@ def _entity_by_kind_id(
     kind: str,
     entity_id: str,
 ) -> dict[str, Any] | None:
-    normalized_kind = _normalize_entity_kind(kind)
+    normalized_kind = _store()._normalize_entity_kind(kind)
     token = str(entity_id or "").strip()
     if normalized_kind == "workstream":
         row = connection.execute("SELECT * FROM workstreams WHERE idea_id = ?", (token.upper(),)).fetchone()
@@ -143,7 +153,7 @@ def _entity_by_kind_id(
         if selector_key:
             matches: list[Mapping[str, Any]] = []
             for candidate in connection.execute("SELECT * FROM releases").fetchall():
-                aliases = {item.casefold() for item in _json_list(str(candidate.get("aliases_json", "")))}
+                aliases = {item.casefold() for item in _store()._json_list(str(candidate.get("aliases_json", "")))}
                 candidate_keys = {
                     str(candidate.get("release_id", "")).strip().casefold(),
                     str(candidate.get("version", "")).strip().casefold(),
@@ -164,7 +174,7 @@ def _entity_by_kind_id(
         row = connection.execute("SELECT * FROM diagrams WHERE diagram_id = ?", (token.upper(),)).fetchone()
     elif normalized_kind == "component":
         row = connection.execute("SELECT * FROM components WHERE component_id = ?", (token,)).fetchone()
-    elif normalized_kind in _ENGINEERING_NOTE_KIND_SET:
+    elif normalized_kind in _store()._ENGINEERING_NOTE_KIND_SET:
         row = connection.execute(
             "SELECT * FROM engineering_notes WHERE note_kind = ? AND note_id = ?",
             (normalized_kind, token),
@@ -183,10 +193,10 @@ def _existing_repo_local_file(
     repo_root: Path,
     path_ref: str,
 ) -> str:
-    normalized_path = _normalize_repo_token(path_ref, repo_root=repo_root)
+    normalized_path = _store()._normalize_repo_token(path_ref, repo_root=repo_root)
     if not normalized_path:
         return ""
-    normalized_candidate = Path(normalized_path)
+    normalized_candidate = _store().Path(normalized_path)
     if normalized_candidate.is_absolute():
         return ""
     resolved = (repo_root / normalized_candidate).resolve()
@@ -219,14 +229,14 @@ def _synthesized_local_path_entity(
     return {
         "kind": kind,
         "entity_id": normalized_path,
-        "title": Path(normalized_path).name,
+        "title": _store().Path(normalized_path).name,
         "status": "",
         "path": normalized_path,
     }
 
 
 def _entity_kind_matches(entity: Mapping[str, Any] | None, *, expected_kind: str) -> bool:
-    if not isinstance(entity, Mapping):
+    if not isinstance(entity, _store().Mapping):
         return False
     return str(entity.get("kind", "")).strip() == str(expected_kind).strip()
 
@@ -242,8 +252,8 @@ def _entity_by_path(
         return None
     for candidate in connection.execute("SELECT * FROM workstreams").fetchall():
         if normalized_path in {
-            _normalize_repo_token(str(candidate["source_path"]), repo_root=repo_root),
-            _normalize_repo_token(str(candidate["idea_file"]), repo_root=repo_root),
+            _store()._normalize_repo_token(str(candidate["source_path"]), repo_root=repo_root),
+            _store()._normalize_repo_token(str(candidate["idea_file"]), repo_root=repo_root),
         }:
             return _entity_from_row(kind="workstream", row=candidate)
     for entity_kind, query in (
@@ -256,23 +266,23 @@ def _entity_by_path(
         for candidate in connection.execute(query).fetchall():
             candidate_paths = set()
             if entity_kind == "plan":
-                candidate_paths.add(_normalize_repo_token(str(candidate["plan_path"]), repo_root=repo_root))
-                candidate_paths.add(_normalize_repo_token(str(candidate["source_path"]), repo_root=repo_root))
+                candidate_paths.add(_store()._normalize_repo_token(str(candidate["plan_path"]), repo_root=repo_root))
+                candidate_paths.add(_store()._normalize_repo_token(str(candidate["source_path"]), repo_root=repo_root))
             elif entity_kind == "bug":
-                candidate_paths.add(_normalize_repo_token(str(candidate["link_target"]), repo_root=repo_root))
-                candidate_paths.add(_normalize_repo_token(str(candidate["source_path"]), repo_root=repo_root))
+                candidate_paths.add(_store()._normalize_repo_token(str(candidate["link_target"]), repo_root=repo_root))
+                candidate_paths.add(_store()._normalize_repo_token(str(candidate["source_path"]), repo_root=repo_root))
             elif entity_kind == "diagram":
                 candidate_paths.update(
                     {
-                        _normalize_repo_token(str(candidate["source_mmd"]), repo_root=repo_root),
-                        _normalize_repo_token(str(candidate["source_svg"]), repo_root=repo_root),
-                        _normalize_repo_token(str(candidate["source_png"]), repo_root=repo_root),
+                        _store()._normalize_repo_token(str(candidate["source_mmd"]), repo_root=repo_root),
+                        _store()._normalize_repo_token(str(candidate["source_svg"]), repo_root=repo_root),
+                        _store()._normalize_repo_token(str(candidate["source_png"]), repo_root=repo_root),
                     }
                 )
             elif entity_kind == "component":
-                candidate_paths.add(_normalize_repo_token(str(candidate["spec_ref"]), repo_root=repo_root))
+                candidate_paths.add(_store()._normalize_repo_token(str(candidate["spec_ref"]), repo_root=repo_root))
             elif entity_kind == "test":
-                candidate_paths.add(_normalize_repo_token(str(candidate["test_path"]), repo_root=repo_root))
+                candidate_paths.add(_store()._normalize_repo_token(str(candidate["test_path"]), repo_root=repo_root))
             if normalized_path in candidate_paths:
                 return _entity_from_row(kind=entity_kind, row=candidate)
     note = connection.execute("SELECT * FROM engineering_notes WHERE source_path = ? LIMIT 1", (normalized_path,)).fetchone()
@@ -293,7 +303,7 @@ def _entity_by_path(
         return {
             "kind": target_kind,
             "entity_id": normalized_path,
-            "title": Path(normalized_path).name,
+            "title": _store().Path(normalized_path).name,
             "status": "",
             "path": normalized_path,
         }
@@ -308,7 +318,7 @@ def _unique_entity_by_path_alias(
     raw_ref = str(ref or "").strip()
     if not raw_ref or "/" in raw_ref:
         return None, ""
-    alias = Path(raw_ref).name
+    alias = _store().Path(raw_ref).name
     if not alias or "." not in alias:
         return None, ""
     alias_casefold = alias.casefold()
@@ -316,13 +326,13 @@ def _unique_entity_by_path_alias(
     seen: set[tuple[str, str, str]] = set()
 
     def _path_matches(path_ref: str) -> bool:
-        normalized_path = _normalize_repo_token(path_ref, repo_root=repo_root)
-        return bool(normalized_path) and Path(normalized_path).name.casefold() == alias_casefold
+        normalized_path = _store()._normalize_repo_token(path_ref, repo_root=repo_root)
+        return bool(normalized_path) and _store().Path(normalized_path).name.casefold() == alias_casefold
 
     def _add(entity: Mapping[str, Any] | None) -> None:
-        if not isinstance(entity, Mapping):
+        if not isinstance(entity, _store().Mapping):
             return
-        row = _search_row_from_entity(entity)
+        row = _store()._search_row_from_entity(entity)
         key = (row["kind"], row["entity_id"], row["path"])
         if key in seen:
             return
@@ -369,7 +379,7 @@ def _unique_entity_by_path_alias(
             {
                 "kind": target_kind,
                 "entity_id": target_id,
-                "title": Path(target_id).name,
+                "title": _store().Path(target_id).name,
                 "status": "",
                 "path": target_id,
             }
@@ -389,9 +399,9 @@ def _projection_exact_search_results(
     raw_query = str(query or "").strip()
     if not raw_query:
         return []
-    normalized_query = _normalize_repo_token(raw_query, repo_root=repo_root)
+    normalized_query = _store()._normalize_repo_token(raw_query, repo_root=repo_root)
     lowered = raw_query.casefold()
-    compact_lookup = _context_lookup_key(raw_query)
+    compact_lookup = _store()._context_lookup_key(raw_query)
     allowed = {str(kind).strip().lower() for kind in kinds if str(kind).strip()}
     candidate_kinds = tuple(allowed) if allowed else (
         "workstream",
@@ -400,16 +410,16 @@ def _projection_exact_search_results(
         "bug",
         "diagram",
         "component",
-        *_ENGINEERING_NOTE_KINDS,
+        *_store()._ENGINEERING_NOTE_KINDS,
         "test",
     )
     results: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
 
     def _add(entity: Mapping[str, Any] | None) -> None:
-        if not isinstance(entity, Mapping):
+        if not isinstance(entity, _store().Mapping):
             return
-        row = _search_row_from_entity(entity)
+        row = _store()._search_row_from_entity(entity)
         key = (row["kind"], row["entity_id"], row["path"])
         if not row["kind"] or (allowed and row["kind"] not in allowed) or key in seen:
             return
@@ -429,19 +439,19 @@ def _projection_exact_search_results(
             return results[: max(1, int(limit))]
 
     for row in connection.execute("SELECT * FROM workstreams").fetchall():
-        aliases = _workstream_lookup_aliases(dict(row), repo_root=repo_root)
+        aliases = _store()._workstream_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             _add(_entity_from_row(kind="workstream", row=row))
             break
 
     for row in connection.execute("SELECT * FROM plans").fetchall():
-        aliases = _plan_lookup_aliases(dict(row), repo_root=repo_root)
+        aliases = _store()._plan_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             _add(_entity_from_row(kind="plan", row=row))
             break
 
     for row in connection.execute("SELECT * FROM components").fetchall():
-        aliases = _component_lookup_aliases(dict(row), repo_root=repo_root)
+        aliases = _store()._component_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             _add(_entity_from_row(kind="component", row=row))
             break
@@ -462,8 +472,8 @@ def _projection_exact_search_results(
         row = connection.execute(sql, (token,)).fetchone()
         if row is not None:
             _add(_entity_from_row(kind=entity_kind, row=row))
-    if not allowed or any(kind in allowed for kind in _ENGINEERING_NOTE_KIND_SET):
-        for note_kind in _ENGINEERING_NOTE_KINDS:
+    if not allowed or any(kind in allowed for kind in _store()._ENGINEERING_NOTE_KIND_SET):
+        for note_kind in _store()._ENGINEERING_NOTE_KINDS:
             if allowed and note_kind not in allowed:
                 continue
             row = connection.execute(
@@ -485,26 +495,26 @@ def _repo_scan_candidate_search_results(
 ) -> list[dict[str, Any]]:
     allowed = {str(kind).strip().lower() for kind in kinds if str(kind).strip()}
     lowered_query = str(query or "").strip().casefold()
-    query_tokens = {token.casefold() for token in re.findall(r"[A-Za-z0-9_./:-]+", str(query or "")) if token}
+    query_tokens = {token.casefold() for token in _store().re.findall(r"[A-Za-z0-9_./:-]+", str(query or "")) if token}
     results: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
     for rank, hit in enumerate(fallback_scan.get("results", []), start=1):
-        if not isinstance(hit, Mapping):
+        if not isinstance(hit, _store().Mapping):
             continue
-        path_ref = _normalize_repo_token(str(hit.get("path", "")).strip(), repo_root=repo_root)
+        path_ref = _store()._normalize_repo_token(str(hit.get("path", "")).strip(), repo_root=repo_root)
         if not path_ref:
             continue
         entity = _entity_by_path(connection, repo_root=repo_root, path_ref=path_ref)
         if entity is None:
-            if bool(_path_signal_profile(path_ref).get("shared")):
+            if bool(_store()._path_signal_profile(path_ref).get("shared")):
                 continue
-            inferred_kind = _repo_scan_inferred_kind(path_ref)
+            inferred_kind = _store()._repo_scan_inferred_kind(path_ref)
             if not inferred_kind:
                 continue
             entity = {
                 "kind": inferred_kind,
                 "entity_id": path_ref,
-                "title": Path(path_ref).name,
+                "title": _store().Path(path_ref).name,
                 "path": path_ref,
             }
         title = str(entity.get("title", "")).strip().casefold()
@@ -521,7 +531,7 @@ def _repo_scan_candidate_search_results(
                     if token and any(token in text for text in (title, entity_id, path_text) if text)
                 )
             ) * 4.0
-        row = _search_row_from_entity(
+        row = _store()._search_row_from_entity(
             entity,
             score=float(max(1, int(limit) * 3) - rank + 1) + lexical_bonus,
         )
@@ -546,11 +556,11 @@ def _resolve_context_entity(
     ref: str,
     kind: str | None,
 ) -> tuple[dict[str, Any] | None, list[dict[str, Any]], dict[str, Any]]:
-    normalized_kind = _normalize_entity_kind(kind)
+    normalized_kind = _store()._normalize_entity_kind(kind)
     raw_ref = str(ref or "").strip()
     if not raw_ref:
         return None, [], {"resolution_mode": "none"}
-    normalized_ref = _normalize_repo_token(raw_ref, repo_root=repo_root)
+    normalized_ref = _store()._normalize_repo_token(raw_ref, repo_root=repo_root)
     exact_repo_local_path = _existing_repo_local_file(repo_root=repo_root, path_ref=raw_ref)
 
     def _fetch_by_id(entity_kind: str, entity_id: str) -> dict[str, Any] | None:
@@ -565,7 +575,7 @@ def _resolve_context_entity(
         "bug",
         "diagram",
         "component",
-        *_ENGINEERING_NOTE_KIND_SET,
+        *_store()._ENGINEERING_NOTE_KIND_SET,
         "test",
     }:
         entity = _fetch_by_id(normalized_kind, raw_ref if normalized_kind != "workstream" else raw_ref.upper())
@@ -584,11 +594,11 @@ def _resolve_context_entity(
             entity = None
         return entity, [], {"resolution_mode": "path_exact" if entity is not None else "none"}
 
-    if _WORKSTREAM_ID_RE.fullmatch(raw_ref.upper()):
+    if _store()._WORKSTREAM_ID_RE.fullmatch(raw_ref.upper()):
         entity = _fetch_by_id("workstream", raw_ref.upper())
         if entity is not None:
             return entity, [], {"resolution_mode": "workstream_id"}
-    if _DIAGRAM_ID_RE.fullmatch(raw_ref.upper()):
+    if _store()._DIAGRAM_ID_RE.fullmatch(raw_ref.upper()):
         entity = _fetch_by_id("diagram", raw_ref.upper())
         if entity is not None:
             return entity, [], {"resolution_mode": "diagram_id"}
@@ -609,30 +619,30 @@ def _resolve_context_entity(
         return entity, [], {"resolution_mode": path_alias_mode}
 
     lowered = raw_ref.casefold()
-    compact_lookup = _context_lookup_key(raw_ref)
+    compact_lookup = _store()._context_lookup_key(raw_ref)
     for row in connection.execute("SELECT * FROM releases").fetchall():
-        aliases = _release_lookup_aliases(dict(row), repo_root=repo_root)
+        aliases = _store()._release_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             return _entity_from_row(kind="release", row=row), [], {"resolution_mode": "release_alias"}
 
     for row in connection.execute("SELECT * FROM workstreams").fetchall():
-        aliases = _workstream_lookup_aliases(dict(row), repo_root=repo_root)
+        aliases = _store()._workstream_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             return _entity_from_row(kind="workstream", row=row), [], {"resolution_mode": "workstream_alias"}
 
     component_rows = connection.execute("SELECT * FROM components").fetchall()
     for row in component_rows:
-        aliases = _component_lookup_aliases(dict(row), repo_root=repo_root)
+        aliases = _store()._component_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             return _entity_from_row(kind="component", row=row), [], {"resolution_mode": "component_alias"}
 
     for row in connection.execute("SELECT * FROM plans").fetchall():
-        aliases = _plan_lookup_aliases(dict(row), repo_root=repo_root)
+        aliases = _store()._plan_lookup_aliases(dict(row), repo_root=repo_root)
         if lowered in aliases or (compact_lookup and compact_lookup in aliases):
             return _entity_from_row(kind="plan", row=row), [], {"resolution_mode": "plan_alias"}
 
-    search_payload = search_entities_payload(repo_root=repo_root, query=raw_ref, limit=5, runtime_mode="auto")
-    matches = [dict(row) for row in search_payload.get("results", []) if isinstance(row, Mapping)]
+    search_payload = _store().search_entities_payload(repo_root=repo_root, query=raw_ref, limit=5, runtime_mode="auto")
+    matches = [dict(row) for row in search_payload.get("results", []) if isinstance(row, _store().Mapping)]
     retrieval_mode = str(search_payload.get("retrieval_mode", "")).strip()
     if matches and retrieval_mode == "exact":
         top = matches[0]
@@ -658,7 +668,7 @@ def _resolve_context_entity(
         "full_scan_recommended": bool(search_payload.get("full_scan_recommended")),
         "full_scan_reason": str(search_payload.get("full_scan_reason", "")).strip(),
         "fallback_scan": dict(search_payload.get("fallback_scan", {}))
-        if isinstance(search_payload.get("fallback_scan"), Mapping)
+        if isinstance(search_payload.get("fallback_scan"), _store().Mapping)
         else {},
     }
 
@@ -716,14 +726,14 @@ def _related_entities(
     def _add_kind_id(kind: str, entity_id: str) -> None:
         resolved = _entity_by_kind_id(connection, kind=kind, entity_id=entity_id)
         if resolved is not None:
-            _add(_summarize_entity(resolved))
+            _add(_store()._summarize_entity(resolved))
             return
         if kind in {"doc", "runbook", "code"}:
             _add(
                 {
                     "kind": kind,
                     "entity_id": entity_id,
-                    "title": Path(entity_id).name,
+                    "title": _store().Path(entity_id).name,
                     "path": entity_id,
                     "status": "",
                 }
@@ -743,8 +753,8 @@ def _related_entities(
         if promoted_to_plan:
             _add_kind_id("plan", promoted_to_plan)
         for row in connection.execute("SELECT * FROM components").fetchall():
-            if workstream_id in set(_json_list(str(row["workstreams_json"]))):
-                _add(_summarize_entity(_entity_from_row(kind="component", row=row)))
+            if workstream_id in set(_store()._json_list(str(row["workstreams_json"]))):
+                _add(_store()._summarize_entity(_entity_from_row(kind="component", row=row)))
     elif kind == "component":
         for workstream_id in entity.get("workstreams", []) if isinstance(entity.get("workstreams"), list) else []:
             _add_kind_id("workstream", str(workstream_id))
@@ -753,11 +763,11 @@ def _related_entities(
     elif kind == "diagram":
         diagram_id = str(entity.get("entity_id", "")).strip()
         for row in connection.execute("SELECT * FROM components").fetchall():
-            if diagram_id in set(_json_list(str(row["diagrams_json"]))):
-                _add(_summarize_entity(_entity_from_row(kind="component", row=row)))
+            if diagram_id in set(_store()._json_list(str(row["diagrams_json"]))):
+                _add(_store()._summarize_entity(_entity_from_row(kind="component", row=row)))
     elif kind == "plan":
         backlog = str(entity.get("backlog", "")).strip().strip("`")
-        if _WORKSTREAM_ID_RE.fullmatch(backlog):
+        if _store()._WORKSTREAM_ID_RE.fullmatch(backlog):
             _add_kind_id("workstream", backlog)
     elif kind == "bug":
         for component_id in entity.get("components", []) if isinstance(entity.get("components"), list) else []:
@@ -805,18 +815,18 @@ def _recent_context_events(
         """
     ).fetchall()
     results: list[dict[str, Any]] = []
-    normalized_paths = {Path(item).as_posix() for item in artifact_paths if item}
+    normalized_paths = {_store().Path(item).as_posix() for item in artifact_paths if item}
     for row in rows:
-        event_workstreams = set(_json_list(str(row["workstreams_json"])))
-        event_components = set(_json_list(str(row["components_json"])))
-        event_artifacts = {Path(item).as_posix() for item in _json_list(str(row["artifacts_json"]))}
+        event_workstreams = set(_store()._json_list(str(row["workstreams_json"])))
+        event_components = set(_store()._json_list(str(row["components_json"])))
+        event_artifacts = {_store().Path(item).as_posix() for item in _store()._json_list(str(row["artifacts_json"]))}
         if not (
             event_workstreams.intersection(workstream_ids)
             or event_components.intersection(component_ids)
             or event_artifacts.intersection(normalized_paths)
         ):
             continue
-        metadata = json.loads(str(row["metadata_json"] or "{}"))
+        metadata = _store().json.loads(str(row["metadata_json"] or "{}"))
         results.append(
             {
                 "event_id": str(row["event_id"]),
@@ -826,7 +836,7 @@ def _recent_context_events(
                 "workstreams": sorted(event_workstreams),
                 "components": sorted(event_components),
                 "artifacts": sorted(event_artifacts),
-                "metadata": metadata if isinstance(metadata, Mapping) else {},
+                "metadata": metadata if isinstance(metadata, _store().Mapping) else {},
             }
         )
         if len(results) >= max(1, int(event_limit)):
@@ -857,8 +867,8 @@ def _delivery_context_rows(
         ).fetchone()
         if payload is None:
             continue
-        decoded = json.loads(str(payload["payload_json"]))
-        if isinstance(decoded, Mapping):
+        decoded = _store().json.loads(str(payload["payload_json"]))
+        if isinstance(decoded, _store().Mapping):
             rows.append(dict(decoded))
     return rows
 
@@ -873,11 +883,11 @@ def load_context_dossier(
 ) -> dict[str, Any]:
     """Resolve one entity or path into a deterministic repo-grounded context dossier."""
 
-    root = Path(repo_root).resolve()
-    started_at = time.perf_counter()
+    root = _store().Path(repo_root).resolve()
+    started_at = _store().time.perf_counter()
     runtime_ready = _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="context", scope="reasoning")
     if not runtime_ready:
-        fallback_scan = _full_scan_guidance(
+        fallback_scan = _store()._full_scan_guidance(
             repo_root=root,
             reason="runtime_unavailable",
             query=str(ref or "").strip(),
@@ -886,7 +896,7 @@ def load_context_dossier(
         )
         return {
             "query": str(ref or "").strip(),
-            "requested_kind": _normalize_entity_kind(kind),
+            "requested_kind": _store()._normalize_entity_kind(kind),
             "resolved": False,
             "matches": [],
             "lookup": {
@@ -910,20 +920,20 @@ def load_context_dossier(
             matches = [
                 dict(row)
                 for row in matches
-                if isinstance(row, Mapping) and not _odylith_runtime_entity_suppressed(repo_root=root, entity=row)
+                if isinstance(row, _store().Mapping) and not _store()._odylith_runtime_entity_suppressed(repo_root=root, entity=row)
             ]
-            if isinstance(entity, Mapping) and _odylith_runtime_entity_suppressed(repo_root=root, entity=entity):
+            if isinstance(entity, _store().Mapping) and _store()._odylith_runtime_entity_suppressed(repo_root=root, entity=entity):
                 entity = None
                 lookup = {
                     **dict(lookup),
                     "resolution_mode": "odylith_disabled",
                     "runtime_ready": True,
-                    "odylith_switch": _odylith_switch_snapshot(repo_root=root),
+                    "odylith_switch": _store()._odylith_switch_snapshot(repo_root=root),
                 }
-            if entity is None and _odylith_query_targets_disabled(repo_root=root, query=str(ref or "").strip()):
+            if entity is None and _store()._odylith_query_targets_disabled(repo_root=root, query=str(ref or "").strip()):
                 return {
                     "query": str(ref or "").strip(),
-                    "requested_kind": _normalize_entity_kind(kind),
+                    "requested_kind": _store()._normalize_entity_kind(kind),
                     "resolved": False,
                     "matches": [],
                     "lookup": dict(lookup),
@@ -931,8 +941,8 @@ def load_context_dossier(
                     "full_scan_reason": "odylith_disabled",
                     "fallback_scan": {
                         "performed": False,
-                        "terms": _full_scan_terms(repo_root=root, query=str(ref or "").strip()),
-                        "roots": _available_full_scan_roots(repo_root=root),
+                        "terms": _store()._full_scan_terms(repo_root=root, query=str(ref or "").strip()),
+                        "roots": _store()._available_full_scan_roots(repo_root=root),
                         "commands": [],
                         "results": [],
                         "reason": "odylith_disabled",
@@ -946,8 +956,8 @@ def load_context_dossier(
             )
             fallback_scan = (
                 dict(lookup.get("fallback_scan", {}))
-                if isinstance(lookup.get("fallback_scan"), Mapping)
-                else _full_scan_guidance(
+                if isinstance(lookup.get("fallback_scan"), _store().Mapping)
+                else _store()._full_scan_guidance(
                     repo_root=root,
                     reason=full_scan_reason,
                     query=str(ref or "").strip(),
@@ -957,7 +967,7 @@ def load_context_dossier(
             )
             return {
                 "query": str(ref or "").strip(),
-                "requested_kind": _normalize_entity_kind(kind),
+                "requested_kind": _store()._normalize_entity_kind(kind),
                 "resolved": False,
                 "matches": matches,
                 "lookup": dict(lookup),
@@ -977,7 +987,7 @@ def load_context_dossier(
         return {
             **proof_state_runtime.resolve_scope_collection_proof_state(delivery_scopes),
             "query": str(ref or "").strip(),
-            "requested_kind": _normalize_entity_kind(kind),
+            "requested_kind": _store()._normalize_entity_kind(kind),
             "resolved": True,
             "entity": entity,
             "matches": matches,
@@ -986,8 +996,8 @@ def load_context_dossier(
             "full_scan_reason": "",
             "fallback_scan": {
                 "performed": False,
-                "terms": _full_scan_terms(repo_root=root, query=str(ref or "").strip()),
-                "roots": _available_full_scan_roots(repo_root=root),
+                "terms": _store()._full_scan_terms(repo_root=root, query=str(ref or "").strip()),
+                "roots": _store()._available_full_scan_roots(repo_root=root),
                 "commands": [],
                 "results": [],
                 "reason": "",
@@ -1010,9 +1020,9 @@ def load_context_dossier(
             repo_root=root,
             category="reasoning",
             operation="context",
-            duration_ms=(time.perf_counter() - started_at) * 1000.0,
+            duration_ms=(_store().time.perf_counter() - started_at) * 1000.0,
             metadata={
                 "query": str(ref or "").strip(),
-                "requested_kind": _normalize_entity_kind(kind),
+                "requested_kind": _store()._normalize_entity_kind(kind),
             },
         )

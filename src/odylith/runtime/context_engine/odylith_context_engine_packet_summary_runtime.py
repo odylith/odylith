@@ -6,18 +6,23 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.execution_engine import runtime_surface_governance
+from odylith.runtime.character import runtime as character_runtime
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bootstrap_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_runtime_support
 from odylith.runtime.context_engine import packet_quality_codec
-from odylith.runtime.context_engine import odylith_context_engine_packet_runtime_bindings
-from odylith.runtime.execution_engine import runtime_surface_governance
-from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.context_engine import tooling_context_routing as routing
 from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.governance import proof_state as proof_state_runtime
 
-def bind(host: Any) -> None:
-    odylith_context_engine_packet_runtime_bindings.bind_packet_runtime(globals(), host)
+_decode_compact_selected_counts = odylith_context_engine_packet_runtime_support.decode_compact_selected_counts
+_normalized_string_list = odylith_context_engine_packet_runtime_support.normalized_string_list
+_payload_packet_kind = odylith_context_engine_packet_runtime_support.payload_packet_kind
+_payload_workstream_hint = odylith_context_engine_packet_runtime_support.payload_workstream_hint
+_repo_scan_degraded_reason = odylith_context_engine_packet_runtime_support.repo_scan_degraded_reason
+
 
 def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
     packet_metrics = dict(payload.get("packet_metrics", {})) if isinstance(payload.get("packet_metrics"), Mapping) else {}

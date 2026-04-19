@@ -11,6 +11,9 @@
 ## Hard Bans
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
   private host symbols is banned.
+- Do not replace `_host()` theater with `bind(host)`, `_HOST_BIND_NAMES`,
+  generic `bind_*_runtime(globals(), host)` injection, or bind lists padded
+  with scratch locals and loop temporaries.
 - Do not replace fake modularization with transitional seam sludge. A giant
   function that begins by aliasing a wall of helpers into locals is still
   poor ownership, even if the `_host()` shim is gone.

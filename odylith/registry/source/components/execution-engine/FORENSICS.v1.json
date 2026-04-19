@@ -11,10 +11,10 @@
     "empty_reasons": [],
     "explicit_event_count": 56,
     "mapped_workstream_evidence_count": 55,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 57
+    "timeline_event_count": 56
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -22,22 +22,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/runtime/execution_engine/runtime_surface_governance.py"
-      ],
-      "confidence": "high",
-      "event_index": 263,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "execution-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-      "ts_iso": "2026-04-18T16:56:56-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",

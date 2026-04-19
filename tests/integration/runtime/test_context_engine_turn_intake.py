@@ -8,7 +8,6 @@ from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import turn_context_runtime
 
 session_packet_runtime.bind(store.__dict__)
-surface_runtime.bind(store.__dict__)
 
 
 def _minimal_impact_report(**kwargs) -> dict[str, object]:  # noqa: ANN001

@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+def _store():
+    from odylith.runtime.context_engine import odylith_context_engine_store as store
+
+    return store
+
+
 import ast
 import contextlib
 import datetime as dt
@@ -22,126 +28,39 @@ from typing import Callable
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
+from odylith.runtime.common.value_coercion import normalize_string_list
+from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_projection_backlog_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_entity_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_registry_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+from odylith.runtime.context_engine import tooling_guidance_catalog
 
 _MAKE_TARGET_RE = re.compile(r"^([A-Za-z0-9][A-Za-z0-9_.-]*):(?:\s|$)")
 
 
-def bind(host: Any) -> None:
-    if isinstance(host, dict):
-        for name in _HOST_BIND_NAMES:
-            if name in host:
-                globals()[name] = host[name]
-    else:
-        for name in _HOST_BIND_NAMES:
-            if hasattr(host, name):
-                globals()[name] = getattr(host, name)
-    odylith_context_engine_projection_search_runtime.bind(globals())
-    odylith_context_engine_projection_entity_runtime.bind(globals())
-    odylith_context_engine_projection_backlog_runtime.bind(globals())
-    odylith_context_engine_projection_registry_runtime.bind(globals())
+class _StoreAttrProxy:
+    def __init__(self, attr_name: str) -> None:
+        self._attr_name = str(attr_name).strip()
 
+    def _value(self) -> object:
+        return getattr(_store(), self._attr_name)
 
-_HOST_BIND_NAMES = (
-    'SCHEMA_VERSION',
-    '_BUG_CANONICAL_STATUS_LABELS',
-    '_BUG_CORE_FIELD_ORDER_SET',
-    '_BUG_CRITICAL_SEVERITIES',
-    '_BUG_DETAIL_SECTION_ORDER',
-    '_BUG_INTELLIGENCE_ALL_FIELDS',
-    '_BUG_INTELLIGENCE_REQUIRED_CRITICAL_FIELDS',
-    '_BUG_METADATA_LINE_RE',
-    '_BUG_TERMINAL_STATUSES',
-    '_CONTRACT_PATH_PREFIXES',
-    '_CONTRACT_REF_RE',
-    '_DIAGRAM_ID_RE',
-    '_ENGINEERING_CORE_PATHS',
-    '_ENGINEERING_NOTE_KINDS',
-    '_ENGINEERING_NOTE_KIND_SET',
-    '_ENTITY_KIND_ALIASES',
-    '_FULL_SCAN_EXCLUDED_GLOBS',
-    '_FULL_SCAN_ROOTS',
-    '_GUIDANCE_CHUNK_MANIFEST_PATH',
-    '_GUIDANCE_CHUNK_ROOT',
-    '_HEADER_RE',
-    '_MARKDOWN_CODE_REF_RE',
-    '_MISS_RECOVERY_ALLOWED_KINDS',
-    '_MISS_RECOVERY_DOC_LIMIT',
-    '_MISS_RECOVERY_GENERIC_QUERY_TOKENS',
-    '_MISS_RECOVERY_KIND_PRIORITY',
-    '_MISS_RECOVERY_RESULT_LIMIT',
-    '_MISS_RECOVERY_TEST_LIMIT',
-    '_NOTE_TITLE_WORDS',
-    '_PROCESS_ARCHITECTURE_PACKET_CACHE',
-    '_PROCESS_MISS_RECOVERY_INDEX_CACHE',
-    '_PROCESS_OPTIMIZATION_SNAPSHOT_CACHE',
-    '_PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE',
-    '_PROCESS_PATH_SCOPE_CACHE',
-    '_PROCESS_PATH_SIGNAL_PROFILE_CACHE',
-    '_PROCESS_PROJECTION_CONNECTION_CACHE',
-    '_PROCESS_PROJECTION_ROWS_CACHE',
-    '_PROCESS_WARM_CACHE',
-    '_PROCESS_WARM_CACHE_FINGERPRINTS',
-    '_PROCESS_WARM_CACHE_TTL_SECONDS',
-    '_PYTEST_LASTFAILED_PATH',
-    '_PYTHON_GRAPH_ROOTS',
-    '_ProjectionCursor',
-    '_RAW_PATH_TOKEN_RE',
-    '_SECTION_NOTE_SOURCES',
-    '_TEST_HISTORY_REPORT_GLOBS',
-    '_WORKSTREAM_ID_RE',
-    '_WORKSTREAM_TOKEN_RE',
-    '_apply_odylith_component_index_ablation',
-    '_apply_odylith_registry_snapshot_ablation',
-    '_compact_test_row_for_packet',
-    '_dedupe_strings',
-    '_env_truthy',
-    '_filter_odylith_search_results',
-    '_normalize_bug_field_key',
-    '_normalize_bug_field_name',
-    '_normalized_string_list',
-    '_odylith_ablation_active',
-    '_odylith_query_targets_disabled',
-    '_odylith_runtime_entity_suppressed',
-    '_odylith_switch_snapshot',
-    '_path_signal_profile',
-    '_path_touches_watch',
-    '_projection_names_for_scope',
-    '_utc_now',
-    'a',
-    'backlog_contract',
-    'bootstraps_root',
-    'canonical_truth_token',
-    'component_registry',
-    'delivery_intelligence_engine',
-    'exc',
-    'f',
-    'governance',
-    'odylith_architecture_mode',
-    'odylith_context_cache',
-    'odylith_context_engine_code_graph_runtime',
-    'odylith_context_engine_engineering_notes_runtime',
-    'odylith_context_engine_projection_compiler_runtime',
-    'odylith_context_engine_projection_runtime',
-    'odylith_control_state',
-    'odylith_evaluation_ledger',
-    'odylith_memory_backend',
-    'odylith_projection_snapshot',
-    'odylith_remote_retrieval',
-    'projection_contract_version',
-    'projection_snapshot_path',
-    'read_runtime_state',
-    'record_runtime_timing',
-    'surface_root_path',
-    'tooling_guidance_catalog',
-    'truth_root_path',
-    'v',
-)
+    def __contains__(self, item: object) -> bool:
+        return item in self._value()
 
+    def __iter__(self):
+        return iter(self._value())
+
+    def __len__(self) -> int:
+        return len(self._value())
+
+    def __bool__(self) -> bool:
+        return bool(self._value())
+
+    def __getattr__(self, name: str) -> object:
+        return getattr(self._value(), name)
 
 
 _ProjectionConnection = odylith_context_engine_projection_search_runtime._ProjectionConnection
@@ -280,6 +199,11 @@ _load_guidance_chunk_notes = odylith_context_engine_projection_search_runtime._l
 
 _load_runbook_notes = odylith_context_engine_projection_search_runtime._load_runbook_notes
 
+_ENGINEERING_NOTE_KIND_SET = _StoreAttrProxy("_ENGINEERING_NOTE_KIND_SET")
+_SECTION_NOTE_SOURCES = _StoreAttrProxy("_SECTION_NOTE_SOURCES")
+_WORKSTREAM_ID_RE = _StoreAttrProxy("_WORKSTREAM_ID_RE")
+_dedupe_strings = normalize_string_list
+
 _projection_state_row = odylith_context_engine_projection_search_runtime._projection_state_row
 
 _empty_projection_tables = odylith_context_engine_projection_search_runtime._empty_projection_tables
@@ -348,14 +272,14 @@ _collect_retrieval_miss_recovery = odylith_context_engine_projection_search_runt
 
 def _normalize_entity_kind(kind: str | None) -> str:
     token = str(kind or "").strip().lower()
-    return _ENTITY_KIND_ALIASES.get(token, token)
+    return _store()._ENTITY_KIND_ALIASES.get(token, token)
 
 
 def _normalize_repo_token(token: str, *, repo_root: Path) -> str:
     raw = str(token or "").strip().replace("\\", "/")
     if not raw:
         return ""
-    embedded_match = _RAW_PATH_TOKEN_RE.search(raw)
+    embedded_match = _store()._RAW_PATH_TOKEN_RE.search(raw)
     if embedded_match is not None:
         raw = str(embedded_match.group(1) or "").strip().replace("\\", "/")
         if not raw:
@@ -364,13 +288,13 @@ def _normalize_repo_token(token: str, *, repo_root: Path) -> str:
     if path.is_absolute():
         try:
             normalized = path.resolve().relative_to(repo_root).as_posix()
-            return canonical_truth_token(_resolve_moved_plan_token(normalized, repo_root=repo_root), repo_root=repo_root)
+            return _store().canonical_truth_token(_resolve_moved_plan_token(normalized, repo_root=repo_root), repo_root=repo_root)
         except ValueError:
             return path.resolve().as_posix()
     while raw.startswith("./"):
         raw = raw[2:]
     normalized = Path(raw).as_posix().strip("/")
-    return canonical_truth_token(_resolve_moved_plan_token(normalized, repo_root=repo_root), repo_root=repo_root)
+    return _store().canonical_truth_token(_resolve_moved_plan_token(normalized, repo_root=repo_root), repo_root=repo_root)
 
 
 def _resolve_moved_plan_token(normalized: str, *, repo_root: Path) -> str:
@@ -394,7 +318,7 @@ def _resolve_moved_plan_token(normalized: str, *, repo_root: Path) -> str:
 
 def _available_full_scan_roots(*, repo_root: Path) -> list[str]:
     """Return the highest-signal source roots for raw repo discovery fallback."""
-    roots = [token for token in _FULL_SCAN_ROOTS if (repo_root / token).exists()]
+    roots = [token for token in _store()._FULL_SCAN_ROOTS if (repo_root / token).exists()]
     return roots or ["."]
 
 
@@ -414,7 +338,7 @@ def _full_scan_terms(*, repo_root: Path, query: str = "", changed_paths: Sequenc
             stripped = str(token or "").strip()
             if len(stripped) >= 3:
                 terms.append(stripped)
-    return _dedupe_strings(terms)[:3]
+    return _store()._dedupe_strings(terms)[:3]
 
 
 def _full_scan_reason_message(reason: str) -> str:
@@ -457,7 +381,7 @@ def _full_scan_commands(*, repo_root: Path, terms: Sequence[str]) -> list[str]:
         "--fixed-strings",
         "--ignore-case",
     ]
-    for glob in _FULL_SCAN_EXCLUDED_GLOBS:
+    for glob in _store()._FULL_SCAN_EXCLUDED_GLOBS:
         command.extend(["--glob", glob])
     for term in normalized_terms:
         command.extend(["-e", term])
@@ -495,7 +419,7 @@ def _run_full_scan(
         "2",
         "--json",
     ]
-    for glob in _FULL_SCAN_EXCLUDED_GLOBS:
+    for glob in _store()._FULL_SCAN_EXCLUDED_GLOBS:
         command.extend(["--glob", glob])
     for term in normalized_terms:
         command.extend(["-e", term])
@@ -708,21 +632,21 @@ def _parse_component_tokens(raw: str) -> list[str]:
 
 
 def _load_schema_contract_notes(*, repo_root: Path, component_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return odylith_context_engine_engineering_notes_runtime._load_schema_contract_notes(
+    return _store().odylith_context_engine_engineering_notes_runtime._load_schema_contract_notes(
         repo_root=repo_root,
         component_rows=component_rows,
     )
 
 
 def _load_make_target_notes(*, repo_root: Path, component_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return odylith_context_engine_engineering_notes_runtime._load_make_target_notes(
+    return _store().odylith_context_engine_engineering_notes_runtime._load_make_target_notes(
         repo_root=repo_root,
         component_rows=component_rows,
     )
 
 
 def _load_bug_learning_notes(*, repo_root: Path, component_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return odylith_context_engine_engineering_notes_runtime._load_bug_learning_notes(
+    return _store().odylith_context_engine_engineering_notes_runtime._load_bug_learning_notes(
         repo_root=repo_root,
         component_rows=component_rows,
     )
@@ -734,7 +658,7 @@ def _load_engineering_notes(
     connection: Any | None = None,
     component_rows: Sequence[Mapping[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
-    return odylith_context_engine_engineering_notes_runtime._load_engineering_notes(
+    return _store().odylith_context_engine_engineering_notes_runtime._load_engineering_notes(
         repo_root=repo_root,
         connection=connection,
         component_rows=component_rows,
@@ -742,7 +666,7 @@ def _load_engineering_notes(
 
 
 def _python_module_name(*, rel_path: str, source_root: str, module_root: str) -> str:
-    return odylith_context_engine_code_graph_runtime._python_module_name(
+    return _store().odylith_context_engine_code_graph_runtime._python_module_name(
         rel_path=rel_path,
         source_root=source_root,
         module_root=module_root,
@@ -750,7 +674,7 @@ def _python_module_name(*, rel_path: str, source_root: str, module_root: str) ->
 
 
 def _collect_python_module_index(repo_root: Path) -> dict[str, str]:
-    return odylith_context_engine_code_graph_runtime._collect_python_module_index(repo_root)
+    return _store().odylith_context_engine_code_graph_runtime._collect_python_module_index(repo_root)
 
 
 def _resolve_from_import(
@@ -762,7 +686,7 @@ def _resolve_from_import(
     alias_name: str,
     module_index: Mapping[str, str],
 ) -> str:
-    return odylith_context_engine_code_graph_runtime._resolve_from_import(
+    return _store().odylith_context_engine_code_graph_runtime._resolve_from_import(
         current_module=current_module,
         is_package=is_package,
         module=module,
@@ -773,7 +697,7 @@ def _resolve_from_import(
 
 
 def _extract_marker_names(decorators: Sequence[ast.expr]) -> list[str]:
-    return odylith_context_engine_code_graph_runtime._extract_marker_names(decorators)
+    return _store().odylith_context_engine_code_graph_runtime._extract_marker_names(decorators)
 
 
 def _parse_python_artifact(
@@ -783,7 +707,7 @@ def _parse_python_artifact(
     module_name: str,
     module_index: Mapping[str, str],
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    return odylith_context_engine_code_graph_runtime._parse_python_artifact(
+    return _store().odylith_context_engine_code_graph_runtime._parse_python_artifact(
         repo_root=repo_root,
         rel_path=rel_path,
         module_name=module_name,
@@ -797,7 +721,7 @@ def _module_command_to_path(
     module_token: str,
     module_index: Mapping[str, str],
 ) -> str:
-    return odylith_context_engine_code_graph_runtime._module_command_to_path(
+    return _store().odylith_context_engine_code_graph_runtime._module_command_to_path(
         repo_root=repo_root,
         module_token=module_token,
         module_index=module_index,
@@ -805,7 +729,7 @@ def _module_command_to_path(
 
 
 def _relation_for_target_path(target_path: str) -> str:
-    return odylith_context_engine_code_graph_runtime._relation_for_target_path(target_path)
+    return _store().odylith_context_engine_code_graph_runtime._relation_for_target_path(target_path)
 
 
 def _load_make_artifacts(
@@ -813,26 +737,26 @@ def _load_make_artifacts(
     repo_root: Path,
     module_index: Mapping[str, str],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    return odylith_context_engine_code_graph_runtime._load_make_artifacts(
+    return _store().odylith_context_engine_code_graph_runtime._load_make_artifacts(
         repo_root=repo_root,
         module_index=module_index,
     )
 
 
 def _doc_source_paths(*, repo_root: Path) -> list[Path]:
-    return odylith_context_engine_code_graph_runtime._doc_source_paths(repo_root=repo_root)
+    return _store().odylith_context_engine_code_graph_runtime._doc_source_paths(repo_root=repo_root)
 
 
 def _load_doc_relationship_edges(*, repo_root: Path) -> list[dict[str, Any]]:
-    return odylith_context_engine_code_graph_runtime._load_doc_relationship_edges(repo_root=repo_root)
+    return _store().odylith_context_engine_code_graph_runtime._load_doc_relationship_edges(repo_root=repo_root)
 
 
 def _load_traceability_doc_code_edges_from_rows(trace_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return odylith_context_engine_code_graph_runtime._load_traceability_doc_code_edges_from_rows(trace_rows)
+    return _store().odylith_context_engine_code_graph_runtime._load_traceability_doc_code_edges_from_rows(trace_rows)
 
 
 def _load_traceability_doc_code_edges(connection: Any) -> list[dict[str, Any]]:
-    return odylith_context_engine_code_graph_runtime._load_traceability_doc_code_edges(connection)
+    return _store().odylith_context_engine_code_graph_runtime._load_traceability_doc_code_edges(connection)
 
 
 def _merge_edge_metadata_values(*values: Any) -> list[Any]:
@@ -849,7 +773,7 @@ def _merge_edge_metadata_values(*values: Any) -> list[Any]:
         for candidate in candidates:
             if candidate in (None, "", [], {}):
                 continue
-            token = odylith_context_cache.fingerprint_payload(candidate)
+            token = _store().odylith_context_cache.fingerprint_payload(candidate)
             if token in seen:
                 continue
             seen.add(token)
@@ -908,7 +832,7 @@ def _load_code_graph(
     connection: Any | None = None,
     trace_rows: Sequence[Mapping[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    return odylith_context_engine_code_graph_runtime._load_code_graph(
+    return _store().odylith_context_engine_code_graph_runtime._load_code_graph(
         repo_root=repo_root,
         connection=connection,
         trace_rows=trace_rows,
@@ -950,7 +874,7 @@ def _path_mtime_iso(path: Path) -> str:
 
 
 def _read_pytest_lastfailed(*, repo_root: Path) -> dict[str, dict[str, Any]]:
-    target = repo_root / _PYTEST_LASTFAILED_PATH
+    target = repo_root / _store()._PYTEST_LASTFAILED_PATH
     if not target.is_file():
         return {}
     try:
@@ -981,7 +905,7 @@ def _read_pytest_lastfailed(*, repo_root: Path) -> dict[str, dict[str, Any]]:
 def _candidate_test_report_paths(*, repo_root: Path) -> list[Path]:
     rows: list[Path] = []
     seen: set[str] = set()
-    for rel_root, glob in _TEST_HISTORY_REPORT_GLOBS:
+    for rel_root, glob in _store()._TEST_HISTORY_REPORT_GLOBS:
         root = repo_root / rel_root
         candidates: Iterable[Path]
         if root.is_dir():
@@ -1071,7 +995,7 @@ def _merge_test_history_rows(rows: Sequence[Mapping[str, Any]]) -> dict[str, dic
         payload["failure_count"] = int(payload.get("failure_count", 0)) + int(row.get("failure_count", 0) or 0)
         payload["last_seen_utc"] = max(str(payload.get("last_seen_utc", "")), str(row.get("last_seen_utc", "")))
         payload["last_failure_utc"] = max(str(payload.get("last_failure_utc", "")), str(row.get("last_failure_utc", "")))
-        payload["sources"] = _dedupe_strings(
+        payload["sources"] = _store()._dedupe_strings(
             [
                 *[str(token).strip() for token in payload.get("sources", []) if str(token).strip()],
                 *[str(token).strip() for token in row.get("sources", []) if str(token).strip()],

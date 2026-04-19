@@ -10,10 +10,10 @@ as a regression.
 - Inventory the current owner, call sites, shared helpers, validators, and
   file sizes before changing structure.
 - Inventory the bounded slop signals explicitly before editing:
-  remaining `def _host()` shims, duplicate `_mapping` or `_normalize_*`
-  helpers, near-identical host mirrors, local alias walls that hide the real
-  owner, phase-mixed giant functions, and touched files already above the repo
-  size thresholds.
+  remaining `def _host()` shims, `bind(host)` / `_HOST_BIND_NAMES` globals
+  injection, duplicate `_mapping` or `_normalize_*` helpers, near-identical
+  host mirrors, local alias walls that hide the real owner, phase-mixed giant
+  functions, and touched files already above the repo size thresholds.
 - Consolidate generic coercion and normalization helpers into a real shared
   owner instead of adding one more local wrapper.
 - If a touched hand-maintained source file is already above `1200` LOC,
@@ -31,6 +31,9 @@ as a regression.
 
 ## Hard Bans
 - `def _host()` plus a wall of rebound private host symbols is banned.
+- `bind(host)`, `_HOST_BIND_NAMES`, or `bind_*_runtime(globals(), host)` are
+  banned when they still hide the real dependency owner behind globals
+  injection.
 - A local alias wall that only renames dozens of helpers without moving the
   ownership boundary is banned.
 - Do not duplicate generic coercion helpers such as `_mapping`,

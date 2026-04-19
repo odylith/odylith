@@ -374,6 +374,33 @@ initQuickTooltips();
           const diagnostics = scopedBrief.diagnostics && typeof scopedBrief.diagnostics === "object" ? scopedBrief.diagnostics : {};
           const reason = String(diagnostics.reason || "").trim().toLowerCase();
           if (reason === "scoped_window_inactive") {
+            const verifiedScopedIds = payload && payload.verified_scoped_workstreams && payload.verified_scoped_workstreams[key] && Array.isArray(payload.verified_scoped_workstreams[key])
+              ? payload.verified_scoped_workstreams[key].filter((token) => WORKSTREAM_RE.test(String(token || "").trim()))
+              : [];
+            const promotedScopedIds = payload && payload.promoted_scoped_workstreams && payload.promoted_scoped_workstreams[key] && Array.isArray(payload.promoted_scoped_workstreams[key])
+              ? payload.promoted_scoped_workstreams[key].filter((token) => WORKSTREAM_RE.test(String(token || "").trim()))
+              : [];
+            const scopeSignals = payload && payload.window_scope_signals && payload.window_scope_signals[key] && typeof payload.window_scope_signals[key] === "object"
+              ? payload.window_scope_signals[key]
+              : {};
+            const hasPromotedScopedSignal = Object.values(scopeSignals).some((signal) => {
+              const row = signal && typeof signal === "object" ? signal : {};
+              const explicitRank = Number(row.rank || 0);
+              if (Number.isFinite(explicitRank) && explicitRank >= 2) return true;
+              const rung = String(row.rung || "").trim().toUpperCase();
+              return /^R[2-5]$/.test(rung);
+            });
+            if (!verifiedScopedIds.length && !promotedScopedIds.length && !hasPromotedScopedSignal && globalReady) {
+              return scopedFallbackToGlobalBrief(
+                globalReady,
+                scopedWorkstream,
+                `${scopedWorkstream} has no scoped live brief yet, so Compass is showing the ${globalReadyWindow === key ? "global live brief" : `${globalReadyWindow === "48h" ? "48-hour" : "24-hour"} global live brief`} while scoped narration stays in background warmup.`,
+                globalReadyWindow && globalReadyWindow !== key
+                  ? "scoped_window_inactive_background_warm_showing_wider_global"
+                  : "scoped_window_inactive_background_warm_showing_global",
+                globalReadyWindow || key,
+              );
+            }
             return scopedBrief;
           }
           if (globalReady) {

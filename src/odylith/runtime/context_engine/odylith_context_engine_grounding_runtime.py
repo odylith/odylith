@@ -1231,6 +1231,7 @@ def build_impact_report(
             workstream_selection = _workstream_selection(
                 connection=connection,
                 candidates=ranked_workstreams,
+                explicit_workstream=str(workstream_hint or "").strip(),
                 judgment_hint=judgment_workstream_hint,
             )
         primary_workstream = dict(workstream_selection.get("top_candidate", {})) if isinstance(

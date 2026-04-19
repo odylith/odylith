@@ -9,10 +9,33 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
-from odylith.runtime.context_engine import odylith_context_engine_packet_runtime_bindings
+from odylith.runtime.common.value_coercion import normalize_string_list
+from odylith.runtime.context_engine import odylith_architecture_mode
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_governance_runtime
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_query_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_support
+from odylith.runtime.context_engine import runtime_read_session
 
-def bind(host: Any) -> None:
-    odylith_context_engine_packet_runtime_bindings.bind_packet_runtime(globals(), host)
+_PROCESS_ARCHITECTURE_PACKET_CACHE = runtime_read_session.shared_process_cache_view("architecture_packet")
+_compact_packet_level_architecture_audit = (
+    odylith_context_engine_hot_path_scope_runtime._compact_packet_level_architecture_audit
+)
+_compact_stage_timings = odylith_context_engine_hot_path_delivery_runtime._compact_stage_timings
+_companion_context_paths = odylith_context_engine_hot_path_governance_runtime._companion_context_paths
+_dedupe_strings = normalize_string_list
+_elapsed_stage_ms = odylith_context_engine_hot_path_delivery_runtime._elapsed_stage_ms
+_full_scan_guidance = odylith_context_engine_projection_query_runtime._full_scan_guidance
+_projection_cache_signature = odylith_context_engine_projection_search_runtime._projection_cache_signature
+_resolve_changed_path_scope_context = odylith_context_engine_hot_path_scope_runtime._resolve_changed_path_scope_context
+_warm_runtime = odylith_context_engine_projection_search_runtime._warm_runtime
+_architecture_bundle_mermaid_signature_hash = (
+    odylith_context_engine_projection_search_runtime._architecture_bundle_mermaid_signature_hash
+)
+record_runtime_timing = odylith_context_engine_runtime_support.record_runtime_timing
+
 
 def build_architecture_audit(
     *,

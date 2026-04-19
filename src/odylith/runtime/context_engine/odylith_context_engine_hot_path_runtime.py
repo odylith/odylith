@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+def _store():
+    from odylith.runtime.context_engine import odylith_context_engine_store as store
+
+    return store
+
+
 import ast
 import contextlib
 import datetime as dt
@@ -28,107 +34,6 @@ from odylith.runtime.context_engine import odylith_context_engine_hot_path_packe
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_finalize_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime
-
-def bind(host: Any) -> None:
-    if isinstance(host, dict):
-        for name in _HOST_BIND_NAMES:
-            if name in host:
-                globals()[name] = host[name]
-    else:
-        for name in _HOST_BIND_NAMES:
-            if hasattr(host, name):
-                globals()[name] = getattr(host, name)
-    odylith_context_engine_hot_path_scope_runtime.bind(globals())
-    odylith_context_engine_hot_path_packet_core_runtime.bind(globals())
-    odylith_context_engine_hot_path_packet_bootstrap_runtime.bind(globals())
-    odylith_context_engine_hot_path_packet_finalize_runtime.bind(globals())
-    odylith_context_engine_hot_path_delivery_runtime.bind(globals())
-    odylith_context_engine_hot_path_governance_runtime.bind(globals())
-
-_HOST_BIND_NAMES = (
-    'SESSION_STALE_SECONDS',
-    '_CODEX_HOT_PATH_PROFILE',
-    '_COMPANION_CONTEXT_RULES',
-    '_CONTRACT_PATH_PREFIXES',
-    '_extract_path_refs',
-    '_ENGINEERING_NOTE_KINDS',
-    '_HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES',
-    '_HOT_PATH_AUTO_ESCALATION_WRITE_FAMILIES',
-    '_HOT_PATH_AUTO_SESSION_BRIEF_FAMILIES',
-    '_IMPACT_COMMAND_LIMIT_AMBIGUOUS',
-    '_IMPACT_COMMAND_LIMIT_BROAD',
-    '_IMPACT_COMMAND_LIMIT_DEFAULT',
-    '_IMPACT_COMMAND_LIMIT_EXPLICIT',
-    '_IMPACT_DOC_LIMIT_AMBIGUOUS',
-    '_IMPACT_DOC_LIMIT_BROAD',
-    '_IMPACT_DOC_LIMIT_DEFAULT',
-    '_IMPACT_DOC_LIMIT_EXPLICIT',
-    '_IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_AMBIGUOUS',
-    '_IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_DEFAULT',
-    '_IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_EXPLICIT',
-    '_IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_AMBIGUOUS',
-    '_IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_BROAD',
-    '_IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_DEFAULT',
-    '_IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_EXPLICIT',
-    '_IMPACT_TEST_LIMIT_AMBIGUOUS',
-    '_IMPACT_TEST_LIMIT_DEFAULT',
-    '_IMPACT_TEST_LIMIT_EXPLICIT',
-    '_IMPACT_WORKSTREAM_LIMIT_AMBIGUOUS',
-    '_IMPACT_WORKSTREAM_LIMIT_BROAD',
-    '_IMPACT_WORKSTREAM_LIMIT_DEFAULT',
-    '_IMPACT_WORKSTREAM_LIMIT_EXPLICIT',
-    '_PROCESS_GIT_REF_CACHE',
-    '_PROCESS_GIT_REF_CACHE_TTL_SECONDS',
-    '_PROCESS_PATH_SCOPE_CACHE',
-    '_PROCESS_PATH_SIGNAL_PROFILE_CACHE',
-    '_SESSION_CLAIM_MODES',
-    '_TOPOLOGY_DOMAIN_RULES',
-    '_WEAK_SHARED_EXACT_PATHS',
-    '_WEAK_SHARED_PREFIXES',
-    '_WORKSTREAM_SELECTION_CONFIDENT_SCORE',
-    '_WORKSTREAM_SELECTION_GAP_MIN',
-    '_cached_projection_rows',
-    '_compact_miss_recovery_for_packet',
-    '_compact_selection_state_parts',
-    '_components_for_paths',
-    '_connect',
-    '_decode_compact_selected_counts',
-    '_encode_compact_selected_counts',
-    '_encode_compact_selection_state',
-    '_entity_by_kind_id',
-    '_entity_from_row',
-    '_full_scan_guidance',
-    '_json_list',
-    '_load_component_match_rows_from_components',
-    '_normalize_repo_token',
-    '_normalized_string_list',
-    '_parse_component_tokens',
-    '_path_fingerprint',
-    '_payload_workstream_hint',
-    '_runtime_enabled',
-    '_summarize_entity',
-    '_truncate_text',
-    '_utc_now',
-    '_warm_runtime',
-    '_workspace_activity_fingerprint',
-    '_workstream_token',
-    'bootstraps_root',
-    'component_registry',
-    'display_command',
-    'governance',
-    'is_component_spec_path',
-    'odylith_context_cache',
-    'odylith_context_engine_grounding_runtime',
-    'prune_runtime_records',
-    'projection_snapshot_path',
-    'routing',
-    'runtime_request_namespace',
-    'sessions_root',
-    'tooling_context_budgeting',
-    'tooling_memory_contracts',
-    'truth_path_kind',
-    'truth_root_tokens',
-)
 
 def _compact_bug_row_for_governance_packet(row: Mapping[str, Any]) -> dict[str, Any]:
     return {
@@ -192,7 +97,7 @@ def _dedupe_strings(values: Sequence[str]) -> list[str]:
     return rows
 
 def _normalize_changed_path_list(*, repo_root: Path, values: Sequence[str]) -> list[str]:
-    return governance.normalize_changed_paths(repo_root=repo_root, values=values)
+    return _store().governance.normalize_changed_paths(repo_root=repo_root, values=values)
 
 def _engineering_note_summary(row: Mapping[str, Any], *, match: Mapping[str, Any] | None = None) -> dict[str, Any]:
     metadata = json.loads(str(row["metadata_json"] or "{}"))
@@ -202,8 +107,8 @@ def _engineering_note_summary(row: Mapping[str, Any], *, match: Mapping[str, Any
         "title": str(row["title"]),
         "source_path": str(row["source_path"]),
         "summary": str(row["summary"]),
-        "components": _json_list(str(row["components_json"])),
-        "workstreams": _json_list(str(row["workstreams_json"])),
+        "components": _store()._json_list(str(row["components_json"])),
+        "workstreams": _store()._json_list(str(row["workstreams_json"])),
     }
     if isinstance(metadata, Mapping):
         for key in ("source_mode", "chunk_id", "chunk_path", "canonical_source", "canonical_section", "manifest_path"):
@@ -235,8 +140,8 @@ def _git_ref_snapshot(*, repo_root: Path) -> dict[str, str]:
     root = Path(repo_root).resolve()
     cache_key = str(root)
     now = time.monotonic()
-    cached = _PROCESS_GIT_REF_CACHE.get(cache_key)
-    if cached is not None and now - cached[0] <= _PROCESS_GIT_REF_CACHE_TTL_SECONDS:
+    cached = _store()._PROCESS_GIT_REF_CACHE.get(cache_key)
+    if cached is not None and now - cached[0] <= _store()._PROCESS_GIT_REF_CACHE_TTL_SECONDS:
         return dict(cached[1])
     try:
         branch_completed = subprocess.run(
@@ -253,7 +158,7 @@ def _git_ref_snapshot(*, repo_root: Path) -> dict[str, str]:
         )
     except OSError:
         snapshot = {"branch_name": "", "head_oid": ""}
-        _PROCESS_GIT_REF_CACHE[cache_key] = (now, snapshot)
+        _store()._PROCESS_GIT_REF_CACHE[cache_key] = (now, snapshot)
         return dict(snapshot)
     branch_name = str(branch_completed.stdout or "").strip()
     head_oid = str(head_completed.stdout or "").strip()
@@ -261,7 +166,7 @@ def _git_ref_snapshot(*, repo_root: Path) -> dict[str, str]:
         "branch_name": "" if branch_name == "HEAD" else branch_name,
         "head_oid": head_oid,
     }
-    _PROCESS_GIT_REF_CACHE[cache_key] = (now, snapshot)
+    _store()._PROCESS_GIT_REF_CACHE[cache_key] = (now, snapshot)
     return dict(snapshot)
 
 def _git_head_oid(*, repo_root: Path) -> str:
@@ -272,27 +177,27 @@ def _git_branch_name(*, repo_root: Path) -> str:
 
 def _path_signal_profile(path: str) -> dict[str, Any]:
     root = Path(".").resolve()
-    normalized = _normalize_repo_token(str(path or ""), repo_root=root)
+    normalized = _store()._normalize_repo_token(str(path or ""), repo_root=root)
     token = normalized.lower()
     if not token:
         return {"category": "unknown", "weight": 0, "shared": True}
     cache_key = f"{root}:{token}"
-    cached = _PROCESS_PATH_SIGNAL_PROFILE_CACHE.get(cache_key)
+    cached = _store()._PROCESS_PATH_SIGNAL_PROFILE_CACHE.get(cache_key)
     if cached is not None:
         return dict(cached)
-    truth_roots = truth_root_tokens(repo_root=root)
-    if token in _WEAK_SHARED_EXACT_PATHS or token.endswith("/agents.md") or any(
-        token.startswith(prefix) for prefix in _WEAK_SHARED_PREFIXES
+    truth_roots = _store().truth_root_tokens(repo_root=root)
+    if token in _store()._WEAK_SHARED_EXACT_PATHS or token.endswith("/agents.md") or any(
+        token.startswith(prefix) for prefix in _store()._WEAK_SHARED_PREFIXES
     ):
         profile = {"category": "shared", "weight": -12, "shared": True}
     elif token == "makefile" or token.startswith("mk/"):
         profile = {"category": "build", "weight": 16, "shared": False}
     elif token.startswith(("src/odylith/", "app/", "services/", "infra/", "bin/", "configs/", "docker/", "policies/")):
         profile = {"category": "implementation", "weight": 18, "shared": False}
-    elif token.startswith(_CONTRACT_PATH_PREFIXES):
+    elif token.startswith(_store()._CONTRACT_PATH_PREFIXES):
         profile = {"category": "contract", "weight": 18, "shared": False}
     else:
-        path_kind = truth_path_kind(normalized, repo_root=root, truth_roots=truth_roots)
+        path_kind = _store().truth_path_kind(normalized, repo_root=root, truth_roots=truth_roots)
         if path_kind == "component_forensics":
             profile = {"category": "component_forensics", "weight": 8, "shared": False}
         elif path_kind == "component_spec":
@@ -307,22 +212,22 @@ def _path_signal_profile(path: str) -> dict[str, Any]:
             profile = {"category": "doc", "weight": 7, "shared": False}
         else:
             profile = {"category": "other", "weight": 4, "shared": False}
-    _PROCESS_PATH_SIGNAL_PROFILE_CACHE[cache_key] = dict(profile)
+    _store()._PROCESS_PATH_SIGNAL_PROFILE_CACHE[cache_key] = dict(profile)
     return dict(profile)
 
 def _path_match_type(*, changed_path: str, target_path: str) -> str:
-    changed = _normalize_repo_token(str(changed_path or ""), repo_root=Path("."))
-    target = _normalize_repo_token(str(target_path or ""), repo_root=Path("."))
+    changed = _store()._normalize_repo_token(str(changed_path or ""), repo_root=Path("."))
+    target = _store()._normalize_repo_token(str(target_path or ""), repo_root=Path("."))
     return _normalized_path_match_type(changed_path=changed, target_path=target)
 
 def _normalized_path_match_type(*, changed_path: str, target_path: str) -> str:
-    changed = _normalized_watch_path(str(changed_path or ""))
-    target = _normalized_watch_path(str(target_path or ""))
+    changed = odylith_context_engine_hot_path_governance_runtime._normalized_watch_path(str(changed_path or ""))
+    target = odylith_context_engine_hot_path_governance_runtime._normalized_watch_path(str(target_path or ""))
     if not changed or not target:
         return ""
     if changed == target:
         return "exact"
-    if _path_touches_watch(changed_path=changed, watch_path=target):
+    if odylith_context_engine_hot_path_governance_runtime._path_touches_watch(changed_path=changed, watch_path=target):
         return "watch"
     return ""
 
@@ -567,7 +472,7 @@ def _finalize_workstream_candidates(candidates: Sequence[dict[str, Any]]) -> lis
         key=lambda row: (
             -int(dict(row.get("evidence", {})).get("score", 0) or 0),
             -int(dict(row.get("evidence", {})).get("strong_signal_count", 0) or 0),
-            _workstream_status_rank(str(row.get("status", ""))),
+            odylith_context_engine_hot_path_delivery_runtime._workstream_status_rank(str(row.get("status", ""))),
             str(row.get("entity_id", "")),
         )
     )
@@ -627,7 +532,7 @@ def _rerank_workstream_candidates(rows: Sequence[Mapping[str, Any]]) -> list[dic
         key=lambda row: (
             -_workstream_evidence_score(row),
             -int(dict(row.get("evidence", {})).get("strong_signal_count", 0) or 0),
-            _workstream_status_rank(str(row.get("status", ""))),
+            odylith_context_engine_hot_path_delivery_runtime._workstream_status_rank(str(row.get("status", ""))),
             str(row.get("entity_id", "")),
         )
     )
@@ -652,14 +557,14 @@ def _prune_low_precision_workstream_candidates(candidates: Sequence[dict[str, An
     exact_rows = [row for row in strong_rows if _workstream_has_exact_path_signal(row)]
     kept_ids: set[str] = set()
     if exact_rows:
-        threshold = max(_WORKSTREAM_SELECTION_CONFIDENT_SCORE, top_strong_score - 80)
+        threshold = max(_store()._WORKSTREAM_SELECTION_CONFIDENT_SCORE, top_strong_score - 80)
         for row in exact_rows:
             if _workstream_evidence_score(row) >= threshold:
                 kept_ids.add(str(row.get("entity_id", "")).strip().upper())
         if not kept_ids:
             kept_ids.add(str(exact_rows[0].get("entity_id", "")).strip().upper())
     else:
-        threshold = max(_WORKSTREAM_SELECTION_CONFIDENT_SCORE, top_strong_score - 48)
+        threshold = max(_store()._WORKSTREAM_SELECTION_CONFIDENT_SCORE, top_strong_score - 48)
         for row in strong_rows:
             if _workstream_evidence_score(row) >= threshold and _workstream_has_path_signal(row):
                 kept_ids.add(str(row.get("entity_id", "")).strip().upper())
@@ -881,7 +786,7 @@ def _compact_engineering_notes(
     per_kind_meta: dict[str, dict[str, Any]] = {}
     total_source = 0
     total_returned = 0
-    for kind in _ENGINEERING_NOTE_KINDS:
+    for kind in _store()._ENGINEERING_NOTE_KINDS:
         rows = notes.get(kind, [])
         if not isinstance(rows, list) or not rows:
             continue
@@ -1020,38 +925,38 @@ def _impact_packet_state(*, shared_only: bool, selection_state: str) -> str:
 def _impact_budget_profile(*, shared_only: bool, selection_state: str) -> dict[str, int]:
     if shared_only:
         return {
-            "workstreams": _IMPACT_WORKSTREAM_LIMIT_BROAD,
-            "docs": _IMPACT_DOC_LIMIT_BROAD,
-            "commands": _IMPACT_COMMAND_LIMIT_BROAD,
-            "tests": _IMPACT_TEST_LIMIT_DEFAULT,
-            "notes_total": _IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_BROAD,
-            "notes_per_kind": _IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_DEFAULT,
+            "workstreams": _store()._IMPACT_WORKSTREAM_LIMIT_BROAD,
+            "docs": _store()._IMPACT_DOC_LIMIT_BROAD,
+            "commands": _store()._IMPACT_COMMAND_LIMIT_BROAD,
+            "tests": _store()._IMPACT_TEST_LIMIT_DEFAULT,
+            "notes_total": _store()._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_BROAD,
+            "notes_per_kind": _store()._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_DEFAULT,
         }
     if selection_state == "explicit":
         return {
-            "workstreams": _IMPACT_WORKSTREAM_LIMIT_EXPLICIT,
-            "docs": _IMPACT_DOC_LIMIT_EXPLICIT,
-            "commands": _IMPACT_COMMAND_LIMIT_EXPLICIT,
-            "tests": _IMPACT_TEST_LIMIT_EXPLICIT,
-            "notes_total": _IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_EXPLICIT,
-            "notes_per_kind": _IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_EXPLICIT,
+            "workstreams": _store()._IMPACT_WORKSTREAM_LIMIT_EXPLICIT,
+            "docs": _store()._IMPACT_DOC_LIMIT_EXPLICIT,
+            "commands": _store()._IMPACT_COMMAND_LIMIT_EXPLICIT,
+            "tests": _store()._IMPACT_TEST_LIMIT_EXPLICIT,
+            "notes_total": _store()._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_EXPLICIT,
+            "notes_per_kind": _store()._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_EXPLICIT,
         }
     if selection_state in {"ambiguous", "none"}:
         return {
-            "workstreams": _IMPACT_WORKSTREAM_LIMIT_AMBIGUOUS,
-            "docs": _IMPACT_DOC_LIMIT_AMBIGUOUS,
-            "commands": _IMPACT_COMMAND_LIMIT_AMBIGUOUS,
-            "tests": _IMPACT_TEST_LIMIT_AMBIGUOUS,
-            "notes_total": _IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_AMBIGUOUS,
-            "notes_per_kind": _IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_AMBIGUOUS,
+            "workstreams": _store()._IMPACT_WORKSTREAM_LIMIT_AMBIGUOUS,
+            "docs": _store()._IMPACT_DOC_LIMIT_AMBIGUOUS,
+            "commands": _store()._IMPACT_COMMAND_LIMIT_AMBIGUOUS,
+            "tests": _store()._IMPACT_TEST_LIMIT_AMBIGUOUS,
+            "notes_total": _store()._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_AMBIGUOUS,
+            "notes_per_kind": _store()._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_AMBIGUOUS,
         }
     return {
-        "workstreams": _IMPACT_WORKSTREAM_LIMIT_DEFAULT,
-        "docs": _IMPACT_DOC_LIMIT_DEFAULT,
-        "commands": _IMPACT_COMMAND_LIMIT_DEFAULT,
-        "tests": _IMPACT_TEST_LIMIT_DEFAULT,
-        "notes_total": _IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_DEFAULT,
-        "notes_per_kind": _IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_DEFAULT,
+        "workstreams": _store()._IMPACT_WORKSTREAM_LIMIT_DEFAULT,
+        "docs": _store()._IMPACT_DOC_LIMIT_DEFAULT,
+        "commands": _store()._IMPACT_COMMAND_LIMIT_DEFAULT,
+        "tests": _store()._IMPACT_TEST_LIMIT_DEFAULT,
+        "notes_total": _store()._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_DEFAULT,
+        "notes_per_kind": _store()._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_DEFAULT,
     }
 
 def _component_grounded_selection_none(
@@ -1085,9 +990,9 @@ def _hot_path_can_stay_fail_closed_without_full_scan(
 ) -> bool:
     if working_tree_scope_degraded:
         return False
-    family = _normalize_family_hint(family_hint)
-    normalized_changed = _normalized_string_list(changed_paths)
-    normalized_explicit = _normalized_string_list(explicit_paths)
+    family = odylith_context_engine_hot_path_delivery_runtime._normalize_family_hint(family_hint)
+    normalized_changed = _store()._normalized_string_list(changed_paths)
+    normalized_explicit = _store()._normalized_string_list(explicit_paths)
     exact_path_grounded = bool(normalized_changed) and (
         not normalized_explicit or normalized_changed == normalized_explicit
     )
@@ -1101,68 +1006,3 @@ def _hot_path_can_stay_fail_closed_without_full_scan(
             and str(selection_state or "").strip() in {"ambiguous", "none"}
         )
     return False
-
-_PACKET_EXPORTS = (
-    "_compact_hot_path_active_conflicts", "_hot_path_keep_architecture_audit", "_hot_path_workstream_selection",
-    "_compact_hot_path_workstream_selection", "_compact_hot_path_retrieval_plan", "_compact_hot_path_packet_quality",
-    "_compact_hot_path_intent", "_hot_path_signal_score", "_hot_path_synthesized_execution_profile",
-    "_hot_path_recomputed_readiness", "_compact_hot_path_routing_handoff", "_compact_hot_path_route_execution_profile",
-    "_encode_hot_path_execution_profile", "_decode_hot_path_execution_profile", "_hot_path_execution_profile_runtime_fields",
-    "_compact_hot_path_payload_within_budget", "_synthesized_hot_path_execution_profile_from_context_packet",
-    "_governance_closeout_doc_count", "_trim_common_hot_path_context_packet", "_compact_hot_path_narrowing_guidance",
-    "_source_hot_path_within_budget", "_fast_finalize_compact_hot_path_packet", "_compact_hot_path_packet_metrics",
-    "_drop_redundant_hot_path_routing_handoff", "_compact_hot_path_fallback_scan",
-    "_compact_governance_validation_bundle_for_hot_path", "_compact_hot_path_surface_reason_token",
-    "_compact_governance_obligations_for_hot_path", "_compact_governance_surface_refs_for_hot_path",
-    "_compact_governance_signal_for_hot_path", "_embedded_governance_signal", "_hot_path_validation_bundle",
-    "_hot_path_governance_obligations", "_validation_bundle_command_count", "_governance_obligation_count",
-    "_compact_hot_path_runtime_packet", "_hot_path_payload_is_compact", "_update_compact_hot_path_runtime_packet",
-    "_trim_route_ready_hot_path_prompt_payload", "_compact_workstream_metadata_for_packet",
-    "_compact_workstream_evidence_for_packet", "_compact_workstream_row_for_packet",
-    "_compact_workstream_reference_for_packet", "_compact_workstream_selection_for_packet",
-    "_compact_bootstrap_workstream_selection", "_compact_neighbor_row_for_packet", "_prioritized_neighbor_rows",
-)
-
-_SCOPE_EXPORTS = (
-    "_compact_architecture_audit_for_packet", "_compact_packet_level_architecture_audit", "_workstream_selection",
-    "_bug_excerpt", "_session_record_path", "_bootstrap_record_path", "_parse_iso_utc", "_normalize_claim_mode",
-    "_lease_expires_utc", "_is_session_expired", "_load_session_state", "_resolve_changed_path_scope_context",
-    "_claim_sets", "list_session_states", "register_session_state", "_collect_impacted_components",
-    "_collect_impacted_workstreams", "_engineering_note_match", "_collect_relevant_notes",
-    "_collect_relevant_bugs", "_collect_code_neighbors", "_collect_recommended_tests",
-)
-
-_GOVERNANCE_EXPORTS = (
-    "_governance_surface_refs", "_governance_closeout_docs", "_bounded_explicit_governance_closeout_docs",
-    "_governance_state_actions", "_governance_requires_architecture_audit", "_governance_diagram_catalog_companions",
-    "_companion_context_paths_for_normalized_changed_paths", "_companion_context_paths", "_governance_hot_path_docs",
-    "_governance_explicit_slice_grounded", "_governance_can_skip_runtime_warmup", "build_governance_slice",
-    "select_impacted_diagrams", "_path_touches_watch",
-    "_normalized_watch_path", "_architecture_rule_matches_path", "_collect_topology_domains",
-    "_component_matches_changed_path", "_load_architecture_diagrams", "_collect_diagram_watch_gaps",
-)
-
-_DELIVERY_EXPORTS = (
-    "_impact_summary_payload", "_delivery_profile_hot_path", "_elapsed_stage_ms", "_compact_stage_timings",
-    "_normalize_family_hint", "_impact_family_profile", "_hot_path_dashboard_surface_like",
-    "_hot_path_routing_confidence_rank", "_hot_path_packet_rank", "_hot_path_auto_escalation_trigger",
-    "_hot_path_can_hold_local_narrowing_without_full_scan", "_compact_hot_path_auto_escalation",
-    "_hot_path_selected_validation_count", "_hot_path_route_ready", "_hot_path_full_scan_recommended",
-    "_hot_path_full_scan_reason", "_hot_path_routing_confidence", "_should_escalate_hot_path_to_session_brief",
-    "_fallback_scan_payload", "_compact_hot_path_session_payload", "_compact_hot_path_workstream_context",
-    "_compact_code_neighbors_for_packet", "_collect_component_validation_commands", "_recommended_validation_commands",
-    "_is_governance_sync_command", "_workstream_status_rank", "_workstream_rank_tuple", "_condense_delivery_scope",
-)
-
-for _module, _names in (
-    (odylith_context_engine_hot_path_packet_core_runtime, _PACKET_EXPORTS[:25]),
-    (odylith_context_engine_hot_path_packet_bootstrap_runtime, _PACKET_EXPORTS[25:35]),
-    (odylith_context_engine_hot_path_packet_finalize_runtime, _PACKET_EXPORTS[35:]),
-    (odylith_context_engine_hot_path_scope_runtime, _SCOPE_EXPORTS),
-    (odylith_context_engine_hot_path_governance_runtime, _GOVERNANCE_EXPORTS),
-    (odylith_context_engine_hot_path_delivery_runtime, _DELIVERY_EXPORTS),
-):
-    globals().update({name: getattr(_module, name) for name in _names})
-
-del _module
-del _names

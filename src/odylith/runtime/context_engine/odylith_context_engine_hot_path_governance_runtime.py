@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+def _store():
+    from odylith.runtime.context_engine import odylith_context_engine_store as store
+
+    return store
+
+
 from typing import Any
+from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+
+_warm_runtime = odylith_context_engine_projection_search_runtime._warm_runtime
 
 
-def bind(host: Any) -> None:
-    getter = host.__getitem__ if isinstance(host, dict) else lambda name: getattr(host, name)
-    for name in ('Any', 'Mapping', 'Path', 'Sequence', '_COMPANION_CONTEXT_RULES', '_TOPOLOGY_DOMAIN_RULES', '_architecture_rule_matches_path', '_broad_shared_only_input', '_cached_projection_rows', '_companion_context_paths_for_normalized_changed_paths', '_component_matches_changed_path', '_connect', '_dedupe_strings', '_delivery_profile_hot_path', '_entity_by_kind_id', '_normalize_repo_token', '_normalized_watch_path', '_path_match_type', '_path_touches_watch', '_runtime_enabled', '_warm_runtime', 'component_registry', 'governance', 'is_component_spec_path', 'odylith_context_cache', 'odylith_context_engine_grounding_runtime', 'projection_snapshot_path'):
-        try:
-            globals()[name] = getter(name)
-        except (AttributeError, KeyError):
-            continue
+def projection_snapshot_path(*, repo_root: Path) -> Path:
+    return _store().projection_snapshot_path(repo_root=_store().Path(repo_root).resolve())
 
 
 def _governance_surface_refs(
@@ -21,13 +25,13 @@ def _governance_surface_refs(
     workstream_ids: Sequence[str],
     component_ids: Sequence[str],
 ) -> dict[str, Any]:
-    impact = governance.build_dashboard_impact(
+    impact = _store().governance.build_dashboard_impact(
         repo_root=repo_root,
         changed_paths=changed_paths,
         force=False,
         impact_mode="auto",
     ).as_dict()
-    reasons = dict(impact.get("reasons", {})) if isinstance(impact.get("reasons"), Mapping) else {}
+    reasons = dict(impact.get("reasons", {})) if isinstance(impact.get("reasons"), _store().Mapping) else {}
     if workstream_ids:
         impact["radar"] = True
         reasons.setdefault("radar", []).append("explicit_workstream_seed")
@@ -48,7 +52,7 @@ def _governance_surface_refs(
             for key in ("radar", "atlas", "compass", "registry", "casebook", "tooling_shell")
         },
         "reasons": {
-            key: _dedupe_strings(str(token).strip() for token in value)
+            key: _store()._dedupe_strings(str(token).strip() for token in value)
             for key, value in reasons.items()
             if isinstance(value, list)
         },
@@ -65,7 +69,7 @@ def _governance_closeout_docs(
         rows.append(str(detail.get("idea_file", "")).strip())
         rows.append(str(detail.get("promoted_to_plan", "")).strip())
     for detail in component_details:
-        traceability = dict(detail.get("traceability", {})) if isinstance(detail.get("traceability"), Mapping) else {}
+        traceability = dict(detail.get("traceability", {})) if isinstance(detail.get("traceability"), _store().Mapping) else {}
         rows.extend(
             str(token).strip()
             for bucket in ("runbooks", "developer_docs", "code_references")
@@ -73,9 +77,9 @@ def _governance_closeout_docs(
             if isinstance(traceability.get(bucket), list) and str(token).strip()
         )
         component_entry = detail.get("component")
-        if isinstance(component_entry, component_registry.ComponentEntry):
+        if isinstance(component_entry, _store().component_registry.ComponentEntry):
             rows.append(str(component_entry.spec_ref).strip())
-    return _dedupe_strings(row for row in rows if row)
+    return _store()._dedupe_strings(row for row in rows if row)
 
 def _bounded_explicit_governance_closeout_docs(
     *,
@@ -163,7 +167,7 @@ def _governance_can_skip_runtime_warmup(
     use_working_tree: bool,
     claimed_paths: Sequence[str],
 ) -> bool:
-    if not _delivery_profile_hot_path(delivery_profile):
+    if not _store()._delivery_profile_hot_path(delivery_profile):
         return False
     if str(runtime_mode or "").strip().lower() not in {"", "auto", "local"}:
         return False
@@ -171,13 +175,13 @@ def _governance_can_skip_runtime_warmup(
         return False
     if not str(workstream_hint or "").strip() and not str(component_hint or "").strip():
         return False
-    root = Path(repo_root).resolve()
+    root = _store().Path(repo_root).resolve()
     normalized_changed = [
-        _normalize_repo_token(str(token).strip(), repo_root=root)
+        _store()._normalize_repo_token(str(token).strip(), repo_root=root)
         for token in changed_paths
         if str(token).strip()
     ]
-    if not normalized_changed or _broad_shared_only_input(normalized_changed):
+    if not normalized_changed or _store()._broad_shared_only_input(normalized_changed):
         return False
     family = str(family_hint or "").strip().lower().replace("-", "_")
     if family not in {
@@ -198,7 +202,7 @@ def _governance_diagram_catalog_companions(
     diagrams: Sequence[Mapping[str, Any]],
 ) -> list[str]:
     normalized_changed = [
-        _normalize_repo_token(str(token), repo_root=Path("."))
+        _store()._normalize_repo_token(str(token), repo_root=_store().Path("."))
         for token in changed_paths
         if str(token).strip()
     ]
@@ -207,7 +211,7 @@ def _governance_diagram_catalog_companions(
         touches_atlas_source = any(
             str(row.get("source_mmd", "")).strip().startswith("odylith/atlas/source/")
             for row in diagrams
-            if isinstance(row, Mapping)
+            if isinstance(row, _store().Mapping)
         )
     if not touches_atlas_source:
         return []
@@ -220,7 +224,7 @@ def _companion_context_paths_for_normalized_changed_paths(changed_paths: Sequenc
         if str(token).strip()
     }
     companions: list[str] = []
-    for rule in _COMPANION_CONTEXT_RULES:
+    for rule in _store()._COMPANION_CONTEXT_RULES:
         match_paths = {
             _normalized_watch_path(str(token).strip())
             for token in rule.get("match_paths", ())
@@ -241,11 +245,11 @@ def _companion_context_paths_for_normalized_changed_paths(changed_paths: Sequenc
             for token in rule.get("paths", ())
             if str(token).strip()
         )
-    return _dedupe_strings(companions)
+    return _store()._dedupe_strings(companions)
 
 def _companion_context_paths(*, changed_paths: Sequence[str], repo_root: Path) -> list[str]:
     normalized_changed = [
-        _normalize_repo_token(str(token).strip(), repo_root=repo_root)
+        _store()._normalize_repo_token(str(token).strip(), repo_root=repo_root)
         for token in changed_paths
         if str(token).strip()
     ]
@@ -258,9 +262,9 @@ def _governance_hot_path_docs(
     family_hint: str,
     workstream_detail: Mapping[str, Any] | None,
 ) -> list[str] | None:
-    root = Path(repo_root).resolve()
+    root = _store().Path(repo_root).resolve()
     normalized_changed = {
-        _normalize_repo_token(str(token).strip(), repo_root=root)
+        _store()._normalize_repo_token(str(token).strip(), repo_root=root)
         for token in changed_paths
         if str(token).strip()
     }
@@ -364,7 +368,7 @@ def _governance_hot_path_docs(
                 "odylith/registry/source/component_registry.v1.json",
             ]
         )
-        if isinstance(workstream_detail, Mapping):
+        if isinstance(workstream_detail, _store().Mapping):
             idea_file = str(workstream_detail.get("idea_file", "")).strip()
             if idea_file:
                 docs.append(idea_file)
@@ -409,7 +413,7 @@ def _governance_hot_path_docs(
 
     if not strategy_applies:
         return None
-    return _dedupe_strings(doc for doc in docs if doc and doc not in normalized_changed)
+    return _store()._dedupe_strings(doc for doc in docs if doc and doc not in normalized_changed)
 
 def _governance_explicit_slice_grounded(
     *,
@@ -421,35 +425,35 @@ def _governance_explicit_slice_grounded(
     component_detail: Mapping[str, Any] | None,
     diagrams: Sequence[Mapping[str, Any]],
 ) -> bool:
-    if explicit_workstream and not isinstance(workstream_detail, Mapping):
+    if explicit_workstream and not isinstance(workstream_detail, _store().Mapping):
         return False
-    if explicit_component and not isinstance(component_detail, Mapping):
+    if explicit_component and not isinstance(component_detail, _store().Mapping):
         return False
-    component_entry = component_detail.get("component") if isinstance(component_detail, Mapping) else None
+    component_entry = component_detail.get("component") if isinstance(component_detail, _store().Mapping) else None
     if (
         explicit_workstream
-        and isinstance(component_entry, component_registry.ComponentEntry)
+        and isinstance(component_entry, _store().component_registry.ComponentEntry)
         and explicit_workstream
         not in {str(token).strip().upper() for token in component_entry.workstreams if str(token).strip()}
     ):
         return False
 
-    root = Path(repo_root).resolve()
+    root = _store().Path(repo_root).resolve()
     normalized_changed = {
-        _normalize_repo_token(str(token), repo_root=root)
+        _store()._normalize_repo_token(str(token), repo_root=root)
         for token in changed_paths
         if str(token).strip()
     }
     direct_targets: set[str] = set()
     if explicit_component:
         direct_targets.add("odylith/registry/source/component_registry.v1.json")
-    if isinstance(component_entry, component_registry.ComponentEntry):
-        direct_targets.add(_normalize_repo_token(str(component_entry.spec_ref), repo_root=root))
+    if isinstance(component_entry, _store().component_registry.ComponentEntry):
+        direct_targets.add(_store()._normalize_repo_token(str(component_entry.spec_ref), repo_root=root))
     for row in diagrams:
-        if not isinstance(row, Mapping):
+        if not isinstance(row, _store().Mapping):
             continue
         for key in ("source_mmd", "source_svg", "source_png", "path"):
-            token = _normalize_repo_token(str(row.get(key, "")).strip(), repo_root=root)
+            token = _store()._normalize_repo_token(str(row.get(key, "")).strip(), repo_root=root)
             if token:
                 direct_targets.add(token)
     return bool(normalized_changed.intersection(token for token in direct_targets if token))
@@ -470,7 +474,7 @@ def build_governance_slice(
     intent: str = "",
     validation_command_hints: Sequence[str] = (),
 ) -> dict[str, Any]:
-    return odylith_context_engine_grounding_runtime.build_governance_slice(
+    return _store().odylith_context_engine_grounding_runtime.build_governance_slice(
         repo_root=repo_root,
         changed_paths=changed_paths,
         workstream=workstream,
@@ -493,18 +497,18 @@ def select_impacted_diagrams(
     runtime_mode: str = "auto",
     skip_runtime_warmup: bool = False,
 ) -> list[dict[str, Any]]:
-    root = Path(repo_root).resolve()
-    if _runtime_enabled(runtime_mode) and not bool(skip_runtime_warmup):
+    root = _store().Path(repo_root).resolve()
+    if _store()._runtime_enabled(runtime_mode) and not bool(skip_runtime_warmup):
         _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="diagram_select")
-    connection = _connect(root)
+    connection = _store()._connect(root)
     changed = [
-        _normalize_repo_token(str(token).strip(), repo_root=root)
+        _store()._normalize_repo_token(str(token).strip(), repo_root=root)
         for token in changed_paths
         if str(token).strip()
     ]
     results: dict[str, dict[str, Any]] = {}
     try:
-        diagram_rows = _cached_projection_rows(
+        diagram_rows = _store()._cached_projection_rows(
             repo_root=root,
             cache_name="diagram_rows",
             loader=lambda: [
@@ -514,7 +518,7 @@ def select_impacted_diagrams(
                 ).fetchall()
             ],
         )
-        watch_rows = _cached_projection_rows(
+        watch_rows = _store()._cached_projection_rows(
             repo_root=root,
             cache_name="diagram_watch_rows",
             loader=lambda: [
@@ -536,13 +540,13 @@ def select_impacted_diagrams(
             source_svg = str(row.get("source_svg", ""))
             source_png = str(row.get("source_png", ""))
             direct_source_match = any(
-                _path_match_type(changed_path=path, target_path=target_path) == "exact"
+                _store()._path_match_type(changed_path=path, target_path=target_path) == "exact"
                 for path in changed
                 for target_path in (source_mmd, source_svg, source_png)
                 if str(target_path).strip()
             )
-            source_mmd_path = root / source_mmd if source_mmd and not Path(source_mmd).is_absolute() else Path(source_mmd)
-            current_hash = odylith_context_cache.fingerprint_paths([source_mmd_path.resolve()]) if source_mmd_path.is_file() else ""
+            source_mmd_path = root / source_mmd if source_mmd and not _store().Path(source_mmd).is_absolute() else _store().Path(source_mmd)
+            current_hash = _store().odylith_context_cache.fingerprint_paths([source_mmd_path.resolve()]) if source_mmd_path.is_file() else ""
             needs_render = bool(current_hash and current_hash != str(row.get("source_mmd_hash", "")))
             results[diagram_id] = {
                 "diagram_id": diagram_id,
@@ -596,7 +600,7 @@ def _collect_topology_domains(
 ) -> list[dict[str, Any]]:
     normalized_components = {str(token).strip() for token in component_ids if str(token).strip()}
     results: list[dict[str, Any]] = []
-    for rule in _TOPOLOGY_DOMAIN_RULES:
+    for rule in _store()._TOPOLOGY_DOMAIN_RULES:
         matched_paths = [
             str(path).strip()
             for path in changed_paths
@@ -618,9 +622,9 @@ def _collect_topology_domains(
                 "domain_id": str(rule.get("domain_id", "")).strip(),
                 "label": str(rule.get("label", "")).strip(),
                 "summary": str(rule.get("summary", "")).strip(),
-                "matched_paths": _dedupe_strings(matched_paths),
-                "matched_components": _dedupe_strings(matched_components),
-                "required_reads": _dedupe_strings(
+                "matched_paths": _store()._dedupe_strings(matched_paths),
+                "matched_components": _store()._dedupe_strings(matched_components),
+                "required_reads": _store()._dedupe_strings(
                     [str(path).strip() for path in rule.get("required_reads", ()) if str(path).strip()]
                 ),
                 "checks": [str(check).strip() for check in rule.get("checks", ()) if str(check).strip()],
@@ -630,7 +634,7 @@ def _collect_topology_domains(
 
 def _component_matches_changed_path(entity: Mapping[str, Any], changed_path: str) -> bool:
     metadata = entity.get("metadata", {})
-    if not isinstance(metadata, Mapping):
+    if not isinstance(metadata, _store().Mapping):
         return False
     path_prefixes = metadata.get("path_prefixes", [])
     if not isinstance(path_prefixes, list):
@@ -649,7 +653,7 @@ def _load_architecture_diagrams(
     component_diagram_map: Mapping[str, Sequence[str]],
     direct_diagram_ids: Sequence[str],
 ) -> list[dict[str, Any]]:
-    ordered_diagram_ids = _dedupe_strings(diagram_ids)
+    ordered_diagram_ids = _store()._dedupe_strings(diagram_ids)
     if not ordered_diagram_ids:
         return []
     watch_rows = connection.execute(
@@ -661,7 +665,7 @@ def _load_architecture_diagrams(
     results: list[dict[str, Any]] = []
     direct_ids = set(str(token).strip() for token in direct_diagram_ids if str(token).strip())
     for diagram_id in ordered_diagram_ids:
-        entity = _entity_by_kind_id(connection, kind="diagram", entity_id=diagram_id)
+        entity = _store()._entity_by_kind_id(connection, kind="diagram", entity_id=diagram_id)
         if entity is None:
             continue
         watch_paths = watch_map.get(diagram_id, [])
@@ -686,9 +690,9 @@ def _load_architecture_diagrams(
                 "title": str(entity.get("title", "")).strip(),
                 "path": str(entity.get("path", "")).strip(),
                 "relation": relation,
-                "related_components": _dedupe_strings(related_components),
-                "matched_paths": _dedupe_strings(matched_paths),
-                "watch_paths": _dedupe_strings(watch_paths),
+                "related_components": _store()._dedupe_strings(related_components),
+                "matched_paths": _store()._dedupe_strings(matched_paths),
+                "watch_paths": _store()._dedupe_strings(watch_paths),
             }
         )
     return results
@@ -717,7 +721,7 @@ def _collect_diagram_watch_gaps(
             for entity in component_entities
             if _component_matches_changed_path(entity, token)
         ]
-        linked_diagram_ids = _dedupe_strings(
+        linked_diagram_ids = _store()._dedupe_strings(
             [
                 str(diagram.get("diagram_id", "")).strip()
                 for diagram in linked_diagrams
@@ -729,7 +733,7 @@ def _collect_diagram_watch_gaps(
         gaps.append(
             {
                 "path": token,
-                "component_ids": _dedupe_strings(matched_components),
+                "component_ids": _store()._dedupe_strings(matched_components),
                 "linked_diagram_ids": linked_diagram_ids,
             }
         )

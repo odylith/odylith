@@ -729,6 +729,54 @@ def test_context_engine_runtime_extracts_do_not_rebind_store_hosts() -> None:
         assert "host = _host()" not in text, f"store-host rebinding resurfaced in {path.relative_to(ROOT)}"
 
 
+def test_context_engine_packet_extracts_use_direct_support_owners() -> None:
+    paths = (
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_packet_summary_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_packet_architecture_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_registry_runtime.py",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "def bind(host: Any) -> None:" not in text, f"packet bind shim resurfaced in {path.relative_to(ROOT)}"
+        assert "_HOST_BIND_NAMES" not in text, f"packet host bind list resurfaced in {path.relative_to(ROOT)}"
+        assert "projection_runtime_bindings" not in text, f"generic projection binder resurfaced in {path.relative_to(ROOT)}"
+
+
+def test_context_engine_bind_shims_are_eliminated_from_remaining_extracts() -> None:
+    paths = (
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_hot_path_delivery_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_hot_path_governance_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_hot_path_packet_bootstrap_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_hot_path_packet_core_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_hot_path_packet_finalize_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_hot_path_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_hot_path_scope_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_memory_snapshot_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_packet_adaptive_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_packet_session_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_backlog_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_entity_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_query_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_search_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_runtime_learning_runtime.py",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "def bind(host: Any) -> None:" not in text, f"bind shim resurfaced in {path.relative_to(ROOT)}"
+        assert "_HOST_BIND_NAMES" not in text, f"host bind list resurfaced in {path.relative_to(ROOT)}"
+        assert "globals().update({" not in text, f"globals injection resurfaced in {path.relative_to(ROOT)}"
+
+
+def test_context_engine_legacy_binding_modules_are_deleted() -> None:
+    paths = (
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_hot_path_packet_bindings.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_packet_runtime_bindings.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_runtime_bindings.py",
+    )
+    for path in paths:
+        assert not path.exists(), f"legacy binding module survived cleanup: {path.relative_to(ROOT)}"
+
+
 def test_selected_runtime_extracts_do_not_rebind_host_modules() -> None:
     paths = (
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_code_graph_runtime.py",

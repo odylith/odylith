@@ -903,7 +903,7 @@
         ? payload.current_workstreams_by_window
         : null;
       const windowKey = state && state.window === "24h" ? "24h" : "48h";
-      if (payloadRowsByWindow && Array.isArray(payloadRowsByWindow[windowKey])) {
+      if (payloadRowsByWindow && Array.isArray(payloadRowsByWindow[windowKey]) && payloadRowsByWindow[windowKey].length) {
         return payloadRowsByWindow[windowKey];
       }
       return Array.isArray(payload && payload.current_workstreams) ? payload.current_workstreams : [];
@@ -1138,20 +1138,62 @@
           .map((row) => String(row && row.idea_id ? row.idea_id : "").trim())
           .filter((token) => WORKSTREAM_RE.test(token))
       );
+      const sortScopedIds = (ids, signalMap = null) => ids.slice().sort((left, right) => {
+        if (signalMap !== null) {
+          const delta = scopeSignalRank(signalMap[right]) - scopeSignalRank(signalMap[left]);
+          if (delta !== 0) return delta;
+        }
+        return String(left || "").localeCompare(String(right || ""));
+      });
+      const scopedBriefMap = payload && payload.standup_brief_scoped && typeof payload.standup_brief_scoped === "object"
+        ? payload.standup_brief_scoped[baseState.window]
+        : null;
+      const readyScopedBriefIds = (ids) => ids.filter((token) => {
+        if (!scopedBriefMap || typeof scopedBriefMap !== "object") return false;
+        const brief = scopedBriefMap[token];
+        return brief && typeof brief === "object" && String(brief.status || "").trim() === "ready";
+      });
       const signalMap = payloadWindowScopeSignals(payload, baseState);
       if (signalMap !== null) {
-        return Object.keys(signalMap)
+        const rankedSignalIds = Object.keys(signalMap)
           .filter((token) => WORKSTREAM_RE.test(String(token || "").trim()))
           .filter((token) => !validIds.size || validIds.has(String(token || "").trim()))
           .filter((token) => scopeSignalRank(signalMap[token]) >= 2)
-          .sort((left, right) => {
-            const delta = scopeSignalRank(signalMap[right]) - scopeSignalRank(signalMap[left]);
-            if (delta !== 0) return delta;
-            return String(left || "").localeCompare(String(right || ""));
-          });
+        if (rankedSignalIds.length) {
+          return sortScopedIds(rankedSignalIds, signalMap);
+        }
+        if (scopedBriefMap && typeof scopedBriefMap === "object") {
+          const scopedBriefIds = Object.keys(scopedBriefMap)
+            .filter((token) => WORKSTREAM_RE.test(String(token || "").trim()))
+            .filter((token) => !validIds.size || validIds.has(String(token || "").trim()));
+          const readyIds = readyScopedBriefIds(scopedBriefIds);
+          if (readyIds.length) {
+            return sortScopedIds(readyIds, signalMap);
+          }
+          const payloadScopedIds = payloadVerifiedScopedWorkstreamIds(payload, baseState);
+          if (payloadScopedIds !== null) {
+            const filteredPayloadScopedIds = payloadScopedIds.filter((token) => !validIds.size || validIds.has(token));
+            const readyPayloadIds = readyScopedBriefIds(filteredPayloadScopedIds);
+            if (readyPayloadIds.length) {
+              return sortScopedIds(readyPayloadIds, signalMap);
+            }
+            if (filteredPayloadScopedIds.length) {
+              return sortScopedIds(filteredPayloadScopedIds, signalMap);
+            }
+          }
+          if (scopedBriefIds.length) {
+            return sortScopedIds(scopedBriefIds, signalMap);
+          }
+        }
       }
       const payloadScopedIds = payloadVerifiedScopedWorkstreamIds(payload, baseState);
       if (payloadScopedIds !== null) {
+        const readyIds = readyScopedBriefIds(payloadScopedIds);
+        if (readyIds.length) {
+          return sortScopedIds(
+            readyIds.filter((token) => !validIds.size || validIds.has(token))
+          );
+        }
         return payloadScopedIds.filter((token) => !validIds.size || validIds.has(token));
       }
       const strictCounts = new Map();

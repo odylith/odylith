@@ -11,9 +11,6 @@ from odylith.runtime.common.consumer_profile import write_consumer_profile
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import sync_session
 
-session_packet_runtime.bind(store.__dict__)
-surface_runtime.bind(store.__dict__)
-
 
 def test_load_backlog_detail_uses_cached_runtime_projection_rows(monkeypatch, tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"

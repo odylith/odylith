@@ -3,8 +3,6 @@ from __future__ import annotations
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_finalize_runtime as hot_path_packet
 
-hot_path_packet.bind(store.__dict__)
-
 
 def test_compact_hot_path_runtime_packet_preserves_proof_state_metadata() -> None:
     compact = hot_path_packet._compact_hot_path_runtime_packet(  # noqa: SLF001

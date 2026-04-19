@@ -353,7 +353,11 @@
               ...drift.source_current_workstreams,
               ...drift.source_active_members,
               ...drift.source_completed_members,
-              ...runtimeCurrentWorkstreamIds(payload),
+              ...(
+                normalizedSourceTruth.kind === "source_truth"
+                  ? []
+                  : runtimeCurrentWorkstreamIds(payload)
+              ),
             ])
           )
             .map((ideaId) => {
@@ -367,7 +371,12 @@
         ...payload,
         release_summary: sourceReleaseSummary,
         current_workstreams_by_window: normalizedSourceTruth.kind === "source_truth"
-          ? (normalizedSourceTruth.current_workstreams_by_window && typeof normalizedSourceTruth.current_workstreams_by_window === "object"
+          ? (exactCurrentRows.length
+            ? {
+                "24h": currentWorkstreamRows.map((row) => ({ ...row })),
+                "48h": currentWorkstreamRows.map((row) => ({ ...row })),
+              }
+            : normalizedSourceTruth.current_workstreams_by_window && typeof normalizedSourceTruth.current_workstreams_by_window === "object"
             ? {
                 "24h": Array.isArray(normalizedSourceTruth.current_workstreams_by_window["24h"])
                   ? normalizedSourceTruth.current_workstreams_by_window["24h"].slice()

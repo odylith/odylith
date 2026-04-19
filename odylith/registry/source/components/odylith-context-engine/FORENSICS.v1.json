@@ -42,10 +42,10 @@
     "empty_reasons": [],
     "explicit_event_count": 95,
     "mapped_workstream_evidence_count": 65,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 95
+    "timeline_event_count": 96
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -54,6 +54,30 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_architecture_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_query_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_registry_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_runtime_bindings.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_store.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_runtime_support.py"
+      ],
+      "confidence": "high",
+      "event_index": 265,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/context_engine/odylith_context_engine_packet_architecture_runtime.py, src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py +7 more",
+      "ts_iso": "2026-04-18T20:51:50-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",

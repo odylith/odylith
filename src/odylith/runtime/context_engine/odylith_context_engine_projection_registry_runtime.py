@@ -2,13 +2,38 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
+from typing import Mapping
 
-from odylith.runtime.context_engine import odylith_context_engine_projection_runtime_bindings
+from odylith.runtime.common.value_coercion import normalize_string_list
 from odylith.runtime.context_engine import odylith_context_engine_registry_detail_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
+from odylith.runtime.governance import component_registry_intelligence as component_registry
 
-def bind(host: Any) -> None:
-    odylith_context_engine_projection_runtime_bindings.bind_projection_runtime(globals(), host)
+# This module only needs a local warm-runtime fingerprint hint to decide
+# whether a cheap grounding-light detail read should reuse cached rows.
+_PROCESS_WARM_CACHE_FINGERPRINTS: dict[str, str] = {}
+_cached_projection_rows = odylith_context_engine_projection_search_runtime._cached_projection_rows
+_connect = odylith_context_engine_projection_search_runtime._connect
+_dedupe_strings = normalize_string_list
+_warm_runtime = odylith_context_engine_projection_search_runtime._warm_runtime
+_apply_odylith_component_index_ablation = (
+    odylith_context_engine_runtime_learning_runtime._apply_odylith_component_index_ablation
+)
+_apply_odylith_registry_snapshot_ablation = (
+    odylith_context_engine_runtime_learning_runtime._apply_odylith_registry_snapshot_ablation
+)
+_odylith_ablation_active = odylith_context_engine_runtime_learning_runtime._odylith_ablation_active
+_odylith_switch_snapshot = odylith_context_engine_runtime_learning_runtime._odylith_switch_snapshot
+
+
+def _json_list(raw: str) -> list[str]:
+    parsed = json.loads(str(raw or "[]"))
+    return [str(item).strip() for item in parsed if str(item).strip()] if isinstance(parsed, list) else []
+
 
 def _component_entry_from_runtime_row(row: Mapping[str, Any]) -> component_registry.ComponentEntry:
     metadata = json.loads(str(row["metadata_json"] or "{}"))

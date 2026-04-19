@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+def _store():
+    from odylith.runtime.context_engine import odylith_context_engine_store as store
+
+    return store
+
+
 from typing import Any
 from typing import Mapping
 
@@ -10,12 +16,8 @@ from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import path_bundle_codec
-from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bindings
 from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.governance import proof_state as proof_state_runtime
-
-def bind(host: Any) -> None:
-    odylith_context_engine_hot_path_packet_bindings.bind_hot_path_packet_runtime(globals(), host)
 
 def _compact_bootstrap_or_brief_hot_path_context_packet(
     *,
@@ -86,8 +88,8 @@ def _compact_bootstrap_or_brief_hot_path_context_packet(
     precision_score = int(retrieval_plan.get("precision_score", 0) or 0)
     if packet_state == "gated_ambiguous" and has_non_shared_anchor and precision_score < 27:
         precision_score = 27
-    selected_counts_payload = _decode_compact_selected_counts(retrieval_plan.get("selected_counts"))
-    selected_counts_token = _encode_compact_selected_counts(selected_counts_payload)
+    selected_counts_payload = _store()._decode_compact_selected_counts(retrieval_plan.get("selected_counts"))
+    selected_counts_token = _store()._encode_compact_selected_counts(selected_counts_payload)
     retrieval_miss_recovery = (
         dict(retrieval_plan.get("miss_recovery", {}))
         if isinstance(retrieval_plan.get("miss_recovery"), Mapping)
@@ -187,7 +189,7 @@ def _compact_bootstrap_or_brief_hot_path_context_packet(
     if compact_route:
         compact_context_packet["route"] = compact_route
 
-    execution_profile = tooling_memory_contracts.compact_execution_profile_mapping(
+    execution_profile = _store().tooling_memory_contracts.compact_execution_profile_mapping(
         dict(context_packet.get("execution_profile", {}))
         if isinstance(context_packet.get("execution_profile"), Mapping)
         else {}
@@ -199,7 +201,7 @@ def _compact_bootstrap_or_brief_hot_path_context_packet(
             "selection_mode": "narrow_first",
             "delegate_preference": "hold_local",
         }
-    execution_profile_token = tooling_memory_contracts.encode_execution_profile_token(execution_profile)
+    execution_profile_token = _store().tooling_memory_contracts.encode_execution_profile_token(execution_profile)
     if execution_profile_token and str(packet_kind or "").strip() not in {"session_brief", "bootstrap_session"}:
         compact_context_packet["execution_profile"] = {"token": execution_profile_token}
 
@@ -271,9 +273,9 @@ def _compact_bootstrap_or_brief_hot_path_delivery(
         else {}
     )
     changed_paths = (
-        _normalized_string_list(payload.get("changed_paths"))
-        or _normalized_string_list(anchors.get("changed_paths"))
-        or _normalized_string_list(anchors.get("explicit_paths"))
+        _store()._normalized_string_list(payload.get("changed_paths"))
+        or _store()._normalized_string_list(anchors.get("changed_paths"))
+        or _store()._normalized_string_list(anchors.get("explicit_paths"))
     )
     compact_context_packet, has_non_shared_anchor = _compact_bootstrap_or_brief_hot_path_context_packet(
         packet_kind=packet_kind,
@@ -331,10 +333,10 @@ def _compact_bootstrap_or_brief_hot_path_delivery(
             for key, value in dict(payload.get("presentation_policy", {})).items()
             if value not in ("", [], {}, None, False)
         }
-    relevant_docs = _normalized_string_list(payload.get("relevant_docs"))
+    relevant_docs = _store()._normalized_string_list(payload.get("relevant_docs"))
     if relevant_docs:
         compact["relevant_docs"] = relevant_docs[:2]
-    recommended_commands = _normalized_string_list(payload.get("recommended_commands"))
+    recommended_commands = _store()._normalized_string_list(payload.get("recommended_commands"))
     if recommended_commands:
         compact["recommended_commands"] = recommended_commands[:2]
     recommended_tests = [
@@ -381,8 +383,8 @@ def _compact_bootstrap_or_brief_hot_path_delivery(
     return compact
 
 def _compact_governance_validation_bundle_for_hot_path(bundle: Mapping[str, Any]) -> dict[str, Any]:
-    recommended_commands = _normalized_string_list(bundle.get("recommended_commands"))
-    strict_gate_commands = _normalized_string_list(bundle.get("strict_gate_commands"))
+    recommended_commands = _store()._normalized_string_list(bundle.get("recommended_commands"))
+    strict_gate_commands = _store()._normalized_string_list(bundle.get("strict_gate_commands"))
     compact = {
         "recommended_command_count": len(recommended_commands),
         "strict_gate_command_count": len(strict_gate_commands),
@@ -467,10 +469,10 @@ def _compact_governance_obligations_for_hot_path(obligations: Mapping[str, Any])
         )
         if linked_bug_count > 0:
             compact["linked_bug_count"] = linked_bug_count
-    closeout_docs = _normalized_string_list(obligations.get("closeout_docs"))
+    closeout_docs = _store()._normalized_string_list(obligations.get("closeout_docs"))
     if closeout_docs:
         compact["closeout_doc_count"] = len(closeout_docs)
-    workstream_state_actions = _normalized_string_list(obligations.get("workstream_state_actions"))
+    workstream_state_actions = _store()._normalized_string_list(obligations.get("workstream_state_actions"))
     if workstream_state_actions:
         compact["workstream_state_action_count"] = len(workstream_state_actions)
     return {
@@ -496,7 +498,7 @@ def _compact_governance_surface_refs_for_hot_path(surface_refs: Mapping[str, Any
                     token
                     for token in [
                         _compact_hot_path_surface_reason_token(token)
-                        for token in _normalized_string_list(value)[:1]
+                        for token in _store()._normalized_string_list(value)[:1]
                     ]
                     if token
                 ),
@@ -517,14 +519,14 @@ def _compact_governance_surface_refs_for_hot_path(surface_refs: Mapping[str, Any
             if reason
         ]
     grouped_surface_union = sorted(
-        _dedupe_strings(
+        _store()._dedupe_strings(
             surface
             for reason, surfaces in grouped_reasons.items()
             if reason
             for surface in surfaces
         )
     )
-    effective_surface_count = len(grouped_surface_union) if grouped_surface_union else len(_dedupe_strings(impacted))
+    effective_surface_count = len(grouped_surface_union) if grouped_surface_union else len(_store()._dedupe_strings(impacted))
     if effective_surface_count > 0:
         compact["surface_count"] = effective_surface_count
     return compact
@@ -558,7 +560,7 @@ def _compact_governance_signal_for_hot_path(
             compact[key] = value
     surface_count = max(
         int(surface_refs.get("surface_count", 0) or 0),
-        len(_normalized_string_list(surface_refs.get("surfaces"))),
+        len(_store()._normalized_string_list(surface_refs.get("surfaces"))),
     )
     if surface_count > 0:
         compact["surface_count"] = surface_count
@@ -631,7 +633,7 @@ def _hot_path_governance_obligations(
 
 def _validation_bundle_command_count(bundle: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
     return max(
-        len(_normalized_string_list(bundle.get(list_key))),
+        len(_store()._normalized_string_list(bundle.get(list_key))),
         int(bundle.get(count_key, 0) or 0),
     )
 

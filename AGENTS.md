@@ -194,6 +194,9 @@ Odylith is a product repo, not a host repo.
 - Treat AI slop as a regression in this repository.
 - Do not ship fake modularization. `def _host()` plus a wall of rebound private
   host symbols is banned.
+- Do not replace that shim with `bind(host)`, `_HOST_BIND_NAMES`, generic
+  `bind_*_runtime(globals(), host)` injection, or scratch-local bind lists that
+  still hide the real dependency graph.
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
   shared owner is appropriate.

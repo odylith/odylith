@@ -2,21 +2,20 @@
 
 from __future__ import annotations
 
+def _store():
+    from odylith.runtime.context_engine import odylith_context_engine_store as store
+
+    return store
+
+
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
 from typing import Any
-
-
-def bind(host: Any) -> None:
-    getter = host.__getitem__ if isinstance(host, dict) else lambda name: getattr(host, name)
-    for name in ('Any', 'Mapping', 'Path', 'SESSION_STALE_SECONDS', 'Sequence', '_PROCESS_PATH_SCOPE_CACHE', '_SESSION_CLAIM_MODES', '_WORKSTREAM_SELECTION_CONFIDENT_SCORE', '_WORKSTREAM_SELECTION_GAP_MIN', '_add_workstream_component_evidence', '_add_workstream_diagram_evidence', '_add_workstream_path_evidence', '_base_workstream_candidate', '_cached_projection_rows', '_candidate', '_components_for_paths', '_dedupe_strings', '_engineering_note_summary', '_entity_by_kind_id', '_entity_from_row', '_extract_path_refs', '_finalize_workstream_candidates', '_git_branch_name', '_git_head_oid', '_json_list', '_load_component_match_rows_from_components', '_normalize_changed_path_list', '_normalize_repo_token', '_normalized_path_match_type', '_normalized_string_list', '_parse_component_tokens', '_path_fingerprint', '_path_signal_profile', '_path_touches_watch', '_prioritize_scope_paths', '_prune_low_precision_workstream_candidates', '_selection_payload', '_summarize_entity', '_utc_now', '_workspace_activity_fingerprint', '_workstream_has_path_signal', '_workstream_token', 'age_seconds', 'ambiguity_class', 'analysis_paths', 'audit', 'authority_graph', 'authority_graph_counts', 'auto_claim_paths', 'benchmark_summary', 'best_path_depth', 'blast_radius', 'blast_radius_counts', 'bootstraps_root', 'broad_only', 'bucket', 'bug_rows', 'cache_key', 'cache_signature', 'cached_scope', 'candidate', 'candidate_by_id', 'candidate_map', 'candidate_paths', 'candidate_rows', 'candidates', 'changed_paths', 'claim_mode', 'claim_sets', 'claimed_paths', 'claimed_workstream', 'claims', 'code_edge_rows', 'code_neighbors', 'compact', 'compact_authority_counts', 'compact_benchmark_summary', 'compact_blast_radius', 'compact_coverage', 'compact_execution_hint', 'compact_fallback_scan', 'compact_historical', 'competing_candidates', 'component', 'component_entities', 'component_id', 'component_ids', 'component_map', 'component_rows', 'components', 'confidence', 'connection', 'contract_consumers', 'contract_refs', 'contract_touchpoint_count', 'coverage', 'covered_by_runbooks', 'degraded', 'detail_level', 'diagram', 'diagram_ids', 'diagram_watch_gap_count', 'direct', 'direct_match_rows', 'documented_by', 'documents', 'domain', 'dt', 'empirical_score', 'entity', 'exact_path_hits', 'execution_hint', 'existing_session', 'expires', 'explicit', 'explicit_claims', 'explicit_entity', 'explicit_paths', 'explicit_workstream', 'failure_count', 'fallback_scan', 'field', 'full_scan_reason', 'generated_surfaces', 'governance', 'hinted_workstream', 'historical_evidence', 'history', 'include_stale', 'intent', 'invoked_by_make', 'item', 'json', 'judgment', 'judgment_hint', 'judgment_reason', 'key', 'lease_expires', 'lease_seconds', 'limit', 'linked_components', 'linked_diagrams', 'make_invocations', 'match', 'match_rows', 'match_type', 'matched_by', 'matched_components', 'matched_id_set', 'matched_ids', 'matched_paths', 'matched_workstreams', 'metadata', 'namespace', 'normalized', 'normalized_changed_paths', 'normalized_component_id', 'normalized_components', 'normalized_workstream', 'note_components', 'note_id', 'note_kind', 'note_path', 'note_paths', 'note_rows', 'note_workstreams', 'now', 'odylith_context_cache', 'operator_consequence_count', 'os', 'overlap', 'packet_state', 'parsed', 'path', 'path_ref', 'payload', 'placeholders', 'projection_snapshot_path', 'prune', 'prune_runtime_records', 'query', 'ranked', 'ratio', 're', 'reason', 'recent_failure', 'record', 'relation', 'repo_dirty_paths', 'repo_root', 'required_reads', 'resolved', 'results', 'reverse', 'root', 'row', 'rows', 'runbook_covers', 'runtime_request_namespace', 'scope_token', 'scoped_working_tree_paths', 'score_gap', 'scored', 'search_body', 'second_score', 'seed', 'seen_paths', 'selected', 'selected_id', 'selected_payload', 'selected_workstream', 'selection_reason', 'selection_state', 'session_id', 'session_record_signature', 'session_seed_paths', 'sessions_root', 'socket', 'source_key', 'source_kind', 'source_path', 'state', 'strong_candidate_count', 'strong_signals', 'summary_only', 'target', 'target_key', 'target_path', 'targets', 'test_rows', 'text', 'token', 'top', 'top_candidate', 'top_evidence', 'top_id', 'top_matches_judgment', 'top_payload', 'top_score', 'top_workstream', 'topology_domains', 'touched_paths', 'traceability_match_rows', 'unresolved_question_count', 'updated', 'use_working_tree', 'validation_obligation_count', 'value', 'watch_path_hits', 'working_tree_scope', 'workstream', 'workstream_entities', 'workstream_id', 'workstream_ids', 'workstream_rows'):
-        try:
-            globals()[name] = getter(name)
-        except (AttributeError, KeyError):
-            continue
 
 
 _MAX_SESSION_SCOPE_PATHS = 12
 _SHARED_SCOPE_RESCUE_MAX_PATHS = 3
+_extract_path_refs = odylith_context_engine_projection_search_runtime._extract_path_refs
 _PATH_CATEGORY_PRIORITY = {
     "implementation": 0,
     "contract": 1,
@@ -34,11 +33,8 @@ _PATH_CATEGORY_PRIORITY = {
 
 
 def _intent_anchor_paths(*, repo_root: Path, intent: str, repo_dirty_paths: Sequence[str]) -> list[str]:
-    extractor = globals().get("_extract_path_refs")
-    if not callable(extractor):
-        return []
     try:
-        candidates = extractor(text=str(intent or "").strip(), repo_root=repo_root)
+        candidates = _extract_path_refs(text=str(intent or "").strip(), repo_root=repo_root)
     except TypeError:
         return []
     if not isinstance(candidates, list):
@@ -46,16 +42,16 @@ def _intent_anchor_paths(*, repo_root: Path, intent: str, repo_dirty_paths: Sequ
     repo_dirty = {str(token).strip() for token in repo_dirty_paths if str(token).strip()}
     normalized: list[str] = []
     for raw in candidates:
-        token = _normalize_repo_token(str(raw), repo_root=repo_root)
+        token = _store()._normalize_repo_token(str(raw), repo_root=repo_root)
         if not token:
             continue
         if token in repo_dirty or (repo_root / token).exists():
             normalized.append(token)
-    return _prioritize_scope_paths(_dedupe_strings(normalized), max_paths=4)
+    return _prioritize_scope_paths(_store()._dedupe_strings(normalized), max_paths=4)
 
 
 def _shared_scope_rescue_paths(repo_dirty_paths: Sequence[str]) -> list[str]:
-    normalized = _dedupe_strings([str(path_ref).strip() for path_ref in repo_dirty_paths if str(path_ref).strip()])
+    normalized = _store()._dedupe_strings([str(path_ref).strip() for path_ref in repo_dirty_paths if str(path_ref).strip()])
     if not normalized:
         return []
     preferred = [
@@ -73,12 +69,12 @@ def _shared_scope_rescue_paths(repo_dirty_paths: Sequence[str]) -> list[str]:
 
 
 def _prioritize_scope_paths(paths: Sequence[str], *, max_paths: int = _MAX_SESSION_SCOPE_PATHS) -> list[str]:
-    normalized = _dedupe_strings([str(token) for token in paths if str(token).strip()])
+    normalized = _store()._dedupe_strings([str(token) for token in paths if str(token).strip()])
     if len(normalized) <= max(1, int(max_paths)):
         return list(normalized)
     ranked: list[tuple[tuple[int, int, int, int, str], str]] = []
     for index, path_ref in enumerate(normalized):
-        profile = _path_signal_profile(path_ref)
+        profile = _store()._path_signal_profile(path_ref)
         category = str(profile.get("category", "other")).strip() or "other"
         shared = bool(profile.get("shared"))
         weight = int(profile.get("weight", 0) or 0)
@@ -101,14 +97,14 @@ def _prioritize_scope_paths(paths: Sequence[str], *, max_paths: int = _MAX_SESSI
 
 def _compact_architecture_audit_for_packet(audit: Mapping[str, Any], *, packet_state: str) -> dict[str, Any]:
     summary_only = str(packet_state or "").strip() == "gated_broad_scope"
-    coverage = dict(audit.get("coverage", {})) if isinstance(audit.get("coverage"), Mapping) else {}
+    coverage = dict(audit.get("coverage", {})) if isinstance(audit.get("coverage"), _store().Mapping) else {}
     benchmark_summary = (
-        dict(audit.get("benchmark_summary", {})) if isinstance(audit.get("benchmark_summary"), Mapping) else {}
+        dict(audit.get("benchmark_summary", {})) if isinstance(audit.get("benchmark_summary"), _store().Mapping) else {}
     )
-    execution_hint = dict(audit.get("execution_hint", {})) if isinstance(audit.get("execution_hint"), Mapping) else {}
-    blast_radius = dict(audit.get("blast_radius", {})) if isinstance(audit.get("blast_radius"), Mapping) else {}
-    authority_graph = dict(audit.get("authority_graph", {})) if isinstance(audit.get("authority_graph"), Mapping) else {}
-    historical_evidence = dict(audit.get("historical_evidence", {})) if isinstance(audit.get("historical_evidence"), Mapping) else {}
+    execution_hint = dict(audit.get("execution_hint", {})) if isinstance(audit.get("execution_hint"), _store().Mapping) else {}
+    blast_radius = dict(audit.get("blast_radius", {})) if isinstance(audit.get("blast_radius"), _store().Mapping) else {}
+    authority_graph = dict(audit.get("authority_graph", {})) if isinstance(audit.get("authority_graph"), _store().Mapping) else {}
+    historical_evidence = dict(audit.get("historical_evidence", {})) if isinstance(audit.get("historical_evidence"), _store().Mapping) else {}
     contract_touchpoint_count = (
         int(audit.get("contract_touchpoint_count", 0) or 0)
         if audit.get("contract_touchpoint_count") not in (None, "")
@@ -151,7 +147,7 @@ def _compact_architecture_audit_for_packet(audit: Mapping[str, Any], *, packet_s
         "topology_domain_ids": [
             str(row.get("domain_id", "")).strip()
             for row in audit.get("topology_domains", [])[:2]
-            if isinstance(row, Mapping) and str(row.get("domain_id", "")).strip()
+            if isinstance(row, _store().Mapping) and str(row.get("domain_id", "")).strip()
         ]
         if isinstance(audit.get("topology_domains"), list)
         else [],
@@ -159,7 +155,7 @@ def _compact_architecture_audit_for_packet(audit: Mapping[str, Any], *, packet_s
         "linked_component_ids": [
             str(row.get("component_id", "")).strip()
             for row in audit.get("linked_components", [])[:2]
-            if isinstance(row, Mapping) and str(row.get("component_id", "")).strip()
+            if isinstance(row, _store().Mapping) and str(row.get("component_id", "")).strip()
         ]
         if isinstance(audit.get("linked_components"), list)
         else [],
@@ -167,7 +163,7 @@ def _compact_architecture_audit_for_packet(audit: Mapping[str, Any], *, packet_s
         "linked_diagram_ids": [
             str(row.get("diagram_id", "")).strip()
             for row in audit.get("linked_diagrams", [])[:2]
-            if isinstance(row, Mapping) and str(row.get("diagram_id", "")).strip()
+            if isinstance(row, _store().Mapping) and str(row.get("diagram_id", "")).strip()
         ]
         if isinstance(audit.get("linked_diagrams"), list)
         else [],
@@ -176,16 +172,16 @@ def _compact_architecture_audit_for_packet(audit: Mapping[str, Any], *, packet_s
             "confidence_tier": str(coverage.get("confidence_tier", "")).strip(),
             "score": int(coverage.get("score", 0) or 0),
             "path_ratio": float(dict(coverage.get("path_coverage", {})).get("ratio", 0.0) or 0.0)
-            if isinstance(coverage.get("path_coverage"), Mapping)
+            if isinstance(coverage.get("path_coverage"), _store().Mapping)
             else 0.0,
             "diagram_ratio": float(dict(coverage.get("diagram_coverage", {})).get("ratio", 0.0) or 0.0)
-            if isinstance(coverage.get("diagram_coverage"), Mapping)
+            if isinstance(coverage.get("diagram_coverage"), _store().Mapping)
             else 0.0,
             "contract_ratio": float(dict(coverage.get("contract_coverage", {})).get("ratio", 0.0) or 0.0)
-            if isinstance(coverage.get("contract_coverage"), Mapping)
+            if isinstance(coverage.get("contract_coverage"), _store().Mapping)
             else 0.0,
             "ownership_ratio": float(dict(coverage.get("ownership_coverage", {})).get("ratio", 0.0) or 0.0)
-            if isinstance(coverage.get("ownership_coverage"), Mapping)
+            if isinstance(coverage.get("ownership_coverage"), _store().Mapping)
             else 0.0,
             "unresolved_edge_count": int(coverage.get("unresolved_edge_count", 0) or 0),
         }
@@ -193,19 +189,19 @@ def _compact_architecture_audit_for_packet(audit: Mapping[str, Any], *, packet_s
         else {},
         "blast_radius": {
             "components": int(dict(blast_radius.get("counts", {})).get("components", 0) or 0)
-            if isinstance(blast_radius.get("counts"), Mapping)
+            if isinstance(blast_radius.get("counts"), _store().Mapping)
             else 0,
             "diagrams": int(dict(blast_radius.get("counts", {})).get("diagrams", 0) or 0)
-            if isinstance(blast_radius.get("counts"), Mapping)
+            if isinstance(blast_radius.get("counts"), _store().Mapping)
             else 0,
             "docs": int(dict(blast_radius.get("counts", {})).get("docs", 0) or 0)
-            if isinstance(blast_radius.get("counts"), Mapping)
+            if isinstance(blast_radius.get("counts"), _store().Mapping)
             else 0,
             "workstreams": int(dict(blast_radius.get("counts", {})).get("workstreams", 0) or 0)
-            if isinstance(blast_radius.get("counts"), Mapping)
+            if isinstance(blast_radius.get("counts"), _store().Mapping)
             else 0,
             "bugs": int(dict(blast_radius.get("counts", {})).get("bugs", 0) or 0)
-            if isinstance(blast_radius.get("counts"), Mapping)
+            if isinstance(blast_radius.get("counts"), _store().Mapping)
             else 0,
         }
         if blast_radius
@@ -230,13 +226,13 @@ def _compact_architecture_audit_for_packet(audit: Mapping[str, Any], *, packet_s
         else {},
         "authority_graph": {
             "nodes": int(dict(authority_graph.get("counts", {})).get("nodes", 0) or 0)
-            if isinstance(authority_graph.get("counts"), Mapping)
+            if isinstance(authority_graph.get("counts"), _store().Mapping)
             else 0,
             "edges": int(dict(authority_graph.get("counts", {})).get("edges", 0) or 0)
-            if isinstance(authority_graph.get("counts"), Mapping)
+            if isinstance(authority_graph.get("counts"), _store().Mapping)
             else 0,
             "traceability_edges": int(dict(authority_graph.get("counts", {})).get("traceability_edges", 0) or 0)
-            if isinstance(authority_graph.get("counts"), Mapping)
+            if isinstance(authority_graph.get("counts"), _store().Mapping)
             else 0,
         }
         if authority_graph
@@ -266,11 +262,11 @@ def _compact_packet_level_architecture_audit(audit: Mapping[str, Any]) -> dict[s
     compact: dict[str, Any] = {
         "resolved": bool(audit.get("resolved")),
     }
-    changed_paths = _normalized_string_list(audit.get("changed_paths"))
+    changed_paths = _store()._normalized_string_list(audit.get("changed_paths"))
     if changed_paths:
         compact["changed_paths"] = changed_paths[:2]
 
-    required_reads = _normalized_string_list(audit.get("required_reads"))
+    required_reads = _store()._normalized_string_list(audit.get("required_reads"))
     if required_reads:
         compact["required_reads"] = required_reads[:4]
         if len(required_reads) > 4:
@@ -280,8 +276,8 @@ def _compact_packet_level_architecture_audit(audit: Mapping[str, Any]) -> dict[s
 
     authority_graph_counts = (
         dict(dict(audit.get("authority_graph", {})).get("counts", {}))
-        if isinstance(audit.get("authority_graph"), Mapping)
-        and isinstance(dict(audit.get("authority_graph", {})).get("counts"), Mapping)
+        if isinstance(audit.get("authority_graph"), _store().Mapping)
+        and isinstance(dict(audit.get("authority_graph", {})).get("counts"), _store().Mapping)
         else {}
     )
     compact_authority_counts = {
@@ -300,7 +296,7 @@ def _compact_packet_level_architecture_audit(audit: Mapping[str, Any]) -> dict[s
         if value > 0:
             compact[key] = value
 
-    coverage = dict(audit.get("coverage", {})) if isinstance(audit.get("coverage"), Mapping) else {}
+    coverage = dict(audit.get("coverage", {})) if isinstance(audit.get("coverage"), _store().Mapping) else {}
     compact_coverage = {
         key: value
         for key, value in {
@@ -311,7 +307,7 @@ def _compact_packet_level_architecture_audit(audit: Mapping[str, Any]) -> dict[s
     if compact_coverage:
         compact["coverage"] = compact_coverage
 
-    execution_hint = dict(audit.get("execution_hint", {})) if isinstance(audit.get("execution_hint"), Mapping) else {}
+    execution_hint = dict(audit.get("execution_hint", {})) if isinstance(audit.get("execution_hint"), _store().Mapping) else {}
     compact_execution_hint = {
         key: value
         for key, value in {
@@ -329,7 +325,7 @@ def _compact_packet_level_architecture_audit(audit: Mapping[str, Any]) -> dict[s
     full_scan_reason = str(audit.get("full_scan_reason", "")).strip()
     if full_scan_reason:
         compact["full_scan_reason"] = full_scan_reason
-    fallback_scan = dict(audit.get("fallback_scan", {})) if isinstance(audit.get("fallback_scan"), Mapping) else {}
+    fallback_scan = dict(audit.get("fallback_scan", {})) if isinstance(audit.get("fallback_scan"), _store().Mapping) else {}
     compact_fallback_scan = {
         key: value
         for key, value in {
@@ -349,7 +345,7 @@ def _compact_packet_level_architecture_audit(audit: Mapping[str, Any]) -> dict[s
                 if value not in ("", [], {}, None)
             }
             for row in fallback_scan.get("results", [])[:4]
-            if isinstance(row, Mapping) and str(row.get("path", "")).strip()
+            if isinstance(row, _store().Mapping) and str(row.get("path", "")).strip()
         ]
         if results:
             compact_fallback_scan["results"] = results
@@ -367,9 +363,9 @@ def _path_prefixes(path_ref: str) -> tuple[str, ...]:
 
 
 def _selector_projection_signature(*, repo_root: Path) -> str:
-    root = Path(repo_root).resolve()
-    snapshot = projection_snapshot_path(repo_root=root)
-    return _path_fingerprint(snapshot) or "projection_snapshot:missing"
+    root = _store().Path(repo_root).resolve()
+    snapshot = _store().projection_snapshot_path(repo_root=root)
+    return _store()._path_fingerprint(snapshot) or "projection_snapshot:missing"
 
 
 def _selector_cache_fetch(
@@ -378,16 +374,16 @@ def _selector_cache_fetch(
     namespace: str,
     payload: Mapping[str, Any],
 ) -> tuple[dict[str, Any] | None, str, str]:
-    root = Path(repo_root).resolve()
+    root = _store().Path(repo_root).resolve()
     cache_key = f"{root}:selector:{str(namespace).strip()}"
-    cache_signature = odylith_context_cache.fingerprint_payload(
+    cache_signature = _store().odylith_context_cache.fingerprint_payload(
         {
             "projection_signature": _selector_projection_signature(repo_root=root),
             "namespace": str(namespace).strip(),
             **dict(payload),
         }
     )
-    cached = _PROCESS_PATH_SCOPE_CACHE.get(cache_key)
+    cached = _store()._PROCESS_PATH_SCOPE_CACHE.get(cache_key)
     if cached is None or cached[0] != cache_signature:
         return None, cache_key, cache_signature
     return dict(cached[1]), cache_key, cache_signature
@@ -403,7 +399,7 @@ def _selector_cache_store(
         key: value
         for key, value in dict(payload).items()
     }
-    _PROCESS_PATH_SCOPE_CACHE[cache_key] = (cache_signature, stored)
+    _store()._PROCESS_PATH_SCOPE_CACHE[cache_key] = (cache_signature, stored)
     return stored
 
 
@@ -454,8 +450,8 @@ def _candidate_rows_for_changed_paths(
     changed_paths: Sequence[str],
     index_payload: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
-    exact = dict(index_payload.get("exact", {})) if isinstance(index_payload.get("exact"), Mapping) else {}
-    prefix = dict(index_payload.get("prefix", {})) if isinstance(index_payload.get("prefix"), Mapping) else {}
+    exact = dict(index_payload.get("exact", {})) if isinstance(index_payload.get("exact"), _store().Mapping) else {}
+    prefix = dict(index_payload.get("prefix", {})) if isinstance(index_payload.get("prefix"), _store().Mapping) else {}
     selected: list[dict[str, Any]] = []
     seen: set[str] = set()
     for path_ref in changed_paths:
@@ -463,7 +459,7 @@ def _candidate_rows_for_changed_paths(
         if not normalized:
             continue
         for row in prefix.get(normalized, []):
-            if not isinstance(row, Mapping):
+            if not isinstance(row, _store().Mapping):
                 continue
             row_key = _path_index_row_key(row)
             if row_key in seen:
@@ -472,7 +468,7 @@ def _candidate_rows_for_changed_paths(
             selected.append(dict(row))
         for ancestor in _path_prefixes(normalized)[:-1]:
             for row in exact.get(ancestor, []):
-                if not isinstance(row, Mapping):
+                if not isinstance(row, _store().Mapping):
                     continue
                 row_key = _path_index_row_key(row)
                 if row_key in seen:
@@ -483,7 +479,7 @@ def _candidate_rows_for_changed_paths(
 
 
 def _component_path_match_rows(component_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    match_rows = _load_component_match_rows_from_components(component_rows)
+    match_rows = _store()._load_component_match_rows_from_components(component_rows)
     rows: list[dict[str, Any]] = []
     for row in match_rows:
         component_id = str(row.get("component_id", "")).strip()
@@ -493,7 +489,7 @@ def _component_path_match_rows(component_rows: Sequence[Mapping[str, Any]]) -> l
             str(row.get("spec_ref", "")).strip(),
             *[str(token).strip() for token in row.get("path_prefixes", []) if str(token).strip()],
         ]
-        for target_path in _dedupe_strings(candidates):
+        for target_path in _store()._dedupe_strings(candidates):
             rows.append(
                 {
                     "component_id": component_id,
@@ -528,20 +524,20 @@ def _workstream_selection(
     ) -> dict[str, Any]:
         selected_id = (
             str(selected_workstream.get("entity_id", "")).strip().upper()
-            if isinstance(selected_workstream, Mapping)
+            if isinstance(selected_workstream, _store().Mapping)
             else ""
         )
         top_id = (
             str(top_candidate.get("entity_id", "")).strip().upper()
-            if isinstance(top_candidate, Mapping)
+            if isinstance(top_candidate, _store().Mapping)
             else ""
         )
         selected_payload = (
             dict(selected_workstream)
-            if isinstance(selected_workstream, Mapping) and selected_id
+            if isinstance(selected_workstream, _store().Mapping) and selected_id
             else {}
         )
-        top_payload = dict(top_candidate) if isinstance(top_candidate, Mapping) and top_id else {}
+        top_payload = dict(top_candidate) if isinstance(top_candidate, _store().Mapping) and top_id else {}
         competing_candidates = [
             dict(row)
             for row in candidate_rows
@@ -570,9 +566,9 @@ def _workstream_selection(
     if explicit:
         selected = candidate_by_id.get(explicit)
         if selected is None:
-            explicit_entity = _entity_by_kind_id(connection, kind="workstream", entity_id=explicit)
+            explicit_entity = _store()._entity_by_kind_id(connection, kind="workstream", entity_id=explicit)
             if explicit_entity is not None:
-                selected = _base_workstream_candidate(explicit_entity)
+                selected = _store()._base_workstream_candidate(explicit_entity)
                 selected["selection_reason"] = "explicit workstream override"
         if selected is not None:
             return _selection_payload(
@@ -586,7 +582,7 @@ def _workstream_selection(
             )
         return _selection_payload(
             state="none",
-            reason=f"Explicit workstream `{explicit}` does not resolve in the runtime projection store.",
+            reason=f"Explicit workstream `{explicit}` does not resolve in the runtime projection _store().",
             selected_workstream={},
             top_candidate=top_candidate,
             score_gap=None,
@@ -604,27 +600,27 @@ def _workstream_selection(
             ambiguity_class="no_candidates",
         )
     top = dict(candidate_rows[0])
-    top_evidence = dict(top.get("evidence", {})) if isinstance(top.get("evidence"), Mapping) else {}
+    top_evidence = dict(top.get("evidence", {})) if isinstance(top.get("evidence"), _store().Mapping) else {}
     top_score = int(top_evidence.get("score", 0) or 0)
     second_score = (
         int(dict(candidate_rows[1].get("evidence", {})).get("score", 0) or 0)
-        if len(candidate_rows) > 1 and isinstance(candidate_rows[1], Mapping)
+        if len(candidate_rows) > 1 and isinstance(candidate_rows[1], _store().Mapping)
         else 0
     )
     score_gap = top_score - second_score
     broad_only = bool(top_evidence.get("broad_only"))
     strong_signals = int(top_evidence.get("strong_signal_count", 0) or 0)
-    judgment = dict(judgment_hint) if isinstance(judgment_hint, Mapping) else {}
-    hinted_workstream = _workstream_token(str(judgment.get("workstream_id", "")).strip())
-    top_workstream = _workstream_token(str(top.get("entity_id", "")).strip())
+    judgment = dict(judgment_hint) if isinstance(judgment_hint, _store().Mapping) else {}
+    hinted_workstream = _store()._workstream_token(str(judgment.get("workstream_id", "")).strip())
+    top_workstream = _store()._workstream_token(str(top.get("entity_id", "")).strip())
     top_matches_judgment = bool(
         hinted_workstream
         and top_workstream
         and hinted_workstream == top_workstream
-        and _workstream_has_path_signal(top)
+        and _store()._workstream_has_path_signal(top)
     )
     judgment_reason = str(judgment.get("reason", "")).strip()
-    if top_score < _WORKSTREAM_SELECTION_CONFIDENT_SCORE:
+    if top_score < _store()._WORKSTREAM_SELECTION_CONFIDENT_SCORE:
         if top_matches_judgment:
             return _selection_payload(
                 state="inferred_confident",
@@ -658,7 +654,7 @@ def _workstream_selection(
             confidence="low",
             ambiguity_class="broad_shared_only",
         )
-    if len(candidate_rows) > 1 and second_score > 0 and score_gap < _WORKSTREAM_SELECTION_GAP_MIN:
+    if len(candidate_rows) > 1 and second_score > 0 and score_gap < _store()._WORKSTREAM_SELECTION_GAP_MIN:
         ambiguity_class = "close_competition"
         strong_candidate_count = sum(
             1
@@ -705,16 +701,16 @@ def _workstream_selection(
     )
 
 def _bug_excerpt(text: str, field: str) -> str:
-    match = re.search(rf"-?\s*{re.escape(field)}:\s*(.+)", str(text or ""), re.MULTILINE)
+    match = _store().re.search(rf"-?\s*{_store().re.escape(field)}:\s*(.+)", str(text or ""), _store().re.MULTILINE)
     return str(match.group(1)).strip() if match is not None else ""
 
 def _session_record_path(*, repo_root: Path, session_id: str) -> Path:
     token = agent_runtime_contract.fallback_session_token(session_id)
-    return (sessions_root(repo_root=repo_root) / f"{token}.json").resolve()
+    return (_store().sessions_root(repo_root=repo_root) / f"{token}.json").resolve()
 
 def _bootstrap_record_path(*, repo_root: Path, session_id: str) -> Path:
     token = agent_runtime_contract.fallback_session_token(session_id)
-    return (bootstraps_root(repo_root=repo_root) / f"{token}.json").resolve()
+    return (_store().bootstraps_root(repo_root=repo_root) / f"{token}.json").resolve()
 
 def _parse_iso_utc(value: str) -> dt.datetime | None:
     token = str(value or "").strip()
@@ -722,19 +718,19 @@ def _parse_iso_utc(value: str) -> dt.datetime | None:
         return None
     normalized = token.replace("Z", "+00:00")
     try:
-        parsed = dt.datetime.fromisoformat(normalized)
+        parsed = _store().dt.datetime.fromisoformat(normalized)
     except ValueError:
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=dt.timezone.utc)
-    return parsed.astimezone(dt.timezone.utc)
+        parsed = parsed.replace(tzinfo=_store().dt.timezone.utc)
+    return parsed.astimezone(_store().dt.timezone.utc)
 
 def _normalize_claim_mode(value: str) -> str:
     token = str(value or "").strip().lower()
-    return token if token in _SESSION_CLAIM_MODES else "shared"
+    return token if token in _store()._SESSION_CLAIM_MODES else "shared"
 
 def _lease_expires_utc(*, lease_seconds: int) -> str:
-    expires = dt.datetime.now(dt.timezone.utc) + dt.timedelta(seconds=max(60, int(lease_seconds)))
+    expires = _store().dt.datetime.now(_store().dt.timezone.utc) + _store().dt.timedelta(seconds=max(60, int(lease_seconds)))
     return expires.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 def _is_session_expired(payload: Mapping[str, Any], *, now: dt.datetime) -> bool:
@@ -743,7 +739,7 @@ def _is_session_expired(payload: Mapping[str, Any], *, now: dt.datetime) -> bool
         return True
     updated = _parse_iso_utc(str(payload.get("updated_utc", "")).strip())
     age_seconds = (now - updated).total_seconds() if updated is not None else float("inf")
-    return age_seconds > SESSION_STALE_SECONDS
+    return age_seconds > _store().SESSION_STALE_SECONDS
 
 def _load_session_state(
     *,
@@ -751,10 +747,10 @@ def _load_session_state(
     session_id: str,
     include_stale: bool = False,
 ) -> dict[str, Any] | None:
-    payload = odylith_context_cache.read_json_object(_session_record_path(repo_root=repo_root, session_id=session_id))
+    payload = _store().odylith_context_cache.read_json_object(_session_record_path(repo_root=repo_root, session_id=session_id))
     if not payload:
         return None
-    if not include_stale and _is_session_expired(payload, now=dt.datetime.now(dt.timezone.utc)):
+    if not include_stale and _is_session_expired(payload, now=_store().dt.datetime.now(_store().dt.timezone.utc)):
         return None
     return payload
 
@@ -768,13 +764,13 @@ def _resolve_changed_path_scope_context(
     claimed_paths: Sequence[str] = (),
     intent: str = "",
 ) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    explicit = _normalize_changed_path_list(repo_root=root, values=explicit_paths)
-    explicit_claims = _normalize_changed_path_list(repo_root=root, values=claimed_paths)
+    root = _store().Path(repo_root).resolve()
+    explicit = _store()._normalize_changed_path_list(repo_root=root, values=explicit_paths)
+    explicit_claims = _store()._normalize_changed_path_list(repo_root=root, values=claimed_paths)
     scope_token = str(working_tree_scope or "repo").strip().lower()
     if scope_token not in {"repo", "session"}:
         scope_token = "repo"
-    namespace = runtime_request_namespace(
+    namespace = _store().runtime_request_namespace(
         repo_root=root,
         changed_paths=explicit,
         session_id=session_id,
@@ -782,21 +778,21 @@ def _resolve_changed_path_scope_context(
         working_tree_scope=scope_token,
     )
     session_record_signature = (
-        _path_fingerprint(_session_record_path(repo_root=root, session_id=session_id))
+        _store()._path_fingerprint(_session_record_path(repo_root=root, session_id=session_id))
         if str(session_id or "").strip()
         else ""
     )
     cache_key = f"{root}:path_scope:{str(namespace.get('request_namespace', '')).strip() or 'default'}"
-    cache_signature = odylith_context_cache.fingerprint_payload(
+    cache_signature = _store().odylith_context_cache.fingerprint_payload(
         {
             "use_working_tree": bool(use_working_tree),
             "working_tree_scope": scope_token,
             "intent": str(intent or "").strip(),
             "session_record_signature": session_record_signature,
-            "workspace_activity": _workspace_activity_fingerprint(repo_root=root) if use_working_tree else "",
+            "workspace_activity": _store()._workspace_activity_fingerprint(repo_root=root) if use_working_tree else "",
         }
     )
-    cached_scope = _PROCESS_PATH_SCOPE_CACHE.get(cache_key)
+    cached_scope = _store()._PROCESS_PATH_SCOPE_CACHE.get(cache_key)
     if cached_scope is not None and cached_scope[0] == cache_signature:
         return {
             key: list(value) if isinstance(value, list) else value
@@ -804,7 +800,7 @@ def _resolve_changed_path_scope_context(
         }
     repo_dirty_paths = (
         _prioritize_scope_paths(
-            governance.collect_meaningful_changed_paths(repo_root=root, changed_paths=(), include_git=True),
+            _store().governance.collect_meaningful_changed_paths(repo_root=root, changed_paths=(), include_git=True),
         )
         if use_working_tree
         else []
@@ -815,24 +811,24 @@ def _resolve_changed_path_scope_context(
         repo_dirty_paths=repo_dirty_paths,
     )
     existing_session = _load_session_state(repo_root=root, session_id=session_id, include_stale=False) if session_id else None
-    session_seed_paths = _dedupe_strings(
+    session_seed_paths = _store()._dedupe_strings(
         [
             *explicit,
             *explicit_claims,
             *intent_anchor_paths,
             *(
                 [str(token) for token in existing_session.get("explicit_paths", [])]
-                if isinstance(existing_session, Mapping) and isinstance(existing_session.get("explicit_paths"), list)
+                if isinstance(existing_session, _store().Mapping) and isinstance(existing_session.get("explicit_paths"), list)
                 else []
             ),
             *(
                 [str(token) for token in existing_session.get("claimed_paths", [])]
-                if isinstance(existing_session, Mapping) and isinstance(existing_session.get("claimed_paths"), list)
+                if isinstance(existing_session, _store().Mapping) and isinstance(existing_session.get("claimed_paths"), list)
                 else []
             ),
             *(
                 [str(token) for token in existing_session.get("analysis_paths", [])]
-                if isinstance(existing_session, Mapping) and isinstance(existing_session.get("analysis_paths"), list)
+                if isinstance(existing_session, _store().Mapping) and isinstance(existing_session.get("analysis_paths"), list)
                 else []
             ),
         ]
@@ -850,8 +846,8 @@ def _resolve_changed_path_scope_context(
             path_ref
             for path_ref in repo_dirty_paths
             if any(
-                _path_touches_watch(changed_path=path_ref, watch_path=seed)
-                or _path_touches_watch(changed_path=seed, watch_path=path_ref)
+                _store()._path_touches_watch(changed_path=path_ref, watch_path=seed)
+                or _store()._path_touches_watch(changed_path=seed, watch_path=path_ref)
                 for seed in session_seed_paths
             )
         ])
@@ -861,7 +857,7 @@ def _resolve_changed_path_scope_context(
         non_shared_dirty_paths = [
             path_ref
             for path_ref in repo_dirty_paths
-            if not bool(_path_signal_profile(path_ref).get("shared"))
+            if not bool(_store()._path_signal_profile(path_ref).get("shared"))
         ]
         if non_shared_dirty_paths:
             scoped_working_tree_paths = _prioritize_scope_paths(non_shared_dirty_paths)
@@ -871,20 +867,20 @@ def _resolve_changed_path_scope_context(
             scoped_working_tree_paths = _shared_scope_rescue_paths(repo_dirty_paths)
             degraded = not bool(scoped_working_tree_paths)
             scope_rescue_mode = "shared_only_seed" if scoped_working_tree_paths else ""
-    analysis_paths = _dedupe_strings([*explicit, *intent_anchor_paths, *scoped_working_tree_paths])
+    analysis_paths = _store()._dedupe_strings([*explicit, *intent_anchor_paths, *scoped_working_tree_paths])
     resolved = {
         "explicit_paths": explicit,
         "explicit_claim_paths": explicit_claims,
         "intent_anchor_paths": intent_anchor_paths,
         "repo_dirty_paths": repo_dirty_paths,
-        "scoped_working_tree_paths": _dedupe_strings(scoped_working_tree_paths),
+        "scoped_working_tree_paths": _store()._dedupe_strings(scoped_working_tree_paths),
         "analysis_paths": analysis_paths,
         "scope_rescue_mode": scope_rescue_mode,
         "working_tree_scope": scope_token,
         "working_tree_scope_degraded": degraded,
         "session_seed_paths": session_seed_paths,
     }
-    _PROCESS_PATH_SCOPE_CACHE[cache_key] = (cache_signature, resolved)
+    _store()._PROCESS_PATH_SCOPE_CACHE[cache_key] = (cache_signature, resolved)
     return {
         key: list(value) if isinstance(value, list) else value
         for key, value in resolved.items()
@@ -900,8 +896,8 @@ def _claim_sets(
     normalized_workstream = str(claimed_workstream or "").strip().upper()
     return {
         "claimed_workstreams": [normalized_workstream] if normalized_workstream else [],
-        "claimed_paths": _dedupe_strings([*map(str, auto_claim_paths), *map(str, claimed_paths)]),
-        "claimed_surfaces": _dedupe_strings([str(token) for token in generated_surfaces]),
+        "claimed_paths": _store()._dedupe_strings([*map(str, auto_claim_paths), *map(str, claimed_paths)]),
+        "claimed_surfaces": _store()._dedupe_strings([str(token) for token in generated_surfaces]),
     }
 
 def list_session_states(
@@ -911,14 +907,14 @@ def list_session_states(
     prune: bool = True,
 ) -> list[dict[str, Any]]:
     if prune and not include_stale:
-        prune_runtime_records(repo_root=repo_root)
-    root = sessions_root(repo_root=repo_root)
+        _store().prune_runtime_records(repo_root=repo_root)
+    root = _store().sessions_root(repo_root=repo_root)
     if not root.is_dir():
         return []
     rows: list[dict[str, Any]] = []
-    now = dt.datetime.now(dt.timezone.utc)
+    now = _store().dt.datetime.now(_store().dt.timezone.utc)
     for path in sorted(root.glob("*.json")):
-        payload = odylith_context_cache.read_json_object(path)
+        payload = _store().odylith_context_cache.read_json_object(path)
         if not payload:
             continue
         if not include_stale and _is_session_expired(payload, now=now):
@@ -935,19 +931,19 @@ def list_session_states(
                 "updated_utc": str(payload.get("updated_utc", "")).strip(),
                 "workstream": str(payload.get("workstream", "")).strip().upper(),
                 "intent": str(payload.get("intent", "")).strip(),
-                "touched_paths": _dedupe_strings([str(item) for item in payload.get("touched_paths", [])])
+                "touched_paths": _store()._dedupe_strings([str(item) for item in payload.get("touched_paths", [])])
                 if isinstance(payload.get("touched_paths"), list)
                 else [],
-                "explicit_paths": _dedupe_strings([str(item) for item in payload.get("explicit_paths", [])])
+                "explicit_paths": _store()._dedupe_strings([str(item) for item in payload.get("explicit_paths", [])])
                 if isinstance(payload.get("explicit_paths"), list)
                 else [],
-                "repo_dirty_paths": _dedupe_strings([str(item) for item in payload.get("repo_dirty_paths", [])])
+                "repo_dirty_paths": _store()._dedupe_strings([str(item) for item in payload.get("repo_dirty_paths", [])])
                 if isinstance(payload.get("repo_dirty_paths"), list)
                 else [],
-                "analysis_paths": _dedupe_strings([str(item) for item in payload.get("analysis_paths", [])])
+                "analysis_paths": _store()._dedupe_strings([str(item) for item in payload.get("analysis_paths", [])])
                 if isinstance(payload.get("analysis_paths"), list)
                 else [],
-                "generated_surfaces": _dedupe_strings([str(item) for item in payload.get("generated_surfaces", [])])
+                "generated_surfaces": _store()._dedupe_strings([str(item) for item in payload.get("generated_surfaces", [])])
                 if isinstance(payload.get("generated_surfaces"), list)
                 else [],
                 "claim_mode": _normalize_claim_mode(str(payload.get("claim_mode", "")).strip()),
@@ -986,7 +982,7 @@ def register_session_state(
     claimed_paths: Sequence[str] = (),
     lease_seconds: int = 15 * 60,
 ) -> dict[str, Any]:
-    prune_runtime_records(repo_root=repo_root)
+    _store().prune_runtime_records(repo_root=repo_root)
     claims = _claim_sets(
         claimed_workstream=workstream,
         generated_surfaces=generated_surfaces,
@@ -995,7 +991,7 @@ def register_session_state(
     )
     record = {
         "session_id": agent_runtime_contract.fallback_session_token(session_id),
-        "updated_utc": _utc_now(),
+        "updated_utc": _store()._utc_now(),
         "workstream": str(workstream or "").strip().upper(),
         "intent": str(intent or "").strip(),
         "turn_context": {
@@ -1003,13 +999,13 @@ def register_session_state(
             for key, value in dict(turn_context or {}).items()
             if value not in ("", [], {}, None)
         }
-        if isinstance(turn_context, Mapping)
+        if isinstance(turn_context, _store().Mapping)
         else {},
-        "touched_paths": _dedupe_strings([str(token) for token in touched_paths]),
-        "explicit_paths": _dedupe_strings([str(token) for token in explicit_paths]),
-        "repo_dirty_paths": _dedupe_strings([str(token) for token in repo_dirty_paths]),
-        "analysis_paths": _dedupe_strings([str(token) for token in analysis_paths]),
-        "generated_surfaces": _dedupe_strings([str(token) for token in generated_surfaces]),
+        "touched_paths": _store()._dedupe_strings([str(token) for token in touched_paths]),
+        "explicit_paths": _store()._dedupe_strings([str(token) for token in explicit_paths]),
+        "repo_dirty_paths": _store()._dedupe_strings([str(token) for token in repo_dirty_paths]),
+        "analysis_paths": _store()._dedupe_strings([str(token) for token in analysis_paths]),
+        "generated_surfaces": _store()._dedupe_strings([str(token) for token in generated_surfaces]),
         "claim_mode": _normalize_claim_mode(claim_mode),
         "lease_expires_utc": _lease_expires_utc(lease_seconds=int(lease_seconds)),
         "selection_state": str(selection_state or "").strip(),
@@ -1018,13 +1014,13 @@ def register_session_state(
         "claimed_workstreams": claims["claimed_workstreams"],
         "claimed_paths": claims["claimed_paths"],
         "claimed_surfaces": claims["claimed_surfaces"],
-        "branch_name": _git_branch_name(repo_root=repo_root),
-        "head_oid": _git_head_oid(repo_root=repo_root),
-        "hostname": socket.gethostname(),
-        "pid": os.getpid(),
+        "branch_name": _store()._git_branch_name(repo_root=repo_root),
+        "head_oid": _store()._git_head_oid(repo_root=repo_root),
+        "hostname": _store().socket.gethostname(),
+        "pid": _store().os.getpid(),
     }
     target = _session_record_path(repo_root=repo_root, session_id=str(record["session_id"]))
-    odylith_context_cache.write_json_if_changed(
+    _store().odylith_context_cache.write_json_if_changed(
         repo_root=repo_root,
         path=target,
         payload=record,
@@ -1039,9 +1035,9 @@ def _collect_impacted_components(
     changed_paths: Sequence[str],
     return_diagnostics: bool = False,
 ) -> list[dict[str, Any]] | tuple[list[dict[str, Any]], dict[str, Any]]:
-    normalized_changed_paths = _dedupe_strings(
+    normalized_changed_paths = _store()._dedupe_strings(
         [
-            _normalize_repo_token(str(path_ref).strip(), repo_root=repo_root)
+            _store()._normalize_repo_token(str(path_ref).strip(), repo_root=repo_root)
             for path_ref in changed_paths
             if str(path_ref).strip()
         ]
@@ -1053,7 +1049,7 @@ def _collect_impacted_components(
     }
     if not normalized_changed_paths:
         return ([], diagnostics) if return_diagnostics else []
-    component_rows = _cached_projection_rows(
+    component_rows = _store()._cached_projection_rows(
         repo_root=repo_root,
         cache_name="components_full_rows",
         loader=lambda: [
@@ -1063,7 +1059,7 @@ def _collect_impacted_components(
             ).fetchall()
         ],
     )
-    match_rows = _cached_projection_rows(
+    match_rows = _store()._cached_projection_rows(
         repo_root=repo_root,
         cache_name="component_path_match_rows",
         loader=lambda: _component_path_match_rows(component_rows),
@@ -1089,12 +1085,12 @@ def _collect_impacted_components(
         if not component_id or not target_path:
             continue
         if any(
-            _normalized_path_match_type(changed_path=path_ref, target_path=target_path)
+            _store()._normalized_path_match_type(changed_path=path_ref, target_path=target_path)
             for path_ref in normalized_changed_paths
         ):
             matched_id_set.add(component_id)
     component_entities = {
-        str(row.get("component_id", "")).strip(): _summarize_entity(_entity_from_row(kind="component", row=row))
+        str(row.get("component_id", "")).strip(): _store()._summarize_entity(_store()._entity_from_row(kind="component", row=row))
         for row in component_rows
         if str(row.get("component_id", "")).strip() in matched_id_set
     }
@@ -1118,9 +1114,9 @@ def _collect_impacted_workstreams(
     diagram_ids: Sequence[str],
     return_diagnostics: bool = False,
 ) -> list[dict[str, Any]] | tuple[list[dict[str, Any]], dict[str, Any]]:
-    normalized_changed_paths = _dedupe_strings(
+    normalized_changed_paths = _store()._dedupe_strings(
         [
-            _normalize_repo_token(str(path_ref).strip(), repo_root=repo_root)
+            _store()._normalize_repo_token(str(path_ref).strip(), repo_root=repo_root)
             for path_ref in changed_paths
             if str(path_ref).strip()
         ]
@@ -1132,17 +1128,17 @@ def _collect_impacted_workstreams(
     }
     if not normalized_changed_paths and not component_ids and not diagram_ids:
         return ([], diagnostics) if return_diagnostics else []
-    workstream_rows = _cached_projection_rows(
+    workstream_rows = _store()._cached_projection_rows(
         repo_root=repo_root,
         cache_name="workstreams_full_rows",
         loader=lambda: [dict(row) for row in connection.execute("SELECT * FROM workstreams").fetchall()],
     )
     workstream_entities = {
-        str(row.get("idea_id", "")).strip().upper(): _entity_from_row(kind="workstream", row=row)
+        str(row.get("idea_id", "")).strip().upper(): _store()._entity_from_row(kind="workstream", row=row)
         for row in workstream_rows
         if str(row.get("idea_id", "")).strip()
     }
-    direct_match_rows = _cached_projection_rows(
+    direct_match_rows = _store()._cached_projection_rows(
         repo_root=repo_root,
         cache_name="workstream_direct_match_rows",
         loader=lambda: [
@@ -1152,14 +1148,14 @@ def _collect_impacted_workstreams(
             }
             for row in workstream_rows
             for target_path in (
-                _normalize_repo_token(str(row.get("source_path", "")), repo_root=repo_root),
-                _normalize_repo_token(str(row.get("idea_file", "")), repo_root=repo_root),
-                _normalize_repo_token(str(row.get("promoted_to_plan", "")), repo_root=repo_root),
+                _store()._normalize_repo_token(str(row.get("source_path", "")), repo_root=repo_root),
+                _store()._normalize_repo_token(str(row.get("idea_file", "")), repo_root=repo_root),
+                _store()._normalize_repo_token(str(row.get("promoted_to_plan", "")), repo_root=repo_root),
             )
             if str(row.get("idea_id", "")).strip() and target_path
         ],
     )
-    traceability_match_rows = _cached_projection_rows(
+    traceability_match_rows = _store()._cached_projection_rows(
         repo_root=repo_root,
         cache_name="workstream_traceability_match_rows",
         loader=lambda: [
@@ -1179,7 +1175,7 @@ def _collect_impacted_workstreams(
                 WHERE target_kind IN ('runbook', 'doc', 'code')
                 """
             ).fetchall()
-            if (target_path := _normalize_repo_token(str(row.get("target_id", "")), repo_root=repo_root))
+            if (target_path := _store()._normalize_repo_token(str(row.get("target_id", "")), repo_root=repo_root))
         ],
     )
     direct_index_payload, direct_cache_hit = _path_row_match_index(
@@ -1217,7 +1213,7 @@ def _collect_impacted_workstreams(
             entity = workstream_entities.get(token)
             if entity is None:
                 return None
-            candidate_map[token] = _base_workstream_candidate(entity)
+            candidate_map[token] = _store()._base_workstream_candidate(entity)
         return candidate_map[token]
 
     for row in candidate_direct_rows:
@@ -1226,13 +1222,13 @@ def _collect_impacted_workstreams(
         if not workstream_id or not target_path:
             continue
         for path_ref in normalized_changed_paths:
-            match_type = _normalized_path_match_type(changed_path=path_ref, target_path=target_path)
+            match_type = _store()._normalized_path_match_type(changed_path=path_ref, target_path=target_path)
             if not match_type:
                 continue
             candidate = _candidate(workstream_id)
             if candidate is None:
                 continue
-            _add_workstream_path_evidence(
+            _store()._add_workstream_path_evidence(
                 candidate,
                 changed_path=path_ref,
                 target_path=target_path,
@@ -1245,13 +1241,13 @@ def _collect_impacted_workstreams(
         if not target_path:
             continue
         for path_ref in normalized_changed_paths:
-            match_type = _normalized_path_match_type(changed_path=path_ref, target_path=target_path)
+            match_type = _store()._normalized_path_match_type(changed_path=path_ref, target_path=target_path)
             if not match_type:
                 continue
             candidate = _candidate(str(row.get("source_id", "")))
             if candidate is None:
                 continue
-            _add_workstream_path_evidence(
+            _store()._add_workstream_path_evidence(
                 candidate,
                 changed_path=path_ref,
                 target_path=target_path,
@@ -1259,7 +1255,7 @@ def _collect_impacted_workstreams(
                 match_type=match_type,
             )
     if component_ids:
-        component_rows = _cached_projection_rows(
+        component_rows = _store()._cached_projection_rows(
             repo_root=repo_root,
             cache_name="components_full_rows",
             loader=lambda: [dict(row) for row in connection.execute("SELECT * FROM components").fetchall()],
@@ -1274,10 +1270,10 @@ def _collect_impacted_workstreams(
             if row is None:
                 continue
             normalized_component_id = str(row.get("component_id", "")).strip()
-            for workstream_id in _json_list(str(row.get("workstreams_json", ""))):
+            for workstream_id in _store()._json_list(str(row.get("workstreams_json", ""))):
                 candidate = _candidate(workstream_id)
                 if candidate is not None:
-                    _add_workstream_component_evidence(candidate, component_id=normalized_component_id)
+                    _store()._add_workstream_component_evidence(candidate, component_id=normalized_component_id)
     if diagram_ids:
         placeholders = ",".join("?" for _ in diagram_ids)
         query = (
@@ -1289,9 +1285,9 @@ def _collect_impacted_workstreams(
             candidate = _candidate(workstream_id)
             if candidate is None:
                 continue
-            _add_workstream_diagram_evidence(candidate, diagram_id=str(row["target_id"]).strip())
-    ranked = _finalize_workstream_candidates(list(candidate_map.values()))
-    pruned = _prune_low_precision_workstream_candidates(ranked)
+            _store()._add_workstream_diagram_evidence(candidate, diagram_id=str(row["target_id"]).strip())
+    ranked = _store()._finalize_workstream_candidates(list(candidate_map.values()))
+    pruned = _store()._prune_low_precision_workstream_candidates(ranked)
     return (pruned, diagnostics) if return_diagnostics else pruned
 
 def _engineering_note_match(
@@ -1314,14 +1310,14 @@ def _engineering_note_match(
                 continue
             if path_ref == note_path:
                 exact_path_hits += 1
-            elif _path_touches_watch(changed_path=path_ref, watch_path=note_path):
+            elif _store()._path_touches_watch(changed_path=path_ref, watch_path=note_path):
                 watch_path_hits += 1
             else:
                 continue
             if note_path not in seen_paths:
                 matched_paths.append(note_path)
                 seen_paths.add(note_path)
-            best_path_depth = max(best_path_depth, len(Path(note_path).parts))
+            best_path_depth = max(best_path_depth, len(_store().Path(note_path).parts))
     matched_components = sorted(set(note_components).intersection(component_ids))
     matched_workstreams = sorted(set(note_workstreams).intersection(workstream_ids))
     matched_by: list[str] = []
@@ -1367,7 +1363,7 @@ def _collect_relevant_notes(
     workstream_ids: Sequence[str],
 ) -> dict[str, list[dict[str, Any]]]:
     ranked: dict[str, list[tuple[tuple[Any, ...], str, dict[str, Any]]]] = {}
-    note_rows = _cached_projection_rows(
+    note_rows = _store()._cached_projection_rows(
         repo_root=repo_root,
         cache_name="engineering_notes_full_rows",
         loader=lambda: [
@@ -1378,9 +1374,9 @@ def _collect_relevant_notes(
         ],
     )
     for row in note_rows:
-        note_paths = _json_list(str(row.get("path_refs_json", "")))
-        note_components = _json_list(str(row.get("components_json", "")))
-        note_workstreams = _json_list(str(row.get("workstreams_json", "")))
+        note_paths = _store()._json_list(str(row.get("path_refs_json", "")))
+        note_components = _store()._json_list(str(row.get("components_json", "")))
+        note_workstreams = _store()._json_list(str(row.get("workstreams_json", "")))
         match = _engineering_note_match(
             note_paths=note_paths,
             note_components=note_components,
@@ -1397,7 +1393,7 @@ def _collect_relevant_notes(
             (
                 tuple(match["sort_key"]),
                 note_id,
-                _engineering_note_summary(row, match=match),
+                _store()._engineering_note_summary(row, match=match),
             )
         )
     results: dict[str, list[dict[str, Any]]] = {}
@@ -1416,17 +1412,17 @@ def _collect_relevant_bugs(
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     normalized_components = {str(token).lower() for token in component_ids}
-    bug_rows = _cached_projection_rows(
+    bug_rows = _store()._cached_projection_rows(
         repo_root=repo_root,
         cache_name="bugs_full_rows",
         loader=lambda: [dict(row) for row in connection.execute("SELECT * FROM bugs ORDER BY date DESC, title").fetchall()],
     )
     for row in bug_rows:
-        components = {token.lower() for token in _parse_component_tokens(str(row.get("components", "")))}
+        components = {token.lower() for token in _store()._parse_component_tokens(str(row.get("components", "")))}
         if not (
             components.intersection(normalized_components)
             or any(
-                _path_touches_watch(changed_path=path_ref, watch_path=_normalize_repo_token(str(row.get("link_target", "")), repo_root=repo_root))
+                _store()._path_touches_watch(changed_path=path_ref, watch_path=_store()._normalize_repo_token(str(row.get("link_target", "")), repo_root=repo_root))
                 for path_ref in changed_paths
                 if str(row.get("link_target", "")).strip()
             )
@@ -1462,7 +1458,7 @@ def _collect_code_neighbors(
     documented_by: dict[str, dict[str, Any]] = {}
     runbook_covers: dict[str, dict[str, Any]] = {}
     covered_by_runbooks: dict[str, dict[str, Any]] = {}
-    code_edge_rows = _cached_projection_rows(
+    code_edge_rows = _store()._cached_projection_rows(
         repo_root=repo_root,
         cache_name="code_edges_full_rows",
         loader=lambda: [
@@ -1524,21 +1520,21 @@ def _collect_recommended_tests(
         for row in bucket:
             candidate_paths.add(str(row.get("path", "")).strip())
     scored: list[tuple[tuple[int, int, int, int], dict[str, Any]]] = []
-    test_rows = _cached_projection_rows(
+    test_rows = _store()._cached_projection_rows(
         repo_root=repo_root,
         cache_name="tests_full_rows",
         loader=lambda: [dict(row) for row in connection.execute("SELECT * FROM test_cases ORDER BY test_path, test_name").fetchall()],
     )
     for row in test_rows:
-        targets = set(_json_list(str(row["target_paths_json"])))
+        targets = set(_store()._json_list(str(row["target_paths_json"])))
         overlap = sorted(targets.intersection(candidate_paths))
         if not overlap:
             continue
-        metadata = json.loads(str(row["metadata_json"] or "{}"))
-        history = metadata.get("history", {}) if isinstance(metadata, Mapping) else {}
-        empirical_score = int(history.get("empirical_score", 0) or 0) if isinstance(history, Mapping) else 0
-        recent_failure = bool(history.get("recent_failure")) if isinstance(history, Mapping) else False
-        failure_count = int(history.get("failure_count", 0) or 0) if isinstance(history, Mapping) else 0
+        metadata = _store().json.loads(str(row["metadata_json"] or "{}"))
+        history = metadata.get("history", {}) if isinstance(metadata, _store().Mapping) else {}
+        empirical_score = int(history.get("empirical_score", 0) or 0) if isinstance(history, _store().Mapping) else 0
+        recent_failure = bool(history.get("recent_failure")) if isinstance(history, _store().Mapping) else False
+        failure_count = int(history.get("failure_count", 0) or 0) if isinstance(history, _store().Mapping) else 0
         scored.append(
             (
                 (
@@ -1552,7 +1548,7 @@ def _collect_recommended_tests(
                     "test_path": str(row["test_path"]),
                     "node_id": str(row["node_id"]),
                     "test_name": str(row["test_name"]),
-                    "markers": _json_list(str(row["markers_json"])),
+                    "markers": _store()._json_list(str(row["markers_json"])),
                     "matched_targets": overlap,
                     "history": {
                         "recent_failure": recent_failure,
@@ -1562,10 +1558,10 @@ def _collect_recommended_tests(
                             for token in history.get("sources", [])
                             if str(token).strip()
                         ]
-                        if isinstance(history, Mapping) and isinstance(history.get("sources"), list)
+                        if isinstance(history, _store().Mapping) and isinstance(history.get("sources"), list)
                         else [],
                         "last_failure_utc": str(history.get("last_failure_utc", "")).strip()
-                        if isinstance(history, Mapping)
+                        if isinstance(history, _store().Mapping)
                         else "",
                     },
                 },

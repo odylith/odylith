@@ -23,88 +23,39 @@ from odylith.runtime.context_engine import odylith_context_engine_hot_path_gover
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime as hot_path_scope_runtime
 
 
-packet_adaptive_runtime.bind(store.__dict__)
-hot_path_finalize_runtime.bind(store.__dict__)
-
-
-def test_projection_query_bind_calls_split_projection_binders(monkeypatch) -> None:
-    calls: list[tuple[str, object]] = []
-
-    monkeypatch.setattr(
-        projection_search_runtime,
-        "bind",
-        lambda host: calls.append(("search", host)),
-    )
-    monkeypatch.setattr(
-        projection_entity_runtime,
-        "bind",
-        lambda host: calls.append(("entity", host)),
-    )
-    monkeypatch.setattr(
+def test_context_engine_split_modules_no_longer_expose_bind_shims() -> None:
+    modules = (
+        packet_session_runtime,
+        packet_adaptive_runtime,
+        memory_snapshot_runtime,
         projection_backlog_runtime,
-        "bind",
-        lambda host: calls.append(("backlog", host)),
+        projection_entity_runtime,
+        projection_query_runtime,
+        projection_search_runtime,
+        hot_path_scope_runtime,
+        hot_path_bootstrap_runtime,
+        hot_path_core_runtime,
+        hot_path_finalize_runtime,
+        hot_path_delivery_runtime,
+        hot_path_governance_runtime,
+        hot_path_runtime,
+        runtime_learning_runtime,
     )
-    monkeypatch.setattr(
-        projection_registry_runtime,
-        "bind",
-        lambda host: calls.append(("registry", host)),
-    )
-
-    projection_query_runtime.bind({})
-
-    assert [name for name, _ in calls] == ["search", "entity", "backlog", "registry"]
-    assert all(target is projection_query_runtime.__dict__ for _, target in calls)
+    for module in modules:
+        assert not hasattr(module, "bind"), f"bind shim resurfaced in {module.__name__}"
 
 
-def test_hot_path_runtime_bind_calls_split_packet_binders(monkeypatch) -> None:
-    calls: list[tuple[str, object]] = []
-
-    monkeypatch.setattr(hot_path_scope_runtime, "bind", lambda host: calls.append(("scope", host)))
-    monkeypatch.setattr(hot_path_core_runtime, "bind", lambda host: calls.append(("core", host)))
-    monkeypatch.setattr(hot_path_bootstrap_runtime, "bind", lambda host: calls.append(("bootstrap", host)))
-    monkeypatch.setattr(hot_path_finalize_runtime, "bind", lambda host: calls.append(("finalize", host)))
-    monkeypatch.setattr(hot_path_delivery_runtime, "bind", lambda host: calls.append(("delivery", host)))
-    monkeypatch.setattr(hot_path_governance_runtime, "bind", lambda host: calls.append(("governance", host)))
-
-    hot_path_runtime.bind({})
-
-    assert [name for name, _ in calls] == [
-        "scope",
-        "core",
-        "bootstrap",
-        "finalize",
-        "delivery",
-        "governance",
-    ]
-    assert all(target is hot_path_runtime.__dict__ for _, target in calls)
+def test_projection_registry_runtime_no_longer_rebinds_parent_host() -> None:
+    assert not hasattr(projection_registry_runtime, "bind")
 
 
-def test_store_refresh_runtime_helper_bindings_calls_split_runtime_binders(monkeypatch) -> None:
-    calls: list[tuple[str, object]] = []
+def test_store_refresh_runtime_helper_bindings_is_noop() -> None:
+    assert store._refresh_runtime_helper_bindings() is None  # noqa: SLF001
 
-    monkeypatch.setattr(packet_summary_runtime, "bind", lambda host: calls.append(("summary", host)))
-    monkeypatch.setattr(packet_architecture_runtime, "bind", lambda host: calls.append(("architecture", host)))
-    monkeypatch.setattr(packet_session_runtime, "bind", lambda host: calls.append(("session", host)))
-    monkeypatch.setattr(packet_adaptive_runtime, "bind", lambda host: calls.append(("adaptive", host)))
-    monkeypatch.setattr(memory_snapshot_runtime, "bind", lambda host: calls.append(("memory_snapshot", host)))
-    monkeypatch.setattr(projection_query_runtime, "bind", lambda host: calls.append(("projection_query", host)))
-    monkeypatch.setattr(hot_path_runtime, "bind", lambda host: calls.append(("hot_path", host)))
-    monkeypatch.setattr(runtime_learning_runtime, "bind", lambda host: calls.append(("runtime_learning", host)))
 
-    store._refresh_runtime_helper_bindings()  # noqa: SLF001
-
-    assert [name for name, _ in calls] == [
-        "summary",
-        "architecture",
-        "session",
-        "adaptive",
-        "memory_snapshot",
-        "projection_query",
-        "hot_path",
-        "runtime_learning",
-    ]
-    assert all(target is store.__dict__ for _, target in calls)
+def test_store_refresh_runtime_helper_bindings_no_longer_rebinds_summary_and_architecture_modules() -> None:
+    assert not hasattr(packet_summary_runtime, "bind")
+    assert not hasattr(packet_architecture_runtime, "bind")
 
 
 def test_runtime_learning_packet_summary_helper_delegates_to_split_summary_runtime(monkeypatch) -> None:
@@ -185,7 +136,7 @@ def test_adaptive_packet_preserves_selector_diagnostics_from_custom_mapping(monk
     )
 
     monkeypatch.setattr(
-        packet_adaptive_runtime,
+        store,
         "build_impact_report",
         lambda **_kwargs: {
             "context_packet_state": "compact",
@@ -197,18 +148,18 @@ def test_adaptive_packet_preserves_selector_diagnostics_from_custom_mapping(monk
             "benchmark_selector_diagnostics": diagnostics,
         },
     )
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_auto_escalation_trigger", lambda **_kwargs: "")
+    monkeypatch.setattr(store, "_hot_path_auto_escalation_trigger", lambda **_kwargs: "")
     monkeypatch.setattr(
-        packet_adaptive_runtime,
+        store,
         "_should_escalate_hot_path_to_session_brief",
         lambda **_kwargs: (False, []),
     )
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_route_ready", lambda _payload: True)
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_full_scan_recommended", lambda _payload: False)
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_routing_confidence", lambda _payload: "high")
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_payload_is_compact", lambda _payload: True)
+    monkeypatch.setattr(store, "_hot_path_route_ready", lambda _payload: True)
+    monkeypatch.setattr(store, "_hot_path_full_scan_recommended", lambda _payload: False)
+    monkeypatch.setattr(store, "_hot_path_routing_confidence", lambda _payload: "high")
+    monkeypatch.setattr(store, "_hot_path_payload_is_compact", lambda _payload: True)
     monkeypatch.setattr(
-        packet_adaptive_runtime,
+        store,
         "_update_compact_hot_path_runtime_packet",
         lambda **kwargs: dict(kwargs["payload"]),
     )
@@ -243,19 +194,19 @@ def test_adaptive_guidance_behavior_packet_skips_runtime_warmup(monkeypatch) -> 
             },
         }
 
-    monkeypatch.setattr(packet_adaptive_runtime, "build_impact_report", _fake_build_impact_report)
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_auto_escalation_trigger", lambda **_kwargs: "")
+    monkeypatch.setattr(store, "build_impact_report", _fake_build_impact_report)
+    monkeypatch.setattr(store, "_hot_path_auto_escalation_trigger", lambda **_kwargs: "")
     monkeypatch.setattr(
-        packet_adaptive_runtime,
+        store,
         "_should_escalate_hot_path_to_session_brief",
         lambda **_kwargs: (False, []),
     )
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_route_ready", lambda _payload: True)
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_full_scan_recommended", lambda _payload: False)
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_routing_confidence", lambda _payload: "medium")
-    monkeypatch.setattr(packet_adaptive_runtime, "_hot_path_payload_is_compact", lambda _payload: True)
+    monkeypatch.setattr(store, "_hot_path_route_ready", lambda _payload: True)
+    monkeypatch.setattr(store, "_hot_path_full_scan_recommended", lambda _payload: False)
+    monkeypatch.setattr(store, "_hot_path_routing_confidence", lambda _payload: "medium")
+    monkeypatch.setattr(store, "_hot_path_payload_is_compact", lambda _payload: True)
     monkeypatch.setattr(
-        packet_adaptive_runtime,
+        store,
         "_update_compact_hot_path_runtime_packet",
         lambda **kwargs: dict(kwargs["payload"]),
     )
@@ -301,7 +252,7 @@ def test_guidance_behavior_impact_packet_avoids_projection_connection(monkeypatc
 
 def test_compact_impact_packet_keeps_benchmark_reviewer_guide_once(monkeypatch) -> None:
     monkeypatch.setattr(
-        hot_path_finalize_runtime,
+        store,
         "_companion_context_paths_for_normalized_changed_paths",
         lambda _paths: [
             "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
