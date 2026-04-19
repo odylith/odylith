@@ -42,6 +42,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import benchmark_metric_helpers
+from odylith.runtime.evaluation import odylith_benchmark_mode
 from odylith.runtime.evaluation import odylith_benchmark_isolation
 from odylith.runtime.evaluation import odylith_benchmark_context_engine
 from odylith.runtime.evaluation import odylith_benchmark_execution_engine
@@ -549,7 +550,7 @@ def _comparison_contract_label_bundle(comparison_contract: str) -> dict[str, str
 
 
 def _normalize_mode(mode: str) -> str:
-    token = str(mode or "").strip()
+    token = odylith_benchmark_mode.normalize_public_mode(mode)
     return _MODE_ALIASES.get(token, token)
 
 

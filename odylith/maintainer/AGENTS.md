@@ -25,10 +25,20 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   `agents-guidelines/CODING_STANDARDS.md` to keep fake modularization,
   duplicate micro-helpers, mirrored host drift, and filler comments out of
   shipped code.
+- Apply that bar to any codebase or project surface in this lane as well:
+  services, libraries, apps, CLIs, infra glue, scripts, docs, prompts, hooks,
+  templates, config, and generated assets all count.
 - When strengthening anti-slop policy in maintainer mode, push the shared
   contract into the consumer-safe guidance, shared skill, and shipped bundle
   mirrors in the same change so Codex and Claude consumer lanes inherit the
   same bar instead of drifting into maintainer-only policy.
+- No transitional states in this lane either. Do not replace one slop class
+  with another, do not treat a shared helper or kernel as a cleanup ornament,
+  and do not let Codex-only or Claude-only project assets drift into softer
+  anti-slop rules than the shared contract.
+- Do not call a slop cleanup complete just because the first smell
+  disappeared. If the replacement smell still exists in the touched slice, the
+  pass is incomplete.
 - For explicit deep anti-slop or decomposition passes in maintainer mode, use
   `skills/fail-closed-code-hygiene/` so the pass fails closed on remaining
   shims, duplicate helper clones, mirror drift, and missing proof.

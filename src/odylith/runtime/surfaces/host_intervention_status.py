@@ -10,6 +10,7 @@ import sys
 from typing import Any
 from typing import Mapping
 
+from odylith.common.json_objects import load_json_object
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.intervention_engine import delivery_ledger
@@ -21,13 +22,7 @@ from odylith.runtime.intervention_engine.visibility_contract import normalize_to
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError):
-        return {}
-    return dict(payload) if isinstance(payload, Mapping) else {}
+    return load_json_object(path)
 
 
 def _matcher_tokens(value: Any) -> set[str]:

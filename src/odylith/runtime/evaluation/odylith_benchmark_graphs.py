@@ -17,6 +17,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_marketing_graphs as marketing_graphs
+from odylith.runtime.evaluation import odylith_benchmark_mode
 from odylith.runtime.evaluation import odylith_benchmark_runner
 from odylith.runtime.evaluation import odylith_benchmark_taxonomy
 
@@ -56,14 +57,10 @@ _REPO_SCAN_BASELINE_MODE = "odylith_repo_scan_baseline"
 _LEGACY_REPO_SCAN_BASELINE_MODE = "full_scan_baseline"
 
 
-def _normalize_mode(mode: str) -> str:
-    return odylith_benchmark_runner._normalize_mode(str(mode or "").strip())  # noqa: SLF001
-
-
 def _lookup_mode_mapping(mapping: Mapping[str, Any], mode: str) -> Any:
-    target = _normalize_mode(mode)
+    target = odylith_benchmark_mode.normalize_public_mode(str(mode or "").strip())
     for key, value in mapping.items():
-        if _normalize_mode(str(key).strip()) == target:
+        if odylith_benchmark_mode.normalize_public_mode(str(key).strip()) == target:
             return value
     return None
 
@@ -478,14 +475,18 @@ def _report_mode_order(report: Mapping[str, Any]) -> list[str]:
     published_table = dict(report.get("published_mode_table", {})) if isinstance(report.get("published_mode_table"), Mapping) else {}
     rows = published_table.get("mode_order", [])
     if isinstance(rows, list):
-        ordered = [_normalize_mode(str(mode).strip()) for mode in rows if str(mode).strip()]
+        ordered = [
+            odylith_benchmark_mode.normalize_public_mode(str(mode).strip())
+            for mode in rows
+            if str(mode).strip()
+        ]
         if ordered:
             return list(dict.fromkeys(mode for mode in ordered if mode))
 
     ordered: list[str] = []
 
     def _add(mode: Any) -> None:
-        token = _normalize_mode(str(mode or "").strip())
+        token = odylith_benchmark_mode.normalize_public_mode(str(mode or "").strip())
         if token and token not in ordered:
             ordered.append(token)
 
@@ -508,8 +509,12 @@ def _graph_comparison(report: Mapping[str, Any]) -> dict[str, Any]:
     comparison = _report_comparison(report)
     ordered_modes = _report_mode_order(report)
     available_modes = {str(mode).strip() for mode in ordered_modes if str(mode).strip()}
-    candidate_mode = _normalize_mode(str(comparison.get("candidate_mode", "")).strip() or _VISUAL_CANDIDATE_MODE)
-    baseline_mode = _normalize_mode(str(comparison.get("baseline_mode", "")).strip() or _VISUAL_BASELINE_MODE)
+    candidate_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("candidate_mode", "")).strip() or _VISUAL_CANDIDATE_MODE
+    )
+    baseline_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("baseline_mode", "")).strip() or _VISUAL_BASELINE_MODE
+    )
     if _VISUAL_CANDIDATE_MODE in available_modes and _VISUAL_BASELINE_MODE in available_modes:
         candidate_mode = _VISUAL_CANDIDATE_MODE
         baseline_mode = _VISUAL_BASELINE_MODE
@@ -542,12 +547,16 @@ def _graph_comparison(report: Mapping[str, Any]) -> dict[str, Any]:
 
 def _scenario_rows(report: Mapping[str, Any]) -> list[dict[str, Any]]:
     comparison = _graph_comparison(report)
-    candidate_mode = _normalize_mode(str(comparison.get("candidate_mode", "")).strip() or "odylith_on")
-    baseline_mode = _normalize_mode(str(comparison.get("baseline_mode", "")).strip() or "full_scan_baseline")
+    candidate_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("candidate_mode", "")).strip() or "odylith_on"
+    )
+    baseline_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("baseline_mode", "")).strip() or "full_scan_baseline"
+    )
     rows: list[dict[str, Any]] = []
     for scenario in _report_scenarios(report):
         results = {
-            _normalize_mode(str(row.get("mode", "")).strip()): row
+            odylith_benchmark_mode.normalize_public_mode(str(row.get("mode", "")).strip()): row
             for row in scenario.get("results", [])
             if isinstance(row, Mapping) and str(row.get("mode", "")).strip()
         }
@@ -921,13 +930,23 @@ def _render_family_heatmap_svg(report: Mapping[str, Any]) -> str:
     family_deltas = _report_family_deltas(report)
     report_comparison = _report_comparison(report)
     comparison = _graph_comparison(report)
-    candidate_mode = _normalize_mode(str(comparison.get("candidate_mode", "")).strip() or "odylith_on")
-    baseline_mode = _normalize_mode(str(comparison.get("baseline_mode", "")).strip() or "full_scan_baseline")
+    candidate_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("candidate_mode", "")).strip() or "odylith_on"
+    )
+    baseline_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("baseline_mode", "")).strip() or "full_scan_baseline"
+    )
     candidate_label = _mode_label(candidate_mode)
     baseline_label = _mode_label(baseline_mode)
     uses_report_comparison = (
-        candidate_mode == _normalize_mode(str(report_comparison.get("candidate_mode", "")).strip() or "odylith_on")
-        and baseline_mode == _normalize_mode(str(report_comparison.get("baseline_mode", "")).strip() or "full_scan_baseline")
+        candidate_mode
+        == odylith_benchmark_mode.normalize_public_mode(
+            str(report_comparison.get("candidate_mode", "")).strip() or "odylith_on"
+        )
+        and baseline_mode
+        == odylith_benchmark_mode.normalize_public_mode(
+            str(report_comparison.get("baseline_mode", "")).strip() or "full_scan_baseline"
+        )
     )
     rows: list[dict[str, Any]] = []
     family_names = odylith_benchmark_taxonomy.ordered_family_names(

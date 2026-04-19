@@ -5,12 +5,8 @@ from __future__ import annotations
 import json
 from typing import Any, Mapping, Sequence
 
-
-def _normalize_mode(mode: str) -> str:
-    token = str(mode or "").strip()
-    if token == "odylith_off":
-        return "raw_agent_baseline"
-    return token
+from odylith.runtime.evaluation import odylith_benchmark_mode
+_normalize_mode = odylith_benchmark_mode.normalize_public_mode
 
 
 def _pretty_json(payload: Mapping[str, Any] | None) -> str:

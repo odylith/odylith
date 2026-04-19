@@ -11,6 +11,9 @@
 - Codex and Claude must enforce the same anti-slop contract across consumer
   and maintainer lanes.
 - Treat the slop class, not the language syntax, as the thing to ban.
+- Any codebase or project surface can accumulate slop: services, libraries,
+  apps, CLIs, infra glue, scripts, docs, prompts, workflows, hooks,
+  templates, config, and generated assets all count.
 - Consumer repos may be Python, TypeScript, JavaScript, Go, Rust, Java,
   shell, SQL, or mixed-language; the language changes, the anti-slop bar does
   not.
@@ -38,6 +41,20 @@
   are code surfaces for this rule. Do not hide slop there just because the
   file is not runtime code.
 
+## No Transitional States
+- No transitional states. Do not replace one slop class with another.
+- Move ownership, not just file boundaries.
+- Do not treat a shared helper or kernel as a cleanup ornament. If the shared
+  owner lands, adopt it in the touched slice or leave an explicit bounded
+  follow-up tied to the same slop class.
+- Do not hide transitional slop behind compatibility wrappers, alias walls,
+  partial migrations, or host-only copies once the real owner exists.
+- A cleanup is not complete just because the original smell disappeared. If
+  the replacement smell survives in the touched slice, the pass is incomplete.
+- When one host or lane tightens the anti-slop bar, propagate the stronger rule
+  across shared guidance, host contracts, install-generated guidance, skills,
+  and shipped mirrors in the same change.
+
 ## Hard Bans
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
   private host symbols is banned.
@@ -50,6 +67,10 @@
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
   shared owner is appropriate.
+- Do not use partial shared-kernel adoption as proof of cleanup. A new shared
+  owner that only a minority of the touched callers adopt is an incomplete pass.
+- Do not soften the anti-slop rule on one host, one lane, or one generated
+  asset surface while claiming the shared contract stayed intact.
 - Do not keep host-mirror files near-identical when a shared helper, shared
   renderer, or shared formatter would remove the duplication.
 - Do not add filler comments or docstrings. Comments must explain invariants,
@@ -100,10 +121,20 @@
   slice or leave an explicit bounded follow-up plan.
 - When guidance, skills, or bundled docs change, update the shipped mirrors in
   the same change.
+- When the anti-slop rule itself changes, update shared guidance, both host
+  contracts, install-generated guidance, shared skills, and shipped mirrors in
+  the same change so the contract does not drift by lane.
+- When claiming repo-wide or lane-wide cleanup, rerun the requested repo-wide
+  structural scan or equivalent inventory instead of relying on touched-slice
+  tests alone.
 - In consumer repos, prove consumer-owned code with the consumer repo's own
   language toolchain, tests, linters, build checks, and formatter or type
   checks where applicable. Odylith narrows the slice; the consumer repo still
   proves its own code.
+- In TypeScript or JavaScript repos, that usually means tests plus lint and
+  typecheck/build proof. In Go, Rust, Java, shell, SQL, or mixed-language
+  repos, use the analogous native test, lint, type, parser, build, or
+  integration surface instead of silently downgrading the bar.
 - For behavioral refactors, run the focused regression suite for the touched
   slice and widen proof when the change reaches shared hot paths or user-facing
   surfaces.
@@ -125,6 +156,8 @@
 - If you introduce a shared owner for `_mapping`, `_normalize_*`, `_delta`,
   `_parts`, or similar helpers, update the touched duplicates onto that owner
   before closeout.
+- If the pass adds a shared kernel, helper, or contract but leaves the touched
+  callers on local forks without a bounded follow-up, the pass is incomplete.
 - If you remove a fake seam and replace it with an alias wall, the pass is
   still incomplete. Remove the local alias wall or move that logic behind a
   real owner before closeout.
@@ -138,8 +171,11 @@
 ## Review Questions
 - Does this change reduce a real duplication or boundary problem, or did it
   just move code into another file?
+- Did this change remove the slop class, or did it merely rename it?
 - Is the new helper owned by a stable contract that more than one caller
   should share?
+- Did the pass leave a shared helper or kernel as an ornament instead of
+  finishing the touched migration?
 - Did the change remove filler comments and replace them with truthful
   documentation?
 - Would the next maintainer be able to find the owner and the proof path

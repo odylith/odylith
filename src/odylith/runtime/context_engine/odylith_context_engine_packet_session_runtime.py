@@ -17,7 +17,11 @@ from odylith.runtime.context_engine import tooling_context_packet_builder
 from odylith.runtime.context_engine import turn_context_runtime
 
 _hot_path_workstream_selection = odylith_context_engine_hot_path_packet_core_runtime._hot_path_workstream_selection
-build_impact_report = odylith_context_engine_grounding_runtime.build_impact_report
+
+
+def build_impact_report(**kwargs: Any) -> dict[str, Any]:
+    """Defer impact-grounding lookup until call time to avoid import-cycle breakage."""
+    return odylith_context_engine_grounding_runtime.build_impact_report(**kwargs)
 
 def build_session_brief(
     *,

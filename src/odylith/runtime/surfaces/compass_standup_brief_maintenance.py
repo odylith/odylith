@@ -23,6 +23,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.common.json_objects import load_json_object
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_batch
@@ -61,8 +62,7 @@ def _now_utc_iso() -> str:
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    payload = odylith_context_cache.read_json_object(path)
-    return dict(payload) if isinstance(payload, Mapping) else {}
+    return load_json_object(path)
 
 
 def _write_json(*, repo_root: Path, path: Path, payload: Mapping[str, Any]) -> None:

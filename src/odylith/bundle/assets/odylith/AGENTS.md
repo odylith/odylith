@@ -66,6 +66,20 @@ Scope: applies to Odylith paths under `odylith/`.
   modularization, `bind(host)` globals injection, alias walls, duplicated
   micro-helpers, phase-mixed monoliths, near-identical host mirrors, or
   filler comments in runtime code, docs, hooks, prompts, or config surfaces.
+  Apply that same bar to any codebase or project surface: services,
+  libraries, apps, CLIs, infra glue, scripts, docs, prompts, hooks,
+  templates, config, and generated assets all count.
+  No transitional states: do not replace one slop class with another, do not
+  treat a shared helper or kernel as a cleanup ornament, and move ownership,
+  not just file boundaries. When one lane or host tightens the anti-slop bar,
+  propagate it through shared guidance, host contracts, install-generated
+  guidance, skills, and shipped mirrors in the same change.
+  Do not call a slop cleanup complete just because the first smell
+  disappeared; if the replacement smell still exists in the touched slice, the
+  pass is incomplete. When the user asks for repo-wide or lane-wide anti-slop
+  hardening, update shared guidance, host contracts, install-generated
+  guidance, skills, shipped mirrors, and enforcement tests together;
+  prose-only hardening is incomplete.
   Use
   `agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` and
   `skills/odylith-code-hygiene-guard/SKILL.md` when quality pressure is high.

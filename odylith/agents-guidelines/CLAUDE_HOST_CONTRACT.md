@@ -21,6 +21,10 @@
 - Codex and Claude must enforce the same anti-slop contract across consumer
   and maintainer lanes.
 - Treat the slop class, not the language syntax, as the thing to ban.
+- Apply that bar to any codebase or project surface: services, libraries,
+  apps, CLIs, infra glue, scripts, docs, prompts, hooks, templates, config,
+  and generated assets all count.
+- No transitional states. Do not replace one slop class with another.
 - Consumer repos may be Python, TypeScript, JavaScript, Go, Rust, Java,
   shell, SQL, or mixed-language; the language changes, the anti-slop bar does
   not.
@@ -28,6 +32,21 @@
   Task-tool subagents, `.claude/commands/`, `.claude/agents/`, or
   `.claude/skills/` as a place to hide duplicate helpers, fake wrappers,
   giant phase-mixed handlers, or near-identical mirrors.
+- Treat hooks, prompt builders, slash-command shims, config templates,
+  statusline scripts, and fallback renderers as code surfaces under the same
+  anti-slop bar.
+- Do not use Claude memory bridges, hook payload formatters, statusline
+  helpers, slash-command shims, or agent templates as escape hatches for
+  softer anti-slop rules.
+- Do not soften the anti-slop rule in Claude-only assets. If a Claude-specific
+  divergence is necessary, document the concrete host capability reason and
+  prove parity against the shared contract.
+- A cleanup is not complete just because a Claude-specific wrapper now calls a
+  shared helper. If duplicated control flow or text still exists in the
+  touched host assets, the pass is incomplete.
+- When one host tightens the anti-slop bar, update the other host contract,
+  shared guidance, install-generated guidance, skills, and shipped mirrors in
+  the same change.
 - If a Claude-only asset truly must diverge from Codex, document the concrete
   host capability reason. Otherwise collapse the behavior behind one shared
   helper, formatter, template, or contract owner.

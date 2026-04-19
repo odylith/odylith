@@ -18,8 +18,8 @@ from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as timeline_logger
+from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts
 from odylith.runtime.surfaces import compass_refresh_runtime
-from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.surfaces import surface_path_helpers
 
 
@@ -246,7 +246,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 2
         appended.append(payload)
 
-    odylith_context_engine_store.append_runtime_event(
+    odylith_context_engine_runtime_artifacts.append_runtime_event(
         repo_root=repo_root,
         event_type="compass_update",
         payload={

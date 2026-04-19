@@ -16,6 +16,7 @@ import subprocess
 from typing import Any, Iterable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
+from odylith.common.json_objects import load_json_object
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import component_registry_intelligence as component_registry
@@ -121,8 +122,7 @@ def _read_text(path: Path) -> str:
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    return raw if isinstance(raw, dict) else {}
+    return load_json_object(path)
 
 
 def _load_component_index(

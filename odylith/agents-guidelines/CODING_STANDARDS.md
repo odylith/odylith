@@ -35,6 +35,11 @@
 - Codex and Claude must enforce the same anti-slop contract across consumer
   and maintainer lanes.
 - Treat the slop class, not the language syntax, as the thing to ban.
+- Apply that bar to any codebase or project surface: services, libraries,
+  apps, CLIs, infra glue, scripts, docs, prompts, hooks, templates, config,
+  and generated assets all count.
+- No transitional states. Do not replace one slop class with another.
+- Move ownership, not just file boundaries.
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
   private host symbols is banned.
 - Do not replace fake modularization with a function-local or module-local
@@ -42,6 +47,12 @@
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
   shared owner is appropriate.
+- Do not treat a shared helper or kernel as a cleanup ornament. If a new owner
+  lands, adopt it in the touched slice or leave a bounded follow-up tied to
+  the same slop class.
+- Do not call a slop cleanup complete just because the first smell
+  disappeared. If the replacement smell still exists in the touched slice, the
+  pass is incomplete.
 - Apply the same bar to equivalent non-Python slop such as duplicated parser
   helpers, near-identical platform adapters, giant phase-mixed controllers or
   components, mirrored hook scripts, and boilerplate command or config assets.
@@ -57,6 +68,12 @@
 - New or materially rewritten runtime Python modules must carry a truthful
   module docstring.
 - Every anti-slop cleanup must add or update enforcement tests.
+- When the anti-slop rule changes, propagate it across shared guidance, host
+  contracts, install-generated guidance, skills, and shipped mirrors in the
+  same change.
+- When the user asks for repo-wide or lane-wide anti-slop hardening, update
+  guidance, skills, install-generated guidance, host contracts, mirrors, and
+  enforcement tests together; prose-only hardening is incomplete.
 - When a cleanup exposes a structural regression, fail closed: repair the
   regression and rerun the governing proof surface before landing more slop
   cleanup on top.

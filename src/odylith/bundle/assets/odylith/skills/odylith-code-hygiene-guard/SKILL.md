@@ -9,6 +9,12 @@ both Codex and Claude. Codex and Claude must enforce the same anti-slop
 contract across consumer and maintainer lanes. Consumer repos may be Python,
 TypeScript, JavaScript, Go, Rust, Java, shell, SQL, or mixed-language; the
 language changes, the anti-slop bar does not.
+Apply that bar to any codebase or project surface: services, libraries, apps,
+CLIs, infra glue, scripts, docs, prompts, hooks, templates, config, and
+generated assets all count.
+
+No transitional states. Do not replace one slop class with another. Move
+ownership, not just file boundaries.
 
 ## Default Flow
 - Read the nearest `AGENTS.md`, then read
@@ -25,8 +31,17 @@ language changes, the anti-slop bar does not.
   duplicated parser or normalizer helpers, near-identical adapters or hook
   scripts, phase-mixed controllers or components, mirrored prompt or config
   assets, and extracted modules that still tunnel back into parent internals.
+- Inventory lane and host reach as well before editing: shared guidance,
+  install-generated guidance, Codex assets, Claude assets, shared skills, and
+  shipped mirrors that must stay aligned if the rule changes.
+- Inventory project-surface reach too before editing: source files, hooks,
+  prompts, templates, config, docs, generators, and installed assets that may
+  be carrying the same slop class under different file extensions.
 - Consolidate generic coercion and normalization helpers into a real shared
   owner instead of adding one more local wrapper.
+- Do not treat a shared helper or kernel as a cleanup ornament. If it lands,
+  adopt it in the touched slice or leave a bounded follow-up tied to the same
+  slop class.
 - If a touched hand-maintained source file is already above `1200` LOC,
   choose decomposition or carry an explicit active decomposition plan before
   adding more growth.
@@ -36,6 +51,9 @@ language changes, the anti-slop bar does not.
 - Remove the slop class end to end inside the touched slice. Do not stop at a
   halfway state where the shared owner exists but the touched duplicates still
   remain.
+- Do not call the pass complete just because the first smell disappeared. If
+  the replacement smell still exists in the touched slice, the pass is
+  incomplete.
 - Update inline documentation only for invariants, failure modes, boundary
   assumptions, or non-obvious state transitions.
 - Add or update enforcement tests so the cleanup stays pinned in CI.
@@ -54,6 +72,8 @@ language changes, the anti-slop bar does not.
   duplicated parser helpers, cloned adapters, giant mixed-phase handlers,
   mirrored hook scripts, or boilerplate config and template assets are the
   same regression under a different file extension.
+- Do not hide the same slop class behind host-only hooks, prompt formatters,
+  command shims, statuslines, or generated guidance assets.
 - Do not leave giant renderers, payload builders, or routers phase-mixed when
   the touched slice can be split into data prep, view model, and
   template/render stages, or gather, score, and decide stages.
@@ -66,11 +86,19 @@ language changes, the anti-slop bar does not.
 ## Required Proof
 - Every anti-slop cleanup must add or update enforcement tests.
 - Run the focused regression suite for the touched slice.
+- When the user asks for repo-wide or lane-wide anti-slop hardening, update
+  guidance, skills, install-generated guidance, host contracts, mirrors, and
+  enforcement tests together; prose-only hardening is incomplete.
 - In consumer repos, run the consumer repo's own toolchain, tests, lints,
   type checks, and build validation for the touched stack after Odylith
   narrows the slice.
+- When the anti-slop rule itself changes, update shared guidance, host
+  contracts, install-generated guidance, skills, and shipped mirrors in the
+  same pass.
 - If the change updates guidance, skills, or shipped mirrors, validate the
   source and bundle copies in the same change.
+- If the pass claims repo-wide or lane-wide cleanup, rerun the requested
+  repo-wide structural scan or equivalent inventory before closeout.
 - If the change touches shared runtime hot paths, run the full runtime suite.
 - If the change touches browser-proved surfaces, run the full headless browser
   matrix.
@@ -82,6 +110,8 @@ language changes, the anti-slop bar does not.
   the cleanup.
 - No touched file may keep a newly avoidable `_mapping`, `_normalize_*`,
   `_delta`, or `_parts` clone once the shared owner exists.
+- No touched pass may leave a shared helper or kernel as an ornament while the
+  touched callers stay on local forks without a bounded follow-up.
 - No touched non-Python file may keep the same duplicated parser, adapter,
   prompt, config, or hook pattern once the shared owner exists.
 - No touched giant function may exit with the same phase-mixed ownership it had

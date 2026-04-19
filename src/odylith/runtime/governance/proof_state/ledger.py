@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from odylith.common.json_objects import load_json_object
 
 _PROOF_SURFACES_PATH = (".odylith", "runtime", "odylith-proof-surfaces.v1.json")
 _LIVE_PROOF_SECTION = "live_proof_lanes"
@@ -16,13 +17,7 @@ def proof_surfaces_path(*, repo_root: Path) -> Path:
 
 
 def _read_json(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
-    return payload if isinstance(payload, dict) else {}
+    return load_json_object(path)
 
 
 def load_live_proof_lanes(*, repo_root: Path) -> dict[str, dict[str, Any]]:

@@ -10,6 +10,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.common.json_objects import load_json_object
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import bug_authoring
 from odylith.runtime.governance import workstream_inference
@@ -126,11 +127,7 @@ _normalize_string_list = visibility_contract.normalize_string_list
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError, TypeError):
-        return {}
-    return dict(payload) if isinstance(payload, Mapping) else {}
+    return load_json_object(path)
 
 
 def _slugify(text: str, *, fallback: str) -> str:

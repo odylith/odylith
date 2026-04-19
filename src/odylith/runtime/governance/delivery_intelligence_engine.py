@@ -22,6 +22,7 @@ from pathlib import Path
 import re
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.common.json_objects import load_json_object
 from odylith.runtime.governance import component_registry_intelligence as registry
 from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import operator_readout
@@ -91,13 +92,7 @@ def _resolve(repo_root: Path, token: str) -> Path:
 
 
 def _read_json(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return {}
-    return payload if isinstance(payload, dict) else {}
+    return load_json_object(path)
 
 
 def _normalize_event_artifacts(values: Iterable[str], *, repo_root: Path | None = None) -> list[str]:

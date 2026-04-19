@@ -146,6 +146,11 @@ ANTI_SLOP_SHARED_HOSTS = "Codex and Claude must enforce the same anti-slop contr
 ANTI_SLOP_LANGUAGE_AGNOSTIC = "Treat the slop class, not the language syntax, as the thing to ban."
 ANTI_SLOP_MIXED_LANGUAGE = "Python, TypeScript, JavaScript, Go, Rust, Java, shell, SQL, or mixed-language"
 ANTI_SLOP_ASSET_SURFACES = "Project assets, prompts, hooks, commands, templates, and generated config"
+ANTI_SLOP_ANY_PROJECT = "any codebase or project surface"
+ANTI_SLOP_INCOMPLETE_PASS = "the pass is incomplete"
+ANTI_SLOP_PROSE_ONLY_INCOMPLETE = "prose-only hardening is incomplete"
+ANTI_SLOP_REPO_WIDE_SCAN = "repo-wide structural scan or equivalent inventory"
+ANTI_SLOP_HOST_ESCAPE_HATCH = "escape hatches for softer anti-slop rules"
 LEGACY_CONSUMER_CHATTER_FRAGMENTS = (
     "must ground in Odylith first",
     "Direct repo scan before Odylith grounding is a policy violation",
@@ -627,6 +632,8 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert ANTI_SLOP_TREAT_AS_REGRESSION in normalized, f"anti-slop regression bar drifted in {path.relative_to(ROOT)}"
         assert "ANTI_SLOP_AND_DECOMPOSITION.md" in normalized, f"anti-slop guide routing drifted in {path.relative_to(ROOT)}"
         assert "code-hygiene-guard" in normalized, f"anti-slop skill routing drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_ANY_PROJECT in normalized.lower(), f"project-wide anti-slop scope drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_INCOMPLETE_PASS in normalized.lower(), f"incomplete-pass anti-slop bar drifted in {path.relative_to(ROOT)}"
 
     proof_paths = (
         ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
@@ -648,6 +655,8 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert ANTI_SLOP_FAIL_CLOSED in normalized.lower(), f"fail-closed anti-slop bar drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_ALIAS_WALL in normalized.lower(), f"alias-wall ban drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_PHASE_OWNER in normalized, f"phase-owner decomposition bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_ANY_PROJECT in normalized.lower(), f"project-surface anti-slop scope drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_INCOMPLETE_PASS in normalized.lower(), f"incomplete-pass anti-slop bar drifted in {path.relative_to(ROOT)}"
 
     cross_lane_paths = (
         ROOT / "odylith" / "AGENTS.md",
@@ -669,6 +678,7 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert ANTI_SLOP_SHARED_HOSTS in normalized, f"shared-host anti-slop contract drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_LANGUAGE_AGNOSTIC in normalized, f"language-agnostic anti-slop contract drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_MIXED_LANGUAGE in normalized, f"mixed-language anti-slop contract drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_ANY_PROJECT in normalized.lower(), f"cross-lane project-surface anti-slop scope drifted in {path.relative_to(ROOT)}"
 
     asset_surface_paths = (
         ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
@@ -679,6 +689,44 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
     for path in asset_surface_paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
         assert ANTI_SLOP_ASSET_SURFACES in normalized, f"asset-surface anti-slop contract drifted in {path.relative_to(ROOT)}"
+
+    hardening_paths = (
+        ROOT / "AGENTS.md",
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+        ROOT / "odylith" / "maintainer" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "odylith" / "maintainer" / "skills" / "fail-closed-code-hygiene" / "SKILL.md",
+        ROOT / "src" / "odylith" / "install" / "agents.py",
+        ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+    )
+    for path in hardening_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_PROSE_ONLY_INCOMPLETE in normalized.lower(), f"anti-slop hardening completeness bar drifted in {path.relative_to(ROOT)}"
+
+    repo_wide_scan_paths = (
+        ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+        ROOT / "odylith" / "maintainer" / "skills" / "fail-closed-code-hygiene" / "SKILL.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+    )
+    for path in repo_wide_scan_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_REPO_WIDE_SCAN in normalized, f"repo-wide anti-slop scan rule drifted in {path.relative_to(ROOT)}"
+
+    host_contract_paths = (
+        ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+    )
+    for path in host_contract_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_HOST_ESCAPE_HATCH in normalized.lower(), f"host anti-slop escape-hatch ban drifted in {path.relative_to(ROOT)}"
 
     maintainer_paths = (
         ROOT / "odylith" / "maintainer" / "AGENTS.md",
@@ -839,6 +887,66 @@ def test_runtime_store_shims_are_not_reintroduced_outside_context_engine() -> No
         assert "def _context_engine_store():" not in text, f"context-engine store shim resurfaced in {path.relative_to(ROOT)}"
 
 
+def test_runtime_artifact_and_daemon_owners_stay_direct_in_selected_consumers() -> None:
+    direct_owner_expectations = {
+        ROOT / "src" / "odylith" / "install" / "repair.py": (
+            "from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts",
+            "odylith_context_engine_runtime_artifacts.sessions_root(",
+            "odylith_context_engine_runtime_artifacts.stop_path(",
+            "odylith_context_engine_store.sessions_root(",
+            "odylith_context_engine_store.stop_path(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "update_compass.py": (
+            "from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts",
+            "odylith_context_engine_runtime_artifacts.append_runtime_event(",
+            "odylith_context_engine_store.append_runtime_event(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_refresh_runtime.py": (
+            "from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon",
+            "odylith_context_engine_workspace_daemon.runtime_daemon_transport(",
+            "odylith_context_engine_store.runtime_daemon_transport(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "render_compass_dashboard.py": (
+            "from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon",
+            "odylith_context_engine_workspace_daemon.runtime_daemon_transport(",
+            "odylith_context_engine_workspace_daemon.request_runtime_daemon(",
+            "from odylith.runtime.context_engine import odylith_context_engine_store",
+            "odylith_context_engine_store.runtime_daemon_transport(",
+            "odylith_context_engine_store.request_runtime_daemon(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "render_tooling_dashboard.py": (
+            "from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts",
+            "odylith_context_engine_runtime_artifacts.state_js_path(",
+            "odylith_context_engine_runtime_artifacts.ensure_state_js_probe_asset(",
+            "odylith_context_engine_store.state_js_path(",
+            "odylith_context_engine_store.ensure_state_js_probe_asset(",
+        ),
+    }
+    for path, expectations in direct_owner_expectations.items():
+        text = path.read_text(encoding="utf-8")
+        required = expectations[: len(expectations) // 2] if path.name == "render_compass_dashboard.py" else ()
+        forbidden = ()
+        if path.name == "repair.py":
+            required = expectations[:3]
+            forbidden = expectations[3:]
+        elif path.name == "update_compass.py":
+            required = expectations[:2]
+            forbidden = expectations[2:]
+        elif path.name == "compass_refresh_runtime.py":
+            required = expectations[:2]
+            forbidden = expectations[2:]
+        elif path.name == "render_compass_dashboard.py":
+            required = expectations[:3]
+            forbidden = expectations[3:]
+        elif path.name == "render_tooling_dashboard.py":
+            required = expectations[:3]
+            forbidden = expectations[3:]
+        for token in required:
+            assert token in text, f"direct owner token missing in {path.relative_to(ROOT)}: {token}"
+        for token in forbidden:
+            assert token not in text, f"store reach-through resurfaced in {path.relative_to(ROOT)}: {token}"
+
+
 def test_selected_runtime_extracts_do_not_rebind_host_modules() -> None:
     paths = (
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_code_graph_runtime.py",
@@ -965,6 +1073,14 @@ def test_selected_runtime_and_install_slices_use_shared_json_release_and_severit
         ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_agent_operating_character.py",
         ROOT / "src" / "odylith" / "runtime" / "governance" / "release_truth_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "tooling_dashboard_surface_status.py",
+        ROOT / "src" / "odylith" / "install" / "release_assets.py",
+        ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "engine.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_dashboard_base.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "host_intervention_status.py",
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "benchmark_snapshot_fallbacks.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "proof_state" / "ledger.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "delivery_intelligence_engine.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_standup_brief_maintenance.py",
     )
     for path in json_owner_paths:
         text = path.read_text(encoding="utf-8")
@@ -973,6 +1089,16 @@ def test_selected_runtime_and_install_slices_use_shared_json_release_and_severit
             assert "json.loads(path.read_text" not in text
         if path.name in {"guidance_behavior_benchmark_contracts.py", "release_truth_runtime.py", "tooling_dashboard_surface_status.py"}:
             assert "def _read_json_object(" in text
+        if path.name in {
+            "engine.py",
+            "compass_dashboard_base.py",
+            "host_intervention_status.py",
+            "benchmark_snapshot_fallbacks.py",
+            "ledger.py",
+            "delivery_intelligence_engine.py",
+            "compass_standup_brief_maintenance.py",
+        }:
+            assert 'json.loads(path.read_text(encoding="utf-8"))' not in text
 
     release_text_paths = (
         ROOT / "src" / "odylith" / "install" / "release_assets.py",
@@ -1007,6 +1133,26 @@ def test_selected_runtime_and_install_slices_use_shared_json_release_and_severit
     assert "_VALID_SEVERITIES = {" not in validate_guidance_text
     assert "VALID_SEVERITIES = {" not in validate_character_text
     assert "validate_guidance_behavior._VALID_SEVERITIES" not in runtime_text
+
+
+def test_benchmark_mode_normalization_uses_shared_owner() -> None:
+    owner_path = ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_mode.py"
+    owner_text = owner_path.read_text(encoding="utf-8")
+    assert '"odylith_off": "raw_agent_baseline"' in owner_text
+
+    for path in (
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py",
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_live_execution.py",
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_live_prompt.py",
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_graphs.py",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert "from odylith.runtime.evaluation import odylith_benchmark_mode" in text
+        assert 'if token == "odylith_off":' not in text
+    graphs_text = (
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_graphs.py"
+    ).read_text(encoding="utf-8")
+    assert "def _normalize_mode(" not in graphs_text
 
 
 def test_compass_runtime_payload_uses_window_summary_support_owner() -> None:

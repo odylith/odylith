@@ -19,6 +19,7 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from typing import Any
 
+from odylith.common.json_objects import JsonObjectLoadError, read_json_object
 from odylith.common.release_text import normalize_release_text
 from odylith.install.archive_safety import validate_archive_members
 from odylith.install.fs import fsync_directory
@@ -785,10 +786,10 @@ def _assets_from_manifest(*, release: ReleaseInfo, manifest: dict[str, Any]) -> 
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError(f"{path.name} must be a JSON object")
-    return payload
+    try:
+        return read_json_object(path)
+    except JsonObjectLoadError as exc:
+        raise ValueError(f"{path.name} must be a JSON object") from exc
 
 
 def _validate_manifest(*, manifest: dict[str, Any], release: ReleaseInfo, repo: str) -> None:

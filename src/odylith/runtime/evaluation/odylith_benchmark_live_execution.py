@@ -42,6 +42,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_isolation
 from odylith.runtime.evaluation import odylith_benchmark_live_process
+from odylith.runtime.evaluation import odylith_benchmark_mode
 from odylith.runtime.evaluation import odylith_benchmark_live_prompt
 from odylith.runtime.reasoning import odylith_reasoning
 
@@ -89,11 +90,7 @@ _LIVE_RESULT_SCHEMA: dict[str, Any] = {
 _LIVE_RESULT_REQUIRED_KEYS = frozenset(_LIVE_RESULT_SCHEMA["required"])
 
 
-def _normalize_mode(mode: str) -> str:
-    token = str(mode or "").strip()
-    if token == "odylith_off":
-        return "raw_agent_baseline"
-    return token
+_normalize_mode = odylith_benchmark_mode.normalize_public_mode
 
 
 def _is_public_live_mode(mode: str) -> bool:

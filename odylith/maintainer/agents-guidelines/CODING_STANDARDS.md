@@ -54,6 +54,11 @@
 ## Anti-Slop Bans
 - Treat AI slop as a regression.
 - Apply that bar aggressively in this maintainer lane.
+- Apply that bar to any codebase or project surface in this lane: services,
+  libraries, apps, CLIs, infra glue, scripts, docs, prompts, hooks,
+  templates, config, and generated assets all count.
+- No transitional states. Do not replace one slop class with another.
+- Move ownership, not just file boundaries.
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
   private host symbols is banned.
 - Do not replace removed shims with transitional alias walls that only rename
@@ -61,6 +66,12 @@
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
   shared owner is appropriate.
+- Do not treat a shared helper or kernel as a cleanup ornament. If a new owner
+  lands, adopt it in the touched slice or leave a bounded follow-up tied to
+  the same slop class.
+- Do not call a slop cleanup complete just because the first smell
+  disappeared. If the replacement smell still exists in the touched slice, the
+  pass is incomplete.
 - Do not keep host-mirror files near-identical when a shared helper, shared
   renderer, or shared formatter would remove the duplicated control flow.
 - Do not leave giant renderers, payload builders, routers, or score engines
@@ -81,6 +92,12 @@
   still carries the same duplicated formatter, renderer, or checkpoint control
   flow after the pass, the pass is incomplete; move the shared logic behind a
   real owner before closeout.
+- If the anti-slop rule changes in maintainer mode, propagate it through the
+  shared consumer-safe guidance, host contracts, install-generated guidance,
+  shared skills, and shipped mirrors in the same change.
+- When the user asks for repo-wide or lane-wide anti-slop hardening, update
+  guidance, skills, install-generated guidance, host contracts, mirrors, and
+  enforcement tests together; prose-only hardening is incomplete.
 - Use `../../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` for the shared
   ban list, decomposition triggers, and proof contract, and use
   `../skills/fail-closed-code-hygiene/` when a maintainer pass is explicitly

@@ -63,7 +63,9 @@ from odylith.runtime.context_engine import odylith_context_engine_projection_reg
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime
 from odylith.runtime.context_engine import odylith_context_engine_process_state
+from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts
 from odylith.runtime.context_engine import odylith_context_engine_runtime_support
+from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import runtime_read_session
@@ -99,15 +101,15 @@ STATE_JS_FILENAME = odylith_control_state.STATE_JS_FILENAME
 STATE_JS_GLOBAL_NAME = odylith_control_state.STATE_JS_GLOBAL_NAME
 EVENTS_FILENAME = odylith_control_state.EVENTS_FILENAME
 TIMINGS_FILENAME = odylith_control_state.TIMINGS_FILENAME
-PID_FILENAME = "odylith-context-engine.pid"
-STOP_FILENAME = "odylith-context-engine.stop"
-SOCKET_FILENAME = "odylith-context-engine.sock"
-DAEMON_METADATA_FILENAME = "odylith-context-engine-daemon.json"
-DAEMON_USAGE_FILENAME = "odylith-context-engine-daemon-usage.v1.json"
-PROOF_SURFACES_FILENAME = "odylith-proof-surfaces.v1.json"
-SESSIONS_DIRNAME = "sessions"
-BOOTSTRAPS_DIRNAME = "bootstraps"
-JUDGMENT_MEMORY_FILENAME = "odylith-judgment-memory.v1.json"
+PID_FILENAME = odylith_context_engine_runtime_artifacts.PID_FILENAME
+STOP_FILENAME = odylith_context_engine_runtime_artifacts.STOP_FILENAME
+SOCKET_FILENAME = odylith_context_engine_runtime_artifacts.SOCKET_FILENAME
+DAEMON_METADATA_FILENAME = odylith_context_engine_runtime_artifacts.DAEMON_METADATA_FILENAME
+DAEMON_USAGE_FILENAME = odylith_context_engine_runtime_artifacts.DAEMON_USAGE_FILENAME
+PROOF_SURFACES_FILENAME = odylith_context_engine_runtime_artifacts.PROOF_SURFACES_FILENAME
+SESSIONS_DIRNAME = odylith_context_engine_runtime_artifacts.SESSIONS_DIRNAME
+BOOTSTRAPS_DIRNAME = odylith_context_engine_runtime_artifacts.BOOTSTRAPS_DIRNAME
+JUDGMENT_MEMORY_FILENAME = odylith_context_engine_runtime_artifacts.JUDGMENT_MEMORY_FILENAME
 SCHEMA_VERSION = odylith_context_engine_runtime_support.SCHEMA_VERSION
 _AGENT_HOT_PATH_PROFILE = agent_runtime_contract.AGENT_HOT_PATH_PROFILE
 _CODEX_HOT_PATH_PROFILE = _AGENT_HOT_PATH_PROFILE
@@ -526,114 +528,68 @@ def _env_truthy(name: str) -> bool:
     token = str(os.environ.get(str(name or "").strip(), "")).strip().lower()
     return token in {"1", "true", "yes", "on", "enabled"}
 
-
-def runtime_root(*, repo_root: Path) -> Path:
-    return odylith_control_state.runtime_root(repo_root=repo_root)
-
-
-def projection_snapshot_path(*, repo_root: Path) -> Path:
-    return odylith_projection_snapshot.snapshot_path(repo_root=repo_root)
-
-
-def state_path(*, repo_root: Path) -> Path:
-    return odylith_control_state.state_path(repo_root=repo_root)
-
-
-def state_js_path(*, repo_root: Path) -> Path:
-    return odylith_control_state.state_js_path(repo_root=repo_root)
-
-
-def ensure_state_js_probe_asset(*, repo_root: Path) -> Path | None:
-    return odylith_control_state.ensure_state_js_probe_asset(repo_root=repo_root)
-
-
-def events_path(*, repo_root: Path) -> Path:
-    return odylith_control_state.events_path(repo_root=repo_root)
-
-
-def timings_path(*, repo_root: Path) -> Path:
-    return odylith_control_state.timings_path(repo_root=repo_root)
-
-
-def pid_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / PID_FILENAME).resolve()
-
-
-def daemon_metadata_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / DAEMON_METADATA_FILENAME).resolve()
-
-
-def stop_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / STOP_FILENAME).resolve()
-
-
-def socket_path(*, repo_root: Path) -> Path:
-    preferred = (runtime_root(repo_root=repo_root) / SOCKET_FILENAME).resolve()
-    if len(str(preferred)) < 100:
-        return preferred
-    token = odylith_context_cache.fingerprint_payload(str(Path(repo_root).resolve()))[:16]
-    return (Path(tempfile.gettempdir()) / f"odylith-tooling-{token}.sock").resolve()
+runtime_root = odylith_context_engine_runtime_artifacts.runtime_root
+projection_snapshot_path = odylith_context_engine_runtime_artifacts.projection_snapshot_path
+state_path = odylith_context_engine_runtime_artifacts.state_path
+state_js_path = odylith_context_engine_runtime_artifacts.state_js_path
+ensure_state_js_probe_asset = odylith_context_engine_runtime_artifacts.ensure_state_js_probe_asset
+events_path = odylith_context_engine_runtime_artifacts.events_path
+timings_path = odylith_context_engine_runtime_artifacts.timings_path
+pid_path = odylith_context_engine_runtime_artifacts.pid_path
+daemon_metadata_path = odylith_context_engine_runtime_artifacts.daemon_metadata_path
+stop_path = odylith_context_engine_runtime_artifacts.stop_path
+socket_path = odylith_context_engine_runtime_artifacts.socket_path
+daemon_usage_path = odylith_context_engine_runtime_artifacts.daemon_usage_path
+proof_surfaces_path = odylith_context_engine_runtime_artifacts.proof_surfaces_path
+sessions_root = odylith_context_engine_runtime_artifacts.sessions_root
+bootstraps_root = odylith_context_engine_runtime_artifacts.bootstraps_root
+judgment_memory_path = odylith_context_engine_runtime_artifacts.judgment_memory_path
+read_runtime_state = odylith_context_engine_runtime_artifacts.read_runtime_state
+write_runtime_state = odylith_context_engine_runtime_artifacts.write_runtime_state
+append_runtime_event = odylith_context_engine_runtime_artifacts.append_runtime_event
+_load_runtime_proof_surfaces = odylith_context_engine_runtime_artifacts.load_runtime_proof_surfaces
+_runtime_proof_section = odylith_context_engine_runtime_artifacts.runtime_proof_section
+_persist_runtime_proof_section = odylith_context_engine_runtime_artifacts.persist_runtime_proof_section
+workspace_daemon_key = odylith_context_engine_workspace_daemon.workspace_daemon_key
+runtime_request_namespace = odylith_context_engine_workspace_daemon.runtime_request_namespace
+runtime_request_namespace_from_payload = odylith_context_engine_workspace_daemon.runtime_request_namespace_from_payload
+_runtime_daemon_pid = odylith_context_engine_workspace_daemon.runtime_daemon_pid
+_read_runtime_daemon_metadata = odylith_context_engine_workspace_daemon.read_runtime_daemon_metadata
+_runtime_daemon_pid_alive = odylith_context_engine_workspace_daemon.runtime_daemon_pid_alive
+_runtime_daemon_owner_pid = odylith_context_engine_workspace_daemon.runtime_daemon_owner_pid
+_normalize_loopback_host = odylith_context_engine_workspace_daemon.normalize_loopback_host
+runtime_daemon_transport = odylith_context_engine_workspace_daemon.runtime_daemon_transport
+read_runtime_daemon_usage = odylith_context_engine_workspace_daemon.read_runtime_daemon_usage
+record_runtime_daemon_usage = odylith_context_engine_workspace_daemon.record_runtime_daemon_usage
+record_runtime_timing = odylith_context_engine_runtime_support.record_runtime_timing
+git_fsmonitor_status = odylith_context_engine_runtime_support.git_fsmonitor_status
+bootstrap_git_fsmonitor = odylith_context_engine_runtime_support.bootstrap_git_fsmonitor
+watcher_backend_report = odylith_context_engine_runtime_support.watcher_backend_report
+preferred_watcher_backend = odylith_context_engine_runtime_support.preferred_watcher_backend
 
 
-def daemon_usage_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / DAEMON_USAGE_FILENAME).resolve()
-
-
-def proof_surfaces_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / PROOF_SURFACES_FILENAME).resolve()
-
-
-def sessions_root(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / SESSIONS_DIRNAME).resolve()
-
-
-def bootstraps_root(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / BOOTSTRAPS_DIRNAME).resolve()
-
-
-def judgment_memory_path(*, repo_root: Path) -> Path:
-    return (odylith_memory_backend.local_backend_root(repo_root=repo_root) / JUDGMENT_MEMORY_FILENAME).resolve()
-
-
-def _load_runtime_proof_surfaces(*, repo_root: Path) -> dict[str, Any]:
-    payload = odylith_context_cache.read_json_object(proof_surfaces_path(repo_root=repo_root))
-    return dict(payload) if isinstance(payload, Mapping) else {}
-
-
-def _runtime_proof_section(*, repo_root: Path, section: str) -> dict[str, Any]:
-    payload = _load_runtime_proof_surfaces(repo_root=repo_root)
-    value = payload.get(section)
-    return dict(value) if isinstance(value, Mapping) else {}
-
-
-def _persist_runtime_proof_section(
+def request_runtime_daemon(
     *,
     repo_root: Path,
-    section: str,
-    payload: Mapping[str, Any],
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    existing = _load_runtime_proof_surfaces(repo_root=root)
-    document = {
-        "contract": "odylith_proof_surfaces.v1",
-        "version": "v1",
-        "updated_utc": _utc_now(),
-    }
-    for key, value in existing.items():
-        if key in {"contract", "version", "updated_utc"}:
-            continue
-        if isinstance(value, Mapping):
-            document[key] = dict(value)
-    section_payload = dict(payload)
-    section_payload.setdefault("recorded_utc", _utc_now())
-    document[section] = section_payload
-    odylith_context_cache.write_json_if_changed(
-        repo_root=root,
-        path=proof_surfaces_path(repo_root=root),
-        payload=document,
-        lock_key=str(proof_surfaces_path(repo_root=root)),
+    command: str,
+    payload: Mapping[str, Any] | None = None,
+    required: bool = False,
+    timeout_seconds: float = 5.0,
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
+    """Preserve the store-owned daemon request contract while delegating transport work."""
+    return odylith_context_engine_workspace_daemon.request_runtime_daemon(
+        repo_root=repo_root,
+        command=command,
+        payload=payload,
+        required=required,
+        timeout_seconds=timeout_seconds,
+        transport_reader=runtime_daemon_transport,
+        metadata_reader=_read_runtime_daemon_metadata,
+        namespace_builder=runtime_request_namespace_from_payload,
+        timing_recorder=record_runtime_timing,
+        socket_factory=socket.socket,
+        socket_path_resolver=socket_path,
     )
-    return section_payload
 
 
 def _memory_backend_proof_signature(
@@ -772,370 +728,6 @@ def _sticky_snapshot_from_section(
     return live
 
 
-def workspace_daemon_key(*, repo_root: Path) -> str:
-    return odylith_context_cache.fingerprint_payload(str(Path(repo_root).resolve()))[:16]
-
-
-def runtime_request_namespace(
-    *,
-    repo_root: Path,
-    command: str = "",
-    changed_paths: Sequence[str] = (),
-    session_id: str = "",
-    claimed_paths: Sequence[str] = (),
-    working_tree_scope: str = "repo",
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    scope_token = str(working_tree_scope or "repo").strip().lower() or "repo"
-    normalized_changed = _normalize_changed_path_list(repo_root=root, values=changed_paths)
-    normalized_claimed = _normalize_changed_path_list(repo_root=root, values=claimed_paths)
-    normalized_session = re.sub(r"[^A-Za-z0-9._-]+", "-", str(session_id or "").strip()).strip("-")
-    namespace_payload = {
-        "command": str(command or "").strip().lower(),
-        "working_tree_scope": scope_token,
-        "session_id": normalized_session,
-        "changed_paths": normalized_changed,
-        "claimed_paths": normalized_claimed,
-    }
-    request_namespace = odylith_context_cache.fingerprint_payload(namespace_payload)[:16]
-    session_namespaced = bool(normalized_session or normalized_claimed or scope_token == "session")
-    return {
-        "workspace_key": workspace_daemon_key(repo_root=root),
-        "request_namespace": request_namespace,
-        "session_namespaced": session_namespaced,
-        "session_namespace": request_namespace if session_namespaced else "",
-        "working_tree_scope": scope_token,
-        "session_id_present": bool(normalized_session),
-        "claim_path_count": len(normalized_claimed),
-        "changed_path_count": len(normalized_changed),
-    }
-
-
-def runtime_request_namespace_from_payload(
-    *,
-    repo_root: Path,
-    command: str,
-    payload: Mapping[str, Any],
-) -> dict[str, Any]:
-    return runtime_request_namespace(
-        repo_root=repo_root,
-        command=command,
-        changed_paths=payload.get("paths", []) if isinstance(payload.get("paths"), list) else (),
-        session_id=str(payload.get("session_id", "")).strip(),
-        claimed_paths=payload.get("claim_paths", []) if isinstance(payload.get("claim_paths"), list) else (),
-        working_tree_scope=str(payload.get("working_tree_scope", "repo")).strip() or "repo",
-    )
-
-
-def _runtime_daemon_pid(*, repo_root: Path) -> int:
-    path = pid_path(repo_root=repo_root)
-    if not path.is_file():
-        return 0
-    try:
-        return max(0, int(path.read_text(encoding="utf-8").strip() or 0))
-    except (OSError, ValueError):
-        return 0
-
-
-def _read_runtime_daemon_metadata(*, repo_root: Path) -> dict[str, Any]:
-    path = daemon_metadata_path(repo_root=repo_root)
-    if not path.is_file():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
-    if not isinstance(payload, Mapping):
-        return {}
-    try:
-        pid = max(0, int(payload.get("pid", 0) or 0))
-    except (TypeError, ValueError):
-        pid = 0
-    return {
-        "pid": pid,
-        "auth_token": str(payload.get("auth_token", "")).strip(),
-        "spawn_reason": str(payload.get("spawn_reason", "")).strip(),
-        "started_utc": str(payload.get("started_utc", "")).strip(),
-    }
-
-
-def _runtime_daemon_pid_alive(pid: int) -> bool:
-    if int(pid or 0) <= 0:
-        return False
-    try:
-        os.kill(int(pid), 0)
-    except OSError:
-        return False
-    return True
-
-
-def _runtime_daemon_owner_pid(*, repo_root: Path) -> int:
-    pid = _runtime_daemon_pid(repo_root=repo_root)
-    if pid > 0:
-        return pid
-    metadata_pid = int(_read_runtime_daemon_metadata(repo_root=repo_root).get("pid", 0) or 0)
-    return metadata_pid if metadata_pid > 0 else 0
-
-
-def _normalize_loopback_host(value: Any) -> str:
-    token = str(value or "").strip().lower()
-    if not token:
-        return "127.0.0.1"
-    if token in {"127.0.0.1", "localhost", "::1"}:
-        return token
-    return ""
-
-
-def runtime_daemon_transport(*, repo_root: Path) -> dict[str, Any] | None:
-    root = Path(repo_root).resolve()
-    owner_pid = _runtime_daemon_owner_pid(repo_root=root)
-    if not _runtime_daemon_pid_alive(owner_pid):
-        return None
-    runtime_socket = socket_path(repo_root=root)
-    try:
-        if runtime_socket.is_socket():
-            return {
-                "transport": "unix",
-                "path": str(runtime_socket),
-                "pid": owner_pid,
-            }
-    except OSError:
-        return None
-    if not runtime_socket.is_file():
-        return None
-    try:
-        payload = json.loads(runtime_socket.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    if not isinstance(payload, Mapping):
-        return None
-    transport = str(payload.get("transport", "")).strip().lower()
-    if transport != "tcp":
-        return None
-    host = _normalize_loopback_host(payload.get("host", ""))
-    if not host:
-        return None
-    try:
-        port = int(payload.get("port", 0) or 0)
-    except (TypeError, ValueError):
-        return None
-    try:
-        transport_pid = int(payload.get("pid", 0) or 0)
-    except (TypeError, ValueError):
-        transport_pid = 0
-    if port <= 0:
-        return None
-    if transport_pid > 0 and transport_pid != owner_pid:
-        return None
-    return {
-        "transport": "tcp",
-        "host": host,
-        "port": port,
-        "pid": owner_pid,
-    }
-
-
-def request_runtime_daemon(
-    *,
-    repo_root: Path,
-    command: str,
-    payload: Mapping[str, Any] | None = None,
-    required: bool = False,
-    timeout_seconds: float = 5.0,
-) -> tuple[dict[str, Any], dict[str, Any]] | None:
-    root = Path(repo_root).resolve()
-    daemon_metadata = _read_runtime_daemon_metadata(repo_root=root)
-    transport = runtime_daemon_transport(repo_root=root)
-    if transport is None:
-        if required:
-            raise RuntimeError("odylith context engine daemon unavailable")
-        return None
-    started_at = time.perf_counter()
-    command_token = str(command or "").strip()
-    request_payload = dict(payload or {})
-    session_scope = runtime_request_namespace_from_payload(
-        repo_root=root,
-        command=command_token,
-        payload=request_payload,
-    )
-    if str(transport.get("transport", "")).strip() == "tcp":
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        connect_target: Any = (
-            str(transport.get("host", "")).strip() or "127.0.0.1",
-            int(transport.get("port", 0) or 0),
-        )
-    else:
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        connect_target = str(transport.get("path", "")).strip() or str(socket_path(repo_root=root))
-    sock.settimeout(timeout_seconds)
-    try:
-        sock.connect(connect_target)
-        rendered = json.dumps(
-            {
-                "command": command_token,
-                "payload": request_payload,
-                **({"auth_token": str(daemon_metadata.get("auth_token", "")).strip()} if str(daemon_metadata.get("auth_token", "")).strip() else {}),
-            },
-            sort_keys=True,
-        ).encode("utf-8") + b"\n"
-        sock.sendall(rendered)
-        sock.shutdown(socket.SHUT_WR)
-        chunks: list[bytes] = []
-        while True:
-            data = sock.recv(65536)
-            if not data:
-                break
-            chunks.append(data)
-    except OSError as exc:
-        if required:
-            raise RuntimeError("odylith context engine daemon request failed") from exc
-        return None
-    finally:
-        with contextlib.suppress(OSError):
-            sock.close()
-    if not chunks:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned no response")
-        return None
-    try:
-        response = json.loads(b"".join(chunks).decode("utf-8"))
-    except json.JSONDecodeError as exc:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned invalid JSON") from exc
-        return None
-    if not isinstance(response, Mapping):
-        if required:
-            raise RuntimeError("odylith context engine daemon returned an invalid payload")
-        return None
-    if not bool(response.get("ok", False)):
-        message = str(response.get("error", "")).strip() or "odylith context engine daemon request failed"
-        if required:
-            raise RuntimeError(message)
-        return None
-    daemon_payload = response.get("payload", {})
-    runtime_execution = {
-        "source": "workspace_daemon",
-        "transport": str(transport.get("transport", "")).strip() or "unknown",
-        "workspace_daemon_reused": True,
-        "workspace_key": str(session_scope.get("workspace_key", "")).strip(),
-        "request_namespace": str(session_scope.get("request_namespace", "")).strip(),
-        "session_namespaced": bool(session_scope.get("session_namespaced")),
-        "session_namespace": str(session_scope.get("session_namespace", "")).strip(),
-        "working_tree_scope": str(session_scope.get("working_tree_scope", "")).strip(),
-        "session_id_present": bool(session_scope.get("session_id_present")),
-        "claim_path_count": int(session_scope.get("claim_path_count", 0) or 0),
-        "changed_path_count": int(session_scope.get("changed_path_count", 0) or 0),
-    }
-    record_runtime_timing(
-        repo_root=root,
-        category="daemon",
-        operation=command_token or "request",
-        duration_ms=(time.perf_counter() - started_at) * 1000.0,
-        metadata={
-            "required": bool(required),
-            "transport": str(runtime_execution["transport"]),
-            "authenticated": bool(str(daemon_metadata.get("auth_token", "")).strip()),
-            "workspace_daemon_reused": True,
-            "session_namespaced": bool(runtime_execution["session_namespaced"]),
-            "session_namespace": str(runtime_execution["session_namespace"]),
-            "request_namespace": str(runtime_execution["request_namespace"]),
-        },
-    )
-    return (
-        dict(daemon_payload) if isinstance(daemon_payload, Mapping) else {"value": daemon_payload},
-        runtime_execution,
-    )
-
-
-def read_runtime_daemon_usage(*, repo_root: Path) -> dict[str, Any]:
-    payload = odylith_context_cache.read_json_object(daemon_usage_path(repo_root=repo_root))
-    if not payload:
-        return {}
-    command_counts = {
-        str(key).strip(): int(value or 0)
-        for key, value in dict(payload.get("command_counts", {})).items()
-        if str(key).strip()
-    } if isinstance(payload.get("command_counts"), Mapping) else {}
-    recent_namespaces = [
-        str(token).strip()
-        for token in payload.get("recent_session_namespaces", [])
-        if str(token).strip()
-    ] if isinstance(payload.get("recent_session_namespaces"), list) else []
-    seen_namespaces = [
-        str(token).strip()
-        for token in payload.get("seen_session_namespaces", [])
-        if str(token).strip()
-    ] if isinstance(payload.get("seen_session_namespaces"), list) else []
-    return {
-        "workspace_key": str(payload.get("workspace_key", "")).strip(),
-        "request_count": int(payload.get("request_count", 0) or 0),
-        "session_scoped_request_count": int(payload.get("session_scoped_request_count", 0) or 0),
-        "unique_session_namespace_count": int(payload.get("unique_session_namespace_count", 0) or 0),
-        "last_command": str(payload.get("last_command", "")).strip(),
-        "last_request_utc": str(payload.get("last_request_utc", "")).strip(),
-        "last_session_namespace": str(payload.get("last_session_namespace", "")).strip(),
-        "last_working_tree_scope": str(payload.get("last_working_tree_scope", "")).strip(),
-        "recent_session_namespaces": recent_namespaces[:8],
-        "seen_session_namespaces": seen_namespaces[:64],
-        "command_counts": command_counts,
-    }
-
-
-def record_runtime_daemon_usage(
-    *,
-    repo_root: Path,
-    command: str,
-    payload: Mapping[str, Any],
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    target = daemon_usage_path(repo_root=root)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    scope = runtime_request_namespace_from_payload(
-        repo_root=root,
-        command=command,
-        payload=payload,
-    )
-    with odylith_context_cache.advisory_lock(repo_root=root, key=str(target)):
-        existing = read_runtime_daemon_usage(repo_root=root)
-        command_counts = dict(existing.get("command_counts", {})) if isinstance(existing.get("command_counts"), Mapping) else {}
-        command_token = str(command or "").strip() or "request"
-        command_counts[command_token] = int(command_counts.get(command_token, 0) or 0) + 1
-        recent_namespaces = [
-            token
-            for token in existing.get("recent_session_namespaces", [])
-            if str(token).strip()
-        ] if isinstance(existing.get("recent_session_namespaces"), list) else []
-        seen_namespaces = [
-            token
-            for token in existing.get("seen_session_namespaces", [])
-            if str(token).strip()
-        ] if isinstance(existing.get("seen_session_namespaces"), list) else []
-        session_namespace = str(scope.get("session_namespace", "")).strip()
-        if session_namespace:
-            recent_namespaces = [session_namespace, *[token for token in recent_namespaces if token != session_namespace]][:8]
-            if session_namespace not in seen_namespaces:
-                seen_namespaces = [session_namespace, *seen_namespaces][:64]
-        updated_payload = {
-            "workspace_key": str(scope.get("workspace_key", "")).strip() or workspace_daemon_key(repo_root=root),
-            "request_count": int(existing.get("request_count", 0) or 0) + 1,
-            "session_scoped_request_count": int(existing.get("session_scoped_request_count", 0) or 0)
-            + (1 if bool(scope.get("session_namespaced")) else 0),
-            "unique_session_namespace_count": len(seen_namespaces),
-            "last_command": command_token,
-            "last_request_utc": _utc_now(),
-            "last_session_namespace": session_namespace,
-            "last_working_tree_scope": str(scope.get("working_tree_scope", "")).strip(),
-            "recent_session_namespaces": recent_namespaces,
-            "seen_session_namespaces": seen_namespaces,
-            "command_counts": command_counts,
-        }
-        rendered = json.dumps(updated_payload, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
-        current = target.read_text(encoding="utf-8") if target.is_file() else ""
-        if current != rendered:
-            target.write_text(rendered, encoding="utf-8")
-    return updated_payload
-
-
 def _safe_unlink(path: Path) -> bool:
     try:
         path.unlink()
@@ -1228,26 +820,6 @@ def _projection_names_for_scope(scope: str) -> tuple[str, ...]:
     return odylith_context_engine_runtime_support.projection_names_for_scope(scope)
 
 
-def git_fsmonitor_status(*, repo_root: Path) -> dict[str, Any]:
-    """Return availability and activation status for Git's fsmonitor daemon."""
-    return odylith_context_engine_runtime_support.git_fsmonitor_status(repo_root=repo_root)
-
-
-def bootstrap_git_fsmonitor(*, repo_root: Path) -> dict[str, Any]:
-    """Start Git fsmonitor when supported, keeping the operation local-only."""
-    return odylith_context_engine_runtime_support.bootstrap_git_fsmonitor(repo_root=repo_root)
-
-
-def watcher_backend_report(*, repo_root: Path) -> dict[str, Any]:
-    """Describe watcher capability and the best local backend currently usable."""
-    return odylith_context_engine_runtime_support.watcher_backend_report(repo_root=repo_root)
-
-
-def preferred_watcher_backend(*, repo_root: Path | None = None) -> str:
-    """Return the preferred local invalidation backend available in this env."""
-    return odylith_context_engine_runtime_support.preferred_watcher_backend(repo_root=repo_root)
-
-
 def watch_targets(*, repo_root: Path) -> tuple[str, ...]:
     """Return the canonical repo-relative inputs that should invalidate projections."""
 
@@ -1286,41 +858,6 @@ def watch_targets(*, repo_root: Path) -> tuple[str, ...]:
         seen.add(token)
         rows.append(token)
     return tuple(rows)
-
-
-def read_runtime_state(*, repo_root: Path) -> dict[str, Any]:
-    return odylith_control_state.read_state(repo_root=repo_root)
-
-
-def write_runtime_state(*, repo_root: Path, payload: Mapping[str, Any]) -> None:
-    odylith_control_state.write_state(repo_root=repo_root, payload=payload)
-
-
-def append_runtime_event(*, repo_root: Path, event_type: str, payload: Mapping[str, Any]) -> None:
-    odylith_control_state.append_event(
-        repo_root=repo_root,
-        event_type=str(event_type).strip() or "projection_update",
-        payload=dict(payload),
-        version=SCHEMA_VERSION,
-        ts_iso=_utc_now(),
-    )
-
-
-def record_runtime_timing(
-    *,
-    repo_root: Path,
-    category: str,
-    operation: str,
-    duration_ms: float,
-    metadata: Mapping[str, Any] | None = None,
-) -> None:
-    odylith_context_engine_runtime_support.record_runtime_timing(
-        repo_root=repo_root,
-        category=category,
-        operation=operation,
-        duration_ms=duration_ms,
-        metadata=metadata,
-    )
 
 
 

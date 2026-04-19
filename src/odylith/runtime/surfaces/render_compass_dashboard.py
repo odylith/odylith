@@ -19,6 +19,7 @@ from zoneinfo import ZoneInfo
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon
 from odylith.runtime.context_engine.surface_projection_fingerprint import default_surface_projection_input_fingerprint
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
@@ -121,9 +122,7 @@ def _emit_progress(
 
 
 def _runtime_daemon_available(*, repo_root: Path) -> bool:
-    from odylith.runtime.context_engine import odylith_context_engine_store
-
-    return odylith_context_engine_store.runtime_daemon_transport(repo_root=repo_root) is not None
+    return odylith_context_engine_workspace_daemon.runtime_daemon_transport(repo_root=repo_root) is not None
 
 
 def _load_daemon_cached_runtime_payload(
@@ -132,9 +131,7 @@ def _load_daemon_cached_runtime_payload(
     input_fingerprint: str,
     refresh_profile: str,
 ) -> dict[str, Any] | None:
-    from odylith.runtime.context_engine import odylith_context_engine_store
-
-    result = odylith_context_engine_store.request_runtime_daemon(
+    result = odylith_context_engine_workspace_daemon.request_runtime_daemon(
         repo_root=repo_root,
         command="compass-runtime-get",
         payload={
@@ -160,9 +157,7 @@ def _record_daemon_cached_runtime_payload(
     refresh_profile: str,
     runtime_payload: Mapping[str, Any],
 ) -> None:
-    from odylith.runtime.context_engine import odylith_context_engine_store
-
-    odylith_context_engine_store.request_runtime_daemon(
+    odylith_context_engine_workspace_daemon.request_runtime_daemon(
         repo_root=repo_root,
         command="compass-runtime-put",
         payload={

@@ -38,3 +38,19 @@ def read_json_object(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise JsonObjectLoadError(code="not_object", path=path)
     return payload
+
+
+def load_json_object(path: Path) -> dict[str, Any]:
+    """Load one JSON object from disk and fail open to an empty mapping."""
+    try:
+        return read_json_object(path)
+    except JsonObjectLoadError:
+        return {}
+
+
+def load_json_object_or_none(path: Path) -> dict[str, Any] | None:
+    """Load one JSON object from disk and return `None` when unavailable."""
+    try:
+        return read_json_object(path)
+    except JsonObjectLoadError:
+        return None

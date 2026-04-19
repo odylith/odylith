@@ -20,6 +20,8 @@ from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.product_assets import resolve_product_path
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
+from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts
+from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.governance import agent_governance_intelligence
 from odylith.runtime.governance import workstream_inference as ws_inference
 from odylith.runtime.surfaces import brand_assets
@@ -365,15 +367,15 @@ def _build_live_refresh_payload(
         "It still never runs sync, never starts provider-backed brief generation, and never mutates tracked Odylith truth."
     )
     return {
-        "enabled": True,
-        "mode": "passive_runtime_probe",
-        "policy_id": policy_id,
-        "state_href": surface_path_helpers.relative_href(
-            output_path=output_path,
-            target=odylith_context_engine_store.state_js_path(repo_root=repo_root),
-        ),
-        "state_global_name": odylith_context_engine_store.STATE_JS_GLOBAL_NAME,
-        "poll_interval_ms": poll_interval_ms,
+            "enabled": True,
+            "mode": "passive_runtime_probe",
+            "policy_id": policy_id,
+            "state_href": surface_path_helpers.relative_href(
+                output_path=output_path,
+                target=odylith_context_engine_runtime_artifacts.state_js_path(repo_root=repo_root),
+            ),
+            "state_global_name": odylith_control_state.STATE_JS_GLOBAL_NAME,
+            "poll_interval_ms": poll_interval_ms,
         "auto_reload_idle_debounce_ms": 3000,
         "auto_reload_min_interval_ms": 45000,
         "reloadable_tabs": reloadable_tabs,
@@ -460,7 +462,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         shell_rendered_utc=tooling_dashboard_surface_status.now_utc(),
     )
     if bool(runtime_payload["live_refresh"].get("enabled")):
-        odylith_context_engine_store.ensure_state_js_probe_asset(repo_root=repo_root)
+        odylith_context_engine_runtime_artifacts.ensure_state_js_probe_asset(repo_root=repo_root)
     _prune_release_note_pages(output_path=output_path)
     runtime_payload["generated_utc"] = stable_generated_utc.resolve_for_js_assignment_file(
         output_path=bundle_paths.payload_js_path,
