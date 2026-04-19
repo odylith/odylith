@@ -6,6 +6,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.execution_engine import contradictions as contradictions_engine
 from odylith.runtime.execution_engine import event_stream as event_stream_engine
 from odylith.runtime.execution_engine import frontier as frontier_engine
@@ -33,10 +34,6 @@ from odylith.runtime.execution_engine.contract import detect_execution_host_prof
 from odylith.runtime.character import runtime as character_runtime
 from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.governance import proof_state as proof_state_runtime
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _string(value: Any) -> str:

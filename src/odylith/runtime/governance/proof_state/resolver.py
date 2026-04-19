@@ -9,6 +9,7 @@ import subprocess
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_token
 from .contract import PROOF_STATUSES
 from .contract import WORK_CATEGORIES
 from .contract import build_claim_guard
@@ -26,10 +27,6 @@ _PLAN_METADATA_RE = re.compile(r"^([A-Za-z0-9/() _.`'-]+):\s*(.*)$")
 _WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
 _BUG_ID_RE = re.compile(r"\bCB-\d{3,}\b")
 _SOURCE_PRECEDENCE = {"casebook": 0, "plan": 1, "inferred": 2}
-
-
-def _normalize_token(value: Any) -> str:
-    return str(value or "").strip()
 
 
 def _parse_bug_fields(lines: Sequence[str]) -> dict[str, str]:

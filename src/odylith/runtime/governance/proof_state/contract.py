@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_token
 
 PROOF_STATUSES: tuple[str, ...] = (
     "diagnosed",
@@ -39,11 +40,6 @@ _STATUS_TO_EVIDENCE_TIER = {
     "live_verified": "live_verified",
     "falsified_live": "falsified_live",
 }
-
-
-def _normalize_token(value: Any) -> str:
-    return str(value or "").strip()
-
 
 def _string_list(values: Any, *, allowed: tuple[str, ...] | None = None) -> list[str]:
     if not isinstance(values, list):

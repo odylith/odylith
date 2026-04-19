@@ -28,6 +28,12 @@ def _extract_shell_function(script_text: str, name: str, next_name: str) -> str:
     return script_text[start:end].strip()
 
 
+def _extract_shell_block(script_text: str, start_marker: str, end_marker: str) -> str:
+    start = script_text.index(start_marker)
+    end = script_text.index(end_marker)
+    return script_text[start:end].strip()
+
+
 def _run_detect_repo_root(*, tmp_path: Path, install_script_text: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     helper = tmp_path / "detect_repo_root.sh"
     detect_repo_root = _extract_shell_function(install_script_text, "detect_repo_root", "describe_repo_root_choice")
@@ -51,6 +57,70 @@ def _run_detect_repo_root(*, tmp_path: Path, install_script_text: str, cwd: Path
         check=False,
         capture_output=True,
         text=True,
+    )
+
+
+def _run_verify_sigstore_identity(
+    *,
+    tmp_path: Path,
+    install_script_text: str,
+    stderr_text: str,
+    stdout_text: str = "",
+    exit_code: int = 0,
+) -> subprocess.CompletedProcess[str]:
+    helper = tmp_path / "verify_sigstore_identity.sh"
+    fake_python = tmp_path / "fake-bootstrap-python"
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    shell_block = _extract_shell_block(
+        install_script_text,
+        "sigstore_stderr_is_benign() {",
+        'release_version="${ODYLITH_VERSION:-latest}"',
+    )
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+    fake_python.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "printf '%s' \"${ODYLITH_FAKE_SIGSTORE_STDOUT:-}\"",
+                "printf '%s' \"${ODYLITH_FAKE_SIGSTORE_STDERR:-}\" >&2",
+                "exit \"${ODYLITH_FAKE_SIGSTORE_EXIT:-0}\"",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+    helper.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/odylith-sigstore.XXXXXX")"',
+                'trap \'rm -rf "$tmpdir"\' EXIT',
+                f'bootstrap_python="{fake_python}"',
+                'signer_identity="freedom-research"',
+                'oidc_issuer="https://token.actions.githubusercontent.com"',
+                shell_block,
+                'verify_sigstore_identity "$1" "$2"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    helper.chmod(0o755)
+    env = {
+        "ODYLITH_FAKE_SIGSTORE_STDERR": stderr_text,
+        "ODYLITH_FAKE_SIGSTORE_STDOUT": stdout_text,
+        "ODYLITH_FAKE_SIGSTORE_EXIT": str(exit_code),
+    }
+    return subprocess.run(
+        ["bash", str(helper), str(asset_path), str(bundle_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
     )
 
 
@@ -104,8 +174,10 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'say "Your repo\'s own Python toolchain stays untouched."' in text
     assert "sigstore_stderr_is_benign() {" in text
     assert "verify_sigstore_identity() {" in text
-    assert "grep -Eiq 'unsupported key type:[[:space:]]*7'" in text
+    assert "grep -Eiq 'unsupported([[:space:]]+[^[:space:]]+:[0-9]+)?[[:space:]]+key type:[[:space:]]*7'" in text
     assert "grep -Eiq 'tuf.*offline|offline.*tuf'" in text
+    assert 'stripped="${line#"${line%%[![:space:]]*}"}"' in text
+    assert 'folded="$folded $stripped"' in text
     assert 'step "Fetching the secure bootstrap runtime"' in text
     assert 'step "Verifying signed release evidence"' in text
     assert 'step "Activating Odylith"' in text
@@ -251,6 +323,56 @@ def test_generated_install_script_detect_repo_root_falls_back_to_current_folder_
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
     assert completed.stdout.splitlines() == [str(nested), "folder"]
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_wrapped_trusted_root_warning(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text=(
+            "Failed to load a trusted root key: unsupported  trust.py:177\n"
+            "                    key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_preserves_unexpected_warning(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text=(
+            "Failed to load a trusted root key: unsupported  trust.py:177\n"
+            "                    key type: 7\n"
+            "warning: unexpected verifier chatter\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert "unexpected verifier chatter" in completed.stderr
+    assert "unsupported  trust.py:177" not in completed.stderr
 
 
 def test_publish_release_assets_rejects_non_canonical_release_context() -> None:

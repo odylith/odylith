@@ -39,25 +39,23 @@
   "timeline": [
     {
       "artifacts": [
-        "claude/settings.json",
-        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
-        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
-        "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
-        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
-        "src/odylith/bundle/assets/project-root/.claude/settings.json",
-        "src/odylith/runtime/common/claude_cli_capabilities.py",
-        "src/odylith/runtime/intervention_engine/alignment_evidence.py"
+        "src/odylith/runtime/intervention_engine/conversation_runtime.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/claude_host_stop_summary.py",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
       ],
       "confidence": "high",
-      "event_index": 270,
+      "event_index": 264,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "governance-intervention-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: claude/settings.json, odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md +6 more",
-      "ts_iso": "2026-04-18T00:07:17-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/intervention_engine/conversation_runtime.py, src/odylith/runtime/surfaces/claude_host_prompt_context.py +4 more",
+      "ts_iso": "2026-04-18T17:44:59-07:00",
       "workstreams": []
     },
     {

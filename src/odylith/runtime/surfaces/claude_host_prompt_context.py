@@ -100,17 +100,11 @@ def render_prompt_context(
         bundle_override=conversation_bundle_override,
         intervention_bundle_override=intervention_bundle_override,
     )
-    live_text = conversation_surface.render_live_text(
-        bundle,
-        markdown=False,
-        include_proposal=False,
-        prefer_ambient_over_teaser=True,
-    )
-    parts: list[str] = []
+    anchor_summary = ""
     if refs:
         ref = refs[0]
         if context_output_override is not None:
-            parts.append(_context_summary(context_output_override, ref))
+            anchor_summary = _context_summary(context_output_override, ref)
         else:
             completed = claude_host_shared.run_odylith(
                 project_dir=repo_root,
@@ -118,10 +112,12 @@ def render_prompt_context(
                 timeout=20,
             )
             if completed is not None:
-                parts.append(_context_summary(completed.stdout or "", ref))
-    if live_text:
-        parts.append(live_text)
-    return host_intervention_support.join_sections(*parts)
+                anchor_summary = _context_summary(completed.stdout or "", ref)
+    return host_intervention_support.render_prompt_bundle_text(
+        bundle=bundle,
+        anchor_summary=anchor_summary,
+        markdown=False,
+    )
 
 
 def render_prompt_system_message(

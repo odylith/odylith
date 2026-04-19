@@ -11,6 +11,9 @@
 ## Hard Bans
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
   private host symbols is banned.
+- Do not replace fake modularization with transitional seam sludge. A giant
+  function that begins by aliasing a wall of helpers into locals is still
+  poor ownership, even if the `_host()` shim is gone.
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
   shared owner is appropriate.
@@ -21,6 +24,9 @@
 - Do not hide rule engines inside giant dict accretion, score piles, or
   output builders when a focused data model or phase owner would make the
   contract clearer.
+- Do not leave giant renderers, payload builders, or routers phase-mixed when
+  they can be split into real owners such as data prep, view model, and
+  template/render stages, or gather, score, and decide stages.
 - Do not grow a hand-maintained source file past `1200` LOC without an active
   decomposition plan, and do not land feature-only growth in `2000+` LOC
   files unless the change is decomposition work or a safety-critical repair.
@@ -34,6 +40,15 @@
 - If a touched hand-maintained source file is already above `2000` LOC, only
   decomposition work, characterization tests, or safety-critical repairs are
   acceptable defaults.
+- If a touched function is already above `300` LOC, inspect whether it mixes
+  distinct phases, data-model shaping, and rendering or decision policy in one
+  body.
+- If a touched function is already above `500` LOC, extract at least one real
+  phase owner or data-model seam in the same pass unless the change is purely
+  a safety-critical repair.
+- If a touched function is already above `900` LOC, treat it as red-zone
+  monolith debt: do not land unrelated feature growth without a same-change
+  decomposition cut or an explicit active workstream tied to the slice.
 - Split by real ownership boundary, data model, or execution phase. Do not
   create suffix theater such as `_runtime2`, `_helpers_extra`, or extracted
   files that still tunnel back through private host shims.
@@ -68,9 +83,14 @@
   bounded class of slop you set out to remove.
 - If you touch a shimmed extract, remove the shim or move the ownership
   boundary for real in the same slice.
+- If you touch a giant render, payload, router, or decision function, leave it
+  with at least one clearer phase boundary than it had on entry.
 - If you introduce a shared owner for `_mapping`, `_normalize_*`, `_delta`,
   `_parts`, or similar helpers, update the touched duplicates onto that owner
   before closeout.
+- If you remove a fake seam and replace it with an alias wall, the pass is
+  still incomplete. Remove the local alias wall or move that logic behind a
+  real owner before closeout.
 - If a touched change updates guidance or skills that ship through bundle
   mirrors or install-managed assets, refresh those mirrors in the same change
   and prove them with tests instead of assuming they stayed aligned.

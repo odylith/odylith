@@ -17,6 +17,7 @@
     "D-031",
     "D-036",
     "D-039",
+    "D-040",
     "D-006",
     "D-007",
     "D-008",
@@ -40,10 +41,10 @@
     "empty_reasons": [],
     "explicit_event_count": 123,
     "mapped_workstream_evidence_count": 48,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 24,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 124
+    "timeline_event_count": 123
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -57,23 +58,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "AGENTS.md",
-        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 271,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/registry/source/components/odylith/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-18T00:07:17-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",

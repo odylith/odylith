@@ -24,8 +24,6 @@ def _stop_intervention_bundle(
     session_id: str = "",
     bundle_override: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    if isinstance(bundle_override, Mapping):
-        return dict(bundle_override)
     summary = codex_host_shared.meaningful_stop_summary(message)
     resolved_root = Path(repo_root).expanduser().resolve()
     prompt_excerpt = intervention_surface_runtime.recent_session_prompt_excerpt(
@@ -46,18 +44,16 @@ def _stop_intervention_bundle(
         session_id=session_id,
         field="components",
     )
-    if not any((summary, prompt_excerpt, changed_paths, workstreams, components)):
-        return {}
-    return host_surface_runtime.compose_host_conversation_bundle(
+    return host_intervention_support.build_stop_conversation_bundle(
         repo_root=resolved_root,
         host_family="codex",
-        turn_phase="stop_summary",
         session_id=session_id,
-        prompt_excerpt=prompt_excerpt,
         assistant_summary=summary,
+        prompt_excerpt=prompt_excerpt,
         changed_paths=changed_paths,
         workstreams=workstreams,
         components=components,
+        bundle_override=bundle_override,
     )
 
 
@@ -85,36 +81,12 @@ def render_codex_stop_summary(
         session_id=session_id,
         bundle_override=conversation_bundle_override,
     )
-    if not bundle:
-        return ""
-    parts: list[str] = []
-    live_text = conversation_surface.render_live_text(
-        bundle,
-        markdown=True,
-        include_proposal=False,
-    )
-    recovered_live_text = visibility_replay.replayable_chat_markdown(
+    return host_intervention_support.render_stop_bundle_text(
         repo_root=Path(repo_root).expanduser().resolve(),
         host_family="codex",
+        bundle=bundle,
         session_id=session_id,
-        max_live_blocks=4,
-        ambient_cap=3,
-        include_assist=False,
-        include_teaser=True,
     )
-    if recovered_live_text and (
-        not live_text or host_intervention_support.looks_like_teaser_live_text(live_text)
-    ):
-        live_text = recovered_live_text
-    closeout_text = conversation_surface.render_closeout_text(
-        bundle,
-        markdown=True,
-    )
-    for part in (live_text, closeout_text):
-        token = str(part or "").strip()
-        if token and token not in parts:
-            parts.append(token)
-    return host_intervention_support.join_sections(*parts)
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -52,11 +52,16 @@
 - Apply that bar aggressively in this maintainer lane.
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
   private host symbols is banned.
+- Do not replace removed shims with transitional alias walls that only rename
+  a dense helper cluster without moving the ownership boundary.
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
   shared owner is appropriate.
 - Do not keep host-mirror files near-identical when a shared helper, shared
   renderer, or shared formatter would remove the duplicated control flow.
+- Do not leave giant renderers, payload builders, routers, or score engines
+  phase-mixed when a real owner can separate data prep, view model,
+  template/render, or gather/score/decide stages.
 - Do not add filler comments or docstrings. Comments must explain invariants,
   failure modes, boundary assumptions, or non-obvious state transitions.
 - New or materially rewritten runtime Python modules must carry a truthful
@@ -180,6 +185,10 @@
   net new unrelated feature growth without a same-change ownership extraction
   or decomposition cut. "We will clean it later" is not an acceptable
   maintainer closeout posture for `2000+` LOC source files.
+- Apply the same bar to giant functions: a touched `500+` LOC function needs a
+  same-change phase extraction unless the change is purely a safety-critical
+  repair, and a touched `900+` LOC function is red-zone monolith debt that may
+  not take unrelated growth without a same-change decomposition cut.
 - When maintainer work touches a hand-maintained source file that is already
   beyond those thresholds, the default action is refactor-first work: split
   it into multiple focused files or modules with robustness, reliability, and

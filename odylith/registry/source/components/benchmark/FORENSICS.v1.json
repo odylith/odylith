@@ -20,10 +20,10 @@
     "empty_reasons": [],
     "explicit_event_count": 63,
     "mapped_workstream_evidence_count": 63,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 64
+    "timeline_event_count": 63
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -36,24 +36,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
-      ],
-      "confidence": "high",
-      "event_index": 264,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "benchmark"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/benchmark/CURRENT_SPEC.md, odylith/runtime/source/optimization-evaluation-corpus.v1.json +1 more",
-      "ts_iso": "2026-04-18T00:07:17-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [
         "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",

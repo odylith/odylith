@@ -34,6 +34,12 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   routine feature work. Use `skills/fail-closed-code-hygiene/`, extract a real
   owner, add enforcement tests, and rerun the full required proof surface
   before closeout.
+- Treat touched `500+` or `900+` LOC giant functions the same way in detached
+  `source-local` maintainer dev posture: do not keep phase-mixed render,
+  payload, router, or score logic growing in place when the slice can take a
+  same-change owner extraction. Do not hide the problem behind an alias wall;
+  move it toward data prep, view model, and template/render owners or another
+  equally real phase seam.
 - Queued Radar items, case queues, and shell or Compass queue previews are not
   automatic implementation picks in the maintainer lane. Unless the user
   explicitly asks to work a queued item, do not start implementing it just

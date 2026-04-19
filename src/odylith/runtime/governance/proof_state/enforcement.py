@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
 from .contract import build_claim_lint
 
 _FIXED_PATTERN = re.compile(r"\bfixed\b(?!\s+(?:in\s+code|live)\b)(?!-)", re.IGNORECASE)
@@ -15,11 +16,6 @@ _PATTERNS = {
     "cleared": _CLEARED_PATTERN,
     "resolved": _RESOLVED_PATTERN,
 }
-
-
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
 
 def _claim_lint_payload(
     *,

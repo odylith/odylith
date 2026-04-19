@@ -7,6 +7,8 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import operator_readout
 from odylith.runtime.governance import proof_state
@@ -101,14 +103,6 @@ _VISIBILITY_DELIVERY_TOKENS = {
     "visibility",
     "ux",
 }
-
-
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
 
 
 def _sequence_count(value: Any) -> int:

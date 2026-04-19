@@ -16,6 +16,7 @@ import hashlib
 import json
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 
 SUBSTRATE_VERSION = "v2"
 GLOBAL_TOTAL_FACT_CAP = 8
@@ -129,10 +130,6 @@ def _sequence(value: Any) -> list[Any]:
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         return []
     return list(value)
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _normalize_text(value: Any) -> str:

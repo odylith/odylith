@@ -139,6 +139,8 @@ ANTI_SLOP_DUPLICATE_HELPERS = (
 ANTI_SLOP_DOCSTRING_RULE = "New or materially rewritten runtime Python modules must carry a truthful module docstring."
 ANTI_SLOP_ENFORCEMENT = "Every anti-slop cleanup must add or update enforcement tests."
 ANTI_SLOP_FAIL_CLOSED = "fail closed"
+ANTI_SLOP_ALIAS_WALL = "alias wall"
+ANTI_SLOP_PHASE_OWNER = "data prep, view model"
 LEGACY_CONSUMER_CHATTER_FRAGMENTS = (
     "must ground in Odylith first",
     "Direct repo scan before Odylith grounding is a policy violation",
@@ -345,11 +347,11 @@ def test_odylith_assist_closeout_contract_stays_explicit_across_shared_and_bundl
         ROOT / "odylith" / "skills" / "odylith-delivery-governance-surface-ops" / "SKILL.md",
         ROOT / "odylith" / "skills" / "odylith-context-engine-operations" / "SKILL.md",
         ROOT / "odylith" / "skills" / "odylith-session-context" / "SKILL.md",
-        ROOT / "odylith" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md",
-        ROOT / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md",
-        ROOT / "src" / "odylith" / "install" / "agents.py",
-        ROOT / "src" / "odylith" / "install" / "manager.py",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+            ROOT / "odylith" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md",
+            ROOT / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md",
+            ROOT / "src" / "odylith" / "install" / "agents.py",
+            ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+            ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
         ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "README.md",
         ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "GROUNDING_AND_NARROWING.md",
         ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ODYLITH_CONTEXT_ENGINE.md",
@@ -612,7 +614,7 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         ROOT / "odylith" / "AGENTS.md",
         ROOT / "odylith" / "maintainer" / "AGENTS.md",
         ROOT / "src" / "odylith" / "install" / "agents.py",
-        ROOT / "src" / "odylith" / "install" / "manager.py",
+        ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
         ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
     )
     for path in routing_paths:
@@ -639,6 +641,8 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert ANTI_SLOP_DOCSTRING_RULE in normalized, f"docstring rule drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_ENFORCEMENT in normalized, f"anti-slop proof contract drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_FAIL_CLOSED in normalized.lower(), f"fail-closed anti-slop bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_ALIAS_WALL in normalized.lower(), f"alias-wall ban drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_PHASE_OWNER in normalized, f"phase-owner decomposition bar drifted in {path.relative_to(ROOT)}"
 
     maintainer_paths = (
         ROOT / "odylith" / "maintainer" / "AGENTS.md",
@@ -649,6 +653,8 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert "fail-closed-code-hygiene" in normalized, f"maintainer anti-slop skill routing drifted in {path.relative_to(ROOT)}"
         assert "red-zone" in normalized.lower(), f"maintainer red-zone anti-slop bar drifted in {path.relative_to(ROOT)}"
         assert "source-local" in normalized, f"maintainer detached-dev anti-slop bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_ALIAS_WALL in normalized.lower(), f"maintainer alias-wall bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_PHASE_OWNER in normalized, f"maintainer phase-owner decomposition bar drifted in {path.relative_to(ROOT)}"
 
 
 def test_anti_slop_guidance_and_skill_bundle_assets_stay_synced() -> None:
@@ -656,6 +662,10 @@ def test_anti_slop_guidance_and_skill_bundle_assets_stay_synced() -> None:
         (
             ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
             ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ),
+        (
+            ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+            ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
         ),
         (
             ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
@@ -773,8 +783,16 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_budgeting.py": ("def _int_value(", "def _mapping_value("),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_builder.py": ("def _int_value(", "def _mapping_value("),
         ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py": ("def _mapping(",),
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_shard_merge.py": ("def _mapping(",),
         ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_evaluation_ledger.py": ("def _int_value(", "def _mapping_value("),
         ROOT / "src" / "odylith" / "runtime" / "governance" / "guidance_behavior_runtime.py": ("def _mapping(",),
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "proof_state" / "contract.py": ("def _normalize_token(",),
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "proof_state" / "enforcement.py": ("def _normalize_string(",),
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "proof_state" / "resolver.py": ("def _normalize_token(",),
+        ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "conversation_runtime.py": (
+            "def _normalize_string(",
+            "def _normalize_token(",
+        ),
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py": ("def _int_value(",),
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_context_support.py": (
             "def _int_value(",
@@ -782,6 +800,8 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
             "def _normalize_token(",
         ),
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router.py": ("def _int_value(",),
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_standup_brief_batch.py": ("def _mapping(",),
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_standup_brief_substrate.py": ("def _mapping(",),
     }
     for path, banned_fragments in local_helper_bans.items():
         text = path.read_text(encoding="utf-8")
@@ -806,8 +826,60 @@ def test_intervention_and_host_surfaces_use_shared_normalization_and_join_helper
     claude_checkpoint_paths = (
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_post_bash_checkpoint.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_post_edit_checkpoint.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "codex_host_post_bash_checkpoint.py",
     )
     for path in claude_checkpoint_paths:
         text = path.read_text(encoding="utf-8")
         assert "host_intervention_support.join_sections(" in text, f"shared join helper missing in {path.relative_to(ROOT)}"
         assert "def _parts(" not in text, f"duplicate section-join helper resurfaced in {path.relative_to(ROOT)}"
+
+    prompt_stop_paths = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_prompt_context.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "codex_host_prompt_context.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_stop_summary.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "codex_host_stop_summary.py",
+    )
+    for path in prompt_stop_paths:
+        text = path.read_text(encoding="utf-8")
+        if "prompt_context" in path.name:
+            assert "host_intervention_support.render_prompt_bundle_text(" in text
+        else:
+            assert "host_intervention_support.build_stop_conversation_bundle(" in text
+            assert "host_intervention_support.render_stop_bundle_text(" in text
+
+
+def test_compass_runtime_payload_uses_window_summary_support_owner() -> None:
+    path = ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_runtime_payload_runtime.py"
+    text = path.read_text(encoding="utf-8")
+    assert "from odylith.runtime.surfaces import compass_window_summary_support" in text
+    assert "compass_window_summary_support.CompassWindowSummaryContext(" in text
+    assert "compass_window_summary_support.summarize_window(" in text
+    for fragment in (
+        "class _CompassWindowSummary:",
+        "class _CompassWindowSummaryContext:",
+        "def _cached_window_events(",
+        "def _cached_window_transactions(",
+        "def _cached_recent_completed_rows(",
+        "def _summarize_window(",
+    ):
+        assert fragment not in text, f"window-summary owner drift resurfaced in {path.relative_to(ROOT)}: {fragment}"
+
+
+def test_router_assessment_runtime_uses_execution_engine_owner_and_avoids_local_signal_walls() -> None:
+    path = ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_assessment_runtime.py"
+    text = path.read_text(encoding="utf-8")
+    assert "from odylith.runtime.orchestration import subagent_router_signal_summary" in text
+    assert "request_with_consumer_write_policy = subagent_router_signal_summary.request_with_consumer_write_policy" in text
+    assert "_context_signal_summary = subagent_router_signal_summary._context_signal_summary" in text
+    for fragment in (
+        "def _bool_value(",
+        "def _preferred_value(",
+        "def request_with_consumer_write_policy(",
+        "def _context_signal_summary(",
+    ):
+        assert fragment not in text, f"router assessment local signal wall resurfaced in {path.relative_to(ROOT)}"
+
+    support_path = ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_signal_summary.py"
+    support_text = support_path.read_text(encoding="utf-8")
+    assert "execution_engine_summary_from_context_sources(" in support_text
+    assert "router_execution_engine_fields(" in support_text

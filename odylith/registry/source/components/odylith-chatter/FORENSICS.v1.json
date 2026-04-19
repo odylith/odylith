@@ -53,26 +53,20 @@
   "timeline": [
     {
       "artifacts": [
-        "AGENTS.md",
-        "odylith/AGENTS.md",
-        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
-        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-        "src/odylith/install/agents.py",
-        "src/odylith/install/manager.py"
+        "odylith/maintainer/AGENTS.md",
+        "src/odylith/install/manager.py",
+        "src/odylith/runtime/orchestration/subagent_router_assessment_runtime.py"
       ],
       "confidence": "high",
-      "event_index": 272,
+      "event_index": 265,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-chatter"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/AGENTS.md +7 more",
-      "ts_iso": "2026-04-18T00:07:42-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/maintainer/AGENTS.md, src/odylith/install/manager.py +1 more",
+      "ts_iso": "2026-04-18T18:19:06-07:00",
       "workstreams": []
     },
     {

@@ -556,12 +556,33 @@ def _collect_sample_tokens(page, base_url: str) -> dict[str, str]:  # noqa: ANN0
     assert response is not None and response.ok
     radar = page.frame_locator("#frame-radar")
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
-    radar_workstream, component_id, _component_href = _select_radar_row_with_link(
-        radar,
-        "a.chip-registry-component",
-        "expected a Radar workstream with a registry deeplink",
-        query_key="component",
-    )
+    try:
+        radar_workstream, component_id, _component_href = _select_radar_row_with_link(
+            radar,
+            "a.chip-registry-component",
+            "expected a Radar workstream with a registry deeplink",
+            query_key="component",
+        )
+    except AssertionError:
+        _radar, radar_workstream = _select_radar_workstream_with_detail_selector(
+            page,
+            detail_selector=".detail-title",
+            failure_message="expected a Radar workstream with a detail pane",
+        )
+        response = page.goto(base_url + "/odylith/index.html?tab=registry", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+        registry = page.frame_locator("#frame-registry")
+        registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+        _registry, component_id = _select_registry_component_with_detail_selector(
+            page,
+            detail_selector=".component-name",
+            failure_message="expected a Registry component for route token sampling",
+        )
+        response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+        radar = page.frame_locator("#frame-radar")
+        radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+        _select_radar_workstream(radar, radar_workstream)
 
     _atlas_row_workstream, diagram_id, diagram_href = _select_radar_row_with_link(
         radar,

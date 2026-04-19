@@ -30,11 +30,16 @@
 - Treat AI slop as a regression.
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
   private host symbols is banned.
+- Do not replace fake modularization with a function-local or module-local
+  alias wall that still hides the real owner behind renamed helper rebinding.
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
   shared owner is appropriate.
 - Do not keep host-mirror files near-identical when a shared helper, shared
   renderer, or shared formatter would remove the duplication.
+- Do not leave giant renderers, payload builders, routers, or score engines
+  phase-mixed when a real owner can separate data prep, view model,
+  template/render, or gather/score/decide stages.
 - Do not add filler comments or docstrings. Comments must explain invariants,
   failure modes, boundary assumptions, or non-obvious state transitions.
 - New or materially rewritten runtime Python modules must carry a truthful
@@ -43,6 +48,9 @@
 - When a cleanup exposes a structural regression, fail closed: repair the
   regression and rerun the governing proof surface before landing more slop
   cleanup on top.
+- For touched `1200+` or `2000+` source files, and for touched `500+` or `900+`
+  line functions, default to real decomposition work instead of another layer
+  of local glue.
 - Use [ANTI_SLOP_AND_DECOMPOSITION.md](./ANTI_SLOP_AND_DECOMPOSITION.md) for
   the full ban list, decomposition triggers, and proof contract.
 

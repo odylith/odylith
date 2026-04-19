@@ -148,3 +148,88 @@ def render_prompt_system_message(
         include_proposal=False,
         prefer_ambient_over_teaser=True,
     )
+
+
+def render_prompt_bundle_text(
+    *,
+    bundle: Mapping[str, Any] | dict[str, Any],
+    anchor_summary: str = "",
+    markdown: bool = False,
+) -> str:
+    """Render prompt-context text from an anchor summary plus live conversation state."""
+    live_text = conversation_surface.render_live_text(
+        bundle,
+        markdown=markdown,
+        include_proposal=False,
+        prefer_ambient_over_teaser=True,
+    )
+    return join_sections(anchor_summary, live_text)
+
+
+def build_stop_conversation_bundle(
+    *,
+    repo_root: Path | str,
+    host_family: str,
+    session_id: str,
+    assistant_summary: str,
+    prompt_excerpt: str,
+    changed_paths: list[str],
+    workstreams: list[str],
+    components: list[str],
+    bundle_override: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Build the stop-summary bundle shared by Codex and Claude hooks."""
+    if isinstance(bundle_override, Mapping):
+        return dict(bundle_override)
+    if not any((assistant_summary, prompt_excerpt, changed_paths, workstreams, components)):
+        return {}
+    root = Path(repo_root).expanduser().resolve()
+    normalized_host = visibility_contract.normalize_token(host_family)
+    return host_surface_runtime.compose_host_conversation_bundle(
+        repo_root=root,
+        host_family=normalized_host,
+        turn_phase="stop_summary",
+        session_id=session_id,
+        prompt_excerpt=prompt_excerpt,
+        assistant_summary=assistant_summary,
+        changed_paths=changed_paths,
+        workstreams=workstreams,
+        components=components,
+    )
+
+
+def render_stop_bundle_text(
+    *,
+    repo_root: Path | str,
+    host_family: str,
+    session_id: str,
+    bundle: Mapping[str, Any] | dict[str, Any],
+) -> str:
+    """Render stop-summary text from a normalized host conversation bundle."""
+    if not bundle:
+        return ""
+    root = Path(repo_root).expanduser().resolve()
+    normalized_host = visibility_contract.normalize_token(host_family)
+    live_text = conversation_surface.render_live_text(
+        bundle,
+        markdown=True,
+        include_proposal=False,
+    )
+    recovered_live_text = visibility_replay.replayable_chat_markdown(
+        repo_root=root,
+        host_family=normalized_host,
+        session_id=session_id,
+        max_live_blocks=4,
+        ambient_cap=3,
+        include_assist=False,
+        include_teaser=True,
+    )
+    if recovered_live_text and (
+        not live_text or looks_like_teaser_live_text(live_text)
+    ):
+        live_text = recovered_live_text
+    closeout_text = conversation_surface.render_closeout_text(
+        bundle,
+        markdown=True,
+    )
+    return join_sections(live_text, closeout_text)

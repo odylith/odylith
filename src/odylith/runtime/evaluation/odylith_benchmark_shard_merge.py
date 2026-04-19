@@ -13,13 +13,10 @@ import os
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _list_of_strings(value: Any) -> list[str]:

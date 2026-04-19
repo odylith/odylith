@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
@@ -59,10 +60,6 @@ _ABORT_FANOUT_FAILURE_CODES = frozenset(
         "unavailable",
     }
 )
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
 
 
 def _scope_packet_payload_chars(*, fact_packet: Mapping[str, Any]) -> int:

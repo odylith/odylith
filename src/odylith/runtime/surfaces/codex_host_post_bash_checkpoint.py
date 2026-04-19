@@ -44,6 +44,7 @@ from odylith.runtime.intervention_engine import surface_runtime as intervention_
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_shared
+from odylith.runtime.surfaces import host_intervention_support
 
 _PATCH_PATH_RE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$", re.MULTILINE)
 _PATCH_MOVE_RE = re.compile(r"^\*\*\* Move to: (.+)$", re.MULTILINE)
@@ -284,15 +285,6 @@ def _dedupe_paths(paths: list[str]) -> list[str]:
         if path and path not in collected:
             collected.append(path)
     return collected
-
-
-def _parts(*values: str) -> str:
-    rows: list[str] = []
-    for value in values:
-        token = str(value or "").strip()
-        if token and token not in rows:
-            rows.append(token)
-    return "\n\n".join(rows).strip()
 
 
 def _paths_from_apply_patch(*, command: str, project_dir: Path) -> list[str]:
@@ -792,7 +784,7 @@ def main(argv: list[str] | None = None) -> int:
         include_assist=False,
         include_teaser=False,
     )
-    developer_context = _parts(replay, developer_context) if replay else developer_context
+    developer_context = host_intervention_support.join_sections(replay, developer_context) if replay else developer_context
     live_intervention = replay or live_intervention
     if bundle and decision is not None and developer_context:
         host_surface_runtime.append_visible_intervention_events(

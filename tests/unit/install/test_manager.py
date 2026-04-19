@@ -5,6 +5,16 @@ from pathlib import Path
 from odylith.install import manager
 
 
+def test_manager_bootstrap_assets_live_in_support_owner() -> None:
+    manager_text = Path(manager.__file__).read_text(encoding="utf-8")
+
+    assert "from odylith.install import bootstrap_assets" in manager_text
+    assert "_customer_bootstrap_guidance = bootstrap_assets.customer_bootstrap_guidance" in manager_text
+    assert "_ensure_customer_bootstrap = bootstrap_assets.ensure_customer_bootstrap" in manager_text
+    assert "def _customer_bootstrap_guidance(" not in manager_text
+    assert "def _ensure_customer_bootstrap(" not in manager_text
+
+
 def test_ensure_odylith_gitignore_entry_writes_all_local_state_rules(tmp_path: Path) -> None:
     updated = manager._ensure_odylith_gitignore_entry(repo_root=tmp_path)  # noqa: SLF001
 

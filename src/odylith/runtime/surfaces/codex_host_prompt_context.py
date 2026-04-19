@@ -50,19 +50,15 @@ def render_codex_prompt_context(
         bundle_override=conversation_bundle_override,
         intervention_bundle_override=intervention_bundle_override,
     )
-    live_text = conversation_surface.render_live_text(
-        bundle,
-        markdown=False,
-        include_proposal=False,
-        prefer_ambient_over_teaser=True,
-    )
-    parts: list[str] = []
+    anchor_summary = ""
     ref = codex_host_shared.prompt_anchor(prompt)
     if ref:
-        parts.append(summary_override or codex_host_shared.context_summary(project_dir=repo_root, ref=ref))
-    if live_text:
-        parts.append(live_text)
-    return host_intervention_support.join_sections(*parts)
+        anchor_summary = summary_override or codex_host_shared.context_summary(project_dir=repo_root, ref=ref)
+    return host_intervention_support.render_prompt_bundle_text(
+        bundle=bundle,
+        anchor_summary=anchor_summary,
+        markdown=False,
+    )
 
 
 def render_codex_prompt_system_message(

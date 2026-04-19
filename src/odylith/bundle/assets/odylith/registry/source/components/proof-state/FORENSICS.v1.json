@@ -28,18 +28,20 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/proof-state/CURRENT_SPEC.md"
+        "src/odylith/runtime/governance/proof_state/contract.py",
+        "src/odylith/runtime/governance/proof_state/enforcement.py",
+        "src/odylith/runtime/governance/proof_state/resolver.py"
       ],
       "confidence": "high",
-      "event_index": 276,
+      "event_index": 266,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "proof-state"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-17T23:58:27-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/governance/proof_state/contract.py, src/odylith/runtime/governance/proof_state/enforcement.py +1 more",
+      "ts_iso": "2026-04-18T17:12:05-07:00",
       "workstreams": []
     },
     {
