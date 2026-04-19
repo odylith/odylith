@@ -17,6 +17,21 @@
   Claude adapter family, but the Odylith Discipline decision remains local and
   model-agnostic.
 
+## Shared Anti-Slop Contract
+- Codex and Claude must enforce the same anti-slop contract across consumer
+  and maintainer lanes.
+- Treat the slop class, not the language syntax, as the thing to ban.
+- Consumer repos may be Python, TypeScript, JavaScript, Go, Rust, Java,
+  shell, SQL, or mixed-language; the language changes, the anti-slop bar does
+  not.
+- Routed Claude leaves inherit the same anti-slop contract. Do not use
+  Task-tool subagents, `.claude/commands/`, `.claude/agents/`, or
+  `.claude/skills/` as a place to hide duplicate helpers, fake wrappers,
+  giant phase-mixed handlers, or near-identical mirrors.
+- If a Claude-only asset truly must diverge from Codex, document the concrete
+  host capability reason. Otherwise collapse the behavior behind one shared
+  helper, formatter, template, or contract owner.
+
 ## Claude Project-Asset Surface
 - Claude Code can load repo-scoped project assets from `.claude/`, including
   `.claude/CLAUDE.md`, `.claude/settings.json`, `.claude/commands/*.md`,

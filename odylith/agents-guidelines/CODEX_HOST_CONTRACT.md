@@ -24,6 +24,21 @@
   pinned dogfood, and consumer lanes. Codex model aliases resolve to the Codex
   adapter family, but the Odylith Discipline decision remains local and model-agnostic.
 
+## Shared Anti-Slop Contract
+- Codex and Claude must enforce the same anti-slop contract across consumer
+  and maintainer lanes.
+- Treat the slop class, not the language syntax, as the thing to ban.
+- Consumer repos may be Python, TypeScript, JavaScript, Go, Rust, Java,
+  shell, SQL, or mixed-language; the language changes, the anti-slop bar does
+  not.
+- Routed Codex leaves inherit the same anti-slop contract. Do not use
+  `spawn_agent`, `.agents/skills/`, or `.codex/` project assets as a place to
+  hide duplicate helpers, fake wrappers, giant phase-mixed handlers, or
+  near-identical mirrors.
+- If a Codex-only asset truly must diverge from Claude, document the concrete
+  host capability reason. Otherwise collapse the behavior behind one shared
+  helper, formatter, template, or contract owner.
+
 ## Codex Project-Asset Surface
 - Codex CLI can load repo-scoped project assets from `.codex/` plus repo-scoped
   skills from `.agents/skills/`.

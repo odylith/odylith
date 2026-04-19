@@ -141,6 +141,11 @@ ANTI_SLOP_ENFORCEMENT = "Every anti-slop cleanup must add or update enforcement 
 ANTI_SLOP_FAIL_CLOSED = "fail closed"
 ANTI_SLOP_ALIAS_WALL = "alias wall"
 ANTI_SLOP_PHASE_OWNER = "data prep, view model"
+ANTI_SLOP_SHARED_LANES = "consumer and maintainer lanes"
+ANTI_SLOP_SHARED_HOSTS = "Codex and Claude must enforce the same anti-slop contract"
+ANTI_SLOP_LANGUAGE_AGNOSTIC = "Treat the slop class, not the language syntax, as the thing to ban."
+ANTI_SLOP_MIXED_LANGUAGE = "Python, TypeScript, JavaScript, Go, Rust, Java, shell, SQL, or mixed-language"
+ANTI_SLOP_ASSET_SURFACES = "Project assets, prompts, hooks, commands, templates, and generated config"
 LEGACY_CONSUMER_CHATTER_FRAGMENTS = (
     "must ground in Odylith first",
     "Direct repo scan before Odylith grounding is a policy violation",
@@ -644,6 +649,37 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert ANTI_SLOP_ALIAS_WALL in normalized.lower(), f"alias-wall ban drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_PHASE_OWNER in normalized, f"phase-owner decomposition bar drifted in {path.relative_to(ROOT)}"
 
+    cross_lane_paths = (
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+    )
+    for path in cross_lane_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_SHARED_LANES in normalized, f"shared-lane anti-slop contract drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_SHARED_HOSTS in normalized, f"shared-host anti-slop contract drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_LANGUAGE_AGNOSTIC in normalized, f"language-agnostic anti-slop contract drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_MIXED_LANGUAGE in normalized, f"mixed-language anti-slop contract drifted in {path.relative_to(ROOT)}"
+
+    asset_surface_paths = (
+        ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+    )
+    for path in asset_surface_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_ASSET_SURFACES in normalized, f"asset-surface anti-slop contract drifted in {path.relative_to(ROOT)}"
+
     maintainer_paths = (
         ROOT / "odylith" / "maintainer" / "AGENTS.md",
         ROOT / "odylith" / "maintainer" / "agents-guidelines" / "CODING_STANDARDS.md",
@@ -655,10 +691,15 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert "source-local" in normalized, f"maintainer detached-dev anti-slop bar drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_ALIAS_WALL in normalized.lower(), f"maintainer alias-wall bar drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_PHASE_OWNER in normalized, f"maintainer phase-owner decomposition bar drifted in {path.relative_to(ROOT)}"
+        assert "consumer-safe guidance" in normalized, f"maintainer shared anti-slop propagation drifted in {path.relative_to(ROOT)}"
 
 
 def test_anti_slop_guidance_and_skill_bundle_assets_stay_synced() -> None:
     pairs = (
+        (
+            ROOT / "odylith" / "AGENTS.md",
+            ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        ),
         (
             ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
             ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
@@ -666,6 +707,14 @@ def test_anti_slop_guidance_and_skill_bundle_assets_stay_synced() -> None:
         (
             ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
             ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ),
+        (
+            ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+            ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ),
+        (
+            ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+            ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
         ),
         (
             ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",

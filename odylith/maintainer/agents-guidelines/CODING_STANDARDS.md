@@ -31,6 +31,10 @@
   abstractions, duplicated wrappers, speculative helper layers, generic
   filler comments, and names or structure that hide the real contract instead
   of clarifying it.
+- When maintainer work tightens anti-slop policy, propagate the shared rule to
+  the consumer-safe guidance, shared skill, and shipped bundle mirrors in the
+  same change so the stronger bar lands across all lanes instead of staying
+  maintainer-local.
 - Add or tighten inline code documentation when it materially improves local
   understanding of non-obvious invariants, state transitions, pressure cases,
   or boundary assumptions, but do not carpet-bomb obvious code with comment

@@ -5,6 +5,9 @@
   lane.
 - For consumer-owned code, the consumer repo's own `AGENTS.md`, coding
   standards, and validation/tooling rules take precedence.
+- This baseline is language-agnostic on purpose. It applies to consumer-owned
+  code whether the repo is Python, TypeScript, JavaScript, Go, Rust, Java,
+  shell, SQL, or mixed-language.
 - Maintainer-only Odylith product coding policy lives in
   `../maintainer/agents-guidelines/CODING_STANDARDS.md`.
 
@@ -28,6 +31,10 @@
 
 ## Anti-Slop Guardrails
 - Treat AI slop as a regression.
+- The anti-slop contract is shared across consumer and maintainer lanes.
+- Codex and Claude must enforce the same anti-slop contract across consumer
+  and maintainer lanes.
+- Treat the slop class, not the language syntax, as the thing to ban.
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
   private host symbols is banned.
 - Do not replace fake modularization with a function-local or module-local
@@ -35,11 +42,16 @@
 - Do not duplicate generic coercion helpers such as `_mapping`,
   `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
   shared owner is appropriate.
+- Apply the same bar to equivalent non-Python slop such as duplicated parser
+  helpers, near-identical platform adapters, giant phase-mixed controllers or
+  components, mirrored hook scripts, and boilerplate command or config assets.
 - Do not keep host-mirror files near-identical when a shared helper, shared
   renderer, or shared formatter would remove the duplication.
 - Do not leave giant renderers, payload builders, routers, or score engines
   phase-mixed when a real owner can separate data prep, view model,
   template/render, or gather/score/decide stages.
+- Project assets, prompts, hooks, commands, templates, and generated config
+  are code surfaces for this rule.
 - Do not add filler comments or docstrings. Comments must explain invariants,
   failure modes, boundary assumptions, or non-obvious state transitions.
 - New or materially rewritten runtime Python modules must carry a truthful
@@ -59,6 +71,9 @@
   contract touched by the change.
 - In consumer repos, validate consumer-owned code with the consumer repo's own
   toolchain and rule set after Odylith narrows the slice.
+- When the consumer repo is not Python, use the analogous local proof surface
+  for that stack instead of downgrading the anti-slop bar because the syntax
+  changed.
 - Use [VALIDATION_AND_TESTING.md](./VALIDATION_AND_TESTING.md) for the full
   proof bundles and command-level validation guidance for Odylith-owned
   product surfaces.

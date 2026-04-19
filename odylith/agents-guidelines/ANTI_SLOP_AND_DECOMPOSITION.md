@@ -7,6 +7,36 @@
 - Do not dismiss it as an aesthetic complaint.
 - Use this guide when the slice shows duplicate helper churn, fake
   extractions, mirrored host drift, oversized-file pressure, or comment noise.
+- This anti-slop contract is shared across consumer and maintainer lanes.
+- Codex and Claude must enforce the same anti-slop contract across consumer
+  and maintainer lanes.
+- Treat the slop class, not the language syntax, as the thing to ban.
+- Consumer repos may be Python, TypeScript, JavaScript, Go, Rust, Java,
+  shell, SQL, or mixed-language; the language changes, the anti-slop bar does
+  not.
+
+## Language-Agnostic Slop Inventory
+- Treat fake seams, duplicate helpers, giant phase-mixed functions, mirror
+  drift, and filler documentation as the same failure class even when the host
+  repo is not Python.
+- In Python, common slop signals include `_host()` shims, `bind(host)` or
+  globals injection, duplicated `_normalize_*` helpers, and giant payload or
+  router functions.
+- In TypeScript or JavaScript, common slop signals include duplicated
+  prop-shaping or parser helpers, near-identical platform adapters, giant
+  components or handlers that mix data prep and rendering, and wrapper modules
+  that still tunnel back into private parent helpers.
+- In Go, Rust, Java, or similar compiled stacks, common slop signals include
+  copy-pasted coercion or decoding helpers, giant control modules that own too
+  many phases, and extracted packages that still depend on hidden parent
+  internals instead of real contracts.
+- In shell, SQL, docs, prompts, hooks, commands, templates, and generated
+  config, common slop signals include near-identical mirrored assets,
+  boilerplate command pipelines, duplicated validation text, and placeholder
+  comments that explain nothing.
+- Project assets, prompts, hooks, commands, templates, and generated config
+  are code surfaces for this rule. Do not hide slop there just because the
+  file is not runtime code.
 
 ## Hard Bans
 - Do not ship fake modularization. `def _host()` plus a wall of rebound
@@ -70,6 +100,10 @@
   slice or leave an explicit bounded follow-up plan.
 - When guidance, skills, or bundled docs change, update the shipped mirrors in
   the same change.
+- In consumer repos, prove consumer-owned code with the consumer repo's own
+  language toolchain, tests, linters, build checks, and formatter or type
+  checks where applicable. Odylith narrows the slice; the consumer repo still
+  proves its own code.
 - For behavioral refactors, run the focused regression suite for the touched
   slice and widen proof when the change reaches shared hot paths or user-facing
   surfaces.
