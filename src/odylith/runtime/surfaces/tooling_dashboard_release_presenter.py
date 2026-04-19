@@ -8,6 +8,8 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 from typing import Any
 
+from odylith.common.release_text import normalize_release_text as _normalize_release_copy
+
 
 def _coerce_release_spotlight(payload: Mapping[str, Any]) -> dict[str, Any]:
     """Extract the release spotlight block when the payload contains one."""
@@ -53,22 +55,6 @@ def _format_timestamp_date(value: Any) -> str:
         token = str(value or "").strip()
         return token[:10] if token else ""
     return parsed.strftime("%Y-%m-%d")
-
-
-def _normalize_release_copy(value: Any, *, limit: int | None = 280) -> str:
-    """Strip markdown/HTML noise from release copy and optionally truncate it."""
-    token = str(value or "").strip()
-    if not token:
-        return ""
-    token = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", token)
-    token = re.sub(r"<[^>]+>", "", token)
-    token = re.sub(r"[*_`>#]", "", token)
-    token = re.sub(r"\s+", " ", token).strip(" -:")
-    if limit is not None and len(token) > limit:
-        token = token[: limit - 3].rstrip() + "..."
-    return token
-
-
 def _release_story_title(story: Mapping[str, Any]) -> str:
     """Return the best available title for the spotlight story."""
     return _normalize_release_copy(story.get("title") or "", limit=120) or _format_version_label(

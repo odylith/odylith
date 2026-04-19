@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.common.json_objects import JsonObjectLoadError
+from odylith.common.json_objects import read_json_object
+from odylith.contracts.severity import VALID_SEVERITIES
+from odylith.contracts.severity import render_valid_severities
 from odylith.runtime.character import budget as character_budget
 from odylith.runtime.character import benchmark as character_benchmark
 from odylith.runtime.character import contract as character_contract
@@ -51,7 +54,6 @@ LIST_FIELDS = {
     "related_guidance_refs",
     "related_component_ids",
 }
-VALID_SEVERITIES = {"critical", "high", "medium", "low"}
 VALID_DECISIONS = {"admit", "defer", "block"}
 ALLOWED_REF_PREFIXES = ("AGENTS.md", "odylith/", "src/odylith/", ".agents/", ".claude/")
 PLATFORM_CONTRACT = "odylith_agent_operating_character_platform_end_to_end.v1"
@@ -153,25 +155,24 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _read_json_object(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        raise CharacterCorpusStateError(
-            f"agent operating character corpus is missing: {path}",
-            status="unavailable",
-            path=path,
-        )
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
+        return read_json_object(path)
+    except JsonObjectLoadError as exc:
+        if exc.code == "missing":
+            raise CharacterCorpusStateError(
+                f"agent operating character corpus is missing: {path}",
+                status="unavailable",
+                path=path,
+            ) from exc
+        if exc.code == "not_object":
+            raise CharacterCorpusStateError(
+                f"agent operating character corpus must be a JSON object: {path}",
+                path=path,
+            ) from exc
         raise CharacterCorpusStateError(
-            f"agent operating character corpus is not valid JSON: {path}: {exc}",
+            f"agent operating character corpus is not valid JSON: {path}: {exc.detail}",
             path=path,
         ) from exc
-    if not isinstance(payload, dict):
-        raise CharacterCorpusStateError(
-            f"agent operating character corpus must be a JSON object: {path}",
-            path=path,
-        )
-    return payload
 
 
 def _nonempty_string_list(value: Any) -> bool:
@@ -287,7 +288,13 @@ def _case_shape_issues(case: Mapping[str, Any], *, index: int) -> list[character
         issues.append(character_contract.CharacterIssue("case_family", f"case {case_id or index} family must be `{EXPECTED_FAMILY}`", case_id=case_id))
     severity = str(case.get("severity", "")).strip().lower()
     if severity and severity not in VALID_SEVERITIES:
-        issues.append(character_contract.CharacterIssue("case_severity", f"case {case_id or index} severity must be one of {', '.join(sorted(VALID_SEVERITIES))}", case_id=case_id))
+        issues.append(
+            character_contract.CharacterIssue(
+                "case_severity",
+                f"case {case_id or index} severity must be one of {render_valid_severities()}",
+                case_id=case_id,
+            )
+        )
     learning_outcome = str(case.get("learning_outcome", "")).strip()
     if learning_outcome and learning_outcome not in character_contract.LEARNING_OUTCOMES:
         issues.append(character_contract.CharacterIssue("case_learning_outcome", f"case {case_id or index} learning_outcome must be a known learning outcome", case_id=case_id))

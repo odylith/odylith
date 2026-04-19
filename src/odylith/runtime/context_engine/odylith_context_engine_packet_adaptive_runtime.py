@@ -2,12 +2,6 @@
 
 from __future__ import annotations
 
-def _store():
-    from odylith.runtime.context_engine import odylith_context_engine_store as store
-
-    return store
-
-
 from pathlib import Path
 from typing import Any
 from typing import Mapping
@@ -22,7 +16,7 @@ _hot_path_workstream_selection = odylith_context_engine_hot_path_packet_core_run
 
 
 def build_impact_report(**kwargs: object) -> dict[str, Any]:
-    return dict(_store().build_impact_report(**kwargs))
+    return dict(context_engine_store.build_impact_report(**kwargs))
 
 def build_adaptive_coding_packet(
     *,
@@ -39,14 +33,14 @@ def build_adaptive_coding_packet(
     validation_command_hints: Sequence[str] = (),
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
-    family = _store()._normalize_family_hint(family_hint)
+    family = context_engine_store._normalize_family_hint(family_hint)
     attempts: list[dict[str, Any]] = []
     initial_source = "impact"
     retain_impact_internal_context = bool(
-        family in _store()._HOT_PATH_AUTO_SESSION_BRIEF_FAMILIES
+        family in context_engine_store._HOT_PATH_AUTO_SESSION_BRIEF_FAMILIES
         or (
             str(workstream_hint or "").strip()
-            and family not in _store()._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
+            and family not in context_engine_store._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
         )
     )
     impact_payload = build_impact_report(
@@ -58,14 +52,14 @@ def build_adaptive_coding_packet(
         claimed_paths=claimed_paths,
         runtime_mode=runtime_mode,
         intent=intent,
-        delivery_profile=_store()._CODEX_HOT_PATH_PROFILE,
+        delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
         family_hint=family_hint,
         workstream_hint=workstream_hint,
         validation_command_hints=validation_command_hints,
         retain_hot_path_internal_context=retain_impact_internal_context,
         skip_runtime_warmup=family == "guidance_behavior",
     )
-    initial_trigger = _store()._hot_path_auto_escalation_trigger(
+    initial_trigger = context_engine_store._hot_path_auto_escalation_trigger(
         packet_kind="impact",
         family_hint=family_hint,
         payload=impact_payload,
@@ -76,12 +70,12 @@ def build_adaptive_coding_packet(
             "label": "compact_packet",
             "trigger": initial_trigger,
             "accepted": True,
-            "route_ready": _store()._hot_path_route_ready(impact_payload),
-            "full_scan_recommended": _store()._hot_path_full_scan_recommended(impact_payload),
-            "routing_confidence": _store()._hot_path_routing_confidence(impact_payload),
+            "route_ready": context_engine_store._hot_path_route_ready(impact_payload),
+            "full_scan_recommended": context_engine_store._hot_path_full_scan_recommended(impact_payload),
+            "routing_confidence": context_engine_store._hot_path_routing_confidence(impact_payload),
         }
     )
-    should_escalate, reasons = _store()._should_escalate_hot_path_to_session_brief(
+    should_escalate, reasons = context_engine_store._should_escalate_hot_path_to_session_brief(
         payload=impact_payload,
         family_hint=family_hint,
         workstream_hint=workstream_hint,
@@ -103,21 +97,21 @@ def build_adaptive_coding_packet(
             intent=intent,
             claimed_paths=claimed_paths,
             runtime_mode=runtime_mode,
-            delivery_profile=_store()._CODEX_HOT_PATH_PROFILE,
+            delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
             family_hint=family_hint,
             validation_command_hints=validation_command_hints,
             impact_override=impact_payload,
         )
-        session_brief_accepted = _store()._hot_path_packet_rank(session_brief_payload) >= _store()._hot_path_packet_rank(impact_payload)
+        session_brief_accepted = context_engine_store._hot_path_packet_rank(session_brief_payload) >= context_engine_store._hot_path_packet_rank(impact_payload)
         attempts.append(
             {
                 "stage": 2,
                 "label": "expanded_context",
                 "trigger": reasons[0] if reasons else initial_trigger,
                 "accepted": session_brief_accepted,
-                "route_ready": _store()._hot_path_route_ready(session_brief_payload),
-                "full_scan_recommended": _store()._hot_path_full_scan_recommended(session_brief_payload),
-                "routing_confidence": _store()._hot_path_routing_confidence(session_brief_payload),
+                "route_ready": context_engine_store._hot_path_route_ready(session_brief_payload),
+                "full_scan_recommended": context_engine_store._hot_path_full_scan_recommended(session_brief_payload),
+                "routing_confidence": context_engine_store._hot_path_routing_confidence(session_brief_payload),
             }
         )
         payload = session_brief_payload if session_brief_accepted else impact_payload
@@ -125,11 +119,11 @@ def build_adaptive_coding_packet(
         stage = "session_brief_rescue" if session_brief_accepted else "compact_success"
     else:
         if explicit_workstream_unresolved:
-            reasons = _store()._dedupe_strings([*reasons, "explicit_workstream_unresolved"])
+            reasons = context_engine_store._dedupe_strings([*reasons, "explicit_workstream_unresolved"])
         payload = impact_payload
         final_source = initial_source
         stage = "compact_success"
-    current_trigger = _store()._hot_path_auto_escalation_trigger(
+    current_trigger = context_engine_store._hot_path_auto_escalation_trigger(
         packet_kind=final_source,
         family_hint=family_hint,
         payload=payload,
@@ -137,8 +131,8 @@ def build_adaptive_coding_packet(
     architecture_rescue_applied = False
     if (
         current_trigger
-        and family in _store()._HOT_PATH_AUTO_ESCALATION_ARCHITECTURE_FAMILIES
-        and family not in _store()._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
+        and family in context_engine_store._HOT_PATH_AUTO_ESCALATION_ARCHITECTURE_FAMILIES
+        and family not in context_engine_store._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
     ):
         architecture_payload = odylith_context_engine_packet_architecture_runtime.build_architecture_audit(
             repo_root=root,
@@ -156,42 +150,42 @@ def build_adaptive_coding_packet(
                 "label": "architecture_assist",
                 "trigger": current_trigger,
                 "accepted": bool(architecture_payload.get("resolved")),
-                "route_ready": _store()._hot_path_route_ready(payload),
-                "full_scan_recommended": _store()._hot_path_full_scan_recommended(payload),
-                "routing_confidence": _store()._hot_path_routing_confidence(payload),
+                "route_ready": context_engine_store._hot_path_route_ready(payload),
+                "full_scan_recommended": context_engine_store._hot_path_full_scan_recommended(payload),
+                "routing_confidence": context_engine_store._hot_path_routing_confidence(payload),
             }
         )
         if bool(architecture_payload.get("resolved")):
             architecture_rescue_applied = True
             stage = "architecture_assist"
-    current_trigger = _store()._hot_path_auto_escalation_trigger(
+    current_trigger = context_engine_store._hot_path_auto_escalation_trigger(
         packet_kind=final_source,
         family_hint=family_hint,
         payload=payload,
     )
     if current_trigger and (
-        not _store()._hot_path_can_hold_local_narrowing_without_full_scan(
+        not context_engine_store._hot_path_can_hold_local_narrowing_without_full_scan(
             family_hint=family_hint,
             payload=payload,
         )
         and (
-        _store()._hot_path_full_scan_recommended(payload)
+        context_engine_store._hot_path_full_scan_recommended(payload)
         or (
-            family not in _store()._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
-            and not _store()._hot_path_route_ready(payload)
+            family not in context_engine_store._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
+            and not context_engine_store._hot_path_route_ready(payload)
             and not architecture_rescue_applied
         )
         )
     ):
-        fallback_reason = _store()._hot_path_full_scan_reason(payload) or "adaptive_full_scan_fallback"
-        fallback_scan = _store()._fallback_scan_payload(
+        fallback_reason = context_engine_store._hot_path_full_scan_reason(payload) or "adaptive_full_scan_fallback"
+        fallback_scan = context_engine_store._fallback_scan_payload(
             repo_root=root,
             reason=fallback_reason,
             query=str(intent or "").strip(),
             changed_paths=changed_paths,
-            perform_scan=family not in _store()._HOT_PATH_SUMMARY_ONLY_FALLBACK_FAMILIES,
+            perform_scan=family not in context_engine_store._HOT_PATH_SUMMARY_ONLY_FALLBACK_FAMILIES,
             result_limit=8,
-            delivery_profile=_store()._CODEX_HOT_PATH_PROFILE,
+            delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
         )
         attempts.append(
             {
@@ -199,12 +193,12 @@ def build_adaptive_coding_packet(
                 "label": "full_scan_fallback",
                 "trigger": current_trigger,
                 "accepted": True,
-                "route_ready": _store()._hot_path_route_ready(payload),
+                "route_ready": context_engine_store._hot_path_route_ready(payload),
                 "full_scan_recommended": True,
-                "routing_confidence": _store()._hot_path_routing_confidence(payload),
+                "routing_confidence": context_engine_store._hot_path_routing_confidence(payload),
             }
         )
-        payload = _store()._update_compact_hot_path_runtime_packet(
+        payload = context_engine_store._update_compact_hot_path_runtime_packet(
             packet_kind=final_source,
             payload=payload,
             full_scan_recommended=True,
@@ -217,17 +211,17 @@ def build_adaptive_coding_packet(
         "initial_source": initial_source,
         "final_source": final_source,
         "auto_escalated": bool(should_escalate or architecture_rescue_applied or stage == "full_scan_fallback"),
-        "reasons": _store()._dedupe_strings([*reasons, initial_trigger, current_trigger]),
+        "reasons": context_engine_store._dedupe_strings([*reasons, initial_trigger, current_trigger]),
         "attempts": attempts,
     }
     if retain_impact_internal_context and final_source == "impact":
-        payload = _store()._update_compact_hot_path_runtime_packet(
+        payload = context_engine_store._update_compact_hot_path_runtime_packet(
             packet_kind="impact",
             payload=payload,
             retain_internal_context=False,
         )
-    elif not _store()._hot_path_payload_is_compact(payload):
-        payload = _store()._compact_hot_path_runtime_packet(
+    elif not context_engine_store._hot_path_payload_is_compact(payload):
+        payload = context_engine_store._compact_hot_path_runtime_packet(
             packet_kind=final_source,
             payload=dict(payload),
         )
@@ -260,14 +254,14 @@ def build_adaptive_coding_packet_reusing_daemon(
     validation_command_hints: Sequence[str] = (),
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
-    family = _store()._normalize_family_hint(family_hint)
+    family = context_engine_store._normalize_family_hint(family_hint)
     attempts: list[dict[str, Any]] = []
     initial_source = "impact"
     retain_impact_internal_context = bool(
-        family in _store()._HOT_PATH_AUTO_SESSION_BRIEF_FAMILIES
+        family in context_engine_store._HOT_PATH_AUTO_SESSION_BRIEF_FAMILIES
         or (
             str(workstream_hint or "").strip()
-            and family not in _store()._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
+            and family not in context_engine_store._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
         )
     )
     impact_request = {
@@ -278,13 +272,13 @@ def build_adaptive_coding_packet_reusing_daemon(
         "claim_paths": [str(token).strip() for token in claimed_paths if str(token).strip()],
         "runtime_mode": str(runtime_mode or "auto").strip() or "auto",
         "intent": str(intent or "").strip(),
-        "delivery_profile": _store()._CODEX_HOT_PATH_PROFILE,
+        "delivery_profile": context_engine_store._CODEX_HOT_PATH_PROFILE,
         "family_hint": str(family_hint or "").strip(),
         "workstream_hint": str(workstream_hint or "").strip(),
         "validation_command_hints": [str(token).strip() for token in validation_command_hints if str(token).strip()],
         "retain_hot_path_internal_context": retain_impact_internal_context,
     }
-    impact_result = _store().request_runtime_daemon(
+    impact_result = context_engine_store.request_runtime_daemon(
         repo_root=root,
         command="impact",
         payload=impact_request,
@@ -303,7 +297,7 @@ def build_adaptive_coding_packet_reusing_daemon(
             workstream_hint=workstream_hint,
             validation_command_hints=validation_command_hints,
         )
-        adaptive["runtime_execution"] = _store()._local_runtime_execution_summary(
+        adaptive["runtime_execution"] = context_engine_store._local_runtime_execution_summary(
             repo_root=root,
             command="impact",
             changed_paths=changed_paths,
@@ -314,7 +308,7 @@ def build_adaptive_coding_packet_reusing_daemon(
         return adaptive
     impact_payload, runtime_execution = impact_result
     any_daemon_reuse = bool(runtime_execution.get("workspace_daemon_reused"))
-    initial_trigger = _store()._hot_path_auto_escalation_trigger(
+    initial_trigger = context_engine_store._hot_path_auto_escalation_trigger(
         packet_kind="impact",
         family_hint=family_hint,
         payload=impact_payload,
@@ -325,12 +319,12 @@ def build_adaptive_coding_packet_reusing_daemon(
             "label": "compact_packet",
             "trigger": initial_trigger,
             "accepted": True,
-            "route_ready": _store()._hot_path_route_ready(impact_payload),
-            "full_scan_recommended": _store()._hot_path_full_scan_recommended(impact_payload),
-            "routing_confidence": _store()._hot_path_routing_confidence(impact_payload),
+            "route_ready": context_engine_store._hot_path_route_ready(impact_payload),
+            "full_scan_recommended": context_engine_store._hot_path_full_scan_recommended(impact_payload),
+            "routing_confidence": context_engine_store._hot_path_routing_confidence(impact_payload),
         }
     )
-    should_escalate, reasons = _store()._should_escalate_hot_path_to_session_brief(
+    should_escalate, reasons = context_engine_store._should_escalate_hot_path_to_session_brief(
         payload=impact_payload,
         family_hint=family_hint,
         workstream_hint=workstream_hint,
@@ -352,11 +346,11 @@ def build_adaptive_coding_packet_reusing_daemon(
             "intent": str(intent or "").strip(),
             "claim_paths": [str(token).strip() for token in claimed_paths if str(token).strip()],
             "runtime_mode": str(runtime_mode or "auto").strip() or "auto",
-            "delivery_profile": _store()._CODEX_HOT_PATH_PROFILE,
+            "delivery_profile": context_engine_store._CODEX_HOT_PATH_PROFILE,
             "family_hint": str(family_hint or "").strip(),
             "validation_command_hints": [str(token).strip() for token in validation_command_hints if str(token).strip()],
         }
-        session_result = _store().request_runtime_daemon(
+        session_result = context_engine_store.request_runtime_daemon(
             repo_root=root,
             command="session-brief",
             payload=session_request,
@@ -374,12 +368,12 @@ def build_adaptive_coding_packet_reusing_daemon(
                 intent=intent,
                 claimed_paths=claimed_paths,
                 runtime_mode=runtime_mode,
-                delivery_profile=_store()._CODEX_HOT_PATH_PROFILE,
+                delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
                 family_hint=family_hint,
                 validation_command_hints=validation_command_hints,
                 impact_override=impact_payload,
             )
-            session_runtime_execution = _store()._local_runtime_execution_summary(
+            session_runtime_execution = context_engine_store._local_runtime_execution_summary(
                 repo_root=root,
                 command="session-brief",
                 changed_paths=changed_paths,
@@ -387,16 +381,16 @@ def build_adaptive_coding_packet_reusing_daemon(
                 claimed_paths=claimed_paths,
                 working_tree_scope=session_scope or "session",
             )
-        session_brief_accepted = _store()._hot_path_packet_rank(session_brief_payload) >= _store()._hot_path_packet_rank(impact_payload)
+        session_brief_accepted = context_engine_store._hot_path_packet_rank(session_brief_payload) >= context_engine_store._hot_path_packet_rank(impact_payload)
         attempts.append(
             {
                 "stage": 2,
                 "label": "expanded_context",
                 "trigger": reasons[0] if reasons else initial_trigger,
                 "accepted": session_brief_accepted,
-                "route_ready": _store()._hot_path_route_ready(session_brief_payload),
-                "full_scan_recommended": _store()._hot_path_full_scan_recommended(session_brief_payload),
-                "routing_confidence": _store()._hot_path_routing_confidence(session_brief_payload),
+                "route_ready": context_engine_store._hot_path_route_ready(session_brief_payload),
+                "full_scan_recommended": context_engine_store._hot_path_full_scan_recommended(session_brief_payload),
+                "routing_confidence": context_engine_store._hot_path_routing_confidence(session_brief_payload),
             }
         )
         payload = session_brief_payload if session_brief_accepted else impact_payload
@@ -408,11 +402,11 @@ def build_adaptive_coding_packet_reusing_daemon(
             runtime_execution = session_runtime_execution
     else:
         if explicit_workstream_unresolved:
-            reasons = _store()._dedupe_strings([*reasons, "explicit_workstream_unresolved"])
+            reasons = context_engine_store._dedupe_strings([*reasons, "explicit_workstream_unresolved"])
         payload = impact_payload
         final_source = initial_source
         stage = "compact_success"
-    current_trigger = _store()._hot_path_auto_escalation_trigger(
+    current_trigger = context_engine_store._hot_path_auto_escalation_trigger(
         packet_kind=final_source,
         family_hint=family_hint,
         payload=payload,
@@ -420,8 +414,8 @@ def build_adaptive_coding_packet_reusing_daemon(
     architecture_rescue_applied = False
     if (
         current_trigger
-        and family in _store()._HOT_PATH_AUTO_ESCALATION_ARCHITECTURE_FAMILIES
-        and family not in _store()._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
+        and family in context_engine_store._HOT_PATH_AUTO_ESCALATION_ARCHITECTURE_FAMILIES
+        and family not in context_engine_store._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
     ):
         architecture_scope = "session" if str(working_tree_scope or "").strip() == "repo" else str(working_tree_scope or "").strip()
         architecture_request = {
@@ -433,7 +427,7 @@ def build_adaptive_coding_packet_reusing_daemon(
             "runtime_mode": str(runtime_mode or "auto").strip() or "auto",
             "detail_level": "packet",
         }
-        architecture_result = _store().request_runtime_daemon(
+        architecture_result = context_engine_store.request_runtime_daemon(
             repo_root=root,
             command="architecture",
             payload=architecture_request,
@@ -451,7 +445,7 @@ def build_adaptive_coding_packet_reusing_daemon(
                 runtime_mode=runtime_mode,
                 detail_level="packet",
             )
-            architecture_runtime_execution = _store()._local_runtime_execution_summary(
+            architecture_runtime_execution = context_engine_store._local_runtime_execution_summary(
                 repo_root=root,
                 command="architecture",
                 changed_paths=changed_paths,
@@ -465,9 +459,9 @@ def build_adaptive_coding_packet_reusing_daemon(
                 "label": "architecture_assist",
                 "trigger": current_trigger,
                 "accepted": bool(architecture_payload.get("resolved")),
-                "route_ready": _store()._hot_path_route_ready(payload),
-                "full_scan_recommended": _store()._hot_path_full_scan_recommended(payload),
-                "routing_confidence": _store()._hot_path_routing_confidence(payload),
+                "route_ready": context_engine_store._hot_path_route_ready(payload),
+                "full_scan_recommended": context_engine_store._hot_path_full_scan_recommended(payload),
+                "routing_confidence": context_engine_store._hot_path_routing_confidence(payload),
             }
         )
         if bool(architecture_runtime_execution.get("workspace_daemon_reused")):
@@ -475,34 +469,34 @@ def build_adaptive_coding_packet_reusing_daemon(
         if bool(architecture_payload.get("resolved")):
             architecture_rescue_applied = True
             stage = "architecture_assist"
-    current_trigger = _store()._hot_path_auto_escalation_trigger(
+    current_trigger = context_engine_store._hot_path_auto_escalation_trigger(
         packet_kind=final_source,
         family_hint=family_hint,
         payload=payload,
     )
     if current_trigger and (
-        not _store()._hot_path_can_hold_local_narrowing_without_full_scan(
+        not context_engine_store._hot_path_can_hold_local_narrowing_without_full_scan(
             family_hint=family_hint,
             payload=payload,
         )
         and (
-        _store()._hot_path_full_scan_recommended(payload)
+        context_engine_store._hot_path_full_scan_recommended(payload)
         or (
-            family not in _store()._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
-            and not _store()._hot_path_route_ready(payload)
+            family not in context_engine_store._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
+            and not context_engine_store._hot_path_route_ready(payload)
             and not architecture_rescue_applied
         )
         )
     ):
-        fallback_reason = _store()._hot_path_full_scan_reason(payload) or "adaptive_full_scan_fallback"
-        fallback_scan = _store()._fallback_scan_payload(
+        fallback_reason = context_engine_store._hot_path_full_scan_reason(payload) or "adaptive_full_scan_fallback"
+        fallback_scan = context_engine_store._fallback_scan_payload(
             repo_root=root,
             reason=fallback_reason,
             query=str(intent or "").strip(),
             changed_paths=changed_paths,
-            perform_scan=family not in _store()._HOT_PATH_SUMMARY_ONLY_FALLBACK_FAMILIES,
+            perform_scan=family not in context_engine_store._HOT_PATH_SUMMARY_ONLY_FALLBACK_FAMILIES,
             result_limit=8,
-            delivery_profile=_store()._CODEX_HOT_PATH_PROFILE,
+            delivery_profile=context_engine_store._CODEX_HOT_PATH_PROFILE,
         )
         attempts.append(
             {
@@ -510,12 +504,12 @@ def build_adaptive_coding_packet_reusing_daemon(
                 "label": "full_scan_fallback",
                 "trigger": current_trigger,
                 "accepted": True,
-                "route_ready": _store()._hot_path_route_ready(payload),
+                "route_ready": context_engine_store._hot_path_route_ready(payload),
                 "full_scan_recommended": True,
-                "routing_confidence": _store()._hot_path_routing_confidence(payload),
+                "routing_confidence": context_engine_store._hot_path_routing_confidence(payload),
             }
         )
-        payload = _store()._update_compact_hot_path_runtime_packet(
+        payload = context_engine_store._update_compact_hot_path_runtime_packet(
             packet_kind=final_source,
             payload=payload,
             full_scan_recommended=True,
@@ -528,17 +522,17 @@ def build_adaptive_coding_packet_reusing_daemon(
         "initial_source": initial_source,
         "final_source": final_source,
         "auto_escalated": bool(should_escalate or architecture_rescue_applied or stage == "full_scan_fallback"),
-        "reasons": _store()._dedupe_strings([*reasons, initial_trigger, current_trigger]),
+        "reasons": context_engine_store._dedupe_strings([*reasons, initial_trigger, current_trigger]),
         "attempts": attempts,
     }
     if retain_impact_internal_context and final_source == "impact":
-        payload = _store()._update_compact_hot_path_runtime_packet(
+        payload = context_engine_store._update_compact_hot_path_runtime_packet(
             packet_kind="impact",
             payload=payload,
             retain_internal_context=False,
         )
-    elif not _store()._hot_path_payload_is_compact(payload):
-        payload = _store()._compact_hot_path_runtime_packet(
+    elif not context_engine_store._hot_path_payload_is_compact(payload):
+        payload = context_engine_store._compact_hot_path_runtime_packet(
             packet_kind=final_source,
             payload=dict(payload),
         )
@@ -553,3 +547,5 @@ def build_adaptive_coding_packet_reusing_daemon(
         "adaptive_escalation": adaptive_escalation,
         "runtime_execution": runtime_execution,
     }
+# Keep the store dependency explicit without pulling it through module bootstrap.
+from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store

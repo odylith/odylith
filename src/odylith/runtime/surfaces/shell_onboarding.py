@@ -9,6 +9,7 @@ import re
 from typing import Any
 from urllib.parse import urlparse
 
+from odylith.common.release_text import normalize_release_text as _normalize_release_note_text
 from odylith.install.state import load_install_state
 from odylith.install.state import load_upgrade_spotlight
 from odylith.install.state import load_version_pin
@@ -664,21 +665,6 @@ def _release_note_paragraphs(body: str, *, limit: int) -> list[str]:
         if len(paragraphs) >= limit:
             break
     return paragraphs[:limit]
-
-
-def _normalize_release_note_text(value: Any, *, limit: int) -> str:
-    token = str(value or "").strip()
-    if not token:
-        return ""
-    token = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", token)
-    token = re.sub(r"<[^>]+>", "", token)
-    token = re.sub(r"[*_`>#]", "", token)
-    token = re.sub(r"\s+", " ", token).strip(" -:")
-    if len(token) > limit:
-        token = token[: limit - 3].rstrip() + "..."
-    return token
-
-
 def _has_backlog_ideas(repo_root: Path) -> bool:
     ideas_root = repo_root / "odylith" / "radar" / "source" / "ideas"
     if not ideas_root.is_dir():

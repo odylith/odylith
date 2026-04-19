@@ -8,6 +8,10 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.common.json_objects import JsonObjectLoadError
+from odylith.common.json_objects import read_json_object
+from odylith.contracts.severity import VALID_SEVERITIES
+from odylith.contracts.severity import render_valid_severities
 from odylith.runtime.governance import guidance_behavior_benchmark_contracts
 from odylith.runtime.governance import guidance_behavior_guidance_contracts
 from odylith.runtime.governance import guidance_behavior_platform_contracts
@@ -42,7 +46,6 @@ _LIST_CASE_FIELDS = {
     "required_evidence",
     "related_guidance_refs",
 }
-_VALID_SEVERITIES = {"critical", "high", "medium", "low"}
 _ALLOWED_RELATED_REF_PREFIXES = (
     "AGENTS.md",
     "odylith/",
@@ -93,15 +96,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def _read_json_object(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        raise CorpusStateError(f"guidance behavior corpus is missing: {path}", status="unavailable", path=path)
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        raise CorpusStateError(f"guidance behavior corpus is not valid JSON: {path}: {exc}", path=path) from exc
-    if not isinstance(payload, dict):
-        raise CorpusStateError(f"guidance behavior corpus must be a JSON object: {path}", path=path)
-    return payload
+        return read_json_object(path)
+    except JsonObjectLoadError as exc:
+        if exc.code == "missing":
+            raise CorpusStateError(f"guidance behavior corpus is missing: {path}", status="unavailable", path=path) from exc
+        if exc.code == "not_object":
+            raise CorpusStateError(f"guidance behavior corpus must be a JSON object: {path}", path=path) from exc
+        raise CorpusStateError(f"guidance behavior corpus is not valid JSON: {path}: {exc.detail}", path=path) from exc
 
 
 def _nonempty_string_list(value: Any) -> bool:
@@ -142,11 +144,11 @@ def _validate_case_shape(case: Mapping[str, Any], *, index: int) -> list[Guidanc
             )
         )
     severity = str(case.get("severity", "")).strip().lower()
-    if severity and severity not in _VALID_SEVERITIES:
+    if severity and severity not in VALID_SEVERITIES:
         issues.append(
             GuidanceIssue(
                 "case_severity",
-                f"case {case_id or index} severity must be one of {', '.join(sorted(_VALID_SEVERITIES))}",
+                f"case {case_id or index} severity must be one of {render_valid_severities()}",
                 case_id=case_id,
             )
         )

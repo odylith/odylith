@@ -2,12 +2,6 @@
 
 from __future__ import annotations
 
-def _store():
-    from odylith.runtime.context_engine import odylith_context_engine_store as store
-
-    return store
-
-
 from typing import Any
 
 from odylith.runtime.common import agent_runtime_contract
@@ -23,19 +17,19 @@ def _impact_summary_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
         "context_packet_state": str(payload.get("context_packet_state", "")).strip(),
         "full_scan_recommended": bool(payload.get("full_scan_recommended")),
         "full_scan_reason": str(payload.get("full_scan_reason", "")).strip(),
-        "truncation": _store()._compact_truncation_for_summary(payload.get("truncation", {}))
-        if isinstance(payload.get("truncation"), _store().Mapping)
+        "truncation": context_engine_store._compact_truncation_for_summary(payload.get("truncation", {}))
+        if isinstance(payload.get("truncation"), context_engine_store.Mapping)
         else {},
-        "primary_workstream": _store()._compact_workstream_reference_for_packet(payload.get("primary_workstream", {}))
-        if isinstance(payload.get("primary_workstream"), _store().Mapping)
+        "primary_workstream": context_engine_store._compact_workstream_reference_for_packet(payload.get("primary_workstream", {}))
+        if isinstance(payload.get("primary_workstream"), context_engine_store.Mapping)
         else {},
-        "workstream_selection": _store()._compact_bootstrap_workstream_selection(payload.get("workstream_selection", {}))
-        if isinstance(payload.get("workstream_selection"), _store().Mapping)
+        "workstream_selection": context_engine_store._compact_bootstrap_workstream_selection(payload.get("workstream_selection", {}))
+        if isinstance(payload.get("workstream_selection"), context_engine_store.Mapping)
         else {},
-        "components": [_store()._compact_component_row_for_packet(row) for row in payload.get("components", []) if isinstance(row, _store().Mapping)]
+        "components": [context_engine_store._compact_component_row_for_packet(row) for row in payload.get("components", []) if isinstance(row, context_engine_store.Mapping)]
         if isinstance(payload.get("components"), list)
         else [],
-        "diagrams": [_store()._compact_diagram_row_for_packet(row) for row in payload.get("diagrams", []) if isinstance(row, _store().Mapping)]
+        "diagrams": [context_engine_store._compact_diagram_row_for_packet(row) for row in payload.get("diagrams", []) if isinstance(row, context_engine_store.Mapping)]
         if isinstance(payload.get("diagrams"), list)
         else [],
         "docs": [str(token).strip() for token in payload.get("docs", []) if str(token).strip()]
@@ -44,29 +38,29 @@ def _impact_summary_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
         "recommended_commands": [str(token).strip() for token in payload.get("recommended_commands", []) if str(token).strip()]
         if isinstance(payload.get("recommended_commands"), list)
         else [],
-        "recommended_tests": [_store()._compact_test_row_for_packet(row) for row in payload.get("recommended_tests", []) if isinstance(row, _store().Mapping)]
+        "recommended_tests": [context_engine_store._compact_test_row_for_packet(row) for row in payload.get("recommended_tests", []) if isinstance(row, context_engine_store.Mapping)]
         if isinstance(payload.get("recommended_tests"), list)
         else [],
-        "guidance_brief": [dict(row) for row in payload.get("guidance_brief", []) if isinstance(row, _store().Mapping)]
+        "guidance_brief": [dict(row) for row in payload.get("guidance_brief", []) if isinstance(row, context_engine_store.Mapping)]
         if isinstance(payload.get("guidance_brief"), list)
         else [],
-        "miss_recovery": _store()._compact_miss_recovery_for_packet(payload.get("miss_recovery", {}))
-        if isinstance(payload.get("miss_recovery"), _store().Mapping)
+        "miss_recovery": context_engine_store._compact_miss_recovery_for_packet(payload.get("miss_recovery", {}))
+        if isinstance(payload.get("miss_recovery"), context_engine_store.Mapping)
         else {},
-        "engineering_notes": _store()._compact_engineering_notes(
-            engineering_notes if isinstance(engineering_notes, _store().Mapping) else {},
+        "engineering_notes": context_engine_store._compact_engineering_notes(
+            engineering_notes if isinstance(engineering_notes, context_engine_store.Mapping) else {},
             total_limit=4,
             per_kind_limit=1,
         )[0],
-        "packet_budget": _store()._compact_budget_meta_for_summary(payload.get("packet_budget", {}))
-        if isinstance(payload.get("packet_budget"), _store().Mapping)
+        "packet_budget": context_engine_store._compact_budget_meta_for_summary(payload.get("packet_budget", {}))
+        if isinstance(payload.get("packet_budget"), context_engine_store.Mapping)
         else {},
-        "packet_metrics": _store()._compact_packet_metrics_for_summary(payload.get("packet_metrics", {}))
-        if isinstance(payload.get("packet_metrics"), _store().Mapping)
+        "packet_metrics": context_engine_store._compact_packet_metrics_for_summary(payload.get("packet_metrics", {}))
+        if isinstance(payload.get("packet_metrics"), context_engine_store.Mapping)
         else {},
     }
     compact_neighbors = _compact_code_neighbors_for_packet(
-        code_neighbors if isinstance(code_neighbors, _store().Mapping) else {},
+        code_neighbors if isinstance(code_neighbors, context_engine_store.Mapping) else {},
         summary_only=True,
     )
     if compact_neighbors:
@@ -77,7 +71,7 @@ def _delivery_profile_hot_path(delivery_profile: str) -> bool:
     return agent_runtime_contract.is_agent_hot_path_profile(delivery_profile)
 
 def _elapsed_stage_ms(started_at: float) -> float:
-    return round((_store().time.perf_counter() - started_at) * 1000.0, 3)
+    return round((context_engine_store.time.perf_counter() - started_at) * 1000.0, 3)
 
 def _compact_stage_timings(stage_timings: Mapping[str, Any]) -> dict[str, float]:
     compact: dict[str, float] = {}
@@ -311,14 +305,14 @@ def _hot_path_dashboard_surface_like(
     family = _normalize_family_hint(family_hint)
     if family == "dashboard_surface":
         return True
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
-    anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
+    anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), context_engine_store.Mapping) else {}
     changed_paths = (
-        _store()._normalized_string_list(payload.get("changed_paths"))
-        or _store()._normalized_string_list(anchors.get("changed_paths"))
-        or _store()._normalized_string_list(anchors.get("explicit_paths"))
+        context_engine_store._normalized_string_list(payload.get("changed_paths"))
+        or context_engine_store._normalized_string_list(anchors.get("changed_paths"))
+        or context_engine_store._normalized_string_list(anchors.get("explicit_paths"))
     )
-    if not changed_paths or _store()._broad_shared_only_input(changed_paths):
+    if not changed_paths or context_engine_store._broad_shared_only_input(changed_paths):
         return False
     governed_dashboard_paths = {
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
@@ -340,7 +334,7 @@ def _hot_path_dashboard_surface_like(
         path.startswith(("src/odylith/runtime/surfaces/", "odylith/"))
         for path in changed_paths
     )
-    dashboard_named = any("dashboard" in _store().Path(path).name.lower() for path in changed_paths)
+    dashboard_named = any("dashboard" in context_engine_store.Path(path).name.lower() for path in changed_paths)
     governed_dashboard_hit = any(path in governed_dashboard_paths for path in changed_paths)
     return script_or_tool_only and (dashboard_named or governed_dashboard_hit)
 
@@ -357,10 +351,10 @@ def _hot_path_routing_confidence_rank(value: str) -> int:
     return 0
 
 def _hot_path_packet_rank(payload: Mapping[str, Any]) -> tuple[int, int, int, int, int, int]:
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
     retrieval_plan = (
         dict(context_packet.get("retrieval_plan", {}))
-        if isinstance(context_packet.get("retrieval_plan"), _store().Mapping)
+        if isinstance(context_packet.get("retrieval_plan"), context_engine_store.Mapping)
         else {}
     )
     precision_score = max(0, min(100, int(retrieval_plan.get("precision_score", 0) or 0)))
@@ -370,11 +364,11 @@ def _hot_path_packet_rank(payload: Mapping[str, Any]) -> tuple[int, int, int, in
         1 if bool(payload.get("native_spawn_ready")) else 0,
         _hot_path_routing_confidence_rank(str(payload.get("routing_confidence", "")).strip()),
         1
-        if _store()._compact_hot_path_payload_within_budget(
+        if context_engine_store._compact_hot_path_payload_within_budget(
             payload=payload,
-            context_packet=dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {},
+            context_packet=dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {},
             packet_metrics=dict(payload.get("packet_metrics", {}))
-            if isinstance(payload.get("packet_metrics"), _store().Mapping)
+            if isinstance(payload.get("packet_metrics"), context_engine_store.Mapping)
             else {},
         )
         else 0,
@@ -382,10 +376,10 @@ def _hot_path_packet_rank(payload: Mapping[str, Any]) -> tuple[int, int, int, in
     )
 
 def _hot_path_guidance_behavior_summary(payload: Mapping[str, Any]) -> dict[str, Any]:
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
-    if isinstance(payload.get("guidance_behavior_summary"), _store().Mapping):
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
+    if isinstance(payload.get("guidance_behavior_summary"), context_engine_store.Mapping):
         return dict(payload.get("guidance_behavior_summary", {}))
-    if isinstance(context_packet.get("guidance_behavior_summary"), _store().Mapping):
+    if isinstance(context_packet.get("guidance_behavior_summary"), context_engine_store.Mapping):
         return dict(context_packet.get("guidance_behavior_summary", {}))
     return {}
 
@@ -399,7 +393,7 @@ def _hot_path_guidance_behavior_validator_available(
     summary = _hot_path_guidance_behavior_summary(payload)
     return bool(
         str(summary.get("validator_command", "")).strip()
-        or _store()._normalized_string_list(summary.get("case_validation_commands"))
+        or context_engine_store._normalized_string_list(summary.get("case_validation_commands"))
     )
 
 def _hot_path_auto_escalation_trigger(
@@ -409,35 +403,35 @@ def _hot_path_auto_escalation_trigger(
     payload: Mapping[str, Any],
 ) -> str:
     family = _normalize_family_hint(family_hint)
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
     full_scan_recommended = bool(payload.get("full_scan_recommended") or context_packet.get("full_scan_recommended"))
     if _hot_path_guidance_behavior_validator_available(family_hint=family_hint, payload=payload):
         return ""
     if full_scan_recommended:
         return "full_scan_recommended"
-    if family in _store()._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES or _hot_path_dashboard_surface_like(
+    if family in context_engine_store._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES or _hot_path_dashboard_surface_like(
         family_hint=family_hint,
         payload=payload,
     ):
         return ""
     retrieval_plan = (
         dict(context_packet.get("retrieval_plan", {}))
-        if isinstance(context_packet.get("retrieval_plan"), _store().Mapping)
+        if isinstance(context_packet.get("retrieval_plan"), context_engine_store.Mapping)
         else {}
     )
-    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), _store().Mapping) else {}
+    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), context_engine_store.Mapping) else {}
     packet_quality = (
         packet_quality_codec.expand_packet_quality(
             dict(context_packet.get("packet_quality", {}))
-            if isinstance(context_packet.get("packet_quality"), _store().Mapping)
+            if isinstance(context_packet.get("packet_quality"), context_engine_store.Mapping)
             else {}
         )
     )
-    selected_counts = _store()._decode_compact_selected_counts(retrieval_plan.get("selected_counts"))
+    selected_counts = context_engine_store._decode_compact_selected_counts(retrieval_plan.get("selected_counts"))
     validation_count = max(0, int(selected_counts.get("tests", 0) or 0)) + max(
         0, int(selected_counts.get("commands", 0) or 0)
     )
-    if not bool(payload.get("route_ready")) and family in _store()._HOT_PATH_AUTO_ESCALATION_WRITE_FAMILIES:
+    if not bool(payload.get("route_ready")) and family in context_engine_store._HOT_PATH_AUTO_ESCALATION_WRITE_FAMILIES:
         return "route_not_ready"
     if _hot_path_routing_confidence_rank(str(payload.get("routing_confidence", "")).strip()) <= 2:
         return "routing_confidence_thin"
@@ -450,7 +444,7 @@ def _hot_path_auto_escalation_trigger(
     if (
         str(packet_kind or "").strip() in {"impact", "session_brief"}
         and bool(route.get("narrowing_required"))
-        and family not in _store()._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
+        and family not in context_engine_store._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES
     ):
         return "narrowing_required"
     return ""
@@ -464,26 +458,26 @@ def _hot_path_can_hold_local_narrowing_without_full_scan(
         return True
     if not _hot_path_dashboard_surface_like(family_hint=family_hint, payload=payload):
         return False
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
     if _hot_path_full_scan_recommended(payload):
         return False
-    packet_metrics = dict(payload.get("packet_metrics", {})) if isinstance(payload.get("packet_metrics"), _store().Mapping) else {}
-    if not _store()._compact_hot_path_payload_within_budget(
+    packet_metrics = dict(payload.get("packet_metrics", {})) if isinstance(payload.get("packet_metrics"), context_engine_store.Mapping) else {}
+    if not context_engine_store._compact_hot_path_payload_within_budget(
         payload=payload,
         context_packet=context_packet,
         packet_metrics=packet_metrics,
     ):
         return False
-    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), _store().Mapping) else {}
-    anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), _store().Mapping) else {}
+    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), context_engine_store.Mapping) else {}
+    anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), context_engine_store.Mapping) else {}
     changed_paths = (
-        _store()._normalized_string_list(payload.get("changed_paths"))
-        or _store()._normalized_string_list(anchors.get("changed_paths"))
-        or _store()._normalized_string_list(anchors.get("explicit_paths"))
+        context_engine_store._normalized_string_list(payload.get("changed_paths"))
+        or context_engine_store._normalized_string_list(anchors.get("changed_paths"))
+        or context_engine_store._normalized_string_list(anchors.get("explicit_paths"))
     )
     return bool(
         changed_paths
-        and not _store()._broad_shared_only_input(changed_paths)
+        and not context_engine_store._broad_shared_only_input(changed_paths)
         and bool(route.get("narrowing_required"))
         and not bool(route.get("route_ready"))
     )
@@ -499,23 +493,23 @@ def _compact_hot_path_auto_escalation(summary: Mapping[str, Any]) -> dict[str, A
     final_source = str(summary.get("final_source", "")).strip()
     if final_source and final_source != str(summary.get("initial_source", "")).strip():
         compact["final_source"] = final_source
-    reasons = _store()._normalized_string_list(summary.get("reasons"))
+    reasons = context_engine_store._normalized_string_list(summary.get("reasons"))
     if reasons:
         compact["reason"] = reasons[0]
     return compact
 
 def _hot_path_selected_validation_count(payload: Mapping[str, Any]) -> int:
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
     retrieval_plan = (
         dict(context_packet.get("retrieval_plan", {}))
-        if isinstance(context_packet.get("retrieval_plan"), _store().Mapping)
+        if isinstance(context_packet.get("retrieval_plan"), context_engine_store.Mapping)
         else {}
     )
-    selected_counts = _store()._decode_compact_selected_counts(retrieval_plan.get("selected_counts"))
+    selected_counts = context_engine_store._decode_compact_selected_counts(retrieval_plan.get("selected_counts"))
     guidance_summary = _hot_path_guidance_behavior_summary(payload)
     guidance_validation_count = 1 if (
         str(guidance_summary.get("validator_command", "")).strip()
-        or _store()._normalized_string_list(guidance_summary.get("case_validation_commands"))
+        or context_engine_store._normalized_string_list(guidance_summary.get("case_validation_commands"))
     ) else 0
     return max(
         guidance_validation_count,
@@ -526,29 +520,29 @@ def _hot_path_selected_validation_count(payload: Mapping[str, Any]) -> int:
     )
 
 def _hot_path_route_ready(payload: Mapping[str, Any]) -> bool:
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
-    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), _store().Mapping) else {}
-    routing_handoff = dict(payload.get("routing_handoff", {})) if isinstance(payload.get("routing_handoff"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
+    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), context_engine_store.Mapping) else {}
+    routing_handoff = dict(payload.get("routing_handoff", {})) if isinstance(payload.get("routing_handoff"), context_engine_store.Mapping) else {}
     return bool(payload.get("route_ready") or route.get("route_ready") or routing_handoff.get("route_ready"))
 
 def _hot_path_full_scan_recommended(payload: Mapping[str, Any]) -> bool:
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
     return bool(payload.get("full_scan_recommended") or context_packet.get("full_scan_recommended"))
 
 def _hot_path_full_scan_reason(payload: Mapping[str, Any]) -> str:
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
     return str(payload.get("full_scan_reason", "")).strip() or str(context_packet.get("full_scan_reason", "")).strip()
 
 def _hot_path_routing_confidence(payload: Mapping[str, Any]) -> str:
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
     packet_quality = (
         packet_quality_codec.expand_packet_quality(
             dict(context_packet.get("packet_quality", {}))
-            if isinstance(context_packet.get("packet_quality"), _store().Mapping)
+            if isinstance(context_packet.get("packet_quality"), context_engine_store.Mapping)
             else {}
         )
     )
-    routing_handoff = dict(payload.get("routing_handoff", {})) if isinstance(payload.get("routing_handoff"), _store().Mapping) else {}
+    routing_handoff = dict(payload.get("routing_handoff", {})) if isinstance(payload.get("routing_handoff"), context_engine_store.Mapping) else {}
     return (
         str(payload.get("routing_confidence", "")).strip()
         or str(routing_handoff.get("routing_confidence", "")).strip()
@@ -563,22 +557,22 @@ def _should_escalate_hot_path_to_session_brief(
     validation_command_hints: Sequence[str],
 ) -> tuple[bool, list[str]]:
     family = _normalize_family_hint(family_hint)
-    if family in _store()._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES:
+    if family in context_engine_store._HOT_PATH_AUTO_ESCALATION_CONSERVATIVE_FAMILIES:
         return False, []
     if _hot_path_guidance_behavior_validator_available(family_hint=family_hint, payload=payload):
         return False, []
     if _hot_path_dashboard_surface_like(family_hint=family_hint, payload=payload):
         return False, []
-    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), _store().Mapping) else {}
-    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), _store().Mapping) else {}
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), context_engine_store.Mapping) else {}
+    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), context_engine_store.Mapping) else {}
     packet_quality = (
         packet_quality_codec.expand_packet_quality(
             dict(context_packet.get("packet_quality", {}))
-            if isinstance(context_packet.get("packet_quality"), _store().Mapping)
+            if isinstance(context_packet.get("packet_quality"), context_engine_store.Mapping)
             else {}
         )
     )
-    selection_state = str(_store()._hot_path_workstream_selection(payload).get("state", "")).strip()
+    selection_state = str(context_engine_store._hot_path_workstream_selection(payload).get("state", "")).strip()
     routing_confidence = (
         str(payload.get("routing_confidence", "")).strip()
         or str(packet_quality.get("routing_confidence", "")).strip()
@@ -608,7 +602,7 @@ def _should_escalate_hot_path_to_session_brief(
         reasons.append(str(payload.get("full_scan_reason", "")).strip())
     if not reasons:
         return False, []
-    if family in _store()._HOT_PATH_AUTO_SESSION_BRIEF_FAMILIES:
+    if family in context_engine_store._HOT_PATH_AUTO_SESSION_BRIEF_FAMILIES:
         return True, reasons
     if bool(str(workstream_hint or "").strip()) and selection_state != "explicit":
         return True, reasons
@@ -638,7 +632,7 @@ def _fallback_scan_payload(
             "changed_paths": normalized_paths[:6],
             "query": str(query or "").strip(),
         }
-    return _store()._full_scan_guidance(
+    return context_engine_store._full_scan_guidance(
         repo_root=repo_root,
         reason=normalized_reason,
         query=str(query or "").strip(),
@@ -658,25 +652,25 @@ def _compact_hot_path_session_payload(session_payload: Mapping[str, Any]) -> dic
         }.items()
         if value not in ("", [], {}, None)
     }
-    claimed_paths = _store()._normalized_string_list(session_payload.get("claimed_paths"))
+    claimed_paths = context_engine_store._normalized_string_list(session_payload.get("claimed_paths"))
     if claimed_paths:
         compact["claimed_paths"] = claimed_paths[:4]
     return compact
 
 def _compact_hot_path_workstream_context(context: Mapping[str, Any]) -> dict[str, Any]:
-    if not isinstance(context, _store().Mapping) or not context:
+    if not isinstance(context, context_engine_store.Mapping) or not context:
         return {}
     resolved = bool(context.get("resolved"))
     if not resolved:
-        lookup = dict(context.get("lookup", {})) if isinstance(context.get("lookup"), _store().Mapping) else {}
+        lookup = dict(context.get("lookup", {})) if isinstance(context.get("lookup"), context_engine_store.Mapping) else {}
         candidate_matches = (
-            [dict(row) for row in context.get("candidate_matches", [])[:2] if isinstance(row, _store().Mapping)]
+            [dict(row) for row in context.get("candidate_matches", [])[:2] if isinstance(row, context_engine_store.Mapping)]
             if isinstance(context.get("candidate_matches"), list)
             else []
         )
         full_scan_recommended = bool(context.get("full_scan_recommended"))
         full_scan_reason = str(context.get("full_scan_reason", "")).strip()
-        fallback_scan = dict(context.get("fallback_scan", {})) if isinstance(context.get("fallback_scan"), _store().Mapping) else {}
+        fallback_scan = dict(context.get("fallback_scan", {})) if isinstance(context.get("fallback_scan"), context_engine_store.Mapping) else {}
         if not lookup and not candidate_matches and not full_scan_recommended and not full_scan_reason and not fallback_scan:
             return {}
         return {
@@ -691,7 +685,7 @@ def _compact_hot_path_workstream_context(context: Mapping[str, Any]) -> dict[str
             }.items()
             if value not in ("", [], {}, None, False)
         }
-    entity = dict(context.get("entity", {})) if isinstance(context.get("entity"), _store().Mapping) else {}
+    entity = dict(context.get("entity", {})) if isinstance(context.get("entity"), context_engine_store.Mapping) else {}
     compact_entity = {
         key: value
         for key, value in {
@@ -729,13 +723,13 @@ def _compact_code_neighbors_for_packet(
             "top_paths": [
                 str(row.get("path", "")).strip()
                 for row in bucket[:2]
-                if isinstance(row, _store().Mapping) and str(row.get("path", "")).strip()
+                if isinstance(row, context_engine_store.Mapping) and str(row.get("path", "")).strip()
             ],
         }
         if summary_only and bucket_name not in {"documented_by", "covered_by_runbooks", "invoked_by_make", "imports", "imported_by"}:
             continue
         if bucket_name in {"documented_by", "covered_by_runbooks", "invoked_by_make", "imports", "imported_by"}:
-            compact[bucket_name] = _store()._prioritized_neighbor_rows(bucket_name, bucket)[:3]
+            compact[bucket_name] = context_engine_store._prioritized_neighbor_rows(bucket_name, bucket)[:3]
     if summary:
         compact["summary"] = summary
     return compact
@@ -754,21 +748,21 @@ def _collect_component_validation_commands(
         tuple(ordered_component_ids),
     ).fetchall()
     metadata_by_component = {
-        str(row["component_id"]): _store().json.loads(str(row["metadata_json"] or "{}"))
+        str(row["component_id"]): context_engine_store.json.loads(str(row["metadata_json"] or "{}"))
         for row in rows
     }
     commands: list[str] = []
     for component_id in ordered_component_ids:
         metadata = metadata_by_component.get(component_id, {})
-        if not isinstance(metadata, _store().Mapping):
+        if not isinstance(metadata, context_engine_store.Mapping):
             continue
         for row in metadata.get("validation_playbook_commands", []):
-            if not isinstance(row, _store().Mapping):
+            if not isinstance(row, context_engine_store.Mapping):
                 continue
             command = str(row.get("command", "")).strip()
             if command:
                 commands.append(command)
-    return _store()._dedupe_strings(commands)
+    return context_engine_store._dedupe_strings(commands)
 
 def _recommended_validation_commands(
     *,
@@ -794,23 +788,23 @@ def _recommended_validation_commands(
         if str(command).strip() and _is_governance_sync_command(str(command))
     ]
     commands: list[str] = [*hinted_commands, *primary_component_commands]
-    make_targets = _store()._dedupe_strings(
+    make_targets = context_engine_store._dedupe_strings(
         [
             str(row.get("title", "")).strip()
             for row in notes.get("make_target", [])
-            if isinstance(row, _store().Mapping) and str(row.get("title", "")).strip()
+            if isinstance(row, context_engine_store.Mapping) and str(row.get("title", "")).strip()
         ]
     )
     commands.extend(f"make {target}" for target in make_targets[:3])
-    unique_test_paths = _store()._dedupe_strings([str(row.get("test_path", "")).strip() for row in tests if str(row.get("test_path", "")).strip()])
+    unique_test_paths = context_engine_store._dedupe_strings([str(row.get("test_path", "")).strip() for row in tests if str(row.get("test_path", "")).strip()])
     if unique_test_paths:
         commands.append("pytest " + " ".join(unique_test_paths[:8]))
     commands.extend(component_sync_commands)
     if changed_paths:
         commands.append(
-            _store().display_command("sync", "--repo-root", ".", "--check-only", *changed_paths[:8])
+            context_engine_store.display_command("sync", "--repo-root", ".", "--check-only", *changed_paths[:8])
         )
-    return _store()._dedupe_strings(commands)
+    return context_engine_store._dedupe_strings(commands)
 
 def _is_governance_sync_command(command: str) -> bool:
     token = str(command).strip().lower()
@@ -835,7 +829,7 @@ def _workstream_rank_tuple(row: Mapping[str, Any]) -> tuple[int, str]:
     )
 
 def _condense_delivery_scope(scope: Mapping[str, Any]) -> dict[str, Any]:
-    linked = scope.get("linked", {}) if isinstance(scope.get("linked"), _store().Mapping) else {}
+    linked = scope.get("linked", {}) if isinstance(scope.get("linked"), context_engine_store.Mapping) else {}
     return {
         "scope_key": str(scope.get("scope_key", "")).strip(),
         "scope_type": str(scope.get("scope_type", "")).strip(),
@@ -851,3 +845,5 @@ def _condense_delivery_scope(scope: Mapping[str, Any]) -> dict[str, Any]:
         if isinstance(linked.get("surfaces"), list)
         else [],
     }
+# Keep the store dependency explicit without pulling it through module bootstrap.
+from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store

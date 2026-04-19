@@ -7,6 +7,7 @@ import shlex
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.contracts.severity import VALID_SEVERITIES
 from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.governance import guidance_behavior_platform_contracts
 from odylith.runtime.governance import guidance_behavior_guidance_contracts
@@ -155,7 +156,7 @@ def _file_fingerprint(path: Path) -> str:
 
 
 def _severity_counts(cases: Sequence[Mapping[str, Any]]) -> dict[str, int]:
-    counts = {severity: 0 for severity in sorted(validate_guidance_behavior._VALID_SEVERITIES)}
+    counts = {severity: 0 for severity in sorted(VALID_SEVERITIES)}
     for case in cases:
         severity = str(case.get("severity", "")).strip().lower()
         if severity in counts:

@@ -21,6 +21,7 @@ from odylith.install.fs import atomic_write_text
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.surfaces import compass_refresh_contract
 
 REFRESH_STATE_SCHEMA_VERSION = "odylith_compass_refresh_state.v1"
@@ -167,12 +168,6 @@ def _normalize_runtime_mode(value: str) -> str:
     if token not in {"auto", "standalone", "daemon"}:
         return "auto"
     return token
-
-
-def _context_engine_store():
-    from odylith.runtime.context_engine import odylith_context_engine_store
-
-    return odylith_context_engine_store
 
 
 def _render_compass_dashboard():
@@ -411,7 +406,7 @@ def _finalize_state(
 
 def _resolve_runtime_mode(*, repo_root: Path, requested_runtime_mode: str) -> str:
     normalized = _normalize_runtime_mode(requested_runtime_mode)
-    daemon_available = _context_engine_store().runtime_daemon_transport(repo_root=repo_root) is not None
+    daemon_available = odylith_context_engine_store.runtime_daemon_transport(repo_root=repo_root) is not None
     if normalized == "auto":
         return "daemon" if daemon_available else "standalone"
     if normalized == "daemon" and not daemon_available:

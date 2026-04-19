@@ -2,12 +2,6 @@
 
 from __future__ import annotations
 
-def _store():
-    from odylith.runtime.context_engine import odylith_context_engine_store as store
-
-    return store
-
-
 import ast
 import contextlib
 import datetime as dt
@@ -97,7 +91,7 @@ def _dedupe_strings(values: Sequence[str]) -> list[str]:
     return rows
 
 def _normalize_changed_path_list(*, repo_root: Path, values: Sequence[str]) -> list[str]:
-    return _store().governance.normalize_changed_paths(repo_root=repo_root, values=values)
+    return context_engine_store.governance.normalize_changed_paths(repo_root=repo_root, values=values)
 
 def _engineering_note_summary(row: Mapping[str, Any], *, match: Mapping[str, Any] | None = None) -> dict[str, Any]:
     metadata = json.loads(str(row["metadata_json"] or "{}"))
@@ -107,8 +101,8 @@ def _engineering_note_summary(row: Mapping[str, Any], *, match: Mapping[str, Any
         "title": str(row["title"]),
         "source_path": str(row["source_path"]),
         "summary": str(row["summary"]),
-        "components": _store()._json_list(str(row["components_json"])),
-        "workstreams": _store()._json_list(str(row["workstreams_json"])),
+        "components": context_engine_store._json_list(str(row["components_json"])),
+        "workstreams": context_engine_store._json_list(str(row["workstreams_json"])),
     }
     if isinstance(metadata, Mapping):
         for key in ("source_mode", "chunk_id", "chunk_path", "canonical_source", "canonical_section", "manifest_path"):
@@ -140,8 +134,8 @@ def _git_ref_snapshot(*, repo_root: Path) -> dict[str, str]:
     root = Path(repo_root).resolve()
     cache_key = str(root)
     now = time.monotonic()
-    cached = _store()._PROCESS_GIT_REF_CACHE.get(cache_key)
-    if cached is not None and now - cached[0] <= _store()._PROCESS_GIT_REF_CACHE_TTL_SECONDS:
+    cached = context_engine_store._PROCESS_GIT_REF_CACHE.get(cache_key)
+    if cached is not None and now - cached[0] <= context_engine_store._PROCESS_GIT_REF_CACHE_TTL_SECONDS:
         return dict(cached[1])
     try:
         branch_completed = subprocess.run(
@@ -158,7 +152,7 @@ def _git_ref_snapshot(*, repo_root: Path) -> dict[str, str]:
         )
     except OSError:
         snapshot = {"branch_name": "", "head_oid": ""}
-        _store()._PROCESS_GIT_REF_CACHE[cache_key] = (now, snapshot)
+        context_engine_store._PROCESS_GIT_REF_CACHE[cache_key] = (now, snapshot)
         return dict(snapshot)
     branch_name = str(branch_completed.stdout or "").strip()
     head_oid = str(head_completed.stdout or "").strip()
@@ -166,7 +160,7 @@ def _git_ref_snapshot(*, repo_root: Path) -> dict[str, str]:
         "branch_name": "" if branch_name == "HEAD" else branch_name,
         "head_oid": head_oid,
     }
-    _store()._PROCESS_GIT_REF_CACHE[cache_key] = (now, snapshot)
+    context_engine_store._PROCESS_GIT_REF_CACHE[cache_key] = (now, snapshot)
     return dict(snapshot)
 
 def _git_head_oid(*, repo_root: Path) -> str:
@@ -177,27 +171,27 @@ def _git_branch_name(*, repo_root: Path) -> str:
 
 def _path_signal_profile(path: str) -> dict[str, Any]:
     root = Path(".").resolve()
-    normalized = _store()._normalize_repo_token(str(path or ""), repo_root=root)
+    normalized = context_engine_store._normalize_repo_token(str(path or ""), repo_root=root)
     token = normalized.lower()
     if not token:
         return {"category": "unknown", "weight": 0, "shared": True}
     cache_key = f"{root}:{token}"
-    cached = _store()._PROCESS_PATH_SIGNAL_PROFILE_CACHE.get(cache_key)
+    cached = context_engine_store._PROCESS_PATH_SIGNAL_PROFILE_CACHE.get(cache_key)
     if cached is not None:
         return dict(cached)
-    truth_roots = _store().truth_root_tokens(repo_root=root)
-    if token in _store()._WEAK_SHARED_EXACT_PATHS or token.endswith("/agents.md") or any(
-        token.startswith(prefix) for prefix in _store()._WEAK_SHARED_PREFIXES
+    truth_roots = context_engine_store.truth_root_tokens(repo_root=root)
+    if token in context_engine_store._WEAK_SHARED_EXACT_PATHS or token.endswith("/agents.md") or any(
+        token.startswith(prefix) for prefix in context_engine_store._WEAK_SHARED_PREFIXES
     ):
         profile = {"category": "shared", "weight": -12, "shared": True}
     elif token == "makefile" or token.startswith("mk/"):
         profile = {"category": "build", "weight": 16, "shared": False}
     elif token.startswith(("src/odylith/", "app/", "services/", "infra/", "bin/", "configs/", "docker/", "policies/")):
         profile = {"category": "implementation", "weight": 18, "shared": False}
-    elif token.startswith(_store()._CONTRACT_PATH_PREFIXES):
+    elif token.startswith(context_engine_store._CONTRACT_PATH_PREFIXES):
         profile = {"category": "contract", "weight": 18, "shared": False}
     else:
-        path_kind = _store().truth_path_kind(normalized, repo_root=root, truth_roots=truth_roots)
+        path_kind = context_engine_store.truth_path_kind(normalized, repo_root=root, truth_roots=truth_roots)
         if path_kind == "component_forensics":
             profile = {"category": "component_forensics", "weight": 8, "shared": False}
         elif path_kind == "component_spec":
@@ -212,12 +206,12 @@ def _path_signal_profile(path: str) -> dict[str, Any]:
             profile = {"category": "doc", "weight": 7, "shared": False}
         else:
             profile = {"category": "other", "weight": 4, "shared": False}
-    _store()._PROCESS_PATH_SIGNAL_PROFILE_CACHE[cache_key] = dict(profile)
+    context_engine_store._PROCESS_PATH_SIGNAL_PROFILE_CACHE[cache_key] = dict(profile)
     return dict(profile)
 
 def _path_match_type(*, changed_path: str, target_path: str) -> str:
-    changed = _store()._normalize_repo_token(str(changed_path or ""), repo_root=Path("."))
-    target = _store()._normalize_repo_token(str(target_path or ""), repo_root=Path("."))
+    changed = context_engine_store._normalize_repo_token(str(changed_path or ""), repo_root=Path("."))
+    target = context_engine_store._normalize_repo_token(str(target_path or ""), repo_root=Path("."))
     return _normalized_path_match_type(changed_path=changed, target_path=target)
 
 def _normalized_path_match_type(*, changed_path: str, target_path: str) -> str:
@@ -557,14 +551,14 @@ def _prune_low_precision_workstream_candidates(candidates: Sequence[dict[str, An
     exact_rows = [row for row in strong_rows if _workstream_has_exact_path_signal(row)]
     kept_ids: set[str] = set()
     if exact_rows:
-        threshold = max(_store()._WORKSTREAM_SELECTION_CONFIDENT_SCORE, top_strong_score - 80)
+        threshold = max(context_engine_store._WORKSTREAM_SELECTION_CONFIDENT_SCORE, top_strong_score - 80)
         for row in exact_rows:
             if _workstream_evidence_score(row) >= threshold:
                 kept_ids.add(str(row.get("entity_id", "")).strip().upper())
         if not kept_ids:
             kept_ids.add(str(exact_rows[0].get("entity_id", "")).strip().upper())
     else:
-        threshold = max(_store()._WORKSTREAM_SELECTION_CONFIDENT_SCORE, top_strong_score - 48)
+        threshold = max(context_engine_store._WORKSTREAM_SELECTION_CONFIDENT_SCORE, top_strong_score - 48)
         for row in strong_rows:
             if _workstream_evidence_score(row) >= threshold and _workstream_has_path_signal(row):
                 kept_ids.add(str(row.get("entity_id", "")).strip().upper())
@@ -786,7 +780,7 @@ def _compact_engineering_notes(
     per_kind_meta: dict[str, dict[str, Any]] = {}
     total_source = 0
     total_returned = 0
-    for kind in _store()._ENGINEERING_NOTE_KINDS:
+    for kind in context_engine_store._ENGINEERING_NOTE_KINDS:
         rows = notes.get(kind, [])
         if not isinstance(rows, list) or not rows:
             continue
@@ -925,38 +919,38 @@ def _impact_packet_state(*, shared_only: bool, selection_state: str) -> str:
 def _impact_budget_profile(*, shared_only: bool, selection_state: str) -> dict[str, int]:
     if shared_only:
         return {
-            "workstreams": _store()._IMPACT_WORKSTREAM_LIMIT_BROAD,
-            "docs": _store()._IMPACT_DOC_LIMIT_BROAD,
-            "commands": _store()._IMPACT_COMMAND_LIMIT_BROAD,
-            "tests": _store()._IMPACT_TEST_LIMIT_DEFAULT,
-            "notes_total": _store()._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_BROAD,
-            "notes_per_kind": _store()._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_DEFAULT,
+            "workstreams": context_engine_store._IMPACT_WORKSTREAM_LIMIT_BROAD,
+            "docs": context_engine_store._IMPACT_DOC_LIMIT_BROAD,
+            "commands": context_engine_store._IMPACT_COMMAND_LIMIT_BROAD,
+            "tests": context_engine_store._IMPACT_TEST_LIMIT_DEFAULT,
+            "notes_total": context_engine_store._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_BROAD,
+            "notes_per_kind": context_engine_store._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_DEFAULT,
         }
     if selection_state == "explicit":
         return {
-            "workstreams": _store()._IMPACT_WORKSTREAM_LIMIT_EXPLICIT,
-            "docs": _store()._IMPACT_DOC_LIMIT_EXPLICIT,
-            "commands": _store()._IMPACT_COMMAND_LIMIT_EXPLICIT,
-            "tests": _store()._IMPACT_TEST_LIMIT_EXPLICIT,
-            "notes_total": _store()._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_EXPLICIT,
-            "notes_per_kind": _store()._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_EXPLICIT,
+            "workstreams": context_engine_store._IMPACT_WORKSTREAM_LIMIT_EXPLICIT,
+            "docs": context_engine_store._IMPACT_DOC_LIMIT_EXPLICIT,
+            "commands": context_engine_store._IMPACT_COMMAND_LIMIT_EXPLICIT,
+            "tests": context_engine_store._IMPACT_TEST_LIMIT_EXPLICIT,
+            "notes_total": context_engine_store._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_EXPLICIT,
+            "notes_per_kind": context_engine_store._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_EXPLICIT,
         }
     if selection_state in {"ambiguous", "none"}:
         return {
-            "workstreams": _store()._IMPACT_WORKSTREAM_LIMIT_AMBIGUOUS,
-            "docs": _store()._IMPACT_DOC_LIMIT_AMBIGUOUS,
-            "commands": _store()._IMPACT_COMMAND_LIMIT_AMBIGUOUS,
-            "tests": _store()._IMPACT_TEST_LIMIT_AMBIGUOUS,
-            "notes_total": _store()._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_AMBIGUOUS,
-            "notes_per_kind": _store()._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_AMBIGUOUS,
+            "workstreams": context_engine_store._IMPACT_WORKSTREAM_LIMIT_AMBIGUOUS,
+            "docs": context_engine_store._IMPACT_DOC_LIMIT_AMBIGUOUS,
+            "commands": context_engine_store._IMPACT_COMMAND_LIMIT_AMBIGUOUS,
+            "tests": context_engine_store._IMPACT_TEST_LIMIT_AMBIGUOUS,
+            "notes_total": context_engine_store._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_AMBIGUOUS,
+            "notes_per_kind": context_engine_store._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_AMBIGUOUS,
         }
     return {
-        "workstreams": _store()._IMPACT_WORKSTREAM_LIMIT_DEFAULT,
-        "docs": _store()._IMPACT_DOC_LIMIT_DEFAULT,
-        "commands": _store()._IMPACT_COMMAND_LIMIT_DEFAULT,
-        "tests": _store()._IMPACT_TEST_LIMIT_DEFAULT,
-        "notes_total": _store()._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_DEFAULT,
-        "notes_per_kind": _store()._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_DEFAULT,
+        "workstreams": context_engine_store._IMPACT_WORKSTREAM_LIMIT_DEFAULT,
+        "docs": context_engine_store._IMPACT_DOC_LIMIT_DEFAULT,
+        "commands": context_engine_store._IMPACT_COMMAND_LIMIT_DEFAULT,
+        "tests": context_engine_store._IMPACT_TEST_LIMIT_DEFAULT,
+        "notes_total": context_engine_store._IMPACT_ENGINEERING_NOTES_TOTAL_LIMIT_DEFAULT,
+        "notes_per_kind": context_engine_store._IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_DEFAULT,
     }
 
 def _component_grounded_selection_none(
@@ -991,8 +985,8 @@ def _hot_path_can_stay_fail_closed_without_full_scan(
     if working_tree_scope_degraded:
         return False
     family = odylith_context_engine_hot_path_delivery_runtime._normalize_family_hint(family_hint)
-    normalized_changed = _store()._normalized_string_list(changed_paths)
-    normalized_explicit = _store()._normalized_string_list(explicit_paths)
+    normalized_changed = context_engine_store._normalized_string_list(changed_paths)
+    normalized_explicit = context_engine_store._normalized_string_list(explicit_paths)
     exact_path_grounded = bool(normalized_changed) and (
         not normalized_explicit or normalized_changed == normalized_explicit
     )
@@ -1006,3 +1000,5 @@ def _hot_path_can_stay_fail_closed_without_full_scan(
             and str(selection_state or "").strip() in {"ambiguous", "none"}
         )
     return False
+# Keep the store dependency explicit without pulling it through module bootstrap.
+from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from odylith.common.json_objects import JsonObjectLoadError
+from odylith.common.json_objects import read_json_object
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import release_planning_view_model
 
@@ -78,10 +79,9 @@ def _runtime_workstream_ids(payload: Mapping[str, Any]) -> list[str]:
 def _read_json_object(path: Path) -> dict[str, Any]:
     """Load a JSON object from disk, returning an empty dict on read errors."""
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        return read_json_object(path)
+    except JsonObjectLoadError:
         return {}
-    return dict(payload) if isinstance(payload, dict) else {}
 
 
 def _load_compass_release_truth_from_traceability(

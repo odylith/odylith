@@ -35,6 +35,7 @@ from odylith.runtime.common.command_surface import display_command, ensure_repo_
 from odylith.runtime.common.consumer_profile import surface_root_path, truth_root_path
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.common import generated_refresh_guard
+from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.governance import dashboard_refresh_contract
@@ -183,12 +184,6 @@ _TRUTH_ONLY_SELECTIVE_EXACT_PATHS: frozenset[str] = frozenset(
         "odylith/technical-plans/INDEX.md",
     }
 )
-
-
-def _context_engine_store():
-    from odylith.runtime.context_engine import odylith_context_engine_store
-
-    return odylith_context_engine_store
 
 
 def _active_odylith_import_roots() -> tuple[str, ...]:
@@ -833,7 +828,7 @@ def _invalidate_sync_runtime_caches(
     invalidated_namespaces: list[str] = []
     derivation_generation_changed = False
     if _step_invalidates_projection_caches(step):
-        _context_engine_store().clear_runtime_process_caches(repo_root=repo_root)
+        odylith_context_engine_store.clear_runtime_process_caches(repo_root=repo_root)
         if session is not None and session.repo_root == repo_root:
             projection_namespaces = ("projection_repo_state", "surface_projection_fingerprint", "runtime_warm")
             session.clear_namespaces(*projection_namespaces)
@@ -986,7 +981,7 @@ def _dashboard_impact_from_governance_packet(
     runtime_mode: str,
 ) -> tuple[governance.DashboardImpact | None, str]:
     try:
-        packet = _context_engine_store().build_governance_slice(
+        packet = odylith_context_engine_store.build_governance_slice(
             repo_root=repo_root,
             changed_paths=changed_paths,
             runtime_mode=runtime_mode,
@@ -1064,7 +1059,7 @@ def _selected_atlas_diagram_ids(
     if not _runtime_fast_path_prerequisites_met(repo_root):
         return []
     try:
-        rows = _context_engine_store().select_impacted_diagrams(
+        rows = odylith_context_engine_store.select_impacted_diagrams(
             repo_root=repo_root,
             changed_paths=changed_paths,
             runtime_mode=runtime_mode,
@@ -2811,7 +2806,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             changed_paths=changed_paths,
             runtime_mode=effective_runtime_mode,
         )
-        _context_engine_store().record_runtime_timing(
+        odylith_context_engine_store.record_runtime_timing(
             repo_root=repo_root,
             category="sync",
             operation="governance_runtime_first",

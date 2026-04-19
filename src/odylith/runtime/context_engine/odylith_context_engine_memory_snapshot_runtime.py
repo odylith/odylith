@@ -2,12 +2,6 @@
 
 from __future__ import annotations
 
-def _store():
-    from odylith.runtime.context_engine import odylith_context_engine_store as store
-
-    return store
-
-
 import contextlib
 import datetime as dt
 import json
@@ -76,7 +70,7 @@ def _build_judgment_memory_snapshot(
     critical_open_bugs = [
         row
         for row in open_bug_rows
-        if str(row.get("Severity", "")).strip().lower() in _store()._BUG_CRITICAL_SEVERITIES
+        if str(row.get("Severity", "")).strip().lower() in context_engine_store._BUG_CRITICAL_SEVERITIES
     ]
     benchmark_comparison = (
         dict(benchmark_report.get("comparison", {}))
@@ -93,16 +87,16 @@ def _build_judgment_memory_snapshot(
         if isinstance(benchmark_acceptance.get("checks"), Mapping)
         else {}
     )
-    benchmark_path = (_store().runtime_root(repo_root=root) / "odylith-benchmarks" / "latest.v1.json").resolve()
-    benchmark_path_ref = _store()._relative_repo_path(repo_root=root, path=benchmark_path)
+    benchmark_path = (context_engine_store.runtime_root(repo_root=root) / "odylith-benchmarks" / "latest.v1.json").resolve()
+    benchmark_path_ref = context_engine_store._relative_repo_path(repo_root=root, path=benchmark_path)
 
     decision_items: list[dict[str, Any]] = []
     for row in plan_done_rows[:3]:
-        backlog_id = _store()._workstream_token(str(row.get("Backlog", "")).strip())
-        plan_path_ref = _store()._parse_link_target(str(row.get("Plan", "")))
-        title = backlog_titles.get(backlog_id) or _store()._humanize_slug(Path(plan_path_ref or "done-plan").stem)
+        backlog_id = context_engine_store._workstream_token(str(row.get("Backlog", "")).strip())
+        plan_path_ref = context_engine_store._parse_link_target(str(row.get("Plan", "")))
+        title = backlog_titles.get(backlog_id) or context_engine_store._humanize_slug(Path(plan_path_ref or "done-plan").stem)
         decision_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="done_plan",
                 summary=f"{title} closed and is now retained as a done plan.",
                 recorded_utc=str(row.get("Updated", "")).strip() or str(row.get("Created", "")).strip(),
@@ -113,7 +107,7 @@ def _build_judgment_memory_snapshot(
         )
     if benchmark_comparison:
         decision_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="proof_outcome",
                 summary=(
                     "Latest benchmark proof is "
@@ -128,7 +122,7 @@ def _build_judgment_memory_snapshot(
             )
         )
     decision_state = "strong" if len(decision_items) >= 3 else "partial" if decision_items else "cold"
-    decision_area = _store()._judgment_memory_area(
+    decision_area = context_engine_store._judgment_memory_area(
         key="decisions",
         label="Decision memory",
         state=decision_state,
@@ -139,14 +133,14 @@ def _build_judgment_memory_snapshot(
         ),
         items=decision_items[:4],
         provenance=[
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Done plans",
                 source_kind="repo_truth",
                 path="odylith/technical-plans/done/",
                 updated_utc=str(plan_done_rows[0].get("Updated", "")).strip() if plan_done_rows else "",
                 trust="authoritative",
             ),
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Benchmark report",
                 source_kind="benchmark_report",
                 path=benchmark_path_ref if benchmark_comparison else "",
@@ -156,20 +150,20 @@ def _build_judgment_memory_snapshot(
         ],
     )
 
-    daemon_usage = _store().odylith_context_cache.read_json_object(_store().daemon_usage_path(repo_root=root))
+    daemon_usage = context_engine_store.odylith_context_cache.read_json_object(context_engine_store.daemon_usage_path(repo_root=root))
     workspace_key = str(daemon_usage.get("workspace_key", "")).strip() if isinstance(daemon_usage, Mapping) else ""
-    branch_name = _store()._git_branch_name(repo_root=root)
-    head_oid = _store()._git_head_oid(repo_root=root)
-    actor_name = _store()._git_stdout(repo_root=root, args=("config", "--get", "user.name"))
-    actor_email = _store()._git_stdout(repo_root=root, args=("config", "--get", "user.email"))
+    branch_name = context_engine_store._git_branch_name(repo_root=root)
+    head_oid = context_engine_store._git_head_oid(repo_root=root)
+    actor_name = context_engine_store._git_stdout(repo_root=root, args=("config", "--get", "user.name"))
+    actor_email = context_engine_store._git_stdout(repo_root=root, args=("config", "--get", "user.email"))
     actor_label = " ".join(token for token in (actor_name, f"<{actor_email}>") if token).strip() or str(os.environ.get("USER", "")).strip()
     workspace_items: list[dict[str, Any]] = []
     if workspace_key or branch_name or head_oid:
         workspace_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="workspace",
                 summary=(
-                    f"Workspace `{workspace_key or _store().workspace_daemon_key(repo_root=root)}` is on `{branch_name or 'detached'}` at "
+                    f"Workspace `{workspace_key or context_engine_store.workspace_daemon_key(repo_root=root)}` is on `{branch_name or 'detached'}` at "
                     f"{(head_oid[:8] if head_oid else 'unknown')} with {len(repo_dirty_paths)} meaningful dirty path(s)."
                 ),
                 recorded_utc=(
@@ -177,14 +171,14 @@ def _build_judgment_memory_snapshot(
                     if isinstance(daemon_usage, Mapping)
                     else projection_updated_utc
                 ),
-                source_path=_store()._relative_repo_path(repo_root=root, path=_store().daemon_usage_path(repo_root=root)),
+                source_path=context_engine_store._relative_repo_path(repo_root=root, path=context_engine_store.daemon_usage_path(repo_root=root)),
                 source_kind="runtime_state",
                 surfaces=("context_engine", "sessions"),
             )
         )
     if actor_label:
         workspace_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="actor",
                 summary=f"Actor identity resolves locally as {actor_label}.",
                 recorded_utc=projection_updated_utc,
@@ -195,7 +189,7 @@ def _build_judgment_memory_snapshot(
     if active_sessions:
         session_row = dict(active_sessions[0])
         workspace_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="session",
                 summary=(
                     f"{len(active_sessions)} active session(s) are currently tracked; the newest claim is "
@@ -208,7 +202,7 @@ def _build_judgment_memory_snapshot(
             )
         )
     workspace_state = "strong" if workspace_items and actor_email and branch_name and (workspace_key or active_sessions) else "partial" if workspace_items else "cold"
-    workspace_area = _store()._judgment_memory_area(
+    workspace_area = context_engine_store._judgment_memory_area(
         key="workspace_actor",
         label="Workspace and actor memory",
         state=workspace_state,
@@ -219,16 +213,16 @@ def _build_judgment_memory_snapshot(
         ),
         items=workspace_items[:3],
         provenance=[
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Git identity",
                 source_kind="local_git",
                 updated_utc=projection_updated_utc,
                 trust="local_observation",
             ),
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Daemon usage",
                 source_kind="runtime_state",
-                path=_store()._relative_repo_path(repo_root=root, path=_store().daemon_usage_path(repo_root=root)),
+                path=context_engine_store._relative_repo_path(repo_root=root, path=context_engine_store.daemon_usage_path(repo_root=root)),
                 updated_utc=str(daemon_usage.get("last_request_utc", "")).strip() if isinstance(daemon_usage, Mapping) else "",
                 trust="derived_runtime",
             ),
@@ -238,7 +232,7 @@ def _build_judgment_memory_snapshot(
     outcome_items: list[dict[str, Any]] = []
     if benchmark_comparison:
         outcome_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="benchmark_delta",
                 summary=(
                     f"Benchmark deltas are recall {float(benchmark_comparison.get('required_path_recall_delta', 0.0) or 0.0):+.3f}, "
@@ -256,17 +250,17 @@ def _build_judgment_memory_snapshot(
         backlog_id = str(row.get("idea_id", "")).strip().upper()
         title = str(row.get("title", "")).strip() or backlog_id
         outcome_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="finished_workstream",
                 summary=f"{title} is now retained as a finished governed outcome.",
                 recorded_utc=str(backlog_projection.get("updated_utc", "")).strip(),
-                source_path=_store()._parse_link_target(str(row.get("link", ""))),
+                source_path=context_engine_store._parse_link_target(str(row.get("link", ""))),
                 source_kind="repo_truth",
                 surfaces=("radar",),
             )
         )
     outcome_state = "strong" if benchmark_comparison and finished_backlog_rows else "partial" if outcome_items else "cold"
-    outcome_area = _store()._judgment_memory_area(
+    outcome_area = context_engine_store._judgment_memory_area(
         key="outcomes",
         label="Outcome memory",
         state=outcome_state,
@@ -277,14 +271,14 @@ def _build_judgment_memory_snapshot(
         ),
         items=outcome_items[:4],
         provenance=[
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Finished workstreams",
                 source_kind="repo_truth",
                 path="odylith/radar/source/INDEX.md",
                 updated_utc=str(backlog_projection.get("updated_utc", "")).strip(),
                 trust="authoritative",
             ),
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Benchmark report",
                 source_kind="benchmark_report",
                 path=benchmark_path_ref if benchmark_comparison else "",
@@ -298,14 +292,14 @@ def _build_judgment_memory_snapshot(
     retained_open_bugs = critical_open_bugs[:3] if critical_open_bugs else open_bug_rows[:3]
     for row in retained_open_bugs:
         negative_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="open_bug",
                 summary=(
                     f"{str(row.get('Title', '')).strip()} remains {str(row.get('Severity', '')).strip()} and "
                     f"{str(row.get('Status', '')).strip().lower()}."
                 ),
                 recorded_utc=str(row.get("Date", "")).strip(),
-                source_path=_store()._parse_link_target(str(row.get("Link", ""))),
+                source_path=context_engine_store._parse_link_target(str(row.get("Link", ""))),
                 source_kind="casebook",
                 severity=str(row.get("Severity", "")).strip(),
                 surfaces=("casebook",),
@@ -313,7 +307,7 @@ def _build_judgment_memory_snapshot(
         )
     if benchmark_comparison and float(benchmark_comparison.get("median_total_payload_token_delta", 0.0) or 0.0) > 0.0:
         negative_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="budget_drag",
                 summary=(
                     f"Total Odylith payload is still {float(benchmark_comparison.get('median_total_payload_token_delta', 0.0) or 0.0):+.1f} "
@@ -328,7 +322,7 @@ def _build_judgment_memory_snapshot(
             )
         )
     negative_state = "strong" if critical_open_bugs or len(negative_items) >= 2 else "partial" if negative_items else "cold"
-    negative_area = _store()._judgment_memory_area(
+    negative_area = context_engine_store._judgment_memory_area(
         key="negative",
         label="Negative memory",
         state=negative_state,
@@ -339,14 +333,14 @@ def _build_judgment_memory_snapshot(
         ),
         items=negative_items[:4],
         provenance=[
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Casebook bugs",
                 source_kind="casebook",
                 path="odylith/casebook/bugs/INDEX.md",
-                updated_utc=_store()._latest_updated_utc(*[str(row.get("Date", "")).strip() for row in retained_open_bugs]),
+                updated_utc=context_engine_store._latest_updated_utc(*[str(row.get("Date", "")).strip() for row in retained_open_bugs]),
                 trust="authoritative",
             ),
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Benchmark gate",
                 source_kind="benchmark_report",
                 path=benchmark_path_ref if benchmark_comparison else "",
@@ -363,19 +357,19 @@ def _build_judgment_memory_snapshot(
     )
     previous_starter = dict(previous.get("starter_slice", {})) if isinstance(previous.get("starter_slice"), Mapping) else {}
     starter_path = str(current_starter.get("path", "")).strip() or str(previous_starter.get("path", "")).strip()
-    starter_workstream = _store()._workstream_token(str(previous_starter.get("workstream_id", "")).strip())
+    starter_workstream = context_engine_store._workstream_token(str(previous_starter.get("workstream_id", "")).strip())
     if starter_path:
         for packet in recent_bootstrap_packets:
             if not isinstance(packet, Mapping):
                 continue
-            packet_workstream = _store()._payload_workstream_hint(packet)
+            packet_workstream = context_engine_store._payload_workstream_hint(packet)
             packet_paths = (
                 [str(token).strip() for token in packet.get("changed_paths", []) if str(token).strip()]
                 if isinstance(packet.get("changed_paths"), list)
                 else []
             )
             if packet_workstream and any(
-                _store()._repo_paths_overlap(repo_root=root, left=packet_path, right=starter_path)
+                context_engine_store._repo_paths_overlap(repo_root=root, left=packet_path, right=starter_path)
                 for packet_path in packet_paths
             ):
                 starter_workstream = packet_workstream
@@ -384,14 +378,14 @@ def _build_judgment_memory_snapshot(
         for session_row in active_sessions:
             if not isinstance(session_row, Mapping):
                 continue
-            session_workstream = _store()._workstream_token(str(session_row.get("workstream", "")).strip())
+            session_workstream = context_engine_store._workstream_token(str(session_row.get("workstream", "")).strip())
             session_paths = (
                 [str(token).strip() for token in session_row.get("claimed_paths", []) if str(token).strip()]
                 if isinstance(session_row.get("claimed_paths"), list)
                 else []
             )
             if session_workstream and any(
-                _store()._repo_paths_overlap(repo_root=root, left=session_path, right=starter_path)
+                context_engine_store._repo_paths_overlap(repo_root=root, left=session_path, right=starter_path)
                 for session_path in session_paths
             ):
                 starter_workstream = session_workstream
@@ -407,7 +401,7 @@ def _build_judgment_memory_snapshot(
     onboarding_items: list[dict[str, Any]] = []
     if starter_path:
         onboarding_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="starter_slice",
                 summary=(
                     f"Starter slice is `{starter_path}` with seam "
@@ -423,7 +417,7 @@ def _build_judgment_memory_snapshot(
         packet = dict(recent_bootstrap_packets[0])
         packet_paths = [str(token).strip() for token in packet.get("changed_paths", []) if str(token).strip()] if isinstance(packet.get("changed_paths"), list) else []
         onboarding_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="bootstrap_packet",
                 summary=(
                     f"Latest bootstrap session `{str(packet.get('session_id', '')).strip() or 'unknown'}` grounded "
@@ -443,10 +437,10 @@ def _build_judgment_memory_snapshot(
         or str(previous_starter.get("component_label", "")).strip(),
         "workstream_id": starter_workstream,
         "first_seen_utc": first_seen_utc,
-        "last_seen_utc": projection_updated_utc or _store()._utc_now(),
+        "last_seen_utc": projection_updated_utc or context_engine_store._utc_now(),
         "status": starter_status,
     }
-    onboarding_area = _store()._judgment_memory_area(
+    onboarding_area = context_engine_store._judgment_memory_area(
         key="onboarding",
         label="Onboarding memory",
         state=onboarding_state,
@@ -459,13 +453,13 @@ def _build_judgment_memory_snapshot(
         ),
         items=onboarding_items[:3],
         provenance=[
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Shell onboarding",
                 source_kind="onboarding_observation",
                 updated_utc=projection_updated_utc,
                 trust="derived_runtime",
             ),
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Bootstrap packets",
                 source_kind="runtime_state",
                 path=":.odylith/runtime/bootstraps/",
@@ -478,7 +472,7 @@ def _build_judgment_memory_snapshot(
     contradiction_items: list[dict[str, Any]] = []
     if retrieval_state == "strong" and decision_state != "strong":
         contradiction_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="retrieval_vs_judgment",
                 summary="Retrieval memory is strong, but durable decision memory is still only partially grounded.",
                 recorded_utc=projection_updated_utc,
@@ -489,7 +483,7 @@ def _build_judgment_memory_snapshot(
         )
     if benchmark_comparison and float(benchmark_comparison.get("median_prompt_token_delta", 0.0) or 0.0) < 0.0 and float(benchmark_comparison.get("median_total_payload_token_delta", 0.0) or 0.0) > 0.0:
         contradiction_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="prompt_vs_payload",
                 summary=(
                     f"Agent prompts are {float(benchmark_comparison.get('median_prompt_token_delta', 0.0) or 0.0):+.1f} tokens leaner than baseline, "
@@ -504,12 +498,12 @@ def _build_judgment_memory_snapshot(
         )
     if critical_open_bugs and not active_plan_rows:
         contradiction_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="bugs_without_active_plan",
                 summary=(
                     f"Casebook still carries {len(critical_open_bugs)} open critical bug(s), but Plans has no active implementation lane bound to them."
                 ),
-                recorded_utc=_store()._latest_updated_utc(*[str(row.get("Date", "")).strip() for row in critical_open_bugs]),
+                recorded_utc=context_engine_store._latest_updated_utc(*[str(row.get("Date", "")).strip() for row in critical_open_bugs]),
                 source_path="odylith/casebook/bugs/INDEX.md",
                 source_kind="casebook",
                 next_move="Bind the current critical bug cluster to one governed implementation slice before more fixes drift outside plan truth.",
@@ -518,10 +512,10 @@ def _build_judgment_memory_snapshot(
         )
     if critical_open_bugs and str(benchmark_acceptance.get("status", "")).strip().lower() in {"provisional_pass", "pass"}:
         contradiction_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="proof_vs_open_risk",
                 summary="Benchmark proof is green, but critical open bugs still keep the release/install lane operationally risky.",
-                recorded_utc=_store()._latest_updated_utc(
+                recorded_utc=context_engine_store._latest_updated_utc(
                     str(benchmark_report.get("generated_utc", "")).strip(),
                     *[str(row.get("Date", "")).strip() for row in critical_open_bugs],
                 ),
@@ -533,7 +527,7 @@ def _build_judgment_memory_snapshot(
         )
     if bool(welcome_state.get("show")) and not recent_bootstrap_packets:
         contradiction_items.append(
-            _store()._judgment_memory_item(
+            context_engine_store._judgment_memory_item(
                 kind="suggested_without_bootstrap",
                 summary="Odylith can name a first governed slice, but no bootstrap-session evidence has been captured for it yet.",
                 recorded_utc=projection_updated_utc,
@@ -543,7 +537,7 @@ def _build_judgment_memory_snapshot(
             )
         )
     contradiction_state = "strong" if len(contradiction_items) >= 2 else "partial" if contradiction_items else "cold"
-    contradiction_area = _store()._judgment_memory_area(
+    contradiction_area = context_engine_store._judgment_memory_area(
         key="contradictions",
         label="Contradiction memory",
         state=contradiction_state,
@@ -554,14 +548,14 @@ def _build_judgment_memory_snapshot(
         ),
         items=contradiction_items[:4],
         provenance=[
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Repo truth and runtime posture",
                 source_kind="repo_truth",
                 path="odylith/radar/source/INDEX.md",
                 updated_utc=str(backlog_projection.get("updated_utc", "")).strip(),
                 trust="authoritative",
             ),
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Benchmark proof",
                 source_kind="benchmark_report",
                 path=benchmark_path_ref if benchmark_comparison else "",
@@ -580,7 +574,7 @@ def _build_judgment_memory_snapshot(
         onboarding_area,
     ]
     freshness_items = [
-        _store()._judgment_memory_item(
+        context_engine_store._judgment_memory_item(
             kind="area_freshness",
             summary=f"{str(area.get('label', '')).strip()} is {str(dict(area.get('freshness', {})).get('bucket', '')).strip() or 'unknown'}.",
             recorded_utc=str(area.get("updated_utc", "")).strip(),
@@ -595,7 +589,7 @@ def _build_judgment_memory_snapshot(
         if str(dict(area.get("freshness", {})).get("bucket", "")).strip() in {"fresh", "recent"}
     )
     freshness_state = "strong" if provisional_areas and fresh_or_recent >= max(2, len(provisional_areas) // 2) else "partial" if freshness_items else "cold"
-    freshness_area = _store()._judgment_memory_area(
+    freshness_area = context_engine_store._judgment_memory_area(
         key="freshness",
         label="Freshness memory",
         state=freshness_state,
@@ -606,7 +600,7 @@ def _build_judgment_memory_snapshot(
         ),
         items=freshness_items[:4],
         provenance=[
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Runtime snapshot timestamps",
                 source_kind="runtime_state",
                 path=":.odylith/runtime/",
@@ -626,16 +620,16 @@ def _build_judgment_memory_snapshot(
                 continue
             source_counts[kind] = source_counts.get(kind, 0) + 1
     provenance_items = [
-        _store()._judgment_memory_item(
+        context_engine_store._judgment_memory_item(
             kind="source_kind",
-            summary=f"{_store()._humanize_slug(kind)} contributes to {count} judgment area(s).",
+            summary=f"{context_engine_store._humanize_slug(kind)} contributes to {count} judgment area(s).",
             recorded_utc=projection_updated_utc,
             source_kind="provenance",
         )
         for kind, count in sorted(source_counts.items(), key=lambda item: (-item[1], item[0]))
     ]
     provenance_state = "strong" if len(source_counts) >= 4 else "partial" if provenance_items else "cold"
-    provenance_area = _store()._judgment_memory_area(
+    provenance_area = context_engine_store._judgment_memory_area(
         key="provenance",
         label="Provenance memory",
         state=provenance_state,
@@ -646,10 +640,10 @@ def _build_judgment_memory_snapshot(
         ),
         items=provenance_items[:5],
         provenance=[
-            _store()._provenance_item(
+            context_engine_store._provenance_item(
                 label="Judgment sources",
                 source_kind="provenance",
-                path=_store()._relative_repo_path(repo_root=root, path=_store().judgment_memory_path(repo_root=root)),
+                path=context_engine_store._relative_repo_path(repo_root=root, path=context_engine_store.judgment_memory_path(repo_root=root)),
                 updated_utc=projection_updated_utc,
                 trust="derived_runtime",
             ),
@@ -678,11 +672,11 @@ def _build_judgment_memory_snapshot(
     snapshot = {
         "contract": "judgment_memory.v1",
         "version": "v1",
-        "generated_utc": _store()._utc_now(),
-        "storage_path": _store()._relative_repo_path(repo_root=root, path=_store().judgment_memory_path(repo_root=root)),
+        "generated_utc": context_engine_store._utc_now(),
+        "storage_path": context_engine_store._relative_repo_path(repo_root=root, path=context_engine_store.judgment_memory_path(repo_root=root)),
         "starter_slice": starter_slice_payload if starter_path else {},
-        "status": _store()._memory_snapshot_status_from_counts(counts),
-        "headline": _store()._judgment_memory_headline(areas),
+        "status": context_engine_store._memory_snapshot_status_from_counts(counts),
+        "headline": context_engine_store._judgment_memory_headline(areas),
         "counts": counts,
         "gap_count": len(gaps),
         "areas": areas,
@@ -706,7 +700,7 @@ def _build_memory_areas_snapshot(
 ) -> dict[str, Any]:
     if not enabled:
         areas = [
-            _store()._memory_area_entry(
+            context_engine_store._memory_area_entry(
                 key=key,
                 label=label,
                 state="disabled",
@@ -760,7 +754,7 @@ def _build_memory_areas_snapshot(
     actual_storage = str(actual_backend.get("storage", "")).strip() or "compiler snapshot"
     actual_sparse = str(actual_backend.get("sparse_recall", "")).strip() or "repo scan fallback"
 
-    retrieval_state = _store()._derive_retrieval_memory_state(
+    retrieval_state = context_engine_store._derive_retrieval_memory_state(
         transition_status=transition_status,
         indexed_entities=indexed_entities,
         evidence_documents=evidence_documents,
@@ -801,7 +795,7 @@ def _build_memory_areas_snapshot(
     outcomes_row = dict(judgment_by_key.get("outcomes", {}))
 
     areas = [
-        _store()._memory_area_entry(
+        context_engine_store._memory_area_entry(
             key="repo_truth",
             label="Repo truth",
             state="strong" if read_only_repo_truth else "partial",
@@ -811,7 +805,7 @@ def _build_memory_areas_snapshot(
                 else "Repo truth exists, but the read-only authority boundary is not fully enforced."
             ),
         ),
-        _store()._memory_area_entry(
+        context_engine_store._memory_area_entry(
             key="retrieval",
             label="Retrieval memory",
             state=retrieval_state,
@@ -821,7 +815,7 @@ def _build_memory_areas_snapshot(
                 else "No meaningful indexed retrieval footprint is materialized yet."
             ),
         ),
-        _store()._memory_area_entry(
+        context_engine_store._memory_area_entry(
             key="guidance",
             label="Guidance memory",
             state=guidance_state,
@@ -831,7 +825,7 @@ def _build_memory_areas_snapshot(
                 else "No compiled guidance catalog is ready yet."
             ),
         ),
-        _store()._memory_area_entry(
+        context_engine_store._memory_area_entry(
             key="session_packets",
             label="Session packet memory",
             state=session_state,
@@ -843,7 +837,7 @@ def _build_memory_areas_snapshot(
                 else "No active session or bootstrap packet memory is warm yet."
             ),
         ),
-        _store()._memory_area_entry(
+        context_engine_store._memory_area_entry(
             key="outcomes",
             label="Outcome memory",
             state=str(outcomes_row.get("state", "")).strip() or outcome_state,
@@ -856,7 +850,7 @@ def _build_memory_areas_snapshot(
                 )
             ),
         ),
-        _store()._memory_area_entry(
+        context_engine_store._memory_area_entry(
             key="decisions",
             label="Decision memory",
             state=str(decisions_row.get("state", "")).strip() or "planned",
@@ -865,7 +859,7 @@ def _build_memory_areas_snapshot(
                 or "Resolved decisions, reversals, and proof outcomes are not first-class durable memory yet."
             ),
         ),
-        _store()._memory_area_entry(
+        context_engine_store._memory_area_entry(
             key="collaboration",
             label="Workspace and actor memory",
             state=str(collaboration_row.get("state", "")).strip() or "planned",
@@ -874,7 +868,7 @@ def _build_memory_areas_snapshot(
                 or "Workspace, actor, and shared-ownership memory are not first-class durable memory yet."
             ),
         ),
-        _store()._memory_area_entry(
+        context_engine_store._memory_area_entry(
             key="contradictions",
             label="Contradiction memory",
             state=str(contradictions_row.get("state", "")).strip() or "planned",
@@ -895,8 +889,8 @@ def _build_memory_areas_snapshot(
             gaps.append(f"{label}: {summary}" if summary else label)
     return {
         "contract": "memory_areas.v1",
-        "status": _store()._memory_snapshot_status_from_counts(counts),
-        "headline": _store()._memory_areas_headline(areas),
+        "status": context_engine_store._memory_snapshot_status_from_counts(counts),
+        "headline": context_engine_store._memory_areas_headline(areas),
         "counts": counts,
         "gap_count": len(gaps),
         "areas": areas,
@@ -912,7 +906,7 @@ def _odylith_disabled_memory_snapshot(
     evaluation_snapshot: Mapping[str, Any],
 ) -> dict[str, Any]:
     disabled_judgment_areas = [
-        _store()._judgment_memory_area(
+        context_engine_store._judgment_memory_area(
             key=key,
             label=label,
             state="disabled",
@@ -934,7 +928,7 @@ def _odylith_disabled_memory_snapshot(
     payload = {
         "contract": "memory_snapshot.v1",
         "version": "v1",
-        "generated_utc": _store()._utc_now(),
+        "generated_utc": context_engine_store._utc_now(),
         "status": "disabled",
         "status_reason": "odylith_disabled",
         "odylith_switch": dict(switch_snapshot),
@@ -1016,8 +1010,8 @@ def _odylith_disabled_memory_snapshot(
             "projection_snapshot_bytes": 0,
             "compiler_manifest_path": "",
             "compiler_manifest_bytes": 0,
-            "odylith_memory_root": str(_store().odylith_memory_backend.local_backend_root(repo_root=repo_root)),
-            "judgment_memory_path": str(_store().judgment_memory_path(repo_root=repo_root)),
+            "odylith_memory_root": str(context_engine_store.odylith_memory_backend.local_backend_root(repo_root=repo_root)),
+            "judgment_memory_path": str(context_engine_store.judgment_memory_path(repo_root=repo_root)),
         },
         "optimization": {
             "contract": "optimization_snapshot.v1",
@@ -1042,8 +1036,8 @@ def _odylith_disabled_memory_snapshot(
     payload["judgment_memory"] = {
         "contract": "judgment_memory.v1",
         "version": "v1",
-        "generated_utc": _store()._utc_now(),
-        "storage_path": _store()._relative_repo_path(repo_root=repo_root, path=_store().judgment_memory_path(repo_root=repo_root)),
+        "generated_utc": context_engine_store._utc_now(),
+        "storage_path": context_engine_store._relative_repo_path(repo_root=repo_root, path=context_engine_store.judgment_memory_path(repo_root=repo_root)),
         "status": "disabled",
         "headline": "Odylith is disabled, so durable judgment memory is suppressed for this run.",
         "counts": {"disabled": len(disabled_judgment_areas)},
@@ -1079,12 +1073,12 @@ def load_runtime_memory_snapshot(
     """Summarize the current local derived memory/retrieval substrate."""
 
     root = Path(repo_root).resolve()
-    odylith_switch = _store()._odylith_switch_snapshot(repo_root=root)
+    odylith_switch = context_engine_store._odylith_switch_snapshot(repo_root=root)
     if not bool(odylith_switch.get("enabled", True)):
         optimization = (
             dict(optimization_snapshot)
             if isinstance(optimization_snapshot, Mapping)
-            else _store().load_runtime_optimization_snapshot(repo_root=root)
+            else context_engine_store.load_runtime_optimization_snapshot(repo_root=root)
         )
         evaluation = (
             dict(evaluation_snapshot)
@@ -1098,13 +1092,13 @@ def load_runtime_memory_snapshot(
             evaluation_snapshot=evaluation,
         )
 
-    state = _store().read_runtime_state(repo_root=root)
-    guidance_catalog = _store().tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
-    guidance_summary = _store().tooling_guidance_catalog.compact_catalog_summary(guidance_catalog)
+    state = context_engine_store.read_runtime_state(repo_root=root)
+    guidance_catalog = context_engine_store.tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
+    guidance_summary = context_engine_store.tooling_guidance_catalog.compact_catalog_summary(guidance_catalog)
     optimization = (
         dict(optimization_snapshot)
         if isinstance(optimization_snapshot, Mapping)
-        else _store().load_runtime_optimization_snapshot(repo_root=root)
+        else context_engine_store.load_runtime_optimization_snapshot(repo_root=root)
     )
     evaluation = (
         dict(evaluation_snapshot)
@@ -1130,7 +1124,7 @@ def load_runtime_memory_snapshot(
         "evidence_documents": 0,
     }
     with contextlib.suppress(RuntimeError):
-        connection = _store()._connect(root)
+        connection = context_engine_store._connect(root)
         try:
             for row in connection.execute(
                 "SELECT name, row_count, updated_utc FROM projection_state ORDER BY name"
@@ -1141,30 +1135,30 @@ def load_runtime_memory_snapshot(
                 }
             counts.update(
                 {
-                    "workstreams": _store()._table_row_count(connection, "workstreams"),
-                    "plans": _store()._table_row_count(connection, "plans"),
-                    "bugs": _store()._table_row_count(connection, "bugs"),
-                    "diagrams": _store()._table_row_count(connection, "diagrams"),
-                    "components": _store()._table_row_count(connection, "components"),
-                    "component_specs": _store()._table_row_count(connection, "component_specs"),
-                    "traceability_edges": _store()._table_row_count(connection, "traceability_edges"),
-                    "engineering_notes": _store()._table_row_count(connection, "engineering_notes"),
-                    "code_artifacts": _store()._table_row_count(connection, "code_artifacts"),
-                    "code_edges": _store()._table_row_count(connection, "code_edges"),
-                    "test_cases": _store()._table_row_count(connection, "test_cases"),
-                    "test_history": _store()._table_row_count(connection, "test_history"),
-                    "delivery_surfaces": _store()._table_row_count(connection, "delivery_surfaces"),
+                    "workstreams": context_engine_store._table_row_count(connection, "workstreams"),
+                    "plans": context_engine_store._table_row_count(connection, "plans"),
+                    "bugs": context_engine_store._table_row_count(connection, "bugs"),
+                    "diagrams": context_engine_store._table_row_count(connection, "diagrams"),
+                    "components": context_engine_store._table_row_count(connection, "components"),
+                    "component_specs": context_engine_store._table_row_count(connection, "component_specs"),
+                    "traceability_edges": context_engine_store._table_row_count(connection, "traceability_edges"),
+                    "engineering_notes": context_engine_store._table_row_count(connection, "engineering_notes"),
+                    "code_artifacts": context_engine_store._table_row_count(connection, "code_artifacts"),
+                    "code_edges": context_engine_store._table_row_count(connection, "code_edges"),
+                    "test_cases": context_engine_store._table_row_count(connection, "test_cases"),
+                    "test_history": context_engine_store._table_row_count(connection, "test_history"),
+                    "delivery_surfaces": context_engine_store._table_row_count(connection, "delivery_surfaces"),
                 }
             )
         finally:
             connection.close()
 
-    projection_snapshot_file = _store().projection_snapshot_path(repo_root=root)
-    compiler_manifest_path = _store().odylith_projection_bundle.manifest_path(repo_root=root)
-    architecture_bundle_path = _store().odylith_architecture_mode.bundle_path(repo_root=root)
-    guidance_catalog_path = _store().tooling_guidance_catalog.compiled_catalog_path(repo_root=root)
-    active_sessions = len(_store().list_session_states(repo_root=root, prune=False))
-    bootstrap_packets = len(list(_store().bootstraps_root(repo_root=root).glob("*.json")))
+    projection_snapshot_file = context_engine_store.projection_snapshot_path(repo_root=root)
+    compiler_manifest_path = context_engine_store.odylith_projection_bundle.manifest_path(repo_root=root)
+    architecture_bundle_path = context_engine_store.odylith_architecture_mode.bundle_path(repo_root=root)
+    guidance_catalog_path = context_engine_store.tooling_guidance_catalog.compiled_catalog_path(repo_root=root)
+    active_sessions = len(context_engine_store.list_session_states(repo_root=root, prune=False))
+    bootstrap_packets = len(list(context_engine_store.bootstraps_root(repo_root=root).glob("*.json")))
     indexed_entity_count = sum(
         counts.get(key, 0)
         for key in (
@@ -1178,24 +1172,24 @@ def load_runtime_memory_snapshot(
             "test_cases",
         )
     )
-    local_backend_status = _store().odylith_memory_backend.backend_runtime_status(repo_root=root)
+    local_backend_status = context_engine_store.odylith_memory_backend.backend_runtime_status(repo_root=root)
     local_backend_manifest = (
         dict(local_backend_status.get("manifest", {}))
         if isinstance(local_backend_status.get("manifest"), Mapping)
         else {}
     )
-    compiler_manifest = _store().odylith_projection_bundle.load_bundle_manifest(repo_root=root)
-    architecture_bundle = _store().odylith_architecture_mode.load_architecture_bundle(repo_root=root)
+    compiler_manifest = context_engine_store.odylith_projection_bundle.load_bundle_manifest(repo_root=root)
+    architecture_bundle = context_engine_store.odylith_architecture_mode.load_architecture_bundle(repo_root=root)
     counts["evidence_documents"] = int(local_backend_manifest.get("document_count", 0) or 0)
     observed_backend = {
-        "provider": str(local_backend_status.get("provider", "")).strip() or _store()._FALLBACK_LOCAL_MEMORY_BACKEND["provider"],
-        "storage": str(local_backend_status.get("storage", "")).strip() or _store()._FALLBACK_LOCAL_MEMORY_BACKEND["storage"],
+        "provider": str(local_backend_status.get("provider", "")).strip() or context_engine_store._FALLBACK_LOCAL_MEMORY_BACKEND["provider"],
+        "storage": str(local_backend_status.get("storage", "")).strip() or context_engine_store._FALLBACK_LOCAL_MEMORY_BACKEND["storage"],
         "sparse_recall": str(local_backend_status.get("sparse_recall", "")).strip()
-        or _store()._FALLBACK_LOCAL_MEMORY_BACKEND["sparse_recall"],
-        "graph_expansion": _store()._FALLBACK_LOCAL_MEMORY_BACKEND["graph_expansion"],
-        "mode": _store()._FALLBACK_LOCAL_MEMORY_BACKEND["mode"],
+        or context_engine_store._FALLBACK_LOCAL_MEMORY_BACKEND["sparse_recall"],
+        "graph_expansion": context_engine_store._FALLBACK_LOCAL_MEMORY_BACKEND["graph_expansion"],
+        "mode": context_engine_store._FALLBACK_LOCAL_MEMORY_BACKEND["mode"],
     }
-    target_backend = dict(_store()._TARGET_LOCAL_MEMORY_BACKEND)
+    target_backend = dict(context_engine_store._TARGET_LOCAL_MEMORY_BACKEND)
     backend_gaps: list[str] = []
     if str(observed_backend.get("storage", "")).strip() != str(target_backend.get("storage", "")).strip():
         backend_gaps.append("columnar_store_not_enabled")
@@ -1210,11 +1204,11 @@ def load_runtime_memory_snapshot(
         if standardization_complete
         else "pending_target_swap"
     )
-    memory_proof_signature = _store()._memory_backend_proof_signature(
+    memory_proof_signature = context_engine_store._memory_backend_proof_signature(
         state=state,
         backend_manifest=local_backend_manifest,
     )
-    memory_proof = _store()._runtime_proof_section(repo_root=root, section="memory_backend")
+    memory_proof = context_engine_store._runtime_proof_section(repo_root=root, section="memory_backend")
     effective_backend = dict(observed_backend)
     effective_backend_gaps = list(backend_gaps)
     effective_standardization_complete = standardization_complete
@@ -1241,7 +1235,7 @@ def load_runtime_memory_snapshot(
         not effective_standardization_complete
         and sticky_standardized
         and sticky_backend
-        and _store()._memory_backend_sticky_snapshot_compatible(
+        and context_engine_store._memory_backend_sticky_snapshot_compatible(
             live_signature=memory_proof_signature,
             sticky_signature=sticky_signature,
             observed_backend=observed_backend,
@@ -1256,7 +1250,7 @@ def load_runtime_memory_snapshot(
         effective_convergence_state = "standardized"
         backend_evidence_source = "sticky_snapshot"
     if effective_standardization_complete and backend_evidence_source == "live_backend":
-        _store()._persist_runtime_proof_section(
+        context_engine_store._persist_runtime_proof_section(
             repo_root=root,
             section="memory_backend",
             payload={
@@ -1270,15 +1264,15 @@ def load_runtime_memory_snapshot(
                 "evidence_source": backend_evidence_source,
             },
         )
-    remote_config = _store().odylith_remote_retrieval.remote_config(repo_root=root)
-    backlog_projection = _store()._load_backlog_projection(repo_root=root)
-    plan_projection = _store()._load_plan_projection(repo_root=root)
-    bug_projection = _store()._load_bug_projection(repo_root=root)
-    diagram_projection = _store()._load_diagram_projection(repo_root=root)
-    recent_bootstrap_packets = _store()._load_recent_bootstrap_packets(repo_root=root, bootstrap_limit=3)
-    active_session_rows = _store().list_session_states(repo_root=root, prune=False)
-    repo_dirty_paths = _store().governance.collect_meaningful_changed_paths(repo_root=root, changed_paths=(), include_git=True)
-    previous_judgment_memory = _store().odylith_context_cache.read_json_object(_store().judgment_memory_path(repo_root=root))
+    remote_config = context_engine_store.odylith_remote_retrieval.remote_config(repo_root=root)
+    backlog_projection = context_engine_store._load_backlog_projection(repo_root=root)
+    plan_projection = context_engine_store._load_plan_projection(repo_root=root)
+    bug_projection = context_engine_store._load_bug_projection(repo_root=root)
+    diagram_projection = context_engine_store._load_diagram_projection(repo_root=root)
+    recent_bootstrap_packets = context_engine_store._load_recent_bootstrap_packets(repo_root=root, bootstrap_limit=3)
+    active_session_rows = context_engine_store.list_session_states(repo_root=root, prune=False)
+    repo_dirty_paths = context_engine_store.governance.collect_meaningful_changed_paths(repo_root=root, changed_paths=(), include_git=True)
+    previous_judgment_memory = context_engine_store.odylith_context_cache.read_json_object(context_engine_store.judgment_memory_path(repo_root=root))
     from odylith.runtime.surfaces import shell_onboarding
 
     welcome_state = shell_onboarding.build_welcome_state(repo_root=root)
@@ -1295,7 +1289,7 @@ def load_runtime_memory_snapshot(
     payload = {
         "contract": "memory_snapshot.v1",
         "version": "v1",
-        "generated_utc": _store()._utc_now(),
+        "generated_utc": context_engine_store._utc_now(),
         "status": "active" if projection_state or str(state.get("updated_utc", "")).strip() else "cold",
         "odylith_switch": odylith_switch,
         "engine": {
@@ -1318,7 +1312,7 @@ def load_runtime_memory_snapshot(
             "actual_local_backend": effective_backend,
             "observed_local_backend": observed_backend,
             "target_local_backend": target_backend,
-            "future_shared_candidate": dict(_store()._FUTURE_SHARED_MEMORY_BACKEND),
+            "future_shared_candidate": dict(context_engine_store._FUTURE_SHARED_MEMORY_BACKEND),
             "gaps": effective_backend_gaps,
             "evidence_source": backend_evidence_source,
             "signature": memory_proof_signature,
@@ -1384,7 +1378,7 @@ def load_runtime_memory_snapshot(
             else int(guidance_summary.get("task_family_count", 0) or 0),
             "catalog_fingerprint": str(guidance_catalog.get("catalog_fingerprint", "")).strip(),
             "compiled_path": str(guidance_catalog_path),
-            "compiled_bytes": _store()._safe_file_size(guidance_catalog_path),
+            "compiled_bytes": context_engine_store._safe_file_size(guidance_catalog_path),
         },
         "retrieval_pipeline": {
             "order": [
@@ -1413,21 +1407,21 @@ def load_runtime_memory_snapshot(
                 if effective_standardization_complete
                 else "repo_scan_fallback",
                 "hybrid_rerank_available": effective_standardization_complete,
-                "hybrid_rerank_enabled": _store()._env_truthy("ODYLITH_HYBRID_RERANK"),
-                "future_shared_candidate": str(_store()._FUTURE_SHARED_MEMORY_BACKEND.get("provider", "")).strip(),
+                "hybrid_rerank_enabled": context_engine_store._env_truthy("ODYLITH_HYBRID_RERANK"),
+                "future_shared_candidate": str(context_engine_store._FUTURE_SHARED_MEMORY_BACKEND.get("provider", "")).strip(),
             },
         },
         "runtime_state": {
             "active_sessions": active_sessions,
             "bootstrap_packets": bootstrap_packets,
             "projection_snapshot_path": str(projection_snapshot_file),
-            "projection_snapshot_bytes": _store()._safe_file_size(projection_snapshot_file),
+            "projection_snapshot_bytes": context_engine_store._safe_file_size(projection_snapshot_file),
             "compiler_manifest_path": str(compiler_manifest_path),
-            "compiler_manifest_bytes": _store()._safe_file_size(compiler_manifest_path),
+            "compiler_manifest_bytes": context_engine_store._safe_file_size(compiler_manifest_path),
             "architecture_bundle_path": str(architecture_bundle_path),
-            "architecture_bundle_bytes": _store()._safe_file_size(architecture_bundle_path),
-            "odylith_memory_root": str(_store().odylith_memory_backend.local_backend_root(repo_root=root)),
-            "judgment_memory_path": str(_store().judgment_memory_path(repo_root=root)),
+            "architecture_bundle_bytes": context_engine_store._safe_file_size(architecture_bundle_path),
+            "odylith_memory_root": str(context_engine_store.odylith_memory_backend.local_backend_root(repo_root=root)),
+            "judgment_memory_path": str(context_engine_store.judgment_memory_path(repo_root=root)),
         },
         "optimization": {
             "contract": "optimization_snapshot.v1",
@@ -1479,24 +1473,24 @@ def load_runtime_memory_snapshot(
         runtime_state=payload.get("runtime_state", {}),
         optimization=optimization,
         evaluation=evaluation,
-        benchmark_report=_store()._load_latest_benchmark_report_snapshot(repo_root=root),
+        benchmark_report=context_engine_store._load_latest_benchmark_report_snapshot(repo_root=root),
         recent_bootstrap_packets=recent_bootstrap_packets,
         active_sessions=active_session_rows,
         repo_dirty_paths=repo_dirty_paths,
         welcome_state=welcome_state,
         previous_snapshot=previous_judgment_memory,
-        retrieval_state=_store()._derive_retrieval_memory_state(
+        retrieval_state=context_engine_store._derive_retrieval_memory_state(
             transition_status=effective_convergence_state,
             indexed_entities=indexed_entity_count,
             evidence_documents=counts["evidence_documents"],
             compiler_ready=bool(compiler_manifest.get("ready")),
         ),
     )
-    _store().odylith_context_cache.write_json_if_changed(
+    context_engine_store.odylith_context_cache.write_json_if_changed(
         repo_root=root,
-        path=_store().judgment_memory_path(repo_root=root),
+        path=context_engine_store.judgment_memory_path(repo_root=root),
         payload=payload["judgment_memory"],
-        lock_key=str(_store().judgment_memory_path(repo_root=root)),
+        lock_key=str(context_engine_store.judgment_memory_path(repo_root=root)),
     )
     payload["memory_areas"] = _build_memory_areas_snapshot(
         enabled=True,
@@ -1522,7 +1516,7 @@ def _architecture_evaluation_snapshot(
     timing_limit: int = 48,
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
-    architecture_cases = _store().odylith_benchmark_contract.architecture_benchmark_scenarios(corpus)
+    architecture_cases = context_engine_store.odylith_benchmark_contract.architecture_benchmark_scenarios(corpus)
     if not architecture_cases:
         return {
             "status": "unseeded",
@@ -1541,7 +1535,7 @@ def _architecture_evaluation_snapshot(
         }
     timing_rows = [
         row
-        for row in _store().odylith_control_state.load_timing_rows(repo_root=root, limit=max(1, int(timing_limit)))
+        for row in context_engine_store.odylith_control_state.load_timing_rows(repo_root=root, limit=max(1, int(timing_limit)))
         if str(row.get("category", "")).strip() == "reasoning"
         and str(row.get("operation", "")).strip() == "architecture"
     ]
@@ -1554,7 +1548,7 @@ def _architecture_evaluation_snapshot(
         match_spec = dict(case.get("match", {})) if isinstance(case.get("match"), Mapping) else {}
         expect_spec = dict(case.get("expect", {})) if isinstance(case.get("expect"), Mapping) else {}
         latest_timing = next(
-            (row for row in timing_rows if _store()._architecture_timing_matches_evaluation_case(row, match_spec)),
+            (row for row in timing_rows if context_engine_store._architecture_timing_matches_evaluation_case(row, match_spec)),
             None,
         )
         case_status = "unmatched"
@@ -1562,7 +1556,7 @@ def _architecture_evaluation_snapshot(
         if latest_timing is not None:
             covered_count += 1
             matched_timings.append(dict(latest_timing))
-            expectation_ok, expectation_details = _store()._architecture_timing_satisfies_evaluation_expectations(
+            expectation_ok, expectation_details = context_engine_store._architecture_timing_satisfies_evaluation_expectations(
                 latest_timing,
                 expect_spec,
             )
@@ -1611,7 +1605,7 @@ def _architecture_evaluation_snapshot(
     recommendations: list[str] = []
     if not timing_rows:
         recommendations.append(
-            f"Architecture benchmark lane is seeded but has no recent dossier evidence yet; run `{_store().display_command('context-engine', '--repo-root', '.', 'architecture', '<path>')}` on a benchmarked slice."
+            f"Architecture benchmark lane is seeded but has no recent dossier evidence yet; run `{context_engine_store.display_command('context-engine', '--repo-root', '.', 'architecture', '<path>')}` on a benchmarked slice."
         )
     drift_cases = [str(row.get("label", "")).strip() for row in case_rows if str(row.get("status", "")).strip() == "drift"]
     unmatched_cases = [str(row.get("label", "")).strip() for row in case_rows if str(row.get("status", "")).strip() == "unmatched"]
@@ -1627,7 +1621,7 @@ def _architecture_evaluation_snapshot(
         recommendations.append(
             "Architecture benchmark lane is currently healthy; use it as the acceptance baseline for future architecture-copilot changes."
         )
-    signature = _store()._architecture_evaluation_proof_signature(
+    signature = context_engine_store._architecture_evaluation_proof_signature(
         repo_root=root,
         corpus=corpus,
     )
@@ -1646,18 +1640,18 @@ def _architecture_evaluation_snapshot(
         "evidence_source": "live_timings",
         "signature": signature,
     }
-    sticky = _store()._runtime_proof_section(repo_root=root, section="architecture_evaluation")
+    sticky = context_engine_store._runtime_proof_section(repo_root=root, section="architecture_evaluation")
     sticky_signature = (
         dict(sticky.get("signature", {}))
         if isinstance(sticky.get("signature"), Mapping)
         else {}
     )
-    sticky_compatible = _store()._architecture_evaluation_signatures_compatible(signature, sticky_signature)
+    sticky_compatible = context_engine_store._architecture_evaluation_signatures_compatible(signature, sticky_signature)
     if (
         int(live_snapshot.get("covered_case_count", 0) or 0) > 0
         and sticky_compatible
-        and _store()._architecture_evaluation_snapshot_strength(sticky)
-        > _store()._architecture_evaluation_snapshot_strength(live_snapshot)
+        and context_engine_store._architecture_evaluation_snapshot_strength(sticky)
+        > context_engine_store._architecture_evaluation_snapshot_strength(live_snapshot)
     ):
         merged = dict(sticky)
         merged["status"] = "active"
@@ -1666,7 +1660,7 @@ def _architecture_evaluation_snapshot(
         merged["live_window_partial"] = True
         return merged
     if int(live_snapshot.get("covered_case_count", 0) or 0) > 0:
-        _store()._persist_runtime_proof_section(
+        context_engine_store._persist_runtime_proof_section(
             repo_root=root,
             section="architecture_evaluation",
             payload=live_snapshot,
@@ -1689,16 +1683,16 @@ def load_runtime_evaluation_snapshot(
     """Summarize benchmark-corpus coverage and drift against recent runtime packets."""
 
     root = Path(repo_root).resolve()
-    odylith_switch = _store()._odylith_switch_snapshot(repo_root=root)
+    odylith_switch = context_engine_store._odylith_switch_snapshot(repo_root=root)
     if not bool(odylith_switch.get("enabled", True)):
-        return _store()._odylith_disabled_evaluation_snapshot(
+        return context_engine_store._odylith_disabled_evaluation_snapshot(
             repo_root=root,
             switch_snapshot=odylith_switch,
         )
-    corpus = _store().odylith_context_cache.read_json_object(_store().optimization_evaluation_corpus_path(repo_root=root))
+    corpus = context_engine_store.odylith_context_cache.read_json_object(context_engine_store.optimization_evaluation_corpus_path(repo_root=root))
     if not isinstance(corpus, Mapping):
         corpus = {}
-    cases = _store().odylith_benchmark_contract.packet_benchmark_scenarios(corpus)
+    cases = context_engine_store.odylith_benchmark_contract.packet_benchmark_scenarios(corpus)
     program = dict(corpus.get("program", {})) if isinstance(corpus.get("program"), Mapping) else {}
     architecture_snapshot = _architecture_evaluation_snapshot(
         repo_root=root,
@@ -1725,7 +1719,7 @@ def load_runtime_evaluation_snapshot(
         return {
             "contract": "evaluation_snapshot.v1",
             "version": "v1",
-            "generated_utc": _store()._utc_now(),
+            "generated_utc": context_engine_store._utc_now(),
             "odylith_switch": odylith_switch,
             "status": "unseeded",
             "program": _normalized_program_snapshot("planned"),
@@ -1743,21 +1737,21 @@ def load_runtime_evaluation_snapshot(
             ],
         }
 
-    packets = _store()._load_recent_bootstrap_packets(repo_root=root, bootstrap_limit=bootstrap_limit)
+    packets = context_engine_store._load_recent_bootstrap_packets(repo_root=root, bootstrap_limit=bootstrap_limit)
     priority_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-    family_distribution = _store()._sorted_count_map([str(row.get("family", "")).strip() for row in cases])
+    family_distribution = context_engine_store._sorted_count_map([str(row.get("family", "")).strip() for row in cases])
     covered_count = 0
     satisfied_count = 0
     case_rows: list[dict[str, Any]] = []
     for case in cases:
         match_spec = dict(case.get("match", {})) if isinstance(case.get("match"), Mapping) else {}
         expect_spec = dict(case.get("expect", {})) if isinstance(case.get("expect"), Mapping) else {}
-        latest_packet = next((packet for packet in packets if _store()._packet_matches_evaluation_case(packet, match_spec)), None)
+        latest_packet = next((packet for packet in packets if context_engine_store._packet_matches_evaluation_case(packet, match_spec)), None)
         case_status = "unmatched"
         expectation_details: dict[str, Any] = {}
         if latest_packet is not None:
             covered_count += 1
-            expectation_ok, expectation_details = _store()._packet_satisfies_evaluation_expectations(latest_packet, expect_spec)
+            expectation_ok, expectation_details = context_engine_store._packet_satisfies_evaluation_expectations(latest_packet, expect_spec)
             if expectation_ok:
                 satisfied_count += 1
                 case_status = "satisfied"
@@ -1774,7 +1768,7 @@ def load_runtime_evaluation_snapshot(
                 "latest_match_utc": str(latest_packet.get("bootstrapped_at", "")).strip() if latest_packet else "",
                 "matched_workstream": str(latest_packet.get("workstream", "")).strip() if latest_packet else "",
                 "observed_packet_state": str(latest_packet.get("packet_state", "")).strip() if latest_packet else "",
-                "expected_packet_state": sorted(_store()._expected_token_set(expect_spec.get("packet_state"))),
+                "expected_packet_state": sorted(context_engine_store._expected_token_set(expect_spec.get("packet_state"))),
                 "expectation_details": expectation_details,
             }
         )
@@ -1788,11 +1782,11 @@ def load_runtime_evaluation_snapshot(
     corpus_size = len(cases)
     coverage_rate = round(covered_count / max(1, corpus_size), 3)
     satisfaction_rate = round(satisfied_count / max(1, covered_count), 3) if covered_count else 0.0
-    status_distribution = _store()._sorted_count_map([str(row.get("status", "")).strip() for row in case_rows])
+    status_distribution = context_engine_store._sorted_count_map([str(row.get("status", "")).strip() for row in case_rows])
     recommendations: list[str] = []
     if not packets:
         recommendations.append(
-            f"Benchmark corpus is seeded but no recent runtime packet evidence is available yet; run `{_store().display_command('context-engine', '--repo-root', '.', 'bootstrap-session', '<path>')}` on a benchmarked slice."
+            f"Benchmark corpus is seeded but no recent runtime packet evidence is available yet; run `{context_engine_store.display_command('context-engine', '--repo-root', '.', 'bootstrap-session', '<path>')}` on a benchmarked slice."
         )
     drift_cases = [str(row.get("label", "")).strip() for row in case_rows if str(row.get("status", "")).strip() == "drift"]
     unmatched_cases = [str(row.get("label", "")).strip() for row in case_rows if str(row.get("status", "")).strip() == "unmatched"]
@@ -1811,7 +1805,7 @@ def load_runtime_evaluation_snapshot(
     return {
         "contract": "evaluation_snapshot.v1",
         "version": "v1",
-        "generated_utc": _store()._utc_now(),
+        "generated_utc": context_engine_store._utc_now(),
         "odylith_switch": odylith_switch,
         "status": "active" if packets else "seeded_no_evidence",
         "program": _normalized_program_snapshot("active"),
@@ -1826,3 +1820,5 @@ def load_runtime_evaluation_snapshot(
         "architecture": architecture_snapshot,
         "recommendations": recommendations[:3],
     }
+# Keep the store dependency explicit without pulling it through module bootstrap.
+from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store

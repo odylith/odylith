@@ -7,6 +7,8 @@ from pathlib import Path
 import re
 from typing import Any
 
+from odylith.common.release_text import normalize_release_text as _normalize_text
+
 _FRONT_MATTER_DELIMITER = "---"
 _FRONT_MATTER_KEY_RE = re.compile(r"^(?P<key>[A-Za-z0-9_-]+):\s*(?P<value>.*)$")
 _PUBLIC_RELEASE_NOTES_REPO = "https://github.com/odylith/odylith"
@@ -48,22 +50,6 @@ def github_release_notes_url(*, version: str, release_tag: str = "") -> str:
         return ""
     ref_token = str(release_tag or f"v{version_token}").strip() or f"v{version_token}"
     return f"{_PUBLIC_RELEASE_NOTES_REPO}/blob/{ref_token}/odylith/runtime/source/release-notes/v{version_token}.md"
-
-
-def _normalize_text(value: Any, *, limit: int = 240) -> str:
-    """Strip markdown noise and collapse a text fragment into plain prose."""
-    token = str(value or "").strip()
-    if not token:
-        return ""
-    token = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", token)
-    token = re.sub(r"<[^>]+>", "", token)
-    token = re.sub(r"[*_`>#]", "", token)
-    token = re.sub(r"\s+", " ", token).strip(" -:")
-    if len(token) > limit:
-        token = token[: limit - 3].rstrip() + "..."
-    return token
-
-
 def _paragraphs(body: str, *, limit: int) -> list[str]:
     """Extract readable paragraph summaries from markdown body text."""
     text = str(body or "").strip()

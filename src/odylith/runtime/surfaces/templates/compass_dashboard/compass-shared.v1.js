@@ -383,14 +383,58 @@ initQuickTooltips();
             const scopeSignals = payload && payload.window_scope_signals && payload.window_scope_signals[key] && typeof payload.window_scope_signals[key] === "object"
               ? payload.window_scope_signals[key]
               : {};
-            const hasPromotedScopedSignal = Object.values(scopeSignals).some((signal) => {
+            const selectedSignal = scopeSignals && typeof scopeSignals === "object"
+              ? scopeSignals[scopedWorkstream]
+              : null;
+            const selectedSignalRow = selectedSignal && typeof selectedSignal === "object" ? selectedSignal : {};
+            const selectedExplicitRank = Number(selectedSignalRow.rank || 0);
+            const selectedRung = String(selectedSignalRow.rung || "").trim().toUpperCase();
+            const selectedFeatureVector = selectedSignalRow.feature_vector && typeof selectedSignalRow.feature_vector === "object"
+              ? selectedSignalRow.feature_vector
+              : {};
+            const selectedCaps = Array.isArray(selectedSignalRow.caps) ? selectedSignalRow.caps : [];
+            const windowHasPromotedScopedSignal = Object.values(scopeSignals).some((signal) => {
               const row = signal && typeof signal === "object" ? signal : {};
               const explicitRank = Number(row.rank || 0);
               if (Number.isFinite(explicitRank) && explicitRank >= 2) return true;
               const rung = String(row.rung || "").trim().toUpperCase();
               return /^R[2-5]$/.test(rung);
             });
-            if (!verifiedScopedIds.length && !promotedScopedIds.length && !hasPromotedScopedSignal && globalReady) {
+            const selectedHasPromotedScopedSignal = (
+              (Number.isFinite(selectedExplicitRank) && selectedExplicitRank >= 2)
+              || /^R[2-5]$/.test(selectedRung)
+            );
+            const selectedHasVerifiedOrPromotedScopedActivity = (
+              verifiedScopedIds.includes(scopedWorkstream)
+              || promotedScopedIds.includes(scopedWorkstream)
+              || selectedHasPromotedScopedSignal
+            );
+            const catalogRows = Array.isArray(payload && payload.workstream_catalog) ? payload.workstream_catalog : [];
+            const selectedScopedRow = catalogRows.find(
+              (row) => String(row && row.idea_id ? row.idea_id : "").trim() === scopedWorkstream
+            ) || scopedWorkstreamRow(payload, scopedWorkstream);
+            const selectedWindowActivity = scopedWindowActivity(selectedScopedRow, key);
+            const selectedHasRawWindowActivity = (
+              selectedWindowActivity.commitCount > 0
+              || selectedWindowActivity.localChangeCount > 0
+              || selectedWindowActivity.fileTouchCount > 0
+            );
+            const selectedGovernanceOnlyLocalChange = (
+              Boolean(selectedFeatureVector.governance_only_local_change)
+              || selectedCaps.some((token) => String(token || "").trim() === "governance_only_local_change")
+            );
+            const currentWindowRows = payload && payload.current_workstreams_by_window && Array.isArray(payload.current_workstreams_by_window[key])
+              ? payload.current_workstreams_by_window[key]
+              : [];
+            const selectedIsCurrentWindowScope = currentWindowRows.some(
+              (row) => String(row && row.idea_id ? row.idea_id : "").trim() === scopedWorkstream
+            );
+            if (
+              !selectedHasVerifiedOrPromotedScopedActivity
+              && !selectedGovernanceOnlyLocalChange
+              && (selectedHasRawWindowActivity || (!windowHasPromotedScopedSignal && selectedIsCurrentWindowScope))
+              && globalReady
+            ) {
               return scopedFallbackToGlobalBrief(
                 globalReady,
                 scopedWorkstream,

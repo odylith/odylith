@@ -2,19 +2,11 @@
 
 from __future__ import annotations
 
-def _store():
-    from odylith.runtime.context_engine import odylith_context_engine_store as store
-
-    return store
-
-
 from typing import Any
 from typing import Mapping
 
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import governance_signal_codec
-from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bootstrap_runtime
-from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.context_engine import path_bundle_codec
 from odylith.runtime.governance import proof_state as proof_state_runtime
@@ -49,8 +41,8 @@ def _compact_hot_path_runtime_packet(
         )
     packet_state = str(payload.get("context_packet_state", "")).strip()
     compact: dict[str, Any] = {}
-    changed_paths = _store()._normalized_string_list(payload.get("changed_paths"))
-    explicit_paths = _store()._normalized_string_list(payload.get("explicit_paths"))
+    changed_paths = context_engine_store._normalized_string_list(payload.get("changed_paths"))
+    explicit_paths = context_engine_store._normalized_string_list(payload.get("explicit_paths"))
     input_context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
     input_anchors = (
         dict(input_context_packet.get("anchors", {}))
@@ -59,8 +51,8 @@ def _compact_hot_path_runtime_packet(
     )
     effective_changed_paths = (
         changed_paths
-        or _store()._normalized_string_list(input_anchors.get("changed_paths"))
-        or _store()._normalized_string_list(input_anchors.get("explicit_paths"))
+        or context_engine_store._normalized_string_list(input_anchors.get("changed_paths"))
+        or context_engine_store._normalized_string_list(input_anchors.get("explicit_paths"))
         or explicit_paths
     )
     full_scan_recommended = bool(payload.get("full_scan_recommended") or input_context_packet.get("full_scan_recommended"))
@@ -69,11 +61,11 @@ def _compact_hot_path_runtime_packet(
         "context_packet",
         "packet_metrics",
     )
-    workstream_hint = _store()._payload_workstream_hint(payload, include_selection=False)
+    workstream_hint = context_engine_store._payload_workstream_hint(payload, include_selection=False)
     if workstream_hint:
         compact["ws"] = workstream_hint
     if retain_internal_context and isinstance(payload.get("session"), Mapping):
-        session_payload = _store()._compact_hot_path_session_payload(dict(payload.get("session", {})))
+        session_payload = context_engine_store._compact_hot_path_session_payload(dict(payload.get("session", {})))
         if session_payload:
             compact["session"] = session_payload
     narrowing_guidance = dict(payload.get("narrowing_guidance", {})) if isinstance(payload.get("narrowing_guidance"), Mapping) else {}
@@ -115,11 +107,11 @@ def _compact_hot_path_runtime_packet(
             compact["claim_guard"] = claim_guard
     if str(packet_kind or "").strip() in {"session_brief", "bootstrap_session"}:
         if isinstance(payload.get("session"), Mapping):
-            session_payload = _store()._compact_hot_path_session_payload(dict(payload.get("session", {})))
+            session_payload = context_engine_store._compact_hot_path_session_payload(dict(payload.get("session", {})))
             if session_payload:
                 compact["session"] = session_payload
         if isinstance(payload.get("workstream_context"), Mapping):
-            compact_workstream_context = _store()._compact_hot_path_workstream_context(
+            compact_workstream_context = context_engine_store._compact_hot_path_workstream_context(
                 dict(payload.get("workstream_context", {}))
             )
             if compact_workstream_context:
@@ -133,7 +125,7 @@ def _compact_hot_path_runtime_packet(
         active_session_count = int(payload.get("active_session_count", 0) or 0)
         if active_session_count > 0:
             compact["active_session_count"] = active_session_count
-        session_seed_paths = _store()._normalized_string_list(payload.get("session_seed_paths"))
+        session_seed_paths = context_engine_store._normalized_string_list(payload.get("session_seed_paths"))
         if session_seed_paths:
             compact["session_seed_paths"] = session_seed_paths[:4]
     if str(packet_kind or "").strip() == "governance_slice":
@@ -170,17 +162,17 @@ def _compact_hot_path_runtime_packet(
             context_packet_payload["route"] = route_payload
             compact["context_packet"] = context_packet_payload
         compact_changed_paths = effective_changed_paths
-        compact_docs = _store()._normalized_string_list(payload.get("docs"))
+        compact_docs = context_engine_store._normalized_string_list(payload.get("docs"))
         authoritative_governance_docs = bool(payload.get("governance_hot_path_docs_authoritative"))
-        governance_hot_path_docs = _store()._normalized_string_list(payload.get("governance_hot_path_docs"))
+        governance_hot_path_docs = context_engine_store._normalized_string_list(payload.get("governance_hot_path_docs"))
         if authoritative_governance_docs:
             prioritized_docs = governance_hot_path_docs
         else:
-            companion_docs = _store()._companion_context_paths_for_normalized_changed_paths(compact_changed_paths)
+            companion_docs = context_engine_store._companion_context_paths_for_normalized_changed_paths(compact_changed_paths)
             non_anchor_docs = [doc for doc in compact_docs if doc not in compact_changed_paths]
-            prioritized_docs = _store()._dedupe_strings(
+            prioritized_docs = context_engine_store._dedupe_strings(
                 [
-                    *_store()._governance_diagram_catalog_companions(
+                    *context_engine_store._governance_diagram_catalog_companions(
                         changed_paths=compact_changed_paths,
                         diagrams=[
                             row
@@ -209,7 +201,7 @@ def _compact_hot_path_runtime_packet(
     elif str(packet_kind or "").strip() == "impact":
         companion_docs = [
             doc
-            for doc in _store()._companion_context_paths_for_normalized_changed_paths(effective_changed_paths)
+            for doc in context_engine_store._companion_context_paths_for_normalized_changed_paths(effective_changed_paths)
             if doc not in effective_changed_paths
         ]
         if companion_docs:
@@ -251,7 +243,7 @@ def _compact_hot_path_runtime_packet(
         if routing_handoff_payload:
             compact["routing_handoff"] = routing_handoff_payload
     if isinstance(payload.get("architecture_audit"), Mapping):
-        compact_architecture_audit = _store()._compact_architecture_audit_for_packet(
+        compact_architecture_audit = context_engine_store._compact_architecture_audit_for_packet(
             dict(payload.get("architecture_audit", {})),
             packet_state=packet_state,
         )
@@ -270,7 +262,7 @@ def _compact_hot_path_runtime_packet(
     if isinstance(payload.get("benchmark_selector_diagnostics"), Mapping):
         compact["benchmark_selector_diagnostics"] = dict(payload.get("benchmark_selector_diagnostics", {}))
     if retain_internal_context and isinstance(payload.get("auto_escalation"), Mapping):
-        compact_auto_escalation = _store()._compact_hot_path_auto_escalation(dict(payload.get("auto_escalation", {})))
+        compact_auto_escalation = context_engine_store._compact_hot_path_auto_escalation(dict(payload.get("auto_escalation", {})))
         if compact_auto_escalation:
             compact["auto_escalation"] = compact_auto_escalation
     if full_scan_recommended:
@@ -301,11 +293,11 @@ def _compact_hot_path_runtime_packet(
             within_budget=True,
             full_scan_recommended=full_scan_recommended,
         )
-    budget_meta = _store().tooling_context_budgeting.packet_budget(
+    budget_meta = context_engine_store.tooling_context_budgeting.packet_budget(
         packet_kind=packet_kind,
         packet_state=packet_state,
     )
-    packet_metrics = _store().tooling_context_budgeting.estimate_packet_metrics(
+    packet_metrics = context_engine_store.tooling_context_budgeting.estimate_packet_metrics(
         compact,
         packet_kind=packet_kind,
         packet_state=packet_state,
@@ -464,7 +456,7 @@ def _update_compact_hot_path_runtime_packet(
         for key, value in merged.items()
         if key not in {"packet_metrics", "inferred_workstream"}
     }
-    workstream_hint = _store()._payload_workstream_hint(merged, include_selection=False)
+    workstream_hint = context_engine_store._payload_workstream_hint(merged, include_selection=False)
     if workstream_hint:
         compact["ws"] = workstream_hint
     else:
@@ -513,7 +505,7 @@ def _update_compact_hot_path_runtime_packet(
         )
         compact["fallback_scan"] = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_fallback_scan(
             full_scan_reason=effective_full_scan_reason,
-            changed_paths=_store()._normalized_string_list(compact.get("changed_paths")),
+            changed_paths=context_engine_store._normalized_string_list(compact.get("changed_paths")),
             context_packet=context_packet_payload,
             fallback_scan=source_fallback,
         )
@@ -552,11 +544,11 @@ def _update_compact_hot_path_runtime_packet(
             full_scan_recommended=effective_full_scan_recommended,
         )
 
-    budget_meta = _store().tooling_context_budgeting.packet_budget(
+    budget_meta = context_engine_store.tooling_context_budgeting.packet_budget(
         packet_kind=packet_kind,
         packet_state=str(context_packet_payload.get("packet_state", "")).strip(),
     )
-    packet_metrics = _store().tooling_context_budgeting.estimate_packet_metrics(
+    packet_metrics = context_engine_store.tooling_context_budgeting.estimate_packet_metrics(
         compact,
         packet_kind=packet_kind,
         packet_state=str(context_packet_payload.get("packet_state", "")).strip(),
@@ -705,11 +697,11 @@ def _trim_route_ready_hot_path_prompt_payload(
     current_full_scan_reason = str(trimmed.get("full_scan_reason", "")).strip() or str(
         context_packet_payload.get("full_scan_reason", "")
     ).strip()
-    retained_anchor_paths = _store()._dedupe_strings(
+    retained_anchor_paths = context_engine_store._dedupe_strings(
         [
-            *_store()._normalized_string_list(trimmed.get("changed_paths")),
-            *_store()._normalized_string_list(trimmed.get("explicit_paths")),
-            *_store()._normalized_string_list(
+            *context_engine_store._normalized_string_list(trimmed.get("changed_paths")),
+            *context_engine_store._normalized_string_list(trimmed.get("explicit_paths")),
+            *context_engine_store._normalized_string_list(
                 dict(context_packet_payload.get("anchors", {})).get("changed_paths")
                 if isinstance(context_packet_payload.get("anchors"), Mapping)
                 else []
@@ -738,8 +730,8 @@ def _trim_route_ready_hot_path_prompt_payload(
                 if isinstance(context_packet_payload.get("anchors"), Mapping)
                 else {}
             )
-            changed_anchor_paths = _store()._normalized_string_list(anchors_payload.get("changed_paths"))
-            current_changed_paths = _store()._normalized_string_list(trimmed.get("changed_paths"))
+            changed_anchor_paths = context_engine_store._normalized_string_list(anchors_payload.get("changed_paths"))
+            current_changed_paths = context_engine_store._normalized_string_list(trimmed.get("changed_paths"))
             if current_changed_paths and changed_anchor_paths:
                 anchors_payload.pop("changed_paths", None)
                 if anchors_payload:
@@ -764,11 +756,11 @@ def _trim_route_ready_hot_path_prompt_payload(
             else {}
         )
         if anchors_payload:
-            changed_anchor_paths = _store()._normalized_string_list(anchors_payload.get("changed_paths"))
-            explicit_anchor_paths = _store()._normalized_string_list(anchors_payload.get("explicit_paths"))
+            changed_anchor_paths = context_engine_store._normalized_string_list(anchors_payload.get("changed_paths"))
+            explicit_anchor_paths = context_engine_store._normalized_string_list(anchors_payload.get("explicit_paths"))
             if explicit_anchor_paths and explicit_anchor_paths == changed_anchor_paths:
                 anchors_payload.pop("explicit_paths", None)
-            if not _store()._normalized_string_list(anchors_payload.get("shared_anchor_paths")):
+            if not context_engine_store._normalized_string_list(anchors_payload.get("shared_anchor_paths")):
                 anchors_payload.pop("shared_anchor_paths", None)
             context_packet_payload["anchors"] = anchors_payload
         retrieval_plan_payload = (
@@ -777,7 +769,7 @@ def _trim_route_ready_hot_path_prompt_payload(
             else {}
         )
         if retrieval_plan_payload:
-            selection_state, _ = _store()._compact_selection_state_parts(
+            selection_state, _ = context_engine_store._compact_selection_state_parts(
                 str(context_packet_payload.get("selection_state", "")).strip()
             )
             if selection_state == "explicit":
@@ -807,7 +799,7 @@ def _trim_route_ready_hot_path_prompt_payload(
         )
         governance_route = isinstance(route_payload.get("governance"), Mapping)
         if governance_route:
-            selection_state, _ = _store()._compact_selection_state_parts(
+            selection_state, _ = context_engine_store._compact_selection_state_parts(
                 str(context_packet_payload.get("selection_state", "")).strip()
             )
             if selection_state in {"explicit", "inferred_confident"}:
@@ -817,13 +809,13 @@ def _trim_route_ready_hot_path_prompt_payload(
                 context_packet_payload.pop("selection", None)
             if route_ready:
                 context_packet_payload.pop("packet_kind", None)
-            anchors_changed_paths = _store()._normalized_string_list(
+            anchors_changed_paths = context_engine_store._normalized_string_list(
                 dict(context_packet_payload.get("anchors", {})).get("changed_paths", [])
                 if isinstance(context_packet_payload.get("anchors"), Mapping)
                 else []
             )
             if anchors_changed_paths:
-                current_changed_paths = _store()._normalized_string_list(trimmed.get("changed_paths"))
+                current_changed_paths = context_engine_store._normalized_string_list(trimmed.get("changed_paths"))
                 effective_changed_paths = current_changed_paths or anchors_changed_paths
                 compact_changed_paths = path_bundle_codec.compact_path_rows(effective_changed_paths)
                 if compact_changed_paths:
@@ -850,10 +842,10 @@ def _trim_route_ready_hot_path_prompt_payload(
         if isinstance(trimmed.get("context_packet"), Mapping)
         else {}
     )
-    selection_state, _ = _store()._compact_selection_state_parts(str(context_packet_payload.get("selection_state", "")).strip())
-    workstream_hint = _store()._payload_workstream_hint(trimmed, include_selection=False)
+    selection_state, _ = context_engine_store._compact_selection_state_parts(str(context_packet_payload.get("selection_state", "")).strip())
+    workstream_hint = context_engine_store._payload_workstream_hint(trimmed, include_selection=False)
     if context_packet_payload and workstream_hint and selection_state in {"explicit", "inferred_confident"}:
-        context_packet_payload["selection_state"] = _store()._encode_compact_selection_state(
+        context_packet_payload["selection_state"] = context_engine_store._encode_compact_selection_state(
             state=selection_state,
             workstream=workstream_hint,
         )
@@ -1037,7 +1029,7 @@ def _prioritized_neighbor_rows(bucket_name: str, bucket: Sequence[Mapping[str, A
     if bucket_name == "documented_by":
         rows.sort(
             key=lambda row: (
-                0 if _store().is_component_spec_path(str(row.get("path", "")), repo_root=_store().Path.cwd()) else 1,
+                0 if context_engine_store.is_component_spec_path(str(row.get("path", "")), repo_root=context_engine_store.Path.cwd()) else 1,
                 str(row.get("path", "")),
             )
         )
@@ -1049,3 +1041,7 @@ def _prioritized_neighbor_rows(bucket_name: str, bucket: Sequence[Mapping[str, A
             )
         )
     return rows
+# Keep the store dependency explicit without pulling it through module bootstrap.
+from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bootstrap_runtime
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime

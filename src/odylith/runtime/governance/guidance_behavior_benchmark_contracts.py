@@ -2,42 +2,27 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
+
+from odylith.common.json_objects import JsonObjectLoadError
+from odylith.common.json_objects import read_json_object
 
 
 CHECK_ID = "guidance_behavior_benchmark_family"
 
 
 def _read_json_object(path: Path) -> tuple[dict[str, Any], list[dict[str, str]]]:
-    if not path.is_file():
-        return {}, [
-            {
-                "check_id": CHECK_ID,
-                "message": f"required benchmark corpus is missing: {path}",
-                "path": str(path),
-            }
-        ]
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        return {}, [
-            {
-                "check_id": CHECK_ID,
-                "message": f"benchmark corpus is not valid JSON: {exc}",
-                "path": str(path),
-            }
-        ]
-    if not isinstance(payload, dict):
-        return {}, [
-            {
-                "check_id": CHECK_ID,
-                "message": "benchmark corpus must be a JSON object",
-                "path": str(path),
-            }
-        ]
-    return payload, []
+        return read_json_object(path), []
+    except JsonObjectLoadError as exc:
+        if exc.code == "missing":
+            message = f"required benchmark corpus is missing: {path}"
+        elif exc.code == "not_object":
+            message = "benchmark corpus must be a JSON object"
+        else:
+            message = f"benchmark corpus is not valid JSON: {exc.detail}"
+        return {}, [{"check_id": CHECK_ID, "message": message, "path": str(path)}]
 
 
 def _string_list(value: Any) -> list[str]:

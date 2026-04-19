@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import datetime as dt
-import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from odylith.common.json_objects import JsonObjectLoadError
+from odylith.common.json_objects import read_json_object
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
 
@@ -142,10 +143,9 @@ def _source_truth_drift_posture(
 def _read_json_object(path: Path) -> dict[str, Any]:
     """Load a JSON object from disk or return an empty dict on failure."""
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        return read_json_object(path)
+    except JsonObjectLoadError:
         return {}
-    return dict(payload) if isinstance(payload, dict) else {}
 
 
 def _parse_utc_token(value: str) -> dt.datetime | None:

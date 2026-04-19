@@ -2,130 +2,55 @@
 
 from __future__ import annotations
 
-def _store():
-    from odylith.runtime.context_engine import odylith_context_engine_store as store
-
-    return store
-
-
-from collections.abc import Iterator
-from collections.abc import MutableMapping
 import time
 from typing import Any
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, resolve_casebook_bug_id
+from odylith.runtime.context_engine import odylith_context_engine_process_state
 from odylith.runtime.context_engine import projection_repo_state_runtime
 from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.context_engine import odylith_context_engine_runtime_support
 from odylith.runtime.memory import odylith_memory_backend
+from odylith.runtime.memory import odylith_projection_snapshot
+from odylith.runtime.memory import odylith_remote_retrieval
 
 
 _PROCESS_PROJECTED_INPUTS_CACHE = runtime_read_session.shared_process_cache_view("projected_inputs")
 _PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE = runtime_read_session.shared_process_cache_view("projection_input_fingerprint")
 _PROCESS_PATH_FINGERPRINT_CACHE = runtime_read_session.shared_process_cache_view("path_fingerprint")
 
-
-class _StoreMappingProxy(MutableMapping[str, Any]):
-    def __init__(self, attr_name: str) -> None:
-        self._attr_name = str(attr_name).strip()
-
-    def _mapping(self) -> MutableMapping[str, Any]:
-        return getattr(_store(), self._attr_name)
-
-    def __getitem__(self, key: str) -> Any:
-        return self._mapping()[key]
-
-    def __setitem__(self, key: str, value: Any) -> None:
-        self._mapping()[key] = value
-
-    def __delitem__(self, key: str) -> None:
-        del self._mapping()[key]
-
-    def __iter__(self) -> Iterator[str]:
-        return iter(self._mapping())
-
-    def __len__(self) -> int:
-        return len(self._mapping())
-
-    def clear(self) -> None:
-        self._mapping().clear()
-
-    def get(self, key: str, default: Any = None) -> Any:
-        return self._mapping().get(key, default)
-
-    def pop(self, key: str, default: Any = None) -> Any:
-        return self._mapping().pop(key, default)
-
-
-class _LazyModuleProxy:
-    def __init__(self, loader) -> None:  # noqa: ANN001
-        self._loader = loader
-
-    def _module(self):  # noqa: ANN201
-        return self._loader()
-
-    def __getattr__(self, name: str) -> object:
-        return getattr(self._module(), name)
-
-
-class _StoreObjectProxy:
-    def __init__(self, attr_name: str) -> None:
-        self._attr_name = str(attr_name).strip()
-
-    def _object(self) -> object:
-        return getattr(_store(), self._attr_name)
-
-    def __getattr__(self, name: str) -> object:
-        return getattr(self._object(), name)
-
-
-def _load_projection_compiler_runtime():
-    from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as module
-
-    return module
-
-
-def _load_projection_snapshot():
-    from odylith.runtime.memory import odylith_projection_snapshot as module
-
-    return module
-
-
-_PROCESS_WARM_CACHE = _StoreMappingProxy("_PROCESS_WARM_CACHE")
-_PROCESS_WARM_CACHE_FINGERPRINTS = _StoreMappingProxy("_PROCESS_WARM_CACHE_FINGERPRINTS")
-odylith_context_engine_projection_compiler_runtime = _LazyModuleProxy(_load_projection_compiler_runtime)
-odylith_projection_snapshot = _LazyModuleProxy(_load_projection_snapshot)
+_PROCESS_WARM_CACHE = odylith_context_engine_process_state._PROCESS_WARM_CACHE
+_PROCESS_WARM_CACHE_FINGERPRINTS = odylith_context_engine_process_state._PROCESS_WARM_CACHE_FINGERPRINTS
 record_runtime_timing = odylith_context_engine_runtime_support.record_runtime_timing
-odylith_remote_retrieval = _StoreObjectProxy("odylith_remote_retrieval")
 
 
 def projection_snapshot_path(*, repo_root: Path) -> Path:
-    return _store().projection_snapshot_path(repo_root=_store().Path(repo_root).resolve())
+    return context_engine_store.projection_snapshot_path(repo_root=context_engine_store.Path(repo_root).resolve())
 
 
 def _odylith_ablation_active(*, repo_root: Path) -> bool:
-    return _store()._odylith_ablation_active(repo_root=_store().Path(repo_root).resolve())
+    return context_engine_store._odylith_ablation_active(repo_root=context_engine_store.Path(repo_root).resolve())
 
 
 def read_runtime_state(*, repo_root: Path) -> dict[str, Any]:
-    return _store().read_runtime_state(repo_root=_store().Path(repo_root).resolve())
+    return context_engine_store.read_runtime_state(repo_root=context_engine_store.Path(repo_root).resolve())
 
 
 def _env_truthy(name: str) -> bool:
-    return _store()._env_truthy(name)
+    return context_engine_store._env_truthy(name)
 
 
 def _full_scan_guidance(**kwargs: Any) -> dict[str, Any]:
-    return dict(_store()._full_scan_guidance(**kwargs))
+    return dict(context_engine_store._full_scan_guidance(**kwargs))
 
 
 class _ProjectionConnection:
     def __init__(self, *, repo_root: Path, snapshot: Mapping[str, Any]) -> None:
-        self.repo_root = _store().Path(repo_root).resolve()
-        raw_tables = snapshot.get("tables", {}) if isinstance(snapshot, _store().Mapping) else {}
+        self.repo_root = context_engine_store.Path(repo_root).resolve()
+        raw_tables = snapshot.get("tables", {}) if isinstance(snapshot, context_engine_store.Mapping) else {}
         self._tables = {
-            str(name).strip(): [dict(row) for row in rows if isinstance(row, _store().Mapping)]
+            str(name).strip(): [dict(row) for row in rows if isinstance(row, context_engine_store.Mapping)]
             for name, rows in raw_tables.items()
             if str(name).strip() and isinstance(rows, list)
         }
@@ -145,7 +70,7 @@ class _ProjectionConnection:
     def execute(self, query: str, params: Sequence[Any] = ()) -> _ProjectionCursor:
         normalized = " ".join(str(query or "").strip().split())
         rows = self._select_rows(normalized, tuple(params))
-        return _store()._ProjectionCursor(rows)
+        return context_engine_store._ProjectionCursor(rows)
 
     def _select_rows(self, query: str, params: tuple[Any, ...]) -> list[dict[str, Any]]:
         if not query:
@@ -162,7 +87,7 @@ class _ProjectionConnection:
         return self._select_rows_generic(query=query, params=params)
 
     def _select_grouped_rows(self, *, query: str) -> list[dict[str, Any]] | None:
-        match = _store().re.match(
+        match = context_engine_store.re.match(
             r"^SELECT\s+(.+?)\s+FROM\s+([A-Za-z_][A-Za-z0-9_]*)\s+GROUP BY\s+(.+?)(?:\s+HAVING\s+COUNT\(\*\)\s*>\s*(\d+))?$",
             query,
         )
@@ -177,7 +102,7 @@ class _ProjectionConnection:
         count_alias = ""
         projected_fields: list[str] = []
         for term in select_terms:
-            count_match = _store().re.match(r"^COUNT\(\*\)\s+AS\s+([A-Za-z_][A-Za-z0-9_]*)$", term, flags=_store().re.IGNORECASE)
+            count_match = context_engine_store.re.match(r"^COUNT\(\*\)\s+AS\s+([A-Za-z_][A-Za-z0-9_]*)$", term, flags=context_engine_store.re.IGNORECASE)
             if count_match is not None:
                 count_alias = str(count_match.group(1) or "").strip()
                 continue
@@ -234,7 +159,7 @@ class _ProjectionConnection:
         return rows[: max(1, relation_limit)] if relation_limit else rows
 
     def _select_rows_generic(self, *, query: str, params: tuple[Any, ...]) -> list[dict[str, Any]]:
-        match = _store().re.match(r"^SELECT\s+(.+?)\s+FROM\s+([A-Za-z_][A-Za-z0-9_]*)\s*(.*)$", query)
+        match = context_engine_store.re.match(r"^SELECT\s+(.+?)\s+FROM\s+([A-Za-z_][A-Za-z0-9_]*)\s*(.*)$", query)
         if match is None:
             return []
         select_clause = str(match.group(1) or "").strip()
@@ -275,11 +200,11 @@ class _ProjectionConnection:
         clause = str(where_clause or "").strip()
         if not clause:
             return [dict(row) for row in rows]
-        parts = [part.strip() for part in _store().re.split(r"\s+AND\s+", clause) if part.strip()]
+        parts = [part.strip() for part in context_engine_store.re.split(r"\s+AND\s+", clause) if part.strip()]
         param_index = 0
         predicates: list[Any] = []
         for part in parts:
-            match_lower = _store().re.match(r"^lower\(([A-Za-z_][A-Za-z0-9_]*)\)\s*=\s*(.+)$", part)
+            match_lower = context_engine_store.re.match(r"^lower\(([A-Za-z_][A-Za-z0-9_]*)\)\s*=\s*(.+)$", part)
             if match_lower is not None:
                 field = str(match_lower.group(1) or "").strip()
                 rhs = str(match_lower.group(2) or "").strip()
@@ -290,7 +215,7 @@ class _ProjectionConnection:
                     value = rhs.strip("'").casefold()
                 predicates.append(lambda row, f=field, v=value: str(row.get(f, "")).strip().casefold() == v)
                 continue
-            match_eq = _store().re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)$", part)
+            match_eq = context_engine_store.re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)$", part)
             if match_eq is not None:
                 field = str(match_eq.group(1) or "").strip()
                 rhs = str(match_eq.group(2) or "").strip()
@@ -301,7 +226,7 @@ class _ProjectionConnection:
                     value = rhs.strip("'")
                 predicates.append(lambda row, f=field, v=value: str(row.get(f, "")).strip() == v)
                 continue
-            match_in = _store().re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\s+IN\s+\((.+)\)$", part)
+            match_in = context_engine_store.re.match(r"^([A-Za-z_][A-Za-z0-9_]*)\s+IN\s+\((.+)\)$", part)
             if match_in is not None:
                 field = str(match_in.group(1) or "").strip()
                 rhs = str(match_in.group(2) or "").strip()
@@ -401,14 +326,14 @@ def _projection_snapshot_cache_signature(*, repo_root: Path) -> tuple[Any, ...]:
     return ("ready", stat.st_mtime_ns, stat.st_size)
 
 def _connect(repo_root: Path) -> _ProjectionConnection:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     cache_key = str(root)
     signature = _projection_snapshot_cache_signature(repo_root=root)
     read_session = runtime_read_session.active_runtime_read_session()
 
     def _load_connection() -> _ProjectionConnection:
         snapshot = odylith_projection_snapshot.load_snapshot(repo_root=root)
-        if bool(snapshot.get("ready")) and isinstance(snapshot.get("tables"), _store().Mapping):
+        if bool(snapshot.get("ready")) and isinstance(snapshot.get("tables"), context_engine_store.Mapping):
             return _ProjectionConnection(repo_root=root, snapshot=snapshot)
         raise RuntimeError(
             f"Odylith projection snapshot is unavailable at {projection_snapshot_path(repo_root=root)}; run warmup first."
@@ -420,21 +345,21 @@ def _connect(repo_root: Path) -> _ProjectionConnection:
             key=f"{cache_key}:{signature}",
             builder=_load_connection,
         )
-    cached = _store()._PROCESS_PROJECTION_CONNECTION_CACHE.get(cache_key)
+    cached = context_engine_store._PROCESS_PROJECTION_CONNECTION_CACHE.get(cache_key)
     if cached is not None and cached[0] == signature:
         connection = cached[1]
         if isinstance(connection, _ProjectionConnection):
             return connection
     connection = _load_connection()
-    _store()._PROCESS_PROJECTION_CONNECTION_CACHE[cache_key] = (signature, connection)
+    context_engine_store._PROCESS_PROJECTION_CONNECTION_CACHE[cache_key] = (signature, connection)
     return connection
 
 def _path_fingerprint(path: Path, *, repo_root: Path | None = None, glob: str = "*.md") -> str:
-    target = _store().Path(path)
+    target = context_engine_store.Path(path)
     state_token = ""
     read_session = runtime_read_session.active_runtime_read_session()
     if repo_root is not None:
-        root = _store().Path(repo_root).resolve()
+        root = context_engine_store.Path(repo_root).resolve()
         state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
         cache_key = f"{target.resolve()}::{glob}"
         if read_session is not None and read_session.matches_repo(root):
@@ -449,18 +374,18 @@ def _path_fingerprint(path: Path, *, repo_root: Path | None = None, glob: str = 
         if cached is not None and cached[0] == state_token:
             return str(cached[1]).strip()
     if target.is_dir():
-        fingerprint = _store().odylith_context_cache.fingerprint_tree(target, glob=glob)
+        fingerprint = context_engine_store.odylith_context_cache.fingerprint_tree(target, glob=glob)
     else:
-        fingerprint = _store().odylith_context_cache.fingerprint_paths([target])
+        fingerprint = context_engine_store.odylith_context_cache.fingerprint_paths([target])
     if state_token:
         _PROCESS_PATH_FINGERPRINT_CACHE[cache_key] = (state_token, fingerprint)
     return fingerprint
 
 def _test_history_report_inputs(*, repo_root: Path) -> dict[str, Any]:
     payload: dict[str, Any] = {
-        "lastfailed": _store().odylith_context_cache.path_signature(repo_root / _store()._PYTEST_LASTFAILED_PATH),
+        "lastfailed": context_engine_store.odylith_context_cache.path_signature(repo_root / context_engine_store._PYTEST_LASTFAILED_PATH),
     }
-    for rel_root, glob in _store()._TEST_HISTORY_REPORT_GLOBS:
+    for rel_root, glob in context_engine_store._TEST_HISTORY_REPORT_GLOBS:
         root = repo_root / rel_root
         key = f"{rel_root or 'repo'}:{glob}"
         if root.is_dir():
@@ -476,22 +401,22 @@ def _workspace_activity_fingerprint(*, repo_root: Path) -> str:
     return projection_repo_state_runtime.workspace_activity_fingerprint(repo_root=repo_root)
 
 def _radar_source_root(*, repo_root: Path) -> Path:
-    return _store().truth_root_path(repo_root=repo_root, key="radar_source")
+    return context_engine_store.truth_root_path(repo_root=repo_root, key="radar_source")
 
 def _technical_plans_root(*, repo_root: Path) -> Path:
-    return _store().truth_root_path(repo_root=repo_root, key="technical_plans")
+    return context_engine_store.truth_root_path(repo_root=repo_root, key="technical_plans")
 
 def _casebook_bugs_root(*, repo_root: Path) -> Path:
-    return _store().truth_root_path(repo_root=repo_root, key="casebook_bugs")
+    return context_engine_store.truth_root_path(repo_root=repo_root, key="casebook_bugs")
 
 def _component_specs_root(*, repo_root: Path) -> Path:
-    return _store().truth_root_path(repo_root=repo_root, key="component_specs")
+    return context_engine_store.truth_root_path(repo_root=repo_root, key="component_specs")
 
 def _component_registry_path(*, repo_root: Path) -> Path:
-    return _store().truth_root_path(repo_root=repo_root, key="component_registry")
+    return context_engine_store.truth_root_path(repo_root=repo_root, key="component_registry")
 
 def _product_root(*, repo_root: Path) -> Path:
-    return _store().surface_root_path(repo_root=repo_root, key="product_root")
+    return context_engine_store.surface_root_path(repo_root=repo_root, key="product_root")
 
 def _atlas_catalog_path(*, repo_root: Path) -> Path:
     return _product_root(repo_root=repo_root) / "atlas" / "source" / "catalog" / "diagrams.v1.json"
@@ -512,17 +437,17 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
     compass_stream_path = _compass_stream_path(repo_root=repo_root)
     traceability_graph_path = _traceability_graph_path(repo_root=repo_root)
     fingerprints = {
-        "workstreams": _store().odylith_context_cache.fingerprint_payload(
+        "workstreams": context_engine_store.odylith_context_cache.fingerprint_payload(
             {
-                "contract_version": _store().projection_contract_version("workstreams"),
+                "contract_version": context_engine_store.projection_contract_version("workstreams"),
                 "backlog_index": _path_fingerprint(radar_source_root / "INDEX.md", repo_root=repo_root),
                 "backlog_archive": _path_fingerprint(radar_source_root / "archive", repo_root=repo_root),
                 "ideas": _path_fingerprint(radar_source_root / "ideas", repo_root=repo_root),
             }
         ),
-        "releases": _store().odylith_context_cache.fingerprint_payload(
+        "releases": context_engine_store.odylith_context_cache.fingerprint_payload(
             {
-                "contract_version": _store().projection_contract_version("releases"),
+                "contract_version": context_engine_store.projection_contract_version("releases"),
                 "traceability": _path_fingerprint(traceability_graph_path, repo_root=repo_root),
                 "release_registry": _path_fingerprint(
                     radar_source_root / "releases" / "releases.v1.json",
@@ -534,30 +459,30 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
                 ),
             }
         ),
-        "plans": _store().odylith_context_cache.fingerprint_payload(
+        "plans": context_engine_store.odylith_context_cache.fingerprint_payload(
             {
-                "contract_version": _store().projection_contract_version("plans"),
+                "contract_version": context_engine_store.projection_contract_version("plans"),
                 "plan_index": _path_fingerprint(technical_plans_root / "INDEX.md", repo_root=repo_root),
                 "plan_done": _path_fingerprint(technical_plans_root / "done", repo_root=repo_root),
                 "plan_parked": _path_fingerprint(technical_plans_root / "parked", repo_root=repo_root),
             }
         ),
-        "bugs": _store().odylith_context_cache.fingerprint_payload(
+        "bugs": context_engine_store.odylith_context_cache.fingerprint_payload(
             {
-                "contract_version": _store().projection_contract_version("bugs"),
+                "contract_version": context_engine_store.projection_contract_version("bugs"),
                 "bugs_index": _path_fingerprint(casebook_bugs_root / "INDEX.md", repo_root=repo_root),
                 "bugs_archive": _path_fingerprint(casebook_bugs_root / "archive", repo_root=repo_root),
             }
         ),
-        "diagrams": _store().odylith_context_cache.fingerprint_payload(
+        "diagrams": context_engine_store.odylith_context_cache.fingerprint_payload(
             {
-                "contract_version": _store().projection_contract_version("diagrams"),
+                "contract_version": context_engine_store.projection_contract_version("diagrams"),
                 "catalog": _path_fingerprint(atlas_catalog_path, repo_root=repo_root),
             }
         ),
-        "components": _store().odylith_context_cache.fingerprint_payload(
+        "components": context_engine_store.odylith_context_cache.fingerprint_payload(
             {
-                "contract_version": _store().projection_contract_version("components"),
+                "contract_version": context_engine_store.projection_contract_version("components"),
                 "manifest": _path_fingerprint(component_registry_path, repo_root=repo_root),
                 "catalog": _path_fingerprint(atlas_catalog_path, repo_root=repo_root),
                 "ideas": _path_fingerprint(radar_source_root / "ideas", repo_root=repo_root),
@@ -567,62 +492,62 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
                 "workspace_activity": _workspace_activity_fingerprint(repo_root=repo_root),
             }
         ),
-        "codex_events": _store().odylith_context_cache.fingerprint_payload(
+        "codex_events": context_engine_store.odylith_context_cache.fingerprint_payload(
             {
-                "contract_version": _store().projection_contract_version("codex_events"),
+                "contract_version": context_engine_store.projection_contract_version("codex_events"),
                 "stream": _path_fingerprint(compass_stream_path, repo_root=repo_root),
             }
         ),
-        "traceability": _store().odylith_context_cache.fingerprint_payload(
+        "traceability": context_engine_store.odylith_context_cache.fingerprint_payload(
             {
-                "contract_version": _store().projection_contract_version("traceability"),
+                "contract_version": context_engine_store.projection_contract_version("traceability"),
                 "graph": _path_fingerprint(traceability_graph_path, repo_root=repo_root),
             }
         ),
-        "delivery": _store().odylith_context_cache.fingerprint_payload(
+        "delivery": context_engine_store.odylith_context_cache.fingerprint_payload(
             {
-                "contract_version": _store().projection_contract_version("delivery"),
+                "contract_version": context_engine_store.projection_contract_version("delivery"),
                 "output": _path_fingerprint(
-                    repo_root / _store().delivery_intelligence_engine.DEFAULT_OUTPUT_PATH,
+                    repo_root / context_engine_store.delivery_intelligence_engine.DEFAULT_OUTPUT_PATH,
                     repo_root=repo_root,
                 ),
             }
         ),
     }
-    requested = set(_store()._projection_names_for_scope(scope))
+    requested = set(context_engine_store._projection_names_for_scope(scope))
     if "engineering_graph" in requested:
-        fingerprints["engineering_graph"] = _store().odylith_context_cache.fingerprint_payload(
+        fingerprints["engineering_graph"] = context_engine_store.odylith_context_cache.fingerprint_payload(
             (
                 {
                     key: _path_fingerprint(repo_root / rel_path, repo_root=repo_root)
                     for key, rel_path in (
-                        *_store()._ENGINEERING_CORE_PATHS,
-                        *_store()._SECTION_NOTE_SOURCES,
+                        *context_engine_store._ENGINEERING_CORE_PATHS,
+                        *context_engine_store._SECTION_NOTE_SOURCES,
                         ("runbook_index", "agents-guidelines/RUNBOOK_INDEX.MD"),
-                        ("guidance_chunk_manifest", _store()._GUIDANCE_CHUNK_MANIFEST_PATH),
+                        ("guidance_chunk_manifest", context_engine_store._GUIDANCE_CHUNK_MANIFEST_PATH),
                     )
                 }
                 | {
-                    "contract_version": _store().projection_contract_version("engineering_graph"),
+                    "contract_version": context_engine_store.projection_contract_version("engineering_graph"),
                 }
             )
             | {
-                "guidance_chunks": _path_fingerprint(repo_root / _store()._GUIDANCE_CHUNK_ROOT, repo_root=repo_root, glob="*.md"),
-                "runbooks": _path_fingerprint(_store().truth_root_path(repo_root=repo_root, key="runbooks"), repo_root=repo_root),
+                "guidance_chunks": _path_fingerprint(repo_root / context_engine_store._GUIDANCE_CHUNK_ROOT, repo_root=repo_root, glob="*.md"),
+                "runbooks": _path_fingerprint(context_engine_store.truth_root_path(repo_root=repo_root, key="runbooks"), repo_root=repo_root),
                 "bugs": _path_fingerprint(casebook_bugs_root, repo_root=repo_root),
                 "make": _path_fingerprint(repo_root / "mk", repo_root=repo_root, glob="*.mk"),
                 "contracts": _path_fingerprint(repo_root / "contracts", repo_root=repo_root, glob="*.json"),
             }
         )
     if "code_graph" in requested:
-        fingerprints["code_graph"] = _store().odylith_context_cache.fingerprint_payload(
+        fingerprints["code_graph"] = context_engine_store.odylith_context_cache.fingerprint_payload(
             (
                 {
                     rel_root: _path_fingerprint(repo_root / rel_root, repo_root=repo_root, glob="*.py")
-                    for rel_root, _module_root in _store()._PYTHON_GRAPH_ROOTS
+                    for rel_root, _module_root in context_engine_store._PYTHON_GRAPH_ROOTS
                 }
                 | {
-                    "contract_version": _store().projection_contract_version("code_graph"),
+                    "contract_version": context_engine_store.projection_contract_version("code_graph"),
                 }
             )
             | {
@@ -644,7 +569,7 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
             }
         )
     if "test_graph" in requested:
-        fingerprints["test_graph"] = _store().odylith_context_cache.fingerprint_payload(
+        fingerprints["test_graph"] = context_engine_store.odylith_context_cache.fingerprint_payload(
             {
                 "tests": _path_fingerprint(repo_root / "tests", repo_root=repo_root, glob="*.py"),
                 "testing": _path_fingerprint(repo_root / "agents-guidelines" / "TESTING.MD", repo_root=repo_root),
@@ -655,7 +580,7 @@ def _compute_projected_input_fingerprints(*, repo_root: Path, scope: str = "defa
 
 
 def _projected_input_fingerprints(*, repo_root: Path, scope: str = "default") -> dict[str, str]:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(scope or "default").strip().lower() or "default"
     state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
     cache_key = f"{root}:{scope_token}"
@@ -678,7 +603,7 @@ def _projected_input_fingerprints(*, repo_root: Path, scope: str = "default") ->
 def projection_input_fingerprint(*, repo_root: Path, scope: str = "default") -> str:
     """Return the deterministic runtime-input fingerprint without rebuilding projections."""
 
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(scope or "default").strip().lower() or "default"
     state_token = projection_repo_state_runtime.projection_repo_state_token(repo_root=root)
     cache_key = f"{root}:{scope_token}"
@@ -694,9 +619,9 @@ def projection_input_fingerprint(*, repo_root: Path, scope: str = "default") -> 
     cached = _PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE.get(cache_key)
     if cached is not None and cached[0] == state_token:
         return str(cached[1]).strip()
-    fingerprint = _store().odylith_context_cache.fingerprint_payload(
+    fingerprint = context_engine_store.odylith_context_cache.fingerprint_payload(
         {
-            "schema": _store().SCHEMA_VERSION,
+            "schema": context_engine_store.SCHEMA_VERSION,
             "scope": scope_token,
             "inputs": _projected_input_fingerprints(repo_root=root, scope=scope_token),
         }
@@ -705,28 +630,28 @@ def projection_input_fingerprint(*, repo_root: Path, scope: str = "default") -> 
     return fingerprint
 
 def _archive_files(root: Path) -> list[Path]:
-    return _store().odylith_context_engine_projection_runtime._archive_files(root)
+    return context_engine_store.odylith_context_engine_projection_runtime._archive_files(root)
 
 def _collect_markdown_sections(path: Path) -> dict[str, list[str]]:
-    return _store().odylith_context_engine_projection_runtime._collect_markdown_sections(path)
+    return context_engine_store.odylith_context_engine_projection_runtime._collect_markdown_sections(path)
 
 def _parse_markdown_table(lines: Sequence[str]) -> tuple[list[str], list[dict[str, str]]]:
-    return _store().odylith_context_engine_projection_runtime._parse_markdown_table(lines)
+    return context_engine_store.odylith_context_engine_projection_runtime._parse_markdown_table(lines)
 
 def _parse_link_target(cell: str) -> str:
-    return _store().odylith_context_engine_projection_runtime._parse_link_target(cell)
+    return context_engine_store.odylith_context_engine_projection_runtime._parse_link_target(cell)
 
 def _load_idea_specs(*, repo_root: Path) -> dict[str, backlog_contract.IdeaSpec]:
-    return _store().odylith_context_engine_projection_runtime._load_idea_specs(repo_root=repo_root)
+    return context_engine_store.odylith_context_engine_projection_runtime._load_idea_specs(repo_root=repo_root)
 
 def _load_backlog_projection(*, repo_root: Path) -> dict[str, Any]:
-    return _store().odylith_context_engine_projection_runtime._load_backlog_projection(repo_root=repo_root)
+    return context_engine_store.odylith_context_engine_projection_runtime._load_backlog_projection(repo_root=repo_root)
 
 def _load_plan_projection(*, repo_root: Path) -> dict[str, list[dict[str, str]]]:
-    return _store().odylith_context_engine_projection_runtime._load_plan_projection(repo_root=repo_root)
+    return context_engine_store.odylith_context_engine_projection_runtime._load_plan_projection(repo_root=repo_root)
 
 def _load_bug_projection(*, repo_root: Path) -> list[dict[str, str]]:
-    return _store().odylith_context_engine_projection_runtime._load_bug_projection(repo_root=repo_root)
+    return context_engine_store.odylith_context_engine_projection_runtime._load_bug_projection(repo_root=repo_root)
 
 def _normalize_bug_projection_rows(
     *,
@@ -734,36 +659,36 @@ def _normalize_bug_projection_rows(
     index_path: Path,
     rows: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, str]]:
-    return _store().odylith_context_engine_projection_runtime._normalize_bug_projection_rows(
+    return context_engine_store.odylith_context_engine_projection_runtime._normalize_bug_projection_rows(
         repo_root=repo_root,
         index_path=index_path,
         rows=rows,
     )
 
 def _normalize_bug_link_target(*, repo_root: Path, index_path: Path, link_target: str) -> str:
-    return _store().odylith_context_engine_projection_runtime._normalize_bug_link_target(
+    return context_engine_store.odylith_context_engine_projection_runtime._normalize_bug_link_target(
         repo_root=repo_root,
         index_path=index_path,
         link_target=link_target,
     )
 
 def _is_bug_placeholder_row(row: Mapping[str, Any]) -> bool:
-    return _store().odylith_context_engine_projection_runtime._is_bug_placeholder_row(row)
+    return context_engine_store.odylith_context_engine_projection_runtime._is_bug_placeholder_row(row)
 
 def _safe_json(value: Any) -> str:
-    return _store().odylith_context_engine_projection_runtime._safe_json(value)
+    return context_engine_store.odylith_context_engine_projection_runtime._safe_json(value)
 
 def _raw_text(path: Path) -> str:
-    return _store().odylith_context_engine_projection_runtime._raw_text(path)
+    return context_engine_store.odylith_context_engine_projection_runtime._raw_text(path)
 
 def _load_codex_event_projection(*, repo_root: Path) -> list[dict[str, Any]]:
-    return _store().odylith_context_engine_projection_runtime._load_codex_event_projection(repo_root=repo_root)
+    return context_engine_store.odylith_context_engine_projection_runtime._load_codex_event_projection(repo_root=repo_root)
 
 def _load_traceability_projection(*, repo_root: Path) -> list[dict[str, str]]:
-    return _store().odylith_context_engine_projection_runtime._load_traceability_projection(repo_root=repo_root)
+    return context_engine_store.odylith_context_engine_projection_runtime._load_traceability_projection(repo_root=repo_root)
 
 def _load_diagram_projection(*, repo_root: Path) -> list[dict[str, Any]]:
-    return _store().odylith_context_engine_projection_runtime._load_diagram_projection(repo_root=repo_root)
+    return context_engine_store.odylith_context_engine_projection_runtime._load_diagram_projection(repo_root=repo_root)
 
 def _looks_like_repo_path(token: str) -> bool:
     value = str(token or "").strip()
@@ -775,22 +700,22 @@ def _looks_like_repo_path(token: str) -> bool:
 
 def _extract_path_refs(*, text: str, repo_root: Path) -> list[str]:
     refs: set[str] = set()
-    for match in _store()._MARKDOWN_CODE_REF_RE.findall(str(text or "")):
-        candidate = _store()._normalize_repo_token(str(match), repo_root=repo_root)
+    for match in context_engine_store._MARKDOWN_CODE_REF_RE.findall(str(text or "")):
+        candidate = context_engine_store._normalize_repo_token(str(match), repo_root=repo_root)
         if candidate and _looks_like_repo_path(candidate):
             refs.add(candidate)
-    for match in _store()._RAW_PATH_TOKEN_RE.findall(str(text or "")):
-        candidate = _store()._normalize_repo_token(str(match), repo_root=repo_root)
+    for match in context_engine_store._RAW_PATH_TOKEN_RE.findall(str(text or "")):
+        candidate = context_engine_store._normalize_repo_token(str(match), repo_root=repo_root)
         if candidate and _looks_like_repo_path(candidate):
             refs.add(candidate)
-    for match in _store()._CONTRACT_REF_RE.findall(str(text or "")):
-        candidate = _store()._normalize_repo_token(str(match), repo_root=repo_root)
+    for match in context_engine_store._CONTRACT_REF_RE.findall(str(text or "")):
+        candidate = context_engine_store._normalize_repo_token(str(match), repo_root=repo_root)
         if candidate:
             refs.add(candidate)
     return sorted(refs)
 
 def _extract_workstream_refs(text: str) -> list[str]:
-    return sorted({token.upper() for token in _store()._WORKSTREAM_TOKEN_RE.findall(str(text or "").upper())})
+    return sorted({token.upper() for token in context_engine_store._WORKSTREAM_TOKEN_RE.findall(str(text or "").upper())})
 
 def _first_summary(lines: Sequence[str]) -> str:
     paragraph: list[str] = []
@@ -808,7 +733,7 @@ def _first_summary(lines: Sequence[str]) -> str:
             if not paragraph and len(bullets) >= 2:
                 break
             continue
-        if _store().re.fullmatch(r"-?\s*[A-Za-z0-9/() _.-]+:\s*.*", line):
+        if context_engine_store.re.fullmatch(r"-?\s*[A-Za-z0-9/() _.-]+:\s*.*", line):
             continue
         paragraph.append(line)
         if len(" ".join(paragraph)) >= 220:
@@ -824,8 +749,8 @@ def _note_title(section: str, content: str) -> str:
     if not title:
         title = str(section or "").strip()
     words = title.split()
-    if len(words) > _store()._NOTE_TITLE_WORDS:
-        title = " ".join(words[:_store()._NOTE_TITLE_WORDS]).strip()
+    if len(words) > context_engine_store._NOTE_TITLE_WORDS:
+        title = " ".join(words[:context_engine_store._NOTE_TITLE_WORDS]).strip()
     return title
 
 def _string_list(value: Any) -> list[str]:
@@ -841,7 +766,7 @@ def _parse_markdown_fields(lines: Sequence[str]) -> dict[str, str]:
         line = str(raw).strip()
         if not line:
             continue
-        match = _store().re.fullmatch(r"-?\s*([A-Za-z0-9/() _.-]+):\s*(.*)", line)
+        match = context_engine_store.re.fullmatch(r"-?\s*([A-Za-z0-9/() _.-]+):\s*(.*)", line)
         if match is None:
             continue
         fields[str(match.group(1)).strip()] = str(match.group(2)).strip()
@@ -893,10 +818,10 @@ def _parse_bug_entry_fields(lines: Sequence[str]) -> dict[str, str]:
             if current_key is not None:
                 _commit()
             continue
-        match = _store()._BUG_METADATA_LINE_RE.fullmatch(stripped)
+        match = context_engine_store._BUG_METADATA_LINE_RE.fullmatch(stripped)
         if match is not None:
             _commit()
-            current_key = _store()._normalize_bug_field_name(str(match.group(1)))
+            current_key = context_engine_store._normalize_bug_field_name(str(match.group(1)))
             initial_value = str(match.group(2)).rstrip()
             current_lines = [initial_value] if initial_value else []
             continue
@@ -910,10 +835,10 @@ def _bug_archive_bucket_from_link_target(link_target: str) -> str:
     token = str(link_target or "").strip()
     if not token:
         return ""
-    path = _store().Path(token)
+    path = context_engine_store.Path(token)
     parts = list(path.parts)
     if len(parts) >= 3 and parts[0] == "bugs" and parts[1] == "archive":
-        bucket = _store().Path(*parts[2:-1]).as_posix() if len(parts) > 3 else ""
+        bucket = context_engine_store.Path(*parts[2:-1]).as_posix() if len(parts) > 3 else ""
         return bucket or "archive"
     return ""
 
@@ -921,29 +846,29 @@ def canonicalize_bug_status(status: str) -> str:
     raw = str(status or "").strip()
     if not raw:
         return ""
-    return _store()._BUG_CANONICAL_STATUS_LABELS.get(raw.lower(), raw)
+    return context_engine_store._BUG_CANONICAL_STATUS_LABELS.get(raw.lower(), raw)
 
 def _bug_is_open(status: str) -> bool:
-    return str(status or "").strip().lower() not in _store()._BUG_TERMINAL_STATUSES
+    return str(status or "").strip().lower() not in context_engine_store._BUG_TERMINAL_STATUSES
 
 def _ordered_bug_detail_sections(fields: Mapping[str, str]) -> list[dict[str, Any]]:
     normalized_fields: dict[str, dict[str, str]] = {}
     for raw_name, raw_value in fields.items():
-        normalized_name = _store()._normalize_bug_field_key(raw_name)
+        normalized_name = context_engine_store._normalize_bug_field_key(raw_name)
         if normalized_name in normalized_fields:
             continue
         value = str(raw_value).strip()
         if not value:
             continue
         normalized_fields[normalized_name] = {
-            "name": _store()._normalize_bug_field_name(raw_name),
+            "name": context_engine_store._normalize_bug_field_name(raw_name),
             "value": value,
         }
 
     sections: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for name in _store()._BUG_DETAIL_SECTION_ORDER:
-        normalized_name = _store()._normalize_bug_field_key(name)
+    for name in context_engine_store._BUG_DETAIL_SECTION_ORDER:
+        normalized_name = context_engine_store._normalize_bug_field_key(name)
         field_value = normalized_fields.get(normalized_name)
         if field_value is None:
             continue
@@ -959,7 +884,7 @@ def _ordered_bug_detail_sections(fields: Mapping[str, str]) -> list[dict[str, An
             }
         )
     for normalized_name in normalized_fields:
-        if normalized_name in seen or normalized_name in _store()._BUG_CORE_FIELD_ORDER_SET:
+        if normalized_name in seen or normalized_name in context_engine_store._BUG_CORE_FIELD_ORDER_SET:
             continue
         field_value = normalized_fields[normalized_name]
         field = field_value["name"]
@@ -978,9 +903,9 @@ def _ordered_bug_detail_sections(fields: Mapping[str, str]) -> list[dict[str, An
 
 def _bug_summary_from_fields(fields: Mapping[str, str], lines: Sequence[str]) -> str:
     def _lookup_field(key: str) -> str:
-        target = _store()._normalize_bug_field_key(key)
+        target = context_engine_store._normalize_bug_field_key(key)
         for field_name, raw_value in fields.items():
-            if _store()._normalize_bug_field_key(field_name) != target:
+            if context_engine_store._normalize_bug_field_key(field_name) != target:
                 continue
             value = str(raw_value).strip()
             if value:
@@ -998,7 +923,7 @@ def _component_rows_from_index(
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for component_id, entry in component_index.items():
-        if not component_id or not isinstance(entry, _store().component_registry.ComponentEntry):
+        if not component_id or not isinstance(entry, context_engine_store.component_registry.ComponentEntry):
             continue
         rows.append(
             {
@@ -1021,7 +946,7 @@ def _build_bug_reference_lookup(
     for row in rows:
         if _is_bug_placeholder_row(row):
             continue
-        link_target = _store()._normalize_repo_token(_parse_link_target(str(row.get("Link", ""))), repo_root=repo_root)
+        link_target = context_engine_store._normalize_repo_token(_parse_link_target(str(row.get("Link", ""))), repo_root=repo_root)
         bug_id = resolve_casebook_bug_id(
             explicit_bug_id=str(row.get(BUG_ID_FIELD, "")).strip(),
             seed=link_target or f"{row.get('Date', '')}::{row.get('Title', '')}",
@@ -1044,14 +969,14 @@ def _build_bug_reference_lookup(
         variants = {
             bug_id,
             link_target,
-            _store().Path(link_target).name,
+            context_engine_store.Path(link_target).name,
         }
         if link_target.startswith("odylith/casebook/bugs/"):
             variants.add(link_target.removeprefix("odylith/casebook/bugs/"))
         if link_target.startswith("odylith/casebook/bugs/archive/"):
             archive_relative = link_target.removeprefix("odylith/casebook/bugs/archive/")
             variants.add(archive_relative)
-            variants.add(_store().Path(archive_relative).name)
+            variants.add(context_engine_store.Path(archive_relative).name)
         for token in variants:
             normalized = str(token).strip().lower()
             if normalized and normalized not in lookup:
@@ -1069,21 +994,21 @@ def _related_bug_refs_from_text(
     candidates = list(_extract_path_refs(text=text, repo_root=repo_root))
     candidates.extend(
         match.group(0)
-        for match in _store().re.finditer(
+        for match in context_engine_store.re.finditer(
             r"(?:odylith/casebook/bugs/)?(?:archive/[A-Za-z0-9._-]+/)?\d{4}-\d{2}-\d{2}-[A-Za-z0-9._-]+\.md",
             str(text or ""),
-            flags=_store().re.IGNORECASE,
+            flags=context_engine_store.re.IGNORECASE,
         )
     )
     candidates.extend(
         match.group(0)
-        for match in _store().re.finditer(r"\bCB(?:X-[A-F0-9]{8}|-\d{3,})\b", str(text or ""), flags=_store().re.IGNORECASE)
+        for match in context_engine_store.re.finditer(r"\bCB(?:X-[A-F0-9]{8}|-\d{3,})\b", str(text or ""), flags=context_engine_store.re.IGNORECASE)
     )
     for raw in candidates:
-        normalized = _store()._normalize_repo_token(str(raw), repo_root=repo_root).lower()
+        normalized = context_engine_store._normalize_repo_token(str(raw), repo_root=repo_root).lower()
         variants = [
             normalized,
-            _store().Path(normalized).name.lower() if normalized else "",
+            context_engine_store.Path(normalized).name.lower() if normalized else "",
         ]
         if normalized and not normalized.startswith("odylith/casebook/bugs/"):
             variants.append(f"odylith/casebook/bugs/{normalized}")
@@ -1120,17 +1045,17 @@ def _classify_bug_path_refs(path_refs: Sequence[str]) -> dict[str, list[str]]:
         path = str(token).strip()
         if not path or path.startswith("odylith/casebook/bugs/"):
             continue
-        if _store().re.fullmatch(r"\d{4}-\d{2}-\d{2}-[A-Za-z0-9._-]+\.md", _store().Path(path).name):
+        if context_engine_store.re.fullmatch(r"\d{4}-\d{2}-\d{2}-[A-Za-z0-9._-]+\.md", context_engine_store.Path(path).name):
             continue
         if path.startswith("docs/"):
             buckets["docs"].append(path)
         elif path.startswith("tests/"):
             buckets["tests"].append(path)
-        elif path.startswith(_store()._CONTRACT_PATH_PREFIXES):
+        elif path.startswith(context_engine_store._CONTRACT_PATH_PREFIXES):
             buckets["contracts"].append(path)
         else:
             buckets["code"].append(path)
-    return {name: _store()._dedupe_strings(values) for name, values in buckets.items()}
+    return {name: context_engine_store._dedupe_strings(values) for name, values in buckets.items()}
 
 def _component_matches_for_bug_paths(
     *,
@@ -1154,8 +1079,8 @@ def _component_matches_for_bug_paths(
                 "component_id": component_id,
                 "name": entry.name,
                 "spec_ref": entry.spec_ref,
-                "workstreams": _store()._dedupe_strings([str(token).strip().upper() for token in entry.workstreams if str(token).strip()]),
-                "diagrams": _store()._dedupe_strings([str(token).strip().upper() for token in entry.diagrams if str(token).strip()]),
+                "workstreams": context_engine_store._dedupe_strings([str(token).strip().upper() for token in entry.workstreams if str(token).strip()]),
+                "diagrams": context_engine_store._dedupe_strings([str(token).strip().upper() for token in entry.diagrams if str(token).strip()]),
             }
         )
     return matches
@@ -1186,16 +1111,16 @@ def _bug_intelligence_coverage(
 ) -> dict[str, Any]:
     present_fields = [
         field
-        for field in _store()._BUG_INTELLIGENCE_ALL_FIELDS
+        for field in context_engine_store._BUG_INTELLIGENCE_ALL_FIELDS
         if str(fields.get(field, "")).strip()
     ]
     missing_fields = [
         field
-        for field in _store()._BUG_INTELLIGENCE_ALL_FIELDS
+        for field in context_engine_store._BUG_INTELLIGENCE_ALL_FIELDS
         if field not in present_fields
     ]
-    critical = str(severity or "").strip().lower() in _store()._BUG_CRITICAL_SEVERITIES
-    required_fields = _store()._BUG_INTELLIGENCE_REQUIRED_CRITICAL_FIELDS if critical else ()
+    critical = str(severity or "").strip().lower() in context_engine_store._BUG_CRITICAL_SEVERITIES
+    required_fields = context_engine_store._BUG_INTELLIGENCE_REQUIRED_CRITICAL_FIELDS if critical else ()
     required_missing = [
         field
         for field in required_fields
@@ -1206,7 +1131,7 @@ def _bug_intelligence_coverage(
         "missing_fields": missing_fields,
         "required_missing_fields": required_missing,
         "captured_count": len(present_fields),
-        "total_fields": len(_store()._BUG_INTELLIGENCE_ALL_FIELDS),
+        "total_fields": len(context_engine_store._BUG_INTELLIGENCE_ALL_FIELDS),
         "critical_expectations": critical,
     }
 
@@ -1220,9 +1145,9 @@ def _split_bug_guidance_items(value: str) -> list[str]:
         if str(line).strip()
     ]
     if len(lines) > 1:
-        return _store()._dedupe_strings(lines)
+        return context_engine_store._dedupe_strings(lines)
     if " / " in raw:
-        return _store()._dedupe_strings([part.strip() for part in raw.split(" / ")])
+        return context_engine_store._dedupe_strings([part.strip() for part in raw.split(" / ")])
     return [raw]
 
 def _bug_agent_guidance(
@@ -1288,7 +1213,7 @@ def _bug_agent_guidance(
             )
         )
 
-    proof_paths = _store()._dedupe_strings(
+    proof_paths = context_engine_store._dedupe_strings(
         [
             *[str(token).strip() for token in ref_buckets.get("code", [])],
             *[str(token).strip() for token in ref_buckets.get("tests", [])],
@@ -1298,26 +1223,26 @@ def _bug_agent_guidance(
     )
     return {
         "lessons": lessons,
-        "preflight_checks": _store()._dedupe_strings(preflight_checks),
+        "preflight_checks": context_engine_store._dedupe_strings(preflight_checks),
         "proof_paths": proof_paths,
     }
 
 def _load_component_match_rows_from_components(component_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     payloads: list[dict[str, Any]] = []
     for row in component_rows:
-        if not isinstance(row, _store().Mapping):
+        if not isinstance(row, context_engine_store.Mapping):
             continue
-        metadata = _store()._json_dict(row.get("metadata_json"))
-        path_prefixes = list(metadata.get("path_prefixes", [])) if isinstance(metadata, _store().Mapping) else []
+        metadata = context_engine_store._json_dict(row.get("metadata_json"))
+        path_prefixes = list(metadata.get("path_prefixes", [])) if isinstance(metadata, context_engine_store.Mapping) else []
         payloads.append(
             {
                 "component_id": str(row.get("component_id", "")).strip(),
                 "name": str(row.get("name", "")).strip(),
                 "spec_ref": str(row.get("spec_ref", "")).strip(),
-                "aliases": _store()._json_list(row.get("aliases_json")),
+                "aliases": context_engine_store._json_list(row.get("aliases_json")),
                 "path_prefixes": [str(token).strip() for token in path_prefixes if str(token).strip()],
-                "workstreams": _store()._json_list(row.get("workstreams_json")),
-                "diagrams": _store()._json_list(row.get("diagrams_json")),
+                "workstreams": context_engine_store._json_list(row.get("workstreams_json")),
+                "diagrams": context_engine_store._json_list(row.get("diagrams_json")),
             }
         )
     return payloads
@@ -1330,7 +1255,7 @@ def _load_component_match_rows(connection: Any) -> list[dict[str, Any]]:
 
 def _components_for_paths(*, component_rows: Sequence[Mapping[str, Any]], path_refs: Sequence[str]) -> list[str]:
     matched: set[str] = set()
-    normalized_paths = [_store()._normalize_repo_token(str(token), repo_root=_store().Path(".")) for token in path_refs if str(token).strip()]
+    normalized_paths = [context_engine_store._normalize_repo_token(str(token), repo_root=context_engine_store.Path(".")) for token in path_refs if str(token).strip()]
     for row in component_rows:
         component_id = str(row.get("component_id", "")).strip()
         if not component_id:
@@ -1338,25 +1263,25 @@ def _components_for_paths(*, component_rows: Sequence[Mapping[str, Any]], path_r
         candidates = [str(row.get("spec_ref", "")).strip()]
         candidates.extend(str(token).strip() for token in row.get("path_prefixes", []) if str(token).strip())
         for path_ref in normalized_paths:
-            if any(_store()._path_touches_watch(changed_path=path_ref, watch_path=candidate) for candidate in candidates):
+            if any(context_engine_store._path_touches_watch(changed_path=path_ref, watch_path=candidate) for candidate in candidates):
                 matched.add(component_id)
                 break
     return sorted(matched)
 
 def _load_adr_notes(*, repo_root: Path, component_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return _store().odylith_context_engine_engineering_notes_runtime._load_adr_notes(
+    return context_engine_store.odylith_context_engine_engineering_notes_runtime._load_adr_notes(
         repo_root=repo_root,
         component_rows=component_rows,
     )
 
 def _load_invariant_notes(*, repo_root: Path, component_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return _store().odylith_context_engine_engineering_notes_runtime._load_invariant_notes(
+    return context_engine_store.odylith_context_engine_engineering_notes_runtime._load_invariant_notes(
         repo_root=repo_root,
         component_rows=component_rows,
     )
 
 def _load_data_ownership_notes(*, repo_root: Path, component_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return _store().odylith_context_engine_engineering_notes_runtime._load_data_ownership_notes(
+    return context_engine_store.odylith_context_engine_engineering_notes_runtime._load_data_ownership_notes(
         repo_root=repo_root,
         component_rows=component_rows,
     )
@@ -1368,7 +1293,7 @@ def _load_section_bullet_notes(
     note_kind: str,
     component_rows: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, Any]]:
-    return _store().odylith_context_engine_engineering_notes_runtime._load_section_bullet_notes(
+    return context_engine_store.odylith_context_engine_engineering_notes_runtime._load_section_bullet_notes(
         repo_root=repo_root,
         rel_path=rel_path,
         note_kind=note_kind,
@@ -1376,7 +1301,7 @@ def _load_section_bullet_notes(
     )
 
 def _markdown_title(*, lines: Sequence[str], fallback: str) -> str:
-    return _store().odylith_context_engine_engineering_notes_runtime._markdown_title(
+    return context_engine_store.odylith_context_engine_engineering_notes_runtime._markdown_title(
         lines=lines,
         fallback=fallback,
     )
@@ -1386,13 +1311,13 @@ def _load_guidance_chunk_notes(
     repo_root: Path,
     component_rows: Sequence[Mapping[str, Any]],
 ) -> tuple[list[dict[str, Any]], set[str]]:
-    return _store().odylith_context_engine_engineering_notes_runtime._load_guidance_chunk_notes(
+    return context_engine_store.odylith_context_engine_engineering_notes_runtime._load_guidance_chunk_notes(
         repo_root=repo_root,
         component_rows=component_rows,
     )
 
 def _load_runbook_notes(*, repo_root: Path, component_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
-    return _store().odylith_context_engine_engineering_notes_runtime._load_runbook_notes(
+    return context_engine_store.odylith_context_engine_engineering_notes_runtime._load_runbook_notes(
         repo_root=repo_root,
         component_rows=component_rows,
     )
@@ -1408,7 +1333,7 @@ def _projection_state_row(
         "name": str(name).strip(),
         "fingerprint": str(fingerprint).strip(),
         "row_count": int(row_count),
-        "updated_utc": _store()._utc_now(),
+        "updated_utc": context_engine_store._utc_now(),
         "payload_json": _safe_json(payload or {}),
     }
 
@@ -1466,7 +1391,7 @@ def _matched_runtime_projection(
     runtime_state: Mapping[str, Any],
     requested_scope: str,
 ) -> tuple[str, str]:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     runtime_scope = str(runtime_state.get("projection_scope", "")).strip().lower()
     runtime_fingerprint = str(runtime_state.get("projection_fingerprint", "")).strip()
     for candidate_scope in _compatible_projection_scopes(requested_scope):
@@ -1481,7 +1406,7 @@ def _local_backend_match_for_requested_scope(
     repo_root: Path,
     requested_scope: str,
 ) -> tuple[bool, str, str]:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(requested_scope or "default").strip().lower() or "default"
     requested_fingerprint = projection_input_fingerprint(repo_root=root, scope=scope_token)
     for candidate_scope in _compatible_projection_scopes(scope_token):
@@ -1501,7 +1426,7 @@ def _warm_runtime_can_reuse_snapshot(
     scope: str,
     requested_fingerprint: str,
 ) -> bool:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(scope or "default").strip().lower() or "default"
     if not projection_snapshot_path(repo_root=root).is_file():
         return False
@@ -1546,7 +1471,7 @@ def _record_process_warm_cache(
     scope: str,
     warmed_at: float | None = None,
 ) -> None:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(scope or "default").strip().lower() or "default"
     applied_at = time.monotonic() if warmed_at is None else float(warmed_at)
     cache_updates: list[tuple[str, str]] = [
@@ -1564,7 +1489,7 @@ def _record_process_warm_cache(
             (f"{root}:default", projection_input_fingerprint(repo_root=root, scope="default"))
         )
     for target_key, fingerprint in cache_updates:
-        _PROCESS_WARM_CACHE[target_key] = applied_at + _store()._PROCESS_WARM_CACHE_TTL_SECONDS
+        _PROCESS_WARM_CACHE[target_key] = applied_at + context_engine_store._PROCESS_WARM_CACHE_TTL_SECONDS
         _PROCESS_WARM_CACHE_FINGERPRINTS[target_key] = str(fingerprint).strip()
 
 
@@ -1575,7 +1500,7 @@ def _warm_runtime(
     reason: str,
     scope: str = "default",
 ) -> bool:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(scope or "default").strip().lower()
     try:
         from odylith.runtime.governance import sync_session as governed_sync_session
@@ -1627,7 +1552,7 @@ def _warm_runtime_uncached(
 ) -> bool:
     if not _runtime_enabled(runtime_mode):
         return False
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(scope or "default").strip().lower()
     cache_key = f"{root}:{scope_token}"
     now = time.monotonic()
@@ -1640,7 +1565,7 @@ def _warm_runtime_uncached(
         _PROCESS_WARM_CACHE.pop(cache_key, None)
         _PROCESS_WARM_CACHE_FINGERPRINTS.pop(cache_key, None)
     if cached_fingerprint and cached_fingerprint == requested_fingerprint:
-        _PROCESS_WARM_CACHE[cache_key] = now + _store()._PROCESS_WARM_CACHE_TTL_SECONDS
+        _PROCESS_WARM_CACHE[cache_key] = now + context_engine_store._PROCESS_WARM_CACHE_TTL_SECONDS
         return True
     if _warm_runtime_can_reuse_snapshot(
         repo_root=root,
@@ -1662,7 +1587,7 @@ def _projection_cache_signature(
     repo_root: Path,
     scope: str = "reasoning",
 ) -> str:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     scope_token = str(scope or "reasoning").strip().lower() or "reasoning"
     return projection_input_fingerprint(repo_root=root, scope=scope_token)
 
@@ -1673,7 +1598,7 @@ def _cached_projection_rows(
     loader: Callable[[], Any],
     scope: str = "reasoning",
 ) -> Any:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     signature = _projection_cache_signature(repo_root=root, scope=scope)
     cache_key = f"{root}:{str(cache_name).strip()}"
     read_session = runtime_read_session.active_runtime_read_session()
@@ -1681,15 +1606,15 @@ def _cached_projection_rows(
         cached = read_session.get_or_compute(
             namespace="projection_rows_lookup",
             key=f"{cache_key}:{signature}",
-            builder=lambda: _store()._PROCESS_PROJECTION_ROWS_CACHE.get(cache_key),
+            builder=lambda: context_engine_store._PROCESS_PROJECTION_ROWS_CACHE.get(cache_key),
         )
         if cached is not None and cached[0] == signature:
             return cached[1]
-    cached = _store()._PROCESS_PROJECTION_ROWS_CACHE.get(cache_key)
+    cached = context_engine_store._PROCESS_PROJECTION_ROWS_CACHE.get(cache_key)
     if cached is not None and cached[0] == signature:
         return cached[1]
     value = loader()
-    _store()._PROCESS_PROJECTION_ROWS_CACHE[cache_key] = (signature, value)
+    context_engine_store._PROCESS_PROJECTION_ROWS_CACHE[cache_key] = (signature, value)
     return value
 
 def clear_runtime_process_caches(*, repo_root: Path | None = None) -> None:
@@ -1701,18 +1626,18 @@ def clear_runtime_process_caches(*, repo_root: Path | None = None) -> None:
         _PROCESS_PATH_FINGERPRINT_CACHE.clear()
         _PROCESS_WARM_CACHE.clear()
         _PROCESS_WARM_CACHE_FINGERPRINTS.clear()
-        _store()._PROCESS_PROJECTION_ROWS_CACHE.clear()
-        _store()._PROCESS_PROJECTION_CONNECTION_CACHE.clear()
-        _store()._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE.clear()
-        _store()._PROCESS_MISS_RECOVERY_INDEX_CACHE.clear()
-        _store()._PROCESS_PATH_SCOPE_CACHE.clear()
-        _store()._PROCESS_PATH_SIGNAL_PROFILE_CACHE.clear()
-        _store()._PROCESS_ARCHITECTURE_PACKET_CACHE.clear()
-        _store()._PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE.clear()
+        context_engine_store._PROCESS_PROJECTION_ROWS_CACHE.clear()
+        context_engine_store._PROCESS_PROJECTION_CONNECTION_CACHE.clear()
+        context_engine_store._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE.clear()
+        context_engine_store._PROCESS_MISS_RECOVERY_INDEX_CACHE.clear()
+        context_engine_store._PROCESS_PATH_SCOPE_CACHE.clear()
+        context_engine_store._PROCESS_PATH_SIGNAL_PROFILE_CACHE.clear()
+        context_engine_store._PROCESS_ARCHITECTURE_PACKET_CACHE.clear()
+        context_engine_store._PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE.clear()
         projection_repo_state_runtime.clear_projection_repo_state_cache()
-        _store().tooling_guidance_catalog.clear_process_guidance_catalog_cache()
+        context_engine_store.tooling_guidance_catalog.clear_process_guidance_catalog_cache()
     else:
-        root = _store().Path(repo_root).resolve()
+        root = context_engine_store.Path(repo_root).resolve()
         prefix = f"{root}:"
         projection_repo_state_runtime.clear_projection_repo_state_cache(repo_root=root)
         for cache in (
@@ -1721,29 +1646,29 @@ def clear_runtime_process_caches(*, repo_root: Path | None = None) -> None:
             _PROCESS_PATH_FINGERPRINT_CACHE,
             _PROCESS_WARM_CACHE,
             _PROCESS_WARM_CACHE_FINGERPRINTS,
-            _store()._PROCESS_PROJECTION_ROWS_CACHE,
-            _store()._PROCESS_PROJECTION_CONNECTION_CACHE,
-            _store()._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE,
-            _store()._PROCESS_MISS_RECOVERY_INDEX_CACHE,
-            _store()._PROCESS_PATH_SCOPE_CACHE,
-            _store()._PROCESS_PATH_SIGNAL_PROFILE_CACHE,
-            _store()._PROCESS_ARCHITECTURE_PACKET_CACHE,
-            _store()._PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE,
+            context_engine_store._PROCESS_PROJECTION_ROWS_CACHE,
+            context_engine_store._PROCESS_PROJECTION_CONNECTION_CACHE,
+            context_engine_store._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE,
+            context_engine_store._PROCESS_MISS_RECOVERY_INDEX_CACHE,
+            context_engine_store._PROCESS_PATH_SCOPE_CACHE,
+            context_engine_store._PROCESS_PATH_SIGNAL_PROFILE_CACHE,
+            context_engine_store._PROCESS_ARCHITECTURE_PACKET_CACHE,
+            context_engine_store._PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE,
         ):
             for key in [token for token in list(cache) if str(token).startswith(prefix)]:
                 cache.pop(key, None)
-        _store().tooling_guidance_catalog.clear_process_guidance_catalog_cache(repo_root=root)
+        context_engine_store.tooling_guidance_catalog.clear_process_guidance_catalog_cache(repo_root=root)
     # Architecture caches are process-local and safe to clear wholesale here.
-    _store().odylith_architecture_mode._PROCESS_ARCHITECTURE_BUNDLE_CACHE.clear()  # noqa: SLF001
-    _store().odylith_architecture_mode._PROCESS_ARCHITECTURE_STRUCTURAL_BASE_CACHE.clear()  # noqa: SLF001
-    _store().odylith_architecture_mode._PROCESS_ARCHITECTURE_STRUCTURAL_CORE_CACHE.clear()  # noqa: SLF001
-    _store().odylith_architecture_mode._PROCESS_ARCHITECTURE_BENCHMARK_CASES_CACHE.clear()  # noqa: SLF001
-    _store().odylith_architecture_mode._PROCESS_ARCHITECTURE_SOURCE_HASH_CACHE.clear()  # noqa: SLF001
-    _store().odylith_architecture_mode._PROCESS_ARCHITECTURE_TRACEABILITY_INDEX_CACHE.clear()  # noqa: SLF001
-    _store().odylith_architecture_mode._PROCESS_ARCHITECTURE_WORKSTREAM_INDEX_CACHE.clear()
+    context_engine_store.odylith_architecture_mode._PROCESS_ARCHITECTURE_BUNDLE_CACHE.clear()  # noqa: SLF001
+    context_engine_store.odylith_architecture_mode._PROCESS_ARCHITECTURE_STRUCTURAL_BASE_CACHE.clear()  # noqa: SLF001
+    context_engine_store.odylith_architecture_mode._PROCESS_ARCHITECTURE_STRUCTURAL_CORE_CACHE.clear()  # noqa: SLF001
+    context_engine_store.odylith_architecture_mode._PROCESS_ARCHITECTURE_BENCHMARK_CASES_CACHE.clear()  # noqa: SLF001
+    context_engine_store.odylith_architecture_mode._PROCESS_ARCHITECTURE_SOURCE_HASH_CACHE.clear()  # noqa: SLF001
+    context_engine_store.odylith_architecture_mode._PROCESS_ARCHITECTURE_TRACEABILITY_INDEX_CACHE.clear()  # noqa: SLF001
+    context_engine_store.odylith_architecture_mode._PROCESS_ARCHITECTURE_WORKSTREAM_INDEX_CACHE.clear()
 
 def prime_reasoning_projection_cache(*, repo_root: Path) -> None:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     connection = _connect(root)
     try:
         _cached_projection_rows(
@@ -1780,9 +1705,9 @@ def prime_reasoning_projection_cache(*, repo_root: Path) -> None:
                 }
                 for row in workstream_rows
                 for target_path in (
-                    _store()._normalize_repo_token(str(row.get("source_path", "")), repo_root=root),
-                    _store()._normalize_repo_token(str(row.get("idea_file", "")), repo_root=root),
-                    _store()._normalize_repo_token(str(row.get("promoted_to_plan", "")), repo_root=root),
+                    context_engine_store._normalize_repo_token(str(row.get("source_path", "")), repo_root=root),
+                    context_engine_store._normalize_repo_token(str(row.get("idea_file", "")), repo_root=root),
+                    context_engine_store._normalize_repo_token(str(row.get("promoted_to_plan", "")), repo_root=root),
                 )
                 if str(row.get("idea_id", "")).strip() and target_path
             ],
@@ -1801,7 +1726,7 @@ def prime_reasoning_projection_cache(*, repo_root: Path) -> None:
                     "target_path": target_path,
                 }
                 for row in traceability_rows
-                if (target_path := _store()._normalize_repo_token(str(row.get("target_id", "")), repo_root=root))
+                if (target_path := context_engine_store._normalize_repo_token(str(row.get("target_id", "")), repo_root=root))
             ],
         )
         _cached_projection_rows(
@@ -1862,10 +1787,10 @@ def prime_reasoning_projection_cache(*, repo_root: Path) -> None:
         _cached_miss_recovery_projection_index(connection, repo_root=root)
     finally:
         connection.close()
-    _store().odylith_architecture_mode.prime_architecture_projection_cache(repo_root=root)
+    context_engine_store.odylith_architecture_mode.prime_architecture_projection_cache(repo_root=root)
 
 def _path_signature(path: Path) -> tuple[bool, int, int]:
-    target = _store().Path(path).resolve()
+    target = context_engine_store.Path(path).resolve()
     if not target.exists():
         return (False, 0, 0)
     try:
@@ -1879,12 +1804,12 @@ def _architecture_bundle_mermaid_signature_hash(
     repo_root: Path,
     bundle: Mapping[str, Any],
 ) -> str:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     rows: list[dict[str, Any]] = []
     for raw in bundle.get("diagrams", []):
-        if not isinstance(raw, _store().Mapping):
+        if not isinstance(raw, context_engine_store.Mapping):
             continue
-        source_mmd = _store()._normalize_repo_token(str(raw.get("source_mmd", "")).strip(), repo_root=root)
+        source_mmd = context_engine_store._normalize_repo_token(str(raw.get("source_mmd", "")).strip(), repo_root=root)
         if not source_mmd:
             continue
         rows.append(
@@ -1895,10 +1820,10 @@ def _architecture_bundle_mermaid_signature_hash(
             }
         )
     rows.sort(key=lambda row: (str(row.get("diagram_id", "")), str(row.get("source_mmd", ""))))
-    return _store().odylith_context_cache.fingerprint_payload(rows or [{"diagram_id": "", "source_mmd": "", "signature": (False, 0, 0)}])
+    return context_engine_store.odylith_context_cache.fingerprint_payload(rows or [{"diagram_id": "", "source_mmd": "", "signature": (False, 0, 0)}])
 
 def _bootstraps_signature(*, repo_root: Path) -> tuple[bool, int, int]:
-    root = _store().bootstraps_root(repo_root=repo_root)
+    root = context_engine_store.bootstraps_root(repo_root=repo_root)
     if not root.is_dir():
         return (False, 0, 0)
     latest_mtime_ns = 0
@@ -1912,12 +1837,12 @@ def _bootstraps_signature(*, repo_root: Path) -> tuple[bool, int, int]:
     return (True, count, latest_mtime_ns)
 
 def _runtime_optimization_cache_signature(*, repo_root: Path) -> tuple[Any, ...]:
-    root = _store().Path(repo_root).resolve()
-    switch_snapshot = _store()._odylith_switch_snapshot(repo_root=root)
+    root = context_engine_store.Path(repo_root).resolve()
+    switch_snapshot = context_engine_store._odylith_switch_snapshot(repo_root=root)
     return (
-        _store().json.dumps(switch_snapshot, sort_keys=True, separators=(",", ":")),
-        _path_signature(_store().odylith_control_state.timings_path(repo_root=root)),
-        _path_signature(_store().odylith_evaluation_ledger.ledger_path(repo_root=root)),
+        context_engine_store.json.dumps(switch_snapshot, sort_keys=True, separators=(",", ":")),
+        _path_signature(context_engine_store.odylith_control_state.timings_path(repo_root=root)),
+        _path_signature(context_engine_store.odylith_evaluation_ledger.ledger_path(repo_root=root)),
         _bootstraps_signature(repo_root=root),
     )
 
@@ -1931,7 +1856,7 @@ def _merge_search_results(
     seen: set[tuple[str, str, str]] = set()
     for source, rows in (("local", local_rows), ("remote", remote_rows)):
         for row in rows:
-            if not isinstance(row, _store().Mapping):
+            if not isinstance(row, context_engine_store.Mapping):
                 continue
             key = (
                 str(row.get("kind", "")).strip(),
@@ -1954,14 +1879,14 @@ def _repair_odylith_backend(
     repo_root: Path,
     reason: str,
 ) -> dict[str, Any]:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     if not odylith_memory_backend.backend_dependencies_available():
         return {
             "ready": False,
             "status": "dependencies_missing",
             "reason": str(reason).strip() or "repair_skipped",
         }
-    runtime_state = _store().read_runtime_state(repo_root=root)
+    runtime_state = context_engine_store.read_runtime_state(repo_root=root)
     scope = str(runtime_state.get("projection_scope", "")).strip().lower() or "full"
     projection_fingerprint = str(runtime_state.get("projection_fingerprint", "")).strip() or projection_input_fingerprint(
         repo_root=root,
@@ -2016,12 +1941,12 @@ def search_entities_payload(
     runtime_mode: str = "auto",
 ) -> dict[str, Any]:
     """Search the runtime store and expose when raw repo scanning is still required."""
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     odylith_ablation_active = _odylith_ablation_active(repo_root=root)
     started_at = time.perf_counter()
     normalized_query = str(query or "").strip()
-    normalized_kinds = tuple(_store()._normalize_entity_kind(kind) for kind in (kinds or []) if str(kind).strip())
-    if odylith_ablation_active and _store()._odylith_query_targets_disabled(repo_root=root, query=normalized_query):
+    normalized_kinds = tuple(context_engine_store._normalize_entity_kind(kind) for kind in (kinds or []) if str(kind).strip())
+    if odylith_ablation_active and context_engine_store._odylith_query_targets_disabled(repo_root=root, query=normalized_query):
         return {
             "query": normalized_query,
             "requested_kinds": list(normalized_kinds),
@@ -2032,8 +1957,8 @@ def search_entities_payload(
             "full_scan_reason": "odylith_disabled",
             "fallback_scan": {
                 "performed": False,
-                "terms": _store()._full_scan_terms(repo_root=root, query=normalized_query),
-                "roots": _store()._available_full_scan_roots(repo_root=root),
+                "terms": context_engine_store._full_scan_terms(repo_root=root, query=normalized_query),
+                "roots": context_engine_store._available_full_scan_roots(repo_root=root),
                 "commands": [],
                 "results": [],
                 "reason": "odylith_disabled",
@@ -2119,7 +2044,7 @@ def search_entities_payload(
     if not exact_results and not backend_ready:
         connection = _connect(root)
         try:
-            exact_results = _store()._projection_exact_search_results(
+            exact_results = context_engine_store._projection_exact_search_results(
                 connection,
                 repo_root=root,
                 query=normalized_query,
@@ -2129,7 +2054,7 @@ def search_entities_payload(
         finally:
             connection.close()
     if odylith_ablation_active:
-        exact_results = _store()._filter_odylith_search_results(repo_root=root, results=exact_results)
+        exact_results = context_engine_store._filter_odylith_search_results(repo_root=root, results=exact_results)
     if exact_results:
         record_runtime_timing(
             repo_root=root,
@@ -2235,7 +2160,7 @@ def search_entities_payload(
         retrieval_mode = "tantivy_plus_vespa" if local_results else "vespa_remote"
 
     if odylith_ablation_active:
-        results = _store()._filter_odylith_search_results(repo_root=root, results=results)
+        results = context_engine_store._filter_odylith_search_results(repo_root=root, results=results)
     has_runtime_results = bool(results)
     repo_scan_reason = "odylith_backend_unavailable" if not backend_ready and not remote_results else "no_runtime_results"
     full_scan_reason = (
@@ -2255,7 +2180,7 @@ def search_entities_payload(
     if not has_runtime_results:
         connection = _connect(root)
         try:
-            results = _store()._repo_scan_candidate_search_results(
+            results = context_engine_store._repo_scan_candidate_search_results(
                 connection,
                 repo_root=root,
                 fallback_scan=fallback_scan,
@@ -2273,7 +2198,7 @@ def search_entities_payload(
             retrieval_mode = "full_repo_scan" if fallback_scan.get("results") else "none"
     if isinstance(fallback_scan, dict):
         fallback_scan["reason"] = full_scan_reason
-        fallback_scan["reason_message"] = _store()._full_scan_reason_message(full_scan_reason)
+        fallback_scan["reason_message"] = context_engine_store._full_scan_reason_message(full_scan_reason)
     record_runtime_timing(
         repo_root=root,
         category="reasoning",
@@ -2312,14 +2237,14 @@ def search_entities(
         kinds=kinds,
         runtime_mode=runtime_mode,
     )
-    return [dict(row) for row in payload.get("results", []) if isinstance(row, _store().Mapping)]
+    return [dict(row) for row in payload.get("results", []) if isinstance(row, context_engine_store.Mapping)]
 
 def _miss_recovery_query_tokens(text: str) -> list[str]:
     tokens: list[str] = []
     seen: set[str] = set()
-    for raw in _store().re.findall(r"[A-Za-z0-9]+", str(text or "").replace("_", " ").replace("-", " ")):
+    for raw in context_engine_store.re.findall(r"[A-Za-z0-9]+", str(text or "").replace("_", " ").replace("-", " ")):
         token = raw.strip().lower()
-        if len(token) < 3 or token in _store()._MISS_RECOVERY_GENERIC_QUERY_TOKENS or token in seen:
+        if len(token) < 3 or token in context_engine_store._MISS_RECOVERY_GENERIC_QUERY_TOKENS or token in seen:
             continue
         seen.add(token)
         tokens.append(token)
@@ -2349,7 +2274,7 @@ def _build_miss_recovery_queries(
         path_ref = str(raw_path).strip()
         if not path_ref:
             continue
-        path_obj = _store().Path(path_ref)
+        path_obj = context_engine_store.Path(path_ref)
         _add(path_obj.stem)
         parent_name = str(path_obj.parent.name).strip()
         if parent_name and parent_name not in {"scripts", "tests", "docs", "source", "runbooks", "components", "specs"}:
@@ -2389,18 +2314,18 @@ def _repo_scan_recovery_rows(
     limit: int,
 ) -> list[dict[str, Any]]:
     query_tokens = _miss_recovery_query_tokens(query)
-    scan = _store()._run_full_scan(repo_root=repo_root, terms=query_tokens, limit=max(8, int(limit) * 3))
+    scan = context_engine_store._run_full_scan(repo_root=repo_root, terms=query_tokens, limit=max(8, int(limit) * 3))
     rows: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
     for rank, hit in enumerate(scan.get("results", []), start=1):
-        if not isinstance(hit, _store().Mapping):
+        if not isinstance(hit, context_engine_store.Mapping):
             continue
-        path_ref = _store()._normalize_repo_token(str(hit.get("path", "")).strip(), repo_root=repo_root)
+        path_ref = context_engine_store._normalize_repo_token(str(hit.get("path", "")).strip(), repo_root=repo_root)
         if not path_ref:
             continue
-        entity = _store()._entity_by_path(connection, repo_root=repo_root, path_ref=path_ref)
+        entity = context_engine_store._entity_by_path(connection, repo_root=repo_root, path_ref=path_ref)
         if entity is None:
-            if bool(_store()._path_signal_profile(path_ref).get("shared")):
+            if bool(context_engine_store._path_signal_profile(path_ref).get("shared")):
                 continue
             kind = _repo_scan_inferred_kind(path_ref)
             if not kind:
@@ -2408,11 +2333,11 @@ def _repo_scan_recovery_rows(
             entity = {
                 "kind": kind,
                 "entity_id": path_ref,
-                "title": _store().Path(path_ref).name,
+                "title": context_engine_store.Path(path_ref).name,
                 "path": path_ref,
             }
         kind = str(entity.get("kind", "")).strip()
-        if kind not in _store()._MISS_RECOVERY_ALLOWED_KINDS:
+        if kind not in context_engine_store._MISS_RECOVERY_ALLOWED_KINDS:
             continue
         entity_id = str(entity.get("entity_id", "")).strip()
         key = (kind, entity_id, path_ref)
@@ -2423,7 +2348,7 @@ def _repo_scan_recovery_rows(
             {
                 "kind": kind,
                 "entity_id": entity_id or path_ref,
-                "title": str(entity.get("title", "")).strip() or _store().Path(path_ref).name,
+                "title": str(entity.get("title", "")).strip() or context_engine_store.Path(path_ref).name,
                 "path": str(entity.get("path", "")).strip() or path_ref,
                 "score": max(0.0, float(max(1, int(limit) * 3) - rank + 1)),
                 "query": " ".join(query_tokens),
@@ -2468,7 +2393,7 @@ def _recovery_search_payload(
                 repo_root=repo_root,
                 query=" ".join(query_tokens),
                 limit=max(1, int(limit)),
-                kinds=_store()._MISS_RECOVERY_ALLOWED_KINDS,
+                kinds=context_engine_store._MISS_RECOVERY_ALLOWED_KINDS,
             )
         except Exception:
             summary = _repair_odylith_backend(connection, repo_root=repo_root, reason="miss_recovery_sparse_error")
@@ -2480,7 +2405,7 @@ def _recovery_search_payload(
                         repo_root=repo_root,
                         query=" ".join(query_tokens),
                         limit=max(1, int(limit)),
-                        kinds=_store()._MISS_RECOVERY_ALLOWED_KINDS,
+                        kinds=context_engine_store._MISS_RECOVERY_ALLOWED_KINDS,
                     )
                 except Exception:
                     rows = []
@@ -2527,11 +2452,11 @@ def _recovery_search_rows(
         limit=limit,
     )
     rows = payload.get("rows", [])
-    return [dict(row) for row in rows if isinstance(row, _store().Mapping)]
+    return [dict(row) for row in rows if isinstance(row, context_engine_store.Mapping)]
 
 def _recovery_note_like_kind(kind: str) -> bool:
     token = str(kind or "").strip().lower()
-    return token in _store()._ENGINEERING_NOTE_KIND_SET or token in {
+    return token in context_engine_store._ENGINEERING_NOTE_KIND_SET or token in {
         "plan",
         "bug",
         "workstream",
@@ -2567,10 +2492,10 @@ def _cached_miss_recovery_projection_index(
     *,
     repo_root: Path,
 ) -> dict[str, Any]:
-    root = _store().Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     cache_key = f"{root}:miss_recovery_projection_index"
     signature = _projection_cache_signature(repo_root=root, scope="reasoning")
-    cached = _store()._PROCESS_MISS_RECOVERY_INDEX_CACHE.get(cache_key)
+    cached = context_engine_store._PROCESS_MISS_RECOVERY_INDEX_CACHE.get(cache_key)
     if cached is not None and cached[0] == signature:
         return cached[1]
 
@@ -2586,13 +2511,13 @@ def _cached_miss_recovery_projection_index(
         kind = str(row.get("kind", "")).strip()
         entity_id = str(row.get("entity_id", "")).strip()
         title = str(row.get("title", "")).strip()
-        path_ref = _store()._normalize_repo_token(str(row.get("path", "")).strip(), repo_root=root)
-        if not kind or kind not in _store()._MISS_RECOVERY_ALLOWED_KINDS:
+        path_ref = context_engine_store._normalize_repo_token(str(row.get("path", "")).strip(), repo_root=root)
+        if not kind or kind not in context_engine_store._MISS_RECOVERY_ALLOWED_KINDS:
             return
         if not entity_id:
             entity_id = path_ref or title
         key = (kind, entity_id, path_ref)
-        terms = _miss_recovery_projection_terms(title, entity_id, path_ref, _store().Path(path_ref).stem if path_ref else "", extra_terms)
+        terms = _miss_recovery_projection_terms(title, entity_id, path_ref, context_engine_store.Path(path_ref).stem if path_ref else "", extra_terms)
         if not terms:
             return
         field_blob = " ".join(
@@ -2608,7 +2533,7 @@ def _cached_miss_recovery_projection_index(
         payload = {
             "kind": kind,
             "entity_id": entity_id,
-            "title": title or _store().Path(path_ref).name,
+            "title": title or context_engine_store.Path(path_ref).name,
             "path": path_ref,
             "terms": tuple(terms),
             "field_blob": field_blob,
@@ -2629,14 +2554,14 @@ def _cached_miss_recovery_projection_index(
         loader=lambda: [dict(row) for row in connection.execute("SELECT * FROM workstreams").fetchall()],
     )
     for row in workstream_rows:
-        metadata = _store()._json_dict(row.get("metadata_json"))
+        metadata = context_engine_store._json_dict(row.get("metadata_json"))
         _register(
-            _store()._entity_from_row(kind="workstream", row=row),
+            context_engine_store._entity_from_row(kind="workstream", row=row),
             extra_terms=(
                 [str(row.get("section", "")).strip(), str(row.get("priority", "")).strip()]
-                + _store()._normalized_string_list(metadata.get("code_references"))
-                + _store()._normalized_string_list(metadata.get("developer_docs"))
-                + _store()._normalized_string_list(metadata.get("runbooks"))
+                + context_engine_store._normalized_string_list(metadata.get("code_references"))
+                + context_engine_store._normalized_string_list(metadata.get("developer_docs"))
+                + context_engine_store._normalized_string_list(metadata.get("runbooks"))
             ),
             score_bias=20.0,
         )
@@ -2646,7 +2571,7 @@ def _cached_miss_recovery_projection_index(
         cache_name="plans_full_rows",
         loader=lambda: [dict(item) for item in connection.execute("SELECT * FROM plans ORDER BY plan_path").fetchall()],
     ):
-        _register(_store()._entity_from_row(kind="plan", row=row), extra_terms=[str(row.get("backlog", "")).strip()], score_bias=18.0)
+        _register(context_engine_store._entity_from_row(kind="plan", row=row), extra_terms=[str(row.get("backlog", "")).strip()], score_bias=18.0)
 
     for row in _cached_projection_rows(
         repo_root=root,
@@ -2654,8 +2579,8 @@ def _cached_miss_recovery_projection_index(
         loader=lambda: [dict(item) for item in connection.execute("SELECT * FROM bugs ORDER BY date DESC, title").fetchall()],
     ):
         _register(
-            _store()._entity_from_row(kind="bug", row=row),
-            extra_terms=_store()._parse_component_tokens(str(row.get("components", ""))),
+            context_engine_store._entity_from_row(kind="bug", row=row),
+            extra_terms=context_engine_store._parse_component_tokens(str(row.get("components", ""))),
             score_bias=16.0,
         )
 
@@ -2665,11 +2590,11 @@ def _cached_miss_recovery_projection_index(
         loader=lambda: [dict(item) for item in connection.execute("SELECT * FROM components").fetchall()],
     ):
         _register(
-            _store()._entity_from_row(kind="component", row=row),
+            context_engine_store._entity_from_row(kind="component", row=row),
             extra_terms=(
-                _store()._json_list(str(row.get("aliases_json", "")))
-                + _store()._json_list(str(row.get("workstreams_json", "")))
-                + _store()._json_list(str(row.get("diagrams_json", "")))
+                context_engine_store._json_list(str(row.get("aliases_json", "")))
+                + context_engine_store._json_list(str(row.get("workstreams_json", "")))
+                + context_engine_store._json_list(str(row.get("diagrams_json", "")))
             ),
             score_bias=22.0,
         )
@@ -2680,7 +2605,7 @@ def _cached_miss_recovery_projection_index(
         loader=lambda: [dict(item) for item in connection.execute("SELECT * FROM diagrams ORDER BY diagram_id").fetchall()],
     ):
         _register(
-            _store()._entity_from_row(kind="diagram", row=row),
+            context_engine_store._entity_from_row(kind="diagram", row=row),
             extra_terms=[str(row.get("slug", "")).strip(), str(row.get("summary", "")).strip()],
             score_bias=18.0,
         )
@@ -2697,11 +2622,11 @@ def _cached_miss_recovery_projection_index(
     ):
         note_kind = str(row.get("note_kind", "")).strip()
         _register(
-            _store()._entity_from_row(kind=note_kind, row=row),
+            context_engine_store._entity_from_row(kind=note_kind, row=row),
             extra_terms=(
-                _store()._json_list(str(row.get("components_json", "")))
-                + _store()._json_list(str(row.get("workstreams_json", "")))
-                + _store()._json_list(str(row.get("path_refs_json", "")))
+                context_engine_store._json_list(str(row.get("components_json", "")))
+                + context_engine_store._json_list(str(row.get("workstreams_json", "")))
+                + context_engine_store._json_list(str(row.get("path_refs_json", "")))
             ),
             score_bias=26.0,
         )
@@ -2712,10 +2637,10 @@ def _cached_miss_recovery_projection_index(
         loader=lambda: [dict(item) for item in connection.execute("SELECT * FROM test_cases ORDER BY test_path, test_name").fetchall()],
     ):
         _register(
-            _store()._entity_from_row(kind="test", row=row),
+            context_engine_store._entity_from_row(kind="test", row=row),
             extra_terms=(
-                _store()._json_list(str(row.get("target_paths_json", "")))
-                + _store()._json_list(str(row.get("markers_json", "")))
+                context_engine_store._json_list(str(row.get("target_paths_json", "")))
+                + context_engine_store._json_list(str(row.get("markers_json", "")))
                 + [str(row.get("node_id", "")).strip()]
             ),
             score_bias=24.0,
@@ -2736,18 +2661,18 @@ def _cached_miss_recovery_projection_index(
         ],
     )
     for row in traceability_rows:
-        target_id = _store()._normalize_repo_token(str(row.get("target_id", "")).strip(), repo_root=root)
+        target_id = context_engine_store._normalize_repo_token(str(row.get("target_id", "")).strip(), repo_root=root)
         if not target_id:
             continue
         target_kind = str(row.get("target_kind", "")).strip().lower()
         projected_kind = "code" if target_kind == "doc" else target_kind
-        if projected_kind not in _store()._MISS_RECOVERY_ALLOWED_KINDS:
+        if projected_kind not in context_engine_store._MISS_RECOVERY_ALLOWED_KINDS:
             continue
         _register(
             {
                 "kind": projected_kind,
                 "entity_id": target_id,
-                "title": _store().Path(target_id).name,
+                "title": context_engine_store.Path(target_id).name,
                 "path": target_id,
             },
             extra_terms=[str(row.get("source_id", "")).strip()],
@@ -2768,17 +2693,17 @@ def _cached_miss_recovery_projection_index(
         relation = str(row.get("relation", "")).strip()
         if relation not in {"documents_code", "runbook_covers_code"}:
             continue
-        source_path = _store()._normalize_repo_token(str(row.get("source_path", "")).strip(), repo_root=root)
+        source_path = context_engine_store._normalize_repo_token(str(row.get("source_path", "")).strip(), repo_root=root)
         if not source_path:
             continue
         projected_kind = _miss_recovery_projection_path_kind(source_path)
-        if projected_kind not in _store()._MISS_RECOVERY_ALLOWED_KINDS:
+        if projected_kind not in context_engine_store._MISS_RECOVERY_ALLOWED_KINDS:
             continue
         _register(
             {
                 "kind": projected_kind,
                 "entity_id": source_path,
-                "title": _store().Path(source_path).name,
+                "title": context_engine_store.Path(source_path).name,
                 "path": source_path,
             },
             extra_terms=[str(row.get("target_path", "")).strip(), relation],
@@ -2789,7 +2714,7 @@ def _cached_miss_recovery_projection_index(
         "rows": rows_by_key,
         "token_index": token_index,
     }
-    _store()._PROCESS_MISS_RECOVERY_INDEX_CACHE[cache_key] = (signature, payload)
+    context_engine_store._PROCESS_MISS_RECOVERY_INDEX_CACHE[cache_key] = (signature, payload)
     return payload
 
 def _projection_miss_recovery_rows(
@@ -2805,7 +2730,7 @@ def _projection_miss_recovery_rows(
     index = _cached_miss_recovery_projection_index(connection, repo_root=repo_root)
     rows_by_key = index.get("rows", {})
     token_index = index.get("token_index", {})
-    if not isinstance(rows_by_key, _store().Mapping) or not isinstance(token_index, _store().Mapping):
+    if not isinstance(rows_by_key, context_engine_store.Mapping) or not isinstance(token_index, context_engine_store.Mapping):
         return []
     candidate_keys: list[tuple[str, str, str]] = []
     seen_keys: set[tuple[str, str, str]] = set()
@@ -2823,7 +2748,7 @@ def _projection_miss_recovery_rows(
     results: list[dict[str, Any]] = []
     for key in candidate_keys:
         candidate = rows_by_key.get(key)
-        if not isinstance(candidate, _store().Mapping):
+        if not isinstance(candidate, context_engine_store.Mapping):
             continue
         terms = {
             str(token).strip()
@@ -2856,7 +2781,7 @@ def _projection_miss_recovery_rows(
     results.sort(
         key=lambda row: (
             -float(row.get("score", 0.0) or 0.0),
-            int(_store()._MISS_RECOVERY_KIND_PRIORITY.get(str(row.get("kind", "")).strip(), 9)),
+            int(context_engine_store._MISS_RECOVERY_KIND_PRIORITY.get(str(row.get("kind", "")).strip(), 9)),
             str(row.get("path", "")),
             str(row.get("entity_id", "")),
         )
@@ -2877,7 +2802,7 @@ def _compact_miss_recovery_result(row: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 def _compact_miss_recovery_for_packet(summary: Mapping[str, Any]) -> dict[str, Any]:
-    if not isinstance(summary, _store().Mapping):
+    if not isinstance(summary, context_engine_store.Mapping):
         return {}
     recovered_entities = summary.get("recovered_entities", [])
     if not isinstance(recovered_entities, list):
@@ -2897,20 +2822,20 @@ def _compact_miss_recovery_for_packet(summary: Mapping[str, Any]) -> dict[str, A
             else [],
             "recovered_docs": [
                 str(token).strip()
-                for token in summary.get("recovered_docs", [])[:_store()._MISS_RECOVERY_DOC_LIMIT]
+                for token in summary.get("recovered_docs", [])[:context_engine_store._MISS_RECOVERY_DOC_LIMIT]
                 if str(token).strip()
             ]
             if isinstance(summary.get("recovered_docs"), list)
             else [],
             "recovered_tests": [
-                _store()._compact_test_row_for_packet(row)
-                for row in recovered_tests[:_store()._MISS_RECOVERY_TEST_LIMIT]
-                if isinstance(row, _store().Mapping)
+                context_engine_store._compact_test_row_for_packet(row)
+                for row in recovered_tests[:context_engine_store._MISS_RECOVERY_TEST_LIMIT]
+                if isinstance(row, context_engine_store.Mapping)
             ],
             "recovered_entities": [
                 _compact_miss_recovery_result(row)
-                for row in recovered_entities[:_store()._MISS_RECOVERY_RESULT_LIMIT]
-                if isinstance(row, _store().Mapping)
+                for row in recovered_entities[:context_engine_store._MISS_RECOVERY_RESULT_LIMIT]
+                if isinstance(row, context_engine_store.Mapping)
             ],
         }.items()
         if value not in ("", [], {}, None)
@@ -2927,7 +2852,7 @@ def _collect_retrieval_miss_recovery(
     docs: Sequence[str],
     tests: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    normalized_paths = _store()._dedupe_strings([str(path).strip() for path in changed_paths if str(path).strip()])
+    normalized_paths = context_engine_store._dedupe_strings([str(path).strip() for path in changed_paths if str(path).strip()])
     if shared_only_input:
         return {"active": False, "activation_reason": "shared_only_input"}
     if str(selection_state or "").strip() not in {"ambiguous", "none"}:
@@ -2942,7 +2867,7 @@ def _collect_retrieval_miss_recovery(
     known_tests = {
         str(row.get("path", row.get("test_path", ""))).strip()
         for row in tests
-        if isinstance(row, _store().Mapping) and str(row.get("path", row.get("test_path", ""))).strip()
+        if isinstance(row, context_engine_store.Mapping) and str(row.get("path", row.get("test_path", ""))).strip()
     }
     existing_paths = set(normalized_paths).union(known_docs).union(known_tests)
     ranked_rows: list[tuple[tuple[int, int, float, str], dict[str, Any]]] = []
@@ -2953,7 +2878,7 @@ def _collect_retrieval_miss_recovery(
             connection,
             repo_root=repo_root,
             query=query,
-            limit=_store()._MISS_RECOVERY_RESULT_LIMIT,
+            limit=context_engine_store._MISS_RECOVERY_RESULT_LIMIT,
         )
         mode_token = str(payload.get("mode", "")).strip()
         if mode_token and mode_token != "none":
@@ -2970,13 +2895,13 @@ def _collect_retrieval_miss_recovery(
             seen_entities.add(entity_key)
             rank_key = (
                 int(query_index),
-                int(_store()._MISS_RECOVERY_KIND_PRIORITY.get(kind, 9)),
+                int(context_engine_store._MISS_RECOVERY_KIND_PRIORITY.get(kind, 9)),
                 -int(round(float(row.get("score", 0.0) or 0.0) * 1000)),
                 path_ref or entity_id,
             )
             ranked_rows.append((rank_key, row))
     ranked_rows.sort(key=lambda item: item[0])
-    recovered_entities = [dict(row) for _rank, row in ranked_rows[:_store()._MISS_RECOVERY_RESULT_LIMIT]]
+    recovered_entities = [dict(row) for _rank, row in ranked_rows[:context_engine_store._MISS_RECOVERY_RESULT_LIMIT]]
     recovery_mode = (
         next(iter(recovery_modes))
         if len(recovery_modes) == 1
@@ -3013,8 +2938,8 @@ def _collect_retrieval_miss_recovery(
                 continue
             recovered_docs.append(path_ref)
             known_docs.add(path_ref)
-    recovered_docs = recovered_docs[:_store()._MISS_RECOVERY_DOC_LIMIT]
-    recovered_tests = recovered_tests[:_store()._MISS_RECOVERY_TEST_LIMIT]
+    recovered_docs = recovered_docs[:context_engine_store._MISS_RECOVERY_DOC_LIMIT]
+    recovered_tests = recovered_tests[:context_engine_store._MISS_RECOVERY_TEST_LIMIT]
     if not recovered_docs and not recovered_tests and not recovered_entities:
         return {
             "active": False,
@@ -3032,3 +2957,10 @@ def _collect_retrieval_miss_recovery(
         "recovered_tests": recovered_tests,
         "recovered_entities": recovered_entities,
     }
+
+# Keep the store dependency explicit without pulling it through module bootstrap.
+from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store
+
+# Import after helper definitions so compiler runtime can reuse this module
+# without reintroducing a store shim or import-time proxy layer.
+from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime

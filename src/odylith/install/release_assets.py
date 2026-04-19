@@ -19,6 +19,7 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from typing import Any
 
+from odylith.common.release_text import normalize_release_text
 from odylith.install.archive_safety import validate_archive_members
 from odylith.install.fs import fsync_directory
 from odylith.install.managed_runtime import (
@@ -125,7 +126,7 @@ def _release_highlights(*, explicit: Any = None, body: str = "", limit: int = 3)
     highlights: list[str] = []
     if isinstance(explicit, (list, tuple)):
         for item in explicit:
-            token = _normalize_release_highlight(item)
+            token = normalize_release_text(item, limit=180, strip_html=False)
             if token and token not in highlights:
                 highlights.append(token)
             if len(highlights) >= limit:
@@ -143,7 +144,7 @@ def _release_highlights(*, explicit: Any = None, body: str = "", limit: int = 3)
             numbered = re.match(r"^\d+\.\s+(?P<text>.+)$", line)
             if numbered:
                 line = str(numbered.group("text") or "").strip()
-        token = _normalize_release_highlight(line)
+        token = normalize_release_text(line, limit=180, strip_html=False)
         if token and token not in highlights:
             highlights.append(token)
         if len(highlights) >= limit:
@@ -152,24 +153,12 @@ def _release_highlights(*, explicit: Any = None, body: str = "", limit: int = 3)
         return tuple(highlights[:limit])
     paragraphs = [segment.strip() for segment in re.split(r"\n\s*\n", body_text) if segment.strip()]
     for paragraph in paragraphs:
-        token = _normalize_release_highlight(paragraph)
+        token = normalize_release_text(paragraph, limit=180, strip_html=False)
         if token and token not in highlights:
             highlights.append(token)
         if len(highlights) >= limit:
             break
     return tuple(highlights[:limit])
-
-
-def _normalize_release_highlight(value: Any) -> str:
-    token = str(value or "").strip()
-    if not token:
-        return ""
-    token = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", token)
-    token = re.sub(r"[*_`#>]", "", token)
-    token = re.sub(r"\s+", " ", token).strip(" -:")
-    if len(token) > 180:
-        token = token[:177].rstrip() + "..."
-    return token
 
 
 def _is_product_repo(repo_root: str | Path) -> bool:

@@ -352,8 +352,8 @@ def test_generated_surface_only_step_does_not_invalidate_projection_caches(tmp_p
     cleared_repo_roots: list[str] = []
     monkeypatch.setattr(
         sync_workstream_artifacts,
-        "_context_engine_store",
-        lambda: SimpleNamespace(
+        "odylith_context_engine_store",
+        SimpleNamespace(
             clear_runtime_process_caches=lambda *, repo_root: cleared_repo_roots.append(str(repo_root))
         ),
     )
@@ -379,8 +379,8 @@ def test_traceability_refresh_invalidates_projection_caches(tmp_path: Path, monk
     cleared_repo_roots: list[str] = []
     monkeypatch.setattr(
         sync_workstream_artifacts,
-        "_context_engine_store",
-        lambda: SimpleNamespace(
+        "odylith_context_engine_store",
+        SimpleNamespace(
             clear_runtime_process_caches=lambda *, repo_root: cleared_repo_roots.append(str(repo_root))
         ),
     )
@@ -408,8 +408,8 @@ def test_traceability_refresh_skips_projection_cache_invalidation_when_output_is
     cleared_repo_roots: list[str] = []
     monkeypatch.setattr(
         sync_workstream_artifacts,
-        "_context_engine_store",
-        lambda: SimpleNamespace(
+        "odylith_context_engine_store",
+        SimpleNamespace(
             clear_runtime_process_caches=lambda *, repo_root: cleared_repo_roots.append(str(repo_root))
         ),
     )
@@ -675,8 +675,8 @@ def test_check_only_sync_skips_runtime_fast_path_and_warmup(tmp_path: Path, monk
     monkeypatch.setattr(sync_workstream_artifacts, "_run_command", _fake_run_command)
     monkeypatch.setattr(
         sync_workstream_artifacts,
-        "_context_engine_store",
-        lambda: SimpleNamespace(
+        "odylith_context_engine_store",
+        SimpleNamespace(
             build_governance_slice=lambda **kwargs: (_ for _ in ()).throw(AssertionError("runtime packet should not build")),
             record_runtime_timing=lambda **kwargs: (_ for _ in ()).throw(AssertionError("runtime timing should not record")),
             warm_projections=lambda **kwargs: (_ for _ in ()).throw(AssertionError("warm_projections should not run")),
@@ -739,8 +739,8 @@ def test_full_mode_sync_skips_governance_runtime_packet_without_eager_default_ru
     )
     monkeypatch.setattr(
         sync_workstream_artifacts,
-        "_context_engine_store",
-        lambda: SimpleNamespace(
+        "odylith_context_engine_store",
+        SimpleNamespace(
             build_governance_slice=lambda **_kwargs: (_ for _ in ()).throw(
                 AssertionError("full-mode sync should not build the governance runtime packet")
             ),
@@ -2073,8 +2073,8 @@ def test_sync_truth_only_selective_slice_skips_broad_preflight_and_runtime_packe
     )
     monkeypatch.setattr(
         sync_workstream_artifacts,
-        "_context_engine_store",
-        lambda: SimpleNamespace(
+        "odylith_context_engine_store",
+        SimpleNamespace(
             build_governance_slice=lambda **_: (_ for _ in ()).throw(
                 AssertionError("narrow truth-only sync should skip governance runtime packet build")
             ),

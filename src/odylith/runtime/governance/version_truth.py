@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
+from odylith.common.release_text import normalize_release_version as _normalize_release_version
 from odylith.install.fs import atomic_write_text
 from odylith.install.manager import PRODUCT_REPO_ROLE, product_repo_role, product_source_version
 from odylith.install.state import ProductVersionPin, load_version_pin, version_pin_path, write_version_pin
@@ -103,16 +104,6 @@ def validate_version_truth(*, repo_root: str | Path) -> list[str]:
                 f"tracked product pin `{truth.pin_version}` does not match `pyproject.toml` version `{truth.source_version}`"
             )
     return errors
-
-
-def _normalize_release_version(version: str) -> str:
-    """Normalize version input so callers can pass either `0.x.y` or `v0.x.y`."""
-    normalized = str(version or "").strip()
-    if normalized.startswith("v"):
-        normalized = normalized[1:]
-    return normalized
-
-
 def validate_release_security_docs(*, repo_root: str | Path, expected_version: str) -> list[str]:
     """Validate that release-facing security docs mention the expected release tag."""
     truth = collect_version_truth(repo_root=repo_root)

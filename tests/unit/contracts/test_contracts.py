@@ -1,4 +1,5 @@
 from odylith.contracts import AgentHostAdapter, AgentPlanStep, AgentPlanV1, AgentRouteV1
+from odylith.contracts.severity import VALID_SEVERITIES, render_valid_severities
 
 
 def test_agent_host_adapter_payload_round_trip_shape() -> None:
@@ -52,3 +53,8 @@ def test_agent_plan_v1_payload_includes_steps() -> None:
     payload = plan.to_payload()
     assert payload["schema"] == "agent_plan.v1"
     assert payload["steps"][0]["owner"] == "worker-a"
+
+
+def test_severity_contract_stays_stable() -> None:
+    assert VALID_SEVERITIES == {"critical", "high", "medium", "low"}
+    assert render_valid_severities() == "critical, high, low, medium"

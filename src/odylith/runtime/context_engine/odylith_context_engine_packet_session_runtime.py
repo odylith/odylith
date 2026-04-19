@@ -2,12 +2,6 @@
 
 from __future__ import annotations
 
-def _store():
-    from odylith.runtime.context_engine import odylith_context_engine_store as store
-
-    return store
-
-
 from pathlib import Path
 import time
 from typing import Any
@@ -54,7 +48,7 @@ def build_session_brief(
     root = Path(repo_root).resolve()
     started_at = time.perf_counter()
     stage_timings: dict[str, float] = {}
-    hot_path = _store()._delivery_profile_hot_path(delivery_profile)
+    hot_path = context_engine_store._delivery_profile_hot_path(delivery_profile)
     normalized_turn_context = turn_context_runtime.normalize_turn_context(
         intent=intent,
         surfaces=generated_surfaces,
@@ -65,12 +59,12 @@ def build_session_brief(
     )
     semantic_intent = turn_context_runtime.operator_ask_text(normalized_turn_context) or str(intent or "").strip()
     stage_started = time.perf_counter()
-    guidance_catalog = _store().tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
-    optimization_snapshot = {} if hot_path else _store().load_runtime_optimization_snapshot(repo_root=root)
-    stage_timings["guidance_catalog"] = _store()._elapsed_stage_ms(stage_started)
+    guidance_catalog = context_engine_store.tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
+    optimization_snapshot = {} if hot_path else context_engine_store.load_runtime_optimization_snapshot(repo_root=root)
+    stage_timings["guidance_catalog"] = context_engine_store._elapsed_stage_ms(stage_started)
     stage_started = time.perf_counter()
     effective_session_id = agent_runtime_contract.fallback_session_token(session_id)
-    path_scope = _store()._resolve_changed_path_scope_context(
+    path_scope = context_engine_store._resolve_changed_path_scope_context(
         repo_root=root,
         explicit_paths=changed_paths,
         use_working_tree=use_working_tree,
@@ -79,7 +73,7 @@ def build_session_brief(
         claimed_paths=claimed_paths,
         intent=intent,
     )
-    stage_timings["path_scope"] = _store()._elapsed_stage_ms(stage_started)
+    stage_timings["path_scope"] = context_engine_store._elapsed_stage_ms(stage_started)
     effective_paths = list(path_scope["analysis_paths"])
     explicit = list(path_scope["explicit_paths"])
     explicit_claims = list(path_scope["explicit_claim_paths"])
@@ -119,7 +113,7 @@ def build_session_brief(
             impact_kwargs.pop("skip_runtime_warmup", None)
             impact_kwargs.pop("finalize_packet", None)
             impact = build_impact_report(**impact_kwargs)
-        stage_timings["impact"] = _store()._elapsed_stage_ms(stage_started)
+        stage_timings["impact"] = context_engine_store._elapsed_stage_ms(stage_started)
     if isinstance(impact.get("changed_paths"), list):
         effective_paths = [str(token) for token in impact.get("changed_paths", []) if str(token).strip()]
     candidate_workstreams = (
@@ -149,7 +143,7 @@ def build_session_brief(
         selection = impact_selection
     else:
         try:
-            connection = _store()._connect(root)
+            connection = context_engine_store._connect(root)
         except RuntimeError:
             explicit_workstream = str(workstream or "").strip().upper()
             top_candidate = dict(candidate_workstreams[0]) if candidate_workstreams else {}
@@ -178,8 +172,8 @@ def build_session_brief(
             }
         else:
             try:
-                judgment_workstream_hint = _store()._load_judgment_workstream_hint(repo_root=root, changed_paths=effective_paths)
-                selection = _store()._workstream_selection(
+                judgment_workstream_hint = context_engine_store._load_judgment_workstream_hint(repo_root=root, changed_paths=effective_paths)
+                selection = context_engine_store._workstream_selection(
                     connection=connection,
                     candidates=candidate_workstreams,
                     explicit_workstream=str(workstream or "").strip(),
@@ -187,7 +181,7 @@ def build_session_brief(
                 )
             finally:
                 connection.close()
-    stage_timings["selection"] = _store()._elapsed_stage_ms(stage_started)
+    stage_timings["selection"] = context_engine_store._elapsed_stage_ms(stage_started)
     selection_state = str(selection.get("state", "")).strip()
     selected_workstream = (
         dict(selection.get("selected_workstream", {}))
@@ -200,7 +194,7 @@ def build_session_brief(
         else ""
     )
     dossier = (
-        _store().load_context_dossier(repo_root=root, ref=inferred_workstream, kind="workstream", runtime_mode=runtime_mode)
+        context_engine_store.load_context_dossier(repo_root=root, ref=inferred_workstream, kind="workstream", runtime_mode=runtime_mode)
         if inferred_workstream and not hot_path
         else {"resolved": False}
     )
@@ -216,21 +210,21 @@ def build_session_brief(
             "workstream": inferred_workstream,
             "intent": str(intent or "").strip(),
             "turn_context": turn_context_runtime.compact_turn_context(normalized_turn_context),
-            "claim_mode": _store()._normalize_claim_mode(claim_mode),
+            "claim_mode": context_engine_store._normalize_claim_mode(claim_mode),
             "explicit_paths": explicit,
-            "claimed_paths": _store()._dedupe_strings([*auto_claim_paths, *explicit_claim_paths, *effective_paths]),
+            "claimed_paths": context_engine_store._dedupe_strings([*auto_claim_paths, *explicit_claim_paths, *effective_paths]),
             "analysis_paths": effective_paths,
-            "generated_surfaces": _store()._dedupe_strings([str(token).strip() for token in generated_surfaces if str(token).strip()]),
+            "generated_surfaces": context_engine_store._dedupe_strings([str(token).strip() for token in generated_surfaces if str(token).strip()]),
             "selection_state": selection_state,
             "selection_reason": str(selection.get("reason", "")).strip(),
             "working_tree_scope": str(path_scope.get("working_tree_scope", "")).strip(),
-            "branch_name": _store()._git_branch_name(repo_root=root) if track_hot_path_session_state else "",
-            "head_oid": _store()._git_head_oid(repo_root=root) if track_hot_path_session_state else "",
-            "updated_utc": _store()._utc_now(),
+            "branch_name": context_engine_store._git_branch_name(repo_root=root) if track_hot_path_session_state else "",
+            "head_oid": context_engine_store._git_head_oid(repo_root=root) if track_hot_path_session_state else "",
+            "updated_utc": context_engine_store._utc_now(),
         }
-        active_sessions = _store().list_session_states(repo_root=root, prune=False) if track_hot_path_session_state else []
+        active_sessions = context_engine_store.list_session_states(repo_root=root, prune=False) if track_hot_path_session_state else []
     else:
-        session_state = _store().register_session_state(
+        session_state = context_engine_store.register_session_state(
             repo_root=root,
             session_id=effective_session_id,
             workstream=inferred_workstream,
@@ -249,16 +243,16 @@ def build_session_brief(
             claimed_paths=explicit_claims,
             lease_seconds=lease_seconds,
         )
-        active_sessions = _store().list_session_states(repo_root=root)
-    stage_timings["session_state"] = _store()._elapsed_stage_ms(stage_started)
+        active_sessions = context_engine_store.list_session_states(repo_root=root)
+    stage_timings["session_state"] = context_engine_store._elapsed_stage_ms(stage_started)
     conflicts = (
-        _store()._session_conflicts(
+        context_engine_store._session_conflicts(
             current_session_id=effective_session_id,
             workstream=inferred_workstream,
             changed_paths=session_state.get("claimed_paths", []),
-            generated_surfaces=_store()._dedupe_strings([str(token) for token in generated_surfaces]),
+            generated_surfaces=context_engine_store._dedupe_strings([str(token) for token in generated_surfaces]),
             session_rows=active_sessions,
-            claim_mode=_store()._normalize_claim_mode(claim_mode),
+            claim_mode=context_engine_store._normalize_claim_mode(claim_mode),
             current_branch_name=str(session_state.get("branch_name", "")).strip(),
             current_head_oid=str(session_state.get("head_oid", "")).strip(),
         )
@@ -273,13 +267,13 @@ def build_session_brief(
         if selection_state == "explicit"
         else (
             str(impact.get("context_packet_state", "")).strip()
-            or _store()._impact_packet_state(
-                shared_only=_store()._broad_shared_only_input(effective_paths),
+            or context_engine_store._impact_packet_state(
+                shared_only=context_engine_store._broad_shared_only_input(effective_paths),
                 selection_state=selection_state,
             )
         )
     )
-    packet_selection = _store()._compact_workstream_selection_for_packet(selection)
+    packet_selection = context_engine_store._compact_workstream_selection_for_packet(selection)
     compact_turn_context = turn_context_runtime.compact_turn_context(normalized_turn_context)
     target_resolution = turn_context_runtime.compact_target_resolution(
         turn_context_runtime.resolve_turn_targets(
@@ -306,14 +300,14 @@ def build_session_brief(
         )
         else []
     )
-    impact_summary = _store()._impact_summary_payload(impact)
+    impact_summary = context_engine_store._impact_summary_payload(impact)
     impact_commands = (
         [str(token).strip() for token in impact_summary.get("recommended_commands", []) if str(token).strip()]
         if isinstance(impact_summary.get("recommended_commands"), list)
         else []
     )
     hint_commands = [str(token).strip() for token in validation_command_hints if str(token).strip()]
-    impact_recommended_commands = _store()._dedupe_strings([*impact_commands, *hint_commands])
+    impact_recommended_commands = context_engine_store._dedupe_strings([*impact_commands, *hint_commands])
     if impact_recommended_commands:
         impact_summary["recommended_commands"] = impact_recommended_commands
     payload = {
@@ -336,7 +330,7 @@ def build_session_brief(
         "workstream_selection": packet_selection,
         "impact": impact_summary,
         "workstream_context": (
-            _store()._compact_context_dossier(
+            context_engine_store._compact_context_dossier(
                 dossier,
                 relation_limit_per_kind=2,
                 event_limit=2,
@@ -346,7 +340,7 @@ def build_session_brief(
             else {}
         ),
         "context_packet_state": packet_state,
-        "truncation": _store()._compact_truncation_for_summary(impact.get("truncation", {}))
+        "truncation": context_engine_store._compact_truncation_for_summary(impact.get("truncation", {}))
         if isinstance(impact.get("truncation"), Mapping)
         else {},
         "full_scan_recommended": bool(impact.get("full_scan_recommended")) and selection_state != "explicit",
@@ -361,7 +355,7 @@ def build_session_brief(
         impact_summary = dict(payload.get("impact", {}))
         docs = impact_summary.get("docs", [])
         if isinstance(docs, list):
-            impact_summary["docs"] = _store()._bootstrap_relevant_docs(
+            impact_summary["docs"] = context_engine_store._bootstrap_relevant_docs(
                 [str(token).strip() for token in docs if str(token).strip()],
                 guidance_rows=[dict(row) for row in impact_summary.get("guidance_brief", []) if isinstance(row, Mapping)]
                 if isinstance(impact_summary.get("guidance_brief"), list)
@@ -378,7 +372,7 @@ def build_session_brief(
         packet_state=packet_state,
         changed_paths=effective_paths,
         explicit_paths=explicit,
-        shared_only_input=_store()._broad_shared_only_input(effective_paths),
+        shared_only_input=context_engine_store._broad_shared_only_input(effective_paths),
         selection_state=selection_state,
         workstream_selection=packet_selection,
         candidate_workstreams=payload.get("candidate_workstreams", [])
@@ -407,14 +401,14 @@ def build_session_brief(
         optimization_snapshot=optimization_snapshot,
         delivery_profile=delivery_profile,
     )
-    stage_timings["finalize"] = _store()._elapsed_stage_ms(stage_started)
+    stage_timings["finalize"] = context_engine_store._elapsed_stage_ms(stage_started)
     timing_payload = payload
     if hot_path:
-        payload = _store()._compact_hot_path_runtime_packet(
+        payload = context_engine_store._compact_hot_path_runtime_packet(
             packet_kind="session_brief",
             payload=payload,
         )
-    _store().record_runtime_timing(
+    context_engine_store.record_runtime_timing(
         repo_root=root,
         category="reasoning",
         operation="session_brief",
@@ -433,8 +427,8 @@ def build_session_brief(
             "estimated_tokens": int(dict(timing_payload.get("packet_metrics", {})).get("estimated_tokens", 0) or 0)
             if isinstance(timing_payload.get("packet_metrics"), Mapping)
             else 0,
-            "stage_timings": _store()._compact_stage_timings(stage_timings),
-            "family_hint": _store()._normalize_family_hint(family_hint),
+            "stage_timings": context_engine_store._compact_stage_timings(stage_timings),
+            "family_hint": context_engine_store._normalize_family_hint(family_hint),
         },
     )
     if hot_path or not compact_delivery:
@@ -472,11 +466,11 @@ def build_session_bootstrap(
     root = Path(repo_root).resolve()
     started_at = time.perf_counter()
     stage_timings: dict[str, float] = {}
-    hot_path = _store()._delivery_profile_hot_path(delivery_profile)
-    optimization_snapshot = {} if hot_path else _store().load_runtime_optimization_snapshot(repo_root=root)
+    hot_path = context_engine_store._delivery_profile_hot_path(delivery_profile)
+    optimization_snapshot = {} if hot_path else context_engine_store.load_runtime_optimization_snapshot(repo_root=root)
     stage_started = time.perf_counter()
-    guidance_catalog = _store().tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
-    stage_timings["guidance_catalog"] = _store()._elapsed_stage_ms(stage_started)
+    guidance_catalog = context_engine_store.tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
+    stage_timings["guidance_catalog"] = context_engine_store._elapsed_stage_ms(stage_started)
     stage_started = time.perf_counter()
     brief = build_session_brief(
         repo_root=root,
@@ -502,7 +496,7 @@ def build_session_bootstrap(
         skip_impact_runtime_warmup=skip_impact_runtime_warmup,
         compact_delivery=False,
     )
-    stage_timings["session_brief"] = _store()._elapsed_stage_ms(stage_started)
+    stage_timings["session_brief"] = context_engine_store._elapsed_stage_ms(stage_started)
     impact = brief.get("impact", {}) if isinstance(brief.get("impact"), Mapping) else {}
     impact_doc_candidates: list[str] = []
     if isinstance(impact.get("docs"), list):
@@ -518,7 +512,7 @@ def build_session_bootstrap(
                 for row in bucket
                 if isinstance(row, Mapping) and str(row.get("path", "")).strip()
             )
-    relevant_docs = _store()._bootstrap_relevant_docs(
+    relevant_docs = context_engine_store._bootstrap_relevant_docs(
         impact_doc_candidates,
         guidance_rows=[dict(row) for row in impact.get("guidance_brief", []) if isinstance(row, Mapping)]
         if isinstance(impact.get("guidance_brief"), list)
@@ -531,19 +525,19 @@ def build_session_bootstrap(
         if str(token).strip()
     ] if isinstance(impact.get("recommended_commands"), list) else []
     recommended_tests = [
-        _store()._compact_test_row_for_packet(row)
+        context_engine_store._compact_test_row_for_packet(row)
         for row in impact.get("recommended_tests", [])[: max(1, int(test_limit))]
         if isinstance(row, Mapping)
     ] if isinstance(impact.get("recommended_tests"), list) else []
     stage_started = time.perf_counter()
-    timing_summary = _store().load_runtime_timing_summary(repo_root=root, limit=12) if not hot_path else {}
-    runtime_state = _store().read_runtime_state(repo_root=root) if not hot_path else {}
-    stage_timings["runtime_state"] = _store()._elapsed_stage_ms(stage_started)
+    timing_summary = context_engine_store.load_runtime_timing_summary(repo_root=root, limit=12) if not hot_path else {}
+    runtime_state = context_engine_store.read_runtime_state(repo_root=root) if not hot_path else {}
+    stage_timings["runtime_state"] = context_engine_store._elapsed_stage_ms(stage_started)
     brief_context_packet = dict(brief.get("context_packet", {})) if isinstance(brief.get("context_packet"), Mapping) else {}
     brief_route = dict(brief_context_packet.get("route", {})) if isinstance(brief_context_packet.get("route"), Mapping) else {}
     brief_selection = _hot_path_workstream_selection(brief)
     payload = {
-        "bootstrapped_at": _store()._utc_now(),
+        "bootstrapped_at": context_engine_store._utc_now(),
         "session": dict(brief.get("session", {})) if isinstance(brief.get("session"), Mapping) else {},
         "turn_context": dict(brief.get("turn_context", {})) if isinstance(brief.get("turn_context"), Mapping) else {},
         "target_resolution": dict(brief.get("target_resolution", {})) if isinstance(brief.get("target_resolution"), Mapping) else {},
@@ -560,19 +554,19 @@ def build_session_bootstrap(
         else [],
         "working_tree_scope": str(brief.get("working_tree_scope", "")).strip(),
         "working_tree_scope_degraded": bool(brief.get("working_tree_scope_degraded")),
-        "inferred_workstream": _store()._payload_workstream_hint(brief, include_selection=False),
+        "inferred_workstream": context_engine_store._payload_workstream_hint(brief, include_selection=False),
         "selection_state": str(brief_selection.get("state", "")).strip()
         or str(brief_context_packet.get("selection_state", "")).strip(),
         "selection_reason": str(brief_selection.get("reason", "")).strip(),
         "selection_confidence": str(brief_selection.get("confidence", "")).strip(),
         "candidate_workstreams": [
-            _store()._compact_workstream_reference_for_packet(row)
+            context_engine_store._compact_workstream_reference_for_packet(row)
             for row in brief.get("candidate_workstreams", [])
             if isinstance(row, Mapping)
         ]
         if isinstance(brief.get("candidate_workstreams"), list)
         else [],
-        "workstream_selection": _store()._compact_bootstrap_workstream_selection(brief.get("workstream_selection", {}))
+        "workstream_selection": context_engine_store._compact_bootstrap_workstream_selection(brief.get("workstream_selection", {}))
         if isinstance(brief.get("workstream_selection"), Mapping)
         else {},
         "context_packet_state": str(brief.get("context_packet_state", "")).strip()
@@ -585,33 +579,33 @@ def build_session_bootstrap(
         if isinstance(brief.get("fallback_scan"), Mapping)
         else {},
         "impact_summary": {
-            "primary_workstream": _store()._compact_workstream_row_for_packet(impact.get("primary_workstream", {}))
+            "primary_workstream": context_engine_store._compact_workstream_row_for_packet(impact.get("primary_workstream", {}))
             if isinstance(impact.get("primary_workstream"), Mapping)
             else {},
-            "components": [_store()._compact_component_row_for_packet(row) for row in impact.get("components", []) if isinstance(row, Mapping)]
+            "components": [context_engine_store._compact_component_row_for_packet(row) for row in impact.get("components", []) if isinstance(row, Mapping)]
             if isinstance(impact.get("components"), list)
             else [],
             "workstreams": [
-                _store()._compact_workstream_reference_for_packet(row)
+                context_engine_store._compact_workstream_reference_for_packet(row)
                 for row in brief.get("candidate_workstreams", [])
                 if isinstance(row, Mapping)
             ]
             if isinstance(brief.get("candidate_workstreams"), list)
             else [],
-            "diagrams": [_store()._compact_diagram_row_for_packet(row) for row in impact.get("diagrams", []) if isinstance(row, Mapping)]
+            "diagrams": [context_engine_store._compact_diagram_row_for_packet(row) for row in impact.get("diagrams", []) if isinstance(row, Mapping)]
             if isinstance(impact.get("diagrams"), list)
             else [],
             "guidance_brief": [dict(row) for row in impact.get("guidance_brief", []) if isinstance(row, Mapping)]
             if isinstance(impact.get("guidance_brief"), list)
             else [],
-            "miss_recovery": _store()._compact_miss_recovery_for_packet(impact.get("miss_recovery", {}))
+            "miss_recovery": context_engine_store._compact_miss_recovery_for_packet(impact.get("miss_recovery", {}))
             if isinstance(impact.get("miss_recovery"), Mapping)
             else {},
         },
         "relevant_docs": relevant_docs,
         "recommended_commands": recommended_commands,
         "recommended_tests": recommended_tests,
-        "top_engineering_notes": _store()._compact_engineering_notes(
+        "top_engineering_notes": context_engine_store._compact_engineering_notes(
             impact.get("engineering_notes", {}) if isinstance(impact.get("engineering_notes"), Mapping) else {},
             total_limit=3,
             per_kind_limit=1,
@@ -625,7 +619,7 @@ def build_session_bootstrap(
             "projection_fingerprint": str(runtime_state.get("projection_fingerprint", "")).strip(),
             "projection_scope": str(runtime_state.get("projection_scope", "")).strip(),
             "updated_utc": str(runtime_state.get("updated_utc", "")).strip(),
-            "timings": _store()._compact_runtime_timing_rows_for_packet(timing_summary)
+            "timings": context_engine_store._compact_runtime_timing_rows_for_packet(timing_summary)
             if isinstance(timing_summary, Mapping)
             else {},
         },
@@ -641,7 +635,7 @@ def build_session_bootstrap(
         packet_state=str(payload.get("context_packet_state", "")).strip(),
         changed_paths=payload.get("changed_paths", []) if isinstance(payload.get("changed_paths"), list) else [],
         explicit_paths=payload.get("explicit_paths", []) if isinstance(payload.get("explicit_paths"), list) else [],
-        shared_only_input=_store()._broad_shared_only_input(
+        shared_only_input=context_engine_store._broad_shared_only_input(
             payload.get("changed_paths", []) if isinstance(payload.get("changed_paths"), list) else []
         ),
         selection_state=str(payload.get("selection_state", "")).strip(),
@@ -677,10 +671,10 @@ def build_session_bootstrap(
         optimization_snapshot=optimization_snapshot,
         delivery_profile=delivery_profile,
     )
-    stage_timings["finalize"] = _store()._elapsed_stage_ms(stage_started)
+    stage_timings["finalize"] = context_engine_store._elapsed_stage_ms(stage_started)
     timing_payload = payload
     if hot_path:
-        payload = _store()._compact_hot_path_runtime_packet(
+        payload = context_engine_store._compact_hot_path_runtime_packet(
             packet_kind="bootstrap_session",
             payload=payload,
         )
@@ -688,36 +682,36 @@ def build_session_bootstrap(
         payload = session_bootstrap_payload_compactor.compact_finalized_bootstrap_payload(payload)
     if isinstance(timing_payload.get("session"), Mapping) and not hot_path:
         session_payload = dict(timing_payload.get("session", {}))
-        target = _store()._bootstrap_record_path(repo_root=root, session_id=str(session_payload.get("session_id", "")).strip())
-        _store().odylith_context_cache.write_json_if_changed(
+        target = context_engine_store._bootstrap_record_path(repo_root=root, session_id=str(session_payload.get("session_id", "")).strip())
+        context_engine_store.odylith_context_cache.write_json_if_changed(
             repo_root=root,
             path=target,
             payload=timing_payload,
             lock_key=str(target),
         )
-        _store().prune_runtime_records(repo_root=root)
+        context_engine_store.prune_runtime_records(repo_root=root)
     if not hot_path:
         packet_summary = odylith_context_engine_packet_summary_runtime._packet_summary_from_bootstrap_payload(timing_payload)
-        benchmark_summary = _store()._packet_benchmark_summary_for_runtime_packet(
+        benchmark_summary = context_engine_store._packet_benchmark_summary_for_runtime_packet(
             repo_root=root,
             packet=packet_summary,
         )
-        control_advisories = dict(_store().load_runtime_optimization_snapshot(repo_root=root).get("control_advisories", {}))
-        _store().odylith_evaluation_ledger.append_event(
+        control_advisories = dict(context_engine_store.load_runtime_optimization_snapshot(repo_root=root).get("control_advisories", {}))
+        context_engine_store.odylith_evaluation_ledger.append_event(
             repo_root=root,
             event_type="packet",
             event_id=(
                 f"{str(packet_summary.get('session_id', '')).strip()}::"
                 f"{str(packet_summary.get('bootstrapped_at', '')).strip()}"
             ),
-            payload=_store().odylith_evaluation_ledger.packet_event_payload(
+            payload=context_engine_store.odylith_evaluation_ledger.packet_event_payload(
                 packet_summary=packet_summary,
                 benchmark_summary=benchmark_summary,
                 control_advisories=control_advisories,
             ),
             recorded_at=str(packet_summary.get("bootstrapped_at", "")).strip(),
         )
-    _store().record_runtime_timing(
+    context_engine_store.record_runtime_timing(
         repo_root=root,
         category="reasoning",
         operation="bootstrap_session",
@@ -734,8 +728,10 @@ def build_session_bootstrap(
             "estimated_tokens": int(dict(timing_payload.get("packet_metrics", {})).get("estimated_tokens", 0) or 0)
             if isinstance(timing_payload.get("packet_metrics"), Mapping)
             else 0,
-            "stage_timings": _store()._compact_stage_timings(stage_timings),
-            "family_hint": _store()._normalize_family_hint(family_hint),
+            "stage_timings": context_engine_store._compact_stage_timings(stage_timings),
+            "family_hint": context_engine_store._normalize_family_hint(family_hint),
         },
     )
     return payload
+# Keep the store dependency explicit without pulling it through module bootstrap.
+from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store

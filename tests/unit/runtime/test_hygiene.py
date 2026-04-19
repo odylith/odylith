@@ -814,6 +814,9 @@ def test_context_engine_bind_shims_are_eliminated_from_remaining_extracts() -> N
         assert "def bind(host: Any) -> None:" not in text, f"bind shim resurfaced in {path.relative_to(ROOT)}"
         assert "_HOST_BIND_NAMES" not in text, f"host bind list resurfaced in {path.relative_to(ROOT)}"
         assert "globals().update({" not in text, f"globals injection resurfaced in {path.relative_to(ROOT)}"
+        assert "def _store():" not in text, f"store shim resurfaced in {path.relative_to(ROOT)}"
+        assert "class _Store" not in text, f"store proxy resurfaced in {path.relative_to(ROOT)}"
+        assert "_LazyModuleProxy" not in text, f"lazy module proxy resurfaced in {path.relative_to(ROOT)}"
 
 
 def test_context_engine_legacy_binding_modules_are_deleted() -> None:
@@ -824,6 +827,16 @@ def test_context_engine_legacy_binding_modules_are_deleted() -> None:
     )
     for path in paths:
         assert not path.exists(), f"legacy binding module survived cleanup: {path.relative_to(ROOT)}"
+
+
+def test_runtime_store_shims_are_not_reintroduced_outside_context_engine() -> None:
+    paths = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_refresh_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "sync_workstream_artifacts.py",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "def _context_engine_store():" not in text, f"context-engine store shim resurfaced in {path.relative_to(ROOT)}"
 
 
 def test_selected_runtime_extracts_do_not_rebind_host_modules() -> None:
@@ -943,6 +956,57 @@ def test_intervention_and_host_surfaces_use_shared_normalization_and_join_helper
         else:
             assert "host_intervention_support.build_stop_conversation_bundle(" in text
             assert "host_intervention_support.render_stop_bundle_text(" in text
+
+
+def test_selected_runtime_and_install_slices_use_shared_json_release_and_severity_owners() -> None:
+    json_owner_paths = (
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "guidance_behavior_benchmark_contracts.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_guidance_behavior.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_agent_operating_character.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "release_truth_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "tooling_dashboard_surface_status.py",
+    )
+    for path in json_owner_paths:
+        text = path.read_text(encoding="utf-8")
+        assert "from odylith.common.json_objects import " in text
+        if path.name in {"validate_guidance_behavior.py", "validate_agent_operating_character.py"}:
+            assert "json.loads(path.read_text" not in text
+        if path.name in {"guidance_behavior_benchmark_contracts.py", "release_truth_runtime.py", "tooling_dashboard_surface_status.py"}:
+            assert "def _read_json_object(" in text
+
+    release_text_paths = (
+        ROOT / "src" / "odylith" / "install" / "release_assets.py",
+        ROOT / "src" / "odylith" / "runtime" / "release_notes.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "version_truth.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "tooling_dashboard_release_presenter.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "shell_onboarding.py",
+    )
+    for path in release_text_paths:
+        text = path.read_text(encoding="utf-8")
+        assert "from odylith.common.release_text import " in text
+    for path in (
+        ROOT / "src" / "odylith" / "runtime" / "release_notes.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "tooling_dashboard_release_presenter.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "shell_onboarding.py",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert 're.sub(r"\\[([^\\]]+)\\]\\([^)]+\\)", r"\\1", token)' not in text
+        assert 're.sub(r"<[^>]+>", "", token)' not in text
+
+    severity_paths = (
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_guidance_behavior.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_agent_operating_character.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "guidance_behavior_runtime.py",
+    )
+    for path in severity_paths:
+        text = path.read_text(encoding="utf-8")
+        assert "from odylith.contracts.severity import " in text
+    validate_guidance_text = severity_paths[0].read_text(encoding="utf-8")
+    validate_character_text = severity_paths[1].read_text(encoding="utf-8")
+    runtime_text = severity_paths[2].read_text(encoding="utf-8")
+    assert "_VALID_SEVERITIES = {" not in validate_guidance_text
+    assert "VALID_SEVERITIES = {" not in validate_character_text
+    assert "validate_guidance_behavior._VALID_SEVERITIES" not in runtime_text
 
 
 def test_compass_runtime_payload_uses_window_summary_support_owner() -> None:
