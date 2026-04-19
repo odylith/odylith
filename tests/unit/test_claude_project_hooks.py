@@ -110,8 +110,10 @@ def test_show_me_prompt_guard_routes_first_demo_without_launcher(tmp_path: Path)
     additional_context = payload["hookSpecificOutput"]["additionalContext"]
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "odylith-show-me" in additional_context
-    assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." in additional_context
-    assert "stdout only" in additional_context
+    assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." not in additional_context
+    assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
+    assert "`odylith show --repo-root .`" in additional_context
+    assert "capture stdout only" in additional_context
     assert "`intervention-status`, `visible-intervention`" in additional_context
     assert "launcher-state explanations" in additional_context
 
