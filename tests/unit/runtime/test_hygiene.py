@@ -917,13 +917,25 @@ def test_router_assessment_runtime_uses_execution_engine_owner_and_avoids_local_
     path = ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_assessment_runtime.py"
     text = path.read_text(encoding="utf-8")
     assert "from odylith.runtime.orchestration import subagent_router_signal_summary" in text
-    assert "request_with_consumer_write_policy = subagent_router_signal_summary.request_with_consumer_write_policy" in text
-    assert "_context_signal_summary = subagent_router_signal_summary._context_signal_summary" in text
+    assert "from odylith.runtime.orchestration import subagent_router_assessment_context" in text
+    assert "request_with_consumer_write_policy = signal_summary.request_with_consumer_write_policy" in text
+    assert "_context_signal_summary = signal_summary._context_signal_summary" in text
+    assert "subagent_router_assessment_context.AssessmentState(" in text
+    assert "subagent_router_assessment_context.apply_context_signal_adjustments(" in text
     for fragment in (
         "def _bool_value(",
         "def _preferred_value(",
         "def request_with_consumer_write_policy(",
         "def _context_signal_summary(",
+        "request_with_consumer_write_policy = subagent_router_signal_summary.request_with_consumer_write_policy",
+        "_context_signal_summary = subagent_router_signal_summary._context_signal_summary",
+        "_normalize_string = ",
+        "_normalize_list = ",
+        "_normalize_token = ",
+        "_clamp_score = ",
+        "_keyword_score = ",
+        "_contains_any = ",
+        "_router_profile_from_token = ",
     ):
         assert fragment not in text, f"router assessment local signal wall resurfaced in {path.relative_to(ROOT)}"
 
@@ -931,3 +943,14 @@ def test_router_assessment_runtime_uses_execution_engine_owner_and_avoids_local_
     support_text = support_path.read_text(encoding="utf-8")
     assert "execution_engine_summary_from_context_sources(" in support_text
     assert "router_execution_engine_fields(" in support_text
+
+    context_path = ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_assessment_context.py"
+    context_text = context_path.read_text(encoding="utf-8")
+    assert "class AssessmentState:" in context_text
+    assert "def apply_context_signal_adjustments(" in context_text
+    for fragment in (
+        "def bind(host: Any) -> None:",
+        "_HOST_BIND_NAMES",
+        "globals().update(",
+    ):
+        assert fragment not in context_text, f"router assessment context regressed into host-binding sludge in {context_path.relative_to(ROOT)}"
