@@ -1513,7 +1513,9 @@ def test_bootstrap_delivery_includes_execution_engine() -> None:
 
 
 def test_context_dossier_delivery_includes_execution_engine() -> None:
-    from odylith.runtime.context_engine.odylith_context_engine_store import compact_context_dossier_for_delivery
+    from odylith.runtime.context_engine.odylith_context_engine_dossier_compaction_runtime import (
+        compact_context_dossier_for_delivery,
+    )
 
     dossier = {
         "resolved": True,

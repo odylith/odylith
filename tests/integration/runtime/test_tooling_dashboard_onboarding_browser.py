@@ -117,7 +117,7 @@ def _seed_consumer_repo(
 
 def _render_shell(repo_root: Path, monkeypatch) -> None:  # noqa: ANN001
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -128,7 +128,7 @@ def _render_shell(repo_root: Path, monkeypatch) -> None:  # noqa: ANN001
 
 def _render_shell_with_payload(repo_root: Path, monkeypatch, shell_payload: dict[str, object]) -> None:  # noqa: ANN001
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: dict(shell_payload),
     )
@@ -138,14 +138,14 @@ def _render_shell_with_payload(repo_root: Path, monkeypatch, shell_payload: dict
 
 
 def _render_shell_without_monkeypatch(repo_root: Path) -> None:
-    original_loader = renderer.odylith_context_engine_store.load_delivery_surface_payload
+    original_loader = renderer.delivery_surface_payload_runtime.load_delivery_surface_payload
     original_self_host = renderer._build_self_host_payload
-    renderer.odylith_context_engine_store.load_delivery_surface_payload = lambda **kwargs: {}
+    renderer.delivery_surface_payload_runtime.load_delivery_surface_payload = lambda **kwargs: {}
     renderer._build_self_host_payload = lambda **kwargs: {}
     try:
         rc = renderer.main(["--repo-root", str(repo_root), "--output", "odylith/index.html"])
     finally:
-        renderer.odylith_context_engine_store.load_delivery_surface_payload = original_loader
+        renderer.delivery_surface_payload_runtime.load_delivery_surface_payload = original_loader
         renderer._build_self_host_payload = original_self_host
     assert rc == 0
 

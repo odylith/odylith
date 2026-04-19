@@ -42,6 +42,8 @@ ownership, not just file boundaries.
 - Do not treat a shared helper or kernel as a cleanup ornament. If it lands,
   adopt it in the touched slice or leave a bounded follow-up tied to the same
   slop class.
+- Partial shared-kernel adoption is still incomplete. If a shared helper or
+  kernel lands, the touched callers must adopt it or the pass is incomplete.
 - If a touched hand-maintained source file is already above `1200` LOC,
   choose decomposition or carry an explicit active decomposition plan before
   adding more growth.
@@ -99,6 +101,9 @@ ownership, not just file boundaries.
   source and bundle copies in the same change.
 - If the pass claims repo-wide or lane-wide cleanup, rerun the requested
   repo-wide structural scan or equivalent inventory before closeout.
+- Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
+  behavior proof for the touched slice and a fresh structural inventory for
+  the claimed scope. One does not substitute for the other.
 - If the change touches shared runtime hot paths, run the full runtime suite.
 - If the change touches browser-proved surfaces, run the full headless browser
   matrix.

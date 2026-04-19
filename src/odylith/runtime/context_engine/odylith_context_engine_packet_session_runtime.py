@@ -9,6 +9,7 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
@@ -22,6 +23,7 @@ _hot_path_workstream_selection = odylith_context_engine_hot_path_packet_core_run
 def build_impact_report(**kwargs: Any) -> dict[str, Any]:
     """Defer impact-grounding lookup until call time to avoid import-cycle breakage."""
     return odylith_context_engine_grounding_runtime.build_impact_report(**kwargs)
+
 
 def build_session_brief(
     *,
@@ -334,7 +336,7 @@ def build_session_brief(
         "workstream_selection": packet_selection,
         "impact": impact_summary,
         "workstream_context": (
-            context_engine_store._compact_context_dossier(
+            dossier_compaction_runtime.compact_context_dossier_for_delivery(
                 dossier,
                 relation_limit_per_kind=2,
                 event_limit=2,

@@ -216,7 +216,7 @@ def _seed_consumer_upgrade_spotlight(tmp_path: Path) -> None:
 def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -345,7 +345,7 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
 def test_shell_case_preview_rows_include_proof_preview_lines(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -452,7 +452,7 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
     _seed_inputs(tmp_path)
     _seed_product_repo_posture(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -488,7 +488,7 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
 def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -521,7 +521,7 @@ def test_render_tooling_dashboard_dedupes_stale_compass_runtime_from_shell_statu
     _seed_inputs(tmp_path)
     _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -559,7 +559,7 @@ def test_render_tooling_dashboard_dedupes_stale_failed_compass_refresh_from_shel
         ),
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -597,7 +597,7 @@ def test_render_tooling_dashboard_dedupes_failed_compass_refresh_when_compass_pa
         ),
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -628,7 +628,7 @@ def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_sta
         },
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -658,7 +658,7 @@ def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_pat
     _seed_inputs(tmp_path)
     _seed_product_repo_posture(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -681,7 +681,7 @@ def test_render_tooling_dashboard_shows_detached_product_repo_version_readout(tm
     _seed_inputs(tmp_path)
     _seed_product_repo_source_local_posture(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -700,7 +700,7 @@ def test_render_tooling_dashboard_enables_balanced_live_refresh_for_detached_sou
     _seed_inputs(tmp_path)
     _seed_product_repo_source_local_posture(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -726,7 +726,7 @@ def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_override
     payload["live_refresh_policy"] = "full_dev"
     source_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -751,7 +751,7 @@ def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_override
 def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switches(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -833,7 +833,7 @@ def test_render_tooling_dashboard_hides_welcome_state_once_truth_exists(tmp_path
     _seed_inputs(tmp_path)
     _seed_existing_odylith_truth(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -854,7 +854,7 @@ def test_render_tooling_dashboard_shows_compact_legacy_upgrade_notice(tmp_path: 
     _seed_existing_odylith_truth(tmp_path)
     _seed_legacy_consumer_launcher(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -875,7 +875,7 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     _seed_existing_odylith_truth(tmp_path)
     _seed_consumer_upgrade_spotlight(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -958,7 +958,7 @@ def test_render_tooling_dashboard_persists_version_story_without_live_upgrade_po
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -1005,7 +1005,7 @@ def test_render_tooling_dashboard_release_note_prefers_highlights_over_full_body
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -1039,7 +1039,7 @@ def test_render_tooling_dashboard_includes_version_in_authored_release_hero_titl
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -1074,7 +1074,7 @@ def test_render_tooling_dashboard_prunes_stale_release_note_pages(tmp_path: Path
     rendered_notes_root.mkdir(parents=True, exist_ok=True)
     (rendered_notes_root / "1.2.2.html").write_text("stale\n", encoding="utf-8")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -1106,7 +1106,7 @@ def test_render_tooling_dashboard_escapes_authored_release_note_content(tmp_path
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -1156,7 +1156,7 @@ def test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install
     rendered_notes_root.mkdir(parents=True, exist_ok=True)
     (rendered_notes_root / "1.2.2.html").write_text("stale\n", encoding="utf-8")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -1178,7 +1178,7 @@ def test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install
 def test_render_tooling_dashboard_does_not_embed_internal_status_snapshots(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {
             _legacy_payload_key("memory", "snapshot"): {
@@ -1283,7 +1283,7 @@ def test_render_tooling_dashboard_skips_noop_writes_when_bundle_is_unchanged(
     _seed_inputs(tmp_path)
     _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -1313,7 +1313,7 @@ def test_render_tooling_dashboard_skips_cached_rebuild_before_surface_validation
     _seed_inputs(tmp_path)
     _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )

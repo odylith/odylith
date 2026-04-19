@@ -6,7 +6,7 @@ from odylith.runtime.surfaces import render_backlog_ui_payload_runtime as payloa
 
 
 def test_attach_delivery_scope_signals_annotates_entries(monkeypatch) -> None:
-    class _FakeStore:
+    class _FakeDeliveryPayloadRuntime:
         @staticmethod
         def load_delivery_surface_payload(**_kwargs):
             return {
@@ -32,7 +32,7 @@ def test_attach_delivery_scope_signals_annotates_entries(monkeypatch) -> None:
                 }
             }
 
-    monkeypatch.setattr(payload_runtime, "odylith_context_engine_store", _FakeStore())
+    monkeypatch.setattr(payload_runtime, "delivery_surface_payload_runtime", _FakeDeliveryPayloadRuntime())
     entries = [{"idea_id": "B-040"}, {"idea_id": "B-071"}]
 
     payload_runtime._attach_delivery_scope_signals(  # noqa: SLF001

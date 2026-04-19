@@ -9,6 +9,8 @@ from pathlib import Path
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.consumer_profile import load_consumer_profile
+from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime as packet_adaptive_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.intervention_engine import conversation_runtime
 
@@ -697,7 +699,7 @@ def _auto_ground_request_with_odylith(
         if daemon_result is not None:
             payload, runtime_execution = daemon_result
         else:
-            payload = odylith_store.build_session_bootstrap(
+            payload = packet_session_runtime.build_session_bootstrap(
                 **base_kwargs,
                 workstream=workstream_hint,
                 delivery_profile=_CODEX_HOT_PATH_PROFILE,
@@ -732,7 +734,7 @@ def _auto_ground_request_with_odylith(
         if daemon_result is not None:
             payload, runtime_execution = daemon_result
         else:
-            payload = odylith_store.build_session_brief(
+            payload = packet_session_runtime.build_session_brief(
                 **base_kwargs,
                 workstream=workstream_hint,
                 delivery_profile=_CODEX_HOT_PATH_PROFILE,
@@ -818,7 +820,7 @@ def _auto_ground_request_with_odylith(
                 working_tree_scope=request.working_tree_scope or ("session" if request.session_id else "repo"),
             )
     else:
-        adaptive = odylith_store.build_adaptive_coding_packet_reusing_daemon(
+        adaptive = packet_adaptive_runtime.build_adaptive_coding_packet_reusing_daemon(
             **base_kwargs,
             family_hint=assessment.task_family,
             workstream_hint=workstream_hint,

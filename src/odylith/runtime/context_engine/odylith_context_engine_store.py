@@ -15,7 +15,6 @@ Design constraints:
 from __future__ import annotations
 
 import ast
-import copy
 import contextlib
 import datetime as dt
 from functools import lru_cache
@@ -43,9 +42,7 @@ from odylith.runtime.context_engine import odylith_context_engine_contracts
 from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.context_engine import odylith_context_engine_engineering_notes_runtime
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime
-from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_architecture_runtime
-from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_governance_runtime
@@ -67,7 +64,6 @@ from odylith.runtime.context_engine import odylith_context_engine_runtime_artifa
 from odylith.runtime.context_engine import odylith_context_engine_runtime_support
 from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
-from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.evaluation import odylith_evaluation_ledger
 from odylith.runtime.memory import odylith_memory_backend
@@ -1936,139 +1932,6 @@ load_registry_detail = odylith_context_engine_projection_registry_runtime.load_r
 
 
 
-def load_delivery_surface_payload(
-    *,
-    repo_root: Path,
-    surface: str,
-    runtime_mode: str = "auto",
-    buckets: Sequence[str] | None = None,
-    include_shell_snapshots: bool = True,
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    requested_buckets = {
-        str(token or "").strip().lower()
-        for token in (buckets or [])
-        if str(token or "").strip()
-    }
-    surface_token = str(surface).strip().lower()
-    try:
-        from odylith.runtime.governance import sync_session as governed_sync_session
-    except ImportError:  # pragma: no cover - defensive bootstrap fallback
-        governed_sync_session = None
-    if governed_sync_session is not None:
-        session = governed_sync_session.active_sync_session()
-        if session is not None and session.repo_root == root:
-            cache_key = odylith_context_cache.fingerprint_payload(
-                {
-                    "surface": surface_token,
-                    "runtime_mode": str(runtime_mode).strip().lower() or "auto",
-                    "requested_buckets": sorted(requested_buckets),
-                    "include_shell_snapshots": bool(include_shell_snapshots),
-                }
-            )
-            cached = session.get_or_compute(
-                namespace="delivery_surface_payload",
-                key=cache_key,
-                builder=lambda: _load_delivery_surface_payload_uncached(
-                    repo_root=root,
-                    surface_token=surface_token,
-                    runtime_mode=runtime_mode,
-                    requested_buckets=requested_buckets,
-                    include_shell_snapshots=include_shell_snapshots,
-                ),
-            )
-            return copy.deepcopy(cached)
-    return _load_delivery_surface_payload_uncached(
-        repo_root=root,
-        surface_token=surface_token,
-        runtime_mode=runtime_mode,
-        requested_buckets=requested_buckets,
-        include_shell_snapshots=include_shell_snapshots,
-    )
-
-
-def _load_delivery_surface_payload_uncached(
-    *,
-    repo_root: Path,
-    surface_token: str,
-    runtime_mode: str,
-    requested_buckets: set[str],
-    include_shell_snapshots: bool,
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    odylith_switch = _odylith_switch_snapshot(repo_root=root)
-    payload: dict[str, Any] = {}
-    if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="delivery_surface"):
-        connection = _connect(root)
-        try:
-            row = connection.execute(
-                "SELECT payload_json FROM delivery_surfaces WHERE surface = ?",
-                (surface_token,),
-            ).fetchone()
-            if row is not None:
-                raw_payload = json.loads(str(row["payload_json"]))
-                payload = dict(raw_payload) if isinstance(raw_payload, Mapping) else {}
-        finally:
-            connection.close()
-    if not payload:
-        try:
-            artifact_payload = delivery_intelligence_engine.load_delivery_intelligence_artifact(repo_root=root)
-        except Exception:
-            artifact_payload = {}
-        sliced = delivery_intelligence_engine.slice_delivery_intelligence_for_surface(
-            payload=artifact_payload,
-            surface=surface_token,
-        )
-        payload = dict(sliced) if isinstance(sliced, Mapping) else {}
-    if requested_buckets:
-        for bucket in (
-            "summary",
-            "case_queue",
-            "systemic_brief",
-            "surface_scope",
-            "grid_scope",
-            "components",
-            "workstreams",
-            "diagrams",
-            "surfaces",
-            "grid",
-            "surface",
-        ):
-            if bucket in requested_buckets:
-                continue
-            payload.pop(bucket, None)
-    if surface_token == "shell":
-        payload["odylith_switch"] = odylith_switch
-        payload["orchestration_adoption_snapshot"] = load_orchestration_adoption_snapshot(repo_root=root)
-    if surface_token == "shell" and include_shell_snapshots:
-        if not bool(odylith_switch.get("enabled", True)):
-            payload.pop("memory_snapshot", None)
-            payload.pop("optimization_snapshot", None)
-            payload.pop("evaluation_snapshot", None)
-            payload.pop("odylith_drawer_history", None)
-            return payload
-        optimization_snapshot = (
-            dict(payload.get("optimization_snapshot", {}))
-            if isinstance(payload.get("optimization_snapshot"), Mapping)
-            else load_runtime_optimization_snapshot(repo_root=root)
-        )
-        evaluation_snapshot = (
-            dict(payload.get("evaluation_snapshot", {}))
-            if isinstance(payload.get("evaluation_snapshot"), Mapping)
-            else load_runtime_evaluation_snapshot(repo_root=root)
-        )
-        payload["optimization_snapshot"] = optimization_snapshot
-        payload["evaluation_snapshot"] = evaluation_snapshot
-        if "memory_snapshot" not in payload:
-            payload["memory_snapshot"] = load_runtime_memory_snapshot(
-                repo_root=root,
-                optimization_snapshot=optimization_snapshot,
-                evaluation_snapshot=evaluation_snapshot,
-            )
-        payload["odylith_drawer_history"] = load_odylith_drawer_history(repo_root=root)
-    return payload
-
-
 _compact_bug_row_for_governance_packet = odylith_context_engine_hot_path_runtime._compact_bug_row_for_governance_packet
 
 
@@ -2865,149 +2728,6 @@ _workstream_rank_tuple = odylith_context_engine_hot_path_delivery_runtime._works
 
 
 
-_condense_delivery_scope = odylith_context_engine_hot_path_delivery_runtime._condense_delivery_scope
-
-
-
-def _compact_context_dossier(
-    dossier: Mapping[str, Any],
-    *,
-    relation_limit_per_kind: int = 4,
-    event_limit: int = 5,
-    delivery_limit: int = 3,
-) -> dict[str, Any]:
-    if not bool(dossier.get("resolved")):
-        return {
-            "resolved": False,
-            "lookup": dict(dossier.get("lookup", {})) if isinstance(dossier.get("lookup"), Mapping) else {},
-            "candidate_matches": dossier.get("matches", [])[:3] if isinstance(dossier.get("matches"), list) else [],
-            "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
-            "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
-            "fallback_scan": dict(dossier.get("fallback_scan", {}))
-            if isinstance(dossier.get("fallback_scan"), Mapping)
-            else {},
-        }
-    related = dossier.get("related_entities", {})
-    entity_payload = dict(dossier.get("entity", {})) if isinstance(dossier.get("entity"), Mapping) else {}
-    compact_entity = {
-        key: value
-        for key, value in {
-            "entity_id": str(entity_payload.get("entity_id", "")).strip(),
-            "title": str(entity_payload.get("title", "")).strip(),
-            "status": str(entity_payload.get("status", "")).strip(),
-            "priority": str(entity_payload.get("priority", "")).strip(),
-            "owner": str(entity_payload.get("owner", "")).strip(),
-            "workstream_type": str(entity_payload.get("workstream_type", "")).strip(),
-            "plan_ref": str(entity_payload.get("plan_ref", "")).strip(),
-            "diagram_id_count": len(entity_payload.get("related_diagram_ids", []))
-            if isinstance(entity_payload.get("related_diagram_ids"), list)
-            else 0,
-            "child_count": len(entity_payload.get("workstream_children", []))
-            if isinstance(entity_payload.get("workstream_children"), list)
-            else 0,
-            "dependency_count": len(entity_payload.get("workstream_depends_on", []))
-            if isinstance(entity_payload.get("workstream_depends_on"), list)
-            else 0,
-        }.items()
-        if value not in ("", [], {}, None, 0)
-    }
-    def _compact_related_row(row: Mapping[str, Any]) -> dict[str, Any]:
-        compact = {
-            key: value
-            for key, value in {
-                "entity_id": str(row.get("entity_id", "")).strip(),
-                "title": str(row.get("title", "")).strip(),
-                "status": str(row.get("status", "")).strip(),
-            }.items()
-            if value not in ("", [], {}, None)
-        }
-        path = str(row.get("path", "")).strip()
-        entity_id = str(row.get("entity_id", "")).strip()
-        if path and path != entity_id:
-            compact["path"] = path
-        return compact
-
-    compact_related = {}
-    if isinstance(related, Mapping):
-        for kind, rows in related.items():
-            if isinstance(rows, list):
-                compact_rows = [
-                    _compact_related_row(row)
-                    for row in rows[: max(1, int(relation_limit_per_kind))]
-                    if isinstance(row, Mapping)
-                ]
-                if compact_rows:
-                    compact_related[str(kind)] = compact_rows
-    events = dossier.get(agent_runtime_contract.AGENT_EVENT_KEY, dossier.get("recent_codex_events", []))
-    compact_events = []
-    if isinstance(events, list):
-        for row in events[: max(1, int(event_limit))]:
-            if not isinstance(row, Mapping):
-                continue
-            compact_events.append(
-                {
-                    "ts_iso": str(row.get("ts_iso", "")).strip(),
-                    "kind": str(row.get("kind", "")).strip(),
-                    "summary": str(row.get("summary", "")).strip(),
-                    "workstreams": [str(token).strip() for token in row.get("workstreams", []) if str(token).strip()][:2]
-                    if isinstance(row.get("workstreams"), list) and row.get("workstreams")
-                    else [],
-                    "components": [str(token).strip() for token in row.get("components", []) if str(token).strip()][:2]
-                    if isinstance(row.get("components"), list) and row.get("components")
-                    else [],
-                }
-            )
-    scopes = dossier.get("delivery_scopes", [])
-    compact_scopes = []
-    if isinstance(scopes, list):
-        compact_scopes = [_condense_delivery_scope(scope) for scope in scopes[: max(1, int(delivery_limit))] if isinstance(scope, Mapping)]
-    relations = dossier.get("relations", [])
-    relation_count = len(relations) if isinstance(relations, list) else 0
-    result = {
-        "resolved": True,
-        "entity": compact_entity,
-        "lookup": dict(dossier.get("lookup", {})) if isinstance(dossier.get("lookup"), Mapping) else {},
-        "related_entities": compact_related,
-        agent_runtime_contract.AGENT_EVENT_KEY: compact_events,
-        "delivery_scope_summaries": compact_scopes,
-        "relation_count": relation_count,
-        "candidate_matches": dossier.get("matches", [])[:3] if isinstance(dossier.get("matches"), list) else [],
-        "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
-        "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
-    }
-    execution_payload = {
-        "packet_kind": "context_dossier",
-        "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
-        "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
-    }
-    result = execution_engine_handshake.attach_execution_engine_handshake(
-        result,
-        payload=execution_payload,
-    )
-    _eg = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
-        payload=execution_payload,
-        context_packet=result,
-    )
-    if _eg:
-        result["execution_engine"] = _eg
-    return result
-
-
-def compact_context_dossier_for_delivery(
-    dossier: Mapping[str, Any],
-    *,
-    relation_limit_per_kind: int = 2,
-    event_limit: int = 2,
-    delivery_limit: int = 1,
-) -> dict[str, Any]:
-    return _compact_context_dossier(
-        dossier,
-        relation_limit_per_kind=max(1, int(relation_limit_per_kind)),
-        event_limit=max(1, int(event_limit)),
-        delivery_limit=max(1, int(delivery_limit)),
-    )
-
-
 def build_impact_report(
     *,
     repo_root: Path,
@@ -3182,91 +2902,6 @@ def _bootstrap_relevant_docs(
     return _dedupe_strings([doc for _score, doc in scored])[: max(1, int(limit))]
 
 
-def build_session_brief(
-    *,
-    repo_root: Path,
-    changed_paths: Sequence[str] = (),
-    use_working_tree: bool = False,
-    working_tree_scope: str = "session",
-    runtime_mode: str = "auto",
-    session_id: str = "",
-    workstream: str = "",
-    generated_surfaces: Sequence[str] = (),
-    intent: str = "",
-    surfaces: Sequence[str] = (),
-    visible_text: Sequence[str] = (),
-    active_tab: str = "",
-    user_turn_id: str = "",
-    supersedes_turn_id: str = "",
-    claim_mode: str = "shared",
-    claimed_paths: Sequence[str] = (),
-    lease_seconds: int = 15 * 60,
-    delivery_profile: str = "full",
-    family_hint: str = "",
-    validation_command_hints: Sequence[str] = (),
-    impact_override: Mapping[str, Any] | None = None,
-    retain_impact_internal_context: bool | None = None,
-    skip_impact_runtime_warmup: bool = False,
-) -> dict[str, Any]:
-    _refresh_runtime_helper_bindings()
-    effective_surfaces = tuple(str(token).strip() for token in [*generated_surfaces, *surfaces] if str(token).strip())
-    return odylith_context_engine_packet_session_runtime.build_session_brief(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=effective_surfaces, intent=intent, visible_text=visible_text, active_tab=active_tab, user_turn_id=user_turn_id, supersedes_turn_id=supersedes_turn_id, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, impact_override=impact_override, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
-
-
-
-def build_session_bootstrap(
-    *,
-    repo_root: Path,
-    changed_paths: Sequence[str] = (),
-    use_working_tree: bool = False,
-    working_tree_scope: str = "session",
-    runtime_mode: str = "auto",
-    session_id: str = "",
-    workstream: str = "",
-    generated_surfaces: Sequence[str] = (),
-    intent: str = "",
-    surfaces: Sequence[str] = (),
-    visible_text: Sequence[str] = (),
-    active_tab: str = "",
-    user_turn_id: str = "",
-    supersedes_turn_id: str = "",
-    claim_mode: str = "shared",
-    claimed_paths: Sequence[str] = (),
-    lease_seconds: int = 15 * 60,
-    doc_limit: int = 8,
-    command_limit: int = 10,
-    test_limit: int = 8,
-    delivery_profile: str = "full",
-    family_hint: str = "",
-    validation_command_hints: Sequence[str] = (),
-    retain_impact_internal_context: bool | None = None,
-    skip_impact_runtime_warmup: bool = False,
-) -> dict[str, Any]:
-    _refresh_runtime_helper_bindings()
-    effective_surfaces = tuple(str(token).strip() for token in [*generated_surfaces, *surfaces] if str(token).strip())
-    return odylith_context_engine_packet_session_runtime.build_session_bootstrap(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=effective_surfaces, intent=intent, visible_text=visible_text, active_tab=active_tab, user_turn_id=user_turn_id, supersedes_turn_id=supersedes_turn_id, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, doc_limit=doc_limit, command_limit=command_limit, test_limit=test_limit, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
-
-
-
-def build_adaptive_coding_packet(
-    *,
-    repo_root: Path,
-    changed_paths: Sequence[str],
-    use_working_tree: bool = False,
-    working_tree_scope: str = "repo",
-    session_id: str = "",
-    claimed_paths: Sequence[str] = (),
-    runtime_mode: str = "auto",
-    intent: str = "",
-    family_hint: str = "",
-    workstream_hint: str = "",
-    validation_command_hints: Sequence[str] = (),
-) -> dict[str, Any]:
-    _refresh_runtime_helper_bindings()
-    return odylith_context_engine_packet_adaptive_runtime.build_adaptive_coding_packet(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, intent=intent, family_hint=family_hint, workstream_hint=workstream_hint, validation_command_hints=validation_command_hints)
-
-
-
 def _local_runtime_execution_summary(
     *,
     repo_root: Path,
@@ -3300,24 +2935,6 @@ def _local_runtime_execution_summary(
     }
 
 
-def build_adaptive_coding_packet_reusing_daemon(
-    *,
-    repo_root: Path,
-    changed_paths: Sequence[str],
-    use_working_tree: bool = False,
-    working_tree_scope: str = "repo",
-    session_id: str = "",
-    claimed_paths: Sequence[str] = (),
-    runtime_mode: str = "auto",
-    intent: str = "",
-    family_hint: str = "",
-    workstream_hint: str = "",
-    validation_command_hints: Sequence[str] = (),
-) -> dict[str, Any]:
-    _refresh_runtime_helper_bindings()
-    return odylith_context_engine_packet_adaptive_runtime.build_adaptive_coding_packet_reusing_daemon(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, intent=intent, family_hint=family_hint, workstream_hint=workstream_hint, validation_command_hints=validation_command_hints)
-
-
 def _refresh_runtime_helper_bindings() -> None:
     return None
 
@@ -3329,14 +2946,9 @@ __all__ = [
     "SCHEMA_VERSION",
     "append_runtime_event",
     "bootstraps_root",
-    "build_adaptive_coding_packet",
-    "build_adaptive_coding_packet_reusing_daemon",
     "build_architecture_audit",
     "build_governance_slice",
     "build_impact_report",
-    "build_session_bootstrap",
-    "build_session_brief",
-    "compact_context_dossier_for_delivery",
     "daemon_usage_path",
     "ensure_state_js_probe_asset",
     "events_path",
@@ -3352,7 +2964,6 @@ __all__ = [
     "bootstrap_git_fsmonitor",
     "load_component_index",
     "load_component_registry_snapshot",
-    "load_delivery_surface_payload",
     "load_orchestration_adoption_snapshot",
     "load_plan_rows",
     "load_registry_detail",

@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import plan_progress
@@ -205,7 +206,7 @@ def _attach_delivery_scope_signals(
     repo_root: Path,
     runtime_mode: str,
 ) -> None:
-    payload = odylith_context_engine_store.load_delivery_surface_payload(
+    payload = delivery_surface_payload_runtime.load_delivery_surface_payload(
         repo_root=repo_root,
         surface="radar",
         runtime_mode=runtime_mode,

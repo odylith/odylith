@@ -748,7 +748,7 @@ def test_render_registry_dashboard_compacts_delivery_intelligence_payload(
     _seed_repo(tmp_path)
 
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **_kwargs: {
             "summary": {"headline": "unused"},
@@ -845,7 +845,7 @@ def test_render_registry_dashboard_surfaces_proof_resolution_when_no_dominant_la
     _seed_repo(tmp_path)
 
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **_kwargs: {
             "components": {

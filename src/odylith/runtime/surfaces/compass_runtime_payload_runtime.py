@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance.delivery import scope_signal_ladder
@@ -701,7 +702,7 @@ def _build_runtime_payload(
         if backlog_token:
             active_plan_map[backlog_token] = plan_token
 
-    delivery_surface_payload = odylith_context_engine_store.load_delivery_surface_payload(
+    delivery_surface_payload = delivery_surface_payload_runtime.load_delivery_surface_payload(
         repo_root=repo_root,
         surface="compass",
         runtime_mode=runtime_mode,

@@ -19,6 +19,8 @@ from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime as grounding_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_governance_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime as packet_adaptive_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import path_bundle_codec
 from odylith.runtime.orchestration import subagent_orchestrator
@@ -4284,7 +4286,7 @@ def test_build_packet_payload_uses_family_based_fast_path(
     adaptive_calls: list[dict[str, object]] = []
 
     monkeypatch.setattr(
-        runner.store,
+        runner.packet_adaptive_runtime,
         "build_adaptive_coding_packet",
         lambda **kwargs: adaptive_calls.append(dict(kwargs))
         or {
@@ -6049,7 +6051,7 @@ def test_build_packet_payload_supports_bootstrap_session_source(monkeypatch, tmp
         captured.update(kwargs)
         return {"bootstrapped_at": "2026-03-31T00:00:00Z", "changed_paths": list(kwargs["changed_paths"])}
 
-    monkeypatch.setattr(runner.store, "build_session_bootstrap", _fake_bootstrap)
+    monkeypatch.setattr(runner.packet_session_runtime, "build_session_bootstrap", _fake_bootstrap)
 
     packet_source, payload, adaptive = runner._build_packet_payload(  # noqa: SLF001
         repo_root=tmp_path,
@@ -6082,7 +6084,7 @@ def test_build_packet_payload_supports_session_brief_source(monkeypatch, tmp_pat
         captured.update(kwargs)
         return {"changed_paths": list(kwargs["changed_paths"])}
 
-    monkeypatch.setattr(runner.store, "build_session_brief", _fake_session_brief)
+    monkeypatch.setattr(runner.packet_session_runtime, "build_session_brief", _fake_session_brief)
 
     packet_source, payload, adaptive = runner._build_packet_payload(  # noqa: SLF001
         repo_root=tmp_path,
@@ -7611,7 +7613,7 @@ def test_route_ready_hot_path_payload_drops_redundant_prompt_metadata(
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "validation-heavy-router-fix")
 
-    adaptive = store.build_adaptive_coding_packet(
+    adaptive = packet_adaptive_runtime.build_adaptive_coding_packet(
         repo_root=REPO_ROOT,
         changed_paths=scenario["changed_paths"],
         runtime_mode="local",
@@ -8371,7 +8373,7 @@ def test_hot_path_session_brief_reuses_compact_selection_without_runtime_reopen(
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("session ledger should stay cold")),
     )
 
-    payload = store.build_session_brief(
+    payload = packet_session_runtime.build_session_brief(
         repo_root=REPO_ROOT,
         changed_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
         runtime_mode="local",
@@ -8393,7 +8395,7 @@ def test_hot_path_bootstrap_session_skips_optimization_snapshot_load(monkeypatch
 
     monkeypatch.setattr(store, "load_runtime_optimization_snapshot", _unexpected_optimization_load)
 
-    payload = store.build_session_bootstrap(
+    payload = packet_session_runtime.build_session_bootstrap(
         repo_root=REPO_ROOT,
         changed_paths=scenario["changed_paths"],
         runtime_mode="local",

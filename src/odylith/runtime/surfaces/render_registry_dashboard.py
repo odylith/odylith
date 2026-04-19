@@ -26,6 +26,7 @@ from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.consumer_profile import load_consumer_profile
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.context_engine import odylith_runtime_surface_summary
 from odylith.runtime.governance import traceability_ui_lookup
@@ -391,7 +392,7 @@ def _build_registry_delivery_intelligence_payload(
     repo_root: Path,
     runtime_mode: str,
 ) -> dict[str, Any]:
-    payload = odylith_context_engine_store.load_delivery_surface_payload(
+    payload = delivery_surface_payload_runtime.load_delivery_surface_payload(
         repo_root=repo_root,
         surface="registry",
         runtime_mode=runtime_mode,

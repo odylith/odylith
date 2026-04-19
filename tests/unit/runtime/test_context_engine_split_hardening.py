@@ -6,9 +6,11 @@ from odylith.runtime.context_engine import odylith_context_engine_hot_path_packe
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime as hot_path_core_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_finalize_runtime as hot_path_finalize_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime as hot_path_runtime
+from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime as memory_snapshot_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime as packet_adaptive_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_architecture_runtime as packet_architecture_runtime
+from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime as packet_summary_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_backlog_runtime as projection_backlog_runtime
@@ -56,6 +58,19 @@ def test_store_refresh_runtime_helper_bindings_is_noop() -> None:
 def test_store_refresh_runtime_helper_bindings_no_longer_rebinds_summary_and_architecture_modules() -> None:
     assert not hasattr(packet_summary_runtime, "bind")
     assert not hasattr(packet_architecture_runtime, "bind")
+
+
+def test_context_engine_store_no_longer_exports_packet_builder_or_dossier_wrappers() -> None:
+    for name in (
+        "build_session_brief",
+        "build_session_bootstrap",
+        "build_adaptive_coding_packet",
+        "build_adaptive_coding_packet_reusing_daemon",
+        "compact_context_dossier_for_delivery",
+        "load_delivery_surface_payload",
+    ):
+        assert name not in store.__dict__, f"{name} resurfaced on context_engine_store"
+    assert callable(dossier_compaction_runtime.compact_context_dossier_for_delivery)
 
 
 def test_runtime_learning_packet_summary_helper_delegates_to_split_summary_runtime(monkeypatch) -> None:

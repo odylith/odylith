@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
 from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import host_runtime as host_runtime_contract
+from odylith.runtime.common.value_coercion import bool_value as _normalize_bool
 from odylith.runtime.context_engine import governance_signal_codec
-from odylith.runtime.orchestration import subagent_router_runtime_policy
+from odylith.runtime.context_engine import packet_quality_codec
+from odylith.runtime.memory import tooling_memory_contracts
+from odylith.runtime.orchestration import subagent_router_profile_support
 
 _SCORE_MIN = 0
 _SCORE_MAX = 4
@@ -263,16 +269,258 @@ def _execution_profile_mapping(
     evidence_pack: Mapping[str, Any],
     optimization_snapshot: Mapping[str, Any],
 ) -> dict[str, Any]:
-    return subagent_router_runtime_policy._execution_profile_mapping(
-        root=root,
-        context_packet=context_packet,
-        evidence_pack=evidence_pack,
-        optimization_snapshot=optimization_snapshot,
+    latest_packet = _mapping_value(optimization_snapshot, "latest_packet")
+    optimization_latest_profile = {
+        key: value
+        for key, value in {
+            "profile": str(_context_lookup(latest_packet, "odylith_execution_profile") or "").strip(),
+            "model": str(_context_lookup(latest_packet, "odylith_execution_model") or "").strip(),
+            "reasoning_effort": str(_context_lookup(latest_packet, "odylith_execution_reasoning_effort") or "").strip(),
+            "agent_role": str(_context_lookup(latest_packet, "odylith_execution_agent_role") or "").strip(),
+            "selection_mode": str(_context_lookup(latest_packet, "odylith_execution_selection_mode") or "").strip(),
+            "delegate_preference": str(_context_lookup(latest_packet, "odylith_execution_delegate_preference") or "").strip(),
+            "source": (
+                str(_context_lookup(latest_packet, "odylith_execution_source") or "optimization_snapshot_latest_packet").strip()
+                if latest_packet
+                else ""
+            ),
+            "confidence": {
+                "score": int(_context_lookup(latest_packet, "odylith_execution_confidence_score") or 0),
+                "level": str(_context_lookup(latest_packet, "odylith_execution_confidence_level") or "").strip(),
+            },
+            "constraints": {
+                "route_ready": _context_signal_bool(_context_lookup(latest_packet, "odylith_execution_route_ready")),
+                "narrowing_required": _context_signal_bool(
+                    _context_lookup(latest_packet, "odylith_execution_narrowing_required")
+                ),
+                "spawn_worthiness": int(_context_lookup(latest_packet, "odylith_execution_spawn_worthiness") or 0),
+                "merge_burden": int(_context_lookup(latest_packet, "odylith_execution_merge_burden") or 0),
+                "reasoning_mode": str(_context_lookup(latest_packet, "odylith_execution_reasoning_mode") or "").strip(),
+            }
+            if latest_packet
+            else {},
+        }.items()
+        if (
+            value not in ("", [], {}, None)
+            and (
+                key not in {"confidence", "constraints"}
+                or (
+                    key == "confidence"
+                    and (int(value.get("score", 0) or 0) > 0 or str(value.get("level", "")).strip())
+                )
+                or (
+                    key == "constraints"
+                    and any(subvalue not in ("", [], {}, None, 0, False) for subvalue in value.values())
+                )
+            )
+        )
+    }
+    candidates = (
+        _execution_profile_candidate(root.get("odylith_execution_profile")),
+        _execution_profile_candidate(root.get("execution_profile")),
+        _execution_profile_candidate(context_packet.get("execution_profile")),
+        _execution_profile_candidate(_context_lookup(evidence_pack, "routing_handoff", "odylith_execution_profile")),
+        _execution_profile_candidate(_context_lookup(evidence_pack, "routing_handoff", "execution_profile")),
+        _execution_profile_candidate(optimization_snapshot.get("execution_profile")),
+        _execution_profile_candidate(_context_lookup(optimization_snapshot, "latest_packet", "odylith_execution_profile")),
+        optimization_latest_profile,
     )
+    scored_candidates: list[tuple[int, int, dict[str, Any]]] = []
+    for index, candidate in enumerate(candidates):
+        if not candidate:
+            continue
+        confidence = dict(candidate.get("confidence", {})) if isinstance(candidate.get("confidence"), Mapping) else {}
+        constraints = dict(candidate.get("constraints", {})) if isinstance(candidate.get("constraints"), Mapping) else {}
+        richness = sum(
+            1
+            for key in ("profile", "model", "reasoning_effort", "agent_role", "selection_mode", "delegate_preference", "source")
+            if str(candidate.get(key, "")).strip()
+        )
+        if confidence:
+            richness += sum(
+                1 for key in ("score", "level") if str(confidence.get(key, "")).strip() or int(confidence.get(key, 0) or 0) > 0
+            )
+        if constraints:
+            richness += sum(1 for value in constraints.values() if value not in ("", [], {}, None, False))
+        scored_candidates.append((richness, index, candidate))
+    if not scored_candidates:
+        return _synthesized_execution_profile_candidate(context_packet=context_packet)
+    merged: dict[str, Any] = {}
+    for _, _, candidate in sorted(scored_candidates, key=lambda item: (item[0], item[1])):
+        for key, value in candidate.items():
+            if value in ("", [], {}, None, False):
+                continue
+            if isinstance(value, Mapping):
+                existing = dict(merged.get(key, {})) if isinstance(merged.get(key), Mapping) else {}
+                merged[key] = {
+                    **existing,
+                    **{subkey: subvalue for subkey, subvalue in value.items() if subvalue not in ("", [], {}, None, False)},
+                }
+                continue
+            merged[key] = value
+    host_runtime = host_runtime_contract.resolve_host_runtime(
+        _context_lookup(root, "host_runtime"),
+        _context_lookup(context_packet, "host_runtime"),
+        _context_lookup(evidence_pack, "routing_handoff", "host_runtime"),
+        _context_lookup(evidence_pack, "routing_handoff", "odylith_execution_host_runtime"),
+        _context_lookup(optimization_snapshot, "latest_packet", "host_runtime"),
+        _context_lookup(optimization_snapshot, "latest_packet", "odylith_execution_host_runtime"),
+        merged.get("host_runtime"),
+    )
+    profile = subagent_router_profile_support.router_profile_from_token(merged.get("profile"))
+    if profile is None:
+        profile = subagent_router_profile_support.router_profile_from_runtime(
+            merged.get("model"),
+            merged.get("reasoning_effort"),
+        )
+        if profile is not None:
+            merged["profile"] = profile.value
+    if profile is not None:
+        model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(
+            profile.value,
+            host_runtime=host_runtime,
+        )
+        merged["model"] = model
+        merged["reasoning_effort"] = reasoning_effort or profile.reasoning_effort
+    if host_runtime:
+        merged["host_runtime"] = host_runtime
+    if not str(merged.get("profile", "")).strip():
+        synthesized = _synthesized_execution_profile_candidate(context_packet=context_packet)
+        if synthesized:
+            merged = {**synthesized, **merged}
+    return merged
 
 
 def _preferred_router_profile_from_execution_profile(profile: Mapping[str, Any]) -> Any | None:
-    return subagent_router_runtime_policy._preferred_router_profile_from_execution_profile(profile=profile)
+    explicit = subagent_router_profile_support.router_profile_from_token(profile.get("profile"))
+    if explicit is not None:
+        return explicit
+    return subagent_router_profile_support.router_profile_from_runtime(
+        profile.get("model"),
+        profile.get("reasoning_effort"),
+    )
+
+
+def _execution_profile_candidate(value: Any) -> dict[str, Any]:
+    return tooling_memory_contracts.execution_profile_mapping(value)
+
+
+def _selected_counts_mapping(value: Any) -> dict[str, int]:
+    if isinstance(value, Mapping):
+        return {
+            str(key).strip(): _int_value(raw)
+            for key, raw in value.items()
+            if str(key).strip() and _int_value(raw) > 0
+        }
+    token = _normalize_token(value)
+    if not token:
+        return {}
+    alias_map = {
+        "c": "commands",
+        "d": "docs",
+        "t": "tests",
+        "g": "guidance",
+    }
+    counts: dict[str, int] = {}
+    for alias, raw_count in re.findall(r"([cdtg])(\d+)", token):
+        key = alias_map.get(alias, "")
+        count = _int_value(raw_count)
+        if key and count > 0:
+            counts[key] = count
+    return counts
+
+
+def _synthesized_execution_profile_candidate(*, context_packet: Mapping[str, Any]) -> dict[str, Any]:
+    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), Mapping) else {}
+    if not bool(route.get("route_ready")) or bool(route.get("narrowing_required")):
+        return {}
+    packet_quality = packet_quality_codec.expand_packet_quality(
+        dict(context_packet.get("packet_quality", {}))
+        if isinstance(context_packet.get("packet_quality"), Mapping)
+        else {}
+    )
+    retrieval_plan = (
+        dict(context_packet.get("retrieval_plan", {}))
+        if isinstance(context_packet.get("retrieval_plan"), Mapping)
+        else {}
+    )
+    selected_counts = _selected_counts_mapping(retrieval_plan.get("selected_counts"))
+    governance = governance_signal_codec.expand_governance_signal(
+        dict(route.get("governance", {})) if isinstance(route.get("governance"), Mapping) else {}
+    )
+    family = _normalize_token(packet_quality.get("intent_family"))
+    confidence = _normalize_token(packet_quality.get("routing_confidence"))
+    validation_count = _int_value(selected_counts.get("tests")) + _int_value(selected_counts.get("commands"))
+    guidance_count = _int_value(selected_counts.get("guidance"))
+    governance_contract = any(
+        (
+            _int_value(governance.get("closeout_doc_count")) > 0,
+            _int_value(governance.get("strict_gate_command_count")) > 0,
+            _normalize_bool(governance.get("plan_binding_required")),
+            _normalize_bool(governance.get("governed_surface_sync_required")),
+        )
+    )
+    host_runtime = host_runtime_contract.resolve_host_runtime(
+        context_packet.get("host_runtime"),
+        _context_lookup(context_packet, "execution_profile", "host_runtime"),
+    )
+    profile = subagent_router_profile_support.RouterProfile.ANALYSIS_MEDIUM.value
+    agent_role = "explorer"
+    selection_mode = "analysis_scout"
+    if family in {"implementation", "write", "bugfix"}:
+        if governance_contract and _int_value(governance.get("strict_gate_command_count")) > 0:
+            profile = subagent_router_profile_support.RouterProfile.FRONTIER_HIGH.value
+            selection_mode = "deep_validation"
+        else:
+            profile = (
+                subagent_router_profile_support.RouterProfile.WRITE_HIGH.value
+                if confidence == "high" and (validation_count > 0 or guidance_count >= 2)
+                else subagent_router_profile_support.RouterProfile.WRITE_MEDIUM.value
+            )
+            selection_mode = "bounded_write"
+        agent_role = "worker"
+    elif family == "validation":
+        profile = (
+            subagent_router_profile_support.RouterProfile.WRITE_HIGH.value
+            if confidence == "high" or validation_count >= 2
+            else subagent_router_profile_support.RouterProfile.WRITE_MEDIUM.value
+        )
+        agent_role = "worker"
+        selection_mode = "validation_focused"
+    elif family in {"docs", "governance"}:
+        profile = (
+            subagent_router_profile_support.RouterProfile.FAST_WORKER.value
+            if governance_contract
+            else subagent_router_profile_support.RouterProfile.ANALYSIS_MEDIUM.value
+        )
+        agent_role = "worker" if profile == subagent_router_profile_support.RouterProfile.FAST_WORKER.value else "explorer"
+        selection_mode = "support_fast_lane" if profile == subagent_router_profile_support.RouterProfile.FAST_WORKER.value else "analysis_scout"
+    elif family in {"analysis", "review", "diagnosis"}:
+        profile = (
+            subagent_router_profile_support.RouterProfile.ANALYSIS_HIGH.value
+            if confidence == "high" or governance_contract or validation_count > 0 or guidance_count > 0
+            else subagent_router_profile_support.RouterProfile.ANALYSIS_MEDIUM.value
+        )
+        agent_role = "explorer"
+        selection_mode = (
+            "analysis_synthesis"
+            if profile == subagent_router_profile_support.RouterProfile.ANALYSIS_HIGH.value
+            else "analysis_scout"
+        )
+    model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(
+        profile,
+        host_runtime=host_runtime,
+    )
+    return {
+        "profile": profile,
+        "model": model,
+        "reasoning_effort": reasoning_effort,
+        "agent_role": agent_role,
+        "selection_mode": selection_mode,
+        "delegate_preference": "delegate",
+        "source": "context_packet_route",
+        "host_runtime": host_runtime,
+    }
 
 
 def _clamp_score(value: int | float) -> int:

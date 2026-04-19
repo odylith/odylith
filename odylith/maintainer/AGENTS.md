@@ -36,9 +36,15 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   with another, do not treat a shared helper or kernel as a cleanup ornament,
   and do not let Codex-only or Claude-only project assets drift into softer
   anti-slop rules than the shared contract.
+- Partial shared-kernel adoption is still incomplete in this lane as well. If
+  a shared helper or kernel lands, the touched callers must adopt it or the
+  pass is incomplete.
 - Do not call a slop cleanup complete just because the first smell
   disappeared. If the replacement smell still exists in the touched slice, the
   pass is incomplete.
+- Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
+  behavior proof for the touched slice and a fresh structural inventory for
+  the claimed scope. One does not substitute for the other.
 - For explicit deep anti-slop or decomposition passes in maintainer mode, use
   `skills/fail-closed-code-hygiene/` so the pass fails closed on remaining
   shims, duplicate helper clones, mirror drift, and missing proof.

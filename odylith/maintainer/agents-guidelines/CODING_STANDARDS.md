@@ -69,6 +69,8 @@
 - Do not treat a shared helper or kernel as a cleanup ornament. If a new owner
   lands, adopt it in the touched slice or leave a bounded follow-up tied to
   the same slop class.
+- Partial shared-kernel adoption is still incomplete. If a shared helper or
+  kernel lands, the touched callers must adopt it or the pass is incomplete.
 - Do not call a slop cleanup complete just because the first smell
   disappeared. If the replacement smell still exists in the touched slice, the
   pass is incomplete.
@@ -98,6 +100,9 @@
 - When the user asks for repo-wide or lane-wide anti-slop hardening, update
   guidance, skills, install-generated guidance, host contracts, mirrors, and
   enforcement tests together; prose-only hardening is incomplete.
+- Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
+  behavior proof for the touched slice and a fresh structural inventory for
+  the claimed scope. One does not substitute for the other.
 - Use `../../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` for the shared
   ban list, decomposition triggers, and proof contract, and use
   `../skills/fail-closed-code-hygiene/` when a maintainer pass is explicitly

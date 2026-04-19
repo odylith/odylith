@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime as grounding_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as session_packet_runtime
@@ -578,54 +579,6 @@ def test_load_registry_detail_grounding_light_uses_runtime_component_fast_path(m
     assert calls["close"] == 1
 
 
-def test_build_session_brief_forwards_retain_impact_internal_context(monkeypatch, tmp_path: Path) -> None:
-    captured: dict[str, object] = {}
-
-    def _fake_build_session_brief(**kwargs):  # noqa: ANN001
-        captured.update(kwargs)
-        return {"changed_paths": list(kwargs.get("changed_paths", []))}
-
-    monkeypatch.setattr(session_packet_runtime, "build_session_brief", _fake_build_session_brief)
-
-    payload = store.build_session_brief(
-        repo_root=tmp_path,
-        changed_paths=["odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"],
-        runtime_mode="local",
-        delivery_profile="agent_hot_path",
-        family_hint="exact_path_ambiguity",
-        retain_impact_internal_context=False,
-        skip_impact_runtime_warmup=True,
-    )
-
-    assert payload == {"changed_paths": ["odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"]}
-    assert captured["retain_impact_internal_context"] is False
-    assert captured["skip_impact_runtime_warmup"] is True
-
-
-def test_build_session_bootstrap_forwards_retain_impact_internal_context(monkeypatch, tmp_path: Path) -> None:
-    captured: dict[str, object] = {}
-
-    def _fake_build_session_bootstrap(**kwargs):  # noqa: ANN001
-        captured.update(kwargs)
-        return {"changed_paths": list(kwargs.get("changed_paths", []))}
-
-    monkeypatch.setattr(session_packet_runtime, "build_session_bootstrap", _fake_build_session_bootstrap)
-
-    payload = store.build_session_bootstrap(
-        repo_root=tmp_path,
-        changed_paths=["AGENTS.md", "odylith/AGENTS.md"],
-        runtime_mode="local",
-        delivery_profile="agent_hot_path",
-        family_hint="broad_shared_scope",
-        retain_impact_internal_context=False,
-        skip_impact_runtime_warmup=True,
-    )
-
-    assert payload == {"changed_paths": ["AGENTS.md", "odylith/AGENTS.md"]}
-    assert captured["retain_impact_internal_context"] is False
-    assert captured["skip_impact_runtime_warmup"] is True
-
-
 def test_build_session_brief_hot_path_requests_unfinalized_impact(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
 
@@ -1150,13 +1103,13 @@ def test_load_delivery_surface_payload_reuses_sync_session_cache(
     monkeypatch.setattr(store.delivery_intelligence_engine, "slice_delivery_intelligence_for_surface", _fake_slice)
 
     with sync_session.activate_sync_session(sync_session.GovernedSyncSession(repo_root=repo_root)):
-        first = store.load_delivery_surface_payload(
+        first = delivery_surface_payload_runtime.load_delivery_surface_payload(
             repo_root=repo_root,
             surface="shell",
             runtime_mode="standalone",
             include_shell_snapshots=False,
         )
-        second = store.load_delivery_surface_payload(
+        second = delivery_surface_payload_runtime.load_delivery_surface_payload(
             repo_root=repo_root,
             surface="shell",
             runtime_mode="standalone",

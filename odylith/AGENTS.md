@@ -74,12 +74,17 @@ Scope: applies to Odylith paths under `odylith/`.
   not just file boundaries. When one lane or host tightens the anti-slop bar,
   propagate it through shared guidance, host contracts, install-generated
   guidance, skills, and shipped mirrors in the same change.
+  Partial shared-kernel adoption is still incomplete; if a shared helper or
+  kernel lands, the touched callers must adopt it or the pass is incomplete.
   Do not call a slop cleanup complete just because the first smell
   disappeared; if the replacement smell still exists in the touched slice, the
   pass is incomplete. When the user asks for repo-wide or lane-wide anti-slop
   hardening, update shared guidance, host contracts, install-generated
   guidance, skills, shipped mirrors, and enforcement tests together;
-  prose-only hardening is incomplete.
+  prose-only hardening is incomplete. Repo-wide or lane-wide anti-slop claims
+  require two proof layers: fresh behavior proof for the touched slice and a
+  fresh structural inventory for the claimed scope. One does not substitute
+  for the other.
   Use
   `agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` and
   `skills/odylith-code-hygiene-guard/SKILL.md` when quality pressure is high.

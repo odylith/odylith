@@ -50,6 +50,10 @@
 - A cleanup is not complete just because a Codex-specific wrapper now calls a
   shared helper. If duplicated control flow or text still exists in the
   touched host assets, the pass is incomplete.
+- Host-specific green proof is not repo-wide structural proof. For repo-wide
+  or lane-wide anti-slop claims, rerun the requested structural inventory for
+  the claimed scope and pair it with fresh behavior proof for the touched
+  slice.
 - When one host tightens the anti-slop bar, update the other host contract,
   shared guidance, install-generated guidance, skills, and shipped mirrors in
   the same change.

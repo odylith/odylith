@@ -49,6 +49,8 @@
   follow-up tied to the same slop class.
 - Do not hide transitional slop behind compatibility wrappers, alias walls,
   partial migrations, or host-only copies once the real owner exists.
+- Partial shared-kernel adoption is still incomplete. If a shared helper or
+  kernel lands, the touched callers must adopt it or the pass is incomplete.
 - A cleanup is not complete just because the original smell disappeared. If
   the replacement smell survives in the touched slice, the pass is incomplete.
 - When one host or lane tightens the anti-slop bar, propagate the stronger rule
@@ -127,6 +129,9 @@
 - When claiming repo-wide or lane-wide cleanup, rerun the requested repo-wide
   structural scan or equivalent inventory instead of relying on touched-slice
   tests alone.
+- Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
+  behavior proof for the touched slice and a fresh structural inventory for
+  the claimed scope. One does not substitute for the other.
 - In consumer repos, prove consumer-owned code with the consumer repo's own
   language toolchain, tests, linters, build checks, and formatter or type
   checks where applicable. Odylith narrows the slice; the consumer repo still

@@ -648,14 +648,14 @@ def _append_turn_context_forwarded(*, forwarded: list[str], args: argparse.Names
 
 
 def _start_bootstrap_payload(args: argparse.Namespace) -> dict[str, object]:
-    from odylith.runtime.context_engine import odylith_context_engine_store
+    from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime
 
-    return odylith_context_engine_store.build_session_bootstrap(
+    return odylith_context_engine_packet_session_runtime.build_session_bootstrap(
         repo_root=Path(args.repo_root).expanduser().resolve(),
         use_working_tree=bool(args.working_tree),
         working_tree_scope=str(args.working_tree_scope),
         intent=str(getattr(args, "intent", "") or "").strip(),
-        surfaces=[str(token).strip() for token in getattr(args, "surface", []) if str(token).strip()],
+        generated_surfaces=[str(token).strip() for token in getattr(args, "surface", []) if str(token).strip()],
         visible_text=[str(token).strip() for token in getattr(args, "visible_text", []) if str(token).strip()],
         active_tab=str(getattr(args, "active_tab", "") or "").strip(),
         user_turn_id=str(getattr(args, "user_turn_id", "") or "").strip(),

@@ -2,38 +2,60 @@
 
 from __future__ import annotations
 
-from typing import Any
-from typing import Mapping
-from typing import Sequence
+from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import host_runtime as host_runtime_contract
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.execution_engine import runtime_lane_policy
+from odylith.runtime.orchestration import subagent_router_context_support
+from odylith.runtime.orchestration import subagent_router_profile_support
 
-def bind(host_module: Any) -> None:
-    globals().update({
-        "RouterProfile": getattr(host_module, "RouterProfile"),
-        "TaskAssessment": getattr(host_module, "TaskAssessment"),
-        "TuningState": getattr(host_module, "TuningState"),
-        "_mapping_value": getattr(host_module, "_mapping_value"),
-        "_context_lookup": getattr(host_module, "_context_lookup"),
-        "_context_signal_bool": getattr(host_module, "_context_signal_bool"),
-        "_execution_profile_candidate": getattr(host_module, "_execution_profile_candidate"),
-        "_synthesized_execution_profile_candidate": getattr(host_module, "_synthesized_execution_profile_candidate"),
-        "_router_profile_from_token": getattr(host_module, "_router_profile_from_token"),
-        "_router_profile_from_runtime": getattr(host_module, "_router_profile_from_runtime"),
-        "_agent_role_for_assessment": getattr(host_module, "_agent_role_for_assessment"),
-        "_normalize_token": getattr(host_module, "_normalize_token"),
-        "_clamp_score": getattr(host_module, "_clamp_score"),
-        "_normalized_rate": getattr(host_module, "_normalized_rate"),
-        "_RUNTIME_EARNED_DEPTH_SELECTION_MODES": getattr(host_module, "_RUNTIME_EARNED_DEPTH_SELECTION_MODES"),
-        "_RUNTIME_SUPPORT_SELECTION_MODES": getattr(host_module, "_RUNTIME_SUPPORT_SELECTION_MODES"),
-        "_PROFILE_PRIORITY": getattr(host_module, "_PROFILE_PRIORITY"),
-        "_tuning_bias_for_profile": getattr(host_module, "_tuning_bias_for_profile"),
-        "_profile_reliability_summary": getattr(host_module, "_profile_reliability_summary"),
-        "_sanitize_user_facing_text": getattr(host_module, "_sanitize_user_facing_text"),
-        "_sanitize_user_facing_lines": getattr(host_module, "_sanitize_user_facing_lines"),
-    })
+RouterProfile = subagent_router_profile_support.RouterProfile
+_mapping_value = subagent_router_context_support._mapping_value
+_context_lookup = subagent_router_context_support._context_lookup
+_context_signal_bool = subagent_router_context_support._context_signal_bool
+_execution_profile_candidate = subagent_router_context_support._execution_profile_candidate
+_synthesized_execution_profile_candidate = subagent_router_context_support._synthesized_execution_profile_candidate
+_router_profile_from_token = subagent_router_profile_support.router_profile_from_token
+_router_profile_from_runtime = subagent_router_profile_support.router_profile_from_runtime
+_agent_role_for_assessment = subagent_router_profile_support.agent_role_for_assessment
+_clamp_score = subagent_router_profile_support.clamp_score
+_normalized_rate = subagent_router_context_support._normalized_rate
+_tuning_bias_for_profile = subagent_router_profile_support.tuning_bias_for_profile
+_profile_reliability_summary = subagent_router_profile_support.profile_reliability_summary
+_sanitize_user_facing_text = subagent_router_profile_support.sanitize_user_facing_text
+_sanitize_user_facing_lines = subagent_router_profile_support.sanitize_user_facing_lines
+_PROFILE_PRIORITY: dict[str, int] = {
+    "main_thread": 0,
+    agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE: 1,
+    agent_runtime_contract.ANALYSIS_HIGH_PROFILE: 2,
+    agent_runtime_contract.FAST_WORKER_PROFILE: 3,
+    agent_runtime_contract.WRITE_MEDIUM_PROFILE: 4,
+    agent_runtime_contract.WRITE_HIGH_PROFILE: 5,
+    agent_runtime_contract.FRONTIER_HIGH_PROFILE: 6,
+    agent_runtime_contract.FRONTIER_XHIGH_PROFILE: 7,
+}
+_RUNTIME_EARNED_DEPTH_SELECTION_MODES: frozenset[str] = frozenset(
+    {
+        "critical_accuracy",
+        "deep_validation",
+        "implementation_primary",
+        "bounded_write",
+        "validation_focused",
+        "analysis_synthesis",
+        "architecture_grounding",
+        "architecture_change",
+    }
+)
+_RUNTIME_SUPPORT_SELECTION_MODES: frozenset[str] = frozenset(
+    {
+        "support_fast_lane",
+        "analysis_scout",
+        "validation_support",
+        "architecture_synthesis",
+    }
+)
 
 
 def _execution_profile_mapping(
@@ -43,133 +65,17 @@ def _execution_profile_mapping(
     evidence_pack: Mapping[str, Any],
     optimization_snapshot: Mapping[str, Any],
 ) -> dict[str, Any]:
-    latest_packet = _mapping_value(optimization_snapshot, "latest_packet")
-    optimization_latest_profile = {
-        key: value
-        for key, value in {
-            "profile": str(_context_lookup(latest_packet, "odylith_execution_profile") or "").strip(),
-            "model": str(_context_lookup(latest_packet, "odylith_execution_model") or "").strip(),
-            "reasoning_effort": str(_context_lookup(latest_packet, "odylith_execution_reasoning_effort") or "").strip(),
-            "agent_role": str(_context_lookup(latest_packet, "odylith_execution_agent_role") or "").strip(),
-            "selection_mode": str(_context_lookup(latest_packet, "odylith_execution_selection_mode") or "").strip(),
-            "delegate_preference": str(_context_lookup(latest_packet, "odylith_execution_delegate_preference") or "").strip(),
-            "source": (
-                str(_context_lookup(latest_packet, "odylith_execution_source") or "optimization_snapshot_latest_packet").strip()
-                if latest_packet
-                else ""
-            ),
-            "confidence": {
-                "score": int(_context_lookup(latest_packet, "odylith_execution_confidence_score") or 0),
-                "level": str(_context_lookup(latest_packet, "odylith_execution_confidence_level") or "").strip(),
-            },
-            "constraints": {
-                "route_ready": _context_signal_bool(_context_lookup(latest_packet, "odylith_execution_route_ready")),
-                "narrowing_required": _context_signal_bool(
-                    _context_lookup(latest_packet, "odylith_execution_narrowing_required")
-                ),
-                "spawn_worthiness": int(_context_lookup(latest_packet, "odylith_execution_spawn_worthiness") or 0),
-                "merge_burden": int(_context_lookup(latest_packet, "odylith_execution_merge_burden") or 0),
-                "reasoning_mode": str(_context_lookup(latest_packet, "odylith_execution_reasoning_mode") or "").strip(),
-            }
-            if latest_packet
-            else {},
-        }.items()
-        if (
-            value not in ("", [], {}, None)
-            and (
-                key not in {"confidence", "constraints"}
-                or (
-                    key == "confidence"
-                    and (int(value.get("score", 0) or 0) > 0 or str(value.get("level", "")).strip())
-                )
-                or (
-                    key == "constraints"
-                    and any(subvalue not in ("", [], {}, None, 0, False) for subvalue in value.values())
-                )
-            )
-        )
-    }
-    candidates = (
-        _execution_profile_candidate(root.get("odylith_execution_profile")),
-        _execution_profile_candidate(root.get("execution_profile")),
-        _execution_profile_candidate(context_packet.get("execution_profile")),
-        _execution_profile_candidate(_context_lookup(evidence_pack, "routing_handoff", "odylith_execution_profile")),
-        _execution_profile_candidate(_context_lookup(evidence_pack, "routing_handoff", "execution_profile")),
-        _execution_profile_candidate(optimization_snapshot.get("execution_profile")),
-        _execution_profile_candidate(_context_lookup(optimization_snapshot, "latest_packet", "odylith_execution_profile")),
-        optimization_latest_profile,
+    return subagent_router_context_support._execution_profile_mapping(
+        root=root,
+        context_packet=context_packet,
+        evidence_pack=evidence_pack,
+        optimization_snapshot=optimization_snapshot,
     )
-    scored_candidates: list[tuple[int, int, dict[str, Any]]] = []
-    for index, candidate in enumerate(candidates):
-        if not candidate:
-            continue
-        confidence = dict(candidate.get("confidence", {})) if isinstance(candidate.get("confidence"), Mapping) else {}
-        constraints = dict(candidate.get("constraints", {})) if isinstance(candidate.get("constraints"), Mapping) else {}
-        richness = sum(
-            1
-            for key in ("profile", "model", "reasoning_effort", "agent_role", "selection_mode", "delegate_preference", "source")
-            if str(candidate.get(key, "")).strip()
-        )
-        if confidence:
-            richness += sum(
-                1 for key in ("score", "level") if str(confidence.get(key, "")).strip() or int(confidence.get(key, 0) or 0) > 0
-            )
-        if constraints:
-            richness += sum(1 for value in constraints.values() if value not in ("", [], {}, None, False))
-        scored_candidates.append((richness, index, candidate))
-    if not scored_candidates:
-        return _synthesized_execution_profile_candidate(context_packet=context_packet)
-    merged: dict[str, Any] = {}
-    for _, _, candidate in sorted(scored_candidates, key=lambda item: (item[0], item[1])):
-        for key, value in candidate.items():
-            if value in ("", [], {}, None, False):
-                continue
-            if isinstance(value, Mapping):
-                existing = dict(merged.get(key, {})) if isinstance(merged.get(key), Mapping) else {}
-                merged[key] = {
-                    **existing,
-                    **{subkey: subvalue for subkey, subvalue in value.items() if subvalue not in ("", [], {}, None, False)},
-                }
-                continue
-            merged[key] = value
-    host_runtime = host_runtime_contract.resolve_host_runtime(
-        _context_lookup(root, "host_runtime"),
-        _context_lookup(context_packet, "host_runtime"),
-        _context_lookup(evidence_pack, "routing_handoff", "host_runtime"),
-        _context_lookup(evidence_pack, "routing_handoff", "odylith_execution_host_runtime"),
-        _context_lookup(optimization_snapshot, "latest_packet", "host_runtime"),
-        _context_lookup(optimization_snapshot, "latest_packet", "odylith_execution_host_runtime"),
-        merged.get("host_runtime"),
-    )
-    profile = _router_profile_from_token(merged.get("profile"))
-    if profile is None:
-        profile = _router_profile_from_runtime(merged.get("model"), merged.get("reasoning_effort"))
-        if profile is not None:
-            merged["profile"] = profile.value
-    if profile is not None:
-        model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(
-            profile.value,
-            host_runtime=host_runtime,
-        )
-        merged["model"] = model
-        merged["reasoning_effort"] = reasoning_effort or profile.reasoning_effort
-    if host_runtime:
-        merged["host_runtime"] = host_runtime
-    if not str(merged.get("profile", "")).strip():
-        synthesized = _synthesized_execution_profile_candidate(context_packet=context_packet)
-        if synthesized:
-            merged = {**synthesized, **merged}
-    return merged
 
 
 def _preferred_router_profile_from_execution_profile(profile: Mapping[str, Any]) -> RouterProfile | None:
-    explicit = _router_profile_from_token(profile.get("profile"))
-    if explicit is not None:
-        return explicit
-    return _router_profile_from_runtime(
-        profile.get("model"),
-        profile.get("reasoning_effort"),
-    )
+    candidate = subagent_router_context_support._preferred_router_profile_from_execution_profile(profile=profile)
+    return candidate if isinstance(candidate, RouterProfile) else None
 
 
 def _decision_odylith_execution_profile(

@@ -27,6 +27,8 @@ from odylith.runtime.memory import odylith_remote_retrieval
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_compass_runtime_cache
 from odylith.runtime.context_engine import odylith_context_engine_daemon_wait_runtime
+from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.common.command_surface import module_invocation
@@ -1681,7 +1683,7 @@ def _run_context(
     relation_limit: int,
 ) -> int:
     with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
-        payload = store.compact_context_dossier_for_delivery(
+        payload = dossier_compaction_runtime.compact_context_dossier_for_delivery(
             store.load_context_dossier(
                 repo_root=repo_root,
                 ref=ref,
@@ -1893,7 +1895,7 @@ def _run_session_brief(
     lease_seconds: int,
 ) -> int:
     with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
-        payload = store.build_session_brief(
+        payload = packet_session_runtime.build_session_brief(
             repo_root=repo_root,
             changed_paths=paths,
             use_working_tree=use_working_tree,
@@ -1936,7 +1938,7 @@ def _run_bootstrap_session(
     test_limit: int,
 ) -> int:
     with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
-        payload = store.build_session_bootstrap(
+        payload = packet_session_runtime.build_session_bootstrap(
             repo_root=repo_root,
             changed_paths=paths,
             use_working_tree=use_working_tree,
@@ -2053,7 +2055,7 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
     if command == "context":
         event_limit = max(1, int(payload.get("event_limit", 2) or 2))
         relation_limit = max(1, int(payload.get("relation_limit", 2) or 2))
-        return store.compact_context_dossier_for_delivery(
+        return dossier_compaction_runtime.compact_context_dossier_for_delivery(
             store.load_context_dossier(
                 repo_root=repo_root,
                 ref=str(payload.get("ref", "")).strip(),
@@ -2132,7 +2134,7 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             else [],
         )
     if command == "session-brief":
-        return store.build_session_brief(
+        return packet_session_runtime.build_session_brief(
             repo_root=repo_root,
             changed_paths=[str(path).strip() for path in payload.get("paths", []) if str(path).strip()]
             if isinstance(payload.get("paths"), list)
@@ -2168,7 +2170,7 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             else [],
         )
     if command == "bootstrap-session":
-        return store.build_session_bootstrap(
+        return packet_session_runtime.build_session_bootstrap(
             repo_root=repo_root,
             changed_paths=[str(path).strip() for path in payload.get("paths", []) if str(path).strip()]
             if isinstance(payload.get("paths"), list)

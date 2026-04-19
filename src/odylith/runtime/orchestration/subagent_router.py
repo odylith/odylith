@@ -37,11 +37,9 @@ from odylith.runtime.common.value_coercion import bool_value as _normalize_bool
 from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
 from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
-from odylith.runtime.context_engine import governance_signal_codec
-from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.evaluation import odylith_evaluation_ledger
-from odylith.runtime.memory import tooling_memory_contracts
 from odylith.runtime.orchestration import subagent_router_context_support
+from odylith.runtime.orchestration import subagent_router_profile_support
 from odylith.runtime.orchestration import subagent_router_runtime_policy
 
 
@@ -432,63 +430,15 @@ def _default_family_outcome_counts_map() -> dict[str, dict[str, dict[str, int]]]
     return {family: _default_outcome_counts_map() for family in _KNOWN_TASK_FAMILIES}
 
 
-class RouterProfile(str, Enum):
-    MAIN_THREAD = "main_thread"
-    ANALYSIS_MEDIUM = agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
-    ANALYSIS_HIGH = agent_runtime_contract.ANALYSIS_HIGH_PROFILE
-    FAST_WORKER = agent_runtime_contract.FAST_WORKER_PROFILE
-    WRITE_MEDIUM = agent_runtime_contract.WRITE_MEDIUM_PROFILE
-    WRITE_HIGH = agent_runtime_contract.WRITE_HIGH_PROFILE
-    FRONTIER_HIGH = agent_runtime_contract.FRONTIER_HIGH_PROFILE
-    FRONTIER_XHIGH = agent_runtime_contract.FRONTIER_XHIGH_PROFILE
-    MINI_MEDIUM = agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
-    MINI_HIGH = agent_runtime_contract.ANALYSIS_HIGH_PROFILE
-    SPARK_MEDIUM = agent_runtime_contract.FAST_WORKER_PROFILE
-    CODEX_MEDIUM = agent_runtime_contract.WRITE_MEDIUM_PROFILE
-    CODEX_HIGH = agent_runtime_contract.WRITE_HIGH_PROFILE
-    GPT54_HIGH = agent_runtime_contract.FRONTIER_HIGH_PROFILE
-    GPT54_XHIGH = agent_runtime_contract.FRONTIER_XHIGH_PROFILE
-
-    @property
-    def model(self) -> str:
-        model, _ = agent_runtime_contract.execution_profile_runtime_fields(self.value)
-        return model
-
-    @property
-    def reasoning_effort(self) -> str:
-        _, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(self.value)
-        return reasoning_effort
+RouterProfile = subagent_router_profile_support.RouterProfile
 
 
 def _router_profile_from_token(value: Any) -> RouterProfile | None:
-    token = agent_runtime_contract.canonical_execution_profile(_normalize_token(value))
-    try:
-        return RouterProfile(token)
-    except ValueError:
-        return None
+    return subagent_router_profile_support.router_profile_from_token(value)
 
 
 def _router_profile_from_runtime(model: Any, reasoning_effort: Any) -> RouterProfile | None:
-    runtime_model = _normalize_string(model)
-    runtime_reasoning = _normalize_token(reasoning_effort)
-    if runtime_model == "gpt-5.4-mini":
-        if runtime_reasoning == "high":
-            return RouterProfile.ANALYSIS_HIGH
-        if runtime_reasoning == "medium":
-            return RouterProfile.ANALYSIS_MEDIUM
-    if runtime_model == "gpt-5.3-codex-spark" and runtime_reasoning == "medium":
-        return RouterProfile.FAST_WORKER
-    if runtime_model == "gpt-5.3-codex":
-        if runtime_reasoning == "high":
-            return RouterProfile.WRITE_HIGH
-        if runtime_reasoning == "medium":
-            return RouterProfile.WRITE_MEDIUM
-    if runtime_model == "gpt-5.4":
-        if runtime_reasoning == "xhigh":
-            return RouterProfile.FRONTIER_XHIGH
-        if runtime_reasoning == "high":
-            return RouterProfile.FRONTIER_HIGH
-    return None
+    return subagent_router_profile_support.router_profile_from_runtime(model, reasoning_effort)
 
 
 class RouterInputError(ValueError):
@@ -896,45 +846,12 @@ def _dedupe_strings(values: Sequence[str]) -> list[str]:
     return subagent_router_context_support._dedupe_strings(values)
 
 
-_USER_FACING_CHATTER_REPLACEMENTS: tuple[tuple[str, str], ...] = (
-    ("The current runtime handoff", "The current slice"),
-    ("the current runtime handoff", "the current slice"),
-    ("The retained runtime handoff", "The current slice"),
-    ("the retained runtime handoff", "the current slice"),
-    ("The retained context packet", "The current slice"),
-    ("the retained context packet", "the current slice"),
-    ("The current retained packet", "The current slice"),
-    ("the current retained packet", "the current slice"),
-    ("The retained packet", "The current slice"),
-    ("the retained packet", "the current slice"),
-    ("runtime handoff", "current slice"),
-    ("runtime context packet", "current slice"),
-    ("Control advisories", "Recent execution evidence"),
-    ("control advisories", "recent execution evidence"),
-    ("advisory loop", "recent execution evidence"),
-    ("packetizer alignment", "execution fit"),
-    ("runtime-backed", "measured"),
-    ("native-spawn-ready", "delegation-ready"),
-    ("route-ready", "ready for delegation"),
-    ("hold-local", "local-first"),
-    ("runtime memory contracts", "grounded evidence"),
-    ("runtime contracts", "grounded contracts"),
-    ("runtime optimization posture", "recent execution posture"),
-    ("retained evidence pack", "current evidence set"),
-)
-
-
 def _sanitize_user_facing_text(value: Any) -> str:
-    text = str(value or "").strip()
-    if not text:
-        return ""
-    for needle, replacement in _USER_FACING_CHATTER_REPLACEMENTS:
-        text = text.replace(needle, replacement)
-    return re.sub(r"\s+", " ", text).strip()
+    return subagent_router_profile_support.sanitize_user_facing_text(value)
 
 
 def _sanitize_user_facing_lines(values: Sequence[str]) -> list[str]:
-    return _dedupe_strings(_sanitize_user_facing_text(value) for value in values)
+    return subagent_router_profile_support.sanitize_user_facing_lines(values)
 
 
 def _context_signal_bool(value: Any) -> bool:
@@ -958,91 +875,14 @@ def _latency_pressure_signal(value: Any) -> int:
 
 
 def _execution_profile_candidate(value: Any) -> dict[str, Any]:
-    return tooling_memory_contracts.execution_profile_mapping(value)
+    return subagent_router_context_support._execution_profile_candidate(value)
 
 
 def _synthesized_execution_profile_candidate(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
-    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), Mapping) else {}
-    if not bool(route.get("route_ready")) or bool(route.get("narrowing_required")):
-        return {}
-    packet_quality = packet_quality_codec.expand_packet_quality(
-        dict(context_packet.get("packet_quality", {}))
-        if isinstance(context_packet.get("packet_quality"), Mapping)
-        else {}
-    )
-    retrieval_plan = (
-        dict(context_packet.get("retrieval_plan", {}))
-        if isinstance(context_packet.get("retrieval_plan"), Mapping)
-        else {}
-    )
-    selected_counts = _selected_counts_mapping(retrieval_plan.get("selected_counts"))
-    governance = governance_signal_codec.expand_governance_signal(
-        dict(route.get("governance", {})) if isinstance(route.get("governance"), Mapping) else {}
-    )
-    family = _normalize_token(packet_quality.get("intent_family"))
-    confidence = _normalize_token(packet_quality.get("routing_confidence"))
-    validation_count = _int_value(selected_counts.get("tests")) + _int_value(selected_counts.get("commands"))
-    guidance_count = _int_value(selected_counts.get("guidance"))
-    governance_contract = any(
-        (
-            _int_value(governance.get("closeout_doc_count")) > 0,
-            _int_value(governance.get("strict_gate_command_count")) > 0,
-            _normalize_bool(governance.get("plan_binding_required")),
-            _normalize_bool(governance.get("governed_surface_sync_required")),
-        )
-    )
-    host_runtime = host_runtime_contract.resolve_host_runtime(
-        context_packet.get("host_runtime"),
-        _context_lookup(context_packet, "execution_profile", "host_runtime"),
-    )
-    profile = RouterProfile.ANALYSIS_MEDIUM.value
-    agent_role = "explorer"
-    selection_mode = "analysis_scout"
-    if family in {"implementation", "write", "bugfix"}:
-        if governance_contract and _int_value(governance.get("strict_gate_command_count")) > 0:
-            profile = RouterProfile.FRONTIER_HIGH.value
-            selection_mode = "deep_validation"
-        else:
-            profile = (
-                RouterProfile.WRITE_HIGH.value
-                if confidence == "high" and (validation_count > 0 or guidance_count >= 2)
-                else RouterProfile.WRITE_MEDIUM.value
-            )
-            selection_mode = "bounded_write"
-        agent_role = "worker"
-    elif family == "validation":
-        profile = RouterProfile.WRITE_HIGH.value if confidence == "high" or validation_count >= 2 else RouterProfile.WRITE_MEDIUM.value
-        agent_role = "worker"
-        selection_mode = "validation_focused"
-    elif family in {"docs", "governance"}:
-        profile = RouterProfile.FAST_WORKER.value if governance_contract else RouterProfile.ANALYSIS_MEDIUM.value
-        agent_role = "worker" if profile == RouterProfile.FAST_WORKER.value else "explorer"
-        selection_mode = "support_fast_lane" if profile == RouterProfile.FAST_WORKER.value else "analysis_scout"
-    elif family in {"analysis", "review", "diagnosis"}:
-        profile = (
-            RouterProfile.ANALYSIS_HIGH.value
-            if confidence == "high" or governance_contract or validation_count > 0 or guidance_count > 0
-            else RouterProfile.ANALYSIS_MEDIUM.value
-        )
-        agent_role = "explorer"
-        selection_mode = "analysis_synthesis" if profile == RouterProfile.ANALYSIS_HIGH.value else "analysis_scout"
-    model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(
-        profile,
-        host_runtime=host_runtime,
-    )
-    return {
-        "profile": profile,
-        "model": model,
-        "reasoning_effort": reasoning_effort,
-        "agent_role": agent_role,
-        "selection_mode": selection_mode,
-        "delegate_preference": "delegate",
-        "source": "context_packet_route",
-        "host_runtime": host_runtime,
-    }
+    return subagent_router_context_support._synthesized_execution_profile_candidate(context_packet=context_packet)
 
 
 def _execution_profile_mapping(
@@ -1101,7 +941,7 @@ def _build_host_message(*sections: Sequence[str]) -> str:
 
 
 def _clamp_score(value: int | float) -> int:
-    return subagent_router_context_support._clamp_score(value)
+    return subagent_router_profile_support.clamp_score(value)
 
 
 def _clamp_bias(value: float) -> float:
@@ -1113,18 +953,7 @@ def _agent_role_for_assessment(
     *,
     profile: RouterProfile | None = None,
 ) -> str:
-    if assessment.needs_write:
-        return "worker"
-    summary = dict(assessment.context_signal_summary or {})
-    recommended_role = _normalize_token(summary.get("odylith_execution_agent_role", ""))
-    confidence = _clamp_score(summary.get("odylith_execution_confidence_score", 0) or 0)
-    if recommended_role in {"explorer", "worker"} and confidence >= 3:
-        return recommended_role
-    if profile in {RouterProfile.MINI_MEDIUM, RouterProfile.MINI_HIGH} and assessment.task_family == "analysis_review":
-        return "explorer"
-    if not assessment.needs_write and assessment.task_family == "analysis_review":
-        return "explorer"
-    return "worker"
+    return subagent_router_profile_support.agent_role_for_assessment(assessment, profile=profile)
 
 
 def _task_tool_subagent_type(*, assessment: TaskAssessment, agent_role: str) -> str:
@@ -2057,92 +1886,12 @@ def _allow_xhigh_by_gate(assessment: TaskAssessment) -> bool:
     return False
 
 
-def _reliability_bias(counts: Mapping[str, int]) -> float:
-    successes = int(counts.get("accepted", 0) or 0)
-    failures = sum(
-        int(counts.get(label, 0) or 0)
-        for label in ("blocked", "ambiguous", "artifact_missing", "quality_too_weak", "broader_coordination")
-    )
-    total = successes + failures
-    if total < 3:
-        return 0.0
-    return max(-0.25, min(0.25, ((successes - failures) / total) * 0.25))
-
-
-def _count_total_labels(counts: Mapping[str, int], labels: Sequence[str]) -> int:
-    return sum(int(counts.get(label, 0) or 0) for label in labels)
-
-
-def _combined_counts(*rows: Mapping[str, int]) -> dict[str, int]:
-    combined: dict[str, int] = {}
-    for row in rows:
-        if not isinstance(row, Mapping):
-            continue
-        for key, value in row.items():
-            token = _normalize_token(key)
-            if not token:
-                continue
-            combined[token] = int(combined.get(token, 0) or 0) + max(0, int(value or 0))
-    return combined
-
-
 def _profile_reliability_summary(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> dict[str, Any]:
-    global_counts = dict(tuning.outcome_counts.get(profile.value, {}))
-    family_counts = dict(tuning.family_outcome_counts.get(assessment.task_family, {}).get(profile.value, {}))
-    family_total = _count_total_labels(
-        family_counts,
-        (
-            "accepted",
-            "blocked",
-            "ambiguous",
-            "artifact_missing",
-            "quality_too_weak",
-            "broader_coordination",
-            "escalated",
-            "token_efficient",
-        ),
-    )
-    counts = family_counts if family_total >= 2 else _combined_counts(global_counts, family_counts)
-    accepted = int(counts.get("accepted", 0) or 0)
-    blocked = int(counts.get("blocked", 0) or 0)
-    ambiguous = int(counts.get("ambiguous", 0) or 0)
-    artifact_missing = int(counts.get("artifact_missing", 0) or 0)
-    quality_too_weak = int(counts.get("quality_too_weak", 0) or 0)
-    broader_coordination = int(counts.get("broader_coordination", 0) or 0)
-    token_efficient = int(counts.get("token_efficient", 0) or 0)
-    failures = blocked + ambiguous + artifact_missing + quality_too_weak + broader_coordination
-    severe_failures = blocked + ambiguous + quality_too_weak
-    total = accepted + failures
-    if total < 2:
-        posture = "unknown"
-    elif failures == 0 and accepted >= 3:
-        posture = "strong"
-    elif severe_failures >= 2 or failures > accepted:
-        posture = "weak"
-    else:
-        posture = "mixed"
-    return {
-        "source": "family" if family_total >= 2 else "combined",
-        "posture": posture,
-        "accepted": accepted,
-        "failures": failures,
-        "severe_failures": severe_failures,
-        "token_efficient": token_efficient,
-        "total": total,
-    }
+    return subagent_router_profile_support.profile_reliability_summary(profile, assessment, tuning)
 
 
 def _tuning_bias_for_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> float:
-    profile_bias = float(tuning.profile_bias.get(profile.value, 0.0) or 0.0)
-    family_bias = float(
-        tuning.family_profile_bias.get(assessment.task_family, {}).get(profile.value, 0.0) or 0.0
-    )
-    return (
-        profile_bias
-        + family_bias
-        + _reliability_bias(tuning.outcome_counts.get(profile.value, {}))
-        + _reliability_bias(tuning.family_outcome_counts.get(assessment.task_family, {}).get(profile.value, {}))
-    )
+    return subagent_router_profile_support.tuning_bias_for_profile(profile, assessment, tuning)
 
 
 def _score_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> float:
@@ -2318,9 +2067,6 @@ def _prompt_wrapper_delta(*, outcome: RouteOutcome, assessment: TaskAssessment) 
     if assessment.feature_implementation and assessment.accuracy_preference in {"max_accuracy", "maximum_accuracy"}:
         lines.append("Restate the accuracy-first bias so the next pass optimizes for correctness over speed.")
     return lines
-
-subagent_router_runtime_policy.bind(sys.modules[__name__])
-
 
 def route_request(
     request: RouteRequest,

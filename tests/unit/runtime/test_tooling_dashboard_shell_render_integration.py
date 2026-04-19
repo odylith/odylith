@@ -30,7 +30,7 @@ def _seed_shell_fixture(repo_root: Path) -> None:
 def test_render_tooling_dashboard_does_not_include_status_packet_card(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_shell_fixture(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {
             _legacy_payload_key("memory", "snapshot"): {},

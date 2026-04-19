@@ -54,6 +54,8 @@ from odylith.runtime.evaluation import odylith_benchmark_prompt_payloads
 from odylith.runtime.common import odylith_benchmark_contract
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import governance_signal_codec
+from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime as packet_adaptive_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import path_bundle_codec
 from odylith.runtime.character import runtime as character_runtime
@@ -3019,7 +3021,7 @@ def _build_packet_payload(
             }
             packet_source = "governance_slice"
         elif requested_source == "session_brief":
-            payload = store.build_session_brief(
+            payload = packet_session_runtime.build_session_brief(
                 repo_root=repo_root,
                 changed_paths=existing_paths,
                 use_working_tree=False,
@@ -3048,7 +3050,7 @@ def _build_packet_payload(
             }
             packet_source = "session_brief"
         elif requested_source == "bootstrap_session":
-            payload = store.build_session_bootstrap(
+            payload = packet_session_runtime.build_session_bootstrap(
                 repo_root=repo_root,
                 changed_paths=existing_paths,
                 use_working_tree=False,
@@ -3077,7 +3079,7 @@ def _build_packet_payload(
             }
             packet_source = "bootstrap_session"
         else:
-            adaptive = store.build_adaptive_coding_packet(
+            adaptive = packet_adaptive_runtime.build_adaptive_coding_packet(
                 repo_root=repo_root,
                 changed_paths=existing_paths,
                 working_tree_scope="session",

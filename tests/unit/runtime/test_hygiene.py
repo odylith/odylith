@@ -151,6 +151,8 @@ ANTI_SLOP_INCOMPLETE_PASS = "the pass is incomplete"
 ANTI_SLOP_PROSE_ONLY_INCOMPLETE = "prose-only hardening is incomplete"
 ANTI_SLOP_REPO_WIDE_SCAN = "repo-wide structural scan or equivalent inventory"
 ANTI_SLOP_HOST_ESCAPE_HATCH = "escape hatches for softer anti-slop rules"
+ANTI_SLOP_KERNEL_ADOPTION = "partial shared-kernel adoption is still incomplete"
+ANTI_SLOP_TWO_PROOF_LAYERS = "fresh behavior proof for the touched slice and a fresh structural inventory for the claimed scope"
 LEGACY_CONSUMER_CHATTER_FRAGMENTS = (
     "must ground in Odylith first",
     "Direct repo scan before Odylith grounding is a policy violation",
@@ -634,6 +636,7 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert "code-hygiene-guard" in normalized, f"anti-slop skill routing drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_ANY_PROJECT in normalized.lower(), f"project-wide anti-slop scope drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_INCOMPLETE_PASS in normalized.lower(), f"incomplete-pass anti-slop bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_KERNEL_ADOPTION in normalized.lower(), f"shared-kernel adoption bar drifted in {path.relative_to(ROOT)}"
 
     proof_paths = (
         ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
@@ -657,6 +660,7 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert ANTI_SLOP_PHASE_OWNER in normalized, f"phase-owner decomposition bar drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_ANY_PROJECT in normalized.lower(), f"project-surface anti-slop scope drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_INCOMPLETE_PASS in normalized.lower(), f"incomplete-pass anti-slop bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_KERNEL_ADOPTION in normalized.lower(), f"shared-kernel adoption bar drifted in {path.relative_to(ROOT)}"
 
     cross_lane_paths = (
         ROOT / "odylith" / "AGENTS.md",
@@ -706,6 +710,7 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
     for path in hardening_paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
         assert ANTI_SLOP_PROSE_ONLY_INCOMPLETE in normalized.lower(), f"anti-slop hardening completeness bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_TWO_PROOF_LAYERS in normalized.lower(), f"two-proof-layer anti-slop bar drifted in {path.relative_to(ROOT)}"
 
     repo_wide_scan_paths = (
         ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
@@ -815,6 +820,17 @@ def test_runtime_user_facing_reason_templates_stay_task_first() -> None:
             assert fragment not in text, f"user-facing runtime template drifted in {path.relative_to(ROOT)}: {fragment!r}"
 
 
+def test_subagent_router_runtime_policy_no_longer_uses_bind_shims() -> None:
+    paths = (
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router.py",
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_runtime_policy.py",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "def bind(" not in text, f"router bind shim resurfaced in {path.relative_to(ROOT)}"
+        assert "globals().update(" not in text, f"router globals injection resurfaced in {path.relative_to(ROOT)}"
+
+
 def test_context_engine_runtime_extracts_do_not_rebind_store_hosts() -> None:
     paths = (
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_compiler_runtime.py",
@@ -865,6 +881,20 @@ def test_context_engine_bind_shims_are_eliminated_from_remaining_extracts() -> N
         assert "def _store():" not in text, f"store shim resurfaced in {path.relative_to(ROOT)}"
         assert "class _Store" not in text, f"store proxy resurfaced in {path.relative_to(ROOT)}"
         assert "_LazyModuleProxy" not in text, f"lazy module proxy resurfaced in {path.relative_to(ROOT)}"
+
+
+def test_session_brief_runtime_uses_dossier_compaction_owner_directly() -> None:
+    path = (
+        ROOT
+        / "src"
+        / "odylith"
+        / "runtime"
+        / "context_engine"
+        / "odylith_context_engine_packet_session_runtime.py"
+    )
+    text = path.read_text(encoding="utf-8")
+    assert "dossier_compaction_runtime.compact_context_dossier_for_delivery(" in text
+    assert "context_engine_store._compact_context_dossier(" not in text
 
 
 def test_context_engine_legacy_binding_modules_are_deleted() -> None:

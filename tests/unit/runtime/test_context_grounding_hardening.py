@@ -5,6 +5,7 @@ from pathlib import Path
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import derivation_provenance
+from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as projection_compiler_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime as hot_path_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime as hot_path_scope
@@ -1387,7 +1388,7 @@ def test_direct_warm_projections_primes_process_warm_cache_for_follow_on_runtime
 
 
 def test_compact_context_dossier_for_delivery_uses_tight_defaults() -> None:
-    compact = store.compact_context_dossier_for_delivery(
+    compact = dossier_compaction_runtime.compact_context_dossier_for_delivery(
         {
             "resolved": True,
             "entity": {
