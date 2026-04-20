@@ -153,6 +153,82 @@
       );
     }
 
+    function executionWaveProgramMemberIds(program) {
+      const ids = [];
+      const seen = new Set();
+      const pushId = (value) => {
+        const token = String(value || "").trim();
+        if (!WORKSTREAM_RE.test(token) || seen.has(token)) return;
+        seen.add(token);
+        ids.push(token);
+      };
+      pushId(program && program.umbrella_id);
+      const waves = [];
+      [
+        program && program.active_waves,
+        program && program.blocked_waves,
+        program && program.complete_waves,
+        program && program.waves,
+      ].forEach((items) => {
+        if (!Array.isArray(items)) return;
+        items.forEach((wave) => {
+          if (!wave || typeof wave !== "object") return;
+          ["primary_workstreams", "carried_workstreams", "in_band_workstreams", "all_workstreams"].forEach((field) => {
+            const workstreams = Array.isArray(wave[field]) ? wave[field] : [];
+            workstreams.forEach((item) => {
+              if (item && typeof item === "object") {
+                pushId(item.idea_id);
+                return;
+              }
+              pushId(item);
+            });
+          });
+        });
+      });
+      return ids;
+    }
+
+    function sourceTruthProgramRowsFromRows(rows) {
+      const programs = [];
+      const seen = new Set();
+      (Array.isArray(rows) ? rows : []).forEach((row) => {
+        const rowPrograms = Array.isArray(row && row.execution_wave_programs) ? row.execution_wave_programs : [];
+        rowPrograms.forEach((program) => {
+          const umbrellaId = String(program && program.umbrella_id ? program.umbrella_id : "").trim();
+          if (!WORKSTREAM_RE.test(umbrellaId) || seen.has(umbrellaId) || !program || typeof program !== "object") return;
+          seen.add(umbrellaId);
+          programs.push(program);
+        });
+      });
+      return programs;
+    }
+
+    function sourceTruthCurrentExecutionProgramIds(sourceTruth) {
+      const payload = sourceTruth && typeof sourceTruth === "object" ? sourceTruth : {};
+      const exactRows = [
+        ...(Array.isArray(payload.current_workstreams) ? payload.current_workstreams : []),
+        ...(Array.isArray(payload.workstream_catalog) ? payload.workstream_catalog : []),
+      ];
+      const exactPrograms = sourceTruthProgramRowsFromRows(exactRows);
+      if (exactPrograms.length) {
+        return normalizedWorkstreamIdList(exactPrograms.map((program) => String(program && program.umbrella_id ? program.umbrella_id : "").trim()));
+      }
+      const executionPrograms = Array.isArray(payload.execution_programs) ? payload.execution_programs : [];
+      return normalizedWorkstreamIdList(
+        executionPrograms.map((program) => String(program && program.umbrella_id ? program.umbrella_id : "").trim())
+      );
+    }
+
+    function runtimeExecutionProgramIds(payload) {
+      const executionWaves = payload && payload.execution_waves && typeof payload.execution_waves === "object"
+        ? payload.execution_waves
+        : {};
+      const programs = Array.isArray(executionWaves.programs) ? executionWaves.programs : [];
+      return normalizedWorkstreamIdList(
+        programs.map((program) => String(program && program.umbrella_id ? program.umbrella_id : "").trim())
+      );
+    }
+
     function identicalWorkstreamLists(left, right) {
       const leftIds = normalizedWorkstreamIdList(left);
       const rightIds = normalizedWorkstreamIdList(right);
@@ -212,6 +288,8 @@
       const runtimeCompletedMembers = normalizedWorkstreamIdList(runtimeCurrentRelease.completed_workstreams);
       const sourceCurrentWorkstreams = sourceTruthCurrentWorkstreamIds(normalizedSourceTruth);
       const runtimeCurrentWorkstreams = runtimeCurrentWorkstreamIds(payload);
+      const sourceExecutionPrograms = sourceTruthCurrentExecutionProgramIds(normalizedSourceTruth);
+      const runtimeExecutionPrograms = runtimeExecutionProgramIds(payload);
       const reasonCodes = [];
       if (String(sourceCurrentRelease.release_id || "").trim() !== String(runtimeCurrentRelease.release_id || "").trim()) {
         reasonCodes.push("current_release_id");
@@ -224,6 +302,9 @@
       }
       if (!identicalWorkstreamLists(sourceCurrentWorkstreams, runtimeCurrentWorkstreams)) {
         reasonCodes.push("current_workstreams");
+      }
+      if (!identicalWorkstreamLists(sourceExecutionPrograms, runtimeExecutionPrograms)) {
+        reasonCodes.push("execution_programs");
       }
       if (!reasonCodes.length) {
         return { has_drift: false, warning: "" };
@@ -251,6 +332,11 @@
           `Source truth current workstreams are ${formatWorkstreamList(sourceCurrentWorkstreams)}, while the visible snapshot lists ${formatWorkstreamList(runtimeCurrentWorkstreams)}.`
         );
       }
+      if (reasonCodes.includes("execution_programs")) {
+        warningParts.push(
+          `Source truth execution programs are ${formatWorkstreamList(sourceExecutionPrograms)}, while the visible snapshot shows ${formatWorkstreamList(runtimeExecutionPrograms)}.`
+        );
+      }
       warningParts.push(`Compass reconciled this view from ${sourceLabel}. Run \`odylith compass refresh --repo-root .\` to refresh the full runtime snapshot.`);
       return {
         has_drift: true,
@@ -260,6 +346,7 @@
         source_active_members: sourceActiveMembers,
         source_completed_members: sourceCompletedMembers,
         source_current_workstreams: sourceCurrentWorkstreams,
+        source_execution_programs: sourceExecutionPrograms,
         source_current_workstream_rows: Array.isArray(normalizedSourceTruth.current_workstreams) ? normalizedSourceTruth.current_workstreams.slice() : [],
         source_workstream_catalog: Array.isArray(normalizedSourceTruth.workstream_catalog) ? normalizedSourceTruth.workstream_catalog.slice() : [],
         warning: warningParts.join(" "),
@@ -323,6 +410,101 @@
       };
     }
 
+    function buildPatchedExecutionWaves(payload, currentWorkstreamRows, workstreamCatalog) {
+      const runtimeExecutionWaves = payload && payload.execution_waves && typeof payload.execution_waves === "object"
+        ? payload.execution_waves
+        : {};
+      const runtimePrograms = [
+        ...(Array.isArray(runtimeExecutionWaves.programs) ? runtimeExecutionWaves.programs : []),
+        ...(Array.isArray(runtimeExecutionWaves.program_catalog) ? runtimeExecutionWaves.program_catalog : []),
+      ].filter((program) => program && typeof program === "object");
+      const runtimeProgramsByUmbrella = new Map();
+      runtimePrograms.forEach((program) => {
+        const umbrellaId = String(program && program.umbrella_id ? program.umbrella_id : "").trim();
+        if (!WORKSTREAM_RE.test(umbrellaId) || runtimeProgramsByUmbrella.has(umbrellaId)) return;
+        runtimeProgramsByUmbrella.set(umbrellaId, program);
+      });
+
+      const sourceRows = [
+        ...(Array.isArray(currentWorkstreamRows) ? currentWorkstreamRows : []),
+        ...(Array.isArray(workstreamCatalog) ? workstreamCatalog : []),
+      ];
+      const sourcePrograms = sourceTruthProgramRowsFromRows(sourceRows);
+      if (!sourcePrograms.length) {
+        return runtimeExecutionWaves;
+      }
+
+      const sourceProgramsByUmbrella = new Map();
+      sourcePrograms.forEach((program) => {
+        const umbrellaId = String(program && program.umbrella_id ? program.umbrella_id : "").trim();
+        if (!WORKSTREAM_RE.test(umbrellaId) || sourceProgramsByUmbrella.has(umbrellaId)) return;
+        sourceProgramsByUmbrella.set(umbrellaId, program);
+      });
+
+      const liveProgramIds = [];
+      const seenLiveIds = new Set();
+      const pushLiveProgramId = (value) => {
+        const token = String(value || "").trim();
+        if (!WORKSTREAM_RE.test(token) || seenLiveIds.has(token)) return;
+        seenLiveIds.add(token);
+        liveProgramIds.push(token);
+      };
+      sourceTruthProgramRowsFromRows(currentWorkstreamRows).forEach((program) => pushLiveProgramId(program && program.umbrella_id));
+      sourceTruthProgramRowsFromRows(workstreamCatalog).forEach((program) => pushLiveProgramId(program && program.umbrella_id));
+      if (!liveProgramIds.length) {
+        sourcePrograms.forEach((program) => pushLiveProgramId(program && program.umbrella_id));
+      }
+
+      const catalogProgramIds = [];
+      const seenCatalogIds = new Set();
+      const pushCatalogProgramId = (value) => {
+        const token = String(value || "").trim();
+        if (!WORKSTREAM_RE.test(token) || seenCatalogIds.has(token)) return;
+        seenCatalogIds.add(token);
+        catalogProgramIds.push(token);
+      };
+      sourcePrograms.forEach((program) => pushCatalogProgramId(program && program.umbrella_id));
+      runtimePrograms.forEach((program) => pushCatalogProgramId(program && program.umbrella_id));
+
+      const livePrograms = liveProgramIds
+        .map((umbrellaId) => sourceProgramsByUmbrella.get(umbrellaId) || runtimeProgramsByUmbrella.get(umbrellaId) || null)
+        .filter(Boolean);
+      const programCatalog = catalogProgramIds
+        .map((umbrellaId) => sourceProgramsByUmbrella.get(umbrellaId) || runtimeProgramsByUmbrella.get(umbrellaId) || null)
+        .filter(Boolean);
+
+      const workstreams = runtimeExecutionWaves.workstreams && typeof runtimeExecutionWaves.workstreams === "object"
+        ? { ...runtimeExecutionWaves.workstreams }
+        : {};
+      sourceRows.forEach((row) => {
+        const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
+        const programs = Array.isArray(row && row.execution_wave_programs) ? row.execution_wave_programs : [];
+        if (!WORKSTREAM_RE.test(ideaId) || !programs.length) return;
+        workstreams[ideaId] = programs.slice();
+      });
+
+      const memberIds = new Set();
+      programCatalog.forEach((program) => {
+        executionWaveProgramMemberIds(program).forEach((ideaId) => memberIds.add(ideaId));
+      });
+
+      return {
+        ...runtimeExecutionWaves,
+        summary: {
+          ...(runtimeExecutionWaves.summary && typeof runtimeExecutionWaves.summary === "object" ? runtimeExecutionWaves.summary : {}),
+          program_count: livePrograms.length,
+          catalog_program_count: programCatalog.length,
+          wave_count: programCatalog.reduce((total, program) => total + Number(program && program.wave_count || 0), 0),
+          active_wave_count: programCatalog.reduce((total, program) => total + Number(program && program.active_wave_count || 0), 0),
+          blocked_wave_count: programCatalog.reduce((total, program) => total + Number(program && program.blocked_wave_count || 0), 0),
+          workstream_count: memberIds.size,
+        },
+        programs: livePrograms,
+        program_catalog: programCatalog,
+        workstreams,
+      };
+    }
+
     function applyCompassRuntimeTruthPatch(payload, sourceTruthPayload, drift) {
       const normalizedSourceTruth = normalizeCompassSourceTruthPayload(sourceTruthPayload);
       const sourceReleaseSummary = normalizedSourceTruth.release_summary;
@@ -370,6 +552,9 @@
       return {
         ...payload,
         release_summary: sourceReleaseSummary,
+        execution_waves: normalizedSourceTruth.kind === "source_truth"
+          ? buildPatchedExecutionWaves(payload, currentWorkstreamRows, workstreamCatalog)
+          : payload.execution_waves,
         current_workstreams_by_window: normalizedSourceTruth.kind === "source_truth"
           ? (exactCurrentRows.length
             ? {

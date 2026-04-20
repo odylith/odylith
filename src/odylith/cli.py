@@ -702,17 +702,55 @@ def _prepare_consumer_upgrade_spotlight(*, repo_root: Path, summary: object, sou
 
 def _refresh_dashboard_after_upgrade(*, repo_root: Path) -> tuple[bool, str]:
     print("Refreshing Odylith dashboard surfaces so the local shell reflects the new release.")
-    render_rc = _sync_workstream_artifacts().refresh_dashboard_surfaces(
-        repo_root=repo_root,
-        surfaces=_DEFAULT_DASHBOARD_REFRESH_SURFACES,
-        runtime_mode="auto",
-        atlas_sync=False,
-    )
-    if render_rc != 0:
+    launcher_path = (repo_root / ".odylith" / "bin" / "odylith").resolve()
+    if not launcher_path.is_file():
+        render_rc = _sync_workstream_artifacts().refresh_dashboard_surfaces(
+            repo_root=repo_root,
+            surfaces=_DEFAULT_DASHBOARD_REFRESH_SURFACES,
+            runtime_mode="auto",
+            atlas_sync=False,
+        )
+        if render_rc != 0:
+            return (
+                False,
+                "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`.",
+            )
+        return True, "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
+    command = [
+        str(launcher_path),
+        "dashboard",
+        "refresh",
+        "--repo-root",
+        str(repo_root),
+        "--surfaces",
+        _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV,
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=str(repo_root),
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
         return (
             False,
             "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`.",
-    )
+        )
+    if completed.stdout:
+        sys.stdout.write(completed.stdout)
+        if not str(completed.stdout).endswith("\n"):
+            sys.stdout.write("\n")
+    if completed.stderr:
+        sys.stderr.write(completed.stderr)
+        if not str(completed.stderr).endswith("\n"):
+            sys.stderr.write("\n")
+    if completed.returncode != 0:
+        return (
+            False,
+            "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`.",
+        )
     return True, "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
 
 

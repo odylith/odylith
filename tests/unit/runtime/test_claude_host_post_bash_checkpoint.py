@@ -132,7 +132,7 @@ def test_post_bash_checkpoint_emits_visible_observation_and_proposal(
     assert "**Odylith Assist:** kept this grounded." in payload["additionalContext"]
     assert "**Odylith Observation:** The Bash edit is governed now." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "Odylith Assist:" not in payload["systemMessage"]
+    assert "**Odylith Assist:** kept this grounded." in payload["systemMessage"]
 
 
 def test_post_bash_bundle_uses_recent_prompt_excerpt_not_intervention_summary(

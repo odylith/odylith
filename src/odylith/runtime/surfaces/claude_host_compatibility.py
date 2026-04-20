@@ -74,7 +74,7 @@ def _report_notes(report: ClaudeCompatibilityReport) -> list[str]:
             "Claude intervention hooks are wired for direct edits, Bash edits, and Stop closeout sources."
         )
         notes.append(
-            "Chat visibility is completed by the assistant-render fallback inside `additionalContext` and the Stop one-shot continuation guard; hook stdout or `systemMessage` alone is not treated as visible-chat proof."
+            "Chat visibility is completed by the assistant-render fallback inside `additionalContext` and the Stop one-shot continuation guard; hook stdout or `systemMessage` may carry the same visible block, including Assist when that moment already earned closeout continuity, but is not alone treated as visible-chat proof."
         )
     else:
         missing = []

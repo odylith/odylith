@@ -101,13 +101,13 @@ def main(argv: list[str] | None = None) -> int:
         turn_phase="prompt_submit",
         session_id=session_id,
         include_proposal=False,
-        include_closeout=False,
+        include_closeout=True,
     )
     replay = visibility_replay.replayable_chat_markdown(
         repo_root=args.repo_root,
         host_family="codex",
         session_id=session_id,
-        include_assist=False,
+        include_assist=True,
         include_teaser=False,
     )
     summary = render_codex_prompt_context(

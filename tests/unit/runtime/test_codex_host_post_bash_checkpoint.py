@@ -531,7 +531,7 @@ def test_main_routes_checkpoint_context_through_additional_context(
     assert "**Odylith Assist:** kept this grounded." in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** The signal is real." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "Odylith Assist:" not in payload["systemMessage"]
+    assert "**Odylith Assist:** kept this grounded." in payload["systemMessage"]
 
 
 def test_command_scoped_governed_paths_skips_repo_wide_dirty_files_when_command_lacks_exact_target(

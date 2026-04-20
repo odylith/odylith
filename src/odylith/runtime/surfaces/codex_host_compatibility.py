@@ -42,10 +42,10 @@ def _report_notes(report: CodexCompatibilityReport) -> list[str]:
         and report.supports_stop_summary_hook
     ):
         notes.append(
-            "Codex intervention hooks are wired for prompt teaser, Bash checkpoint Observation/Proposal, and Stop closeout sources."
+            "Codex intervention hooks are wired for prompt teaser, Bash checkpoint intervention blocks, and Stop closeout sources."
         )
         notes.append(
-            "Chat visibility is completed by the assistant-render fallback inside `additionalContext`; hook `systemMessage` alone is not treated as a visible-chat proof."
+            "Chat visibility is completed by the assistant-render fallback inside `additionalContext`; hook `systemMessage` may carry the same visible block, including Assist when that moment already earned closeout continuity, but it is not alone treated as a visible-chat proof."
         )
     else:
         missing = []

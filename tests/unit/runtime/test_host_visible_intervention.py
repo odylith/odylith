@@ -36,7 +36,7 @@ def _bundle() -> dict[str, object]:
     }
 
 
-def test_visible_intervention_renders_live_markdown_without_assist(monkeypatch, tmp_path) -> None:
+def test_visible_intervention_renders_live_markdown_with_assist(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(
         host_visible_intervention.host_surface_runtime,
         "compose_host_conversation_bundle",
@@ -53,7 +53,7 @@ def test_visible_intervention_renders_live_markdown_without_assist(monkeypatch, 
 
     assert "**Odylith Observation:**" in rendered
     assert "Odylith Proposal:" in rendered
-    assert "Odylith Assist:" not in rendered
+    assert "**Odylith Assist:** kept the visible path alive." in rendered
 
 
 def test_visible_intervention_renders_stop_assist(monkeypatch, tmp_path) -> None:

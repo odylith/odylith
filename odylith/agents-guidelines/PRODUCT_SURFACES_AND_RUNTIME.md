@@ -101,8 +101,10 @@
 - Checkpoint hooks carry two surfaces on purpose:
   - hidden developer context with the full Observation/Proposal/Assist bundle
     for continuity into the next model turn
-  - a visible checkpoint beat for the user when Observation or Proposal is
-    actually earned
+  - a visible checkpoint block for the user when the moment earns a real
+    Observation/Proposal beat, optionally followed by the matching
+    `Odylith Assist:` line when closeout continuity is already eligible for
+    that same moment
 - The primary visible intervention moment is the edit/bash checkpoint, not the
   stop fallback. Stop may still recover a late Observation or a closeout
   Assist line, but the product should not make users wait until stop to feel a

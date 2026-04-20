@@ -150,8 +150,7 @@ def main(argv: list[str] | None = None) -> int:
             turn_phase="post_edit_checkpoint",
             session_id=session_id,
             include_proposal=True,
-            include_closeout=False,
-            developer_include_closeout=True,
+            include_closeout=True,
         )
         if bundle
         else None
@@ -166,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
         session_id=session_id,
         max_live_blocks=4,
         ambient_cap=3,
-        include_assist=False,
+        include_assist=True,
         include_teaser=False,
     )
     developer_context = host_intervention_support.join_sections(replay, developer_context) if replay else developer_context

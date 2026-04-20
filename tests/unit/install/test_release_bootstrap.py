@@ -682,7 +682,22 @@ def test_dogfood_activate_bootstraps_missing_launcher_before_upgrade() -> None:
 
     assert 'if [[ ! -x "$odylith_launcher" ]]; then' in text
     assert 'odylith_cli doctor --repo-root . --repair' in text
-    assert text.index('odylith_cli doctor --repo-root . --repair') < text.index('launcher_cli upgrade --repo-root .')
+    assert text.index('odylith_cli doctor --repo-root . --repair') < text.index('source_version="$(current_source_version)"')
+
+
+def test_dogfood_activate_uses_source_upgrade_across_release_boundaries() -> None:
+    text = (REPO_ROOT / "bin" / "dogfood-activate").read_text(encoding="utf-8")
+
+    assert 'source_version="$(current_source_version)"' in text
+    assert 'version_status="$(launcher_cli version --repo-root .)"' in text
+    assert 'active_version="$(printf \'%s\\n\' "$version_status" | sed -n \'s/^Active: //p\' | head -n 1)"' in text
+    assert 'pinned_version="$(printf \'%s\\n\' "$version_status" | sed -n \'s/^Pinned: //p\' | head -n 1)"' in text
+    assert 'if [[ -n "$source_version" && -n "$active_version" && "$source_version" != "$active_version" ]]; then' in text
+    assert 'odylith_cli upgrade --repo-root . --to "$source_version" --write-pin' in text
+    assert 'elif [[ -n "$source_version" && -n "$pinned_version" && "$source_version" == "$active_version" && "$source_version" == "$pinned_version" ]]; then' in text
+    assert 'launcher_cli dashboard refresh --repo-root .' in text
+    assert 'else' in text
+    assert 'launcher_cli upgrade --repo-root .' in text
 
 
 def test_dev_validate_surfaces_detached_source_local_lane() -> None:

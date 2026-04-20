@@ -404,14 +404,16 @@ claiming ML calibration.
 - `post_edit_checkpoint` and `post_bash_checkpoint`
   are the primary visible intervention lanes. They may upgrade an earned
   observation into a proposal by attaching concrete changed-path evidence and
-  governed targets, and should surface the earned Observation/Proposal beat
-  visibly at the hook moment when the host supports it, or through the
-  assistant-render fallback when the host keeps hook output hidden. On Codex,
-  `post_bash_checkpoint` is the CLI name for the hookable Bash checkpoint
-  surface; native desktop patch/exec payloads are manual/test fallback inputs,
-  not automatic hook coverage. On Claude, direct edits and Bash writes are
-  separate hook commands but must render the same shared intervention bundle
-  shape.
+  governed targets, and should surface the earned visible intervention block
+  at the hook moment when the host supports it, or through the
+  assistant-render fallback when the host keeps hook output hidden. That
+  visible block is usually the Observation/Proposal beat, but it may append
+  the matching `Odylith Assist:` line when the same moment already has an
+  eligible closeout bundle. On Codex, `post_bash_checkpoint` is the CLI name
+  for the hookable Bash checkpoint surface; native desktop patch/exec payloads
+  are manual/test fallback inputs, not automatic hook coverage. On Claude,
+  direct edits and Bash writes are separate hook commands but must render the
+  same shared intervention bundle shape.
 - Codex `post_bash_checkpoint` grounding must use a repo-local latency cache
   before invoking `odylith start --repo-root .`. A cold or stale cache may run
   start once for the active session bucket; warm cache entries, including
@@ -427,10 +429,12 @@ claiming ML calibration.
     `hookSpecificOutput.additionalContext`) with the full
     Observation/Proposal/Assist bundle for model continuity plus
     assistant-render fallback instructions for chat visibility
-  - hook `systemMessage` with the earned Observation/Proposal beat and only
+  - hook `systemMessage` with the earned visible intervention block and only
     failure-level governance status when that status materially changes the
-    next move; this is useful host context but is not alone considered proof
-    that the user saw the beat
+    next move; the block is usually the Observation/Proposal beat, but may
+    append the matching Assist line when closeout continuity is already
+    eligible for that same moment. This is useful host context but is not
+    alone considered proof that the user saw the beat.
 - Host adapters must consume the shared `VisibleInterventionDecision` instead
   of deriving visibility policy locally. The same decision object feeds Codex
   prompt/post-bash/stop paths, Claude prompt/post-edit/post-bash/stop paths,

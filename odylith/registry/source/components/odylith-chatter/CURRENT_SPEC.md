@@ -210,10 +210,13 @@ end-of-work outcomes instead of canned self-promotion.
   intervention engine fast path rather than forcing every host beat through
   chatter composition.
 - Checkpoint hooks may therefore carry two simultaneous surfaces:
-  a visible Observation/Proposal beat for the user and a hidden
+  a visible intervention block for the user and a hidden
   Observation/Proposal/Assist developer-context bundle for next-turn
-  continuity. Chatter should consume that carried truth instead of trying to
-  infer a second visible intervention from the same moment.
+  continuity. That visible block is usually the Observation/Proposal beat,
+  but it may already include the matching `Odylith Assist:` line when the
+  same moment earned closeout continuity. Chatter should consume that carried
+  truth instead of trying to infer a second visible intervention from the
+  same moment.
 - That structured intervention payload should remain the source for the human
   block rendering. Do not rebuild Observation or Proposal UX from Compass event
   summaries when the carried markdown, prompt context, and render policy are

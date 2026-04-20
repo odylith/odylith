@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.surfaces import compass_standup_brief_maintenance
@@ -2574,10 +2575,19 @@ def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> N
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
     fixture_context_engine_dir = fixture_root / ".odylith" / "runtime"
     fixture_context_engine_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(
-        _REPO_ROOT / ".odylith" / "runtime" / "odylith-context-engine-state.v1.js",
-        fixture_context_engine_dir / "odylith-context-engine-state.v1.js",
-    )
+    source_runtime_dir = _REPO_ROOT / ".odylith" / "runtime"
+    source_state_js = source_runtime_dir / odylith_control_state.STATE_JS_FILENAME
+    fixture_state_js = fixture_context_engine_dir / odylith_control_state.STATE_JS_FILENAME
+    if source_state_js.is_file():
+        shutil.copyfile(source_state_js, fixture_state_js)
+    else:
+        source_state_json = source_runtime_dir / odylith_control_state.STATE_FILENAME
+        fixture_state_js.write_text(
+            odylith_control_state._render_state_js(  # noqa: SLF001
+                payload=json.loads(source_state_json.read_text(encoding="utf-8"))
+            ),
+            encoding="utf-8",
+        )
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"

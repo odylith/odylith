@@ -35,7 +35,7 @@ def render_visible_intervention(
     proposal = normalized_phase not in {"prompt_submit", "userpromptsubmit", "stop_summary"}
     if include_proposal is not None:
         proposal = bool(include_proposal)
-    closeout = normalized_phase == "stop_summary"
+    closeout = True
     if include_closeout is not None:
         closeout = bool(include_closeout)
     resolved_session = host_surface_runtime.normalized_session_id(session_id, host_family=host_family)

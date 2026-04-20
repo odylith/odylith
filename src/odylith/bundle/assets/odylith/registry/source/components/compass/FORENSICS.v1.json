@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 126,
-    "mapped_workstream_evidence_count": 67,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 150,
+    "mapped_workstream_evidence_count": 85,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 33,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 126
+    "timeline_event_count": 151
   },
   "name": "Compass",
   "path_prefixes": [
@@ -53,6 +53,888 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 314,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "ts_iso": "2026-04-20T18:29:15Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 313,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-20T18:29:15Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 311,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "ts_iso": "2026-04-20T18:29:13Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 310,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-20T18:29:13Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 308,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
+      "ts_iso": "2026-04-20T18:29:12Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 307,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
+      "ts_iso": "2026-04-20T18:29:11Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 305,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-20T18:29:09Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 304,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "ts_iso": "2026-04-20T18:29:09Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 302,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-20T18:29:00Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 301,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "ts_iso": "2026-04-20T18:29:00Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 300,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
+      "ts_iso": "2026-04-20T18:28:46Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 299,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
+      "ts_iso": "2026-04-20T18:28:42Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 297,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-20T18:26:33Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 296,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "ts_iso": "2026-04-20T18:26:33Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 294,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "capture_proposed",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
+      "ts_iso": "2026-04-20T18:26:01Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 293,
+      "explicit_components": [
+        "execution-engine",
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
+      "ts_iso": "2026-04-20T18:26:01Z",
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 292,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
+      "ts_iso": "2026-04-20T18:25:18Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "medium",
+      "event_index": 291,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "benchmark",
+        "compass",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-contracts",
+        "radar",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
+      "ts_iso": "2026-04-20T18:25:05Z",
+      "workstreams": [
+        "B-096"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -276,6 +1158,179 @@
         "B-109",
         "B-110"
       ]
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 316,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.11 for the current repository; repo pin is 0.1.11.",
+      "ts_iso": "2026-04-20T13:02:47-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 315,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.10 for the current repository; repo pin is 0.1.10.",
+      "ts_iso": "2026-04-20T11:37:04-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 290,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-04-20T11:22:31-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/surfaces/render_compass_dashboard.py"
+      ],
+      "confidence": "high",
+      "event_index": 317,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "compass"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/surfaces/render_compass_dashboard.py",
+      "ts_iso": "2026-04-20T11:22:13-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 289,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.10 for the current repository; repo pin is 0.1.10.",
+      "ts_iso": "2026-04-20T09:55:39-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 288,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.10 for the current repository; repo pin is 0.1.10.",
+      "ts_iso": "2026-04-20T08:43:56-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 287,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-20T08:43:11-07:00",
+      "workstreams": []
     },
     {
       "artifacts": [],

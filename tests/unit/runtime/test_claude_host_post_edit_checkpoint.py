@@ -195,7 +195,7 @@ def test_main_emits_observation_and_proposal_for_correlated_edit(monkeypatch, tm
     assert "**Odylith Assist:** kept this grounded." in payload["additionalContext"]
     assert "**Odylith Observation:**" in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "Odylith Assist:" not in payload["systemMessage"]
+    assert "**Odylith Assist:** kept this grounded." in payload["systemMessage"]
 
 
 def test_post_edit_bundle_uses_recent_prompt_excerpt_not_intervention_summary(tmp_path: Path) -> None:

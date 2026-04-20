@@ -1,5 +1,5 @@
 # Security Posture
-Last updated: 2026-04-09
+Last updated: 2026-04-20
 
 ## Purpose
 
@@ -8,7 +8,8 @@ first-class product boundaries. It hardens `.odylith/` against runtime drift,
 fails closed on insecure consumer-lane overrides, and keeps Odylith-owned
 Python helpers on a tight leash.
 
-This posture reflects shipped release `v0.1.10`, published on 2026-04-08.
+This posture is authored for release line `v0.1.11`; the latest published
+release remains `v0.1.10`, published on 2026-04-08.
 
 ## Threat Model
 

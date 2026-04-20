@@ -91,6 +91,13 @@ def test_parse_args_rejects_removed_refresh_profile_flag() -> None:
         render_compass_dashboard._parse_args(["--refresh-profile", "full"])  # noqa: SLF001
 
 
+def test_parse_args_reports_compass_render_prog_on_unknown_flag(capsys) -> None:
+    with pytest.raises(SystemExit):
+        render_compass_dashboard._parse_args(["--bogus"])  # noqa: SLF001
+
+    assert "usage: odylith compass render" in capsys.readouterr().err
+
+
 def test_refresh_runtime_artifacts_reuses_matching_runtime_payload(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     runtime_dir = repo_root / "odylith/compass/runtime"

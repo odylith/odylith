@@ -137,7 +137,7 @@ def render_prompt_system_message(
         repo_root=root,
         host_family=normalized_host,
         session_id=session_id,
-        include_assist=False,
+        include_assist=True,
         include_teaser=False,
     )
     if replay:
@@ -221,7 +221,7 @@ def render_stop_bundle_text(
         session_id=session_id,
         max_live_blocks=4,
         ambient_cap=3,
-        include_assist=False,
+        include_assist=True,
         include_teaser=True,
     )
     if recovered_live_text and (
@@ -232,4 +232,4 @@ def render_stop_bundle_text(
         bundle,
         markdown=True,
     )
-    return join_sections(live_text, closeout_text)
+    return merge_replay_with_closeout(replay=live_text, closeout_text=closeout_text)

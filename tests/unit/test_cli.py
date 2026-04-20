@@ -780,6 +780,106 @@ def test_install_adopt_latest_clears_stale_upgrade_spotlight_when_no_version_cha
     assert "Dashboard refreshed." in output
 
 
+def test_refresh_dashboard_after_upgrade_reenters_through_fresh_launcher(monkeypatch, tmp_path: Path, capsys) -> None:
+    repo_root = tmp_path / "repo"
+    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
+    launcher_path.parent.mkdir(parents=True, exist_ok=True)
+    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
+    captured: dict[str, object] = {}
+
+    def fake_run(command, **kwargs):  # noqa: ANN001, ANN003
+        captured["command"] = command
+        captured["kwargs"] = kwargs
+        return SimpleNamespace(returncode=0, stdout="dashboard refresh completed\n", stderr="")
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_run)
+
+    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
+    output = capsys.readouterr()
+
+    assert refreshed is True
+    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
+    assert captured["command"] == [
+        str(launcher_path.resolve()),
+        "dashboard",
+        "refresh",
+        "--repo-root",
+        str(repo_root),
+        "--surfaces",
+        "tooling_shell,radar,compass",
+    ]
+    assert captured["kwargs"] == {
+        "cwd": str(repo_root),
+        "check": False,
+        "capture_output": True,
+        "text": True,
+    }
+    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
+    assert "dashboard refresh completed" in output.out
+
+
+def test_refresh_dashboard_after_upgrade_returns_failure_when_launcher_refresh_fails(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    repo_root = tmp_path / "repo"
+    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
+    launcher_path.parent.mkdir(parents=True, exist_ok=True)
+    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(  # noqa: ANN002, ANN003
+            returncode=2,
+            stdout="dashboard refresh completed\n- outcome: failed\n",
+            stderr="compass failed\n",
+        ),
+    )
+
+    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
+    output = capsys.readouterr()
+
+    assert refreshed is False
+    assert (
+        message
+        == "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`."
+    )
+    assert "dashboard refresh completed" in output.out
+    assert "compass failed" in output.err
+
+
+def test_refresh_dashboard_after_upgrade_falls_back_to_in_process_refresh_when_launcher_is_missing(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        lambda **kwargs: captured.update(kwargs) or 0,
+    )
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should use in-process fallback")),
+    )
+
+    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
+    output = capsys.readouterr()
+
+    assert refreshed is True
+    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
+    assert captured == {
+        "repo_root": repo_root,
+        "surfaces": ("tooling_shell", "radar", "compass"),
+        "runtime_mode": "auto",
+        "atlas_sync": False,
+    }
+    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
+
+
 def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     install_state = tmp_path / ".odylith" / "install.json"

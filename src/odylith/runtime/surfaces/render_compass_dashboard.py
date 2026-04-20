@@ -425,7 +425,7 @@ def _split_source_vs_generated_files(files: Sequence[str]) -> tuple[list[str], l
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="odylith sync",
+        prog="odylith compass render",
         description="Render Compass executive dashboard shell and runtime snapshots.",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root")

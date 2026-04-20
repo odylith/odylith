@@ -187,15 +187,18 @@
   `hookSpecificOutput.additionalContext`. Prompt-time context should feel like
   one gentle interjection, not a visible dump of narrowing scaffolding.
 - Post-bash checkpoint is the primary intervention source lane. When the
-  recovered bundle earns an Observation or Proposal, Codex should emit that
-  live beat in hook `systemMessage` and duplicate the full
+  recovered bundle earns a live intervention block, Codex should emit that
+  visible block in hook `systemMessage` and duplicate the full
   Observation/Proposal/Assist bundle plus the assistant-render fallback into
-  `hookSpecificOutput.additionalContext`. If the host keeps hook output
-  hidden, the next assistant message must render the fallback Markdown instead
-  of silently dropping the product moment.
+  `hookSpecificOutput.additionalContext`. The visible block is usually the
+  earned Observation/Proposal beat, but it may also append the matching
+  `Odylith Assist:` line when the same moment already has eligible closeout
+  continuity. If the host keeps hook output hidden, the next assistant
+  message must render the fallback Markdown instead of silently dropping the
+  product moment.
 - Success-only governance refresh receipts must stay quiet when an earned live
   intervention exists. If refresh fails or is skipped, Codex may append that
-  failure-level status after the visible Observation/Proposal beat instead of
+  failure-level status after the visible intervention block instead of
   replacing it.
 - Stop-summary is the fallback closeout lane, not the primary delightful
   intervention surface. When the recovered stop bundle carries a real closeout

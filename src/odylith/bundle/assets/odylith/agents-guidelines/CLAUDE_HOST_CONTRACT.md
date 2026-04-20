@@ -196,18 +196,22 @@
   discreet model context and now carries an assistant-render fallback so the
   next assistant message can speak the teaser if the host hides hook output.
 - `PostToolUse` is the primary intervention source lane. When the recovered
-  bundle earns an Observation or Proposal, Claude should emit that live beat
-  through hook `systemMessage` and carry the full Observation/Proposal/Assist
-  bundle plus assistant-render fallback through top-level `additionalContext`.
-  If the host keeps hook output hidden, the next assistant message must render
-  the fallback Markdown instead of silently dropping the product moment.
+  bundle earns a live intervention block, Claude should emit that visible
+  block through hook `systemMessage` and carry the full
+  Observation/Proposal/Assist bundle plus assistant-render fallback through
+  top-level `additionalContext`. The visible block is usually the earned
+  Observation/Proposal beat, but it may also append the matching
+  `Odylith Assist:` line when the same moment already has eligible closeout
+  continuity. If the host keeps hook output hidden, the next assistant
+  message must render the fallback Markdown instead of silently dropping the
+  product moment.
 - Do not run the primary `PostToolUse` edit checkpoint asynchronously. Async
   hooks are useful for background diagnostics, but they deliver output on a later
   turn and can suppress completion notices in normal Claude Code sessions; the
   Observation/Proposal lane is a live UX surface, so it stays synchronous.
 - Success-only governance refresh receipts must stay quiet when an earned live
   intervention exists. If refresh fails or is skipped, Claude may append that
-  failure-level status after the visible Observation/Proposal beat instead of
+  failure-level status after the visible intervention block instead of
   replacing it.
 - That live path is intervention-engine-owned on purpose. Do not route Claude
   prompt, stop, or post-edit hooks through the heavier closeout chatter stack

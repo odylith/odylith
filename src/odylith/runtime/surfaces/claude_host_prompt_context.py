@@ -167,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
         turn_phase="prompt_submit",
         session_id=session_id,
         include_proposal=False,
-        include_closeout=False,
+        include_closeout=True,
         delivery_channel="assistant_visible_fallback",
         delivery_status="assistant_render_required",
     )
@@ -175,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
         repo_root=repo_root,
         host_family="claude",
         session_id=session_id,
-        include_assist=False,
+        include_assist=True,
         include_teaser=False,
     )
     summary = render_prompt_context(

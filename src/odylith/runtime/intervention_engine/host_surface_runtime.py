@@ -383,7 +383,7 @@ def assistant_visible_fallback_context(visible_text: str) -> str:
     return "\n".join(
         [
             "Odylith visible delivery fallback:",
-            "Visible proof is missing or host display is unproven. Render this Markdown once if it is not already visible. Do not mention hooks or use a code fence.",
+            "Visible proof is missing or host display is unproven. Start the next visible assistant message with this Markdown once if it is not already visible. Do not mention hooks or use a code fence.",
             "",
             _VISIBLE_DELIVERY_BEGIN,
             visible,
@@ -421,12 +421,26 @@ def stop_visible_delivery_reason(visible_text: str) -> str:
     ).strip()
 
 
+def _visible_delivery_with_assist(*, developer_context: str, visible_text: str) -> str:
+    visible = _canonical_visible_delivery_text(visible_text)
+    if visible and any(label in visible for label in _ASSIST_LABELS):
+        return visible
+    _live_context, assist_suffix = _split_assist_suffix(developer_context)
+    assist = _normalize_block_string(assist_suffix)
+    if visible and assist:
+        return f"{visible}\n\n{assist}"
+    return visible or assist
+
+
 def _developer_context_with_visible_fallback(*, developer_context: str, visible_text: str) -> str:
     context = _normalize_block_string(developer_context)
-    fallback = assistant_visible_fallback_context(visible_text)
+    visible = _visible_delivery_with_assist(
+        developer_context=context,
+        visible_text=visible_text,
+    )
+    fallback = assistant_visible_fallback_context(visible)
     if not fallback:
         return context
-    visible = _canonical_visible_delivery_text(visible_text)
     if visible and _canonical_visible_delivery_text(context) == visible:
         context = ""
     if visible and visible in context:

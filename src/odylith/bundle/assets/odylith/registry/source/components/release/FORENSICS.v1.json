@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 41,
+    "explicit_event_count": 43,
     "mapped_workstream_evidence_count": 26,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 41
+    "timeline_event_count": 44
   },
   "name": "Release",
   "path_prefixes": [
@@ -267,6 +267,79 @@
         "B-109",
         "B-110"
       ]
+    },
+    {
+      "artifacts": [
+        "bin/dogfood-activate"
+      ],
+      "confidence": "high",
+      "event_index": 321,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: bin/dogfood-activate",
+      "ts_iso": "2026-04-20T13:06:50-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 290,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
+      "ts_iso": "2026-04-20T11:22:31-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 287,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "ts_iso": "2026-04-20T08:43:11-07:00",
+      "workstreams": []
     },
     {
       "artifacts": [],
