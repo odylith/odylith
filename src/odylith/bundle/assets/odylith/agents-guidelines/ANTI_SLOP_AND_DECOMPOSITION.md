@@ -160,6 +160,9 @@
   before closeout.
 - If the change touches browser-proved UI or shell surfaces, run the full
   headless browser matrix before closeout.
+- When browser proof applies, cover the real rendered states that own the
+  contract: normal, empty/fallback, and degraded or error states when they
+  exist.
 - If the change touches install, upgrade, repair, launcher, bundled project
   assets, or bundle-mirror generation, run the install suite and mirror-content
   checks before closeout.

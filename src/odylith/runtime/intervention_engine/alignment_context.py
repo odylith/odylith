@@ -21,6 +21,9 @@ from odylith.runtime.intervention_engine import delivery_runtime
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_broker
+from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
+from odylith.runtime.intervention_engine.visibility_contract import normalize_string_list as _normalize_string_list
+from odylith.runtime.intervention_engine.visibility_contract import normalize_token as _normalize_token
 
 
 _VISIBILITY_WORKSTREAM = "B-096"
@@ -34,32 +37,6 @@ _ALIGNMENT_COMPONENTS: tuple[str, ...] = (
     "odylith-memory-backend",
     "tribunal",
 )
-
-
-def _normalize_string(value: Any) -> str:
-    return visibility_contract.normalize_string(value)
-
-
-def _normalize_token(value: Any) -> str:
-    return visibility_contract.normalize_token(value)
-
-
-def _normalize_string_list(value: Any, *, limit: int = 12) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        token = _normalize_string(value)
-        return [token] if token else []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = _normalize_string(item)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-        if len(rows) >= max(1, int(limit)):
-            break
-    return rows
-
 
 def _merge_strings(*values: Any, limit: int = 12) -> list[str]:
     rows: list[str] = []

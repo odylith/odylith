@@ -98,6 +98,9 @@
 - When install, upgrade, repair, launcher, or bundled project-asset surfaces
   move, proving `tests/unit/install` is mandatory. When browser-proved
   surfaces move, proving the headless browser matrix is mandatory.
+- When browser proof applies, cover the real rendered states that own the
+  contract: normal, empty/fallback, and degraded or error states when they
+  exist.
 - Host-mirror work fails closed as well. If a Codex/Claude or other host pair
   still carries the same duplicated formatter, renderer, or checkpoint control
   flow after the pass, the pass is incomplete; move the shared logic behind a

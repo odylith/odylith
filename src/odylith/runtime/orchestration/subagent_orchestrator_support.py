@@ -6,7 +6,9 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import float_value as _float_value
 from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import normalize_string_list as _dedupe_strings
 from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
 from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.context_engine import packet_quality_codec
@@ -82,18 +84,6 @@ def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, An
     return _normalize_context_signals(payload.get("routing_handoff", {}))
 
 
-def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    ordered: list[str] = []
-    for raw in values:
-        token = _normalize_string(raw)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        ordered.append(token)
-    return ordered
-
-
 def _sanitize_user_facing_text(value: Any) -> str:
     return leaf_router._sanitize_user_facing_text(value)  # noqa: SLF001
 
@@ -149,15 +139,6 @@ def _execution_profile_mapping(value: Any) -> dict[str, Any]:
     profile["model"] = selected.model
     profile["reasoning_effort"] = selected.reasoning_effort
     return profile
-
-
-def _float_value(value: Any) -> float:
-    try:
-        return float(value or 0.0)
-    except (TypeError, ValueError):
-        return 0.0
-
-
 def _normalized_rate(value: Any) -> float:
     numeric = _float_value(value)
     if numeric > 1.0:

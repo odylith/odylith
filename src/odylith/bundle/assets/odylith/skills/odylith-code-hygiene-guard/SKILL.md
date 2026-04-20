@@ -117,6 +117,9 @@ ownership, not just file boundaries.
 - If the change touches shared runtime hot paths, run the full runtime suite.
 - If the change touches browser-proved surfaces, run the full headless browser
   matrix.
+- When browser proof applies, cover the real rendered states that own the
+  contract: normal, empty/fallback, and degraded or error states when they
+  exist.
 - If the change touches install, upgrade, repair, launchers, or install-managed
   mirror surfaces, run the install suite and the mirror-content checks.
 

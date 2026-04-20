@@ -121,3 +121,6 @@ No transitional states. Do not replace one slop class with another.
   the claimed scope. One does not substitute for the other.
 - Run the headless browser matrix when the change touches browser-proved UI or
   shell surfaces.
+- When browser proof applies, cover the real rendered states that own the
+  contract: normal, empty/fallback, and degraded or error states when they
+  exist.

@@ -10,7 +10,7 @@ import sys
 from typing import Any
 from typing import Mapping
 
-from odylith.common.json_objects import load_json_object
+from odylith.common.json_objects import load_json_object as _load_json
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.intervention_engine import delivery_ledger
@@ -19,12 +19,6 @@ from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
 from odylith.runtime.intervention_engine.visibility_contract import normalize_token as _normalize_token
-
-
-def _load_json(path: Path) -> dict[str, Any]:
-    return load_json_object(path)
-
-
 def _matcher_tokens(value: Any) -> set[str]:
     matcher = _normalize_string(value)
     if matcher in {"*", ".*"}:

@@ -7,6 +7,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.consumer_profile import canonical_truth_token
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import string_rows as _string_rows
 from odylith.runtime.character import runtime as character_runtime
 from odylith.runtime.governance import guidance_behavior_runtime
 
@@ -53,20 +54,6 @@ _EXECUTION_PROFILE_FIELDS: tuple[str, ...] = (
 
 def _mapping_rows(value: Any) -> list[dict[str, Any]]:
     return [dict(row) for row in value] if isinstance(value, list) else []
-
-
-def _string_rows(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = str(item or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
 
 
 def _mapping_value(value: Any) -> dict[str, Any]:

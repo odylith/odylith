@@ -5,24 +5,13 @@ from __future__ import annotations
 import json
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
 from odylith.runtime.evaluation import odylith_benchmark_mode
 _normalize_mode = odylith_benchmark_mode.normalize_public_mode
 
 
 def _pretty_json(payload: Mapping[str, Any] | None) -> str:
     return json.dumps(dict(payload or {}), indent=2, sort_keys=True, ensure_ascii=False)
-
-
-def _dedupe_strings(rows: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    ordered: list[str] = []
-    for raw in rows:
-        token = str(raw or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        ordered.append(token)
-    return ordered
 
 
 def _string_rows(value: Any) -> list[str]:

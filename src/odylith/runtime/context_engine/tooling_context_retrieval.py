@@ -5,7 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
 from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import string_rows as _string_list
 from odylith.runtime.common.consumer_profile import (
     canonical_truth_token,
     truth_path_kind,
@@ -13,18 +15,6 @@ from odylith.runtime.common.consumer_profile import (
 )
 
 _ACTIONABLE_NOTE_KINDS = {"guardrail", "runbook", "testing", "tooling_policy", "workflow"}
-
-
-def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    rows: list[str] = []
-    for item in values:
-        token = str(item or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
 
 
 def _compact_mapping_list(
@@ -62,11 +52,6 @@ def _coalesced_string(*values: Any) -> str:
             return token
     return ""
 
-
-def _string_list(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    return _dedupe_strings([str(item) for item in value])
 
 def _path_prefix_match(path_ref: str, prefix: str) -> bool:
     path_token = str(path_ref or "").strip().strip("/")

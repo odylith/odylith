@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
 
 RUNTIME_LAYER_CONTRACT = "odylith_guidance_behavior_runtime_layers.v1"
 RUNTIME_LAYER_CONTRACTS: tuple[dict[str, Any], ...] = (
@@ -85,18 +86,6 @@ RUNTIME_LAYER_CONTRACTS: tuple[dict[str, Any], ...] = (
         },
     },
 )
-
-
-def _dedupe_strings(values: list[str]) -> list[str]:
-    rows: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        token = str(value or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
 
 
 def runtime_layer_contract_summary() -> dict[str, Any]:

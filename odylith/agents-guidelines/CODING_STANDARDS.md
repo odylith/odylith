@@ -89,6 +89,11 @@
 - Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
   behavior proof for the touched slice and a fresh structural inventory for
   the claimed scope. One does not substitute for the other.
+- When a touched surface renders in a browser, webview, or browser-proved UI
+  shell, do not stop at unit, snapshot, or hook-only proof. Run the full
+  applicable headless browser matrix and cover the real rendered states that
+  own the contract, including normal, empty/fallback, and degraded or error
+  states when they exist.
 - When a cleanup exposes a structural regression, fail closed: repair the
   regression and rerun the governing proof surface before landing more slop
   cleanup on top.

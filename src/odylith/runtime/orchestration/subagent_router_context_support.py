@@ -6,6 +6,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
 from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
 from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.common import agent_runtime_contract
@@ -184,18 +185,6 @@ def _context_signal_score(value: Any) -> int:
     if token in {"very_high", "max", "maximum", "full"}:
         return 4
     return 0
-
-
-def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    rows: list[str] = []
-    for value in values:
-        token = str(value or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
 
 
 def _context_signal_bool(value: Any) -> bool:

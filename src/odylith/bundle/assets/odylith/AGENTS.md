@@ -92,7 +92,11 @@ Scope: applies to Odylith paths under `odylith/`.
   for the other. Guidance-only hardening without updated tests, validators, or
   mirror-content checks is incomplete. For shared hot paths, user-visible
   flows, or high-risk structural moves, land characterization or
-  contract-focused tests before or alongside the refactor.
+  contract-focused tests before or alongside the refactor. When browser-rendered
+  dashboards, onboarding, HTML/CSS/JS shells, or other browser-proved surfaces
+  move, rerun the full headless browser matrix and cover the real rendered
+  states that own the contract, including normal, empty/fallback, and degraded
+  or error states when they exist.
   Use
   `agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` and
   `skills/odylith-code-hygiene-guard/SKILL.md` when quality pressure is high.

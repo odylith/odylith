@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.common import codex_cli_capabilities
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 
 
 _CODEX_HOST_RUNTIME = "codex_cli"
@@ -44,13 +45,6 @@ _UNSUPPORTED_TOKENS: frozenset[str] = frozenset(
         "unsupported",
     }
 )
-
-
-def _normalize_token(value: Any) -> str:
-    """Normalize host-runtime tokens for comparison against known aliases."""
-    return " ".join(str(value or "").split()).strip().lower().replace("-", "_").replace(" ", "_")
-
-
 def _is_truthy_env(value: Any) -> bool:
     """Interpret common shell truthy values the same way across host probes."""
     token = str(value or "").strip().lower()

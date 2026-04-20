@@ -22,19 +22,6 @@ _normalize_string = visibility_contract.normalize_string
 _normalize_token = visibility_contract.normalize_token
 
 
-def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    """De-duplicate normalized strings while preserving input order."""
-    rows: list[str] = []
-    seen: set[str] = set()
-    for raw in values:
-        token = _normalize_string(raw)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
-
-
 def _normalize_string_list(value: Any) -> list[str]:
     """Normalize a list-ish input into a de-duplicated string list."""
     return visibility_contract.normalize_string_list(value)
@@ -49,7 +36,7 @@ def _normalize_surface_list(value: Any) -> list[str]:
                 rows.append(str(item.get("surface", "")))
             else:
                 rows.append(str(item))
-    return _dedupe_strings(rows)
+    return visibility_contract.normalize_string_list(rows)
 
 
 def _normalize_proof_refs(value: Any) -> list[dict[str, Any]]:

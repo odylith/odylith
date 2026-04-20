@@ -7,8 +7,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from odylith.common.json_objects import JsonObjectLoadError
-from odylith.common.json_objects import read_json_object
+from odylith.common.json_objects import load_json_object as _read_json_object
 from odylith.runtime.governance import dashboard_refresh_contract
 from odylith.runtime.governance import release_truth_runtime
 
@@ -138,16 +137,6 @@ def _source_truth_drift_posture(
     # Compass already shows release-truth drift inside its own subtle header
     # status banner; suppress the duplicated shell-level warning slab.
     return {}
-
-
-def _read_json_object(path: Path) -> dict[str, Any]:
-    """Load a JSON object from disk or return an empty dict on failure."""
-    try:
-        return read_json_object(path)
-    except JsonObjectLoadError:
-        return {}
-
-
 def _parse_utc_token(value: str) -> dt.datetime | None:
     """Parse an ISO-like UTC token into an aware UTC datetime."""
     token = str(value or "").strip()

@@ -10,6 +10,8 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.common.value_coercion import mapping_copy as _mapping_value
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
+from odylith.runtime.common.value_coercion import string_rows as _string_rows
 from odylith.runtime.character import runtime as character_runtime
 from odylith.runtime.evaluation import odylith_ablation
 from odylith.runtime.context_engine import odylith_context_cache
@@ -29,20 +31,6 @@ _PROCESS_HOT_PATH_ROUTING_HANDOFF_CACHE: dict[str, dict[str, Any]] = {}
 
 def _mapping_rows(value: Any) -> list[dict[str, Any]]:
     return [dict(row) for row in value] if isinstance(value, list) else []
-
-
-def _string_rows(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = str(item or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
 
 
 def _guidance_actionability_read_path(row: Mapping[str, Any]) -> str:
@@ -142,12 +130,6 @@ def _merge_guidance_rows(
 def _nested_mapping(payload: Mapping[str, Any], key: str) -> dict[str, Any]:
     value = payload.get(key, {})
     return dict(value) if isinstance(value, Mapping) else {}
-
-
-def _normalize_token(value: Any) -> str:
-    return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
-
-
 def _delivery_scope_lookup(repo_root: Path) -> tuple[dict[str, dict[str, Any]], dict[str, Mapping[str, Any]]]:
     payload = delivery_intelligence_engine.load_delivery_intelligence_artifact(repo_root=repo_root)
     scopes = payload.get("scopes", []) if isinstance(payload.get("scopes"), list) else []

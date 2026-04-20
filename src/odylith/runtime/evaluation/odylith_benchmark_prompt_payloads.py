@@ -7,6 +7,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.evaluation.odylith_benchmark_prompt_family_rules import (
     family_anchors_all_required_docs,
@@ -16,18 +17,6 @@ from odylith.runtime.evaluation.odylith_benchmark_prompt_family_rules import (
 )
 
 _support_doc_family_rank = support_doc_family_rank
-
-
-def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    rows: list[str] = []
-    seen: set[str] = set()
-    for raw in values:
-        token = str(raw or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
 
 
 def _normalized_string_list(values: Any) -> list[str]:

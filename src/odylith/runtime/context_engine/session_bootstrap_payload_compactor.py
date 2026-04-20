@@ -4,21 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from odylith.runtime.common.value_coercion import string_rows as _string_rows
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.memory import tooling_memory_contracts
-
-
-def _string_rows(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    rows: list[str] = []
-    for item in value:
-        token = str(item).strip()
-        if token and token not in rows:
-            rows.append(token)
-    return rows
-
 
 def _clean_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
     return {

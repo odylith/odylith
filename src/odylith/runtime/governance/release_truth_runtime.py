@@ -6,8 +6,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from odylith.common.json_objects import JsonObjectLoadError
-from odylith.common.json_objects import read_json_object
+from odylith.common.json_objects import load_json_object as _read_json_object
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import release_planning_view_model
 
@@ -74,16 +73,6 @@ def _active_workstream_ids(rows: Any) -> list[str]:
 def _runtime_workstream_ids(payload: Mapping[str, Any]) -> list[str]:
     """Read visible current workstream membership from the runtime payload."""
     return _active_workstream_ids(payload.get("current_workstreams"))
-
-
-def _read_json_object(path: Path) -> dict[str, Any]:
-    """Load a JSON object from disk, returning an empty dict on read errors."""
-    try:
-        return read_json_object(path)
-    except JsonObjectLoadError:
-        return {}
-
-
 def _load_compass_release_truth_from_traceability(
     *,
     repo_root: Path,

@@ -62,6 +62,12 @@
   slice.
 - Guidance-only hardening without updated tests, validators, or mirror-content
   checks is incomplete.
+- Do not claim browser-rendered UI hardening from hook, snapshot, or unit proof
+  alone. If the touched Codex-visible assets also drive browser-rendered
+  dashboards, onboarding, shells, HTML, CSS, JS, templates, or other
+  browser-proved surfaces, rerun the full headless browser matrix and cover the
+  real rendered states that own the contract, including normal, empty/fallback,
+  and degraded or error states when they exist.
 - When one host tightens the anti-slop bar, update the other host contract,
   shared guidance, install-generated guidance, skills, and shipped mirrors in
   the same change.

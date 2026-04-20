@@ -9,6 +9,7 @@ import re
 import subprocess
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
 
 _RUNTIME_STATE_PATHS = (
     ".odylith/install.json",
@@ -42,18 +43,6 @@ _PROMPT_VISIBLE_FILE_SUFFIXES = frozenset(
         ".txt",
     }
 )
-
-
-def _dedupe_strings(rows: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    ordered: list[str] = []
-    for raw in rows:
-        token = str(raw or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        ordered.append(token)
-    return ordered
 
 
 def _string_rows(value: Any) -> list[str]:

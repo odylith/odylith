@@ -153,6 +153,8 @@ ANTI_SLOP_REPO_WIDE_SCAN = "repo-wide structural scan or equivalent inventory"
 ANTI_SLOP_HOST_ESCAPE_HATCH = "escape hatches for softer anti-slop rules"
 ANTI_SLOP_KERNEL_ADOPTION = "partial shared-kernel adoption is still incomplete"
 ANTI_SLOP_TWO_PROOF_LAYERS = "fresh behavior proof for the touched slice and a fresh structural inventory for the claimed scope"
+ANTI_SLOP_BROWSER_MATRIX = "headless browser matrix"
+ANTI_SLOP_BROWSER_STATES = "normal, empty/fallback, and degraded or error states"
 LEGACY_CONSUMER_CHATTER_FRAGMENTS = (
     "must ground in Odylith first",
     "Direct repo scan before Odylith grounding is a policy violation",
@@ -712,6 +714,29 @@ def test_anti_slop_contract_stays_explicit_across_guidance_surfaces() -> None:
         assert ANTI_SLOP_PROSE_ONLY_INCOMPLETE in normalized.lower(), f"anti-slop hardening completeness bar drifted in {path.relative_to(ROOT)}"
         assert ANTI_SLOP_TWO_PROOF_LAYERS in normalized.lower(), f"two-proof-layer anti-slop bar drifted in {path.relative_to(ROOT)}"
 
+    browser_proof_paths = (
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+        ROOT / "odylith" / "maintainer" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "odylith" / "maintainer" / "skills" / "fail-closed-code-hygiene" / "SKILL.md",
+        ROOT / "src" / "odylith" / "install" / "agents.py",
+        ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+    )
+    for path in browser_proof_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert ANTI_SLOP_BROWSER_MATRIX in normalized, f"browser-proof anti-slop bar drifted in {path.relative_to(ROOT)}"
+        assert ANTI_SLOP_BROWSER_STATES in normalized, f"browser-state anti-slop bar drifted in {path.relative_to(ROOT)}"
+
     repo_wide_scan_paths = (
         ROOT / "odylith" / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md",
         ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
@@ -1041,11 +1066,39 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_retrieval.py": ("def _int_value(",),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_routing.py": ("def _int_value(",),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_budgeting.py": ("def _int_value(", "def _mapping_value("),
-        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_builder.py": ("def _int_value(", "def _mapping_value("),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_builder.py": (
+            "def _int_value(",
+            "def _mapping_value(",
+            "def _normalize_token(",
+            "def _string_rows(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_retrieval.py": (
+            "def _int_value(",
+            "def _dedupe_strings(",
+            "def _string_list(",
+        ),
         ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py": ("def _mapping(",),
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_live_diagnostics.py": (
+            "def _dedupe_strings(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_live_prompt.py": (
+            "def _dedupe_strings(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_prompt_payloads.py": (
+            "def _dedupe_strings(",
+        ),
         ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_shard_merge.py": ("def _mapping(",),
-        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_evaluation_ledger.py": ("def _int_value(", "def _mapping_value("),
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_evaluation_ledger.py": (
+            "def _int_value(",
+            "def _mapping_value(",
+            "def _float_value(",
+            "def _string_list(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "common" / "host_runtime.py": ("def _normalize_token(",),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "path_bundle_codec.py": ("def _string_rows(",),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "session_bootstrap_payload_compactor.py": ("def _string_rows(",),
         ROOT / "src" / "odylith" / "runtime" / "governance" / "guidance_behavior_runtime.py": ("def _mapping(",),
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "guidance_behavior_runtime_contracts.py": ("def _dedupe_strings(",),
         ROOT / "src" / "odylith" / "runtime" / "governance" / "proof_state" / "contract.py": ("def _normalize_token(",),
         ROOT / "src" / "odylith" / "runtime" / "governance" / "proof_state" / "enforcement.py": ("def _normalize_string(",),
         ROOT / "src" / "odylith" / "runtime" / "governance" / "proof_state" / "resolver.py": ("def _normalize_token(",),
@@ -1053,9 +1106,15 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
             "def _normalize_string(",
             "def _normalize_token(",
         ),
+        ROOT / "src" / "odylith" / "runtime" / "memory" / "tooling_memory_contracts.py": ("def _string_rows(",),
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_support.py": (
+            "def _float_value(",
+            "def _dedupe_strings(",
+        ),
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py": ("def _int_value(",),
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_context_support.py": (
             "def _int_value(",
+            "def _dedupe_strings(",
             "def _normalize_string(",
             "def _normalize_token(",
         ),
@@ -1072,6 +1131,7 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
 
 def test_intervention_and_host_surfaces_use_shared_normalization_and_join_helpers() -> None:
     visibility_paths = (
+        ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "alignment_context.py",
         ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "alignment_evidence.py",
         ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "visibility_replay.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "host_intervention_status.py",
@@ -1082,6 +1142,9 @@ def test_intervention_and_host_surfaces_use_shared_normalization_and_join_helper
         assert "normalize_token as _normalize_token" in text, f"shared token alias missing in {path.relative_to(ROOT)}"
         assert "def _normalize_string(" not in text, f"duplicate normalize_string helper resurfaced in {path.relative_to(ROOT)}"
         assert "def _normalize_token(" not in text, f"duplicate normalize_token helper resurfaced in {path.relative_to(ROOT)}"
+        if path.name == "alignment_context.py":
+            assert "normalize_string_list as _normalize_string_list" in text
+            assert "def _normalize_string_list(" not in text
 
     claude_checkpoint_paths = (
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_post_bash_checkpoint.py",
@@ -1107,6 +1170,12 @@ def test_intervention_and_host_surfaces_use_shared_normalization_and_join_helper
             assert "host_intervention_support.build_stop_conversation_bundle(" in text
             assert "host_intervention_support.render_stop_bundle_text(" in text
 
+    delivery_runtime_text = (
+        ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "delivery_runtime.py"
+    ).read_text(encoding="utf-8")
+    assert "def _dedupe_strings(" not in delivery_runtime_text
+    assert "visibility_contract.normalize_string_list(rows)" in delivery_runtime_text
+
 
 def test_selected_runtime_and_install_slices_use_shared_json_release_and_severity_owners() -> None:
     json_owner_paths = (
@@ -1129,8 +1198,11 @@ def test_selected_runtime_and_install_slices_use_shared_json_release_and_severit
         assert "from odylith.common.json_objects import " in text
         if path.name in {"validate_guidance_behavior.py", "validate_agent_operating_character.py"}:
             assert "json.loads(path.read_text" not in text
-        if path.name in {"guidance_behavior_benchmark_contracts.py", "release_truth_runtime.py", "tooling_dashboard_surface_status.py"}:
+        if path.name == "guidance_behavior_benchmark_contracts.py":
             assert "def _read_json_object(" in text
+        if path.name in {"release_truth_runtime.py", "tooling_dashboard_surface_status.py"}:
+            assert "load_json_object as _read_json_object" in text
+            assert "def _read_json_object(" not in text
         if path.name in {
             "engine.py",
             "compass_dashboard_base.py",
@@ -1141,6 +1213,14 @@ def test_selected_runtime_and_install_slices_use_shared_json_release_and_severit
             "compass_standup_brief_maintenance.py",
         }:
             assert 'json.loads(path.read_text(encoding="utf-8"))' not in text
+        if path.name in {
+            "engine.py",
+            "compass_dashboard_base.py",
+            "host_intervention_status.py",
+            "benchmark_snapshot_fallbacks.py",
+            "compass_standup_brief_maintenance.py",
+        }:
+            assert "def _load_json(" not in text
 
     release_text_paths = (
         ROOT / "src" / "odylith" / "install" / "release_assets.py",
@@ -1249,9 +1329,15 @@ def test_router_assessment_runtime_uses_execution_engine_owner_and_avoids_local_
     context_text = context_path.read_text(encoding="utf-8")
     assert "class AssessmentState:" in context_text
     assert "def apply_context_signal_adjustments(" in context_text
+    assert "scores = state" in context_text
     for fragment in (
         "def bind(host: Any) -> None:",
         "_HOST_BIND_NAMES",
         "globals().update(",
+        "ambiguity = state.ambiguity",
+        "blast_radius = state.blast_radius",
+        "coordination_cost = state.coordination_cost",
+        "requested_depth = state.requested_depth",
+        "accuracy_bias = state.accuracy_bias",
     ):
         assert fragment not in context_text, f"router assessment context regressed into host-binding sludge in {context_path.relative_to(ROOT)}"
