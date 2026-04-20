@@ -138,6 +138,8 @@ Scope: applies to Odylith paths under `odylith/`.
   intervention-status` for that host/session. That status surface is the
   low-latency delivery ledger for Teaser, Ambient Highlight, Observation,
   Proposal, and Assist readiness; hook payload generation alone is not enough.
+- A plain `Odylith, help` request is the CLI help fast path. Use the first
+  available `odylith --help` command and print stdout only.
 - A plain `Odylith, show me what you can do` request is the advisory
   `odylith show` repo-capability demo. It is not a request to prove
   intervention UX, diagnose install posture, run `start`, run `doctor`, or

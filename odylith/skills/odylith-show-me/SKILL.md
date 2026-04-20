@@ -4,6 +4,9 @@ Use this skill when the operator says "show me what you can do", "what can
 Odylith do", "what can you do for this repo", or any similar first-time
 exploration request. Works identically on Claude Code and Codex.
 
+Do not use this skill for `Odylith, help`. That request should route directly
+to the CLI help output and print stdout only.
+
 1. Run the first available show command and capture stdout only:
    - Installed or dogfood repo with launcher:
      `./.odylith/bin/odylith show --repo-root .`

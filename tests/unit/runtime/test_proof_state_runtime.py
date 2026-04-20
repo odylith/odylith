@@ -211,6 +211,21 @@ def test_resolve_scope_collection_proof_state_marks_ambiguous_multiple_lanes() -
     }
 
 
+def test_resolve_scope_collection_proof_state_collapses_legacy_discipline_aliases() -> None:
+    resolved = proof_state.resolve_scope_collection_proof_state(
+        [
+            {"proof_state": {"lane_id": "agent_operating_character", "current_blocker": "A"}},
+            {"proof_state": {"lane_id": "discipline", "current_blocker": "A"}},
+        ]
+    )
+
+    assert resolved["proof_state"]["lane_id"] == "discipline"
+    assert resolved["proof_state_resolution"] == {
+        "state": "resolved",
+        "lane_ids": ["discipline"],
+    }
+
+
 def test_load_context_dossier_promotes_resolved_proof_state(monkeypatch, tmp_path: Path) -> None:
     class _Connection:
         def close(self) -> None:
@@ -318,9 +333,47 @@ def test_bug_scope_resolution_prefers_linked_casebook_bug_over_shared_workstream
         "lane_ids": ["proof-state-control-plane"],
     }
     assert "proof_state" not in annotated[1]
-    assert annotated[1]["proof_state_resolution"] == {
-        "state": "ambiguous",
-        "lane_ids": ["proof-state-control-plane", "proof-state-control-plane-b"],
+
+
+def test_annotate_scopes_with_proof_state_collapses_legacy_discipline_lane_aliases(tmp_path: Path) -> None:
+    source_path = _write_casebook_bug(
+        tmp_path,
+        filename="2026-04-19-discipline-alias-bug.md",
+        title="Discipline Alias Bug",
+        bug_id="CB-110",
+        workstream="B-110",
+        lane_id="agent_operating_character",
+    )
+    _write_plan(
+        tmp_path,
+        lane_id="discipline",
+        blocker="Plan fallback blocker text",
+        phase="plan-phase",
+        clearance="Plan fallback clearance",
+    )
+    proof_state.persist_live_proof_lanes(
+        repo_root=tmp_path,
+        live_proof_lanes={
+            "agent_operating_character": {
+                "lane_id": "agent_operating_character",
+                "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+            },
+            "discipline": {
+                "lane_id": "discipline",
+                "frontier_phase": "manifests-deploy",
+            },
+        },
+    )
+
+    annotated = proof_state.annotate_scopes_with_proof_state(
+        repo_root=tmp_path,
+        scopes=[_bug_scope(bug_id="CB-110", source_path=source_path, workstream="B-110")],
+    )
+
+    assert annotated[0]["proof_state"]["lane_id"] == "discipline"
+    assert annotated[0]["proof_state_resolution"] == {
+        "state": "resolved",
+        "lane_ids": ["discipline"],
     }
 
 

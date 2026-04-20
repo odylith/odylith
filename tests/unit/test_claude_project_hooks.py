@@ -118,6 +118,28 @@ def test_show_me_prompt_guard_routes_first_demo_without_launcher(tmp_path: Path)
     assert "launcher-state explanations" in additional_context
 
 
+def test_show_me_prompt_guard_routes_help_without_diagnostics(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    completed = _run_hook(
+        "show-me-prompt-guard.py",
+        repo_root,
+        payload={"prompt": "Odylith, help."},
+    )
+
+    assert completed.returncode == 0
+    assert completed.stderr == ""
+    payload = json.loads(completed.stdout)
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "Odylith help first-match route" in additional_context
+    assert "`./.odylith/bin/odylith --help`" in additional_context
+    assert "`odylith --help`" in additional_context
+    assert "`start`, `show`, `doctor`, `version`" in additional_context
+    assert "`intervention-status`, `visible-intervention`" in additional_context
+
+
 def test_show_me_prompt_guard_stays_silent_for_unrelated_prompts(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()

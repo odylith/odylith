@@ -7,6 +7,7 @@ from .contract import PROOF_STATUSES
 from .contract import WORK_CATEGORIES
 from .contract import build_claim_guard
 from .contract import build_claim_lint
+from .contract import normalize_proof_lane_id
 from .enforcement import enforce_claim_payload
 from .enforcement import enforce_claim_text
 from .contract import normalize_proof_state
@@ -34,6 +35,7 @@ __all__ = [
     "enforce_claim_payload",
     "enforce_claim_text",
     "load_live_proof_lanes",
+    "normalize_proof_lane_id",
     "normalize_proof_state",
     "persist_live_proof_lanes",
     "proof_drift_warning",

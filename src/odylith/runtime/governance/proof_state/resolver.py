@@ -15,6 +15,7 @@ from .contract import WORK_CATEGORIES
 from .contract import build_claim_guard
 from .contract import frontier_has_advanced
 from .contract import normalize_deployment_truth
+from .contract import normalize_proof_lane_id
 from .contract import normalize_proof_state
 from .ledger import load_live_proof_lanes
 from .ledger import persist_live_proof_lanes
@@ -89,7 +90,7 @@ def _bug_proof_rows(repo_root: Path) -> list[dict[str, Any]]:
             continue
         text = path.read_text(encoding="utf-8")
         fields = _parse_bug_fields(text.splitlines())
-        lane_id = _normalize_token(fields.get("Proof Lane ID"))
+        lane_id = normalize_proof_lane_id(fields.get("Proof Lane ID"))
         blocker = _normalize_token(fields.get("Current Blocker"))
         fingerprint = _normalize_token(fields.get("Failure Fingerprint"))
         first_phase = _normalize_token(fields.get("First Failing Phase"))
@@ -137,7 +138,7 @@ def _plan_proof_rows(repo_root: Path) -> list[dict[str, Any]]:
             continue
         text = path.read_text(encoding="utf-8")
         fields = _parse_plan_fields(text.splitlines())
-        lane_id = _normalize_token(fields.get("Proof Lane ID"))
+        lane_id = normalize_proof_lane_id(fields.get("Proof Lane ID"))
         blocker = _normalize_token(fields.get("Current Blocker"))
         fingerprint = _normalize_token(fields.get("Failure Fingerprint"))
         first_phase = _normalize_token(fields.get("First Failing Phase"))
@@ -196,7 +197,7 @@ def _stream_proof_events(repo_root: Path) -> list[dict[str, Any]]:
 
 
 def _match_lane_id_from_event(event: Mapping[str, Any], source_rows: Sequence[Mapping[str, Any]]) -> str:
-    lane_id = _normalize_token(event.get("proof_lane"))
+    lane_id = normalize_proof_lane_id(event.get("proof_lane"))
     if lane_id:
         return lane_id
     workstreams = {
@@ -209,7 +210,7 @@ def _match_lane_id_from_event(event: Mapping[str, Any], source_rows: Sequence[Ma
         if workstreams & {_normalize_token(token) for token in row.get("workstreams", []) if _normalize_token(token)}
     ]
     if len(candidates) == 1:
-        return _normalize_token(candidates[0].get("lane_id"))
+        return normalize_proof_lane_id(candidates[0].get("lane_id"))
     return ""
 
 
@@ -220,12 +221,12 @@ def _merge_live_proof_lanes(
     events: Sequence[Mapping[str, Any]],
 ) -> dict[str, dict[str, Any]]:
     merged = {
-        lane_id: dict(row)
+        normalize_proof_lane_id(lane_id): dict(row)
         for lane_id, row in existing.items()
-        if _normalize_token(lane_id) and isinstance(row, Mapping)
+        if normalize_proof_lane_id(lane_id) and isinstance(row, Mapping)
     }
     for row in source_rows:
-        lane_id = _normalize_token(row.get("lane_id"))
+        lane_id = normalize_proof_lane_id(row.get("lane_id"))
         if not lane_id:
             continue
         lane = dict(merged.get(lane_id, {}))
@@ -385,9 +386,9 @@ def _resolved_source_rows(snapshot: Mapping[str, Any], source_rows: Sequence[Map
         ]
         bug_lane_ids = sorted(
             {
-                _normalize_token(row.get("lane_id"))
+                normalize_proof_lane_id(row.get("lane_id"))
                 for row in bug_rows
-                if _normalize_token(row.get("lane_id"))
+                if normalize_proof_lane_id(row.get("lane_id"))
             }
         )
         if len(bug_lane_ids) == 1:
@@ -395,11 +396,11 @@ def _resolved_source_rows(snapshot: Mapping[str, Any], source_rows: Sequence[Map
             rows = [
                 dict(row)
                 for row in source_rows
-                if _normalize_token(row.get("lane_id")) == lane_id
+                if normalize_proof_lane_id(row.get("lane_id")) == lane_id
             ]
-            rows.sort(key=lambda row: (0 if row.get("source") == "casebook" else 1, _normalize_token(row.get("lane_id"))))
+            rows.sort(key=lambda row: (0 if row.get("source") == "casebook" else 1, normalize_proof_lane_id(row.get("lane_id"))))
             return rows
-        bug_rows.sort(key=lambda row: (0 if row.get("source") == "casebook" else 1, _normalize_token(row.get("lane_id"))))
+        bug_rows.sort(key=lambda row: (0 if row.get("source") == "casebook" else 1, normalize_proof_lane_id(row.get("lane_id"))))
         return bug_rows
 
     workstreams = set(_scope_workstreams(snapshot))
@@ -408,22 +409,22 @@ def _resolved_source_rows(snapshot: Mapping[str, Any], source_rows: Sequence[Map
         for row in source_rows
         if workstreams & {_normalize_token(token) for token in row.get("workstreams", []) if _normalize_token(token)}
     ]
-    rows.sort(key=lambda row: (0 if row.get("source") == "casebook" else 1, _normalize_token(row.get("lane_id"))))
+    rows.sort(key=lambda row: (0 if row.get("source") == "casebook" else 1, normalize_proof_lane_id(row.get("lane_id"))))
     return rows
 
 
 def _merge_source_rows(rows: Sequence[Mapping[str, Any]]) -> tuple[dict[str, Any] | None, list[str]]:
     lane_ids = sorted(
         {
-            _normalize_token(row.get("lane_id"))
+            normalize_proof_lane_id(row.get("lane_id"))
             for row in rows
-            if _normalize_token(row.get("lane_id"))
+            if normalize_proof_lane_id(row.get("lane_id"))
         }
     )
     if len(lane_ids) != 1:
         return None, lane_ids
     lane_rows = sorted(
-        (dict(row) for row in rows if _normalize_token(row.get("lane_id")) == lane_ids[0]),
+        (dict(row) for row in rows if normalize_proof_lane_id(row.get("lane_id")) == lane_ids[0]),
         key=lambda row: (_SOURCE_PRECEDENCE.get(_normalize_token(row.get("source")), 99), _normalize_token(row.get("source_path"))),
     )
     merged: dict[str, Any] = {"lane_id": lane_ids[0]}
@@ -474,7 +475,7 @@ def _inferred_live_rows(
             {
                 "source": "inferred",
                 "source_path": "",
-                "lane_id": _normalize_token(lane_id) or _normalize_token(row.get("lane_id")),
+                "lane_id": normalize_proof_lane_id(lane_id) or normalize_proof_lane_id(row.get("lane_id")),
                 "linked_bug_id": _normalize_token(row.get("linked_bug_id")),
                 "current_blocker": _normalize_token(row.get("current_blocker")),
                 "failure_fingerprint": _normalize_token(row.get("failure_fingerprint")),
@@ -484,7 +485,7 @@ def _inferred_live_rows(
                 "workstreams": sorted(lane_workstreams),
             }
         )
-    rows.sort(key=lambda row: _normalize_token(row.get("lane_id")))
+    rows.sort(key=lambda row: normalize_proof_lane_id(row.get("lane_id")))
     return rows
 
 
@@ -516,7 +517,7 @@ def _resolved_proof_state(
         if local_head:
             deployment_truth["local_head"] = local_head
     state = {
-        "lane_id": _normalize_token(source_row.get("lane_id")) or _normalize_token(live_lane.get("lane_id")),
+        "lane_id": normalize_proof_lane_id(source_row.get("lane_id")) or normalize_proof_lane_id(live_lane.get("lane_id")),
         "current_blocker": _normalize_token(source_row.get("current_blocker")) or _normalize_token(live_lane.get("current_blocker")),
         "failure_fingerprint": _normalize_token(live_lane.get("failure_fingerprint")) or _normalize_token(source_row.get("failure_fingerprint")),
         "first_failing_phase": _normalize_token(source_row.get("first_failing_phase")) or _normalize_token(live_lane.get("first_failing_phase")),
@@ -574,16 +575,16 @@ def resolve_scope_collection_proof_state(
     ]
     lane_ids = sorted(
         {
-            _normalize_token(row.get("lane_id"))
+            normalize_proof_lane_id(row.get("lane_id"))
             for row in states
-            if _normalize_token(row.get("lane_id"))
+            if normalize_proof_lane_id(row.get("lane_id"))
         }
     )
     if len(lane_ids) == 1 and states:
         primary = next(
             (
                 row for row in states
-                if _normalize_token(row.get("lane_id")) == lane_ids[0]
+                if normalize_proof_lane_id(row.get("lane_id")) == lane_ids[0]
             ),
             states[0],
         )
@@ -592,7 +593,7 @@ def resolve_scope_collection_proof_state(
             if not isinstance(scope, Mapping):
                 continue
             scope_state = normalize_proof_state(scope.get("proof_state", {}))
-            if _normalize_token(scope_state.get("lane_id")) != lane_ids[0]:
+            if normalize_proof_lane_id(scope_state.get("lane_id")) != lane_ids[0]:
                 continue
             if isinstance(scope.get("claim_guard"), Mapping):
                 claim_guard = dict(scope.get("claim_guard", {}))
@@ -606,10 +607,10 @@ def resolve_scope_collection_proof_state(
         return {"proof_state_resolution": {"state": "ambiguous", "lane_ids": lane_ids}}
     explicit_lane_ids = sorted(
         {
-            _normalize_token(lane_id)
+            normalize_proof_lane_id(lane_id)
             for resolution in explicit_resolutions
             for lane_id in resolution.get("lane_ids", [])
-            if _normalize_token(lane_id)
+            if normalize_proof_lane_id(lane_id)
         }
     )
     if len(explicit_lane_ids) > 1:
@@ -646,7 +647,7 @@ def annotate_scopes_with_proof_state(
             inferred_candidates = _inferred_live_rows(clone, live_lanes)
             source_row, lane_ids = _merge_source_rows(inferred_candidates)
         if source_row is not None and len(lane_ids) == 1:
-            lane_id = _normalize_token(source_row.get("lane_id"))
+            lane_id = normalize_proof_lane_id(source_row.get("lane_id"))
             proof_state = _resolved_proof_state(
                 repo_root=root,
                 snapshot=clone,
@@ -689,17 +690,17 @@ def annotate_scopes_with_proof_state(
                 if key in scope_lookup and isinstance(scope_lookup[key].get("proof_state"), Mapping)
             ]
             lane_ids = sorted({
-                _normalize_token(row.get("lane_id"))
+                normalize_proof_lane_id(row.get("lane_id"))
                 for row in child_states
-                if _normalize_token(row.get("lane_id"))
+                if normalize_proof_lane_id(row.get("lane_id"))
             })
             ambiguous_lane_ids = sorted(
                 {
-                    _normalize_token(lane_id)
+                    normalize_proof_lane_id(lane_id)
                     for key in child_keys
                     if key in scope_lookup and isinstance(scope_lookup[key].get("proof_state_resolution"), Mapping)
                     for lane_id in scope_lookup[key].get("proof_state_resolution", {}).get("lane_ids", [])
-                    if _normalize_token(lane_id)
+                    if normalize_proof_lane_id(lane_id)
                 }
             )
             if len(lane_ids) == 1:

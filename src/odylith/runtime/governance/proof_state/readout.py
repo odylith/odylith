@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from .contract import WORK_CATEGORIES
+from .contract import normalize_proof_lane_id
 from .contract import normalize_proof_state
 
 
@@ -12,9 +13,9 @@ def proof_resolution_message(proof_state_resolution: Mapping[str, Any] | Any) ->
     resolution = dict(proof_state_resolution) if isinstance(proof_state_resolution, Mapping) else {}
     state = str(resolution.get("state", "")).strip().lower()
     lane_ids = [
-        str(token).strip()
+        normalize_proof_lane_id(token)
         for token in resolution.get("lane_ids", [])
-        if str(token).strip()
+        if normalize_proof_lane_id(token)
     ] if isinstance(resolution.get("lane_ids"), list) else []
     if state == "ambiguous":
         suffix = f": {', '.join(lane_ids)}" if lane_ids else ""

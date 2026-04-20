@@ -178,6 +178,7 @@ def test_show_me_skill_blocks_host_status_detours() -> None:
             assert "with CLI commands" not in text
         else:
             assert "Run the first available show command" in text
+            assert "Do not use this skill for `Odylith, help`." in text
             assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." not in text
             assert "`./.odylith/bin/odylith show --repo-root .`" in text
             assert "`odylith show --repo-root .`" in text
@@ -204,8 +205,11 @@ def test_claude_show_me_guard_is_shipped_in_project_assets() -> None:
     for path in guard_paths:
         text = path.read_text(encoding="utf-8")
         assert "Odylith show-me first-match route" in text
+        assert "Odylith help first-match route" in text
         assert "odylith-show-me" in text
         assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." not in text
+        assert "`./.odylith/bin/odylith --help`" in text
+        assert "`odylith --help`" in text
         assert "`./.odylith/bin/odylith show --repo-root .`" in text
         assert "`odylith show --repo-root .`" in text
         assert "`intervention-status`, `visible-intervention`" in text
@@ -214,6 +218,8 @@ def test_claude_show_me_guard_is_shipped_in_project_assets() -> None:
 def test_managed_guidance_exempts_show_me_from_intervention_proof() -> None:
     block = managed_block(repo_role="product_repo")
 
+    assert "Odylith, help" in block
+    assert "CLI help fast path" in block
     assert "Odylith, show me what you can do" in block
     assert "advisory `odylith show` repo-capability demo" in block
     assert "not a request to prove intervention UX" in block

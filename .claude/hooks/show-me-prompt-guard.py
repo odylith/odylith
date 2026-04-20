@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Claude prompt hook that routes show-me capability requests."""
+"""Claude prompt hook that routes first-match show-me and help requests."""
 
 from __future__ import annotations
 
@@ -21,6 +21,12 @@ _REPO_SHOW_ME_PHRASES: tuple[str, ...] = (
     "what can you do in this repo",
     "show me what you can do for this repo",
     "show me what you can do in this repo",
+)
+_HELP_PHRASES: tuple[str, ...] = (
+    "odylith help",
+    "odylith, help",
+    "help odylith",
+    "help, odylith",
 )
 
 
@@ -46,6 +52,10 @@ def _is_show_me_prompt(prompt: object) -> bool:
     return any(phrase in text for phrase in _REPO_SHOW_ME_PHRASES)
 
 
+def _is_help_prompt(prompt: object) -> bool:
+    return _normalize(prompt).rstrip(".!?") in _HELP_PHRASES
+
+
 def _additional_context(project_dir: Path) -> str:
     del project_dir
     return (
@@ -62,17 +72,35 @@ def _additional_context(project_dir: Path) -> str:
     )
 
 
+def _help_additional_context(project_dir: Path) -> str:
+    del project_dir
+    return (
+        "Odylith help first-match route: this prompt asks for the CLI help surface, "
+        "not install, runtime, intervention, launcher, or repo diagnosis. Run the "
+        "first command that works from the repo root and capture stdout only: "
+        "`./.odylith/bin/odylith --help`; `odylith --help`. Return that stdout "
+        "directly. Do not run `start`, `show`, `doctor`, `version`, "
+        "`intervention-status`, `visible-intervention`, host compatibility checks, "
+        "or launcher-state explanations unless the user explicitly asks for diagnostics."
+    )
+
+
 def main() -> int:
     project_dir = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else Path.cwd().resolve()
     payload = _load_payload()
-    if not _is_show_me_prompt(payload.get("prompt", "")):
+    prompt = payload.get("prompt", "")
+    if _is_show_me_prompt(prompt):
+        additional_context = _additional_context(project_dir)
+    elif _is_help_prompt(prompt):
+        additional_context = _help_additional_context(project_dir)
+    else:
         return 0
     print(
         json.dumps(
             {
                 "hookSpecificOutput": {
                     "hookEventName": "UserPromptSubmit",
-                    "additionalContext": _additional_context(project_dir),
+                    "additionalContext": additional_context,
                 }
             },
             sort_keys=True,

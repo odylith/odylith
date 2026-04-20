@@ -1,4 +1,11 @@
-"""Contract helpers for the Odylith governance proof state layer."""
+"""Contract helpers for the Odylith governance proof state layer.
+
+Proof lanes are user-facing governance identifiers. The discipline rename kept
+historical source truth around long enough that live payloads can still carry
+both the legacy `agent_operating_character` token and the current `discipline`
+token for the same lane. This layer normalizes those aliases so current
+surfaces do not manufacture fake ambiguity from one logical lane.
+"""
 
 from __future__ import annotations
 
@@ -30,6 +37,10 @@ DEPLOYMENT_TRUTH_FIELDS: tuple[str, ...] = (
     "last_live_failing_commit",
 )
 CLAIM_GUARD_TERMS: tuple[str, ...] = ("fixed", "cleared", "resolved")
+_PROOF_LANE_ALIASES = {
+    "agent_operating_character": "discipline",
+    "agent-operating-character": "discipline",
+}
 _STATUS_ORDER = {token: index for index, token in enumerate(PROOF_STATUSES)}
 _STATUS_TO_EVIDENCE_TIER = {
     "diagnosed": "diagnosis_only",
@@ -40,6 +51,11 @@ _STATUS_TO_EVIDENCE_TIER = {
     "live_verified": "live_verified",
     "falsified_live": "falsified_live",
 }
+
+def normalize_proof_lane_id(value: Any) -> str:
+    token = _normalize_token(value)
+    return _PROOF_LANE_ALIASES.get(token, token)
+
 
 def _string_list(values: Any, *, allowed: tuple[str, ...] | None = None) -> list[str]:
     if not isinstance(values, list):
@@ -99,7 +115,7 @@ def normalize_proof_state(value: Any) -> dict[str, Any]:
     )
     has_signal = deployment_truth_signal or any(
         (
-            _normalize_token(raw.get("lane_id")),
+            normalize_proof_lane_id(raw.get("lane_id")),
             _normalize_token(raw.get("current_blocker")),
             _normalize_token(raw.get("failure_fingerprint")),
             _normalize_token(raw.get("first_failing_phase")),
@@ -132,7 +148,7 @@ def normalize_proof_state(value: Any) -> dict[str, Any]:
     if status not in PROOF_STATUSES:
         status = "diagnosed"
     normalized = {
-        "lane_id": _normalize_token(raw.get("lane_id")),
+        "lane_id": normalize_proof_lane_id(raw.get("lane_id")),
         "current_blocker": _normalize_token(raw.get("current_blocker")),
         "failure_fingerprint": _normalize_token(raw.get("failure_fingerprint")),
         "first_failing_phase": _normalize_token(raw.get("first_failing_phase")),

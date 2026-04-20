@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.common.json_objects import load_json_object
+from .contract import normalize_proof_lane_id
 
 _PROOF_SURFACES_PATH = (".odylith", "runtime", "odylith-proof-surfaces.v1.json")
 _LIVE_PROOF_SECTION = "live_proof_lanes"
@@ -25,18 +26,31 @@ def load_live_proof_lanes(*, repo_root: Path) -> dict[str, dict[str, Any]]:
     section = payload.get(_LIVE_PROOF_SECTION, {})
     if not isinstance(section, dict):
         return {}
-    return {
-        str(lane_id).strip(): dict(row)
-        for lane_id, row in section.items()
-        if str(lane_id).strip() and isinstance(row, dict)
-    }
+    rows: dict[str, dict[str, Any]] = {}
+    for lane_id, row in section.items():
+        normalized_lane_id = normalize_proof_lane_id(lane_id)
+        if not normalized_lane_id or not isinstance(row, dict):
+            continue
+        lane = dict(rows.get(normalized_lane_id, {}))
+        lane.update(dict(row))
+        lane["lane_id"] = normalize_proof_lane_id(lane.get("lane_id") or normalized_lane_id)
+        rows[normalized_lane_id] = lane
+    return rows
 
 
 def persist_live_proof_lanes(*, repo_root: Path, live_proof_lanes: dict[str, dict[str, Any]]) -> Path:
     path = proof_surfaces_path(repo_root=repo_root)
     payload = _read_json(path)
     payload["contract"] = "odylith_proof_surfaces.v1"
-    payload[_LIVE_PROOF_SECTION] = live_proof_lanes
+    normalized_rows: dict[str, dict[str, Any]] = {}
+    for lane_id, row in live_proof_lanes.items():
+        normalized_lane_id = normalize_proof_lane_id(lane_id)
+        if not normalized_lane_id or not isinstance(row, dict):
+            continue
+        lane = dict(row)
+        lane["lane_id"] = normalize_proof_lane_id(lane.get("lane_id") or normalized_lane_id)
+        normalized_rows[normalized_lane_id] = lane
+    payload[_LIVE_PROOF_SECTION] = normalized_rows
     path.parent.mkdir(parents=True, exist_ok=True)
     rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if path.is_file():
