@@ -11,7 +11,6 @@ from typing import Mapping
 
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
-from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import host_intervention_support
 
@@ -101,14 +100,13 @@ def main(argv: list[str] | None = None) -> int:
         turn_phase="prompt_submit",
         session_id=session_id,
         include_proposal=False,
-        include_closeout=True,
+        include_closeout=False,
+        developer_include_closeout=False,
     )
-    replay = visibility_replay.replayable_chat_markdown(
+    replay = host_intervention_support.preferred_live_replay_markdown(
         repo_root=args.repo_root,
         host_family="codex",
         session_id=session_id,
-        include_assist=True,
-        include_teaser=False,
     )
     summary = render_codex_prompt_context(
         args.repo_root,
@@ -125,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
     summary = (
         host_intervention_support.join_sections(replay, summary)
         if replay
-        else decision.developer_context or summary
+        else host_intervention_support.join_sections(summary, decision.developer_context)
     )
     system_message = replay or decision.visible_markdown or system_message
     if not summary and not system_message:
@@ -141,6 +139,7 @@ def main(argv: list[str] | None = None) -> int:
             host_surface_runtime.codex_prompt_payload(
                 additional_context=summary,
                 system_message=system_message,
+                include_assist_in_visible_fallback=False,
             )
         )
     )

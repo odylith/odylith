@@ -38,6 +38,22 @@ def join_sections(*values: Any) -> str:
     return visibility_contract.join_blocks(*values)
 
 
+def preferred_live_replay_markdown(
+    *,
+    repo_root: Path | str,
+    host_family: str,
+    session_id: str,
+) -> str:
+    """Return one clean pending live beat for prompt and checkpoint recovery."""
+    return visibility_replay.preferred_replayable_chat_markdown(
+        repo_root=repo_root,
+        host_family=host_family,
+        session_id=session_id,
+        include_assist=False,
+        include_teaser=False,
+    )
+
+
 def looks_like_teaser_live_text(value: str) -> bool:
     """Return whether the live text is still only a teaser beat."""
     text = str(value or "").strip()
@@ -133,12 +149,10 @@ def render_prompt_system_message(
         include_proposal=False,
         include_closeout=False,
     )
-    replay = visibility_replay.replayable_chat_markdown(
+    replay = preferred_live_replay_markdown(
         repo_root=root,
         host_family=normalized_host,
         session_id=session_id,
-        include_assist=True,
-        include_teaser=False,
     )
     if replay:
         return replay

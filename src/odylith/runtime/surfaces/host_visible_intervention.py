@@ -10,6 +10,7 @@ from typing import Sequence
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import visibility_replay
+from odylith.runtime.surfaces import host_intervention_support
 
 
 def _normalize_text(value: object) -> str:
@@ -35,16 +36,24 @@ def render_visible_intervention(
     proposal = normalized_phase not in {"prompt_submit", "userpromptsubmit", "stop_summary"}
     if include_proposal is not None:
         proposal = bool(include_proposal)
-    closeout = True
+    closeout = normalized_phase == "stop_summary"
     if include_closeout is not None:
         closeout = bool(include_closeout)
     resolved_session = host_surface_runtime.normalized_session_id(session_id, host_family=host_family)
-    replay = visibility_replay.replayable_chat_markdown(
-        repo_root=repo_root,
-        host_family=host_family,
-        session_id=resolved_session,
-        include_assist=closeout,
-        include_teaser=False,
+    replay = (
+        visibility_replay.replayable_chat_markdown(
+            repo_root=repo_root,
+            host_family=host_family,
+            session_id=resolved_session,
+            include_assist=closeout,
+            include_teaser=False,
+        )
+        if closeout
+        else host_intervention_support.preferred_live_replay_markdown(
+            repo_root=repo_root,
+            host_family=host_family,
+            session_id=resolved_session,
+        )
     )
     if replay:
         return replay
@@ -65,6 +74,7 @@ def render_visible_intervention(
         session_id=session_id,
         include_proposal=proposal,
         include_closeout=closeout,
+        developer_include_closeout=closeout,
         delivery_channel="manual_visible_command",
         delivery_status="manual_visible",
     )

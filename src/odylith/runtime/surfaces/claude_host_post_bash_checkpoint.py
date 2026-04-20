@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.intervention_engine import host_surface_runtime
-from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
@@ -112,21 +111,18 @@ def main(argv: list[str] | None = None) -> int:
             turn_phase="post_bash_checkpoint",
             session_id=session_id,
             include_proposal=True,
-            include_closeout=True,
+            include_closeout=False,
+            developer_include_closeout=True,
         )
         if bundle
         else None
     )
     developer_context = decision.developer_context if decision is not None else ""
     live_intervention = decision.visible_markdown if decision is not None else ""
-    replay = visibility_replay.replayable_chat_markdown(
+    replay = host_intervention_support.preferred_live_replay_markdown(
         repo_root=repo_root,
         host_family="claude",
         session_id=session_id,
-        max_live_blocks=4,
-        ambient_cap=3,
-        include_assist=True,
-        include_teaser=False,
     )
     developer_context = host_intervention_support.join_sections(replay, developer_context) if replay else developer_context
     live_intervention = replay or live_intervention
@@ -143,6 +139,7 @@ def main(argv: list[str] | None = None) -> int:
             live_intervention=live_intervention,
             governance_status=host_intervention_support.join_sections((governance_message or {}).get("systemMessage")),
         ),
+        include_assist_in_visible_fallback=False,
     )
     if payload_out:
         sys.stdout.write(json.dumps(payload_out))

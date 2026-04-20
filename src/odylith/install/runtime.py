@@ -304,6 +304,7 @@ def _preferred_wrapped_runtime_fallback(
     allow_host_python_fallback: bool = False,
 ) -> Path:
     candidate = _normalize_python_path(fallback_python)
+    defer_host_sys_executable = allow_host_python_fallback and candidate == _normalize_python_path(Path(sys.executable))
     trusted_candidate = _trusted_runtime_python(repo_root=repo_root, python=candidate)
     if trusted_candidate is not None:
         trusted_root = _runtime_root_for_python(repo_root=repo_root, python=trusted_candidate)
@@ -343,7 +344,9 @@ def _preferred_wrapped_runtime_fallback(
             repo_root=repo_root,
             runtime_root=unwrapped_runtime_root,
         ):
-            if allow_host_python_fallback or _trusted_runtime_python(repo_root=repo_root, python=unwrapped) is not None:
+            if _trusted_runtime_python(repo_root=repo_root, python=unwrapped) is not None:
+                return unwrapped
+            if allow_host_python_fallback and not defer_host_sys_executable:
                 return unwrapped
 
     excluded_roots: set[Path] = set()

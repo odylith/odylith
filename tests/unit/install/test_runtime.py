@@ -967,6 +967,37 @@ def test_ensure_launcher_preserves_host_venv_python_path_when_source_root_is_pro
     assert str(source_root / "src") in text
 
 
+def test_ensure_launcher_prefers_managed_runtime_over_sys_executable_for_source_local(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    source_root = tmp_path / "source"
+    (source_root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+    (source_root / "pyproject.toml").write_text("[project]\nname = 'odylith'\nversion = '1.2.3'\n", encoding="utf-8")
+
+    managed_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(managed_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    managed_python = managed_root / "bin" / "python"
+    managed_python.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    managed_python.chmod(0o755)
+    _trust_managed_runtime(managed_root)
+
+    launcher = runtime.ensure_launcher(
+        repo_root=repo_root,
+        fallback_python=Path(sys.executable),
+        fallback_source_root=source_root,
+        allow_host_python_fallback=True,
+    )
+
+    launcher_text = launcher.read_text(encoding="utf-8")
+    bootstrap_text = (repo_root / ".odylith" / "bin" / "odylith-bootstrap").read_text(encoding="utf-8")
+
+    assert str(managed_python) in launcher_text
+    assert str(managed_python) in bootstrap_text
+    assert str(Path(sys.executable).expanduser()) not in launcher_text
+    assert str(Path(sys.executable).expanduser()) not in bootstrap_text
+    assert str(source_root / "src") in launcher_text
+    assert str(source_root / "src") in bootstrap_text
+
+
 def test_doctor_runtime_repairs_missing_launcher(tmp_path: Path) -> None:
     repo_root = _repo_root(tmp_path)
     version_root = _make_runtime(repo_root)

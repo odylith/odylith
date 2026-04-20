@@ -116,3 +116,44 @@ def test_replay_dedupes_latest_blocks_and_keeps_assist_unwrapped(tmp_path: Path)
     assert replay.count("**Odylith Insight:** ambient 3.") == 1
     assert replay.endswith("**Odylith Assist:** closeout stays outside the live ruler.")
     assert not replay.endswith("---")
+
+
+def test_preferred_replay_prioritizes_intervention_over_newer_ambient_blocks(tmp_path: Path) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Primary observation.",
+        session_id="preferred-replay",
+        host_family="codex",
+        intervention_key="preferred-observation",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** Replay the primary intervention block first.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_render_required",
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Newer ambient risk.",
+        session_id="preferred-replay",
+        host_family="codex",
+        intervention_key="preferred-risk",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Risks:** A newer ambient note should not outrank the intervention block.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_render_required",
+    )
+
+    preferred = visibility_replay.preferred_replayable_chat_markdown(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="preferred-replay",
+        include_assist=False,
+        include_teaser=False,
+    )
+
+    assert preferred == (
+        "---\n\n"
+        "**Odylith Observation:** Replay the primary intervention block first.\n"
+        "\n---"
+    )

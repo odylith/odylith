@@ -19,6 +19,13 @@ from odylith.runtime.intervention_engine.visibility_contract import normalize_bl
 from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
 from odylith.runtime.intervention_engine.visibility_contract import normalize_token as _normalize_token
 
+_FAMILY_PRIORITY: dict[str, int] = {
+    "intervention": 0,
+    "ambient": 1,
+    "teaser": 2,
+    "assist": 3,
+}
+
 
 def _family(row: Mapping[str, Any]) -> str:
     family = visibility_contract.event_visibility_family(row)
@@ -157,4 +164,43 @@ def replayable_chat_markdown(
     ).strip()
 
 
-__all__ = ["replayable_chat_blocks", "replayable_chat_markdown"]
+def preferred_replayable_chat_markdown(
+    *,
+    repo_root: Path | str,
+    host_family: str = "",
+    session_id: str = "",
+    limit: int = 200,
+    max_live_blocks: int = 4,
+    ambient_cap: int = 3,
+    include_assist: bool = True,
+    include_teaser: bool = False,
+) -> str:
+    """Return the highest-priority pending block for one clean replay beat."""
+
+    blocks = replayable_chat_blocks(
+        repo_root=repo_root,
+        host_family=host_family,
+        session_id=session_id,
+        limit=limit,
+        max_live_blocks=max_live_blocks,
+        ambient_cap=ambient_cap,
+        include_assist=include_assist,
+        include_teaser=include_teaser,
+    )
+    if not blocks:
+        return ""
+    preferred = min(
+        enumerate(blocks),
+        key=lambda item: (
+            _FAMILY_PRIORITY.get(_normalize_token(item[1].get("visibility_family")), 99),
+            item[0],
+        ),
+    )[1]
+    return _normalize_block_string(preferred.get("display_markdown"))
+
+
+__all__ = [
+    "preferred_replayable_chat_markdown",
+    "replayable_chat_blocks",
+    "replayable_chat_markdown",
+]

@@ -190,7 +190,7 @@ def test_codex_post_tool_payload_uses_additional_context_and_system_message() ->
     assert payload["systemMessage"] == "Odylith governance refresh completed."
 
 
-def test_visible_delivery_fallback_carries_assist_when_system_message_is_live_only() -> None:
+def test_visible_delivery_fallback_keeps_assist_in_continuity_when_system_message_is_live_only() -> None:
     payload = host_surface_runtime.codex_post_tool_payload(
         developer_context="**Odylith Observation:** The signal is real.\n\n**Odylith Assist:** kept this grounded.",
         system_message="**Odylith Observation:** The signal is real.",
@@ -199,11 +199,12 @@ def test_visible_delivery_fallback_carries_assist_when_system_message_is_live_on
     additional_context = payload["hookSpecificOutput"]["additionalContext"]
 
     assert "<odylith-visible-markdown>" in additional_context
-    assert (
-        "---\n\n**Odylith Observation:** The signal is real.\n\n---\n\n**Odylith Assist:** kept this grounded."
-        in additional_context
-    )
+    assert "---\n\n**Odylith Observation:** The signal is real.\n\n---" in additional_context
+    assert "**Odylith Assist:** kept this grounded." in additional_context
     assert payload["systemMessage"] == "---\n\n**Odylith Observation:** The signal is real.\n\n---"
+    assert payload["systemMessage"] != (
+        "---\n\n**Odylith Observation:** The signal is real.\n\n---\n\n**Odylith Assist:** kept this grounded."
+    )
 
 
 def test_codex_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
@@ -216,6 +217,7 @@ def test_codex_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
     assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"] == "Odylith is tracking this signal: governed truth is taking shape here."
+    assert "Odylith Assist:" not in payload["hookSpecificOutput"]["additionalContext"]
 
 
 def test_claude_post_tool_payload_uses_additional_context_and_system_message() -> None:
@@ -239,6 +241,7 @@ def test_claude_prompt_payload_keeps_prompt_context_discreet() -> None:
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith Assist:" not in payload["hookSpecificOutput"]["additionalContext"]
     assert "systemMessage" not in payload
 
 

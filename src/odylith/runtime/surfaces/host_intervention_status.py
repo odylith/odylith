@@ -246,11 +246,14 @@ def inspect_intervention_status(
         include_assist=True,
         include_teaser=False,
     )
-    replay_markdown = "\n\n".join(
-        visibility_contract.normalize_block_string(row.get("display_markdown"))
-        for row in replay_blocks
-        if visibility_contract.normalize_block_string(row.get("display_markdown"))
-    ).strip()
+    replay_markdown = visibility_replay.preferred_replayable_chat_markdown(
+        repo_root=root,
+        host_family=host,
+        session_id=resolved_session,
+        limit=limit,
+        include_assist=True,
+        include_teaser=False,
+    )
     pending = ledger.get("pending_proposal_state") if isinstance(ledger.get("pending_proposal_state"), Mapping) else {}
     return {
         "version": "v1",
@@ -265,6 +268,7 @@ def inspect_intervention_status(
         "chat_visible_proof": proof,
         "assistant_visible_replay_markdown": replay_markdown,
         "assistant_visible_replay_count": len(replay_blocks),
+        "assistant_visible_replay_additional_count": max(len(replay_blocks) - (1 if replay_markdown else 0), 0),
         "assistant_visible_replay_blocks": replay_blocks,
         "active_lanes": delivery_ledger.active_lane_matrix(host_family=host),
         "delivery_ledger": ledger,
@@ -374,8 +378,11 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
     replay = visibility_contract.normalize_block_string(report.get("assistant_visible_replay_markdown"))
     if replay:
         lines.append("")
-        lines.append("Assistant-visible replay:")
+        lines.append("Next assistant-visible replay:")
         lines.append(replay)
+        additional_count = int(report.get("assistant_visible_replay_additional_count") or 0)
+        if additional_count:
+            lines.append(f"Additional pending replay blocks: {additional_count}.")
     lines.append(f"Fast smoke: `{_normalize_string(report.get('smoke_command'))}`")
     return "\n".join(lines).strip()
 

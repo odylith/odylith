@@ -341,7 +341,8 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
     assert report["delivery_ledger"]["unconfirmed_event_count"] == 1
     assert report["chat_visible_proof"]["status"] == "pending_confirmation"
     assert report["assistant_visible_replay_count"] == 1
-    assert "Assistant-visible replay:" in rendered
+    assert report["assistant_visible_replay_additional_count"] == 0
+    assert "Next assistant-visible replay:" in rendered
     assert rendered.count("**Odylith Observation:** Hidden hook context is not chat-visible proof.") == 1
     assert "---\n\n**Odylith Observation:** Hidden hook context is not chat-visible proof.\n\n---" in rendered
 
@@ -388,9 +389,12 @@ def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is
     assert report["delivery_ledger"]["unconfirmed_event_count"] == 2
     assert report["chat_visible_proof"]["status"] == "ledger_visible_with_pending_confirmation"
     assert "pending chat-confirmation event(s)" in rendered
-    assert "Assistant-visible replay:" in rendered
+    assert report["assistant_visible_replay_count"] == 2
+    assert report["assistant_visible_replay_additional_count"] == 1
+    assert "Next assistant-visible replay:" in rendered
+    assert "Additional pending replay blocks: 1." in rendered
     assert "**Odylith Observation:** Earlier visible proof." in rendered
-    assert "**Odylith Observation:** New hidden beat still needs proof." in rendered
+    assert "**Odylith Observation:** New hidden beat still needs proof." not in rendered
 
 
 def test_hook_payload_visible_text_without_ledger_proof_stays_unproven(tmp_path: Path) -> None:
