@@ -6,18 +6,13 @@ import json
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
+from odylith.runtime.common.value_coercion import string_rows as _string_rows
 from odylith.runtime.evaluation import odylith_benchmark_mode
 _normalize_mode = odylith_benchmark_mode.normalize_public_mode
 
 
 def _pretty_json(payload: Mapping[str, Any] | None) -> str:
     return json.dumps(dict(payload or {}), indent=2, sort_keys=True, ensure_ascii=False)
-
-
-def _string_rows(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    return [str(token).strip() for token in value if str(token).strip()]
 
 
 def _looks_like_code_or_test_path(path: str) -> bool:

@@ -1,4 +1,4 @@
-"""Voice helpers for the Odylith discipline layer."""
+"""Choose whether a discipline decision should surface a visible intervention."""
 
 from __future__ import annotations
 
@@ -14,6 +14,12 @@ def intervention_candidate_for_decision(
     violations: Sequence[Mapping[str, Any]],
     affordances: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
+    """Return the operator-facing intervention candidate for a decision.
+
+    Passing or low-signal checks intentionally stay silent. A visible candidate
+    is only emitted when a high-signal violated law intersects the visible-law
+    set and the final decision is strong enough to warrant intervention.
+    """
     law_ids = [
         str(row.get("law_id", "")).strip()
         for row in violations
@@ -27,6 +33,8 @@ def intervention_candidate_for_decision(
         for item in pressure.get("pressure_observations", [])
         if str(item).strip()
     ] if isinstance(pressure.get("pressure_observations"), list) else []
+    # Visibility requires both a meaningful recovery cue and a violated law that
+    # the intervention layer is allowed to surface to the operator.
     high_signal = bool(recovery_action) and bool(set(law_ids) & VISIBLE_INTERVENTION_LAWS)
     visible = bool(high_signal and decision in {"block", "defer"})
     if not visible:

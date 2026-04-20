@@ -1,4 +1,10 @@
-"""Affordance helpers for the Odylith discipline layer."""
+"""Rank the next admissible moves for a discipline decision.
+
+This module intentionally prefers deterministic recovery actions from violated
+hard laws before it falls back to softer pressure-shaped nudges. The result is
+used as the "what should I do next?" surface for both machine and human
+consumers.
+"""
 
 from __future__ import annotations
 
@@ -44,6 +50,7 @@ def _append_unique(
     pressure_feature: str = "",
     law_id: str = "",
 ) -> None:
+    """Append an affordance once while preserving the caller's priority order."""
     if any(str(row.get("action", "")).strip() == action for row in rows):
         return
     payload: dict[str, Any] = {
@@ -63,6 +70,14 @@ def rank_affordances(
     pressure: Mapping[str, Any],
     hard_law_results: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, Any]]:
+    """Return ranked recovery or execution actions for the current decision.
+
+    Ordering matters here:
+    1. Violated hard laws always contribute their owning recovery actions first.
+    2. High uncertainty can force a context-narrowing move even without a law violation.
+    3. Adaptive affordances only appear when no law-specific recovery already owns the route.
+    4. A generic proceed-locally action is used only when nothing more specific applies.
+    """
     ranked: list[dict[str, Any]] = []
     for row in hard_law_results:
         if row.get("status") != "violated":
@@ -75,6 +90,8 @@ def rank_affordances(
             reason=str(row.get("recovery", "")).strip(),
             law_id=law_id,
         )
+    # When the system cannot confidently classify the pressure, the safest next
+    # move is to shrink scope before any stronger action is suggested.
     if not ranked and float(pressure.get("uncertainty", 1.0) or 1.0) >= 0.7:
         _append_unique(
             ranked,
@@ -82,6 +99,8 @@ def rank_affordances(
             reason="Pressure is uncertain; gather the smallest relevant local truth before acting.",
         )
     features = dict(pressure.get("features", {})) if isinstance(pressure.get("features"), Mapping) else {}
+    # Adaptive affordances are secondary hints; they should never bury a more
+    # explicit recovery path already supplied by a violated hard law.
     if not any(row.get("law_id") for row in ranked):
         for feature, action, reason in _ADAPTIVE_AFFORDANCES:
             if features.get(feature):

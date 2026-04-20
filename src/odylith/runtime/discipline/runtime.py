@@ -1,4 +1,9 @@
-"""Low-latency runtime helpers for Odylith Discipline evidence."""
+"""Expose compact runtime summary surfaces for the discipline family.
+
+These helpers are used when other packets or CLI surfaces need a small,
+stable description of the discipline proof path without executing the full
+validator or benchmark on every call.
+"""
 
 from __future__ import annotations
 
@@ -25,6 +30,7 @@ PATH_MARKERS: tuple[str, ...] = (
 
 
 def _strings(*values: Any, limit: int = 16) -> list[str]:
+    """Collect unique string tokens from mixed scalar/sequence inputs."""
     rows: list[str] = []
     seen: set[str] = set()
     for value in values:
@@ -46,12 +52,14 @@ def _strings(*values: Any, limit: int = 16) -> list[str]:
 
 
 def _file_fingerprint(path: Path) -> str:
+    """Return a short content fingerprint for an existing file."""
     if not path.is_file():
         return ""
     return hashlib.sha256(path.read_bytes()).hexdigest()[:16]
 
 
 def _relevant_text(values: Sequence[Any]) -> str:
+    """Collapse candidate path/doc inputs into one lowercase search string."""
     return "\n".join(_strings(*values, limit=48)).lower()
 
 
@@ -63,14 +71,18 @@ def should_attach_summary(
     docs: Sequence[Any] = (),
     recommended_commands: Sequence[Any] = (),
 ) -> bool:
+    """Decide whether a packet should carry a discipline runtime summary."""
     family = str(family_hint or "").strip().lower().replace("-", "_")
     if family == contract.FAMILY:
         return True
+    # Marker matching is intentionally broad because packets may mention the
+    # family indirectly through paths, docs, or recommended commands.
     text = _relevant_text([changed_paths, explicit_paths, docs, recommended_commands])
     return any(marker in text for marker in PATH_MARKERS)
 
 
 def compact_summary(value: Any, *, limit: int = 6) -> dict[str, Any]:
+    """Reduce a rich runtime summary to the small packet-safe subset."""
     summary = _mapping(value)
     if not summary:
         return {}
@@ -119,6 +131,7 @@ def compact_summary(value: Any, *, limit: int = 6) -> dict[str, Any]:
 
 
 def summary_from_sources(*sources: Any, limit: int = 6) -> dict[str, Any]:
+    """Extract the first usable discipline summary from nested source payloads."""
     for source in sources:
         row = _mapping(source)
         if not row:
@@ -132,10 +145,12 @@ def summary_from_sources(*sources: Any, limit: int = 6) -> dict[str, Any]:
 
 
 def validator_command_from_sources(*sources: Any) -> str:
+    """Return the validator command from the first embedded discipline summary."""
     return str(summary_from_sources(*sources).get("validator_command", "")).strip()
 
 
 def commands_with_validator(commands: Sequence[Any], summary: Mapping[str, Any], *, limit: int = 16) -> list[str]:
+    """Append the validator command to a command list when it is not already present."""
     rows = _strings(commands, limit=limit)
     command = str(summary.get("validator_command", "")).strip()
     if command and command not in rows:
@@ -148,11 +163,14 @@ def runtime_summary(
     repo_root: Path,
     case_ids: Sequence[str] = (),
 ) -> dict[str, Any]:
+    """Build a local summary of the available discipline proof surface."""
     root = Path(repo_root).expanduser().resolve()
     corpus_path = root / validate_discipline.CORPUS_RELATIVE_PATH
     cases: list[dict[str, Any]] = []
     status = "unavailable"
     try:
+        # Selection is reused here so the summary reflects the same case slicing
+        # semantics as the validator, without claiming that validation has run.
         cases = validate_discipline.load_discipline_cases(repo_root=root)
         selected, issues = validate_discipline._select_cases(cases, case_ids=case_ids)  # noqa: SLF001
         cases = selected if not issues else []
@@ -205,6 +223,7 @@ def summary_for_packet(
     docs: Sequence[Any] = (),
     recommended_commands: Sequence[Any] = (),
 ) -> dict[str, Any]:
+    """Return a compact runtime summary only when the packet actually needs it."""
     if not should_attach_summary(
         family_hint=family_hint,
         changed_paths=changed_paths,

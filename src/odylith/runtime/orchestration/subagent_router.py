@@ -403,6 +403,8 @@ _ODYLITH_DOC_SURFACE_SEGMENTS: frozenset[str] = frozenset(
 
 
 def _delegated_profile_values() -> tuple[str, ...]:
+    """Return the routed profiles that participate in delegated scoring."""
+
     return (
         RouterProfile.ANALYSIS_MEDIUM.value,
         RouterProfile.ANALYSIS_HIGH.value,
@@ -415,18 +417,26 @@ def _delegated_profile_values() -> tuple[str, ...]:
 
 
 def _default_profile_bias_map() -> dict[str, float]:
+    """Initialize zeroed per-profile tuning bias for delegated tiers."""
+
     return {profile: 0.0 for profile in _delegated_profile_values()}
 
 
 def _default_outcome_counts_map() -> dict[str, dict[str, int]]:
+    """Initialize empty outcome counters for delegated profiles."""
+
     return {profile: {} for profile in _delegated_profile_values()}
 
 
 def _default_family_profile_bias_map() -> dict[str, dict[str, float]]:
+    """Initialize family-specific bias maps for every known task family."""
+
     return {family: _default_profile_bias_map() for family in _KNOWN_TASK_FAMILIES}
 
 
 def _default_family_outcome_counts_map() -> dict[str, dict[str, dict[str, int]]]:
+    """Initialize family-specific outcome counters for every task family."""
+
     return {family: _default_outcome_counts_map() for family in _KNOWN_TASK_FAMILIES}
 
 
@@ -434,10 +444,14 @@ RouterProfile = subagent_router_profile_support.RouterProfile
 
 
 def _router_profile_from_token(value: Any) -> RouterProfile | None:
+    """Parse a stored profile token back into a `RouterProfile` enum."""
+
     return subagent_router_profile_support.router_profile_from_token(value)
 
 
 def _router_profile_from_runtime(model: Any, reasoning_effort: Any) -> RouterProfile | None:
+    """Infer the router profile that matches runtime model/effort fields."""
+
     return subagent_router_profile_support.router_profile_from_runtime(model, reasoning_effort)
 
 
@@ -1848,12 +1862,21 @@ def _classify_task_family(
 
 
 def assess_request(request: RouteRequest) -> TaskAssessment:
+    """Assess one bounded request using the runtime scoring implementation."""
+
     from odylith.runtime.orchestration import subagent_router_assessment_runtime
 
     return subagent_router_assessment_runtime.assess_request(request)
 
 
 def _allow_xhigh_by_gate(assessment: TaskAssessment) -> bool:
+    """Decide whether the router may even consider the `frontier_xhigh` tier.
+
+    `frontier_xhigh` is not part of the normal score race. The gate only opens
+    for slices that combine strong accuracy pressure with meaningful ambiguity,
+    blast radius, reversibility risk, or unusually low confidence.
+    """
+
     if assessment.correctness_critical and assessment.feature_implementation and max(
         assessment.ambiguity,
         assessment.blast_radius,
@@ -1887,24 +1910,34 @@ def _allow_xhigh_by_gate(assessment: TaskAssessment) -> bool:
 
 
 def _profile_reliability_summary(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> dict[str, Any]:
+    """Expose the shared profile reliability summary from the support module."""
+
     return subagent_router_profile_support.profile_reliability_summary(profile, assessment, tuning)
 
 
 def _tuning_bias_for_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> float:
+    """Expose the bounded local tuning bias for one profile and task family."""
+
     return subagent_router_profile_support.tuning_bias_for_profile(profile, assessment, tuning)
 
 
 def _score_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> float:
+    """Delegate profile scoring to the runtime-policy module."""
+
     return subagent_router_runtime_policy._score_profile(profile=profile, assessment=assessment, tuning=tuning)
 
 
 
 def _score_margin(selected: RouterProfile, scorecard: Mapping[str, float]) -> float:
+    """Compute the selected profile's lead over the nearest competitor."""
+
     return subagent_router_runtime_policy._score_margin(selected=selected, scorecard=scorecard)
 
 
 
 def _routing_confidence(selected: RouterProfile, assessment: TaskAssessment, scorecard: Mapping[str, float]) -> int:
+    """Collapse the scorecard and assessment into a bounded routing confidence."""
+
     return subagent_router_runtime_policy._routing_confidence(selected=selected, assessment=assessment, scorecard=scorecard)
 
 
@@ -1915,11 +1948,15 @@ def _apply_accuracy_backstop(
     assessment: TaskAssessment,
     scorecard: Mapping[str, float],
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Raise the selected profile when accuracy pressure outruns the score win."""
+
     return subagent_router_runtime_policy._apply_accuracy_backstop(selected=selected, assessment=assessment, scorecard=scorecard)
 
 
 
 def _next_stronger_profile(profile: RouterProfile, assessment: TaskAssessment) -> RouterProfile:
+    """Return the next stronger profile for this assessment's task shape."""
+
     return subagent_router_runtime_policy._next_stronger_profile(profile=profile, assessment=assessment)
 
 
@@ -1931,6 +1968,8 @@ def _apply_reliability_backstop(
     tuning: TuningState,
     routing_confidence: int,
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Adjust the winner when recent local reliability evidence warrants it."""
+
     return subagent_router_runtime_policy._apply_reliability_backstop(selected=selected, assessment=assessment, tuning=tuning, routing_confidence=routing_confidence)
 
 
@@ -1943,6 +1982,8 @@ def _apply_odylith_execution_alignment(
     routing_confidence: int,
     allow_xhigh: bool,
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Align the chosen profile with Odylith execution-lane constraints."""
+
     return subagent_router_runtime_policy._apply_odylith_execution_alignment(selected=selected, assessment=assessment, scorecard=scorecard, routing_confidence=routing_confidence, allow_xhigh=allow_xhigh)
 
 
@@ -1958,6 +1999,8 @@ def _top_score_lines(
     score_margin: float,
     backstop_lines: Sequence[str],
 ) -> list[str]:
+    """Render the human-readable explanation for the score and backstop outcome."""
+
     return subagent_router_runtime_policy._top_score_lines(selected=selected, scorecard=scorecard, assessment=assessment, task_class_policy_lines=task_class_policy_lines, allow_xhigh=allow_xhigh, routing_confidence=routing_confidence, score_margin=score_margin, backstop_lines=backstop_lines)
 
 
@@ -1968,6 +2011,14 @@ def _select_profile(
     tuning: TuningState,
     allow_xhigh: bool,
 ) -> tuple[RouterProfile, dict[str, float]]:
+    """Score the eligible profiles and return the winner plus the scorecard.
+
+    Candidate selection is intentionally narrower for read-only analysis slices
+    so lightweight profiles can win cleanly. Write-capable and higher-risk work
+    expands the candidate set, and the gate-controlled xhigh tier is appended
+    only when the assessment has already earned that cost.
+    """
+
     if not assessment.needs_write and assessment.task_family == "analysis_review":
         candidates = [
             RouterProfile.MINI_MEDIUM,
@@ -1986,6 +2037,8 @@ def _select_profile(
     if allow_xhigh:
         candidates.append(RouterProfile.GPT54_XHIGH)
     scorecard = {profile.value: round(_score_profile(profile, assessment, tuning), 3) for profile in candidates}
+    # Priority breaks near-ties deterministically so higher-trust profiles win
+    # equal score races instead of depending on enum or dict ordering.
     selected = max(
         candidates,
         key=lambda profile: (scorecard[profile.value], _PROFILE_PRIORITY.get(profile.value, 0)),
@@ -1998,6 +2051,13 @@ def _next_profile_for_escalation(
     assessment: TaskAssessment,
     outcome: RouteOutcome,
 ) -> RouterProfile | None:
+    """Pick the next stronger profile after a delegated pass failed to settle.
+
+    Escalation is monotonic and bounded: the router only moves upward, skips
+    tiers that do not match the slice shape, and refuses to escalate when the
+    outcome indicates local rescoping is the real fix.
+    """
+
     profile = _validated_profile(decision)
     if profile is RouterProfile.MAIN_THREAD or profile is RouterProfile.GPT54_XHIGH:
         return None
@@ -2028,6 +2088,8 @@ def _next_profile_for_escalation(
 
 
 def _escalation_refusal_reason(decision: RoutingDecision, assessment: TaskAssessment, outcome: RouteOutcome) -> str:
+    """Explain why escalation should stop and return to the main thread."""
+
     profile = _validated_profile(decision)
     if not (outcome.blocked or outcome.ambiguous or outcome.artifact_missing or outcome.quality_too_weak or outcome.broader_coordination):
         return "no escalation trigger was present"
@@ -2047,6 +2109,8 @@ def _escalation_refusal_reason(decision: RoutingDecision, assessment: TaskAssess
 
 
 def _prompt_wrapper_delta(*, outcome: RouteOutcome, assessment: TaskAssessment) -> list[str]:
+    """Generate retry guidance lines for a follow-up delegated attempt."""
+
     lines: list[str] = []
     if outcome.blocked:
         lines.append("Call out the exact blocker and the expected unblock artifact in the respawn prompt.")
@@ -2073,6 +2137,15 @@ def route_request(
     *,
     repo_root: Path | None = None,
 ) -> RoutingDecision:
+    """Route one bounded request to the main thread or a concrete agent profile.
+
+    The router applies consumer-lane write policy, computes a task assessment,
+    rejects any hard-gated slice immediately, then scores the eligible profiles
+    and wraps the winner in the host/runtime contract needed for actual spawn
+    execution. All later backstops refine the winner; none of them can overturn
+    a hard main-thread refusal.
+    """
+
     from odylith.runtime.orchestration import subagent_router_assessment_runtime
 
     _ensure_valid_route_request(request)
@@ -2085,6 +2158,8 @@ def route_request(
     task_class_policy = _task_class_policy_for(assessment)
     task_class_policy_lines = _task_class_policy_lines(task_class_policy)
     if assessment.hard_gate_hits:
+        # Hard gates intentionally bypass every scoring or tuning hook so the
+        # router cannot delegate around a safety or grounding contract.
         why = f"kept local because {', '.join(assessment.hard_gate_hits)}"
         return RoutingDecision(
             delegate=False,
@@ -2343,6 +2418,13 @@ def escalate_routing_decision(
     request: RouteRequest | None = None,
     assessment: TaskAssessment | None = None,
 ) -> RoutingDecision | None:
+    """Escalate a previous delegated decision after an unsatisfactory outcome.
+
+    This function reuses the original assessment context, decides whether the
+    failure signals justify another delegated attempt, and if so emits a new
+    routing decision with a stronger profile and a tighter retry contract.
+    """
+
     assessed = _assessment_for_followup(
         decision=decision,
         request=request,
@@ -2426,6 +2508,8 @@ def escalate_routing_decision(
         if request is not None
         else {}
     )
+    # Precompute the profile after `next_profile` so the escalated decision can
+    # advertise whether there is still another stronger step available.
     next_step = _next_profile_for_escalation(
         RoutingDecision(
             delegate=True,
@@ -2520,6 +2604,8 @@ def escalate_routing_decision(
 
 
 def _outcome_labels(outcome: RouteOutcome) -> list[str]:
+    """Flatten the boolean outcome flags into stable ledger/audit labels."""
+
     labels: list[str] = []
     if outcome.accepted:
         labels.append("accepted")
@@ -2545,6 +2631,14 @@ def record_outcome(
     outcome: RouteOutcome,
     request: RouteRequest | None = None,
 ) -> dict[str, Any]:
+    """Record routing outcome feedback into adaptive local tuning state.
+
+    The router only learns from concrete outcome flags. This function dedupes
+    replayed outcome identities, updates per-profile and per-family counters,
+    nudges local bias values within bounded limits, and writes a companion event
+    into the evaluation ledger for later analysis.
+    """
+
     _validated_profile(decision)
     state = load_tuning_state(repo_root=repo_root)
     profile = decision.profile
@@ -2608,6 +2702,9 @@ def record_outcome(
             float(state.family_profile_bias[task_family].get(profile, 0.0) or 0.0) + family_bias_delta
         )
         if family_bias_delta < 0 and assessed is not None:
+            # When one profile underperforms on a task family, give part of that
+            # penalty back to the likely successor so later score races can move
+            # upward more readily for the same family.
             successor = _next_profile_for_escalation(decision, assessed, outcome)
             if successor is not None:
                 successor_family_bias_delta = round(abs(family_bias_delta) / 2.0, 3)
@@ -2653,6 +2750,8 @@ def append_route_audit(
     outcome: RouteOutcome | None = None,
     stream_path: Path | None = None,
 ) -> dict[str, Any]:
+    """Emit a Compass timeline audit event for routing or routing feedback."""
+
     stream = stream_path or (Path(repo_root).resolve() / DEFAULT_STREAM_PATH).resolve()
     artifacts = list(request.artifacts or request.allowed_paths or [])
     if not artifacts:

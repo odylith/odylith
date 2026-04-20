@@ -1,4 +1,9 @@
-"""Budget helpers for the Odylith discipline layer."""
+"""Track hot-path budget guarantees for discipline evaluation.
+
+Discipline checks are designed to stay on a zero-credit, low-latency path. This
+module records that contract as explicit counters so callers can verify the
+runtime did not quietly widen into model calls or other expensive operations.
+"""
 
 from __future__ import annotations
 
@@ -20,10 +25,17 @@ ZERO_CREDIT_HOT_PATH = {
 
 
 def start_timer() -> float:
+    """Capture a monotonic start time for one discipline evaluation."""
     return perf_counter()
 
 
 def runtime_budget(*, started_at: float, host_model_calls_allowed: bool = False) -> dict[str, Any]:
+    """Return the baseline budget report for a local discipline check.
+
+    Every counter starts at zero because the discipline hot path is meant to
+    describe what was allowed and what was actually spent. Callers that perform
+    broader work can layer their own observed counts on top of this shape.
+    """
     elapsed_ms = max(0.0, (perf_counter() - started_at) * 1000.0)
     counters = dict(ZERO_CREDIT_HOT_PATH)
     return {
@@ -41,11 +53,14 @@ def runtime_budget(*, started_at: float, host_model_calls_allowed: bool = False)
 
 
 def budget_failures(budget: dict[str, Any]) -> list[str]:
+    """Return the counter keys that violate the zero-credit hot-path contract."""
     failures: list[str] = []
     for key, expected in ZERO_CREDIT_HOT_PATH.items():
         try:
             observed = int(budget.get(key, 0) or 0)
         except (TypeError, ValueError):
+            # Malformed counters are treated as failures because callers cannot
+            # safely prove the budget contract from non-numeric data.
             failures.append(key)
             continue
         if observed != expected:

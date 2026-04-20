@@ -128,16 +128,7 @@ def _as_repo_path(*, repo_root: Path, path: Path) -> str:
 
 
 def _normalize_repo_path(*, repo_root: Path, token: str) -> str:
-    raw = str(token or "").strip()
-    if not raw:
-        return ""
-    path = Path(raw)
-    if path.is_absolute():
-        try:
-            return path.resolve().relative_to(repo_root.resolve()).as_posix()
-        except ValueError:
-            return ""
-    return path.as_posix().lstrip("./")
+    return repo_path_resolver.normalize_repo_token(repo_root=repo_root, value=token)
 
 
 def _wave_sort_key(wave_id: str) -> tuple[int, str]:

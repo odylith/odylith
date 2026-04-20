@@ -1,4 +1,9 @@
-"""Memory helpers for the Odylith discipline layer."""
+"""Build persistence-safe memory artifacts from discipline decisions.
+
+The helpers here sanitize strings aggressively because memory records may live
+longer than the originating chat turn. The goal is to retain only compact,
+durable signals rather than secrets, transcripts, or transient filesystem refs.
+"""
 
 from __future__ import annotations
 
@@ -34,6 +39,7 @@ _EPHEMERAL_REF_PREFIXES = (
 
 
 def unsafe_practice_string(token: str) -> bool:
+    """Return whether a token is unsafe to retain in practice memory."""
     lowered = str(token or "").strip().lower()
     if not lowered:
         return True
@@ -45,6 +51,7 @@ def unsafe_practice_string(token: str) -> bool:
 
 
 def _safe_strings(value: Any, *, limit: int = 12, max_chars: int = 180) -> list[str]:
+    """Normalize strings while dropping sensitive or ephemeral references."""
     rows: list[str] = []
     for token in clean_strings(value, limit=limit * 2):
         if unsafe_practice_string(token):
@@ -56,10 +63,12 @@ def _safe_strings(value: Any, *, limit: int = 12, max_chars: int = 180) -> list[
 
 
 def safe_practice_strings(value: Any, *, limit: int = 12, max_chars: int = 180) -> list[str]:
+    """Public wrapper for persistence-safe string extraction."""
     return _safe_strings(value, limit=limit, max_chars=max_chars)
 
 
 def _compact_law_results(value: Any, *, limit: int = 12) -> list[dict[str, str]]:
+    """Trim law results to the fields safe and useful for durable memory."""
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         return []
     rows: list[dict[str, str]] = []
@@ -80,6 +89,7 @@ def _compact_law_results(value: Any, *, limit: int = 12) -> list[dict[str, str]]
 
 
 def _counter_subset(value: Any, keys: Sequence[str]) -> dict[str, int | bool | str | float]:
+    """Copy only scalar counter fields from a richer payload."""
     source = dict(value) if isinstance(value, Mapping) else {}
     payload: dict[str, int | bool | str | float] = {}
     for key in keys:
@@ -100,6 +110,7 @@ def practice_event_from_decision(
     proof_status: str = "not_proven",
     timestamp: str | None = None,
 ) -> dict[str, Any]:
+    """Project a decision into the durable practice-event schema."""
     learning = dict(decision.get("learning_signal", {})) if isinstance(decision.get("learning_signal"), Mapping) else {}
     budget = dict(decision.get("latency_budget", {})) if isinstance(decision.get("latency_budget"), Mapping) else {}
     tribunal = dict(decision.get("tribunal_signal", {})) if isinstance(decision.get("tribunal_signal"), Mapping) else {}
@@ -107,6 +118,8 @@ def practice_event_from_decision(
     archetypes = _safe_strings(decision.get("known_archetype_matches"), limit=6)
     pressure_features = _safe_strings(decision.get("pressure_observations"), limit=12)
     fingerprint = str(learning.get("fingerprint", "")).strip()
+    # Learning owns the preferred fingerprint. If it is absent, fall back to the
+    # decision id suffix so the event still has a deterministic identity.
     if not fingerprint:
         fingerprint = str(decision.get("decision_id", "")).rsplit(":", maxsplit=1)[-1] or "unfingerprinted"
     visibility = str(intervention.get("visibility", "")).strip() or (

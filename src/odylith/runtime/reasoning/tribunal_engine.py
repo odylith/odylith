@@ -1,16 +1,27 @@
 """Backend-agnostic multi-actor reasoning for Odylith cases.
 
-Tribunal is the non-UI reasoning engine that sits beneath Odylith. It does
-not render dashboards directly. Instead, it:
-- turns delivery-intelligence scopes into decision dossiers;
-- runs specialized actors over the same grounded case;
-- adjudicates disagreement instead of flattening it into one template;
+Tribunal is the non-UI reasoning engine that sits beneath Odylith. It does not
+render dashboards directly. Instead, it:
+- turns delivery-intelligence scopes into case dossiers;
+- filters and ranks the live queue into an explicit focus set;
+- runs a fixed actor roster over the same grounded evidence bundle;
+- adjudicates disagreement into one maintainer-facing call;
 - emits one short maintainer brief plus an approval-gated correction packet.
 
-The engine keeps a deterministic baseline, but selected cases can now be
-refined by an external provider when the provider can cite grounded evidence.
-Provider output is advisory, validated against named evidence, and falls back
-cleanly to the deterministic path when it cannot be trusted.
+The pipeline is intentionally fail-closed.
+- Selection is deterministic and stable across equivalent inputs.
+- Evidence is normalized into small citation-friendly items before any actor or
+  provider sees it.
+- Provider output is optional, advisory, and only allowed to override
+  deterministic wording when every enriched field cites named evidence items.
+- Cache reuse is fingerprint-based, so stale reasoning is discarded whenever the
+  underlying case facts or provider contract change materially.
+
+Tribunal therefore behaves less like a generic summarizer and more like a
+bounded editorial court: it narrows the admissible case set, gathers the
+evidence that matters, lets specialized voices contest the story, and only then
+produces the queue row, maintainer brief, and remediation packet that the rest
+of Odylith consumes.
 """
 
 from __future__ import annotations
@@ -76,9 +87,13 @@ _ACTOR_ORDER: tuple[str, ...] = (
     "risk_analyst",
     "prescriber",
 )
+# The actor order is intentionally stable because downstream editorial and
+# adjudication surfaces explain influence in terms of named roles rather than
+# opaque score vectors.
 
 
 def _series(values: Sequence[str], *, limit: int = 3) -> str:
+    """Render a short natural-language series for human-facing Tribunal text."""
     rows = [str(token).strip() for token in values if str(token).strip()][:limit]
     if not rows:
         return ""
@@ -88,11 +103,20 @@ def _series(values: Sequence[str], *, limit: int = 3) -> str:
         return f"{rows[0]} and {rows[1]}"
     return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
+
 def _readout(snapshot: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the normalized operator-readout payload for one scope snapshot."""
     return dict(snapshot.get("operator_readout", {})) if isinstance(snapshot.get("operator_readout"), Mapping) else {}
 
 
 def _candidate_score_band_key(snapshot: Mapping[str, Any]) -> tuple[int, int, int, int, int, int]:
+    """Build the stable priority band used for case ranking.
+
+    The tuple is intentionally ordered from coarse triage class to finer urgency
+    indicators. Cases that land in the same score band are considered genuinely
+    tied on the meaningful priority dimensions and are only separated later by
+    explicit identity-based tie-breakers.
+    """
     readout = _readout(snapshot)
     scores = snapshot.get("scores", {}) if isinstance(snapshot.get("scores"), Mapping) else {}
     scope_type = str(snapshot.get("scope_type", "")).strip().lower()
@@ -108,6 +132,7 @@ def _candidate_score_band_key(snapshot: Mapping[str, Any]) -> tuple[int, int, in
 
 
 def _candidate_sort_key(snapshot: Mapping[str, Any]) -> tuple[int, int, int, int, int, int, str, str]:
+    """Extend the score band with stable identity tie-breakers."""
     band = _candidate_score_band_key(snapshot)
     scope_id = str(snapshot.get("scope_id", "")).strip().lower()
     scope_key = str(snapshot.get("scope_key", "")).strip().lower()
@@ -117,6 +142,12 @@ def _candidate_sort_key(snapshot: Mapping[str, Any]) -> tuple[int, int, int, int
 def _eligible_candidate_snapshots(
     payload: Mapping[str, Any],
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Filter delivery scopes down to the live cases Tribunal may reason about.
+
+    Tribunal reasons only about live, actionable scopes in supported scope
+    classes. The exclusion counters are kept so the selection summary can
+    explain why apparently present scopes never reached the visible queue.
+    """
     scopes = payload.get("scopes", []) if isinstance(payload.get("scopes"), list) else []
     candidates: list[dict[str, Any]] = []
     excluded = {
@@ -143,6 +174,18 @@ def _eligible_candidate_snapshots(
 
 
 def _candidate_selection(payload: Mapping[str, Any], *, scope_cap: int) -> dict[str, Any]:
+    """Build the ranked visible queue plus the smaller provider-focus subset.
+
+    Tribunal keeps two related views of the live scope set:
+    - the visible queue contains every eligible case in stable priority order;
+    - the provider-focus set is a smaller top slice used when AI effort is
+      available and should be spent on the most leverage-heavy distinct cases.
+
+    Selection is intentionally two-pass. Tribunal first covers distinct scenario
+    classes, then fills remaining slots by priority. That prevents a single hot
+    scenario from starving every other meaningful case class out of the focused
+    inbox.
+    """
     candidates, excluded = _eligible_candidate_snapshots(payload)
     ordered = sorted(candidates, key=_candidate_sort_key)
     all_scopes = payload.get("scopes", []) if isinstance(payload.get("scopes"), list) else []
@@ -159,6 +202,7 @@ def _candidate_selection(payload: Mapping[str, Any], *, scope_cap: int) -> dict[
     covered_scenarios: set[str] = set()
 
     def _selection_metrics(snapshot: Mapping[str, Any]) -> dict[str, Any]:
+        """Capture the ranking facts used to explain why a case was selected."""
         readout = _readout(snapshot)
         diagnostics = snapshot.get("diagnostics", {}) if isinstance(snapshot.get("diagnostics"), Mapping) else {}
         scores = snapshot.get("scores", {}) if isinstance(snapshot.get("scores"), Mapping) else {}
@@ -173,6 +217,7 @@ def _candidate_selection(payload: Mapping[str, Any], *, scope_cap: int) -> dict[
         }
 
     def _selection_reason(snapshot: Mapping[str, Any], *, slot: str) -> str:
+        """Generate the operator-facing explanation for a queue-selection slot."""
         metrics = _selection_metrics(snapshot)
         scenario = str(metrics.get("scenario", "clear_path")).replace("_", " ").strip() or "clear path"
         scope_type = str(metrics.get("scope_type", "scope")).strip() or "scope"
@@ -315,10 +360,12 @@ def _candidate_selection(payload: Mapping[str, Any], *, scope_cap: int) -> dict[
 
 
 def _candidate_scope_keys(payload: Mapping[str, Any], *, scope_cap: int) -> list[str]:
+    """Return only the selected scope keys from the richer selection payload."""
     return list(_candidate_selection(payload, scope_cap=scope_cap).get("selected_scope_keys", []))
 
 
 def _normalize_strings(values: Any, *, limit: int | None = None) -> list[str]:
+    """Normalize a list-shaped value into trimmed strings with optional truncation."""
     rows: list[str] = []
     if not isinstance(values, list):
         return rows
@@ -333,6 +380,13 @@ def _normalize_strings(values: Any, *, limit: int | None = None) -> list[str]:
 
 
 def _normalize_refs(values: Any, *, require_surface: bool, limit: int = 8) -> list[dict[str, str]]:
+    """Normalize and deduplicate proof/evidence references for Tribunal use.
+
+    When ``require_surface`` is true, Tribunal keeps only references that are
+    either directly linkable or attached to known proof-route surfaces. That
+    lets provider gating and queue rows reason about whether an operator can
+    actually inspect the cited proof.
+    """
     rows: list[dict[str, str]] = []
     if not isinstance(values, list):
         return rows
@@ -367,6 +421,7 @@ def _normalize_refs(values: Any, *, require_surface: bool, limit: int = 8) -> li
 
 
 def _proof_route_quality(routes: Sequence[Mapping[str, Any]]) -> str:
+    """Classify how inspectable the current proof routes are."""
     if not routes:
         return "missing"
     if all(
@@ -385,6 +440,13 @@ def _semantic_diff_candidates(
     changed_artifacts: Sequence[str],
     limit: int = 4,
 ) -> list[str]:
+    """Choose the most plausible artifacts for semantic-diff review.
+
+    The heuristic prefers exact path overlap first, then basename overlap, and
+    only falls back to generic owned artifacts when no stronger match exists.
+    This keeps the later semantic-review question bounded to artifacts that
+    plausibly represent the newest meaningful delta.
+    """
     owned = [str(token).strip() for token in owned_artifacts if str(token).strip()]
     changed = [str(token).strip() for token in changed_artifacts if str(token).strip()]
     if not owned:
@@ -409,6 +471,7 @@ def _semantic_diff_candidates(
 
 
 def _evidence_gaps(*, observations: Mapping[str, Any]) -> list[str]:
+    """List the highest-leverage missing facts in the current observation bundle."""
     gaps: list[str] = []
     if not str(observations.get("latest_explicit_ts_iso", "")).strip():
         gaps.append("No explicit checkpoint timestamp is attached to the case.")
@@ -422,6 +485,7 @@ def _evidence_gaps(*, observations: Mapping[str, Any]) -> list[str]:
 
 
 def _sentence(value: str) -> str:
+    """Return a sentence-shaped string with terminal punctuation when needed."""
     token = str(value or "").strip()
     if not token:
         return ""
@@ -429,6 +493,7 @@ def _sentence(value: str) -> str:
 
 
 def _date_label(value: str) -> str:
+    """Trim ISO-like timestamps to a compact date label for prose surfaces."""
     token = str(value or "").strip()
     if len(token) >= 10 and token[4] == "-" and token[7] == "-":
         return token[:10]
@@ -436,6 +501,7 @@ def _date_label(value: str) -> str:
 
 
 def _artifact_label(value: str) -> str:
+    """Collapse a repo path or scoped token into a short readable artifact label."""
     token = str(value or "").strip()
     if not token:
         return ""
@@ -447,6 +513,7 @@ def _artifact_label(value: str) -> str:
 
 
 def _focus_artifact(observations: Mapping[str, Any]) -> str:
+    """Choose the single artifact Tribunal treats as the case's main delta."""
     for key in ("semantic_diff_candidates", "owned_artifacts", "changed_artifacts"):
         values = _normalize_strings(observations.get(key), limit=4)
         if values:
@@ -455,11 +522,13 @@ def _focus_artifact(observations: Mapping[str, Any]) -> str:
 
 
 def _surface_phrase(observations: Mapping[str, Any], *, limit: int = 4) -> str:
+    """Render the linked surfaces as a short human phrase."""
     surfaces = _normalize_strings(observations.get("linked_surfaces"), limit=limit)
     return _series(surfaces, limit=limit) if surfaces else "the linked surfaces"
 
 
 def _checkpoint_phrase(observations: Mapping[str, Any]) -> str:
+    """Render the temporal anchor Tribunal uses when discussing recency."""
     latest = _date_label(str(observations.get("latest_activity_ts_iso", "")).strip())
     explicit = _date_label(str(observations.get("latest_explicit_ts_iso", "")).strip())
     if latest and explicit:
@@ -472,6 +541,7 @@ def _checkpoint_phrase(observations: Mapping[str, Any]) -> str:
 
 
 def _provider_contract_signature(*, config: Any | None, provider: Any | None) -> dict[str, Any]:
+    """Capture the reasoning-provider contract that affects cache validity."""
     return {
         "mode": str(getattr(config, "mode", "")).strip() if config is not None else "",
         "provider": str(getattr(config, "provider", "")).strip() if config is not None else "",
@@ -491,6 +561,14 @@ def _evidence_fingerprint(
     *,
     provider_contract: Mapping[str, Any] | None = None,
 ) -> str:
+    """Fingerprint the case facts Tribunal considers reasoning-significant.
+
+    The fingerprint intentionally includes provider-contract shape as well as the
+    normalized evidence bundle. That means cached deterministic or AI-assisted
+    reasoning is invalidated not only when the case changes, but also when the
+    configured provider contract materially changes the admissible reasoning
+    environment.
+    """
     evidence = snapshot.get("evidence_context", {}) if isinstance(snapshot.get("evidence_context"), Mapping) else {}
     diagnostics = snapshot.get("diagnostics", {}) if isinstance(snapshot.get("diagnostics"), Mapping) else {}
     readout = _readout(snapshot)
@@ -544,6 +622,7 @@ def _evidence_fingerprint(
 
 
 def _classify_change_mix(paths: Sequence[str]) -> str:
+    """Classify the dominant kind of artifact churn in the current case."""
     lowered = [
         workstream_inference.normalize_repo_token(str(path or "")).strip().lower()
         for path in paths
@@ -587,6 +666,7 @@ def _classify_change_mix(paths: Sequence[str]) -> str:
 
 
 def _subject(snapshot: Mapping[str, Any]) -> dict[str, Any]:
+    """Project one delivery snapshot into Tribunal's subject record."""
     diagnostics = snapshot.get("diagnostics", {}) if isinstance(snapshot.get("diagnostics"), Mapping) else {}
     readout = _readout(snapshot)
     return {
@@ -601,6 +681,13 @@ def _subject(snapshot: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _decision_at_stake(subject: Mapping[str, Any], observations: Mapping[str, Any]) -> str:
+    """Phrase the concrete maintainer question this case is actually about.
+
+    Tribunal deliberately turns a large snapshot into one decision-shaped
+    question. That question becomes the center of the dossier and constrains the
+    actor memos so they argue about a bounded maintainer judgment rather than
+    narrating every fact in the scope.
+    """
     scope_id = str(subject.get("id", "")).strip()
     label = str(subject.get("label", scope_id)).strip() or scope_id or "this scope"
     scenario = str(subject.get("scenario", "")).strip()
@@ -636,6 +723,18 @@ def _decision_at_stake(subject: Mapping[str, Any], observations: Mapping[str, An
 
 
 def _build_observations(snapshot: Mapping[str, Any], posture: Mapping[str, Any]) -> dict[str, Any]:
+    """Normalize raw delivery/posture facts into the Tribunal observation model.
+
+    This is the canonical translation layer between delivery intelligence and
+    Tribunal reasoning. The observation bundle deliberately mixes:
+    - temporal facts such as latest activity and latest explicit checkpoint;
+    - ownership and change facts such as named artifacts and semantic candidates;
+    - proof-routing quality, claim-guard, and policy metadata;
+    - derived summaries such as change mix and evidence gaps.
+
+    Actor memos, provider gating, confidence scoring, and queue-row proof state
+    all consume this same normalized view.
+    """
     evidence = snapshot.get("evidence_context", {}) if isinstance(snapshot.get("evidence_context"), Mapping) else {}
     diagnostics = snapshot.get("diagnostics", {}) if isinstance(snapshot.get("diagnostics"), Mapping) else {}
     readout = _readout(snapshot)
@@ -687,6 +786,9 @@ def _build_observations(snapshot: Mapping[str, Any], posture: Mapping[str, Any])
             if isinstance(row, Mapping)
         ][:8],
     }
+    # Proof-route quality and evidence gaps are computed after the raw fields are
+    # assembled so every downstream consumer works from the same derived judgment
+    # instead of recomputing slightly different thresholds.
     observations["evidence_refs"] = evidence_refs
     observations["proof_routes"] = proof_routes
     observations["proof_refs"] = proof_routes
@@ -696,6 +798,7 @@ def _build_observations(snapshot: Mapping[str, Any], posture: Mapping[str, Any])
 
 
 def _actor_memo(*, actor: str, claim: str, evidence: Sequence[str], confidence: float, unknowns: Sequence[str], decision_impact: str, best_next_check: str) -> dict[str, Any]:
+    """Build the common memo shape used by every Tribunal actor."""
     return {
         "actor": actor,
         "claim": str(claim).strip(),
@@ -713,6 +816,13 @@ def _build_evidence_items(
     observations: Mapping[str, Any],
     explanation_facts: Sequence[str],
 ) -> list[dict[str, str]]:
+    """Compile a small evidence register that both actors and providers cite.
+
+    Tribunal does not let downstream reasoning cite arbitrary raw payload text.
+    Instead, it distills the current dossier into tagged evidence items with
+    stable ids. That gives actor memos a shared citation vocabulary and gives the
+    provider validator an explicit set of admissible evidence ids.
+    """
     rows: list[tuple[str, str]] = []
 
     def _append(tag: str, text: str) -> None:
@@ -770,6 +880,7 @@ def _evidence_citations(
     tags: Sequence[str],
     limit: int = 3,
 ) -> list[str]:
+    """Select short citation strings from the evidence register by tag."""
     wanted = {str(tag).strip() for tag in tags if str(tag).strip()}
     rows: list[str] = []
     for row in evidence_items:
@@ -788,10 +899,16 @@ def _evidence_citations(
 
 
 def _ownership_ready(observations: Mapping[str, Any]) -> bool:
+    """Return whether the case has named owned artifacts for bounded review."""
     return bool(_normalize_strings(observations.get("owned_artifacts"), limit=1))
 
 
 def _is_self_hosting_case(subject: Mapping[str, Any], observations: Mapping[str, Any]) -> bool:
+    """Return whether the case concerns Odylith grading its own evaluator path.
+
+    These cases are treated specially because Tribunal must not over-trust queue
+    output derived from evaluator semantics that are themselves still moving.
+    """
     _ = subject
     components = {str(token).strip().lower() for token in observations.get("linked_components", []) if str(token).strip()}
     artifacts = [
@@ -814,12 +931,14 @@ def _is_self_hosting_case(subject: Mapping[str, Any], observations: Mapping[str,
 
 
 def _has_authority_gap(observations: Mapping[str, Any]) -> bool:
+    """Return whether cross-surface breadth exceeds the grounded ownership story."""
     linked_surfaces = _normalize_strings(observations.get("linked_surfaces"), limit=8)
     linked_components = _normalize_strings(observations.get("linked_components"), limit=8)
     return len(linked_surfaces) >= 4 and len(linked_components) >= 2 and not _ownership_ready(observations)
 
 
 def _semantic_review_case(subject: Mapping[str, Any], observations: Mapping[str, Any]) -> bool:
+    """Return whether the case is bounded enough for semantic-vs-render review."""
     _ = subject
     return _ownership_ready(observations) and str(observations.get("change_mix", "")).strip() == "reasoning_or_control_plane_change"
 
@@ -830,6 +949,13 @@ def _bounded_sparse_evidence_bundle_ready(
     *,
     evidence_items: Sequence[Mapping[str, Any]],
 ) -> bool:
+    """Allow narrowly bounded sparse-evidence review for certain non-workstream cases.
+
+    Components and diagrams can sometimes be reviewable before strict ownership
+    evidence is complete, but only when the case still carries enough linked
+    context, temporal anchoring, changed artifacts, and explicit evidence gaps
+    to keep provider reasoning bounded.
+    """
     scope_type = str(subject.get("type", "")).strip().lower()
     if scope_type not in {"component", "diagram"}:
         return False
@@ -862,6 +988,15 @@ def _provider_gate(
     observations: Mapping[str, Any],
     evidence_items: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
+    """Decide whether a case may spend provider-backed reasoning effort.
+
+    This gate encodes Tribunal's main safety posture for optional AI assistance.
+    A case must be both worth the spend and bounded enough to review safely. The
+    result therefore distinguishes:
+    - provider unavailable vs. provider intentionally not used;
+    - focus-budget exclusion vs. evidence-quality exclusion;
+    - deterministic bounded cases vs. cases where AI review is justified.
+    """
     if not provider_available:
         return {
             "eligible": False,
@@ -960,11 +1095,18 @@ def _provider_gate(
 
 
 def _provider_artifact_label(tag: str) -> str:
+    """Map evidence tags to safe human artifact labels for provider text cleanup."""
     token = str(tag or "").strip()
     return _PROVIDER_ARTIFACT_LABELS.get(token, "the cited artifact")
 
 
 def _sanitize_provider_text(text: str, *, evidence_items: Sequence[Mapping[str, Any]]) -> str:
+    """Strip raw path leakage from provider prose using evidence-derived labels.
+
+    Providers are allowed to talk about evidence, but not to leak raw repo paths
+    directly into Tribunal prose. This pass rewrites any path-shaped spans to
+    the highest-priority human label inferred from the evidence register.
+    """
     if not text:
         return ""
     path_labels: dict[str, tuple[int, str]] = {}
@@ -1000,6 +1142,17 @@ def _validate_provider_finding(
     *,
     evidence_items: Sequence[Mapping[str, Any]],
 ) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    """Validate provider enrichment against the evidence register.
+
+    Tribunal accepts provider text only when each required field:
+    - contains non-empty sanitized text;
+    - cites at least one known evidence id;
+    - avoids raw path leakage; and
+    - covers the full required field set.
+
+    Partial or weakly grounded provider output therefore degrades cleanly back to
+    the deterministic wording rather than blending trusted and untrusted fields.
+    """
     evidence_ids = {
         str(row.get("id", "")).strip()
         for row in evidence_items
@@ -1043,6 +1196,7 @@ def _provider_prompt_payload(
     actor_memos: Sequence[Mapping[str, Any]],
     evidence_items: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
+    """Build the bounded provider prompt payload from deterministic Tribunal state."""
     return {
         "case_id": str(dossier.get("case_id", "")).strip(),
         "decision_at_stake": str(dossier.get("decision_at_stake", "")).strip(),
@@ -1109,6 +1263,13 @@ def _apply_provider_enrichment(
     actor_memos: Sequence[Mapping[str, Any]],
     evidence_items: Sequence[Mapping[str, Any]],
 ) -> tuple[dict[str, Any], str, dict[str, Any]]:
+    """Attempt provider enrichment while preserving deterministic fallbacks.
+
+    The returned metadata is as important as the enriched text:
+    it records whether the provider was eligible, attempted, validated,
+    unavailable, or rejected for validation reasons. Queue and cache surfaces use
+    that state to explain why a case remained deterministic.
+    """
     gate = dict(provider_gate) if isinstance(provider_gate, Mapping) else {}
     provider_metadata: dict[str, Any] = {
         "state": "deterministic-only",
@@ -1141,6 +1302,9 @@ def _apply_provider_enrichment(
     )
     failure_code = str(getattr(provider, "last_failure_code", "")).strip()
     failure_detail = str(getattr(provider, "last_failure_detail", "")).strip()
+    # Runtime transport failures degrade the rest of the run differently from
+    # validation failures: the former mean the provider was unavailable, while
+    # the latter mean it responded but failed Tribunal's grounding contract.
     if finding is None and failure_code in {"timeout", "unavailable", "transport_error"}:
         provider_metadata["provider_failure_code"] = failure_code
         provider_metadata["provider_failure_detail"] = failure_detail
@@ -1184,6 +1348,14 @@ def _can_reuse_cached_case(
     provider: Any | None,
     require_provider_attempt: bool,
 ) -> bool:
+    """Return whether a prior case can be reused without recomputation.
+
+    Cached cases are only reusable when the evidence fingerprint matches and the
+    provider expectations for this run also match. Tribunal refuses to reuse a
+    deterministic cache entry when the current run says the case is now eligible
+    for provider review, because that would silently suppress a newly admissible
+    enrichment attempt.
+    """
     if str(cached.get("evidence_fingerprint", "")).strip() != str(fingerprint).strip():
         return False
     case = cached.get("case", {}) if isinstance(cached.get("case"), Mapping) else {}
@@ -1263,6 +1435,13 @@ def _confidence_components(
     provider_used: bool,
     provider_validated: bool,
 ) -> dict[str, float]:
+    """Score the main ingredients that feed Tribunal confidence.
+
+    Confidence is intentionally not a raw actor vote average. Tribunal combines
+    dossier completeness, proof-route inspectability, ownership clarity,
+    contradiction pressure, and provider-validation state into a small component
+    model so operators can see why a case feels strong or weak.
+    """
     evidence_present = float(
         sum(
             1
@@ -1307,6 +1486,7 @@ def _score_confidence(
     provider_used: bool,
     provider_validated: bool,
 ) -> tuple[float, dict[str, float]]:
+    """Collapse confidence components into one bounded Tribunal confidence score."""
     components = _confidence_components(
         observations=observations,
         actor_memos=actor_memos,
@@ -1325,6 +1505,7 @@ def _score_confidence(
 
 
 def _observer_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Frame the live case surface before causal or normative judgment begins."""
     label = str(subject.get("label", subject.get("id", ""))).strip()
     linked_surfaces = _normalize_strings(observations.get("linked_surfaces"), limit=6)
     claim = f"{label} is currently being read through {', '.join(linked_surfaces) or 'the linked Odylith surfaces'}."
@@ -1344,6 +1525,7 @@ def _observer_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], 
 
 
 def _ownership_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Argue about who actually owns the newest meaningful change."""
     scope_id = str(subject.get("id", "")).strip() or str(subject.get("label", "")).strip() or "this scope"
     label = str(subject.get("label", scope_id)).strip() or scope_id
     status = str(subject.get("status", "")).strip().lower()
@@ -1378,6 +1560,7 @@ def _ownership_memo(subject: Mapping[str, Any], observations: Mapping[str, Any],
 
 
 def _causal_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Explain why the case is still live instead of settled."""
     label = str(subject.get("label", subject.get("id", ""))).strip() or "this scope"
     status = str(subject.get("status", "")).strip().lower()
     latest = str(observations.get("latest_activity_ts_iso", "")).strip()
@@ -1411,6 +1594,7 @@ def _causal_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], ev
 
 
 def _policy_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """State the hard policy boundary, if any, that constrains the case."""
     label = str(subject.get("label", subject.get("id", ""))).strip() or "this scope"
     status = str(subject.get("status", "")).strip().lower()
     breaches = observations.get("policy_breaches", []) if isinstance(observations.get("policy_breaches"), list) else []
@@ -1440,6 +1624,7 @@ def _policy_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], ev
 
 
 def _normative_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """State the stronger maintainer norm even when policy is not explicit."""
     label = str(subject.get("label", subject.get("id", ""))).strip() or "this scope"
     if _is_self_hosting_case(subject, observations):
         claim = "A strong platform maintainer should not treat self-hosted evaluator output as stable while the judgment path is still changing."
@@ -1463,6 +1648,7 @@ def _normative_memo(subject: Mapping[str, Any], observations: Mapping[str, Any],
 
 
 def _adversary_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Present the strongest rival explanation to the current diagnosis."""
     label = str(subject.get("label", subject.get("id", ""))).strip() or "this scope"
     focus = _focus_artifact(observations)
     if _is_self_hosting_case(subject, observations):
@@ -1491,6 +1677,7 @@ def _adversary_memo(subject: Mapping[str, Any], observations: Mapping[str, Any],
 
 
 def _counterfactual_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Describe the assumption shift that would most weaken the current case."""
     focus = _focus_artifact(observations)
     if _is_self_hosting_case(subject, observations):
         claim = f"If {focus} does not touch evaluator semantics, the case should drop from trust downgrade to routine implementation tracking."
@@ -1516,6 +1703,7 @@ def _counterfactual_memo(subject: Mapping[str, Any], observations: Mapping[str, 
 
 
 def _gap_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Name the missing evidence that caps Tribunal's current assertiveness."""
     _ = subject
     gaps = _normalize_strings(observations.get("evidence_gaps"), limit=4)
     claim = gaps[0] if gaps else "Evidence quality is bounded mainly by residual semantic ownership uncertainty."
@@ -1535,6 +1723,7 @@ def _gap_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evide
 
 
 def _risk_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Explain the cost of trusting the wrong story for this case."""
     label = str(subject.get("label", subject.get("id", ""))).strip() or "this scope"
     focus = _focus_artifact(observations)
     if _is_self_hosting_case(subject, observations):
@@ -1563,6 +1752,7 @@ def _risk_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evid
 
 
 def _prescriber_memo(subject: Mapping[str, Any], observations: Mapping[str, Any], evidence_items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Choose the single next check most likely to change the maintainer call."""
     scope_id = str(subject.get("id", "")).strip() or str(subject.get("label", "")).strip() or "this scope"
     label = str(subject.get("label", scope_id)).strip() or scope_id
     focus = _focus_artifact(observations)
@@ -1593,6 +1783,11 @@ def _prescriber_memo(subject: Mapping[str, Any], observations: Mapping[str, Any]
         best_next_check=claim,
     )
 
+# The actor roster below is intentionally asymmetric. Some actors are trying to
+# explain the current state, some are trying to refute that story, and others
+# are translating the contest into policy, risk, or next-step posture. Tribunal
+# relies on that uneven contest to avoid flattening every case into one generic
+# explanation template.
 
 def _adjudicate(
     *,
@@ -1602,6 +1797,14 @@ def _adjudicate(
     actor_memos: Sequence[Mapping[str, Any]],
     confidence: float,
 ) -> dict[str, Any]:
+    """Collapse the actor contest into one final case form and editorial frame.
+
+    Adjudication chooses the case form first, then derives the maintainer-facing
+    fields and actor influence map from that form. The goal is not to average
+    every memo equally; it is to identify what kind of case this is, what rival
+    explanation still matters, what the cost of being wrong is, and which next
+    check would actually change the decision.
+    """
     memo_by_actor = {
         str(row.get("actor", "")).strip(): row
         for row in actor_memos
@@ -1698,6 +1901,7 @@ def _adjudicate(
 
 
 def _editorial_headline(form: str, subject: Mapping[str, Any], observations: Mapping[str, Any]) -> str:
+    """Return the short queue headline that matches the adjudicated case form."""
     scope_id = str(subject.get("id", "")).strip()
     label = str(subject.get("label", scope_id)).strip() or scope_id or "This scope"
     focus = _focus_artifact(observations)
@@ -1719,6 +1923,15 @@ def _editorial_headline(form: str, subject: Mapping[str, Any], observations: Map
 
 
 def _build_editor_brief(subject: Mapping[str, Any], dossier: Mapping[str, Any], adjudication: Mapping[str, Any], actor_memos: Sequence[Mapping[str, Any]]) -> str:
+    """Render the short maintainer brief from the adjudicated case form.
+
+    The brief is intentionally editorial rather than exhaustive. It should tell
+    a maintainer:
+    - why the case is live;
+    - what rival or gap still matters;
+    - why the current call is provisional or actionable; and
+    - what next check most reduces uncertainty.
+    """
     memo_by_actor = {
         str(row.get("actor", "")).strip(): row
         for row in actor_memos
@@ -1795,6 +2008,13 @@ def _case_queue_row(
     deterministic_reason_detail: str,
     selection_meta: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    """Build the queue-facing projection of one Tribunal case.
+
+    This row is the bridge between deep reasoning and the shell/dashboard queue.
+    It carries the final headline, action label, proof reopen signal, provider
+    state, confidence factors, and selection metadata needed to explain why the
+    case is visible and what should happen next.
+    """
     form = str(adjudication.get("form", "")).strip()
     mode = str(packet.get("execution_mode", "manual")).strip() or "manual"
     selection = dict(selection_meta) if isinstance(selection_meta, Mapping) else {}
@@ -1849,6 +2069,7 @@ def _case_queue_row(
 
 
 def _build_systemic_brief(case_rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Summarize repeated latent causes across the current visible queue."""
     themes: dict[str, int] = {}
     for row in case_rows:
         for tag in row.get("systemic_theme_tags", []) if isinstance(row.get("systemic_theme_tags"), list) else []:
@@ -1885,7 +2106,21 @@ def build_tribunal_payload(
     config: Any | None = None,
     provider: Any | None = None,
 ) -> dict[str, Any]:
-    """Build the Tribunal outcome artifact from delivery scopes and Odylith posture."""
+    """Build the full Tribunal artifact from delivery scopes and Odylith posture.
+
+    End-to-end flow:
+    1. Select eligible visible cases and the smaller provider-focus set.
+    2. Rebuild each case dossier from delivery snapshots and posture facts.
+    3. Reuse cached cases only when the evidence fingerprint is still valid.
+    4. Otherwise run the actor roster, optional provider enrichment, confidence
+       scoring, editorial brief generation, and remediation-packet compilation.
+    5. Emit the case list, queue rows, systemic brief, cache rows, and stats in
+       one artifact that downstream surfaces can consume directly.
+
+    The payload therefore acts as Tribunal's canonical output boundary. Other
+    modules should not need to reconstruct the actor contest or provider state
+    from raw delivery snapshots once this artifact exists.
+    """
 
     scope_cap = max(1, int(getattr(config, "scope_cap", 6) if config is not None else 6))
     provider_name = str(getattr(config, "provider", "")).strip() if config is not None else ""
@@ -1965,6 +2200,9 @@ def build_tribunal_payload(
             observations=observations,
             evidence_items=evidence_items,
         )
+        # A runtime provider failure disables the remaining provider attempts for
+        # this refresh so Tribunal does not produce a half-degraded mixed run that
+        # looks like a deliberate per-case gate decision.
         if provider is not None and provider_runtime_failure_code:
             provider_gate = {
                 "eligible": False,
@@ -2027,6 +2265,9 @@ def build_tribunal_payload(
             _risk_memo(subject, observations, evidence_items),
             _prescriber_memo(subject, observations, evidence_items),
         ]
+        # Tribunal first adjudicates deterministically, then optionally lets a
+        # validated provider refine a few narrative fields, and finally reruns
+        # adjudication with the scored confidence attached.
         adjudication = _adjudicate(
             case_id=str(dossier.get("case_id", "")).strip(),
             subject=subject,
@@ -2070,6 +2311,9 @@ def build_tribunal_payload(
         observations["reasoning_state"] = str(reasoning_meta.get("state", "deterministic-only")).strip() or "deterministic-only"
         dossier["observations"] = observations
         prescriber = next((row for row in actor_memos if str(row.get("actor", "")).strip() == "prescriber"), {})
+        # Packet compilation happens only after reasoning is settled, because the
+        # remediator needs the final adjudicated form and prescriber output rather
+        # than the raw snapshot or early deterministic draft.
         packet = remediator.compile_correction_packet(
             repo_root=repo_root,
             dossier=dossier,
@@ -2138,6 +2382,8 @@ def build_tribunal_payload(
             if str(error).strip()
         }
     )
+    # Top-level payload state describes the whole run, not any single case. One
+    # validated provider-assisted case is enough to mark the refresh hybrid.
     state = "deterministic-only"
     degraded_reason = "ai-provider-disabled"
     if provider is not None:
@@ -2187,12 +2433,14 @@ def build_tribunal_payload(
 
 
 def cases_by_scope_key(payload: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    """Index Tribunal cases by scope key for fast downstream lookup."""
     return {
         str(row.get("scope_key", "")).strip(): dict(row)
         for row in payload.get("cases", [])
         if isinstance(row, Mapping) and str(row.get("scope_key", "")).strip()
     }
 def case_queue(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Return the queue-row projection from a Tribunal payload."""
     return [
         dict(row)
         for row in payload.get("case_queue", [])
@@ -2201,6 +2449,7 @@ def case_queue(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
 
 
 def packet_summaries(payload: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Return remediator packet summaries for every case that compiled one."""
     rows: list[dict[str, Any]] = []
     for case in payload.get("cases", []) if isinstance(payload.get("cases"), list) else []:
         if not isinstance(case, Mapping):

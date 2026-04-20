@@ -1,4 +1,4 @@
-"""Subagent Orchestrator Odylith Runtime helpers for the Odylith orchestration layer."""
+"""Normalize Odylith grounding packets into orchestration-ready runtime signals."""
 
 from __future__ import annotations
 
@@ -49,6 +49,7 @@ if TYPE_CHECKING:
 
 
 def _first_present(*values: Any) -> Any:
+    """Return the first non-empty value, treating blank strings as missing."""
     for value in values:
         if isinstance(value, str):
             if _normalize_string(value):
@@ -60,6 +61,7 @@ def _first_present(*values: Any) -> Any:
 
 
 def _bool_value(value: Any) -> bool:
+    """Normalize loose truthy values used by packets and consumer profiles."""
     if isinstance(value, bool):
         return value
     token = _normalize_token(value)
@@ -71,6 +73,7 @@ def _bool_value(value: Any) -> bool:
 
 
 def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Convert an architecture audit payload into the standard routing contracts."""
     audit = dict(payload) if isinstance(payload, Mapping) else {}
     if not audit:
         return {}
@@ -95,6 +98,8 @@ def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
     )
     authority_graph_edge_count = _int_value(_mapping_lookup(authority_graph_counts, "edges"))
     resolved = bool(_mapping_lookup(audit, "resolved"))
+    # Architecture packets are only treated as route-ready when the audit both
+    # resolved cleanly and stayed bounded enough to avoid a follow-up broad scan.
     route_ready = bool(
         resolved
         and not full_scan_recommended
@@ -267,6 +272,7 @@ def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _odylith_payload_grounded(payload: Mapping[str, Any]) -> bool:
+    """Decide whether an Odylith payload is grounded enough to narrow execution."""
     if _odylith_payload_full_scan_recommended(payload):
         return False
     if _odylith_payload_diagram_watch_gap_count(payload) > 0:
@@ -286,6 +292,7 @@ def _request_with_consumer_write_policy(
     *,
     repo_root: Path,
 ) -> OrchestrationRequest:
+    """Attach consumer write-policy signals to write requests before grounding."""
     if not request.needs_write:
         return request
     profile = load_consumer_profile(repo_root=Path(repo_root).resolve())
@@ -328,6 +335,7 @@ def _request_with_consumer_write_policy(
 
 
 def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
+    """Summarize how fully the request already adopts Odylith routing contracts."""
     base = _normalize_context_signals(request.context_signals)
     routing_handoff = _nested_mapping(base, "routing_handoff")
     context_packet = _nested_mapping(base, "context_packet")
@@ -364,6 +372,8 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
     narrowing_required = bool(routing_handoff.get("narrowing_required") or route.get("narrowing_required"))
     packet_present = bool(routing_handoff or context_packet or architecture_audit or evidence_pack)
     auto_grounding_applied = bool(auto_grounding.get("applied"))
+    # Grounded here means "safe to narrow around the packet" rather than
+    # "complete proof for execution"; full-scan pressure or diagram gaps still veto it.
     grounded = bool(
         not full_scan_recommended
         and diagram_watch_gap_count <= 0
@@ -388,6 +398,8 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
         for token in odylith_write_policy.get("protected_roots", [])
         if str(token).strip().strip("/")
     ]
+    # The execution-engine summary is mirrored through multiple packet surfaces.
+    # Collapse them here so callers do not have to understand every fallback path.
     execution_engine_component_id = _normalize_string(
         _first_present(
             _mapping_lookup(execution_engine_summary, "execution_engine_component_id"),
@@ -541,6 +553,7 @@ def _decision_odylith_adoption(
     final_changed_paths: Sequence[str] | None = None,
     changed_path_source: str = "",
 ) -> dict[str, Any]:
+    """Combine request adoption state with the final orchestration decision."""
     summary = _request_odylith_adoption(request)
     summary["delegate"] = bool(decision.delegate)
     summary["mode"] = _normalize_token(decision.mode)
@@ -570,6 +583,7 @@ def _request_prefers_architecture_grounding(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> bool:
+    """Detect requests that should be grounded through the architecture packet lane."""
     if request.odylith_operation == "architecture":
         return True
     task_kind = _normalize_token(request.task_kind)
@@ -590,6 +604,7 @@ def _request_prefers_governance_grounding(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> bool:
+    """Detect requests that are better narrowed through governance-owned records."""
     if request.odylith_operation == "governance_slice":
         return True
     normalized_paths = [str(path).strip() for path in request.candidate_paths if str(path).strip()]
@@ -630,6 +645,7 @@ def _auto_odylith_operation(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> str:
+    """Pick the automatic Odylith packet family that best matches the request."""
     if request.odylith_operation != "auto":
         return request.odylith_operation
     if (request.session_id or request.use_working_tree or request.claimed_paths) and not request.candidate_paths:
@@ -647,6 +663,7 @@ def _auto_ground_request_with_odylith(
     repo_root: Path,
     assessment: leaf_router.TaskAssessment,
 ) -> OrchestrationRequest:
+    """Fetch or build an Odylith packet and merge its grounding signals into the request."""
     request = _request_with_consumer_write_policy(request, repo_root=repo_root)
     explicit_context_signals = {
         str(key): value
@@ -674,6 +691,8 @@ def _auto_ground_request_with_odylith(
         "intent": request.intent or request.phase or request.task_kind,
         "validation_command_hints": list(request.validation_commands),
     }
+    # Prefer the runtime daemon when available so repeated turns can reuse the
+    # same packet work; each branch falls back to the local builder for parity.
     if operation == "bootstrap_session":
         daemon_result = odylith_store.request_runtime_daemon(
             repo_root=Path(repo_root).resolve(),
@@ -837,6 +856,8 @@ def _auto_ground_request_with_odylith(
             payload_signals,
             _architecture_context_signals(payload),
         )
+    # Keep caller-supplied signals, then layer in the auto-grounded packet and
+    # the runtime execution summary that explains how the packet was produced.
     merged_signals = _merge_context_signals(
         _normalize_context_signals(request.context_signals),
         payload_signals,
@@ -884,6 +905,7 @@ def _auto_ground_request_with_odylith(
 
 
 def _score_level(score: int) -> str:
+    """Map the shared 0-4 scoring scale onto stable textual levels."""
     clamped = max(0, min(4, int(score)))
     if clamped >= 4:
         return "high"
@@ -895,6 +917,7 @@ def _score_level(score: int) -> str:
 
 
 def _intent_confidence_score(value: Any) -> int:
+    """Convert packet confidence labels into the shared score scale."""
     token = _normalize_token(value)
     if token == "high":
         return 4
@@ -906,6 +929,7 @@ def _intent_confidence_score(value: Any) -> int:
 
 
 def _profile_runtime_fields(profile_token: str) -> tuple[str, str, str]:
+    """Expand a router profile token into model, reasoning effort, and agent role."""
     profile = _normalize_token(profile_token)
     model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(profile)
     if profile in {
@@ -947,6 +971,7 @@ def _subtask_odylith_execution_profile(
     spawn_worthiness: int,
     merge_burden: int,
 ) -> dict[str, Any]:
+    """Choose the execution profile metadata attached to one delegated subtask."""
     base_execution = (
         _execution_profile_mapping(_mapping_lookup(base_root, "odylith_execution_profile"))
         or _execution_profile_mapping(_mapping_lookup(base_root, "execution_profile"))
@@ -1012,6 +1037,8 @@ def _subtask_odylith_execution_profile(
     )
     profile = _normalize_token(base_execution.get("profile"))
     selection_mode = _normalize_token(base_execution.get("selection_mode"))
+    # Start from any explicit parent profile, then specialize it using the
+    # current subtask role, architecture packet posture, and recent history.
     if narrowing_required and spawn_worthiness <= 2:
         profile = leaf_router.RouterProfile.MAIN_THREAD.value
         selection_mode = "narrow_first"

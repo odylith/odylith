@@ -1,4 +1,9 @@
-"""Support helpers for the Odylith discipline layer."""
+"""Normalize and describe the supported discipline host/lane matrix.
+
+This module keeps host-family aliases, lane aliases, and capability summaries in
+one place so the rest of the package can reason about support posture without
+hard-coding host-specific branches.
+"""
 
 from __future__ import annotations
 
@@ -59,6 +64,7 @@ _LANE_ALIASES: dict[str, str] = {
 
 
 def normalize_host_family(value: str) -> str:
+    """Collapse host/model aliases into the canonical discipline host family."""
     token = str(value or "").strip().lower().replace(" ", "_")
     if token in _HOST_ALIASES:
         return _HOST_ALIASES[token]
@@ -71,11 +77,13 @@ def normalize_host_family(value: str) -> str:
 
 
 def normalize_lane(value: str) -> str:
+    """Collapse lane aliases into the canonical discipline lane name."""
     token = str(value or "").strip().lower().replace(" ", "_")
     return _LANE_ALIASES.get(token, token or "unknown")
 
 
 def host_capabilities(host_family: str) -> dict[str, Any]:
+    """Return the discipline capability profile for a normalized host family."""
     host = normalize_host_family(host_family)
     common = {
         "semantic_discipline_contract": True,
@@ -109,6 +117,8 @@ def host_capabilities(host_family: str) -> dict[str, Any]:
         }
     return {
         **common,
+        # Unknown hosts keep the shape but explicitly mark the semantic contract
+        # unsupported so downstream code can emit the right recovery cue.
         "semantic_discipline_contract": False,
         "host_family": host,
         "known_host": False,
@@ -119,6 +129,7 @@ def host_capabilities(host_family: str) -> dict[str, Any]:
 
 
 def lane_capabilities(lane: str) -> dict[str, Any]:
+    """Return the posture and mutation defaults for a normalized lane."""
     normalized = normalize_lane(lane)
     if normalized == "dev":
         return {
@@ -162,6 +173,7 @@ def lane_capabilities(lane: str) -> dict[str, Any]:
 
 
 def host_lane_support(*, host_family: str, lane: str) -> dict[str, Any]:
+    """Combine host and lane capability records into one support payload."""
     host = host_capabilities(host_family)
     lane_profile = lane_capabilities(lane)
     return {
@@ -188,6 +200,7 @@ def host_lane_support(*, host_family: str, lane: str) -> dict[str, Any]:
 
 
 def host_lane_matrix() -> list[dict[str, Any]]:
+    """Enumerate the canonical supported host/lane combinations."""
     return [
         host_lane_support(host_family=host, lane=lane)
         for host in SUPPORTED_HOST_FAMILIES

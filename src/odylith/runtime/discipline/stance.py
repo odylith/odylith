@@ -1,4 +1,4 @@
-"""Stance helpers for the Odylith discipline layer."""
+"""Infer the emphasis vector that should shape a discipline response."""
 
 from __future__ import annotations
 
@@ -13,6 +13,12 @@ def infer_stance_vector(
     hard_law_results: Sequence[Mapping[str, Any]],
     lane: str = "",
 ) -> dict[str, float]:
+    """Return a clamped stance vector for the current pressure profile.
+
+    Every facet starts at a low baseline so the output is always structurally
+    complete. Pressure features and law violations then add weight to the facets
+    that should dominate the response.
+    """
     features = dict(pressure.get("features", {})) if isinstance(pressure.get("features"), Mapping) else {}
     violations = {str(row.get("law_id", "")).strip() for row in hard_law_results if row.get("status") == "violated"}
     vector = {facet: 0.2 for facet in STANCE_FACETS}

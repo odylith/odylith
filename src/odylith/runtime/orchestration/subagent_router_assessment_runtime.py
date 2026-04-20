@@ -11,6 +11,7 @@ _context_signal_summary = signal_summary._context_signal_summary
 
 
 def assess_request(request: router.RouteRequest) -> router.TaskAssessment:
+    """Assess one routing request from prompt cues plus structured runtime handoff."""
     prompt = signal_summary._normalize_string(request.prompt)
     criteria = " ".join(signal_summary._normalize_list(request.acceptance_criteria))
     validation_commands = signal_summary._normalize_list(request.validation_commands)
@@ -396,6 +397,8 @@ def assess_request(request: router.RouteRequest) -> router.TaskAssessment:
         and explicit_path_count <= 3
     )
     if high_coordination_delegate_candidate and coordination_cost >= 3:
+        # A bounded, route-ready runtime contract can outweigh scary prompt wording
+        # when the retained slice is already small and merge-safe.
         coordination_cost = signal_summary._clamp_score(coordination_cost - 1)
         feature_reasons.setdefault("context_signals", []).append(
             "The retained runtime contract kept this high-signal slice delegable despite elevated coordination language because the retained runtime contract is already bounded and route-ready"
@@ -424,6 +427,8 @@ def assess_request(request: router.RouteRequest) -> router.TaskAssessment:
         base_confidence = signal_summary._clamp_score(base_confidence + 1)
 
     hard_gate_hits: list[str] = []
+    # Hard gates capture reasons the main thread should keep control even if the
+    # softer scoring signals would otherwise like delegation.
     if runtime_narrowing_required:
         hard_gate_hits.append("runtime-narrowing-required")
     if coordination_cost >= 4 and not (

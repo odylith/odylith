@@ -1,9 +1,9 @@
 """Contract helpers for the Odylith governance proof state layer.
 
 Proof lanes are user-facing governance identifiers. The discipline rename kept
-historical source truth around long enough that live payloads can still carry
-both the legacy `agent_operating_character` token and the current `discipline`
-token for the same lane. This layer normalizes those aliases so current
+historical alias tokens around long enough that live payloads can still carry
+legacy `agent_operating_character` values beside the current `discipline`
+value for the same lane. This layer normalizes those aliases so current
 surfaces do not manufacture fake ambiguity from one logical lane.
 """
 

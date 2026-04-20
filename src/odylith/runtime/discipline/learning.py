@@ -1,4 +1,9 @@
-"""Learning helpers for the Odylith discipline layer."""
+"""Derive retention and learning posture from a finished discipline decision.
+
+The output here is intentionally compact and persistence-safe: it records the
+kind of learning that should happen without retaining raw conversational text or
+creating durable doctrine from unproven local observations.
+"""
 
 from __future__ import annotations
 
@@ -9,6 +14,7 @@ from odylith.runtime.discipline.contract import LEARNING_CONTRACT
 
 
 def _fingerprint(*parts: Any) -> str:
+    """Create a short stable fingerprint from durable, non-secret decision parts."""
     digest = hashlib.sha256()
     for part in parts:
         digest.update(str(part or "").encode("utf-8"))
@@ -23,9 +29,12 @@ def learning_signal(
     hard_law_results: Sequence[Mapping[str, Any]],
     benchmark_tags: Sequence[str],
 ) -> dict[str, Any]:
+    """Classify what kind of learning, if any, this decision should produce."""
     violations = [row for row in hard_law_results if row.get("status") == "violated"]
     observations = [str(item) for item in pressure.get("pressure_observations", []) if str(item).strip()]
     recurrence = bool(pressure.get("features", {}).get("recurrence"))
+    # Proof-sensitive violations are treated more strictly because they are the
+    # kinds of mistakes that can escape into public claims or false completion.
     if violations and any(row.get("law_id") in {"fresh_proof_completion", "benchmark_public_claim"} for row in violations):
         outcome = "blocked_until_proof"
         retention = "benchmark_pressure"
@@ -44,6 +53,9 @@ def learning_signal(
     else:
         outcome = "handled_silently"
         retention = "hot_recent"
+    # Repeated pressure can promote even a routine recovery into a Tribunal
+    # candidate because recurrence changes the problem from local execution to
+    # durable doctrine.
     if recurrence and retention in {"benchmark_pressure", "durable_practice"}:
         retention = "tribunal_doctrine_candidate"
     durable_requires_proof = retention != "hot_recent"

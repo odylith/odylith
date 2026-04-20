@@ -1,4 +1,4 @@
-"""Proof helpers for the Odylith discipline layer."""
+"""Select the strongest proof obligation implied by a discipline decision."""
 
 from __future__ import annotations
 
@@ -36,6 +36,12 @@ def proof_obligation_for_decision(
     violations: Sequence[Mapping[str, Any]],
     pressure: Mapping[str, Any],
 ) -> str:
+    """Return the highest-priority proof requirement for the current state.
+
+    Violated laws dominate because they are explicit contract failures. Pressure
+    features only supply a proof obligation when there is no stronger law-owned
+    requirement already in force.
+    """
     law_ids = {str(row.get("law_id", "")).strip() for row in violations if str(row.get("law_id", "")).strip()}
     for law_id in _PRIORITY:
         if law_id in law_ids:

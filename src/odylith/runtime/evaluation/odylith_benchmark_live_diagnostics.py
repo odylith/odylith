@@ -10,6 +10,7 @@ import subprocess
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
+from odylith.runtime.common.value_coercion import string_rows as _string_rows
 
 _RUNTIME_STATE_PATHS = (
     ".odylith/install.json",
@@ -43,13 +44,6 @@ _PROMPT_VISIBLE_FILE_SUFFIXES = frozenset(
         ".txt",
     }
 )
-
-
-def _string_rows(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    return [str(token).strip() for token in value if str(token).strip()]
-
 
 def _safe_resolve_path(path: Path) -> Path | None:
     with contextlib.suppress(OSError, RuntimeError):

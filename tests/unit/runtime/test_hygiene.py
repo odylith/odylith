@@ -813,6 +813,20 @@ def test_anti_slop_guidance_and_skill_bundle_assets_stay_synced() -> None:
     assert "@../../../odylith/skills/odylith-code-hygiene-guard/SKILL.md" in shim_text
 
 
+def test_claude_hygiene_bridge_and_reviewer_stay_aligned() -> None:
+    paths = (
+        ROOT / ".claude" / "CLAUDE.md",
+        ROOT / ".claude" / "agents" / "odylith-reviewer.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "project-root" / ".claude" / "CLAUDE.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "project-root" / ".claude" / "agents" / "odylith-reviewer.md",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        normalized = " ".join(text.split())
+        assert "odylith-code-hygiene-guard" in normalized, f"Claude hygiene skill routing drifted in {path.relative_to(ROOT)}"
+        assert "ANTI_SLOP_AND_DECOMPOSITION.md" in normalized, f"Claude anti-slop guide routing drifted in {path.relative_to(ROOT)}"
+
+
 def test_runtime_orchestration_templates_stay_debranded() -> None:
     paths = (
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py",
@@ -1084,9 +1098,11 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
         ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py": ("def _mapping(",),
         ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_live_diagnostics.py": (
             "def _dedupe_strings(",
+            "def _string_rows(",
         ),
         ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_live_prompt.py": (
             "def _dedupe_strings(",
+            "def _string_rows(",
         ),
         ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_prompt_payloads.py": (
             "def _dedupe_strings(",

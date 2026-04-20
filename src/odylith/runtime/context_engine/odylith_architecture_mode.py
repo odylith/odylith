@@ -21,6 +21,7 @@ import re
 import time
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import odylith_benchmark_contract
@@ -158,17 +159,11 @@ def _utc_now() -> str:
 
 
 def _normalize_repo_path(*, repo_root: Path, value: Any) -> str:
-    token = str(value or "").strip()
-    if not token:
-        return ""
-    root = Path(repo_root).resolve()
-    try:
-        candidate = Path(token)
-        if candidate.is_absolute():
-            return candidate.resolve().relative_to(root).as_posix()
-    except Exception:
-        return token
-    return token
+    return repo_path_resolver.normalize_repo_token(
+        repo_root=repo_root,
+        value=value,
+        preserve_external_absolute=True,
+    )
 
 
 def _json_dict(value: Any) -> dict[str, Any]:

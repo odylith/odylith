@@ -65,6 +65,7 @@ def _execution_profile_mapping(
     evidence_pack: Mapping[str, Any],
     optimization_snapshot: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Delegate execution-profile normalization to the shared context-support helper."""
     return subagent_router_context_support._execution_profile_mapping(
         root=root,
         context_packet=context_packet,
@@ -74,6 +75,7 @@ def _execution_profile_mapping(
 
 
 def _preferred_router_profile_from_execution_profile(profile: Mapping[str, Any]) -> RouterProfile | None:
+    """Resolve a concrete router profile from a normalized execution-profile mapping."""
     candidate = subagent_router_context_support._preferred_router_profile_from_execution_profile(profile=profile)
     return candidate if isinstance(candidate, RouterProfile) else None
 
@@ -83,6 +85,7 @@ def _decision_odylith_execution_profile(
     assessment: TaskAssessment,
     selected: RouterProfile | None = None,
 ) -> dict[str, Any]:
+    """Build the user-facing execution-profile payload attached to a routing decision."""
     summary = dict(assessment.context_signal_summary or {})
     recommended_profile = str(summary.get("odylith_execution_profile", "")).strip()
     if not recommended_profile:
@@ -113,6 +116,7 @@ def _decision_odylith_execution_profile(
 
 
 def _odylith_execution_guard_reason(assessment: TaskAssessment) -> str:
+    """Explain why runtime-backed execution guidance should currently hold work local."""
     summary = dict(assessment.context_signal_summary or {})
     governance_guard = runtime_lane_policy.delegation_guard(summary)
     if governance_guard.blocked:
@@ -158,6 +162,7 @@ def _apply_odylith_execution_priors(
     assessment: TaskAssessment,
     allow_xhigh: bool,
 ) -> tuple[dict[str, float], list[str]]:
+    """Bias raw tier scores toward measured runtime guidance when the packet earned it."""
     summary = dict(assessment.context_signal_summary or {})
     recommended = _router_profile_from_token(summary.get("odylith_execution_profile", ""))
     confidence = _clamp_score(summary.get("odylith_execution_confidence_score", 0) or 0)
@@ -259,6 +264,8 @@ def _apply_odylith_execution_priors(
     runtime_depth_mode = selection_mode in _RUNTIME_EARNED_DEPTH_SELECTION_MODES
     runtime_support_mode = selection_mode in _RUNTIME_SUPPORT_SELECTION_MODES
 
+    # Start with the runtime recommendation, then let readiness, history, and
+    # advisory quality strengthen or erode that prior before we touch other tiers.
     recommended_delta = 0.18 * confidence
     if route_ready:
         recommended_delta += 0.12
@@ -332,6 +339,8 @@ def _apply_odylith_execution_priors(
         adjusted[recommended.value] = round(adjusted[recommended.value] - (0.45 * confidence), 3)
 
     if delegate_preference == "hold_local" or control_advisory_delegation == "hold_local_bias":
+        # A strong hold-local signal should drag the whole delegated ladder down, not
+        # merely lower the recommended tier by a token amount.
         global_penalty = 0.09 * confidence
         if not route_ready:
             global_penalty += 0.12
@@ -456,6 +465,7 @@ def _apply_odylith_execution_priors(
 
 
 def _score_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> float:
+    """Score one router profile against the assessed slice characteristics."""
     tuning_bias = _tuning_bias_for_profile(profile, assessment, tuning)
     if profile is RouterProfile.MINI_MEDIUM:
         return (
@@ -593,6 +603,7 @@ def _score_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: T
 
 
 def _score_margin(selected: RouterProfile, scorecard: Mapping[str, float]) -> float:
+    """Return the winning tier's margin over the best distinct runner-up."""
     ordered = sorted(scorecard.items(), key=lambda item: (item[1], _PROFILE_PRIORITY.get(item[0], 0)), reverse=True)
     if len(ordered) < 2:
         return round(float(scorecard.get(selected.value, 0.0) or 0.0), 3)
@@ -604,6 +615,7 @@ def _score_margin(selected: RouterProfile, scorecard: Mapping[str, float]) -> fl
 
 
 def _routing_confidence(selected: RouterProfile, assessment: TaskAssessment, scorecard: Mapping[str, float]) -> int:
+    """Convert the winning margin and slice posture into a 0-4 routing confidence."""
     confidence = assessment.base_confidence
     margin = _score_margin(selected, scorecard)
     if margin >= 2.5:
@@ -639,6 +651,7 @@ def _apply_accuracy_backstop(
     assessment: TaskAssessment,
     scorecard: Mapping[str, float],
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Promote fragile low-tier winners when the slice demands more accuracy."""
     routing_confidence = _routing_confidence(selected, assessment, scorecard)
     lines: list[str] = []
     if (
@@ -720,6 +733,7 @@ def _apply_accuracy_backstop(
 
 
 def _next_stronger_profile(profile: RouterProfile, assessment: TaskAssessment) -> RouterProfile:
+    """Choose the next stronger fallback tier for reliability escalation."""
     if profile in {RouterProfile.MINI_MEDIUM, RouterProfile.MINI_HIGH}:
         if assessment.needs_write:
             return (
@@ -758,6 +772,7 @@ def _apply_reliability_backstop(
     tuning: TuningState,
     routing_confidence: int,
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Escalate weak historical winners to a stronger tier when prior outcomes justify it."""
     summary = _profile_reliability_summary(selected, assessment, tuning)
     lines: list[str] = []
     if summary["total"] >= 2:
@@ -793,6 +808,7 @@ def _apply_odylith_execution_alignment(
     routing_confidence: int,
     allow_xhigh: bool,
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Align the final tier with runtime guidance when history says the fit is stable."""
     summary = dict(assessment.context_signal_summary or {})
     recommended = _router_profile_from_token(summary.get("odylith_execution_profile", ""))
     confidence = _clamp_score(summary.get("odylith_execution_confidence_score", 0) or 0)
@@ -807,6 +823,8 @@ def _apply_odylith_execution_alignment(
         selected in {RouterProfile.GPT54_HIGH, RouterProfile.GPT54_XHIGH}
         and packet_alignment_state == "drifting"
     ):
+        # Drift in comparable slices caps the expensive frontier tiers even if the
+        # raw scorecard still likes them.
         capped_profiles = [
             profile
             for profile in (
@@ -835,6 +853,8 @@ def _apply_odylith_execution_alignment(
         and not assessment.correctness_critical
         and yield_state == "wasteful"
     ):
+        # Wasteful spend is treated similarly: keep the route on a cheaper proven lane
+        # unless correctness pressure explicitly overrides the caution.
         capped_profiles = [
             profile
             for profile in (
@@ -944,6 +964,7 @@ def _top_score_lines(
     score_margin: float,
     backstop_lines: Sequence[str],
 ) -> list[str]:
+    """Summarize the dominant drivers, backstops, and tradeoffs behind the routed tier."""
     ordered = sorted(scorecard.items(), key=lambda item: (item[1], _PROFILE_PRIORITY.get(item[0], 0)), reverse=True)
     lines: list[str] = []
     if selected is RouterProfile.MAIN_THREAD:

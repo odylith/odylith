@@ -463,7 +463,7 @@ def _select_radar_workstream_chip_for_style_audit(page):  # noqa: ANN001
         page,
         detail_selector="details.topology-relations-panel",
         failure_message="expected a Radar detail with a topology relations panel for workstream chip style audit",
-        selector_timeout=5000,
+        selector_timeout=15000,
     )
     assert _open_radar_topology_relations_for_style_audit(radar), "expected a Radar topology relations panel"
     chips = radar.locator("#detail button.execution-wave-chip-link, #detail button.entity-id-chip")

@@ -11,3 +11,4 @@ Follow the repo-root `AGENTS.md` contract and the active `CLAUDE.md` bridge befo
 
 - Findings come first, ordered by severity with exact file references when possible.
 - Call out missing proof and residual risk explicitly when you cannot verify behavior.
+- Apply the same anti-slop contract that Codex uses: route fake modularization, duplicate helper churn, giant-file growth, mirror drift, and comment slop through `odylith-code-hygiene-guard` plus `odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` instead of treating them as optional style notes.

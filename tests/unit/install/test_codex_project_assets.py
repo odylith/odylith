@@ -70,6 +70,29 @@ def test_live_claude_project_assets_match_bundle_mirror_inventory() -> None:
     assert live == bundled
 
 
+def test_live_claude_skill_shims_cover_repo_owned_odylith_skills() -> None:
+    source_skill_names = {path.parent.name for path in (REPO_ROOT / "odylith" / "skills").glob("*/SKILL.md")}
+    live_skill_names = {path.parent.name for path in (LIVE_CLAUDE_ROOT / "skills").glob("*/SKILL.md")}
+    bundled_skill_names = {
+        path.parent.name for path in (PROJECT_ROOT_BUNDLE / ".claude" / "skills").glob("*/SKILL.md")
+    }
+
+    assert live_skill_names == source_skill_names
+    assert bundled_skill_names == source_skill_names
+
+
+def test_live_claude_skill_shims_and_review_assets_match_bundle_content() -> None:
+    mirrored_paths = (
+        *sorted(path.relative_to(LIVE_CLAUDE_ROOT) for path in (LIVE_CLAUDE_ROOT / "skills").rglob("SKILL.md")),
+        Path("CLAUDE.md"),
+        Path("agents") / "odylith-reviewer.md",
+    )
+    for relative_path in mirrored_paths:
+        live_path = LIVE_CLAUDE_ROOT / relative_path
+        bundle_path = PROJECT_ROOT_BUNDLE / ".claude" / relative_path
+        assert live_path.read_text(encoding="utf-8") == bundle_path.read_text(encoding="utf-8")
+
+
 def test_live_claude_hook_scripts_match_bundle_mirror_content() -> None:
     live_hooks = LIVE_CLAUDE_ROOT / "hooks"
     bundle_hooks = PROJECT_ROOT_BUNDLE / ".claude" / "hooks"

@@ -1,4 +1,9 @@
-"""Contract helpers for the Odylith discipline layer."""
+"""Shared constants and compact helpers for the discipline contract.
+
+This file is the vocabulary layer for discipline: identifiers, enumerations,
+required record fields, and tiny coercion helpers live here so the rest of the
+package can speak a stable schema without each module redefining it.
+"""
 
 from __future__ import annotations
 
@@ -76,6 +81,8 @@ PRACTICE_EVENT_REQUIRED_FIELDS: tuple[str, ...] = (
     "retention_class",
 )
 
+# These four maps intentionally share the same law ids so the runtime can move
+# from detection, to recovery cue, to decision severity without lookup glue.
 HARD_LAWS: dict[str, str] = {
     "supported_host_lane": "Use a supported host family and execution lane for Odylith Discipline decisions.",
     "cli_first_governed_truth": "Use a CLI writer where governed truth has one.",
@@ -124,6 +131,8 @@ HARD_LAW_DECISIONS: dict[str, str] = {
     "explicit_model_credit": "block",
 }
 
+# Any visible intervention law may justify an operator-facing intervention if it
+# becomes violated in a blocking or deferring decision.
 VISIBLE_INTERVENTION_LAWS: frozenset[str] = frozenset(HARD_LAWS)
 
 
@@ -135,6 +144,7 @@ class DisciplineIssue:
     case_id: str = ""
 
     def as_dict(self) -> dict[str, str]:
+        """Serialize the issue while omitting empty optional fields."""
         payload = {"check_id": self.check_id, "message": self.message}
         if self.path:
             payload["path"] = self.path
@@ -144,10 +154,12 @@ class DisciplineIssue:
 
 
 def compact_mapping(value: Any) -> dict[str, Any]:
+    """Return a plain dict when the input is mapping-shaped, else an empty dict."""
     return dict(value) if isinstance(value, Mapping) else {}
 
 
 def clean_strings(value: Any, *, limit: int = 16) -> list[str]:
+    """Normalize a scalar or collection into unique, trimmed string tokens."""
     if isinstance(value, str):
         candidates = [value]
     elif isinstance(value, list | tuple | set):

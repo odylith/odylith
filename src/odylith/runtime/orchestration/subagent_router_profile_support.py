@@ -66,6 +66,7 @@ class RouterProfile(str, Enum):
 
 
 def router_profile_from_token(value: Any) -> RouterProfile | None:
+    """Map a canonical execution-profile token to a router profile enum."""
     token = agent_runtime_contract.canonical_execution_profile(_normalize_token(value))
     try:
         return RouterProfile(token)
@@ -74,6 +75,7 @@ def router_profile_from_token(value: Any) -> RouterProfile | None:
 
 
 def router_profile_from_runtime(model: Any, reasoning_effort: Any) -> RouterProfile | None:
+    """Infer the closest router profile from raw model/runtime fields."""
     runtime_model = _normalize_string(model)
     runtime_reasoning = _normalize_token(reasoning_effort)
     if runtime_model == "gpt-5.4-mini":
@@ -97,6 +99,7 @@ def router_profile_from_runtime(model: Any, reasoning_effort: Any) -> RouterProf
 
 
 def sanitize_user_facing_text(value: Any) -> str:
+    """Rewrite implementation jargon into calmer user-facing phrasing."""
     text = str(value or "").strip()
     if not text:
         return ""
@@ -106,6 +109,7 @@ def sanitize_user_facing_text(value: Any) -> str:
 
 
 def sanitize_user_facing_lines(values: Sequence[str]) -> list[str]:
+    """Sanitize, deduplicate, and preserve order for user-facing explanation lines."""
     seen: set[str] = set()
     rows: list[str] = []
     for value in values:
@@ -118,6 +122,7 @@ def sanitize_user_facing_lines(values: Sequence[str]) -> list[str]:
 
 
 def clamp_score(value: int | float) -> int:
+    """Clamp arbitrary numeric values into the router's 0-4 score range."""
     return max(0, min(4, int(round(float(value)))))
 
 
@@ -126,6 +131,7 @@ def agent_role_for_assessment(
     *,
     profile: RouterProfile | None = None,
 ) -> str:
+    """Choose the host agent role that best matches the assessed slice."""
     if bool(getattr(assessment, "needs_write", False)):
         return "worker"
     summary = dict(getattr(assessment, "context_signal_summary", {}) or {})
@@ -141,6 +147,7 @@ def agent_role_for_assessment(
 
 
 def _reliability_bias(counts: Mapping[str, int]) -> float:
+    """Convert historical successes/failures into a bounded soft bias term."""
     successes = int(counts.get("accepted", 0) or 0)
     failures = sum(
         int(counts.get(label, 0) or 0)
@@ -153,10 +160,12 @@ def _reliability_bias(counts: Mapping[str, int]) -> float:
 
 
 def _count_total_labels(counts: Mapping[str, int], labels: Sequence[str]) -> int:
+    """Count the total occurrences of a selected set of outcome labels."""
     return sum(int(counts.get(label, 0) or 0) for label in labels)
 
 
 def _combined_counts(*rows: Mapping[str, int]) -> dict[str, int]:
+    """Merge multiple label-count mappings into one normalized count map."""
     combined: dict[str, int] = {}
     for row in rows:
         if not isinstance(row, Mapping):
@@ -170,6 +179,7 @@ def _combined_counts(*rows: Mapping[str, int]) -> dict[str, int]:
 
 
 def profile_reliability_summary(profile: RouterProfile, assessment: Any, tuning: Any) -> dict[str, Any]:
+    """Summarize the recent reliability posture for one router profile."""
     task_family = str(getattr(assessment, "task_family", "") or "")
     outcome_counts = dict(getattr(tuning, "outcome_counts", {}) or {})
     family_outcome_counts = dict(getattr(tuning, "family_outcome_counts", {}) or {})
@@ -219,6 +229,7 @@ def profile_reliability_summary(profile: RouterProfile, assessment: Any, tuning:
 
 
 def tuning_bias_for_profile(profile: RouterProfile, assessment: Any, tuning: Any) -> float:
+    """Return the total soft bias applied to a profile for this assessment."""
     task_family = str(getattr(assessment, "task_family", "") or "")
     profile_bias = float(dict(getattr(tuning, "profile_bias", {}) or {}).get(profile.value, 0.0) or 0.0)
     family_profile_bias = dict(getattr(tuning, "family_profile_bias", {}) or {})

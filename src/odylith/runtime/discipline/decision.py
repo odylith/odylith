@@ -1,4 +1,10 @@
-"""Decision helpers for the Odylith discipline layer."""
+"""Assemble a full discipline decision from local intent and evidence.
+
+This is the package's orchestration point: it normalizes host/lane support,
+observes pressure, evaluates hard laws, chooses the nearest admissible action,
+and emits the derived learning/memory/benchmark artifacts that downstream
+surfaces rely on.
+"""
 
 from __future__ import annotations
 
@@ -26,6 +32,7 @@ from odylith.runtime.discipline.voice import intervention_candidate_for_decision
 
 
 def _canonical_evidence(evidence: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """Stabilize evidence ordering so decision ids do not depend on dict order."""
     rows = [
         {"index": index, "key": str(key), "value": value}
         for index, (key, value) in enumerate(evidence.items())
@@ -34,6 +41,7 @@ def _canonical_evidence(evidence: Mapping[str, Any]) -> list[dict[str, Any]]:
 
 
 def _decision_id(*, intent: str, host_family: str, lane: str, evidence: Mapping[str, Any]) -> str:
+    """Derive a short stable id for one exact intent/evidence/support tuple."""
     material = json.dumps(
         {
             "evidence": _canonical_evidence(evidence),
@@ -50,6 +58,7 @@ def _decision_id(*, intent: str, host_family: str, lane: str, evidence: Mapping[
 
 
 def _supported_host_lane_law(support: Mapping[str, Any]) -> dict[str, Any] | None:
+    """Project unsupported host/lane posture into the hard-law result shape."""
     if bool(support.get("semantic_contract_supported")):
         return None
     return {
@@ -69,11 +78,14 @@ def evaluate_discipline_move(
     evidence: Mapping[str, Any] | None = None,
     source_refs: Sequence[str] = (),
 ) -> dict[str, Any]:
+    """Evaluate one proposed move against the discipline contract."""
     started_at = budget.start_timer()
     facts = compact_mapping(evidence)
     support = host_lane_support(host_family=host_family, lane=lane)
     normalized_host = str(support.get("host_family", "")).strip() or "unknown"
     normalized_lane = str(support.get("lane", "")).strip() or "unknown"
+    # Host/lane normalization is folded back into facts so downstream modules can
+    # reason about the resolved lane without each one repeating normalization.
     if normalized_lane and "lane" not in facts:
         facts["lane"] = normalized_lane
     pressure = observe_pressure(intent, evidence=facts)
@@ -84,6 +96,8 @@ def evaluate_discipline_move(
     violations = violated_laws(hard_laws)
     stance_vector = infer_stance_vector(pressure=pressure, hard_law_results=hard_laws, lane=normalized_lane)
     affordances = rank_affordances(pressure=pressure, hard_law_results=hard_laws)
+    # Violated hard laws dominate the final decision. In the absence of an
+    # explicit violation, high uncertainty still downgrades the move to "defer".
     if violations:
         violated_decisions = {
             HARD_LAW_DECISIONS.get(str(row.get("law_id", "")).strip(), "defer")
@@ -150,6 +164,8 @@ def evaluate_discipline_move(
         "host_model_calls_allowed": runtime_budget["host_model_calls_allowed"],
         "source_refs": safe_practice_strings(source_refs, limit=12),
     }
+    # Learning, practice-event, and benchmark tags are derived after the core
+    # payload exists so each helper can operate on the same canonical record.
     payload["learning_signal"] = learning_signal(
         decision=decision,
         pressure=pressure,

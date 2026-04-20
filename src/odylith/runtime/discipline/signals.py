@@ -1,4 +1,9 @@
-"""Signals helpers for the Odylith discipline layer."""
+"""Extract low-level intent signals from prompt text and optional evidence.
+
+The regular expressions in this file are intentionally heuristic. They provide
+cheap, deterministic cues that later stages can compose into laws, pressure, and
+affordances without pretending the initial signal read is a full semantic parse.
+"""
 
 from __future__ import annotations
 
@@ -62,6 +67,7 @@ _LEARNING_RE = re.compile(r"\b(learn|learning|adaptive|improve|better|memory|pri
 
 
 def extract_intent_signals(intent: str, *, evidence: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """Return the raw signal bundle used by the rest of the discipline stack."""
     text = str(intent or "").strip()
     lowered = text.lower()
     facts = compact_mapping(evidence)
@@ -92,6 +98,9 @@ def extract_intent_signals(intent: str, *, evidence: Mapping[str, Any] | None = 
     benchmark_claim_risk = bool(facts.get("public_claim")) or (
         public_claim_text and not proof_execution_intent
     )
+    # Governed-truth risk is intentionally narrow: the law should only activate
+    # when the prompt is actually trying to mutate a CLI-owned surface without
+    # already going through the owning authoring path.
     governed_truth_risk = bool(facts.get("cli_writer_exists")) or (
         cli_owned_surface
         and mutation_intent
@@ -101,6 +110,9 @@ def extract_intent_signals(intent: str, *, evidence: Mapping[str, Any] | None = 
     delegation_risk = (
         bool(_DELEGATE_RE.search(text)) or bool(facts.get("delegation_requested"))
     ) and not bool(_DELEGATION_SAFETY_RE.search(text))
+    # Features are the normalized pressure/law vocabulary used downstream. The
+    # earlier booleans stay in the payload so callers can still inspect the raw
+    # cues that produced each feature.
     features = {
         "ambiguity": bool(_BROAD_RE.search(text)) or len(text.split()) < 6,
         "proof_risk": completion_claim or "proof" in lowered,

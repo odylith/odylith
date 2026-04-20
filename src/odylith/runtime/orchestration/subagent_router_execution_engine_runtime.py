@@ -37,6 +37,7 @@ def execution_engine_summary_from_context_sources(
 
 
 def _context_lookup(payload: Mapping[str, Any], *path: str) -> Any:
+    """Traverse nested execution-engine mappings with raw dict lookup."""
     current: Any = payload
     for key in path:
         if not isinstance(current, Mapping):
@@ -46,6 +47,7 @@ def _context_lookup(payload: Mapping[str, Any], *path: str) -> Any:
 
 
 def _preferred_value(summary: Mapping[str, Any], key: str, *fallbacks: Any) -> Any:
+    """Prefer a summary field and fall back to the first non-empty alternative."""
     if key in summary:
         return summary.get(key)
     for fallback in fallbacks:
@@ -61,6 +63,7 @@ def _summary_signal_value(
     context_signals: Mapping[str, Any],
     key: str,
 ) -> Any:
+    """Resolve one summary signal from summary, root, or context fallbacks."""
     return _preferred_value(
         execution_engine_summary,
         key,

@@ -363,16 +363,22 @@ def _normalize_odylith_operation(value: Any) -> str:
     token = _normalize_token(value) or "auto"
     return token if token in _KNOWN_ODYLITH_OPERATIONS else "auto"
 def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Expose normalized architecture signals from the shared runtime helper."""
+
     return subagent_orchestrator_odylith_runtime._architecture_context_signals(payload=payload)
 
 
 
 def _odylith_payload_grounded(payload: Mapping[str, Any]) -> bool:
+    """Report whether an Odylith payload already carries grounding evidence."""
+
     return subagent_orchestrator_odylith_runtime._odylith_payload_grounded(payload=payload)
 
 
 
 def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
+    """Summarize how much Odylith context the request already contains."""
+
     return subagent_orchestrator_odylith_runtime._request_odylith_adoption(request=request)
 
 
@@ -385,6 +391,8 @@ def _decision_odylith_adoption(
     final_changed_paths: Sequence[str] | None = None,
     changed_path_source: str = "",
 ) -> dict[str, Any]:
+    """Summarize Odylith grounding and adoption facts for the final decision."""
+
     return subagent_orchestrator_odylith_runtime._decision_odylith_adoption(
         repo_root=repo_root,
         request=request,
@@ -399,6 +407,8 @@ def _request_prefers_architecture_grounding(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> bool:
+    """Tell whether the prompt leans toward architecture-grounded context."""
+
     return subagent_orchestrator_odylith_runtime._request_prefers_architecture_grounding(request=request, assessment=assessment)
 
 
@@ -407,6 +417,8 @@ def _request_prefers_governance_grounding(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> bool:
+    """Tell whether the prompt leans toward governance-grounded context."""
+
     return subagent_orchestrator_odylith_runtime._request_prefers_governance_grounding(request=request, assessment=assessment)
 
 
@@ -415,6 +427,8 @@ def _auto_odylith_operation(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> str:
+    """Infer the best Odylith grounding operation for this request."""
+
     return subagent_orchestrator_odylith_runtime._auto_odylith_operation(request=request, assessment=assessment)
 
 
@@ -425,11 +439,15 @@ def _auto_ground_request_with_odylith(
     repo_root: Path,
     assessment: leaf_router.TaskAssessment,
 ) -> OrchestrationRequest:
+    """Enrich the request with Odylith grounding when the slice earned it."""
+
     return subagent_orchestrator_odylith_runtime._auto_ground_request_with_odylith(request=request, repo_root=repo_root, assessment=assessment)
 
 
 
 def _architecture_policy_context(request: OrchestrationRequest) -> dict[str, Any]:
+    """Extract architecture fan-out policy from normalized request signals."""
+
     base = _normalize_context_signals(request.context_signals)
     routing_handoff = _nested_mapping(base, "routing_handoff")
     context_packet = _nested_mapping(base, "context_packet")
@@ -459,16 +477,22 @@ def _architecture_policy_context(request: OrchestrationRequest) -> dict[str, Any
 
 
 def _score_level(score: int) -> str:
+    """Map a numeric score into the stable verbal band used in summaries."""
+
     return subagent_orchestrator_odylith_runtime._score_level(score=score)
 
 
 
 def _intent_confidence_score(value: Any) -> int:
+    """Normalize intent-confidence input into the orchestrator score band."""
+
     return subagent_orchestrator_odylith_runtime._intent_confidence_score(value=value)
 
 
 
 def _profile_runtime_fields(profile_token: str) -> tuple[str, str, str]:
+    """Expand a profile token into host-visible runtime spawn fields."""
+
     return subagent_orchestrator_odylith_runtime._profile_runtime_fields(profile_token=profile_token)
 
 
@@ -492,6 +516,8 @@ def _subtask_odylith_execution_profile(
     spawn_worthiness: int,
     merge_burden: int,
 ) -> dict[str, Any]:
+    """Assemble the Odylith execution profile attached to one delegated leaf."""
+
     return subagent_orchestrator_odylith_runtime._subtask_odylith_execution_profile(request=request, assessment=assessment, subtask=subtask, intent_profile=intent_profile, architecture_audit=architecture_audit, base_root=base_root, base_context_packet=base_context_packet, base_optimization_snapshot=base_optimization_snapshot, route_ready=route_ready, narrowing_required=narrowing_required, validation_pressure=validation_pressure, utility_score=utility_score, token_efficiency_score=token_efficiency_score, routing_confidence_score=routing_confidence_score, spawn_worthiness=spawn_worthiness, merge_burden=merge_burden)
 
 
@@ -1376,6 +1402,8 @@ def _adaptive_batch_mode(
     groups: Sequence[Sequence[str]],
     tuning: TuningState,
 ) -> tuple[OrchestrationMode, list[str]]:
+    """Choose the batch mode after safety checks and local tuning bias."""
+
     return subagent_orchestrator_runtime_signals._adaptive_batch_mode(
         request,
         assessment,
@@ -1641,6 +1669,8 @@ def _build_subtasks(
     mode: OrchestrationMode,
     groups: Sequence[Sequence[str]],
 ) -> list[SubtaskSlice]:
+    """Build the delegated leaf slices for the selected orchestration mode."""
+
     return subagent_orchestrator_subtasks_runtime._build_subtasks(
         request,
         mode=mode,
@@ -1758,6 +1788,8 @@ def _subtask_context_signals(
     mode: OrchestrationMode,
     all_subtasks: Sequence[SubtaskSlice],
 ) -> dict[str, Any]:
+    """Project parent assessment and request context into one leaf signal set."""
+
     return subagent_orchestrator_runtime_signals._subtask_context_signals(
         request,
         assessment,
@@ -1913,6 +1945,15 @@ def _effective_request(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> OrchestrationRequest:
+    """Backfill missing orchestration facts from the router assessment.
+
+    Callers sometimes provide only the prompt and a rough scope. The router can
+    infer stronger task-shape facts such as phase, task kind, and write
+    criticality, and the orchestrator wants one canonical request object before
+    it starts applying local gates or decomposition policy. Explicit caller
+    values always win over inferred ones.
+    """
+
     if (
         request.needs_write == assessment.needs_write
         and request.correctness_critical == assessment.correctness_critical
@@ -1952,11 +1993,23 @@ def orchestrate_prompt(
     *,
     repo_root: Path,
 ) -> OrchestrationDecision:
+    """Choose the orchestration mode for one grounded repo-work prompt.
+
+    The orchestrator first validates the prompt, then lets the leaf router
+    classify the slice, optionally enriches it with Odylith grounding, and only
+    then decides whether the work should stay local, run as one bounded leaf, or
+    split into a conservative serial or parallel batch. Hard local-only gates
+    always run before any adaptive or fan-out logic.
+    """
+
     _ensure_valid_request(request)
     base_route_request = _base_route_request(request)
     assessment = leaf_router.assess_request(base_route_request)
     request = _auto_ground_request_with_odylith(request, repo_root=repo_root, assessment=assessment)
     if request.context_signals:
+        # Grounding can add candidate paths or execution hints that materially
+        # change the router's confidence and task family, so re-assess once the
+        # enriched request is available.
         base_route_request = _base_route_request(request)
         assessment = leaf_router.assess_request(base_route_request)
     assessment_errors = _assessment_validation_errors(request, assessment)
@@ -2724,6 +2777,14 @@ def build_decision_ledger(
     request: OrchestrationRequest,
     decision: OrchestrationDecision,
 ) -> dict[str, Any]:
+    """Build the persisted inspection ledger for one orchestration decision.
+
+    The runtime decision object is optimized for execution. The ledger expands
+    that into a durable inspection record with summaries, follow-up state,
+    delegated leaf rows, and an append-only event trail so later tooling can
+    reconstruct how the orchestrator reached and evolved this decision.
+    """
+
     decision = _attach_inspection_artifacts(repo_root=repo_root, decision=decision)
     recorded_at = _now_timestamp()
     inspection_artifacts = dict(decision.inspection_artifacts)
@@ -2771,6 +2832,8 @@ def persist_decision_ledger(
     request: OrchestrationRequest,
     decision: OrchestrationDecision,
 ) -> dict[str, Any]:
+    """Persist a freshly built decision ledger to the canonical ledger path."""
+
     ledger = build_decision_ledger(repo_root=repo_root, request=request, decision=decision)
     inspection_artifacts = dict(ledger.get("inspection_artifacts", {}))
     ledger_path = Path(str(inspection_artifacts.get("ledger_path", ""))).expanduser().resolve()
@@ -2781,6 +2844,8 @@ def persist_decision_ledger(
 
 
 def load_decision_ledger(*, repo_root: Path, decision_id: str) -> dict[str, Any]:
+    """Load a persisted decision ledger or raise a structured lookup error."""
+
     path = decision_ledger_path(repo_root=repo_root, decision_id=decision_id)
     payload = _load_json_mapping(path)
     if not payload:
@@ -2793,6 +2858,8 @@ def load_decision_ledger(*, repo_root: Path, decision_id: str) -> dict[str, Any]
 
 
 def _subtask_ledger_map(ledger: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    """Index persisted subtask rows by subtask id for update-time merging."""
+
     subtasks = ledger.get("subtasks", [])
     if not isinstance(subtasks, Sequence) or isinstance(subtasks, (str, bytes, bytearray)):
         return {}
@@ -2804,6 +2871,14 @@ def _subtask_ledger_map(ledger: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def _merge_subtask_ledger_update(entry: dict[str, Any], update: Mapping[str, Any], *, recorded_at: str) -> None:
+    """Merge one partial runtime update into a persisted subtask row.
+
+    Ledger updates arrive incrementally from host runtime hooks, so this merger
+    must preserve untouched state, normalize older payload shapes, and keep the
+    nested inspection structure complete even when the incoming update only
+    mentions one subsection such as follow-up or closeout.
+    """
+
     state = dict(entry.get("inspection_state", {}))
     default_state = _default_subtask_inspection_state()
     for key, value in default_state.items():
@@ -2858,6 +2933,8 @@ def _merge_subtask_ledger_update(entry: dict[str, Any], update: Mapping[str, Any
         0,
         int(dict(entry.get("route_close_agent_overrides", {})).get("prequeue_same_scope_reuse_claim_minutes", 0) or 0),
     )
+    # Follow-up state evolves independently from result handoff and closeout, so
+    # it uses a dedicated merger that can honor same-scope reuse grace periods.
     state["followup"] = _merge_followup_state(
         existing=state.get("followup", _default_followup_state()),
         update=raw_followup if isinstance(raw_followup, Mapping) else {},
@@ -2883,6 +2960,8 @@ def _merge_subtask_ledger_update(entry: dict[str, Any], update: Mapping[str, Any
 
 
 def _append_ledger_event(ledger: dict[str, Any], event: dict[str, Any]) -> None:
+    """Append one event while enforcing the bounded rolling event history."""
+
     events = ledger.get("events", [])
     if not isinstance(events, list):
         events = []
@@ -2898,6 +2977,13 @@ def record_decision_ledger(
     decision_id: str,
     update: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Apply an incremental inspection update to an existing decision ledger.
+
+    This is the mutation path used after orchestration time: spawned agents can
+    report status, transcript pointers, handoff artifacts, follow-up claims, and
+    closeout state without rebuilding the entire ledger from scratch.
+    """
+
     ledger = load_decision_ledger(repo_root=repo_root, decision_id=decision_id)
     recorded_at = _now_timestamp()
     if _normalize_string(update.get("decision_id", "")) and _normalize_string(update.get("decision_id", "")) != _normalize_string(decision_id):
@@ -2982,6 +3068,8 @@ def append_orchestration_audit(
     feedback: ExecutionFeedback | None = None,
     stream_path: Path | None = None,
 ) -> dict[str, Any]:
+    """Emit a Compass timeline event for an orchestration decision or outcome."""
+
     stream = stream_path or (Path(repo_root).resolve() / DEFAULT_STREAM_PATH).resolve()
     artifacts = list(request.candidate_paths or ["src/odylith/runtime/orchestration/subagent_orchestrator.py"])
     components = [DEFAULT_COMPONENT_ID, *request.components]

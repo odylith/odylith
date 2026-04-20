@@ -73,6 +73,30 @@ def display_repo_path(*, repo_root: Path, value: str | Path) -> str:
     return RepoPathResolver(repo_root=repo_root).repo_path(value)
 
 
+def normalize_repo_token(
+    *,
+    repo_root: Path,
+    value: str | Path,
+    preserve_external_absolute: bool = False,
+) -> str:
+    """Normalize a path-like token against the repo root."""
+
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    path = Path(raw)
+    if path.is_absolute():
+        try:
+            resolved = path.resolve()
+        except OSError:
+            return raw if preserve_external_absolute else ""
+        try:
+            return resolved.relative_to(Path(repo_root).resolve()).as_posix()
+        except ValueError:
+            return str(resolved) if preserve_external_absolute else ""
+    return path.as_posix().lstrip("./")
+
+
 def relative_href(*, repo_root: Path, output_path: Path, value: str | Path) -> str:
     """Render a browser-friendly href from `output_path` to `value`."""
 
@@ -82,6 +106,7 @@ def relative_href(*, repo_root: Path, output_path: Path, value: str | Path) -> s
 __all__ = [
     "RepoPathResolver",
     "display_repo_path",
+    "normalize_repo_token",
     "relative_href",
     "resolve_repo_path",
 ]

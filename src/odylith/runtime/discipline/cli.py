@@ -1,4 +1,9 @@
-"""CLI helpers for the Odylith discipline layer."""
+"""Provide the human and machine CLI surface for discipline evaluation.
+
+The CLI intentionally exposes a compact operator-friendly layer over the richer
+decision payload. JSON remains the full-fidelity surface; human output is a
+curated summary that keeps the next move and proof obligation obvious.
+"""
 
 from __future__ import annotations
 
@@ -64,10 +69,12 @@ _MACHINE_DETAIL_HINT = "Detailed verification stays behind --json."
 
 
 def _json(payload: Mapping[str, Any]) -> str:
+    """Serialize CLI payloads with stable formatting for terminals and fixtures."""
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Build the discipline CLI parser and subcommand tree."""
     parser = argparse.ArgumentParser(prog="odylith discipline", description="Inspect local discipline behavior.")
     parser.add_argument("--repo-root", default=".")
     subparsers = parser.add_subparsers(dest="discipline_command", required=True)
@@ -85,6 +92,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _print(payload: Mapping[str, Any], *, as_json: bool) -> None:
+    """Dispatch payload rendering to the matching human or JSON formatter."""
     if as_json:
         print(_json(payload), end="")
         return
@@ -101,6 +109,7 @@ def _print(payload: Mapping[str, Any], *, as_json: bool) -> None:
 
 
 def _clean_strings(value: Any) -> list[str]:
+    """Normalize mixed scalar/collection inputs for human-facing CLI output."""
     if isinstance(value, str):
         candidates = [value]
     elif isinstance(value, list | tuple | set):
@@ -119,6 +128,7 @@ def _clean_strings(value: Any) -> list[str]:
 
 
 def _decision_label(value: Any) -> str:
+    """Map internal decision codes to readable past-tense CLI labels."""
     token = str(value or "ready").strip()
     return {
         "admit": "admitted",
@@ -132,20 +142,24 @@ def _decision_label(value: Any) -> str:
 
 
 def _human_law_reason(law_id: str) -> str:
+    """Return the canned human explanation for a violated law id."""
     return _HUMAN_LAW_REASONS.get(law_id, "This move needs a lower-risk path before acting.")
 
 
 def _human_action(action: Any) -> str:
+    """Return the canned human explanation for the next admissible action."""
     token = str(action or "").strip()
     return _HUMAN_ACTIONS.get(token, token.replace("_", " ") if token else "Choose the lowest-risk local move.")
 
 
 def _human_proof(proof: Any) -> str:
+    """Return the human description of a proof obligation token."""
     token = str(proof or "").strip()
     return _HUMAN_PROOF.get(token, token.replace("_", " ") if token else "")
 
 
 def _violated_law_ids(payload: Mapping[str, Any]) -> list[str]:
+    """Extract violated law ids from either explicit or embedded payload forms."""
     explicit = _clean_strings(payload.get("violated_laws"))
     if explicit:
         return explicit
@@ -163,6 +177,7 @@ def _violated_law_ids(payload: Mapping[str, Any]) -> list[str]:
 
 
 def _budget_line(payload: Mapping[str, Any]) -> str:
+    """Render a compact hot-path budget summary for human CLI output."""
     budget = payload.get("latency_budget")
     if not isinstance(budget, Mapping):
         return "Budget: local discipline path; use --json for counters."
@@ -176,6 +191,7 @@ def _budget_line(payload: Mapping[str, Any]) -> str:
 
 
 def _print_human_status(payload: Mapping[str, Any]) -> None:
+    """Render the human summary for `odylith discipline status`."""
     support = payload.get("host_lane_support") if isinstance(payload.get("host_lane_support"), Mapping) else {}
     hosts = ", ".join(_clean_strings(support.get("supported_host_families"))) or "unknown"
     lanes = ", ".join(_clean_strings(support.get("supported_lanes"))) or "unknown"
@@ -194,6 +210,7 @@ def _print_human_status(payload: Mapping[str, Any]) -> None:
 
 
 def _print_human_check(payload: Mapping[str, Any]) -> None:
+    """Render the human summary for `odylith discipline check`."""
     print(f"Odylith Discipline: {_decision_label(payload.get('decision'))}")
     violations = _violated_law_ids(payload)
     if violations:
@@ -212,6 +229,7 @@ def _print_human_check(payload: Mapping[str, Any]) -> None:
 
 
 def _print_human_explanation(payload: Mapping[str, Any]) -> None:
+    """Render the human summary for `odylith discipline explain`."""
     decision_id = str(payload.get("decision_id", "")).strip()
     suffix = f" {decision_id}" if decision_id else ""
     print(f"Odylith Discipline decision{suffix}: {_decision_label(payload.get('decision'))}")
@@ -230,6 +248,7 @@ def _print_human_explanation(payload: Mapping[str, Any]) -> None:
 
 
 def _print_human_fallback(payload: Mapping[str, Any]) -> None:
+    """Render a minimal human fallback for unexpected payload shapes."""
     print(f"Odylith Discipline: {str(payload.get('status', 'unavailable')).strip() or 'unavailable'}")
     reason = str(payload.get("reason", "")).strip()
     if reason:
@@ -238,16 +257,19 @@ def _print_human_fallback(payload: Mapping[str, Any]) -> None:
 
 
 def _decision_cache_dir(repo_root: Path) -> Path:
+    """Return the cache directory that stores local decision records."""
     return repo_root / DECISION_CACHE_RELATIVE
 
 
 def _decision_filename(decision_id: str) -> str:
+    """Sanitize a decision id into a stable filesystem-safe filename."""
     token = str(decision_id or "").strip()
     safe = "".join(char if char.isalnum() or char in {"-", "_", "."} else "_" for char in token)
     return f"{safe or 'unknown'}.json"
 
 
 def _record_decision(repo_root: Path, payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Persist the latest decision so status/explain can reuse local evidence."""
     decision_id = str(payload.get("decision_id", "")).strip()
     if not decision_id:
         return {"recorded": False, "reason": "missing_decision_id"}
@@ -265,6 +287,7 @@ def _record_decision(repo_root: Path, payload: Mapping[str, Any]) -> dict[str, A
 
 
 def _load_decision(repo_root: Path, decision_id: str) -> dict[str, Any]:
+    """Load a previously recorded decision payload from the local cache."""
     path = _decision_cache_dir(repo_root) / _decision_filename(decision_id)
     if not path.is_file():
         return {}
@@ -276,6 +299,7 @@ def _load_decision(repo_root: Path, decision_id: str) -> dict[str, Any]:
 
 
 def _latest_decision(repo_root: Path) -> dict[str, Any]:
+    """Load the most recently recorded local discipline decision, if any."""
     path = _decision_cache_dir(repo_root) / "latest.json"
     if not path.is_file():
         return {}
@@ -287,6 +311,7 @@ def _latest_decision(repo_root: Path) -> dict[str, Any]:
 
 
 def _decision_digest(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Trim a full decision payload down to the status-friendly summary subset."""
     if not payload:
         return {}
     learning = payload.get("learning_signal") if isinstance(payload.get("learning_signal"), Mapping) else {}
@@ -307,6 +332,7 @@ def _decision_digest(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _explain_decision(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Project a stored decision into the `explain` response shape."""
     hard_laws = payload.get("hard_law_results") if isinstance(payload.get("hard_law_results"), list) else []
     violated = [
         row
@@ -350,6 +376,7 @@ def _explain_decision(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def run_discipline(argv: Sequence[str] | None = None) -> int:
+    """Execute the discipline CLI command tree."""
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
     if args.discipline_command == "status":
@@ -394,6 +421,8 @@ def run_discipline(argv: Sequence[str] | None = None) -> int:
         _print(payload, as_json=bool(args.as_json))
         return 0
     if args.discipline_command == "check":
+        # The check command is intentionally file-based so operator intent can be
+        # reviewed or reused without shell-escaping long prompt text.
         intent_path = Path(args.intent_file)
         if not intent_path.is_absolute():
             intent_path = repo_root / intent_path
@@ -427,4 +456,5 @@ def run_discipline(argv: Sequence[str] | None = None) -> int:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Console-script entrypoint."""
     return run_discipline(argv)

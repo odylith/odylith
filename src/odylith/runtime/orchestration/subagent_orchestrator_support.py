@@ -46,6 +46,7 @@ _CODEX_HOT_PATH_PROFILE = agent_runtime_contract.AGENT_HOT_PATH_PROFILE
 
 
 def _normalize_list(value: Any) -> list[str]:
+    """Normalize scalar-or-sequence inputs into a cleaned string list."""
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return [_normalize_string(item) for item in value if _normalize_string(item)]
     token = _normalize_string(value)
@@ -53,12 +54,14 @@ def _normalize_list(value: Any) -> list[str]:
 
 
 def _normalize_context_signals(value: Any) -> dict[str, Any]:
+    """Normalize context-signal mappings to stable string keys."""
     if not isinstance(value, Mapping):
         return {}
     return {_normalize_string(key): raw for key, raw in value.items() if _normalize_string(key)}
 
 
 def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract the orchestration-relevant context payload from a larger mapping."""
     explicit = payload.get("context_signals")
     if isinstance(explicit, Mapping):
         return _normalize_context_signals(explicit)
@@ -85,14 +88,17 @@ def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, An
 
 
 def _sanitize_user_facing_text(value: Any) -> str:
+    """Delegate user-facing copy cleanup to the router-owned sanitizer."""
     return leaf_router._sanitize_user_facing_text(value)  # noqa: SLF001
 
 
 def _sanitize_user_facing_lines(values: Sequence[str]) -> list[str]:
+    """Delegate line-wise user-facing cleanup to the router-owned sanitizer."""
     return leaf_router._sanitize_user_facing_lines(values)  # noqa: SLF001
 
 
 def _mapping_lookup(payload: Mapping[str, Any], key: str) -> Any:
+    """Read a mapping key with support for compact packet-quality aliases."""
     wanted = _normalize_token(key)
     for raw_key, raw_value in payload.items():
         if _normalize_token(raw_key) == wanted:
@@ -120,6 +126,7 @@ def _mapping_lookup(payload: Mapping[str, Any], key: str) -> Any:
 
 
 def _nested_mapping(payload: Mapping[str, Any], *path: str) -> dict[str, Any]:
+    """Traverse nested mappings using alias-aware lookup at each step."""
     current: Any = payload
     for key in path:
         if not isinstance(current, Mapping):
@@ -129,6 +136,7 @@ def _nested_mapping(payload: Mapping[str, Any], *path: str) -> dict[str, Any]:
 
 
 def _execution_profile_mapping(value: Any) -> dict[str, Any]:
+    """Normalize execution-profile memory into router-friendly runtime fields."""
     profile = tooling_memory_contracts.execution_profile_mapping(value)
     if not profile:
         return {}
@@ -140,6 +148,7 @@ def _execution_profile_mapping(value: Any) -> dict[str, Any]:
     profile["reasoning_effort"] = selected.reasoning_effort
     return profile
 def _normalized_rate(value: Any) -> float:
+    """Clamp percent-like or ratio-like inputs to the inclusive `[0, 1]` range."""
     numeric = _float_value(value)
     if numeric > 1.0:
         numeric = numeric / 100.0 if numeric <= 100.0 else 1.0
@@ -147,6 +156,7 @@ def _normalized_rate(value: Any) -> float:
 
 
 def _request_seed_paths(request: Any) -> list[str]:
+    """Return the explicit path seeds that can anchor Odylith grounding."""
     return _dedupe_strings(
         [
             *getattr(request, "candidate_paths", []),
@@ -156,6 +166,7 @@ def _request_seed_paths(request: Any) -> list[str]:
 
 
 def _request_has_odylith_seeds(request: Any) -> bool:
+    """Return whether the request already carries usable Odylith grounding hints."""
     return bool(
         _request_seed_paths(request)
         or getattr(request, "workstreams", [])
@@ -166,14 +177,17 @@ def _request_has_odylith_seeds(request: Any) -> bool:
 
 
 def _payload_context_packet(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the embedded context packet when present."""
     return dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
 
 
 def _payload_routing_handoff(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the embedded routing handoff when present."""
     return dict(payload.get("routing_handoff", {})) if isinstance(payload.get("routing_handoff"), Mapping) else {}
 
 
 def _compact_selection_state_parts(value: Any) -> tuple[str, str]:
+    """Split compact selection-state tokens into state and detail parts."""
     token = _normalize_string(value)
     if not token:
         return "", ""
@@ -185,6 +199,7 @@ def _compact_selection_state_parts(value: Any) -> tuple[str, str]:
 
 
 def _payload_packet_kind(payload: Mapping[str, Any], *, context_packet: Mapping[str, Any], routing_handoff: Mapping[str, Any]) -> str:
+    """Infer the dominant Odylith packet kind from explicit and embedded fields."""
     packet_kind = _normalize_token(payload.get("packet_kind"))
     if packet_kind:
         return packet_kind
@@ -201,6 +216,7 @@ def _payload_packet_kind(payload: Mapping[str, Any], *, context_packet: Mapping[
 
 
 def _odylith_payload_full_scan_recommended(payload: Mapping[str, Any]) -> bool:
+    """Return whether the current Odylith payload still recommends a broader scan."""
     context_packet = _payload_context_packet(payload)
     architecture_audit = dict(payload.get("architecture_audit", {})) if isinstance(payload.get("architecture_audit"), Mapping) else {}
     return bool(
@@ -211,6 +227,7 @@ def _odylith_payload_full_scan_recommended(payload: Mapping[str, Any]) -> bool:
 
 
 def _odylith_payload_route_ready(payload: Mapping[str, Any]) -> bool:
+    """Return whether the payload says delegation is route-ready right now."""
     context_packet = _payload_context_packet(payload)
     route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), Mapping) else {}
     routing_handoff = _payload_routing_handoff(payload)
@@ -218,12 +235,14 @@ def _odylith_payload_route_ready(payload: Mapping[str, Any]) -> bool:
 
 
 def _odylith_payload_selection_state(payload: Mapping[str, Any]) -> str:
+    """Return the normalized selection state from the Odylith payload."""
     context_packet = _payload_context_packet(payload)
     state, _ = _compact_selection_state_parts(payload.get("selection_state") or context_packet.get("selection_state"))
     return _normalize_token(state)
 
 
 def _odylith_payload_routing_confidence(payload: Mapping[str, Any]) -> str:
+    """Return the strongest available routing-confidence signal from the payload."""
     context_packet = _payload_context_packet(payload)
     packet_quality = packet_quality_codec.expand_packet_quality(
         dict(context_packet.get("packet_quality", {}))
@@ -239,11 +258,13 @@ def _odylith_payload_routing_confidence(payload: Mapping[str, Any]) -> str:
 
 
 def _odylith_payload_diagram_watch_gap_count(payload: Mapping[str, Any]) -> int:
+    """Count unresolved diagram-watch gaps in the current payload."""
     gaps = payload.get("diagram_watch_gaps", [])
     return len(gaps) if isinstance(gaps, list) else 0
 
 
 def _odylith_payload_component_ids(payload: Mapping[str, Any]) -> list[str]:
+    """Extract normalized component ids from payload component rows."""
     component_rows = payload.get("components", [])
     if not isinstance(component_rows, list):
         return []
@@ -255,6 +276,7 @@ def _odylith_payload_component_ids(payload: Mapping[str, Any]) -> list[str]:
 
 
 def _odylith_payload_workstreams(payload: Mapping[str, Any]) -> list[str]:
+    """Extract normalized workstream identifiers from common payload fields."""
     values: list[str] = []
     for key in ("inferred_workstream", "workstream", "ws"):
         token = _normalize_string(payload.get(key, ""))
@@ -284,6 +306,7 @@ def _odylith_payload_workstreams(payload: Mapping[str, Any]) -> list[str]:
 
 
 def _odylith_payload_paths(payload: Mapping[str, Any]) -> list[str]:
+    """Collect the best available path anchors from the Odylith payload."""
     context_packet = _payload_context_packet(payload)
     anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), Mapping) else {}
     values: list[str] = []
@@ -298,6 +321,7 @@ def _odylith_payload_paths(payload: Mapping[str, Any]) -> list[str]:
 
 
 def _merge_context_signals(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str, Any]:
+    """Merge two context-signal mappings while preserving nested dict structure."""
     merged = {str(key): value for key, value in dict(base).items()}
     for raw_key, raw_value in overlay.items():
         key = _normalize_string(raw_key)
@@ -312,6 +336,7 @@ def _merge_context_signals(base: Mapping[str, Any], overlay: Mapping[str, Any]) 
 
 
 def _clamp_confidence(value: int | float) -> int:
+    """Clamp orchestration confidence values into the router's 0-4 score range."""
     return max(0, min(4, int(round(float(value)))))
 
 

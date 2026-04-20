@@ -11,6 +11,7 @@ from odylith.runtime.orchestration import subagent_router_signal_summary as sign
 
 @dataclass
 class AssessmentState:
+    """Mutable assessment scores that runtime context can tune in place."""
     ambiguity: int
     blast_radius: int
     context_breadth: int
@@ -36,6 +37,7 @@ class AssessmentState:
 
 
 def apply_context_signal_adjustments(*, request: router.RouteRequest, context_signal_summary: Mapping[str, Any], state: AssessmentState, explicit_path_count: int, has_structured_handoff: bool, needs_write: bool) -> None:
+    """Adjust prompt-derived assessment scores using structured runtime handoff signals."""
     scores = state
     feature_reasons = scores.feature_reasons
     base_confidence_boost = False
@@ -99,6 +101,8 @@ def apply_context_signal_adjustments(*, request: router.RouteRequest, context_si
     control_advisory_signal_conflict = bool(context_signal_summary['control_advisory_signal_conflict'])
     control_advisory_sample_balance = context_signal_summary['control_advisory_sample_balance']
     control_advisory_present = bool(control_advisory_state or control_advisory_reasoning_mode or control_advisory_depth or control_advisory_delegation or control_advisory_parallelism or control_advisory_packet_strategy or control_advisory_budget_mode or control_advisory_retrieval_focus or control_advisory_speed_mode or control_advisory_freshness_bucket or (control_advisory_confidence_score > 0) or (control_advisory_evidence_strength_score > 0) or control_advisory_signal_conflict or (control_advisory_sample_balance not in {'', 'none'}))
+    # Guarded advisories deliberately reduce trust in recent execution history; the
+    # router should tighten scope until the evidence is fresher or better balanced.
     control_advisory_reliable = bool(control_advisory_present and control_advisory_confidence_score >= 3 and (control_advisory_evidence_strength_score >= 3) and (control_advisory_freshness_bucket in {'fresh', 'recent'}) and (not control_advisory_signal_conflict))
     control_advisory_guarded = bool(control_advisory_present and (control_advisory_freshness_bucket in {'aging', 'stale'} or control_advisory_evidence_strength_score <= 1 or control_advisory_signal_conflict or (control_advisory_sample_balance in {'thin', 'none'})))
     packet_profile_present = bool(packet_strategy or budget_mode or retrieval_focus or speed_mode or packet_reliability or selection_bias)
@@ -427,6 +431,8 @@ def apply_context_signal_adjustments(*, request: router.RouteRequest, context_si
     if context_signal_summary['route_ready']:
         feature_reasons.setdefault('context_signals', []).append('runtime handoff was already route-ready for native delegation')
         if context_signal_summary['bounded_governance_delegate_candidate']:
+            # Governance-heavy slices can still be delegation-ready when the retained
+            # packet carries the closeout contract instead of leaving it implicit.
             scores.validation_clarity = signal_summary._clamp_score(scores.validation_clarity + 1)
             scores.acceptance_clarity = signal_summary._clamp_score(scores.acceptance_clarity + 1)
             base_confidence_boost = True

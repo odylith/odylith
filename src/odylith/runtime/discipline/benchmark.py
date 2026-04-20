@@ -1,4 +1,9 @@
-"""Benchmark helpers for the Odylith discipline layer."""
+"""Summarize benchmark-facing outputs for the discipline family.
+
+The helpers here deliberately operate on already-produced decision rows rather
+than running benchmark logic themselves. That keeps the hot path local while
+still giving benchmark/reporting code a stable aggregation surface.
+"""
 
 from __future__ import annotations
 
@@ -30,6 +35,7 @@ DISCIPLINE_METRICS: tuple[str, ...] = (
 
 
 def benchmark_tags_for_decision(decision: Mapping[str, Any]) -> list[str]:
+    """Build a stable, deduplicated tag set for one discipline decision."""
     tags = [FAMILY]
     tags.extend(str(item) for item in decision.get("known_archetype_matches", []) if str(item).strip())
     if decision.get("learning_signal", {}).get("outcome"):
@@ -38,6 +44,13 @@ def benchmark_tags_for_decision(decision: Mapping[str, Any]) -> list[str]:
 
 
 def summarize_case_results(results: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """Aggregate per-case expectations into family-level benchmark metrics.
+
+    The summary intentionally treats missing expectation keys as permissive
+    defaults in a few places because some cases only assert a subset of the
+    family contract. That keeps the aggregator reusable across shallow and deep
+    benchmark fixtures.
+    """
     rows = [dict(row) for row in results]
     total = len(rows)
     if total == 0:
@@ -74,6 +87,9 @@ def summarize_case_results(results: Sequence[Mapping[str, Any]]) -> dict[str, An
     hot_path_pass = sum(1 for row in rows if row.get("hot_path_budget_passed"))
     false_allows = sum(1 for row in rows if row.get("false_allow"))
     false_blocks = sum(1 for row in rows if row.get("false_block"))
+    # Stance validation is intentionally structural here: the benchmark asks
+    # whether the vector is well-formed numeric output, not whether each facet
+    # landed on one exact value for every case.
     stance_pass = sum(
         1
         for decision in decisions

@@ -1,4 +1,9 @@
-"""Pressure helpers for the Odylith discipline layer."""
+"""Map extracted intent signals into pressure observations and uncertainty.
+
+Pressure is intentionally broader than hard-law evaluation: it captures
+ambiguous or emerging traits that may influence stance or affordances even when
+no deterministic law is currently violated.
+"""
 
 from __future__ import annotations
 
@@ -21,6 +26,7 @@ _ARCHETYPE_BY_FEATURE: dict[str, str] = {
 
 
 def observe_pressure(intent: str, *, evidence: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """Classify the observed pressure and estimate how certain that read is."""
     signals = extract_intent_signals(intent, evidence=evidence)
     text = str(signals.get("text", "")).strip()
     features = dict(signals.get("features", {})) if isinstance(signals.get("features"), Mapping) else {}
@@ -36,6 +42,8 @@ def observe_pressure(intent: str, *, evidence: Mapping[str, Any] | None = None) 
         for key, value in features.items()
         if value and key not in _ARCHETYPE_BY_FEATURE
     }
+    # Uncertainty is biased low when we recognize a known archetype, and biased
+    # upward when the prompt presents true features we do not yet classify well.
     uncertainty = 0.15 if matches else 0.55
     if unknown_features and matches:
         uncertainty = max(uncertainty, 0.35)

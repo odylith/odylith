@@ -22,6 +22,7 @@ _SCORE_MAX = 4
 
 
 def _normalize_list(value: Any) -> list[str]:
+    """Return a normalized string list from a sequence or scalar signal value."""
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return [_normalize_string(item) for item in value if _normalize_string(item)]
     token = _normalize_string(value)
@@ -29,6 +30,7 @@ def _normalize_list(value: Any) -> list[str]:
 
 
 def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
+    """Prefer explicit counts but fall back to the length of a list-shaped field."""
     value = _mapping_value(payload, list_key)
     return max(
         len(value) if isinstance(value, list) else len(_normalize_list(value)),
@@ -37,12 +39,14 @@ def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: 
 
 
 def _normalize_context_signals(value: Any) -> dict[str, Any]:
+    """Normalize a context-signal mapping to string keys without losing raw values."""
     if not isinstance(value, Mapping):
         return {}
     return {_normalize_string(key): raw for key, raw in value.items() if _normalize_string(key)}
 
 
 def _embedded_governance_signal(context_packet: Mapping[str, Any]) -> dict[str, Any]:
+    """Expand the compact governance payload embedded under a context packet route."""
     route = _mapping_value(context_packet, "route")
     if not isinstance(route, Mapping):
         return {}
@@ -61,6 +65,7 @@ def _validation_bundle_from_context(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Return validation obligations from context signals or synthesized governance fallbacks."""
     validation_bundle = _mapping_value(context_signals, "validation_bundle")
     if isinstance(validation_bundle, Mapping):
         return dict(validation_bundle)
@@ -83,6 +88,7 @@ def _governance_obligations_from_context(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Return the compact governance-closeout obligations relevant to routing."""
     governance_obligations = _mapping_value(context_signals, "governance_obligations")
     if isinstance(governance_obligations, Mapping):
         return dict(governance_obligations)
@@ -109,6 +115,7 @@ def _surface_refs_from_context(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Return impacted-surface metadata, synthesizing compact counts when needed."""
     surface_refs = _mapping_value(context_signals, "surface_refs")
     if isinstance(surface_refs, Mapping):
         return dict(surface_refs)
@@ -122,6 +129,7 @@ def _surface_refs_from_context(
 
 
 def _mapping_value(payload: Mapping[str, Any], key: str) -> Any:
+    """Look up a normalized key, including compact aliases used by packet codecs."""
     wanted = _normalize_token(key)
     for raw_key, raw_value in payload.items():
         if _normalize_token(raw_key) == wanted:
@@ -149,11 +157,13 @@ def _mapping_value(payload: Mapping[str, Any], key: str) -> Any:
 
 
 def _context_signal_root(context_signals: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Return the nested routing handoff when present, else the raw context mapping."""
     nested = _mapping_value(context_signals, "routing_handoff")
     return nested if isinstance(nested, Mapping) else context_signals
 
 
 def _context_lookup(payload: Mapping[str, Any], *path: str) -> Any:
+    """Traverse a normalized path through nested context mappings."""
     current: Any = payload
     for key in path:
         if not isinstance(current, Mapping):
@@ -163,6 +173,7 @@ def _context_lookup(payload: Mapping[str, Any], *path: str) -> Any:
 
 
 def _context_signal_score(value: Any) -> int:
+    """Coerce heterogeneous signal shapes onto the router's 0-4 score ladder."""
     if isinstance(value, bool):
         return _SCORE_MAX if value else _SCORE_MIN
     if isinstance(value, (int, float)):
@@ -188,6 +199,7 @@ def _context_signal_score(value: Any) -> int:
 
 
 def _context_signal_bool(value: Any) -> bool:
+    """Interpret scalar or structured signal values as booleans."""
     if isinstance(value, bool):
         return value
     if isinstance(value, (int, float)):
@@ -202,6 +214,7 @@ def _context_signal_bool(value: Any) -> bool:
 
 
 def _context_signal_level(score: int) -> str:
+    """Convert a normalized score into the router's coarse level labels."""
     value = _clamp_score(score)
     if value >= 4:
         return "high"
@@ -213,6 +226,7 @@ def _context_signal_level(score: int) -> str:
 
 
 def _scaled_numeric_signal(value: Any) -> int:
+    """Normalize numeric metrics that may arrive as ratios, percentages, or scores."""
     if isinstance(value, (int, float)):
         numeric = float(value)
         if 0.0 <= numeric <= 1.0:
@@ -224,6 +238,7 @@ def _scaled_numeric_signal(value: Any) -> int:
 
 
 def _normalized_rate(value: Any) -> float:
+    """Normalize a ratio or percentage-like value onto the inclusive 0.0-1.0 range."""
     if isinstance(value, bool):
         return 1.0 if value else 0.0
     try:
@@ -236,6 +251,7 @@ def _normalized_rate(value: Any) -> float:
 
 
 def _latency_pressure_signal(value: Any) -> int:
+    """Bucket latency measurements into the router's 0-4 pressure scale."""
     try:
         numeric = float(value or 0.0)
     except (TypeError, ValueError):
@@ -258,6 +274,7 @@ def _execution_profile_mapping(
     evidence_pack: Mapping[str, Any],
     optimization_snapshot: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Merge execution-profile hints from live context, evidence, and optimization history."""
     latest_packet = _mapping_value(optimization_snapshot, "latest_packet")
     optimization_latest_profile = {
         key: value
@@ -335,6 +352,8 @@ def _execution_profile_mapping(
     if not scored_candidates:
         return _synthesized_execution_profile_candidate(context_packet=context_packet)
     merged: dict[str, Any] = {}
+    # Less-rich candidates land first so later, more specific sources can fill or
+    # overwrite fields without losing sub-mappings that were only present upstream.
     for _, _, candidate in sorted(scored_candidates, key=lambda item: (item[0], item[1])):
         for key, value in candidate.items():
             if value in ("", [], {}, None, False):
@@ -374,6 +393,8 @@ def _execution_profile_mapping(
     if host_runtime:
         merged["host_runtime"] = host_runtime
     if not str(merged.get("profile", "")).strip():
+        # Only synthesize a fallback profile after we exhaust explicit guidance from
+        # runtime packets, evidence packs, and optimization history.
         synthesized = _synthesized_execution_profile_candidate(context_packet=context_packet)
         if synthesized:
             merged = {**synthesized, **merged}
@@ -381,6 +402,7 @@ def _execution_profile_mapping(
 
 
 def _preferred_router_profile_from_execution_profile(profile: Mapping[str, Any]) -> Any | None:
+    """Resolve a router profile from an execution-profile mapping or runtime tuple."""
     explicit = subagent_router_profile_support.router_profile_from_token(profile.get("profile"))
     if explicit is not None:
         return explicit
@@ -391,10 +413,12 @@ def _preferred_router_profile_from_execution_profile(profile: Mapping[str, Any])
 
 
 def _execution_profile_candidate(value: Any) -> dict[str, Any]:
+    """Normalize an arbitrary execution-profile payload into the shared mapping contract."""
     return tooling_memory_contracts.execution_profile_mapping(value)
 
 
 def _selected_counts_mapping(value: Any) -> dict[str, int]:
+    """Decode retrieval-plan selected counts from a mapping or compact token string."""
     if isinstance(value, Mapping):
         return {
             str(key).strip(): _int_value(raw)
@@ -420,7 +444,10 @@ def _selected_counts_mapping(value: Any) -> dict[str, int]:
 
 
 def _synthesized_execution_profile_candidate(*, context_packet: Mapping[str, Any]) -> dict[str, Any]:
+    """Infer a router execution profile from packet quality when no explicit one exists."""
     route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), Mapping) else {}
+    # Synthesized guidance is only safe once the packet says the slice is route-ready
+    # and no longer needs narrowing.
     if not bool(route.get("route_ready")) or bool(route.get("narrowing_required")):
         return {}
     packet_quality = packet_quality_codec.expand_packet_quality(
@@ -513,4 +540,5 @@ def _synthesized_execution_profile_candidate(*, context_packet: Mapping[str, Any
 
 
 def _clamp_score(value: int | float) -> int:
+    """Clamp a numeric signal onto the router's inclusive 0-4 scale."""
     return max(_SCORE_MIN, min(_SCORE_MAX, int(round(float(value)))))

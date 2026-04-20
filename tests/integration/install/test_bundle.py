@@ -41,6 +41,7 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (project_root / ".claude" / "hooks" / "log-stop-summary.py").is_file()
     assert (project_root / ".claude" / "hooks" / "guard-destructive-bash.py").is_file()
     assert (project_root / ".claude" / "output-styles" / "odylith-grounded.md").is_file()
+    assert (project_root / ".claude" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md").is_file()
     assert (project_root / ".claude" / "skills" / "odylith-subagent-router" / "SKILL.md").is_file()
     assert (project_root / ".claude" / "skills" / "odylith-delivery-governance-surface-ops" / "SKILL.md").is_file()
     assert (project_root / ".claude" / "rules" / "odylith-governance.md").is_file()
@@ -51,6 +52,9 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert "./.odylith/bin/odylith codex session-start-ground --repo-root ." in codex_hooks
     assert (project_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").is_file()
     assert not (project_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
+    assert "odylith-code-hygiene-guard" in (project_root / ".claude" / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "ANTI_SLOP_AND_DECOMPOSITION.md" in (project_root / ".claude" / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "odylith-code-hygiene-guard" in (project_root / ".claude" / "agents" / "odylith-reviewer.md").read_text(encoding="utf-8")
 
 
 def test_bundle_root_contains_managed_governance_surface_assets() -> None:

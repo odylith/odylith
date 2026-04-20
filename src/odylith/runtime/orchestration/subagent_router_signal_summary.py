@@ -64,6 +64,7 @@ _RUNTIME_EARNED_DEPTH_SELECTION_MODES = subagent_router._RUNTIME_EARNED_DEPTH_SE
 
 
 def _bool_value(value: Any) -> bool:
+    """Coerce a permissive boolean from scalar configuration or signal values."""
     if isinstance(value, bool):
         return value
     token = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
@@ -75,6 +76,7 @@ def _bool_value(value: Any) -> bool:
 
 
 def _preferred_value(summary: Mapping[str, Any], key: str, *fallbacks: Any) -> Any:
+    """Return a summary field when present, else the first non-empty fallback."""
     if key in summary:
         return summary.get(key)
     for fallback in fallbacks:
@@ -88,6 +90,7 @@ def request_with_consumer_write_policy(
     *,
     repo_root: Path | None,
 ) -> subagent_router.RouteRequest:
+    """Attach consumer write-policy constraints to write requests before assessment."""
     if repo_root is None or not request.needs_write:
         return request
     profile = load_consumer_profile(repo_root=Path(repo_root).resolve())
@@ -104,6 +107,7 @@ def request_with_consumer_write_policy(
 
 
 def _context_signal_summary(request: subagent_router.RouteRequest) -> dict[str, Any]:
+    """Flatten structured runtime handoff signals into router-friendly scoring fields."""
     context_signals = subagent_router_context_support._normalize_context_signals(request.context_signals)
     root = _context_signal_root(context_signals)
     context_packet = _mapping_value(context_signals, "context_packet")
@@ -191,6 +195,8 @@ def _context_signal_summary(request: subagent_router.RouteRequest) -> dict[str, 
         if str(token).strip().strip("/")
     ]
     normalized_allowed_paths = [str(path).strip().lstrip("./") for path in request.allowed_paths if str(path).strip()]
+    # Consumer repos may allow diagnosis on Odylith-owned paths without allowing
+    # mutation; keep that distinction explicit for downstream routing gates.
     consumer_odylith_write_blocked = bool(
         request.needs_write
         and odylith_fix_mode == "feedback_only"
@@ -262,6 +268,8 @@ def _context_signal_summary(request: subagent_router.RouteRequest) -> dict[str, 
         else {}
     )
     control_advisories: dict[str, Any] = {}
+    # Prefer the freshest advisory source that actually populated a field, but keep
+    # falling back so sparse learning or evaluation packets still produce a usable view.
     for source in (learning_control_advisories, evaluation_control_advisories, optimization_control_advisories):
         for key, value in source.items():
             if key not in control_advisories or control_advisories[key] in ("", [], {}, None):
@@ -976,4 +984,3 @@ def _context_signal_summary(request: subagent_router.RouteRequest) -> dict[str, 
         "odylith_write_protected_roots": odylith_write_protected_roots,
         "consumer_odylith_write_blocked": consumer_odylith_write_blocked,
     }
-
