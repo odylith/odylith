@@ -7,7 +7,7 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.execution_engine import runtime_surface_governance
-from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bootstrap_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
@@ -41,7 +41,7 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
         evidence_pack,
         limit=6,
     )
-    character_summary = character_runtime.summary_from_sources(
+    discipline_summary = discipline_runtime.summary_from_sources(
         payload,
         context_packet,
         evidence_pack,
@@ -349,10 +349,10 @@ def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[s
         "selection_state": selection_state,
         "packet_state": packet_state,
         "guidance_behavior_summary": guidance_behavior_summary,
-        "character_summary": character_summary,
-        "character_status": str(character_summary.get("status", "")).strip(),
-        "character_validation_status": str(character_summary.get("validation_status", "")).strip(),
-        "character_case_count": int(character_summary.get("case_count", 0) or 0),
+        "discipline_summary": discipline_summary,
+        "discipline_status": str(discipline_summary.get("status", "")).strip(),
+        "discipline_validation_status": str(discipline_summary.get("validation_status", "")).strip(),
+        "discipline_case_count": int(discipline_summary.get("case_count", 0) or 0),
         "guidance_behavior_status": str(guidance_behavior_summary.get("status", "")).strip(),
         "guidance_behavior_validation_status": str(guidance_behavior_summary.get("validation_status", "")).strip(),
         "guidance_behavior_case_count": int(guidance_behavior_summary.get("case_count", 0) or 0),

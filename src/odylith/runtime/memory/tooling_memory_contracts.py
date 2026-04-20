@@ -8,7 +8,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common.consumer_profile import canonical_truth_token
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.value_coercion import string_rows as _string_rows
-from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.governance import guidance_behavior_runtime
 
 
@@ -791,7 +791,7 @@ def build_context_packet(
         payload,
         limit=max(limit, 6),
     )
-    character_summary = character_runtime.summary_from_sources(
+    discipline_summary = discipline_runtime.summary_from_sources(
         payload,
         limit=max(limit, 6),
     )
@@ -810,7 +810,7 @@ def build_context_packet(
             "packet_kind": str(packet_kind or "").strip(),
             "packet_state": str(packet_state or "").strip(),
             **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
-            **({"character_summary": character_summary} if character_summary else {}),
+            **({"discipline_summary": discipline_summary} if discipline_summary else {}),
             "selection_state": str(payload.get("selection_state", "")).strip()
             or str(retrieval_plan.get("selection_state", "")).strip(),
             "full_scan_recommended": bool(payload.get("full_scan_recommended")),
@@ -953,7 +953,7 @@ def build_context_packet(
         "packet_kind": str(packet_kind or "").strip(),
         "packet_state": str(packet_state or "").strip(),
         **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
-        **({"character_summary": character_summary} if character_summary else {}),
+        **({"discipline_summary": discipline_summary} if discipline_summary else {}),
         "selection_state": str(payload.get("selection_state", "")).strip()
         or str(retrieval_plan.get("selection_state", "")).strip(),
         "full_scan_recommended": bool(payload.get("full_scan_recommended")),
@@ -1165,7 +1165,7 @@ def build_evidence_pack(
         payload,
         limit=max(limit, 6),
     )
-    character_summary = character_runtime.summary_from_sources(
+    discipline_summary = discipline_runtime.summary_from_sources(
         payload,
         limit=max(limit, 6),
     )
@@ -1177,7 +1177,7 @@ def build_evidence_pack(
             "packet_kind": str(packet_kind or "").strip(),
             "packet_state": str(packet_state or "").strip(),
             **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
-            **({"character_summary": character_summary} if character_summary else {}),
+            **({"discipline_summary": discipline_summary} if discipline_summary else {}),
             "selection_state": selection_state,
             "full_scan_recommended": bool(payload.get("full_scan_recommended")),
             "full_scan_reason": str(payload.get("full_scan_reason", "")).strip(),
@@ -1213,7 +1213,7 @@ def build_evidence_pack(
         "packet_kind": str(packet_kind or "").strip(),
         "packet_state": str(packet_state or "").strip(),
         **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
-        **({"character_summary": character_summary} if character_summary else {}),
+        **({"discipline_summary": discipline_summary} if discipline_summary else {}),
         "selection_state": selection_state,
         "full_scan_recommended": bool(payload.get("full_scan_recommended")),
         "full_scan_reason": str(payload.get("full_scan_reason", "")).strip(),

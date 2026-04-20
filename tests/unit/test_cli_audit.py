@@ -515,27 +515,8 @@ _DISCIPLINE_SHORTCUT_CASES = [
     },
     {
         "path": ("discipline", "explain"),
-        "argv": lambda root: ["discipline", "explain", f"--repo-root={root}", "--decision-id", "character:fixture"],
-        "expected_argv": lambda root: ["--repo-root", str(root), "explain", "--decision-id", "character:fixture"],
-    },
-]
-
-
-_CHARACTER_ALIAS_SHORTCUT_CASES = [
-    {
-        "path": ("character", "status"),
-        "argv": lambda root: ["character", "status", f"--repo-root={root}"],
-        "expected_argv": lambda root: ["--repo-root", str(root), "status"],
-    },
-    {
-        "path": ("character", "check"),
-        "argv": lambda root: ["character", "check", f"--repo-root={root}", "--intent-file", "intent.txt"],
-        "expected_argv": lambda root: ["--repo-root", str(root), "check", "--intent-file", "intent.txt", "--lane", "dev"],
-    },
-    {
-        "path": ("character", "explain"),
-        "argv": lambda root: ["character", "explain", f"--repo-root={root}", "--decision-id", "character:fixture"],
-        "expected_argv": lambda root: ["--repo-root", str(root), "explain", "--decision-id", "character:fixture"],
+        "argv": lambda root: ["discipline", "explain", f"--repo-root={root}", "--decision-id", "discipline:fixture"],
+        "expected_argv": lambda root: ["--repo-root", str(root), "explain", "--decision-id", "discipline:fixture"],
     },
 ]
 
@@ -565,13 +546,13 @@ def test_cli_discipline_shortcut_dispatch_matrix(monkeypatch, tmp_path: Path, ca
     captured: dict[str, object] = {}
     real_module_attr = cli._module_attr  # noqa: SLF001
 
-    def fake_run_character(argv: list[str]) -> int:
+    def fake_run_discipline(argv: list[str]) -> int:
         captured["argv"] = list(argv)
         return 96
 
     def fake_module_attr(module_name: str, attribute_name: str):  # noqa: ANN001
-        if module_name == cli._CHARACTER_CLI_MODULE and attribute_name == "run_character":  # noqa: SLF001
-            return fake_run_character
+        if module_name == cli._DISCIPLINE_CLI_MODULE and attribute_name == "run_discipline":  # noqa: SLF001
+            return fake_run_discipline
         return real_module_attr(module_name, attribute_name)
 
     monkeypatch.setattr(cli, "_module_attr", fake_module_attr)
@@ -579,28 +560,6 @@ def test_cli_discipline_shortcut_dispatch_matrix(monkeypatch, tmp_path: Path, ca
     rc = cli.main(case["argv"](tmp_path))
 
     assert rc == 96
-    assert captured["argv"] == case["expected_argv"](tmp_path)
-
-
-@pytest.mark.parametrize("case", _CHARACTER_ALIAS_SHORTCUT_CASES, ids=lambda case: " ".join(case["path"]))
-def test_cli_character_alias_shortcut_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str, object]) -> None:
-    captured: dict[str, object] = {}
-    real_module_attr = cli._module_attr  # noqa: SLF001
-
-    def fake_run_character(argv: list[str]) -> int:
-        captured["argv"] = list(argv)
-        return 97
-
-    def fake_module_attr(module_name: str, attribute_name: str):  # noqa: ANN001
-        if module_name == cli._CHARACTER_CLI_MODULE and attribute_name == "run_character":  # noqa: SLF001
-            return fake_run_character
-        return real_module_attr(module_name, attribute_name)
-
-    monkeypatch.setattr(cli, "_module_attr", fake_module_attr)
-
-    rc = cli.main(case["argv"](tmp_path))
-
-    assert rc == 97
     assert captured["argv"] == case["expected_argv"](tmp_path)
 
 
@@ -648,9 +607,9 @@ _DOWNSTREAM_ARGV_CASES = [
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
     {
-        "path": ("validate", "agent-operating-character"),
-        "argv": lambda root: ["validate", "agent-operating-character", f"--repo-root={root}"],
-        "target_obj": cli.validate_agent_operating_character,
+        "path": ("validate", "discipline"),
+        "argv": lambda root: ["validate", "discipline", f"--repo-root={root}"],
+        "target_obj": cli.validate_discipline,
         "target_attr": "main",
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
@@ -671,7 +630,7 @@ _DOWNSTREAM_ARGV_CASES = [
     {
         "path": ("validate", "discipline"),
         "argv": lambda root: ["validate", "discipline", f"--repo-root={root}"],
-        "target_obj": cli.validate_agent_operating_character,
+        "target_obj": cli.validate_discipline,
         "target_attr": "main",
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
@@ -796,11 +755,7 @@ def test_cli_dispatch_matrix_covers_every_parser_leaf() -> None:
     covered_paths.update(tuple(case["path"]) for case in _OWNED_SURFACE_REFRESH_CASES)
     covered_paths.update(tuple(case["path"]) for case in _SHORTCUT_CASES)
     covered_paths.update(tuple(case["path"]) for case in _DISCIPLINE_SHORTCUT_CASES)
-    covered_paths.update(
-        tuple(case["path"])
-        for case in _DOWNSTREAM_ARGV_CASES
-        if tuple(case["path"]) != ("validate", "agent-operating-character")
-    )
+    covered_paths.update(tuple(case["path"]) for case in _DOWNSTREAM_ARGV_CASES)
 
     assert leaf_paths == covered_paths
 

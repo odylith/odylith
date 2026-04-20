@@ -2,7 +2,7 @@
 
 ## Odylith Discipline Contract
 - Memory Contracts own the Learning facet. Odylith Discipline learning events use
-  `odylith_agent_operating_character_learning.v1` and retain compact practice
+  `odylith_discipline_learning.v1` and retain compact practice
   signals only: pressure features, stance vector, hard-law result, decision,
   recovery action, proof obligation/status, benchmark/case ids, related
   Casebook ids, source refs, fingerprint, and retention class.

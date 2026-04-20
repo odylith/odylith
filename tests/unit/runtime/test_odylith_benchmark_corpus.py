@@ -139,7 +139,7 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "external_dependency_recovery",
         "destructive_scope_control",
         "guidance_behavior",
-        "agent_operating_character",
+        "discipline",
     }.issubset(families)
     assert {
         "consumer-install-upgrade-runtime-contract",
@@ -192,12 +192,12 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "guidance-fresh-proof-completion-claim",
         "guidance-bounded-delegation-contract",
         "guidance-visible-intervention-proof",
-        "character-hard-law-zero-credit",
-        "character-unknown-pressure-adaptive-stance",
-        "character-mixed-pressure-affordance-ranking",
-        "character-learning-replay-tribunal-candidate",
-        "character-noise-suppression-silent-pass",
-        "character-benchmark-sovereignty-public-claim",
+        "discipline-hard-law-zero-credit",
+        "discipline-unknown-pressure-adaptive-stance",
+        "discipline-mixed-pressure-affordance-ranking",
+        "discipline-learning-replay-tribunal-candidate",
+        "discipline-noise-suppression-silent-pass",
+        "discipline-benchmark-sovereignty-public-claim",
     }.issubset(scenario_ids)
     assert {
         "architecture-release-install-runtime-boundary",
@@ -299,53 +299,53 @@ def test_guidance_behavior_family_is_curated_low_latency_and_taxonomized() -> No
     ) == ["warm"]
 
 
-def test_agent_operating_character_family_filter_selects_only_character_cases() -> None:
+def test_discipline_family_filter_selects_only_discipline_cases() -> None:
     scenarios = _load_normalized()
     selection = runner._resolve_benchmark_scenario_selection(  # noqa: SLF001
         all_scenarios=scenarios,
         benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
-        families=["agent_operating_character"],
+        families=["discipline"],
     )
     selected = selection["scenarios"]
     selected_ids = {str(row.get("scenario_id", "")).strip() for row in selected}
 
     assert selection["selection_strategy"] == "manual_selection"
-    assert selection["selected_families"] == {"agent_operating_character"}
+    assert selection["selected_families"] == {"discipline"}
     assert len(selected) == 7
-    assert all(str(row.get("family", "")).strip() == "agent_operating_character" for row in selected)
+    assert all(str(row.get("family", "")).strip() == "discipline" for row in selected)
     assert selected_ids == {
-        "character-host-lane-parity-matrix",
-        "character-hard-law-zero-credit",
-        "character-unknown-pressure-adaptive-stance",
-        "character-mixed-pressure-affordance-ranking",
-        "character-learning-replay-tribunal-candidate",
-        "character-noise-suppression-silent-pass",
-        "character-benchmark-sovereignty-public-claim",
+        "discipline-host-lane-parity-matrix",
+        "discipline-hard-law-zero-credit",
+        "discipline-unknown-pressure-adaptive-stance",
+        "discipline-mixed-pressure-affordance-ranking",
+        "discipline-learning-replay-tribunal-candidate",
+        "discipline-noise-suppression-silent-pass",
+        "discipline-benchmark-sovereignty-public-claim",
     }
 
 
-def test_agent_operating_character_family_is_credit_safe_and_taxonomized() -> None:
-    assert odylith_benchmark_prompt_family_rules.family_zero_support_doc_expansion("agent_operating_character") is True
-    assert odylith_benchmark_prompt_family_rules.family_uses_curated_doc_overrides("agent_operating_character") is True
-    assert odylith_benchmark_prompt_family_rules.family_anchors_all_required_docs("agent_operating_character") is True
+def test_discipline_family_is_credit_safe_and_taxonomized() -> None:
+    assert odylith_benchmark_prompt_family_rules.family_zero_support_doc_expansion("discipline") is True
+    assert odylith_benchmark_prompt_family_rules.family_uses_curated_doc_overrides("discipline") is True
+    assert odylith_benchmark_prompt_family_rules.family_anchors_all_required_docs("discipline") is True
     assert (
         odylith_benchmark_prompt_family_rules.support_doc_family_rank(
-            path="odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",
-            family="agent_operating_character",
+            path="odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+            family="discipline",
         )
         == 0
     )
     assert (
         odylith_benchmark_prompt_family_rules.support_doc_family_rank(
-            path="src/odylith/runtime/governance/validate_agent_operating_character.py",
-            family="agent_operating_character",
+            path="src/odylith/runtime/governance/validate_discipline.py",
+            family="discipline",
         )
         == 0
     )
-    assert odylith_benchmark_taxonomy.family_group_label("agent_operating_character") == "Grounding / Orchestration Control"
+    assert odylith_benchmark_taxonomy.family_group_label("discipline") == "Grounding / Orchestration Control"
     profile = odylith_context_engine_hot_path_delivery_runtime._impact_family_profile(  # noqa: SLF001
         hot_path=True,
-        family_hint="agent_operating_character",
+        family_hint="discipline",
     )
 
     assert profile["allow_miss_recovery"] is False
@@ -359,13 +359,13 @@ def test_agent_operating_character_family_is_credit_safe_and_taxonomized() -> No
     assert (
         runner._profile_uses_live_public_modes_for_selection(  # noqa: SLF001
             profile="quick",
-            selected_families=["agent_operating_character"],
+            selected_families=["discipline"],
         )
         is False
     )
     assert runner._cache_profiles_for_selection(  # noqa: SLF001
         profile="quick",
-        selected_families=["agent_operating_character"],
+        selected_families=["discipline"],
         cache_profiles=["warm"],
         explicit_cache_profile_selection=False,
     ) == ["cold"]
@@ -436,22 +436,22 @@ def test_guidance_behavior_observed_paths_include_runtime_summary_sources() -> N
     assert "src/odylith/runtime/context_engine/execution_engine_handshake.py" not in paths
 
 
-def test_agent_operating_character_observed_paths_include_corpus_summary_source() -> None:
+def test_discipline_observed_paths_include_corpus_summary_source() -> None:
     paths = runner._observed_packet_paths(  # noqa: SLF001
         {
             "context_packet": {
-                "character_summary": {
+                "discipline_summary": {
                     "source_refs": [
-                        "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",
-                        "src/odylith/runtime/character",
+                        "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+                        "src/odylith/runtime/discipline",
                     ],
                 }
             }
         }
     )
 
-    assert "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json" in paths
-    assert "src/odylith/runtime/character" not in paths
+    assert "odylith/runtime/source/discipline-evaluation-corpus.v1.json" in paths
+    assert "src/odylith/runtime/discipline" not in paths
 
 
 def test_benchmark_corpus_meets_seriousness_floor() -> None:

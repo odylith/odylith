@@ -146,15 +146,15 @@ def test_failed_guidance_behavior_summary_becomes_single_high_signal_fact() -> N
     assert "guidance_behavior_contract" in facts[0].evidence_classes
 
 
-def test_character_summary_feeds_alignment_without_copy_or_noise_on_pass() -> None:
+def test_discipline_summary_feeds_alignment_without_copy_or_noise_on_pass() -> None:
     observation = _observation(
         context_packet_summary={
-            "character_summary": {
-                "family": "agent_operating_character",
+            "discipline_summary": {
+                "family": "discipline",
                 "status": "available",
                 "validation_status": "not_run",
                 "case_count": 19,
-                "selected_case_ids": ["character-visible-pass-stays-silent"],
+                "selected_case_ids": ["discipline-visible-pass-stays-silent"],
                 "validator_command": "odylith validate discipline --repo-root .",
             },
         },
@@ -162,19 +162,19 @@ def test_character_summary_feeds_alignment_without_copy_or_noise_on_pass() -> No
 
     refs = {(row["kind"], row["id"]) for row in alignment_evidence.active_target_refs(observation)}
 
-    assert "agent_operating_character_contract" in alignment_evidence.runtime_evidence_classes(observation)
+    assert "discipline_contract" in alignment_evidence.runtime_evidence_classes(observation)
     assert ("component", "execution-engine") in refs
     assert alignment_evidence.governance_facts_from_alignment(
         observation=observation,
-        evidence_classes=["agent_operating_character_contract"],
+        evidence_classes=["discipline_contract"],
     ) == []
 
 
-def test_failed_character_summary_becomes_single_high_signal_fact() -> None:
+def test_failed_discipline_summary_becomes_single_high_signal_fact() -> None:
     observation = _observation(
         memory_summary={
-            "character_summary": {
-                "family": "agent_operating_character",
+            "discipline_summary": {
+                "family": "discipline",
                 "status": "failed",
                 "validation_status": "failed",
                 "case_count": 1,
@@ -190,4 +190,4 @@ def test_failed_character_summary_becomes_single_high_signal_fact() -> None:
 
     assert [fact.headline for fact in facts] == ["Odylith Discipline validation is not passing."]
     assert "local Discipline validator" in facts[0].detail
-    assert "agent_operating_character_contract" in facts[0].evidence_classes
+    assert "discipline_contract" in facts[0].evidence_classes

@@ -616,8 +616,8 @@ def _scenario_required_paths_for_live_prompt(
         for token in _dedupe_strings(_normalized_string_list(scenario.get("required_paths")))
         if token not in changed
         or (
-            family == "agent_operating_character"
-            and str(token).strip().lower().endswith("/agent-operating-character-evaluation-corpus.v1.json")
+            family == "discipline"
+            and str(token).strip().lower().endswith("/discipline-evaluation-corpus.v1.json")
         )
     ]
 
@@ -643,8 +643,8 @@ def _required_support_docs_for_live_prompt(
         if (
             token not in changed
             or (
-                family == "agent_operating_character"
-                and str(token).strip().lower().endswith("/agent-operating-character-evaluation-corpus.v1.json")
+                family == "discipline"
+                and str(token).strip().lower().endswith("/discipline-evaluation-corpus.v1.json")
             )
         )
         and not _looks_like_code_anchor(token)
@@ -952,7 +952,7 @@ def supplement_live_prompt_payload(
                 payload["boundary_hints"] = _dedupe_strings(boundary_hints)
             payload["strict_boundary"] = True
             return payload
-        if family == "agent_operating_character" and scenario_required_paths:
+        if family == "discipline" and scenario_required_paths:
             payload = _set_context_anchor_explicit_paths(
                 payload,
                 explicit_paths=scenario_required_paths,

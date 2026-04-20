@@ -12,7 +12,7 @@
   validator commands as local admissibility evidence. This path must not run
   full validation, widen repo scans, or probe host capability when the local
   Odylith Discipline or Guidance Behavior summary is already sufficient.
-- The `odylith_agent_operating_character_host_lane_support.v1` matrix is an
+- The `odylith_discipline_host_lane_support.v1` matrix is an
   Execution Engine contract input: Codex maps to routed spawn, Claude maps to
   Task-tool subagents, dev maps to source-local maintainer work, dogfood maps
   to pinned shipped-runtime proof, and consumer maps to diagnose-and-handoff by

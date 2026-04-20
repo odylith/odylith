@@ -58,7 +58,7 @@ from odylith.runtime.context_engine import odylith_context_engine_packet_adaptiv
 from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import path_bundle_codec
-from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.orchestration import subagent_orchestrator
 from odylith.runtime.orchestration import subagent_router as leaf_router
@@ -114,11 +114,11 @@ _VALID_MODES = frozenset((*DEFAULT_MODES, *DIAGNOSTIC_CONTROL_MODES, *_MODE_ALIA
 DEFAULT_CACHE_PROFILES: tuple[str, ...] = ("warm", "cold")
 _VALID_CACHE_PROFILES = frozenset({"warm", "cold"})
 _FAMILY_ALIASES = {
-    "discipline": "agent_operating_character",
-    "odylith-discipline": "agent_operating_character",
-    "odylith_discipline": "agent_operating_character",
+    "discipline": "discipline",
+    "odylith-discipline": "discipline",
+    "odylith_discipline": "discipline",
 }
-_LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "agent_operating_character"})
+_LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "discipline"})
 _MIN_BENCHMARK_RUNTIME_FREE_BYTES = 256 * 1024 * 1024
 _RUNTIME_POSTURE_MANAGED_HELPER_ENV = "ODYLITH_BENCHMARK_RUNTIME_POSTURE_MANAGED_HELPER"
 _VALID_PACKET_SOURCES = frozenset({"adaptive", "impact", "governance_slice", "session_brief", "bootstrap_session"})
@@ -3739,14 +3739,14 @@ def _observed_packet_paths(payload: Mapping[str, Any]) -> list[str]:
                 for path in path_bundle_codec.expand_path_rows(source_refs)
                 if path.endswith("guidance-behavior-evaluation-corpus.v1.json")
             )
-    character_summary = character_runtime.summary_from_sources(payload, context_packet, limit=6)
-    if character_summary:
-        source_refs = character_summary.get("source_refs", [])
+    discipline_summary = discipline_runtime.summary_from_sources(payload, context_packet, limit=6)
+    if discipline_summary:
+        source_refs = discipline_summary.get("source_refs", [])
         if isinstance(source_refs, list):
             rows.extend(
                 path
                 for path in path_bundle_codec.expand_path_rows(source_refs)
-                if path.endswith("agent-operating-character-evaluation-corpus.v1.json")
+                if path.endswith("discipline-evaluation-corpus.v1.json")
             )
     anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), Mapping) else {}
     for key in ("changed_paths", "explicit_paths"):

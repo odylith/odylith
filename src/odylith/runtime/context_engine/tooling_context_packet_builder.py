@@ -12,7 +12,7 @@ from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.common.value_coercion import mapping_copy as _mapping_value
 from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.common.value_coercion import string_rows as _string_rows
-from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.evaluation import odylith_ablation
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import tooling_context_budgeting as budgeting
@@ -1584,7 +1584,7 @@ def _prune_hot_path_finalize_base_payload(
         "inferred_workstream",
         "adaptive_packet_profile",
         "guidance_behavior_summary",
-        "character_summary",
+        "discipline_summary",
     }
     if normalized_kind in {"impact", "governance_slice"}:
         keep_keys.add("intent")
@@ -1986,7 +1986,7 @@ def finalize_packet(
         docs=docs,
         recommended_commands=source_recommended_commands,
     )
-    character_summary = character_runtime.summary_for_packet(
+    discipline_summary = discipline_runtime.summary_for_packet(
         repo_root=root,
         family_hint=family_hint,
         changed_paths=changed_paths,
@@ -2003,11 +2003,11 @@ def finalize_packet(
                 limit=16,
             )
         )
-    if character_summary:
+    if discipline_summary:
         recommended_commands = tuple(
-            character_runtime.commands_with_validator(
+            discipline_runtime.commands_with_validator(
                 recommended_commands,
-                character_summary,
+                discipline_summary,
                 limit=16,
             )
         )
@@ -2109,8 +2109,8 @@ def finalize_packet(
         and selected_command_count > 0
         and full_scan_reason_token in {"", "selection_ambiguous", "selection_none", "adaptive_full_scan_fallback"}
     )
-    character_validator_grounded = bool(
-        character_summary
+    discipline_validator_grounded = bool(
+        discipline_summary
         and selected_command_count > 0
         and full_scan_reason_token in {"", "selection_ambiguous", "selection_none", "adaptive_full_scan_fallback"}
     )
@@ -2120,7 +2120,7 @@ def finalize_packet(
         and (
             (full_scan_reason_token == "selection_ambiguous" and grounded_ambiguous_write)
             or guidance_behavior_validator_grounded
-            or character_validator_grounded
+            or discipline_validator_grounded
         )
     ):
         packet_state = "expanded"
@@ -2157,16 +2157,16 @@ def finalize_packet(
     enriched = dict(payload)
     if guidance_behavior_summary:
         enriched["guidance_behavior_summary"] = dict(guidance_behavior_summary)
-    if character_summary:
-        enriched["character_summary"] = dict(character_summary)
+    if discipline_summary:
+        enriched["discipline_summary"] = dict(discipline_summary)
     effective_commands = guidance_behavior_runtime.commands_with_validator(
         enriched.get("recommended_commands") or recommended_commands,
         guidance_behavior_summary,
         limit=16,
     )
-    effective_commands = character_runtime.commands_with_validator(
+    effective_commands = discipline_runtime.commands_with_validator(
         effective_commands,
-        character_summary,
+        discipline_summary,
         limit=16,
     )
     if effective_commands:

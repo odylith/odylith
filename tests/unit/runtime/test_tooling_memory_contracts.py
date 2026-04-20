@@ -114,16 +114,16 @@ def test_context_packet_and_evidence_pack_retain_guidance_behavior_summary() -> 
     ]
 
 
-def test_context_packet_and_evidence_pack_retain_character_summary() -> None:
+def test_context_packet_and_evidence_pack_retain_discipline_summary() -> None:
     payload = {
-        "character_summary": {
-            "contract": "odylith_agent_operating_character_runtime_summary.v1",
-            "decision_contract": "odylith_agent_operating_character.v1",
-            "family": "agent_operating_character",
+        "discipline_summary": {
+            "contract": "odylith_discipline_runtime_summary.v1",
+            "decision_contract": "odylith_discipline.v1",
+            "family": "discipline",
             "status": "available",
             "validation_status": "not_run",
             "case_count": 13,
-            "selected_case_ids": ["character-credit-safe-hot-path"],
+            "selected_case_ids": ["discipline-credit-safe-hot-path"],
             "validator_command": "odylith validate discipline --repo-root .",
             "hot_path_contract": {
                 "provider_calls": False,
@@ -153,9 +153,9 @@ def test_context_packet_and_evidence_pack_retain_character_summary() -> None:
         payload=payload,
     )
 
-    assert context_packet["character_summary"]["case_count"] == 13
-    assert context_packet["character_summary"]["hot_path_contract"]["host_model_calls"] is False
-    assert evidence_pack["character_summary"]["validator_command"].endswith(
+    assert context_packet["discipline_summary"]["case_count"] == 13
+    assert context_packet["discipline_summary"]["hot_path_contract"]["host_model_calls"] is False
+    assert evidence_pack["discipline_summary"]["validator_command"].endswith(
         "validate discipline --repo-root ."
     )
-    assert evidence_pack["character_summary"]["hot_path_contract"]["projection_expansion"] is False
+    assert evidence_pack["discipline_summary"]["hot_path_contract"]["projection_expansion"] is False

@@ -717,7 +717,7 @@ def test_quick_profile_default_is_bounded_current_head_sentinel_smoke() -> None:
 
 def test_discipline_benchmark_family_alias_selects_internal_family() -> None:
     scenarios = [
-        {"scenario_id": "discipline-a", "family": "agent_operating_character", "priority": "critical"},
+        {"scenario_id": "discipline-a", "family": "discipline", "priority": "critical"},
         {"scenario_id": "other-a", "family": "guidance_behavior", "priority": "critical"},
     ]
 
@@ -727,7 +727,7 @@ def test_discipline_benchmark_family_alias_selects_internal_family() -> None:
         families=("discipline",),
     )
 
-    assert selection["selected_families"] == {"agent_operating_character"}
+    assert selection["selected_families"] == {"discipline"}
     assert [row["scenario_id"] for row in selection["scenarios"]] == ["discipline-a"]
 
 

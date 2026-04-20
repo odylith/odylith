@@ -14,7 +14,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
-from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.common.value_coercion import int_value as _int
 from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.governance import guidance_behavior_runtime
@@ -52,7 +52,7 @@ _GUIDANCE_BEHAVIOR_PROBLEM_STATUSES = {
     "unavailable",
     "error",
 }
-_CHARACTER_PROBLEM_STATUSES = _GUIDANCE_BEHAVIOR_PROBLEM_STATUSES
+_DISCIPLINE_PROBLEM_STATUSES = _GUIDANCE_BEHAVIOR_PROBLEM_STATUSES
 
 
 def _sequence(value: Any) -> list[Any]:
@@ -118,8 +118,8 @@ def _guidance_behavior_summary_from_observation(observation: ObservationEnvelope
     }
 
 
-def _character_summary_from_observation(observation: ObservationEnvelope) -> dict[str, Any]:
-    summary = character_runtime.summary_from_sources(
+def _discipline_summary_from_observation(observation: ObservationEnvelope) -> dict[str, Any]:
+    summary = discipline_runtime.summary_from_sources(
         observation.context_packet_summary,
         observation.packet_summary,
         observation.memory_summary,
@@ -129,18 +129,18 @@ def _character_summary_from_observation(observation: ObservationEnvelope) -> dic
     if summary:
         return summary
     packet = merged_packet_summary(observation)
-    status = _normalize_token(packet.get("character_status"))
+    status = _normalize_token(packet.get("discipline_status"))
     if not status:
         return {}
     return {
         key: value
         for key, value in {
-            "family": "agent_operating_character",
+            "family": "discipline",
             "status": status,
-            "validation_status": packet.get("character_validation_status"),
-            "case_count": _int(packet.get("character_case_count")),
-            "selected_case_ids": _string_list(packet.get("character_selected_case_ids"), limit=8),
-            "validator_command": packet.get("character_validator_command"),
+            "validation_status": packet.get("discipline_validation_status"),
+            "case_count": _int(packet.get("discipline_case_count")),
+            "selected_case_ids": _string_list(packet.get("discipline_selected_case_ids"), limit=8),
+            "validator_command": packet.get("discipline_validator_command"),
         }.items()
         if value not in ("", [], {}, None, 0)
     }
@@ -160,14 +160,14 @@ def _guidance_behavior_is_material(summary: Mapping[str, Any]) -> bool:
     )
 
 
-def _character_is_material(summary: Mapping[str, Any]) -> bool:
+def _discipline_is_material(summary: Mapping[str, Any]) -> bool:
     if not summary:
         return False
     status = _normalize_token(summary.get("status"))
     validation_status = _normalize_token(summary.get("validation_status"))
     return bool(
-        status in _CHARACTER_PROBLEM_STATUSES
-        or validation_status in _CHARACTER_PROBLEM_STATUSES
+        status in _DISCIPLINE_PROBLEM_STATUSES
+        or validation_status in _DISCIPLINE_PROBLEM_STATUSES
         or _int(summary.get("case_count")) > 0
         or _normalize_string(summary.get("validator_command"))
     )
@@ -295,7 +295,7 @@ def active_target_refs(observation: ObservationEnvelope) -> list[dict[str, str]]
                 label=guidance_signal.get("scope_label") or "Guidance Behavior Contract",
             )
         )
-    if _character_is_material(_character_summary_from_observation(observation)):
+    if _discipline_is_material(_discipline_summary_from_observation(observation)):
         refs.append(_ref("component", "execution-engine", label="Odylith Discipline Contract"))
     return _dedupe_refs(refs)
 
@@ -347,8 +347,8 @@ def runtime_evidence_classes(observation: ObservationEnvelope) -> list[str]:
         rows.append("tribunal_signal")
     if _guidance_behavior_is_material(_guidance_behavior_summary_from_observation(observation)):
         rows.append("guidance_behavior_contract")
-    if _character_is_material(_character_summary_from_observation(observation)):
-        rows.append("agent_operating_character_contract")
+    if _discipline_is_material(_discipline_summary_from_observation(observation)):
+        rows.append("discipline_contract")
     if _visibility_summary_is_material(_mapping(observation.visibility_summary)):
         rows.append("visibility_ledger")
     if _delivery_snapshot_is_material(_mapping(observation.delivery_snapshot)):
@@ -407,7 +407,7 @@ def alignment_signal_text(observation: ObservationEnvelope) -> str:
     tribunal = _mapping(observation.tribunal_summary)
     visibility = _mapping(observation.visibility_summary)
     guidance_behavior = _guidance_behavior_summary_from_observation(observation)
-    character = _character_summary_from_observation(observation)
+    discipline_summary = _discipline_summary_from_observation(observation)
     pieces: list[Any] = [
         packet.get("packet_state"),
         packet.get("packet_kind"),
@@ -417,13 +417,13 @@ def alignment_signal_text(observation: ObservationEnvelope) -> str:
         visibility.get("chat_visible_proof"),
         guidance_behavior.get("status"),
         guidance_behavior.get("validation_status"),
-        character.get("status"),
-        character.get("validation_status"),
+        discipline_summary.get("status"),
+        discipline_summary.get("validation_status"),
     ]
     pieces.extend(_string_list(execution.get("execution_engine_pressure_signals"), limit=6))
     pieces.extend(_string_list(guidance_behavior.get("failed_check_ids"), limit=6))
     pieces.extend(_string_list(guidance_behavior.get("selected_case_ids"), limit=6))
-    pieces.extend(_string_list(character.get("selected_case_ids"), limit=6))
+    pieces.extend(_string_list(discipline_summary.get("selected_case_ids"), limit=6))
     systemic = _mapping(tribunal.get("systemic_brief"))
     pieces.extend(
         [
@@ -589,16 +589,16 @@ def governance_facts_from_alignment(
                 91,
             )
         )
-    character = _character_summary_from_observation(observation)
-    character_status = _normalize_token(character.get("status"))
-    character_validation_status = _normalize_token(character.get("validation_status"))
+    discipline_summary = _discipline_summary_from_observation(observation)
+    discipline_status = _normalize_token(discipline_summary.get("status"))
+    discipline_validation_status = _normalize_token(discipline_summary.get("validation_status"))
     if (
-        character_status in _CHARACTER_PROBLEM_STATUSES
-        or character_validation_status in _CHARACTER_PROBLEM_STATUSES
+        discipline_status in _DISCIPLINE_PROBLEM_STATUSES
+        or discipline_validation_status in _DISCIPLINE_PROBLEM_STATUSES
     ):
         detail = (
             "Run the local Discipline validator before surfacing behavior claims."
-            if _normalize_string(character.get("validator_command"))
+            if _normalize_string(discipline_summary.get("validator_command"))
             else "The Odylith Discipline corpus or validator is not in a usable passing state."
         )
         facts.append(
@@ -606,7 +606,7 @@ def governance_facts_from_alignment(
                 "invariant",
                 "Odylith Discipline validation is not passing.",
                 detail,
-                _merge_lists(evidence_classes, ["agent_operating_character_contract"], limit=10),
+                _merge_lists(evidence_classes, ["discipline_contract"], limit=10),
                 [_ref("component", "execution-engine", label="Odylith Discipline Contract")],
                 92,
             )

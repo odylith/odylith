@@ -23,7 +23,7 @@ def test_scenario_workspace_self_reference_strip_paths_hide_benchmark_scaffold_b
     )
     _write(repo_root / "odylith" / "runtime" / "source" / "optimization-evaluation-corpus.v1.json", "{}\n")
     _write(repo_root / "odylith" / "runtime" / "source" / "guidance-behavior-evaluation-corpus.v1.json", "{}\n")
-    _write(repo_root / "odylith" / "runtime" / "source" / "agent-operating-character-evaluation-corpus.v1.json", "{}\n")
+    _write(repo_root / "odylith" / "runtime" / "source" / "discipline-evaluation-corpus.v1.json", "{}\n")
     _write(
         repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "runtime" / "source" / "optimization-evaluation-corpus.v1.json",
         "{}\n",
@@ -49,7 +49,7 @@ def test_scenario_workspace_self_reference_strip_paths_hide_benchmark_scaffold_b
         / "odylith"
         / "runtime"
         / "source"
-        / "agent-operating-character-evaluation-corpus.v1.json",
+        / "discipline-evaluation-corpus.v1.json",
         "{}\n",
     )
     _write(repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py")
@@ -77,9 +77,9 @@ def test_scenario_workspace_self_reference_strip_paths_hide_benchmark_scaffold_b
     assert Path("src/odylith/runtime/reasoning/remediator.py") in rows
     assert Path("odylith/runtime/source/optimization-evaluation-corpus.v1.json") in rows
     assert Path("odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json") in rows
-    assert Path("odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json") in rows
+    assert Path("odylith/runtime/source/discipline-evaluation-corpus.v1.json") in rows
     assert Path("src/odylith/bundle/assets/odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json") in rows
-    assert Path("src/odylith/bundle/assets/odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json") in rows
+    assert Path("src/odylith/bundle/assets/odylith/runtime/source/discipline-evaluation-corpus.v1.json") in rows
     assert Path("tests/unit/runtime/test_odylith_benchmark_runner.py") in rows
     assert Path(".odylith/runtime/odylith-benchmarks/latest-proof.v1.json") in rows
 

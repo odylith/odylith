@@ -31,7 +31,7 @@ from odylith.runtime.execution_engine.contract import TurnPresentationPolicy
 from odylith.runtime.execution_engine.contract import ValidationMatrix
 from odylith.runtime.execution_engine.contract import ExecutionHostProfile
 from odylith.runtime.execution_engine.contract import detect_execution_host_profile
-from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.governance import proof_state as proof_state_runtime
 
@@ -507,8 +507,8 @@ def build_packet_execution_engine_snapshot(
     validation_bundle = _mapping(payload.get("validation_bundle"))
     guidance_behavior = guidance_behavior_runtime.summary_from_sources(payload, context, limit=6)
     guidance_behavior_command = _string(guidance_behavior.get("validator_command"))
-    character_summary = character_runtime.summary_from_sources(payload, context, limit=6)
-    character_command = _string(character_summary.get("validator_command"))
+    discipline_summary = discipline_runtime.summary_from_sources(payload, context, limit=6)
+    discipline_command = _string(discipline_summary.get("validator_command"))
     recommended_tests = _strings(
         [
             _string(row.get("path"))
@@ -516,7 +516,7 @@ def build_packet_execution_engine_snapshot(
             if isinstance(row, Mapping)
         ]
     )
-    recommended_commands = _strings(payload.get("recommended_commands"), guidance_behavior_command, character_command)
+    recommended_commands = _strings(payload.get("recommended_commands"), guidance_behavior_command, discipline_command)
     relevant_docs = _strings(payload.get("relevant_docs"), payload.get("docs"))
     user_instructions = _instruction_candidates(
         payload.get("user_instructions"),
@@ -563,7 +563,7 @@ def build_packet_execution_engine_snapshot(
     )
     execution_profile_context = _mapping(context.get("execution_profile"))
     guidance_behavior_summary_present = bool(guidance_behavior)
-    character_summary_present = bool(character_summary)
+    discipline_summary_present = bool(discipline_summary)
     host_probe_required = bool(
         route_ready
         or native_spawn_ready
@@ -578,7 +578,7 @@ def build_packet_execution_engine_snapshot(
             model_name=_string(execution_profile_context.get("model")),
             environ=environ,
         )
-        if host_probe_required or not (guidance_behavior_summary_present or character_summary_present)
+        if host_probe_required or not (guidance_behavior_summary_present or discipline_summary_present)
         else ExecutionHostProfile.detected(
             host_family=_string(payload.get("host_family"))
             or _string(context.get("host_family"))

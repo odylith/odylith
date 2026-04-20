@@ -2,7 +2,7 @@
 
 ## Odylith Discipline Contract
 - Benchmark owns Product Truth for Odylith Discipline. The
-  `agent_operating_character` family measures hard laws, unknown pressure,
+  `discipline` family measures hard laws, unknown pressure,
   mixed pressure, learning replay, false allow/block behavior, intervention
   precision, zero-credit hot paths, and public-claim gating.
 - Quick family proof stays local-only; public/release claims require full
@@ -117,7 +117,7 @@ reviewer framing that explains how Odylith should be compared.
   fresh proof, bound delegation contracts, and distinguish hidden
   intervention payloads from chat-visible proof.
 - The tracked corpus now tags `guidance_behavior` and
-  `agent_operating_character` quick scenarios to B-110 so the v0.1.11 program
+  `discipline` quick scenarios to B-110 so the v0.1.11 program
   is visible to benchmark selection, adoption summaries, and advisory widening
   checks.
 - Proof-discipline summary metrics are first-class benchmark outputs now:
@@ -794,7 +794,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
   - Scope: B-110
-  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md
+  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
 - **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
   - Scope: B-021, B-022
   - Evidence: README.md, docs/benchmarks/README.md +3 more

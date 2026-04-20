@@ -11,7 +11,7 @@ from typing import Sequence
 from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.execution_engine import runtime_surface_governance
-from odylith.runtime.character import runtime as character_runtime
+from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.governance import guidance_behavior_runtime
 
 
@@ -195,14 +195,14 @@ def _recommended_validation(payload: Mapping[str, Any], context_packet: Mapping[
     )
     guidance_behavior = guidance_behavior_runtime.summary_from_sources(payload, context_packet, limit=6)
     guidance_behavior_command = _string(guidance_behavior.get("validator_command"))
-    character_summary = character_runtime.summary_from_sources(payload, context_packet, limit=6)
-    character_command = _string(character_summary.get("validator_command"))
+    discipline_summary = discipline_runtime.summary_from_sources(payload, context_packet, limit=6)
+    discipline_command = _string(discipline_summary.get("validator_command"))
     recommended_tests = [
         _string(row.get("path"))
         for row in payload.get("recommended_tests", [])
         if isinstance(row, Mapping) and _string(row.get("path"))
     ]
-    recommended_commands = _strings(payload.get("recommended_commands"), guidance_behavior_command, character_command)
+    recommended_commands = _strings(payload.get("recommended_commands"), guidance_behavior_command, discipline_command)
     strict_gate_commands = _strings(validation_bundle.get("strict_gate_commands"))
     strict_gate_count = int(validation_bundle.get("strict_gate_command_count", 0) or 0)
     if strict_gate_count <= 0:
@@ -219,8 +219,8 @@ def _recommended_validation(payload: Mapping[str, Any], context_packet: Mapping[
             ),
             "guidance_behavior_status": _string(guidance_behavior.get("status")),
             "guidance_behavior_validation_status": _string(guidance_behavior.get("validation_status")),
-            "character_status": _string(character_summary.get("status")),
-            "character_validation_status": _string(character_summary.get("validation_status")),
+            "discipline_status": _string(discipline_summary.get("status")),
+            "discipline_validation_status": _string(discipline_summary.get("validation_status")),
         }.items()
         if value not in ("", [], {}, None, False, 0)
     }

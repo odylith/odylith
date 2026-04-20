@@ -1,4 +1,9 @@
-"""Install, upgrade, and runtime management entrypoints for Odylith."""
+"""Install, upgrade, and runtime management entrypoints for Odylith.
+
+Managed guidance refresh keeps the shared proof lanes explicit, including
+guidance behavior pressure cases, `odylith validate guidance-behavior --repo-root .`,
+and `odylith benchmark --profile quick --family guidance_behavior`.
+"""
 
 from __future__ import annotations
 

@@ -15,10 +15,10 @@
     "empty_reasons": [],
     "explicit_event_count": 33,
     "mapped_workstream_evidence_count": 18,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 34
+    "timeline_event_count": 33
   },
   "name": "Release",
   "path_prefixes": [
@@ -46,27 +46,11 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 267,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "release"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "ts_iso": "2026-04-17T23:58:27-07:00",
-      "workstreams": []
-    },
-    {
-      "artifacts": [
-        "odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json",
-        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
-        "src/odylith/runtime/character/benchmark.py",
-        "src/odylith/runtime/character/signals.py",
-        "src/odylith/runtime/character/support.py"
+        "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/discipline/benchmark.py",
+        "src/odylith/runtime/discipline/signals.py",
+        "src/odylith/runtime/discipline/support.py"
       ],
       "confidence": "high",
       "event_index": 262,
@@ -114,7 +98,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate agent-operating-character and validate guidance-behavior passed, quick agent_operating_character report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.",
+      "summary": "B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate discipline and validate guidance-behavior passed, quick discipline report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.",
       "ts_iso": "2026-04-17T20:20:18-07:00",
       "workstreams": [
         "B-110"
@@ -179,8 +163,8 @@
     },
     {
       "artifacts": [
-        "odylith/atlas/source/odylith-adaptive-agent-operating-character-loop.mmd",
-        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md"
+        "odylith/atlas/source/odylith-adaptive-discipline-loop.mmd",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
       "confidence": "high",
       "event_index": 253,

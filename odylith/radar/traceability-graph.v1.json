@@ -6933,8 +6933,8 @@
         "D-039",
         "D-040"
       ],
-      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-agent-operating-character-with-learning-spine.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-discipline-with-learning-spine.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -7050,8 +7050,8 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [],
-      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-governance-alignment.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-governance-alignment.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -7153,7 +7153,7 @@
         {
           "umbrella_id": "B-110",
           "wave_id": "W1",
-          "wave_label": "Adaptive Character Governance Alignment",
+          "wave_label": "Adaptive Discipline Governance Alignment",
           "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
@@ -7176,8 +7176,8 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [],
-      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-runtime-and-budget-kernel.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-runtime-and-budget-kernel.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -7279,7 +7279,7 @@
         {
           "umbrella_id": "B-110",
           "wave_id": "W2",
-          "wave_label": "Adaptive Character Runtime And Budget Kernel",
+          "wave_label": "Adaptive Discipline Runtime And Budget Kernel",
           "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
@@ -7302,8 +7302,8 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [],
-      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-learning-spine.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-learning-spine.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -7405,7 +7405,7 @@
         {
           "umbrella_id": "B-110",
           "wave_id": "W3",
-          "wave_label": "Adaptive Character Learning Spine",
+          "wave_label": "Adaptive Discipline Learning Spine",
           "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
@@ -7428,8 +7428,8 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [],
-      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-subsystem-integration.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-subsystem-integration.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -7531,7 +7531,7 @@
         {
           "umbrella_id": "B-110",
           "wave_id": "W4",
-          "wave_label": "Adaptive Character Subsystem Integration",
+          "wave_label": "Adaptive Discipline Subsystem Integration",
           "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
@@ -7554,8 +7554,8 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [],
-      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-tooling-and-host-parity.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-tooling-and-host-parity.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -7657,7 +7657,7 @@
         {
           "umbrella_id": "B-110",
           "wave_id": "W5",
-          "wave_label": "Adaptive Character Tooling And Host Parity",
+          "wave_label": "Adaptive Discipline Tooling And Host Parity",
           "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
@@ -7680,8 +7680,8 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [],
-      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-benchmark-sovereignty.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-benchmark-sovereignty.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -7783,7 +7783,7 @@
         {
           "umbrella_id": "B-110",
           "wave_id": "W6",
-          "wave_label": "Adaptive Character Benchmark Sovereignty",
+          "wave_label": "Adaptive Discipline Benchmark Sovereignty",
           "wave_status": "complete",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
@@ -7808,8 +7808,8 @@
       "related_diagram_ids": [
         "D-040"
       ],
-      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-surfaces-and-release-proof.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -7911,7 +7911,7 @@
         {
           "umbrella_id": "B-110",
           "wave_id": "W7",
-          "wave_label": "Adaptive Character Surfaces And Release Proof",
+          "wave_label": "Adaptive Discipline Surfaces And Release Proof",
           "wave_status": "active",
           "role": "primary",
           "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json"
@@ -9348,7 +9348,7 @@
       "waves": [
         {
           "wave_id": "W1",
-          "label": "Adaptive Character Governance Alignment",
+          "label": "Adaptive Discipline Governance Alignment",
           "status": "complete",
           "summary": "Bind B-110 and child slices to v0.1.11, update source governance, Registry, Atlas, AGENTS, guidelines, skills, Compass, and release targeting before runtime implementation.",
           "depends_on": [],
@@ -9360,16 +9360,16 @@
           "gate_refs": [
             {
               "workstream_id": "B-111",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
               "label": "Governance alignment gate"
             }
           ]
         },
         {
           "wave_id": "W2",
-          "label": "Adaptive Character Runtime And Budget Kernel",
+          "label": "Adaptive Discipline Runtime And Budget Kernel",
           "status": "complete",
-          "summary": "Add the local character runtime package, deterministic hard laws, open-world pressure observations, stance vector inference, ranked affordances, and runtime budget enforcement.",
+          "summary": "Add the local discipline runtime package, deterministic hard laws, open-world pressure observations, stance vector inference, ranked affordances, and runtime budget enforcement.",
           "depends_on": [
             "W1"
           ],
@@ -9381,14 +9381,14 @@
           "gate_refs": [
             {
               "workstream_id": "B-112",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
               "label": "Runtime and budget kernel gate"
             }
           ]
         },
         {
           "wave_id": "W3",
-          "label": "Adaptive Character Learning Spine",
+          "label": "Adaptive Discipline Learning Spine",
           "status": "complete",
           "summary": "Add compact learning events, retention tiers, recurrence fingerprints, noise suppression, and benchmark/Tribunal promotion hooks.",
           "depends_on": [
@@ -9402,16 +9402,16 @@
           "gate_refs": [
             {
               "workstream_id": "B-113",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
               "label": "Learning spine gate"
             }
           ]
         },
         {
           "wave_id": "W4",
-          "label": "Adaptive Character Subsystem Integration",
+          "label": "Adaptive Discipline Subsystem Integration",
           "status": "complete",
-          "summary": "Connect Context, Execution, Proof State, Memory, Router, Orchestrator, Intervention, Chatter, Tribunal, and surfaces through compact character contracts.",
+          "summary": "Connect Context, Execution, Proof State, Memory, Router, Orchestrator, Intervention, Chatter, Tribunal, and surfaces through compact discipline contracts.",
           "depends_on": [
             "W3"
           ],
@@ -9423,16 +9423,16 @@
           "gate_refs": [
             {
               "workstream_id": "B-114",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
               "label": "Subsystem integration gate"
             }
           ]
         },
         {
           "wave_id": "W5",
-          "label": "Adaptive Character Tooling And Host Parity",
+          "label": "Adaptive Discipline Tooling And Host Parity",
           "status": "complete",
-          "summary": "Add character CLI commands, shared skill, Codex and Claude shims, and lane parity without host-model calls on hot character paths.",
+          "summary": "Add discipline CLI commands, shared skill, Codex and Claude shims, and lane parity without host-model calls on hot discipline paths.",
           "depends_on": [
             "W4"
           ],
@@ -9444,16 +9444,16 @@
           "gate_refs": [
             {
               "workstream_id": "B-115",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
               "label": "Tooling and host parity gate"
             }
           ]
         },
         {
           "wave_id": "W6",
-          "label": "Adaptive Character Benchmark Sovereignty",
+          "label": "Adaptive Discipline Benchmark Sovereignty",
           "status": "complete",
-          "summary": "Add the agent_operating_character benchmark family, adaptive replay and novelty suites, latency and credit metrics, and publication guards while keeping guidance_behavior green.",
+          "summary": "Add the discipline benchmark family, adaptive replay and novelty suites, latency and credit metrics, and publication guards while keeping guidance_behavior green.",
           "depends_on": [
             "W5"
           ],
@@ -9465,14 +9465,14 @@
           "gate_refs": [
             {
               "workstream_id": "B-116",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
               "label": "Benchmark sovereignty gate"
             }
           ]
         },
         {
           "wave_id": "W7",
-          "label": "Adaptive Character Surfaces And Release Proof",
+          "label": "Adaptive Discipline Surfaces And Release Proof",
           "status": "active",
           "summary": "Refresh governed surfaces, run browser checks, restore pinned dogfood before shipped-runtime claims, and block public claims until full proof passes.",
           "depends_on": [
@@ -9486,7 +9486,7 @@
           "gate_refs": [
             {
               "workstream_id": "B-117",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
               "label": "Surfaces and release proof gate"
             }
           ]
@@ -10263,56 +10263,56 @@
       "type": "workstream",
       "label": "Discipline, Credit-Safe And Benchmark-Proved",
       "status": "implementation",
-      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-agent-operating-character-with-learning-spine.md"
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-discipline-with-learning-spine.md"
     },
     {
       "id": "B-111",
       "type": "workstream",
       "label": "Discipline Governance Alignment",
       "status": "implementation",
-      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-governance-alignment.md"
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-governance-alignment.md"
     },
     {
       "id": "B-112",
       "type": "workstream",
       "label": "Discipline Runtime And Budget Kernel",
       "status": "implementation",
-      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-runtime-and-budget-kernel.md"
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-runtime-and-budget-kernel.md"
     },
     {
       "id": "B-113",
       "type": "workstream",
       "label": "Discipline Learning Spine",
       "status": "implementation",
-      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-learning-spine.md"
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-learning-spine.md"
     },
     {
       "id": "B-114",
       "type": "workstream",
       "label": "Discipline Subsystem Integration",
       "status": "implementation",
-      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-subsystem-integration.md"
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-subsystem-integration.md"
     },
     {
       "id": "B-115",
       "type": "workstream",
       "label": "Discipline Tooling And Host Parity",
       "status": "implementation",
-      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-tooling-and-host-parity.md"
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-tooling-and-host-parity.md"
     },
     {
       "id": "B-116",
       "type": "workstream",
       "label": "Discipline Benchmark Sovereignty",
       "status": "implementation",
-      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-benchmark-sovereignty.md"
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-benchmark-sovereignty.md"
     },
     {
       "id": "B-117",
       "type": "workstream",
       "label": "Discipline Surfaces And Release Proof",
       "status": "implementation",
-      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-character-surfaces-and-release-proof.md"
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md"
     },
     {
       "id": "B-118",
@@ -10858,7 +10858,7 @@
       "type": "diagram",
       "label": "Discipline Loop",
       "diagram_id": "D-039",
-      "file": "odylith/atlas/source/odylith-adaptive-agent-operating-character-loop.mmd"
+      "file": "odylith/atlas/source/odylith-adaptive-discipline-loop.mmd"
     },
     {
       "id": "diagram:D-040",
@@ -11330,10 +11330,10 @@
       "file": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md"
     },
     {
-      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "type": "plan",
-      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
-      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md"
+      "label": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "file": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
@@ -14373,7 +14373,7 @@
     },
     {
       "source": "B-110",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -14383,7 +14383,7 @@
     },
     {
       "source": "B-111",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -14393,7 +14393,7 @@
     },
     {
       "source": "B-112",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -14403,7 +14403,7 @@
     },
     {
       "source": "B-113",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -14413,7 +14413,7 @@
     },
     {
       "source": "B-114",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -14423,7 +14423,7 @@
     },
     {
       "source": "B-115",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -14433,7 +14433,7 @@
     },
     {
       "source": "B-116",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -14448,7 +14448,7 @@
     },
     {
       "source": "B-117",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -15439,7 +15439,7 @@
       "category": "topology_conflict",
       "message": "B-110: autofix skipped `related_diagram_ids` due to metadata conflict",
       "idea_id": "B-110",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-17-agent-operating-character-with-learning-spine.md: current='D-039' candidate='D-039,D-040'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-17-discipline-with-learning-spine.md: current='D-039' candidate='D-039,D-040'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
     }
   ],
@@ -15461,5 +15461,5 @@
     "warning_count": 5,
     "warning_item_count": 5
   },
-  "generated_utc": "2026-04-19 01:25:35Z"
+  "generated_utc": "2026-04-20 01:11:33Z"
 }

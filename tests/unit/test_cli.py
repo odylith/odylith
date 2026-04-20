@@ -1176,23 +1176,23 @@ def test_validate_guidance_behavior_dispatches_fast_path(monkeypatch, tmp_path: 
     assert captured["argv"] == ["--repo-root", str(tmp_path), "--case-id", "guidance-a", "--json"]
 
 
-def test_validate_agent_operating_character_dispatches_fast_path(monkeypatch, tmp_path: Path) -> None:
+def test_validate_discipline_dispatches_fast_path(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
 
     def fake_validate_main(argv: list[str]) -> int:
         captured["argv"] = list(argv)
         return 0
 
-    monkeypatch.setattr(cli.validate_agent_operating_character, "main", fake_validate_main)
+    monkeypatch.setattr(cli.validate_discipline, "main", fake_validate_main)
 
     rc = cli.main(
         [
             "validate",
-            "agent-operating-character",
+            "discipline",
             "--repo-root",
             str(tmp_path),
             "--case-id",
-            "character-credit-safe-hot-path",
+            "discipline-credit-safe-hot-path",
             "--json",
         ]
     )
@@ -1202,17 +1202,17 @@ def test_validate_agent_operating_character_dispatches_fast_path(monkeypatch, tm
         "--repo-root",
         str(tmp_path),
         "--case-id",
-        "character-credit-safe-hot-path",
+        "discipline-credit-safe-hot-path",
         "--json",
     ]
 
 
-def test_character_check_dispatches_to_shared_cli(monkeypatch, tmp_path: Path) -> None:
+def test_discipline_check_dispatches_to_shared_cli(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
 
-    class _CharacterModule:
+    class _DisciplineModule:
         @staticmethod
-        def run_character(argv: list[str]) -> int:
+        def run_discipline(argv: list[str]) -> int:
             captured["argv"] = list(argv)
             return 7
 
@@ -1220,14 +1220,14 @@ def test_character_check_dispatches_to_shared_cli(monkeypatch, tmp_path: Path) -
     monkeypatch.setattr(
         cli,
         "_module_handle",
-        lambda module_name: _CharacterModule if module_name == "odylith.runtime.character.cli" else real_module_handle(module_name),
+        lambda module_name: _DisciplineModule if module_name == "odylith.runtime.discipline.cli" else real_module_handle(module_name),
     )
     intent = tmp_path / "intent.txt"
     intent.write_text("Say it is fixed now.", encoding="utf-8")
 
     rc = cli.main(
         [
-            "character",
+            "discipline",
             "check",
             "--repo-root",
             str(tmp_path),
@@ -1254,12 +1254,12 @@ def test_character_check_dispatches_to_shared_cli(monkeypatch, tmp_path: Path) -
     ]
 
 
-def test_discipline_alias_dispatches_to_shared_character_cli(monkeypatch, tmp_path: Path) -> None:
+def test_discipline_dispatches_to_shared_discipline_cli(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
 
-    class _CharacterModule:
+    class _DisciplineModule:
         @staticmethod
-        def run_character(argv: list[str]) -> int:
+        def run_discipline(argv: list[str]) -> int:
             captured["argv"] = list(argv)
             return 9
 
@@ -1267,7 +1267,7 @@ def test_discipline_alias_dispatches_to_shared_character_cli(monkeypatch, tmp_pa
     monkeypatch.setattr(
         cli,
         "_module_handle",
-        lambda module_name: _CharacterModule if module_name == "odylith.runtime.character.cli" else real_module_handle(module_name),
+        lambda module_name: _DisciplineModule if module_name == "odylith.runtime.discipline.cli" else real_module_handle(module_name),
     )
     intent = tmp_path / "intent.txt"
     intent.write_text("Say it is fixed now.", encoding="utf-8")
@@ -1301,12 +1301,12 @@ def test_discipline_alias_dispatches_to_shared_character_cli(monkeypatch, tmp_pa
     ]
 
 
-def test_character_status_and_explain_dispatch_to_shared_cli(monkeypatch, tmp_path: Path) -> None:
+def test_discipline_status_and_explain_dispatch_to_shared_cli(monkeypatch, tmp_path: Path) -> None:
     captured: list[list[str]] = []
 
-    class _CharacterModule:
+    class _DisciplineModule:
         @staticmethod
-        def run_character(argv: list[str]) -> int:
+        def run_discipline(argv: list[str]) -> int:
             captured.append(list(argv))
             return 0
 
@@ -1314,18 +1314,18 @@ def test_character_status_and_explain_dispatch_to_shared_cli(monkeypatch, tmp_pa
     monkeypatch.setattr(
         cli,
         "_module_handle",
-        lambda module_name: _CharacterModule if module_name == "odylith.runtime.character.cli" else real_module_handle(module_name),
+        lambda module_name: _DisciplineModule if module_name == "odylith.runtime.discipline.cli" else real_module_handle(module_name),
     )
 
-    assert cli.main(["character", "status", "--repo-root", str(tmp_path), "--json"]) == 0
+    assert cli.main(["discipline", "status", "--repo-root", str(tmp_path), "--json"]) == 0
     assert cli.main(
         [
-            "character",
+            "discipline",
             "explain",
             "--repo-root",
             str(tmp_path),
             "--decision-id",
-            "character:codex:dev:abc",
+            "discipline:codex:dev:abc",
             "--json",
         ]
     ) == 0
@@ -1337,7 +1337,7 @@ def test_character_status_and_explain_dispatch_to_shared_cli(monkeypatch, tmp_pa
             str(tmp_path),
             "explain",
             "--decision-id",
-            "character:codex:dev:abc",
+            "discipline:codex:dev:abc",
             "--json",
         ],
     ]
@@ -2146,12 +2146,12 @@ def test_start_bootstrap_lane_emits_payload(monkeypatch, tmp_path: Path, capsys)
 
 
 def test_start_bootstrap_payload_forwards_turn_context(monkeypatch, tmp_path: Path) -> None:
-    from odylith.runtime.context_engine import odylith_context_engine_store as context_store
+    from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 
     captured: dict[str, object] = {}
 
     monkeypatch.setattr(
-        context_store,
+        packet_session_runtime,
         "build_session_bootstrap",
         lambda **kwargs: captured.update(kwargs) or {"packet_kind": "bootstrap_session"},
     )
@@ -2181,7 +2181,7 @@ def test_start_bootstrap_payload_forwards_turn_context(monkeypatch, tmp_path: Pa
 
     assert payload == {"packet_kind": "bootstrap_session"}
     assert captured["intent"] == "Why doesn't this admin panel take full width?"
-    assert captured["surfaces"] == ["compass"]
+    assert captured["generated_surfaces"] == ["compass"]
     assert captured["visible_text"] == ["Current release"]
     assert captured["active_tab"] == "releases"
     assert captured["user_turn_id"] == "turn-3"

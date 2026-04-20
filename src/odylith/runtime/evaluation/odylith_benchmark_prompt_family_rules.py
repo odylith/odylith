@@ -16,7 +16,7 @@ _ZERO_SUPPORT_DOC_EXPANSION_FAMILIES = frozenset(
         "explicit_workstream",
         "governed_surface_sync",
         "guidance_behavior",
-        "agent_operating_character",
+        "discipline",
         "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
@@ -137,12 +137,12 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
         if ".agents/skills/" in lowered and lowered.endswith("/skill.md"):
             return 2
         return 4
-    if normalized_family == "agent_operating_character":
-        if lowered.endswith("/agent-operating-character-evaluation-corpus.v1.json"):
+    if normalized_family == "discipline":
+        if lowered.endswith("/discipline-evaluation-corpus.v1.json"):
             return 0
-        if lowered.endswith("/validate_agent_operating_character.py"):
+        if lowered.endswith("/validate_discipline.py"):
             return 0
-        if lowered.startswith("src/odylith/runtime/character/") or "/src/odylith/runtime/character/" in lowered:
+        if lowered.startswith("src/odylith/runtime/discipline/") or "/src/odylith/runtime/discipline/" in lowered:
             return 1
         if lowered == "agents.md" or lowered.endswith("/agents.md"):
             return 1
@@ -161,7 +161,7 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
         if lowered.endswith("/agents-guidelines/odylith_context_engine.md"):
             return 2
         if lowered.endswith("/skill.md") and (
-            "odylith-discipline" in lowered or "odylith-agent-operating-character" in lowered
+            "odylith-discipline" in lowered or "odylith-discipline" in lowered
         ):
             return 2
         return 4

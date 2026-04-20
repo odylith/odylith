@@ -3,7 +3,7 @@
 ## Odylith Discipline Contract
 - Context Engine owns the Attention facet. It supplies truth, ambiguity,
   anchors, workstream/component refs, proof posture, cached priors, and compact
-  `character_summary` inputs when relevant.
+  `discipline_summary` inputs when relevant.
 - Packet construction may use Tier 0 and bounded Tier 1 local evidence only.
   It must not run the full discipline validator, call host/provider models,
   spawn subagents, expand projections, run broad scans, or execute benchmarks
@@ -573,15 +573,15 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-04-17 · Implementation:** B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate agent-operating-character and validate guidance-behavior passed, quick agent_operating_character report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.
+- **2026-04-17 · Implementation:** B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate discipline and validate guidance-behavior passed, quick discipline report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.
   - Scope: B-110
-  - Evidence: odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md +3 more
+  - Evidence: odylith/runtime/source/discipline-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md +3 more
 - **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
   - Scope: B-110
-  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md
+  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
 - **2026-04-17 · Implementation:** B-110 Odylith Discipline source-local proof landed: zero-credit validator, guidance-behavior validator, quick benchmark family selection, and Discipline quick benchmark are green; pinned dogfood runtime proof remains blocked by managed runtime drift.
   - Scope: B-110, B-111, B-112, B-113
-  - Evidence: odylith/runtime/source/agent-operating-character-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md +2 more
+  - Evidence: odylith/runtime/source/discipline-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md +2 more
 - **2026-04-16 · Implementation:** Context Engine and Execution Engine alignment hardened stale snapshot handling across packet summaries, router assessment, remediator execution, and benchmark proof with fail-closed canonical execution-engine identity checks; runtime, integration, registry, backlog, atlas, sync, and diff hygiene validation passed.
   - Scope: B-099
   - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py +3 more

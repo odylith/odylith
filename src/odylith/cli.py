@@ -48,7 +48,7 @@ _CONTEXT_ENGINE_MODULE = "odylith.runtime.context_engine.odylith_context_engine"
 _VERSION_TRUTH_MODULE = "odylith.runtime.governance.version_truth"
 _BENCHMARK_COMPARE_MODULE = "odylith.runtime.evaluation.benchmark_compare"
 _PROGRAM_WAVE_AUTHORING_MODULE = "odylith.runtime.governance.program_wave_authoring"
-_CHARACTER_CLI_MODULE = "odylith.runtime.character.cli"
+_DISCIPLINE_CLI_MODULE = "odylith.runtime.discipline.cli"
 _MAINTAINER_LANE_STATUS_MODULE = "odylith.runtime.governance.maintainer_lane_status"
 _BACKLOG_AUTHORING_MODULE = "odylith.runtime.governance.backlog_authoring"
 _COMPASS_LOG_MODULE = "odylith.runtime.common.log_compass_timeline_event"
@@ -76,8 +76,7 @@ _VALIDATE_COMMAND_MODULES = {
     "casebook-source": _CASEBOOK_SOURCE_VALIDATION_MODULE,
     "component-registry": "odylith.runtime.governance.validate_component_registry_contract",
     "component-registry-contract": "odylith.runtime.governance.validate_component_registry_contract",
-    "discipline": "odylith.runtime.governance.validate_agent_operating_character",
-    "agent-operating-character": "odylith.runtime.governance.validate_agent_operating_character",
+    "discipline": "odylith.runtime.governance.validate_discipline",
     "guidance-behavior": "odylith.runtime.governance.validate_guidance_behavior",
     "guidance-portability": "odylith.runtime.governance.validate_guidance_portability",
     "plan-risk-mitigation": "odylith.runtime.governance.validate_plan_risk_mitigation_contract",
@@ -204,8 +203,8 @@ auto_promote_workstream_phase = _register_lazy_module("odylith.runtime.governanc
 sync_component_spec_requirements = _register_lazy_module("odylith.runtime.governance.sync_component_spec_requirements")
 version_truth = _register_lazy_module(_VERSION_TRUTH_MODULE)
 validate_guidance_behavior = _register_lazy_module("odylith.runtime.governance.validate_guidance_behavior")
-validate_agent_operating_character = _register_lazy_module(
-    "odylith.runtime.governance.validate_agent_operating_character"
+validate_discipline = _register_lazy_module(
+    "odylith.runtime.governance.validate_discipline"
 )
 validate_guidance_portability = _register_lazy_module("odylith.runtime.governance.validate_guidance_portability")
 validate_plan_traceability_contract = _register_lazy_module("odylith.runtime.governance.validate_plan_traceability_contract")
@@ -1404,22 +1403,22 @@ def _cmd_wave(args: argparse.Namespace) -> int:
     )
 
 
-def _cmd_character(args: argparse.Namespace) -> int:
+def _cmd_discipline(args: argparse.Namespace) -> int:
     forwarded: list[str] = []
-    if args.character_command == "check":
+    if args.discipline_command == "check":
         forwarded.extend(["--intent-file", str(args.intent_file)])
         if str(getattr(args, "host", "")).strip():
             forwarded.extend(["--host", str(args.host)])
         if str(getattr(args, "lane", "")).strip():
             forwarded.extend(["--lane", str(args.lane)])
-    elif args.character_command == "explain":
+    elif args.discipline_command == "explain":
         forwarded.extend(["--decision-id", str(args.decision_id)])
     if bool(getattr(args, "as_json", False)):
         forwarded.append("--json")
-    return _module_attr(_CHARACTER_CLI_MODULE, "run_character")(
+    return _module_attr(_DISCIPLINE_CLI_MODULE, "run_discipline")(
         ensure_repo_root_args(
             repo_root=args.repo_root,
-            argv=[str(args.character_command).strip(), *forwarded],
+            argv=[str(args.discipline_command).strip(), *forwarded],
         )
     )
 
@@ -2109,7 +2108,7 @@ def build_parser() -> argparse.ArgumentParser:
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
         child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
     discipline = subparsers.add_parser("discipline", help="Inspect Odylith Discipline behavior.")
-    discipline_subparsers = discipline.add_subparsers(dest="character_command", required=True)
+    discipline_subparsers = discipline.add_subparsers(dest="discipline_command", required=True)
     discipline_status = discipline_subparsers.add_parser("status", help="Show local discipline readiness and budget posture.")
     discipline_status.add_argument("--repo-root", default=".", help="Consumer repository root.")
     discipline_status.add_argument("--json", action="store_true", dest="as_json", help="Render status as JSON.")
@@ -2445,20 +2444,20 @@ def main(argv: list[str] | None = None) -> int:
                 return _run_module_main(_VERSION_TRUTH_MODULE, ["--repo-root", repo_root, *forwarded, "check"])
             target = _VALIDATE_COMMAND_MODULES.get(tokens[1])
             if _help_requested(forwarded):
-                if tokens[1] == "agent-operating-character" and target is not None:
+                if tokens[1] == "discipline" and target is not None:
                     return _run_module_main(target, ["--repo-root", repo_root, *forwarded])
                 parser = build_parser()
                 args = parser.parse_args(tokens)
                 return _cmd_validate(args)
             if target is not None:
                 return _run_module_main(target, ["--repo-root", repo_root, *forwarded])
-        if tokens[0] in {"discipline", "character"}:
+        if tokens[0] == "discipline":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
             if forwarded and str(forwarded[0]).strip() == "check" and not _forwarded_has_flag(forwarded, "--lane"):
                 forwarded = list(forwarded)
                 insert_at = forwarded.index("--json") if "--json" in forwarded else len(forwarded)
                 forwarded[insert_at:insert_at] = ["--lane", "dev"]
-            return _module_attr(_CHARACTER_CLI_MODULE, "run_character")(
+            return _module_attr(_DISCIPLINE_CLI_MODULE, "run_discipline")(
                 ensure_repo_root_args(repo_root=repo_root, argv=forwarded),
             )
         if tokens[0] == "lane" and len(tokens) >= 2 and tokens[1] == "status":
@@ -2649,8 +2648,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_program(args)
     if args.command == "wave":
         return _cmd_wave(args)
-    if args.command in {"character", "discipline"}:
-        return _cmd_character(args)
+    if args.command == "discipline":
+        return _cmd_discipline(args)
     if args.command == "governance":
         return _cmd_governance(args)
     if args.command == "validate":

@@ -795,6 +795,10 @@ def test_anti_slop_guidance_and_skill_bundle_assets_stay_synced() -> None:
             ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
         ),
         (
+            ROOT / "odylith" / "agents-guidelines" / "SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+            ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+        ),
+        (
             ROOT / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
             ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
         ),
@@ -1059,7 +1063,7 @@ def test_compass_extracts_use_direct_support_owners() -> None:
 
 def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
     local_helper_bans = {
-        ROOT / "src" / "odylith" / "runtime" / "character" / "runtime.py": ("def _mapping(",),
+        ROOT / "src" / "odylith" / "runtime" / "discipline" / "runtime.py": ("def _mapping(",),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "execution_engine_handshake.py": ("def _mapping(",),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_runtime_surface_summary.py": ("def _mapping(",),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_quality.py": ("def _int_value(",),
@@ -1181,7 +1185,7 @@ def test_selected_runtime_and_install_slices_use_shared_json_release_and_severit
     json_owner_paths = (
         ROOT / "src" / "odylith" / "runtime" / "governance" / "guidance_behavior_benchmark_contracts.py",
         ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_guidance_behavior.py",
-        ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_agent_operating_character.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_discipline.py",
         ROOT / "src" / "odylith" / "runtime" / "governance" / "release_truth_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "tooling_dashboard_surface_status.py",
         ROOT / "src" / "odylith" / "install" / "release_assets.py",
@@ -1196,7 +1200,7 @@ def test_selected_runtime_and_install_slices_use_shared_json_release_and_severit
     for path in json_owner_paths:
         text = path.read_text(encoding="utf-8")
         assert "from odylith.common.json_objects import " in text
-        if path.name in {"validate_guidance_behavior.py", "validate_agent_operating_character.py"}:
+        if path.name in {"validate_guidance_behavior.py", "validate_discipline.py"}:
             assert "json.loads(path.read_text" not in text
         if path.name == "guidance_behavior_benchmark_contracts.py":
             assert "def _read_json_object(" in text
@@ -1243,17 +1247,17 @@ def test_selected_runtime_and_install_slices_use_shared_json_release_and_severit
 
     severity_paths = (
         ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_guidance_behavior.py",
-        ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_agent_operating_character.py",
+        ROOT / "src" / "odylith" / "runtime" / "governance" / "validate_discipline.py",
         ROOT / "src" / "odylith" / "runtime" / "governance" / "guidance_behavior_runtime.py",
     )
     for path in severity_paths:
         text = path.read_text(encoding="utf-8")
         assert "from odylith.contracts.severity import " in text
     validate_guidance_text = severity_paths[0].read_text(encoding="utf-8")
-    validate_character_text = severity_paths[1].read_text(encoding="utf-8")
+    validate_discipline_text = severity_paths[1].read_text(encoding="utf-8")
     runtime_text = severity_paths[2].read_text(encoding="utf-8")
     assert "_VALID_SEVERITIES = {" not in validate_guidance_text
-    assert "VALID_SEVERITIES = {" not in validate_character_text
+    assert "VALID_SEVERITIES = {" not in validate_discipline_text
     assert "validate_guidance_behavior._VALID_SEVERITIES" not in runtime_text
 
 

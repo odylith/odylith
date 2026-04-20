@@ -295,7 +295,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-04-17 · Implementation:** B-110 aggressive QA hardened visible-proof command handling, transcript-safe practice memory, malformed counter validation, and structured refresh result coercion.
   - Scope: B-110
-  - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-agent-operating-character-credit-safe-and-benchmark-proved.md, src/odylith/runtime/character/laws.py +7 more
+  - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md, src/odylith/runtime/discipline/laws.py +7 more
 - **2026-04-17 · Decision:** Queued B-126 Conditional Release-Targeted Backlog Authoring for v0.1.12 next release targeting; status remains queued and implementation is intentionally deferred out of the v0.1.11 lane.
   - Scope: B-126
   - Evidence: odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl
