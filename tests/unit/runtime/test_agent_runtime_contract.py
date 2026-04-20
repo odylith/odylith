@@ -13,6 +13,50 @@ def test_default_host_session_id_accepts_host_session_environment_keys() -> None
     ) == "claude-session-7"
 
 
+def test_default_host_session_id_respects_explicit_empty_environment() -> None:
+    assert agent_runtime_contract.default_host_session_id(environ={}) == ""
+
+
+def test_default_host_session_id_prefers_matching_host_family_key() -> None:
+    environ = {
+        "CODEX_THREAD_ID": "codex-thread-7",
+        "CLAUDE_CODE_SESSION_ID": "claude-session-7",
+    }
+    assert agent_runtime_contract.default_host_session_id(environ=environ, host_family="claude") == "claude-session-7"
+    assert agent_runtime_contract.default_host_session_id(environ=environ, host_family="codex") == "codex-thread-7"
+
+
+def test_resolve_hook_session_id_prefers_payload_session_id() -> None:
+    assert agent_runtime_contract.resolve_hook_session_id(
+        {"session_id": "codex-session-1", "thread_id": "thread-1", "turn_id": "turn-1"},
+        host_family="codex",
+    ) == "codex-session-1"
+
+
+def test_resolve_hook_session_id_prefers_payload_thread_id_before_env() -> None:
+    assert agent_runtime_contract.resolve_hook_session_id(
+        {"thread_id": "thread-1", "turn_id": "turn-1"},
+        host_family="codex",
+        environ={"CODEX_THREAD_ID": "thread-from-env"},
+    ) == "thread-1"
+
+
+def test_resolve_hook_session_id_prefers_stable_host_env_over_turn_id() -> None:
+    assert agent_runtime_contract.resolve_hook_session_id(
+        {"turn_id": "turn-1"},
+        host_family="codex",
+        environ={"CODEX_THREAD_ID": "thread-from-env"},
+    ) == "thread-from-env"
+
+
+def test_resolve_hook_session_id_uses_turn_id_without_stable_host_session() -> None:
+    assert agent_runtime_contract.resolve_hook_session_id(
+        {"turn_id": "turn-1"},
+        host_family="codex",
+        environ={},
+    ) == "turn-1"
+
+
 def test_fallback_session_token_uses_neutral_prefix_when_missing() -> None:
     assert agent_runtime_contract.fallback_session_token("", pid=42) == "agent-42"
 

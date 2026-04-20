@@ -256,15 +256,7 @@ def detect_host_family() -> str:
 
 
 def hook_session_id(payload: Mapping[str, Any] | None, *, host_family: str = "claude") -> str:
-    if isinstance(payload, Mapping):
-        for key in ("session_id", "thread_id", "turn_id"):
-            token = str(payload.get(key) or "").strip()
-            if token:
-                return token
-    default = agent_runtime_contract.default_host_session_id()
-    if default:
-        return default
-    return agent_runtime_contract.fallback_session_token(host_family)
+    return agent_runtime_contract.resolve_hook_session_id(payload, host_family=host_family)
 
 
 def utc_now_iso() -> str:

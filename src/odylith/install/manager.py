@@ -2037,6 +2037,7 @@ def install_bundle(
             repo_role=repo_role,
             include_brand=False,
             version=active_version,
+            product_root=bundled_product_root(),
         )
         value_engine_migration = _value_engine_migration_payload(
             repo_root=root,
@@ -2114,6 +2115,7 @@ def upgrade_install(
                 state=previous_state,
                 active_version=current_version,
             ),
+            product_root=bundled_product_root(),
         )
 
         if source_repo:
@@ -2246,6 +2248,7 @@ def upgrade_install(
                 repo_role=repo_role,
                 include_brand=False,
                 version=current_version,
+                product_root=bundled_product_root(),
             )
             _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
             value_engine_migration = _value_engine_migration_payload(
@@ -2376,6 +2379,7 @@ def upgrade_install(
             repo_role=repo_role,
             include_brand=False,
             version=staged.version,
+            product_root=bundled_product_root(),
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
         value_engine_migration = _value_engine_migration_payload(
@@ -2575,6 +2579,7 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
             repo_role=repo_role,
             include_brand=False,
             version=target_version,
+            product_root=bundled_product_root(),
         )
         pin = load_version_pin(repo_root=root, fallback_version=target_version)
         diverged = bool(pin and target_version != pin.odylith_version)
@@ -2922,6 +2927,7 @@ def doctor_bundle(
             repo_role=repo_role,
             include_brand=False,
             version=repaired_active_version,
+            product_root=bundled_product_root(),
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
         repaired_status = version_status(repo_root=root)

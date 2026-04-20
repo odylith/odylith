@@ -170,7 +170,8 @@ def append_intervention_event(
         "ts_iso": dt.datetime.now(tz=dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "author": "assistant",
         "source": "assistant",
-        "session_id": _normalize_string(session_id) or agent_runtime_contract.default_host_session_id(),
+        "session_id": _normalize_string(session_id)
+        or agent_runtime_contract.default_host_session_id(host_family=host_family),
         "host_family": _normalize_string(host_family).lower(),
         "intervention_key": _normalize_string(intervention_key),
         "turn_phase": _normalize_string(turn_phase).lower(),

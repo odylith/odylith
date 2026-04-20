@@ -64,16 +64,7 @@ def load_payload(raw: str | None = None) -> dict[str, Any]:
 
 
 def hook_session_id(payload: Mapping[str, Any] | None) -> str:
-    if not isinstance(payload, Mapping):
-        return agent_runtime_contract.fallback_session_token("codex")
-    for key in ("session_id", "thread_id", "turn_id"):
-        token = str(payload.get(key) or "").strip()
-        if token:
-            return token
-    default = agent_runtime_contract.default_host_session_id()
-    if default:
-        return default
-    return agent_runtime_contract.fallback_session_token("codex")
+    return agent_runtime_contract.resolve_hook_session_id(payload, host_family="codex")
 
 
 def _mapping_payload(value: Any) -> Mapping[str, Any]:

@@ -42,10 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -204,16 +204,10 @@
         "Nothing moved in this window: B-003 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-004": [
-        "Completed in this window: Discipline hardening advanced here, and that gives the self-hosting hardening lane a real landed state instead of a pending thread.",
-        "Current execution: The self-host posture was hardened into one explicit contract. That matters because the repo can now run like a disciplined consumer of its own release process without extra ambiguity.",
-        "Next planned: The forcing function is now a verified checkpoint capture for B-004, so the completed posture contract stays visible and safe in Compass.",
-        "Risks to watch: No critical blockers are currently surfaced. The watch item is simply whether the checkpoint evidence stays fresh and trustworthy."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-005": [
-        "Completed in this window: Discipline hardening advanced in this lane too, so B-005 now has more than planning notes; the release posture changes are concretely landed.",
-        "Current execution: The lane completed its core direction: local release reset, smaller managed runtime assets, full-stack default install, and generated installer proof. That reduces release fragility while keeping operation flow intact.",
-        "Next planned: A verified checkpoint for B-005 is the forcing action now, keeping the completed reset and packaging work tied to observable proof.",
-        "Risks to watch: No critical blockers are surfaced right now. This mostly stays calm, with attention on whether proof artifacts remain current as the lane settles."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-006": [
         "Nothing moved in this window: B-006 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -270,10 +264,7 @@
         "Nothing moved in this window: B-026 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-027": [
-        "Completed in this window: Discipline hardening moved forward, giving this lane a tangible completed marker instead of a stale boundary note.",
-        "Current execution: An explicit lane matrix is now published across constitutional docs, AGENTS guidance, shared guidelines, shared/maintainer skills, and component specs. It anchors how lane boundaries are supposed to be interpreted.",
-        "Next planned: The forcing function is the next verified checkpoint for B-027, so the lane boundary and toolchain clarity work keeps a reliable handoff state.",
-        "Risks to watch: No critical blockers are surfaced now. The practical seam is drift in cross-document alignment as changes continue."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-028": [
         "Nothing moved in this window: B-028 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -605,10 +596,7 @@
         "Nothing moved in this window: B-003 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-004": [
-        "Completed in this window: Anti-slop guidance and runtime docs were hardened here too. That gives the broader window a concrete quality improvement, not just a 24h status.",
-        "Current execution: The self-host posture now stands as one explicit contract, letting the product repo act as a disciplined consumer of its own release path without blocking local work.",
-        "Next planned: The forcing function remains a verified checkpoint capture for B-004, needed to keep this hardening work clearly documented and still enforceable.",
-        "Risks to watch: No critical blockers are currently surfaced. The risk is procedural, not technical: keep the verification checkpoint from becoming stale."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-005": [
         "Completed in this window: Anti-slop guidance and runtime docs were hardened, and this lane completed cleanly. It improves the documentation and enforcement posture for the release/runtime changes that just landed.",
@@ -671,10 +659,7 @@
         "Nothing moved in this window: B-026 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-027": [
-        "Completed in this window: Anti-slop guidance and runtime docs were hardened for this lane, adding quality posture where boundary clarity and runtime behavior touch.",
-        "Current execution: The explicit lane matrix is now published across core governance/docs and skills surfaces. That is the clearest fix for confusion in boundary and toolchain interpretation.",
-        "Next planned: The forcing function is to capture the next verified checkpoint for B-027 so the boundary/runtime matrix keeps moving with fresh proof.",
-        "Risks to watch: No critical blockers are currently surfaced. The watch is simple: prevent any lane boundary doc, spec, or guidance copy from drifting apart."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-028": [
         "Nothing moved in this window: B-028 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -857,16 +842,14 @@
       "fingerprint": "ea17320facdbe9913b57a2dc4f49b3d384aaf2fa251f03ae80fdb88a77934800",
       "substrate_fingerprint": "ea17320facdbe9913b57a2dc4f49b3d384aaf2fa251f03ae80fdb88a77934800",
       "bundle_fingerprint": "",
-      "provider_decision": "skipped_not_worth_calling",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-04-20T15:43:57Z",
       "sections": [],
       "diagnostics": {
-        "reason": "skipped_not_worth_calling",
-        "title": "Brief stayed on wallet-safe local truth",
-        "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-        "provider_decision": "skipped_not_worth_calling",
-        "skip_reason": "no_winner_change"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       },
       "evidence_lookup": {}
     },
@@ -877,16 +860,14 @@
       "fingerprint": "aa68fe2fe800e3c8a2f2cae55bb7cf35254012dd6f48d3ff921cf8ac3062f25c",
       "substrate_fingerprint": "aa68fe2fe800e3c8a2f2cae55bb7cf35254012dd6f48d3ff921cf8ac3062f25c",
       "bundle_fingerprint": "",
-      "provider_decision": "skipped_not_worth_calling",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-04-20T15:43:57Z",
       "sections": [],
       "diagnostics": {
-        "reason": "skipped_not_worth_calling",
-        "title": "Brief stayed on wallet-safe local truth",
-        "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-        "provider_decision": "skipped_not_worth_calling",
-        "skip_reason": "no_winner_change"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       },
       "evidence_lookup": {}
     }
@@ -1903,262 +1884,39 @@
       },
       "B-004": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "b3bd5e9c4d8ce693194f10856055fb20fa304b8b832284d67b9647ffddb24f3f",
-        "generated_utc": "2026-04-20T15:43:57Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Discipline hardening advanced here, and that gives the self-hosting hardening lane a real landed state instead of a pending thread.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "The self-host posture was hardened into one explicit contract. That matters because the repo can now run like a disciplined consumer of its own release process without extra ambiguity.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "The forcing function is now a verified checkpoint capture for B-004, so the completed posture contract stays visible and safe in Compass.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced. The watch item is simply whether the checkpoint evidence stays fresh and trustworthy.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Advance Odylith Discipline hardening.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-002": {
-            "text": "Reduce runtime slop and harden cross-lane guardrails.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Self-Hosting Posture Hardening (B-004) in the last 24 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-004": {
-            "text": "Land By hardening self-host posture into one explicit contract, Odylith can make the product repo behave like a disciplined consumer of its own release process without blocking; Self-Hosting Posture Hardening (B-004) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-005": {
-            "text": "Live self-host posture check passed: Odylith product repo is on pinned dogfood runtime `0.1.10` with repo pin `0.1.10`, and the repo-local launcher is present.",
-            "section_key": "current_execution",
-            "kind": "self_host_status"
-          },
-          "F-006": {
-            "text": "Checklist is 33/33; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-007": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-008": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Self-Hosting Posture Hardening (B-004).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-009": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-004"
-            ]
-          }
-        },
         "substrate_fingerprint": "b3bd5e9c4d8ce693194f10856055fb20fa304b8b832284d67b9647ffddb24f3f",
-        "bundle_fingerprint": "c487987479a1c197fad3a0872185639b01d3168edba0beb852f704d48bd1c2d5",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "b3bd5e9c4d8ce693194f10856055fb20fa304b8b832284d67b9647ffddb24f3f"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-20T15:43:57Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-005": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "8406cdf205b60c39849d880bde4a29b081d9a82591519d501af86052fdb9bb72",
-        "generated_utc": "2026-04-20T15:43:57Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Discipline hardening advanced in this lane too, so B-005 now has more than planning notes; the release posture changes are concretely landed.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "The lane completed its core direction: local release reset, smaller managed runtime assets, full-stack default install, and generated installer proof. That reduces release fragility while keeping operation flow intact.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "A verified checkpoint for B-005 is the forcing action now, keeping the completed reset and packaging work tied to observable proof.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced right now. This mostly stays calm, with attention on whether proof artifacts remain current as the lane settles.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Advance Odylith Discipline hardening.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-002": {
-            "text": "Workstream lineage merge update across 21 workstreams.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) in the last 24 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-004": {
-            "text": "Land By resetting the release line locally, splitting the runtime into smaller managed assets while keeping install full-stack by default, and proving the generated installer against; Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 42/42; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-005"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-005"
-            ]
-          }
-        },
         "substrate_fingerprint": "8406cdf205b60c39849d880bde4a29b081d9a82591519d501af86052fdb9bb72",
-        "bundle_fingerprint": "c487987479a1c197fad3a0872185639b01d3168edba0beb852f704d48bd1c2d5",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "8406cdf205b60c39849d880bde4a29b081d9a82591519d501af86052fdb9bb72"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-20T15:43:57Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-006": {
         "status": "unavailable",
@@ -2396,135 +2154,21 @@
       },
       "B-027": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "6ee0451808e7912dd434f7c69445fe029e35bde3cab200ddfe364a3175ba3eed",
-        "generated_utc": "2026-04-20T15:43:57Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Discipline hardening moved forward, giving this lane a tangible completed marker instead of a stale boundary note.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "An explicit lane matrix is now published across constitutional docs, AGENTS guidance, shared guidelines, shared/maintainer skills, and component specs. It anchors how lane boundaries are supposed to be interpreted.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "The forcing function is the next verified checkpoint for B-027, so the lane boundary and toolchain clarity work keeps a reliable handoff state.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced now. The practical seam is drift in cross-document alignment as changes continue.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Advance Odylith Discipline hardening.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-002": {
-            "text": "Harden runtime discipline and Claude anti-slop parity.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Lane Boundary, Runtime, and Toolchain Clarity (B-027) in the last 24 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-004": {
-            "text": "Publish one explicit lane matrix across constitutional docs, AGENTS guidance, shared guidelines, shared and maintainer skills, component specs; Lane Boundary, Runtime, and Toolchain Clarity (B-027) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-005": {
-            "text": "Live self-host posture check passed: Odylith product repo is on pinned dogfood runtime `0.1.10` with repo pin `0.1.10`, and the repo-local launcher is present.",
-            "section_key": "current_execution",
-            "kind": "self_host_status"
-          },
-          "F-006": {
-            "text": "Checklist is 42/42; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-007": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-008": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Lane Boundary, Runtime, and Toolchain Clarity (B-027).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-009": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-027"
-            ]
-          }
-        },
         "substrate_fingerprint": "6ee0451808e7912dd434f7c69445fe029e35bde3cab200ddfe364a3175ba3eed",
-        "bundle_fingerprint": "c487987479a1c197fad3a0872185639b01d3168edba0beb852f704d48bd1c2d5",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "6ee0451808e7912dd434f7c69445fe029e35bde3cab200ddfe364a3175ba3eed"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-20T15:43:57Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-028": {
         "status": "unavailable",
@@ -4394,135 +4038,21 @@
       },
       "B-004": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "08c1f6fe38492506a35250c9033d9dc50d16f0497ffccd949d1e118074a1fd8d",
-        "generated_utc": "2026-04-20T15:43:57Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Anti-slop guidance and runtime docs were hardened here too. That gives the broader window a concrete quality improvement, not just a 24h status.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "The self-host posture now stands as one explicit contract, letting the product repo act as a disciplined consumer of its own release path without blocking local work.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "The forcing function remains a verified checkpoint capture for B-004, needed to keep this hardening work clearly documented and still enforceable.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced. The risk is procedural, not technical: keep the verification checkpoint from becoming stale.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Harden anti-slop guidance and runtime docs.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-002": {
-            "text": "Advance Odylith Discipline hardening.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Self-Hosting Posture Hardening (B-004) in the last 48 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-004": {
-            "text": "Land By hardening self-host posture into one explicit contract, Odylith can make the product repo behave like a disciplined consumer of its own release process without blocking; Self-Hosting Posture Hardening (B-004) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-005": {
-            "text": "Live self-host posture check passed: Odylith product repo is on pinned dogfood runtime `0.1.10` with repo pin `0.1.10`, and the repo-local launcher is present.",
-            "section_key": "current_execution",
-            "kind": "self_host_status"
-          },
-          "F-006": {
-            "text": "Checklist is 33/33; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-007": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-008": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Self-Hosting Posture Hardening (B-004).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-004"
-            ]
-          },
-          "F-009": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-004"
-            ]
-          }
-        },
         "substrate_fingerprint": "08c1f6fe38492506a35250c9033d9dc50d16f0497ffccd949d1e118074a1fd8d",
-        "bundle_fingerprint": "c487987479a1c197fad3a0872185639b01d3168edba0beb852f704d48bd1c2d5",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "08c1f6fe38492506a35250c9033d9dc50d16f0497ffccd949d1e118074a1fd8d"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-20T15:43:57Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-005": {
         "schema_version": "v25",
@@ -4888,135 +4418,21 @@
       },
       "B-027": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "1417a2e22802f66f90b42cfaeee1697a07bd5a1e6814516888a8d976e04477d1",
-        "generated_utc": "2026-04-20T15:43:57Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Anti-slop guidance and runtime docs were hardened for this lane, adding quality posture where boundary clarity and runtime behavior touch.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "The explicit lane matrix is now published across core governance/docs and skills surfaces. That is the clearest fix for confusion in boundary and toolchain interpretation.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "The forcing function is to capture the next verified checkpoint for B-027 so the boundary/runtime matrix keeps moving with fresh proof.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced. The watch is simple: prevent any lane boundary doc, spec, or guidance copy from drifting apart.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Harden anti-slop guidance and runtime docs.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-002": {
-            "text": "Advance Odylith Discipline hardening.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Lane Boundary, Runtime, and Toolchain Clarity (B-027) in the last 48 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-004": {
-            "text": "Publish one explicit lane matrix across constitutional docs, AGENTS guidance, shared guidelines, shared and maintainer skills, component specs; Lane Boundary, Runtime, and Toolchain Clarity (B-027) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-005": {
-            "text": "Live self-host posture check passed: Odylith product repo is on pinned dogfood runtime `0.1.10` with repo pin `0.1.10`, and the repo-local launcher is present.",
-            "section_key": "current_execution",
-            "kind": "self_host_status"
-          },
-          "F-006": {
-            "text": "Checklist is 42/42; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-007": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-008": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Lane Boundary, Runtime, and Toolchain Clarity (B-027).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-027"
-            ]
-          },
-          "F-009": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-027"
-            ]
-          }
-        },
         "substrate_fingerprint": "1417a2e22802f66f90b42cfaeee1697a07bd5a1e6814516888a8d976e04477d1",
-        "bundle_fingerprint": "c487987479a1c197fad3a0872185639b01d3168edba0beb852f704d48bd1c2d5",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "1417a2e22802f66f90b42cfaeee1697a07bd5a1e6814516888a8d976e04477d1"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-20T15:43:57Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-028": {
         "status": "unavailable",

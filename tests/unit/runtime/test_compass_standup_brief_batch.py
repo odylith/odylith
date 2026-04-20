@@ -968,3 +968,62 @@ def test_build_brief_bundle_stops_after_provider_budget_failure_and_blocks_later
     assert results["scoped"]["24h"]["B-012"]["diagnostics"]["reason"] == "credits_exhausted"
     assert results["scoped"]["24h"]["B-025"]["diagnostics"]["reason"] == "credits_exhausted"
     assert results["scoped"]["48h"]["B-048"]["diagnostics"]["reason"] == "credits_exhausted"
+
+
+def test_build_brief_bundle_retries_failed_threaded_pack_inline(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    packets_global = {
+        "24h": _fact_packet(idea_id="B-115", window="24h"),
+        "48h": _fact_packet(idea_id="B-117", window="48h"),
+    }
+    generated_utc = _generated_utc()
+    call_count = {"value": 0}
+
+    def _fake_resolve_bundle_pack(  # noqa: ANN001, ANN003
+        *,
+        global_packets_by_window,
+        scoped_packets_by_window,
+        **_kwargs,
+    ):
+        call_count["value"] += 1
+        if call_count["value"] == 1:
+            raise RuntimeError("threaded pack blew up once")
+        return (
+            {
+                window_key: narrator._ready_brief(  # noqa: SLF001
+                    source="provider",
+                    fingerprint=narrator.standup_brief_fingerprint(fact_packet=packet),
+                    generated_utc=generated_utc,
+                    sections=_single_scope_response(packet)["sections"],
+                    evidence_lookup=narrator._brief_evidence_lookup(fact_packet=packet),  # noqa: SLF001
+                )
+                for window_key, packet in global_packets_by_window.items()
+            },
+            {
+                window_key: {
+                    scope_id: narrator._ready_brief(  # noqa: SLF001
+                        source="provider",
+                        fingerprint=narrator.standup_brief_fingerprint(fact_packet=packet),
+                        generated_utc=generated_utc,
+                        sections=_single_scope_response(packet)["sections"],
+                        evidence_lookup=narrator._brief_evidence_lookup(fact_packet=packet),  # noqa: SLF001
+                    )
+                    for scope_id, packet in scoped_window.items()
+                }
+                for window_key, scoped_window in scoped_packets_by_window.items()
+            },
+        )
+
+    monkeypatch.setattr(batch, "_resolve_bundle_pack", _fake_resolve_bundle_pack)
+
+    results = batch.build_brief_bundle(
+        repo_root=tmp_path,
+        global_fact_packets_by_window=packets_global,
+        scoped_fact_packets_by_window={},
+        generated_utc=generated_utc,
+        config=_reasoning_config(),
+        provider=_QueuedProvider([]),
+        defer_scoped=True,
+    )
+
+    assert sorted(results["global"]) == ["24h", "48h"]
+    assert call_count["value"] >= 3

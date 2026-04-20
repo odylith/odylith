@@ -421,7 +421,14 @@ def customer_diagram_catalog_source() -> str:
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
-def refresh_consumer_managed_guidance(*, repo_root: Path, repo_role: str, include_brand: bool, version: str = "") -> None:
+def refresh_consumer_managed_guidance(
+    *,
+    repo_root: Path,
+    repo_role: str,
+    include_brand: bool,
+    version: str = "",
+    product_root: Path | None = None,
+) -> None:
     if str(repo_role).strip() == PRODUCT_REPO_ROLE:
         return
     atomic_write_text(repo_root / "odylith" / "AGENTS.md", customer_bootstrap_guidance(), encoding="utf-8")
@@ -430,7 +437,7 @@ def refresh_consumer_managed_guidance(*, repo_root: Path, repo_role: str, includ
     sync_managed_scoped_guidance(repo_root=repo_root)
     sync_managed_agents_guidelines(repo_root=repo_root)
     sync_managed_skills(repo_root=repo_root)
-    sync_managed_release_notes(repo_root=repo_root, version=version)
+    sync_managed_release_notes(repo_root=repo_root, version=version, product_root=product_root)
     if include_brand:
         sync_managed_surface_brand(repo_root=repo_root)
 
@@ -636,8 +643,8 @@ def sync_managed_surface_brand(*, repo_root: Path) -> None:
         shutil.copy2(source_path, target_path)
 
 
-def sync_managed_release_notes(*, repo_root: Path, version: str = "") -> None:
-    source_root = bundled_product_root() / "runtime" / "source" / "release-notes"
+def sync_managed_release_notes(*, repo_root: Path, version: str = "", product_root: Path | None = None) -> None:
+    source_root = (product_root or bundled_product_root()) / "runtime" / "source" / "release-notes"
     target_root = repo_root / "odylith" / "runtime" / "source" / "release-notes"
     target_root.mkdir(parents=True, exist_ok=True)
     for candidate in target_root.iterdir():

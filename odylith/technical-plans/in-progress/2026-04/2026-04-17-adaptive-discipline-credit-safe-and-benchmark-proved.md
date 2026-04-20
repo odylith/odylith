@@ -1,6 +1,6 @@
 Status: In progress
 Created: 2026-04-17
-Updated: 2026-04-18
+Updated: 2026-04-19
 Backlog: B-110, B-111, B-112, B-113, B-114, B-115, B-116, B-117
 
 # Odylith Discipline, Credit-Safe And Benchmark-Proved
@@ -16,6 +16,10 @@ The runtime loop is:
 
 ## Decisions
 - B-110 is the release-bound umbrella for this effort; B-111 through B-117 are its execution-wave children.
+- Anti-slop hardening is a release-bound part of Odylith Discipline: guidance,
+  skills, install-generated mirrors, Codex and Claude host surfaces, Atlas,
+  Compass, and enforcement proof must move together or the cleanup is
+  incomplete.
 - Named postures such as Scout, Steward, Verifier, Foreman, Witness, Tribunal, and Operator are UX vocabulary and benchmark labels, not a runtime state machine.
 - Deterministic hard laws remain fail-closed: CLI-first governed truth, proof-backed completion claims, visible-intervention proof, queue non-adoption, bounded delegation, public benchmark proof, consumer-lane mutation guard, and explicit model-consuming commands only.
 - Odylith Discipline is represented as a stance vector across attention, restraint, agency, honesty, coordination, memory, judgment, voice, and accountability.
@@ -53,6 +57,7 @@ The runtime loop is:
 ## Related Records
 - Umbrella: B-110.
 - Child waves: B-111, B-112, B-113, B-114, B-115, B-116, B-117.
+- Atlas diagrams: D-039, D-040, D-041.
 - Related execution and context work: B-099, B-100, B-101, B-102, B-103, B-104.
 - Related visible intervention work: B-096, B-105, B-106, B-107, B-108, B-109.
 - Related learning and governance cases: CB-104, CB-121, CB-122, CB-123 where applicable.
@@ -77,9 +82,9 @@ The runtime loop is:
 - B-112 Runtime And Budget Kernel: add `src/odylith/runtime/discipline/`, hard laws, pressure observations, stance vectors, ranked affordances, and credit/latency budget enforcement.
 - B-113 Learning Spine: add compact learning events, retention classes, recurrence fingerprints, noise suppression, and benchmark/Tribunal promotion hooks.
 - B-114 Subsystem Integration: connect Context, Execution, Proof State, Router/Orchestrator, Memory, Intervention, Chatter, Tribunal, and surfaces through compact summaries and contracts.
-- B-115 Tooling And Host Parity: add `odylith discipline status/check/explain`, shared skill, Codex shim, Claude shim, and lane parity.
+- B-115 Tooling And Host Parity: add `odylith discipline status/check/explain`, shared skill, Codex shim, Claude shim, full Claude skill parity, reviewer/host guidance parity, and help/show fast-path preservation.
 - B-116 Benchmark Sovereignty: add `discipline` benchmark family, adaptive replay cases, novelty/generalization cases, latency/credit metrics, and publication guards.
-- B-117 Surfaces And Release Proof: refresh Radar, Compass, Registry, Atlas, Casebook, Dashboard, browser smoke tests, and full release proof after pinned dogfood is repaired.
+- B-117 Surfaces And Release Proof: refresh Radar, Compass, Registry, Atlas, Casebook, Dashboard, add D-040/D-041 Atlas topology proof, rerun browser proof, and close the release lane without drifting rendered UX.
 
 ## Interfaces
 - `odylith discipline status --repo-root . [--json]`
@@ -118,6 +123,42 @@ The runtime loop is:
 - `./.odylith/bin/odylith benchmark --profile quick --family discipline --no-write-report --json`
 
 ## Validation Evidence
+- 2026-04-19 governance and Atlas hardening closeout:
+  - Authored D-041 `Anti-Slop Governance And Host Parity` and updated B-115,
+    B-117, and this plan so Atlas topology, host parity, and release-proof
+    evidence stay bound to the same B-110 wave.
+  - `./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync`:
+    passed after authoring D-041; rendered the new Atlas diagram and settled
+    Atlas at 41 fresh / 0 stale.
+  - `./.odylith/bin/odylith atlas auto-update --repo-root . --all-stale
+    --runtime-mode auto`: passed after selective sync exposed one stale
+    review-marker holdout; refreshed D-001 and returned Atlas to 41 fresh / 0
+    stale.
+  - `./.odylith/bin/odylith sync --repo-root . --impact-mode selective
+    --proceed-with-overlap`: passed after the B-115/B-117/plan/Atlas updates;
+    refreshed Radar, Atlas, Compass, Registry, shell, delivery intelligence,
+    and bundle mirrors.
+  - `./.odylith/bin/odylith sync --repo-root . --check-only --impact-mode
+    selective --proceed-with-overlap`: passed after governed refresh.
+  - `./.odylith/bin/odylith validate discipline --repo-root . --json`:
+    passed; 26 cases, all major metrics 1.0, host/provider hot-path calls 0.
+  - `./.odylith/bin/odylith validate guidance-behavior --repo-root . --json`:
+    passed; 6 cases and 11 checks.
+  - `PYTHONPATH=src python -m pytest -q tests/unit/install`: 155 passed.
+  - `PYTHONPATH=src python -m pytest -q
+    tests/unit/runtime/test_compass_standup_brief_batch.py -k
+    'retries_failed_threaded_pack_inline or
+    stops_after_provider_budget_failure'`: 2 passed, 22 deselected.
+  - `PYTHONPATH=src python -m pytest -q
+    tests/integration/runtime/test_surface_browser_deep.py -k
+    'shell_safe_compass_refresh_artifacts_enqueue_background_warm_without_foreground_provider'`:
+    1 passed, 39 deselected.
+  - `PYTHONPATH=src python -m pytest -q tests/integration/runtime`: 169
+    passed, 1 skipped after fixing the Compass standup-brief invalid-batch
+    fallback so background warm artifacts keep the expected global spans.
+  - `./.odylith/bin/odylith --help`: passed.
+  - `./.odylith/bin/odylith show --repo-root .`: passed; the CLI help/show
+    fast paths still route directly and preserve the advisory demo behavior.
 - `PYTHONPATH=src python -m py_compile src/odylith/runtime/discipline/*.py src/odylith/runtime/governance/validate_discipline.py src/odylith/cli.py`: passed.
 - `python -m json.tool odylith/runtime/source/discipline-evaluation-corpus.v1.json`: passed.
 - `python -m json.tool odylith/runtime/source/optimization-evaluation-corpus.v1.json`: passed.
@@ -127,25 +168,25 @@ The runtime loop is:
 - `PYTHONPATH=src python -m odylith.cli benchmark --repo-root . --profile quick --family discipline --no-write-report --json`: provisional pass, 7 selected scenarios including `discipline-host-lane-parity-matrix`, hard quality gate cleared, 0 hard-gate failures, fairness contract passed; advisory widening remains nonblocking mechanism attention for this diagnostic family.
 - Superseded on 2026-04-18 by B-110-tagged benchmark scenarios: quick `discipline` now clears hard, secondary, and advisory checks with `odylith_requires_widening_rate=0.0`.
 - `PYTHONPATH=src python -m odylith.cli benchmark --repo-root . --profile quick --family guidance_behavior --no-write-report --json`: provisional pass, 6 selected scenarios, 0 hard-gate failures, `odylith_on` validation success `1.0`, critical validation success `1.0`, critical path recall `1.0`.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/test_cli.py tests/unit/test_cli_audit.py -k 'discipline'`: 26 passed, 263 deselected.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/test_cli.py tests/unit/test_cli_audit.py tests/unit/runtime/test_execution_engine_handshake.py tests/unit/runtime/test_tooling_memory_contracts.py tests/unit/runtime/test_odylith_benchmark_isolation.py tests/unit/install/test_codex_project_assets.py -k 'discipline or guidance_behavior or observed_paths or public_and_bundle or codex_project_assets'`: 40 passed, 263 deselected before host/lane parity hardening; superseded by the 26-test focused rerun above for new Discipline changes.
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/test_cli.py tests/unit/test_cli_audit.py -k 'discipline'`: 26 passed, 263 deselected.
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/test_cli.py tests/unit/test_cli_audit.py tests/unit/runtime/test_execution_engine_handshake.py tests/unit/runtime/test_tooling_memory_contracts.py tests/unit/runtime/test_odylith_benchmark_isolation.py tests/unit/install/test_codex_project_assets.py -k 'discipline or guidance_behavior or observed_paths or public_and_bundle or codex_project_assets'`: 40 passed, 263 deselected before host/lane parity hardening; superseded by the 26-test focused rerun above for new Discipline changes.
 - `./.odylith/bin/odylith sync --repo-root . --impact-mode selective --proceed-with-overlap -- ...`: passed, including plan/workstream binding, backlog contract, Registry contract, Atlas refresh, Compass, Radar, Registry, Casebook, shell render, source bundle mirror, and Registry forensics.
 - `./.odylith/bin/odylith atlas auto-update --repo-root . --all-stale --runtime-mode standalone`: passed; refreshed two unrelated stale review-only diagrams (`D-031`, `D-032`) and brought Atlas to 39 fresh / 0 stale.
 - `./.odylith/bin/odylith atlas auto-update --repo-root . --all-stale --runtime-mode standalone`: passed again after the evidence-only Radar refresh; refreshed `D-001` and brought Atlas back to 39 fresh / 0 stale.
 - `./.odylith/bin/odylith sync --repo-root . --check-only --impact-mode selective --proceed-with-overlap`: passed after Atlas stale review markers were refreshed; Registry, Radar, plan, Atlas, and delivery-intelligence checks are green.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_context_execution_alignment_browser.py tests/integration/runtime/test_intervention_visibility_browser.py tests/integration/runtime/test_compass_browser_regression_matrix.py tests/integration/runtime/test_atlas_sort_browser.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`: 158 passed, 1 skipped.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_atlas_sort_browser.py`: 23 passed after the final Atlas D-001 refresh.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_context_execution_alignment_browser.py`: 78 passed.
+- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_context_execution_alignment_browser.py tests/integration/runtime/test_intervention_visibility_browser.py tests/integration/runtime/test_compass_browser_regression_matrix.py tests/integration/runtime/test_atlas_sort_browser.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`: 158 passed, 1 skipped.
+- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_atlas_sort_browser.py`: 23 passed after the final Atlas D-001 refresh.
+- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_context_execution_alignment_browser.py`: 78 passed.
 - `./.odylith/bin/odylith sync --repo-root . --impact-mode selective --proceed-with-overlap ...`: passed with plan/workstream binding, backlog contract, Registry contract, Atlas freshness, Compass, Radar, Registry, Casebook, shell render, source bundle mirror, and follow-up freshness refreshes.
 - `./.odylith/bin/odylith sync --repo-root . --check-only --impact-mode selective --proceed-with-overlap`: passed, including Registry requirements, component registry contract, plan/workstream binding, backlog contract, plan risk/mitigation, Atlas freshness, and delivery-intelligence freshness.
 - `PYTHONPATH=src python -m py_compile src/odylith/runtime/discipline/*.py src/odylith/runtime/governance/validate_discipline.py src/odylith/cli.py`: passed after the unsupported-host/lane and malformed-assertion hardening pass.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/test_cli.py -k 'discipline'`: 25 passed, 118 deselected; covers unsupported host/lane deferral, duplicate stringified evidence keys, CLI normalization, missing intent files, malformed benchmark assertions, unknown learning outcomes, selected-case filtering, mirrors, and dispatch.
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/test_cli.py -k 'discipline'`: 25 passed, 118 deselected; covers unsupported host/lane deferral, duplicate stringified evidence keys, CLI normalization, missing intent files, malformed benchmark assertions, unknown learning outcomes, selected-case filtering, mirrors, and dispatch.
 - `PYTHONPATH=src python -m odylith.cli validate discipline --repo-root . --json`: passed after hardening, 19 cases, 0 issues, `discipline_hard_law_pass_rate=1.0`, `discipline_hot_path_budget_pass_rate=1.0`, `discipline_provider_call_count=0`, `discipline_host_model_call_count=0`, `discipline_false_allow_rate=0.0`, and `discipline_false_block_rate=0.0`.
 - `PYTHONPATH=src python -m odylith.cli validate guidance-behavior --repo-root .`: passed after hardening, 6 cases and 11 guidance checks.
 - `PYTHONPATH=src python -m odylith.cli benchmark --repo-root . --profile quick --family discipline --no-write-report --json`: provisional pass after hardening, 7 selected scenarios, hard quality gate cleared, 0 hard-gate failures, fairness contract passed; advisory widening remains nonblocking mechanism attention.
 - Superseded on 2026-04-18 by B-110-tagged benchmark scenarios: quick `discipline` now clears hard, secondary, and advisory checks with `odylith_requires_widening_rate=0.0`.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_execution_engine_handshake.py tests/unit/runtime/test_tooling_context_packet_builder.py tests/unit/runtime/test_tooling_context_routing.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_intervention_engine.py tests/unit/test_cli.py`: 431 passed.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_atlas_sort_browser.py`: 23 passed after the latest code hardening.
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_execution_engine_handshake.py tests/unit/runtime/test_tooling_context_packet_builder.py tests/unit/runtime/test_tooling_context_routing.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_intervention_engine.py tests/unit/test_cli.py`: 431 passed.
+- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_atlas_sort_browser.py`: 23 passed after the latest code hardening.
 - `PYTHONPATH=src pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/runtime/test_intervention_alignment_evidence.py`: 39 passed after the adaptive proof/voice/platform-integration hardening pass.
 - `PYTHONPATH=src python -m py_compile src/odylith/runtime/discipline/*.py src/odylith/runtime/governance/validate_discipline.py src/odylith/runtime/intervention_engine/alignment_evidence.py src/odylith/runtime/execution_engine/runtime_surface_governance.py src/odylith/cli.py`: passed after the same hardening pass.
 - `PYTHONPATH=src pytest -q tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_execution_engine_handshake.py tests/unit/runtime/test_tooling_context_packet_builder.py tests/unit/runtime/test_tooling_memory_contracts.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_intervention_engine.py tests/unit/runtime/test_intervention_alignment_evidence.py tests/unit/test_cli.py tests/unit/test_cli_audit.py -k 'discipline or guidance_behavior or execution_engine or intervention or context_packet or memory'`: 141 passed, 427 deselected.
@@ -155,22 +196,22 @@ The runtime loop is:
 - Superseded on 2026-04-18 by B-110-tagged benchmark scenarios: quick `discipline` now clears hard, secondary, and advisory checks with `odylith_requires_widening_rate=0.0`.
 - `./.odylith/bin/odylith benchmark --repo-root . --profile quick --family guidance_behavior --no-write-report --json`: provisional pass after hardening, 6 selected scenarios, hard quality gate cleared, fairness contract passed, 0 hard-gate failures, no advisory failures.
 - `PYTHONPATH=src python -m py_compile src/odylith/runtime/discipline/*.py src/odylith/runtime/governance/validate_discipline.py src/odylith/cli.py`: passed after the learning-spine and `discipline explain` implementation.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/test_cli.py -k 'discipline'`: 32 passed, 118 deselected; adds compact practice-event contract coverage, sanitized source-ref handling, local decision-record explain, unknown decision failure, status last-decision reporting, validator practice-event rejection, and top-level CLI dispatch coverage for status/explain.
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/test_cli.py -k 'discipline'`: 32 passed, 118 deselected; adds compact practice-event contract coverage, sanitized source-ref handling, local decision-record explain, unknown decision failure, status last-decision reporting, validator practice-event rejection, and top-level CLI dispatch coverage for status/explain.
 - `PYTHONPATH=src python -m odylith.cli validate discipline --repo-root .`: passed after the practice-event validator became required.
 - `PYTHONPATH=src python -m odylith.cli validate guidance-behavior --repo-root .`: passed after the practice-event integration.
 - `PYTHONPATH=src python -m odylith.cli discipline status --repo-root . --json`: passed after status began reporting the runtime summary, active hard laws, learning outcomes/retention classes, benchmark-proof freshness posture, and last decision digest.
 - `PYTHONPATH=src python -m odylith.cli discipline check --repo-root . --intent-file <tmp> --host claude-sonnet --lane pinned-dogfood --json`: passed; normalized to Claude/dogfood, blocked proofless completion, emitted `benchmark_pressure` practice event, and kept host model calls at 0.
 - `PYTHONPATH=src python -m odylith.cli discipline explain --repo-root . --decision-id discipline:claude:dogfood:980a0af875f63e4a --json`: passed from the local decision receipt; returned `explained`, `block`, `fresh_proof_completion`, and host model calls 0.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/runtime/test_tooling_memory_contracts.py tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_execution_engine_handshake.py tests/unit/runtime/test_tooling_context_packet_builder.py tests/unit/runtime/test_tooling_context_routing.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_isolation.py tests/unit/runtime/test_intervention_engine.py tests/unit/runtime/test_claude_host_post_edit_checkpoint.py tests/unit/install/test_codex_project_assets.py tests/unit/test_cli.py tests/unit/test_cli_audit.py`: 616 passed.
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/runtime/test_tooling_memory_contracts.py tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_execution_engine_handshake.py tests/unit/runtime/test_tooling_context_packet_builder.py tests/unit/runtime/test_tooling_context_routing.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_isolation.py tests/unit/runtime/test_intervention_engine.py tests/unit/runtime/test_claude_host_post_edit_checkpoint.py tests/unit/install/test_codex_project_assets.py tests/unit/test_cli.py tests/unit/test_cli_audit.py`: 616 passed.
 - `PYTHONPATH=src python -m odylith.cli benchmark --repo-root . --profile quick --family discipline --no-write-report --json`: provisional pass after the learning-spine/explain implementation; 7 selected scenarios, hard quality gate cleared, 0 hard-gate failures, fairness contract passed, advisory `widening_rate_healthy` remains nonblocking mechanism attention.
 - Superseded on 2026-04-18 by B-110-tagged benchmark scenarios: quick `discipline` now clears hard, secondary, and advisory checks with `odylith_requires_widening_rate=0.0`.
 - `PYTHONPATH=src python -m odylith.cli benchmark --repo-root . --profile quick --family guidance_behavior --no-write-report --json`: provisional pass after the learning-spine/explain implementation; 6 selected scenarios, hard quality gate cleared, 0 hard-gate failures, no advisory failures.
 - `./.odylith/bin/odylith sync --repo-root . --impact-mode selective --proceed-with-overlap -- ...`: passed after the learning-spine/explain implementation, including plan/workstream binding, backlog contract, Registry contract, Atlas review-marker refresh for D-039, Compass, Radar, Registry, Casebook, shell render, source bundle mirror, delivery intelligence refresh, and Registry forensics updates.
 - `./.odylith/bin/odylith atlas auto-update --repo-root . --all-stale --runtime-mode standalone`: passed after sync; refreshed review markers for D-001 and D-027 and brought Atlas to 39 fresh / 0 stale.
 - `./.odylith/bin/odylith sync --repo-root . --check-only --impact-mode selective --proceed-with-overlap`: passed after Atlas settlement; Registry, backlog, plan, Atlas, and delivery-intelligence checks are green.
-- `PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_context_execution_alignment_browser.py tests/integration/runtime/test_intervention_visibility_browser.py tests/integration/runtime/test_compass_browser_regression_matrix.py tests/integration/runtime/test_atlas_sort_browser.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`: 158 passed, 1 skipped after the latest governed refresh.
+- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_context_execution_alignment_browser.py tests/integration/runtime/test_intervention_visibility_browser.py tests/integration/runtime/test_compass_browser_regression_matrix.py tests/integration/runtime/test_atlas_sort_browser.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`: 158 passed, 1 skipped after the latest governed refresh.
 - Final Atlas settlement: `./.odylith/bin/odylith atlas auto-update --repo-root . --all-stale --runtime-mode standalone` refreshed D-001 review markers and brought Atlas to 39 fresh / 0 stale; the immediate follow-up `./.odylith/bin/odylith sync --repo-root . --check-only --impact-mode selective --proceed-with-overlap` passed.
-- Final narrow surface verification after Atlas settlement: `PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_atlas_sort_browser.py`: 23 passed.
+- Final narrow surface verification after Atlas settlement: `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_atlas_sort_browser.py`: 23 passed.
 - 2026-04-18 hardening pass:
   - `PYTHONPATH=src pytest -q tests/unit/runtime/test_discipline.py tests/unit/runtime/test_validate_discipline.py tests/unit/runtime/test_intervention_alignment_evidence.py`: 39 passed after open-world pressure, proof-obligation, live-voice, and platform-integration hardening.
   - `./.odylith/bin/odylith validate discipline --repo-root . --json`: passed with 19 selected cases, platform integration passing, all declared corpus expectations matched, `discipline_provider_call_count=0`, and `discipline_host_model_call_count=0`.

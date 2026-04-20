@@ -53,7 +53,7 @@ def normalized_session_id(value: Any, *, host_family: str = "") -> str:
     token = _normalize_string(value)
     if token:
         return token
-    default = agent_runtime_contract.default_host_session_id()
+    default = agent_runtime_contract.default_host_session_id(host_family=host_family)
     if default:
         return default
     family = _normalize_string(host_family).lower() or "host"

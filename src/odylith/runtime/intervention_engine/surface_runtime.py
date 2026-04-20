@@ -180,7 +180,8 @@ def observation_envelope(
         )
     return {
         "host_family": _normalize_string(host_family).lower(),
-        "session_id": _normalize_string(session_id) or agent_runtime_contract.default_host_session_id(),
+        "session_id": _normalize_string(session_id)
+        or agent_runtime_contract.default_host_session_id(host_family=host_family),
         "turn_phase": _normalize_string(turn_phase).lower(),
         "prompt_excerpt": _normalize_string(prompt_excerpt),
         "assistant_summary": _normalize_string(assistant_summary),

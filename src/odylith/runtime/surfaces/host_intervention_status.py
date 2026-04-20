@@ -216,7 +216,9 @@ def inspect_intervention_status(
 ) -> dict[str, Any]:
     root = Path(repo_root).expanduser().resolve()
     host = _normalize_token(host_family) or "codex"
-    resolved_session = _normalize_string(session_id) or agent_runtime_contract.default_host_session_id()
+    resolved_session = _normalize_string(session_id) or agent_runtime_contract.default_host_session_id(
+        host_family=host
+    )
     readiness = _static_readiness(repo_root=root, host_family=host)
     confirmed_events = visibility_broker.confirm_assistant_chat_delivery(
         repo_root=root,

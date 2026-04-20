@@ -1891,12 +1891,15 @@ def build_brief_bundle(
     if defer_scoped and len(bundle_packs) > 1:
         import concurrent.futures
         with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(bundle_packs), 4)) as pool:
-            futures = [pool.submit(_resolve_pack, pack) for pack in bundle_packs]
+            futures = {pool.submit(_resolve_pack, pack): pack for pack in bundle_packs}
             for future in concurrent.futures.as_completed(futures):
                 try:
                     pack_ready_global, pack_ready_scoped = future.result()
                 except Exception:
-                    continue
+                    # Some local stubs and cheap adapters are not reliable
+                    # under pooled pack resolution. Retry that exact pack
+                    # inline instead of silently dropping a whole window.
+                    pack_ready_global, pack_ready_scoped = _resolve_pack(futures[future])
                 provider_global.update(pack_ready_global)
                 for window_key, window_results in pack_ready_scoped.items():
                     merged_window = dict(provider_scoped.get(window_key, {}))

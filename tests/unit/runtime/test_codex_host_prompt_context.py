@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.intervention_engine import surface_runtime
+from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.surfaces import codex_host_prompt_context
 
 
@@ -144,3 +145,51 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
     assert "Odylith is tracking this signal:" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith is tracking this signal:")
     assert payload["systemMessage"].endswith(f"\n{surface_runtime.LIVE_BOUNDARY}")
+
+
+def test_main_records_prompt_events_on_stable_thread_id_not_turn_id(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    monkeypatch.setenv("CODEX_THREAD_ID", "codex-thread-123")
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "prompt": "Design a conversation observation engine with governed proposal flow.",
+                    "turn_id": "turn-9",
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        codex_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {
+            "intervention_bundle": {
+                "candidate": {
+                    "stage": "teaser",
+                    "teaser_text": "Odylith is tracking this signal: Keep the visibility proof on the stable chat id.",
+                }
+            }
+        },
+    )
+
+    exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    json.loads(capsys.readouterr().out)
+    thread_events = stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+        session_id="codex-thread-123",
+    )
+    turn_events = stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+        session_id="turn-9",
+    )
+
+    assert thread_events
+    assert {row["session_id"] for row in thread_events} == {"codex-thread-123"}
+    assert turn_events == []

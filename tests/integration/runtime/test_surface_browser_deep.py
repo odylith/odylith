@@ -138,6 +138,8 @@ class _CompassProvider:
         text = re.sub(r"`?\./\.odylith/bin/odylith`?", "the launcher", text)
         if text.lower().startswith("to "):
             text = text[3:].strip()
+        if mode == "completed" and text.lower().startswith("i "):
+            text = text[2:].strip()
         text = cls._trim_words(text, limit=26 if mode in {"direction", "impact"} else 20)
         text = " ".join(text.split()).strip(" .,:;")
         if text:
@@ -3586,6 +3588,7 @@ def test_compass_live_timeline_keeps_prior_window_day_while_hiding_future_hours(
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    history_dir = fixture_root / "odylith" / "compass" / "runtime" / "history"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
 
     previous_day = "2026-04-04"
@@ -3655,6 +3658,16 @@ def test_compass_live_timeline_keeps_prior_window_day_while_hiding_future_hours(
     runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     runtime_js_path.write_text(
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    previous_day_payload = dict(payload)
+    previous_day_payload["generated_utc"] = "2026-04-05T06:41:00Z"
+    previous_day_payload["now_local_iso"] = "2026-04-04T23:41:00-07:00"
+    previous_day_payload["timeline_events"] = [previous_event]
+    previous_day_payload["timeline_transactions"] = [previous_transaction]
+    history_dir.mkdir(parents=True, exist_ok=True)
+    (history_dir / f"{previous_day}.v1.json").write_text(
+        json.dumps(previous_day_payload, indent=2) + "\n",
         encoding="utf-8",
     )
 

@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-04-17
+Last updated: 2026-04-19
 
 
 Last updated (UTC): 2026-04-15
@@ -293,6 +293,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-19 · Implementation:** Added D-041 anti-slop governance topology, refreshed B-115/B-117 surfaces, and closed the Compass standup-batch regression with final green source-local proof.
+  - Scope: B-115, B-117
+  - Evidence: odylith/atlas/source/odylith-anti-slop-governance-and-host-parity.mmd, odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md +5 more
 - **2026-04-17 · Implementation:** B-110 aggressive QA hardened visible-proof command handling, transcript-safe practice memory, malformed counter validation, and structured refresh result coercion.
   - Scope: B-110
   - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md, src/odylith/runtime/discipline/laws.py +7 more
@@ -306,8 +309,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
 - **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
-- **2026-03-23 · Decision:** Successor created: B-276 reopens B-275 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History

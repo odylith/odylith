@@ -42,7 +42,7 @@ workstream_depends_on:
 
 workstream_blocks: 
 
-related_diagram_ids: 
+related_diagram_ids: D-041
 
 workstream_reopens: 
 
@@ -70,10 +70,19 @@ Odylith maintainers and host-lane operators who need v0.1.11 Odylith Discipline 
 Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith Discipline loop.
 
 ## Proposed Solution
-Create the workstream for Odylith Discipline Tooling And Host Parity and refine the exact implementation plan during execution.
+Keep the anti-slop and discipline contract authoritative in one shared source,
+then propagate it through Codex and Claude host surfaces, install-generated
+guidance, skill shims, bundle mirrors, and hygiene enforcement so the host
+surfaces stay behaviorally aligned while structural cleanup continues.
 
 ## Scope
-- Define and land the bounded work for Odylith Discipline Tooling And Host Parity.
+- Keep Codex and Claude on the same anti-slop, discipline, CLI-first, and
+  proof contract.
+- Ensure repo-owned Odylith skills are available through Claude shims instead
+  of leaving partial host parity.
+- Preserve the help/show fast paths so `Odylith, help` and `Odylith, show me
+  what you can do` stay direct CLI execution instead of getting intercepted by
+  other guidance or skills.
 - Keep the first implementation wave narrow and test-backed.
 
 ## Non-Goals
@@ -89,7 +98,8 @@ Create the workstream for Odylith Discipline Tooling And Host Parity and refine 
 - B-110 execution waves are explicit and CLI-authorable\n- each child slice maps to one governance/runtime/proof concern\n- release targeting and wave status are visible in Radar and Compass\n- implementation can add focused tests without growing red-zone files
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Run focused install and hygiene proof for host-surface and mirror changes.
+- Prove that the help/show fast paths still execute directly through the CLI.
 
 ## Rollout
 - Queue now, then bind a technical plan when the implementation wave starts.
@@ -104,7 +114,8 @@ Each child slice should strengthen the same Odylith Discipline platform: determi
 - `odylith`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- Cross-host guidance, reviewer, and skill-surface parity may change, but the
+  public `odylith` CLI contract must remain stable.
 
 ## Migration/Compatibility
 - No migration impact recorded yet.
@@ -113,4 +124,5 @@ Each child slice should strengthen the same Odylith Discipline platform: determi
 - Add targeted regression coverage when implementation begins.
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- Which additional host surfaces still need explicit parity proof beyond the
+  shared Codex/Claude lanes?

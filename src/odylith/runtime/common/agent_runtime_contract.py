@@ -27,6 +27,10 @@ _HOST_SESSION_ENV_KEYS: tuple[str, ...] = (
     "CLAUDE_CODE_SESSION_ID",
     "CLAUDE_SESSION_ID",
 )
+_HOST_SESSION_ENV_KEYS_BY_FAMILY: dict[str, tuple[str, ...]] = {
+    "codex": ("CODEX_THREAD_ID",),
+    "claude": ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID"),
+}
 
 ANALYSIS_MEDIUM_PROFILE = "analysis_medium"
 ANALYSIS_HIGH_PROFILE = "analysis_high"
@@ -205,10 +209,24 @@ def normalize_session_token(value: Any) -> str:
     return _SESSION_TOKEN_RE.sub("-", str(value or "").strip()).strip("-")
 
 
-def default_host_session_id(*, environ: Mapping[str, str] | None = None) -> str:
+def _ordered_host_session_env_keys(host_family: str = "") -> tuple[str, ...]:
+    """Return host-session env keys with the active host family ordered first."""
+    family = str(host_family or "").strip().lower()
+    ordered: list[str] = []
+    for key in (*_HOST_SESSION_ENV_KEYS_BY_FAMILY.get(family, ()), *_HOST_SESSION_ENV_KEYS):
+        if key not in ordered:
+            ordered.append(key)
+    return tuple(ordered)
+
+
+def default_host_session_id(
+    *,
+    environ: Mapping[str, str] | None = None,
+    host_family: str = "",
+) -> str:
     """Return the best available host session id from the environment."""
-    env = environ or os.environ
-    for key in _HOST_SESSION_ENV_KEYS:
+    env = os.environ if environ is None else environ
+    for key in _ordered_host_session_env_keys(host_family):
         token = normalize_session_token(env.get(key, ""))
         if token:
             return token
@@ -222,6 +240,33 @@ def default_host_session_id(*, environ: Mapping[str, str] | None = None) -> str:
         if token:
             return token
     return ""
+
+
+def resolve_hook_session_id(
+    payload: Mapping[str, Any] | None,
+    *,
+    host_family: str = "",
+    environ: Mapping[str, str] | None = None,
+) -> str:
+    """Resolve one stable hook session id without fragmenting by turn.
+
+    Hook payloads may expose both chat-scoped ids (`session_id`, `thread_id`)
+    and turn-scoped ids (`turn_id`). The intervention ledger, replay, and
+    status surfaces need the stable chat identity whenever it exists, so the
+    host environment wins over a payload-only `turn_id`.
+    """
+    mapping = payload if isinstance(payload, Mapping) else {}
+    for key in ("session_id", "thread_id"):
+        token = normalize_session_token(mapping.get(key, ""))
+        if token:
+            return token
+    default = default_host_session_id(environ=environ, host_family=host_family)
+    if default:
+        return default
+    turn_id = normalize_session_token(mapping.get("turn_id", ""))
+    if turn_id:
+        return turn_id
+    return fallback_session_token(host_family)
 
 
 def fallback_session_token(value: Any = "", *, pid: int | None = None) -> str:

@@ -7553,7 +7553,9 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-041"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-tooling-and-host-parity.md",
       "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "plan_traceability": {
@@ -7648,7 +7650,7 @@
       "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -7806,7 +7808,8 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [
-        "D-040"
+        "D-040",
+        "D-041"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md",
       "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
@@ -7902,7 +7905,7 @@
       "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 1,
+        "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -10866,6 +10869,13 @@
       "label": "Discipline Surface DAGs And Release Proof",
       "diagram_id": "D-040",
       "file": "odylith/atlas/source/odylith-discipline-surface-dags-and-release-proof.mmd"
+    },
+    {
+      "id": "diagram:D-041",
+      "type": "diagram",
+      "label": "Anti-Slop Governance And Host Parity",
+      "diagram_id": "D-041",
+      "file": "odylith/atlas/source/odylith-anti-slop-governance-and-host-parity.mmd"
     },
     {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -14423,6 +14433,11 @@
     },
     {
       "source": "B-115",
+      "target": "diagram:D-041",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-115",
       "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
       "edge_type": "promoted_to_plan"
     },
@@ -14444,6 +14459,11 @@
     {
       "source": "B-117",
       "target": "diagram:D-040",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-117",
+      "target": "diagram:D-041",
       "edge_type": "diagram_linkage"
     },
     {
@@ -15308,7 +15328,7 @@
     },
     "B-115": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -15322,7 +15342,7 @@
     },
     "B-117": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 1,
+      "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -15456,10 +15476,10 @@
     "active_release_assignment_count": 38,
     "execution_program_count": 4,
     "execution_wave_count": 23,
-    "node_count": 277,
-    "edge_count": 627,
+    "node_count": 278,
+    "edge_count": 629,
     "warning_count": 5,
     "warning_item_count": 5
   },
-  "generated_utc": "2026-04-20 01:11:33Z"
+  "generated_utc": "2026-04-20 03:28:27Z"
 }

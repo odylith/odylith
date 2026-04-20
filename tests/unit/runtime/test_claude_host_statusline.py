@@ -96,6 +96,11 @@ def test_freshness_label_buckets():
     assert claude_host_shared.freshness_label(None, now=now) == "no snapshot"
 
 
+def test_hook_session_id_prefers_stable_env_over_turn_id(monkeypatch) -> None:
+    monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "claude-session-42")
+    assert claude_host_shared.hook_session_id({"turn_id": "turn-7"}) == "claude-session-42"
+
+
 def test_main_writes_string_to_stdout(tmp_path, capsys):
     _write_runtime_snapshot(
         tmp_path,

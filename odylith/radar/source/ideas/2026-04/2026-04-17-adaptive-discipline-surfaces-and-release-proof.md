@@ -42,7 +42,7 @@ workstream_depends_on:
 
 workstream_blocks: 
 
-related_diagram_ids: D-040
+related_diagram_ids: D-040, D-041
 
 workstream_reopens: 
 
@@ -70,10 +70,16 @@ Odylith maintainers and host-lane operators who need v0.1.11 Odylith Discipline 
 Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith Discipline loop.
 
 ## Proposed Solution
-Create the workstream for Odylith Discipline Surfaces And Release Proof and refine the exact implementation plan during execution.
+Keep the governed surfaces truthful while the runtime and host contracts move:
+refresh Atlas, Compass, Radar, Registry, Casebook, and shell artifacts through
+owned lanes, add the topology diagrams that explain the release-proof path, and
+prove the rendered browser states before claiming the surface contract is clean.
 
 ## Scope
-- Define and land the bounded work for Odylith Discipline Surfaces And Release Proof.
+- Refresh the governed surfaces for Discipline and anti-slop hardening without
+  widening into unrelated product work.
+- Keep Atlas topology current for both release-proof DAGs and anti-slop
+  cross-host parity.
 - Keep the first implementation wave narrow and test-backed.
 
 ## Non-Goals
@@ -89,7 +95,8 @@ Create the workstream for Odylith Discipline Surfaces And Release Proof and refi
 - B-110 execution waves are explicit and CLI-authorable\n- each child slice maps to one governance/runtime/proof concern\n- release targeting and wave status are visible in Radar and Compass\n- implementation can add focused tests without growing red-zone files
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Run owned Atlas refresh plus selective sync and follow with check-only proof.
+- Run headless browser coverage for the affected governed surfaces.
 
 ## Rollout
 - Queue now, then bind a technical plan when the implementation wave starts.
@@ -104,7 +111,8 @@ Each child slice should strengthen the same Odylith Discipline platform: determi
 - `odylith`
 
 ## Interface Changes
-- None decided yet; record interface changes once implementation is scoped.
+- Surface content, topology diagrams, and generated artifacts may change, but
+  the public CLI and visible help/show behavior must remain stable.
 
 ## Migration/Compatibility
 - No migration impact recorded yet.
@@ -113,4 +121,5 @@ Each child slice should strengthen the same Odylith Discipline platform: determi
 - Add targeted regression coverage when implementation begins.
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- Which additional Atlas diagrams or surface proof lanes still need first-class
+  governance after the current B-117 closeout?
