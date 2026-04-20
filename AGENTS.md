@@ -57,6 +57,7 @@ Paths under `odylith/` follow `odylith/AGENTS.md`.
   intervention-status` for that host/session. That status surface is the
   low-latency delivery ledger for Teaser, Ambient Highlight, Observation,
   Proposal, and Assist readiness; hook payload generation alone is not enough.
+- Only call a session or worktree fully end to end after `intervention-status` reports `Activation: ready` and `chat_visible_proof=proven_this_session`. Treat `ledger_visible_unconfirmed`, `pending_confirmation`, `ledger_visible_with_pending_confirmation`, and `chat_confirmed_with_pending_confirmation` as partial proof, not completion, and treat `degraded` or `unproven_this_session` as not active yet.
 - Existing Codex and Claude sessions may not hot-reload changed hooks,
   guidance, or source-local runtime code. After changing intervention
   visibility behavior, prove it in a newly started or explicitly reloaded

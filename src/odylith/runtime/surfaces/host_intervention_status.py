@@ -316,6 +316,12 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
             f"{_normalize_token(proof.get('status')) or 'unknown'} - "
             f"{_normalize_string(proof.get('summary')) or 'no proof summary available.'}"
         ),
+        (
+            "End-to-end claim gate: only `Activation: ready` with "
+            "`Chat-visible proof: proven_this_session` counts as fully "
+            "chat-proved; ledger-visible-only and pending-confirmation states "
+            "are partial."
+        ),
     ]
     activation_note = _normalize_string(readiness.get("activation_note"))
     if activation_note:

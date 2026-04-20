@@ -124,6 +124,8 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "`odylith codex intervention-status` or `odylith claude" in block
     assert "low-latency delivery ledger for Teaser, Ambient Highlight, Observation," in block
     assert "Proposal, and Assist readiness; hook payload generation alone is not enough" in block
+    assert "Only call a session or worktree fully end to end after `intervention-status` reports `Activation: ready` and `chat_visible_proof=proven_this_session`" in block
+    assert "`ledger_visible_with_pending_confirmation`, and `chat_confirmed_with_pending_confirmation` as partial proof" in block
     assert "Explicit feedback that Odylith ambient highlights, interventions, Assist," in block
     assert "ordinary low-signal short" in block
     assert "Stop is the fallback closeout and live-beat recovery lane" in block

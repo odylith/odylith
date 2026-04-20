@@ -308,6 +308,7 @@ def test_codex_intervention_status_separates_static_ready_from_visible_proof(tmp
     assert report["delivery_ledger"]["visible_event_count"] == 0
     assert report["chat_visible_proof"]["status"] == "unproven_this_session"
     assert "Chat-visible proof: unproven_this_session" in rendered
+    assert "End-to-end claim gate: only `Activation: ready` with `Chat-visible proof: proven_this_session` counts as fully chat-proved" in rendered
     assert "assistant must render the visible-intervention fallback directly" in rendered
 
 
@@ -389,6 +390,7 @@ def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is
     assert report["delivery_ledger"]["unconfirmed_event_count"] == 2
     assert report["chat_visible_proof"]["status"] == "ledger_visible_with_pending_confirmation"
     assert "pending chat-confirmation event(s)" in rendered
+    assert "ledger-visible-only and pending-confirmation states are partial." in rendered
     assert report["assistant_visible_replay_count"] == 2
     assert report["assistant_visible_replay_additional_count"] == 1
     assert "Next assistant-visible replay:" in rendered

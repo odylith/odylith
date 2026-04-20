@@ -61,3 +61,5 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "`odylith codex intervention-status` or `odylith claude" in guidance
     assert "low-latency delivery ledger for Teaser, Ambient Highlight, Observation," in guidance
     assert "Assist readiness; hook payload generation alone is not enough" in guidance
+    assert "Only call a session or worktree fully end to end after `intervention-status` reports `Activation: ready` and `chat_visible_proof=proven_this_session`" in guidance
+    assert "`ledger_visible_with_pending_confirmation`, and `chat_confirmed_with_pending_confirmation` as partial proof" in guidance

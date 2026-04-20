@@ -235,6 +235,12 @@
   UX lanes, recent delivery-ledger events, pending proposals, and the exact
   smoke command to force a visible fallback. Use it before telling an operator
   the Codex intervention UX is active in a particular session.
+- Only describe a Codex session or worktree as fully end to end after
+  `intervention-status` reports `Activation: ready` and `chat-visible proof:
+  proven_this_session`. `ledger_visible_unconfirmed`,
+  `pending_confirmation`, `ledger_visible_with_pending_confirmation`, and
+  `chat_confirmed_with_pending_confirmation` are partial proof, not
+  completion; `degraded` and `unproven_this_session` are not active yet.
 - That live path is intervention-engine-owned on purpose. Do not route Codex
   prompt or checkpoint hooks through the heavier closeout chatter stack just
   to render teaser/Observation/Proposal text.

@@ -249,6 +249,17 @@
   the active UX lanes, recent delivery-ledger events, pending proposals, and
   the exact smoke command to force a visible fallback. Use it before telling
   an operator the Claude intervention UX is active in a particular session.
+- Only describe a Claude session or worktree as fully end to end after
+  `intervention-status` reports `Activation: ready` and `chat-visible proof:
+  proven_this_session`. `ledger_visible_unconfirmed`,
+  `pending_confirmation`, `ledger_visible_with_pending_confirmation`, and
+  `chat_confirmed_with_pending_confirmation` are partial proof, not
+  completion; `degraded` and `unproven_this_session` are not active yet.
+- Claude worktrees created under `.claude/worktrees/<slug>/` are not ready just
+  because `.claude/settings.json` and hooks exist. Provision the repo-local
+  launcher in that worktree immediately with `./.odylith/bin/odylith doctor
+  --repo-root .claude/worktrees/<slug> --repair` from the parent repo before
+  treating hooks, slash commands, or intervention checks there as self-hosting.
 - Empty or missing hook session ids must fall back to a stable host-local
   synthetic session token. Claude must never bleed recent prompt or changed-path
   memory from one session into another just because the payload omitted

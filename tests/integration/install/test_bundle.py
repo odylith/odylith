@@ -25,6 +25,13 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (project_root / ".claude" / "commands" / "odylith-query.md").is_file()
     assert (project_root / ".claude" / "commands" / "odylith-plan.md").is_file()
     assert (project_root / ".claude" / "commands" / "odylith-worktree.md").is_file()
+    worktree_command = (project_root / ".claude" / "commands" / "odylith-worktree.md").read_text(encoding="utf-8")
+    assert "./.odylith/bin/odylith doctor --repo-root .claude/worktrees/$ARGUMENTS --repair" in worktree_command
+    assert "only call intervention or self-host posture fully end to end there after `intervention-status` reports `Activation: ready` and `Chat-visible proof: proven_this_session`" in worktree_command
+    codex_contract = (root / "agents-guidelines" / "CODEX_HOST_CONTRACT.md").read_text(encoding="utf-8")
+    assert "Only describe a Codex session or worktree as fully end to end after" in codex_contract
+    claude_contract = (root / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md").read_text(encoding="utf-8")
+    assert "Only describe a Claude session or worktree as fully end to end after" in claude_contract
     assert (project_root / ".claude" / "commands" / "odylith-sync-governance.md").is_file()
     sync_command = (project_root / ".claude" / "commands" / "odylith-sync-governance.md").read_text(encoding="utf-8")
     assert "./.odylith/bin/odylith radar refresh --repo-root ." in sync_command
