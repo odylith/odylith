@@ -65,6 +65,30 @@ def _finalize_visibility_ratios(ratios: dict[str, dict[str, Any]]) -> dict[str, 
     return ratios
 
 
+def _ratio_identity(row: Mapping[str, Any]) -> tuple[str, str]:
+    """Return the unique beat identity used for chat-visibility ratios."""
+    key = str(visibility_contract.event_confirmation_key(row) or "").strip()
+    family = str(visibility_contract.event_visibility_family(row) or "other")
+    return key, family if family in visibility_contract.VISIBILITY_FAMILIES else "other"
+
+
+def _hidden_teaser_superseded_by_later_live_beat(
+    rows: list[Mapping[str, Any]],
+    *,
+    latest_index: int,
+    visible: bool,
+    chat_confirmed: bool,
+    family: str,
+) -> bool:
+    """Return whether a hidden teaser was retired by a later stronger beat."""
+    if family != "teaser" or visible or chat_confirmed:
+        return False
+    return any(
+        visibility_contract.event_visibility_family(row) in {"ambient", "intervention", "assist"}
+        for row in rows[latest_index + 1 :]
+    )
+
+
 def delivery_snapshot(
     *,
     repo_root: Path | str,
@@ -95,30 +119,65 @@ def delivery_snapshot(
     visible_rows: list[dict[str, Any]] = []
     chat_confirmed_rows: list[dict[str, Any]] = []
     visibility_ratios = _empty_visibility_ratios()
+    ratio_states: dict[str, dict[str, Any]] = {}
 
     for row in rows:
         compact = _compact_event(row)
         kind = str(compact.get("kind") or "unknown")
         status = str(compact.get("delivery_status") or "unknown")
         channel = str(compact.get("delivery_channel") or "unknown")
-        family = str(compact.get("visibility_family") or "other")
-        if family not in visibility_ratios:
-            family = "other"
         counts_by_kind[kind] = counts_by_kind.get(kind, 0) + 1
         counts_by_status[status] = counts_by_status.get(status, 0) + 1
         counts_by_channel[channel] = counts_by_channel.get(channel, 0) + 1
-        visibility_ratios[family]["total"] += 1
         compact_rows.append(compact)
         if bool(compact.get("visible")):
             visible_rows.append(compact)
-            visibility_ratios[family]["ledger_visible"] += 1
         if visibility_contract.event_chat_confirmed(row):
             chat_confirmed_rows.append(compact)
+        key, family = _ratio_identity(row)
+        if not key:
+            continue
+        state = ratio_states.setdefault(
+            key,
+            {
+                "family": family,
+                "ledger_visible": False,
+                "chat_confirmed": False,
+                "latest_index": -1,
+            },
+        )
+        state["family"] = family
+        state["ledger_visible"] = bool(state["ledger_visible"]) or bool(compact.get("visible"))
+        state["chat_confirmed"] = bool(state["chat_confirmed"]) or bool(compact.get("chat_confirmed"))
+        state["latest_index"] = max(int(state.get("latest_index") or -1), len(compact_rows) - 1)
+
+    for state in ratio_states.values():
+        family = str(state.get("family") or "other")
+        if _hidden_teaser_superseded_by_later_live_beat(
+            rows,
+            latest_index=int(state.get("latest_index") or -1),
+            visible=bool(state.get("ledger_visible")),
+            chat_confirmed=bool(state.get("chat_confirmed")),
+            family=family,
+        ):
+            continue
+        if family not in visibility_ratios:
+            family = "other"
+        visibility_ratios[family]["total"] += 1
+        if bool(state.get("ledger_visible")):
+            visibility_ratios[family]["ledger_visible"] += 1
+        if bool(state.get("chat_confirmed")):
             visibility_ratios[family]["chat_confirmed"] += 1
 
     frontier_rows = visible_delivery_frontier.active_unconfirmed_rows(rows)
     unconfirmed_rows = [_compact_event(row) for row in frontier_rows]
+    pending_keys: set[str] = set()
     for row in unconfirmed_rows:
+        key = str(row.get("chat_confirmation_key") or row.get("delivery_bundle_id") or "").strip()
+        if key in pending_keys:
+            continue
+        if key:
+            pending_keys.add(key)
         family = str(row.get("visibility_family") or "other")
         if family not in visibility_ratios:
             family = "other"

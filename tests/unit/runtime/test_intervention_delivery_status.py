@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith import cli
 from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import host_surface_runtime
@@ -282,6 +284,104 @@ def test_delivery_snapshot_reports_visibility_ratios_by_family(tmp_path: Path) -
     assert ratios["assist"]["pending_confirmation"] == 0
     assert ratios["assist"]["ledger_visible_ratio"] == 1.0
     assert ratios["assist"]["chat_confirmed_ratio"] == 0.0
+
+
+def test_delivery_snapshot_visibility_ratios_collapse_pending_and_confirmed_rows_by_beat_identity(
+    tmp_path: Path,
+) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Observation needs chat confirmation.",
+        session_id="ratio-collapse",
+        host_family="codex",
+        intervention_key="observation-collapse",
+        display_markdown="---\n\n**Odylith Observation:** One real beat should not count twice.\n\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="codex_post_tool_use",
+    )
+
+    host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="ratio-collapse",
+        last_assistant_message="---\n\n**Odylith Observation:** One real beat should not count twice.\n\n---",
+        render_surface="codex_user_prompt_submit",
+    )
+
+    snapshot = delivery_ledger.delivery_snapshot(repo_root=tmp_path, host_family="codex", session_id="ratio-collapse")
+    ratios = snapshot["visibility_ratios"]
+
+    assert ratios["intervention"]["total"] == 1
+    assert ratios["intervention"]["ledger_visible"] == 1
+    assert ratios["intervention"]["chat_confirmed"] == 1
+    assert ratios["intervention"]["pending_confirmation"] == 0
+    assert ratios["intervention"]["ledger_visible_ratio"] == 1.0
+    assert ratios["intervention"]["chat_confirmed_ratio"] == 1.0
+
+
+@pytest.mark.parametrize(
+    ("host_family", "seed_repo"),
+    [
+        ("codex", _seed_codex_repo),
+        ("claude", _seed_claude_repo),
+    ],
+)
+def test_later_live_beats_supersede_stale_teaser_confirmation_debt(
+    tmp_path: Path,
+    host_family: str,
+    seed_repo,
+) -> None:
+    seed_repo(tmp_path)
+    session_id = f"{host_family}-stale-teaser"
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_teaser",
+        summary="Teaser still waiting.",
+        session_id=session_id,
+        host_family=host_family,
+        intervention_key="teaser",
+        turn_phase="prompt_submit",
+        display_markdown="---\n\nOdylith is tracking this signal: teaser waiting for proof.\n\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface=f"{host_family}_user_prompt_submit",
+        metadata={"selected_block_set_id": "prompt-1"},
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Later live beat.",
+        session_id=session_id,
+        host_family=host_family,
+        intervention_key="risk",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="---\n\n**Odylith Risks:** Later live proof should retire the teaser debt.\n\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface=f"{host_family}_post_tool_use",
+        metadata={"selected_block_set_id": "checkpoint-1"},
+    )
+
+    host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=tmp_path,
+        host_family=host_family,
+        session_id=session_id,
+        last_assistant_message="---\n\n**Odylith Risks:** Later live proof should retire the teaser debt.\n\n---",
+        render_surface=f"{host_family}_post_tool_use",
+    )
+
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family=host_family,
+        session_id=session_id,
+    )
+
+    assert report["chat_visible_proof"]["status"] == "proven_this_session"
+    assert report["delivery_ledger"]["unconfirmed_event_count"] == 0
+    assert report["assistant_visible_replay_markdown"] == ""
+    assert report["delivery_ledger"]["visibility_ratios"]["teaser"]["total"] == 0
 
 
 def test_codex_intervention_status_is_low_latency_and_human_readable(tmp_path: Path) -> None:

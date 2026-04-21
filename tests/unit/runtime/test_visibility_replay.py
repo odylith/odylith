@@ -200,3 +200,62 @@ def test_preferred_replay_prioritizes_history_and_risks_over_plain_insight_ambie
         "**Odylith Insight:** A newer generic insight should not outrank history or risks.\n"
         "\n---"
     )
+
+
+def test_replay_does_not_resurrect_stale_teaser_after_later_live_block_is_confirmed(tmp_path: Path) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_teaser",
+        summary="Prompt teaser waiting for proof.",
+        session_id="stale-teaser-replay",
+        host_family="codex",
+        intervention_key="teaser",
+        turn_phase="prompt_submit",
+        display_markdown="---\n\nOdylith is tracking this signal: stale teaser.\n\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="codex_user_prompt_submit",
+        metadata={"selected_block_set_id": "prompt-1"},
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Later observation waiting for proof.",
+        session_id="stale-teaser-replay",
+        host_family="codex",
+        intervention_key="observation",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="---\n\n**Odylith Observation:** Later live block should supersede the teaser.\n\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="codex_post_tool_use",
+        metadata={"selected_block_set_id": "checkpoint-1"},
+    )
+
+    assert visibility_replay.preferred_replayable_chat_markdown(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="stale-teaser-replay",
+        include_assist=False,
+        include_teaser=False,
+    ) == (
+        "---\n\n"
+        "**Odylith Observation:** Later live block should supersede the teaser.\n"
+        "\n---"
+    )
+
+    host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="stale-teaser-replay",
+        last_assistant_message="---\n\n**Odylith Observation:** Later live block should supersede the teaser.\n\n---",
+        render_surface="codex_post_tool_use",
+    )
+
+    assert visibility_replay.replayable_chat_markdown(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="stale-teaser-replay",
+        include_assist=False,
+        include_teaser=True,
+    ) == ""

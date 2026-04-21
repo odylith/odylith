@@ -16,6 +16,11 @@ _normalize_string = visibility_contract.normalize_string
 _normalize_token = visibility_contract.normalize_token
 
 
+def _event_family(row: Mapping[str, Any]) -> str:
+    """Return the normalized visible family for one delivery row."""
+    return visibility_contract.event_visibility_family(row)
+
+
 def event_bundle_id(row: Mapping[str, Any]) -> str:
     """Return the stable delivery-bundle id for one intervention event row."""
     metadata = row.get("metadata")
@@ -49,6 +54,7 @@ def active_unconfirmed_rows(rows: list[Mapping[str, Any]]) -> list[dict[str, Any
     bundles: dict[str, list[dict[str, Any]]] = {}
     bundle_last_index: dict[str, int] = {}
     bundle_requires_chat: dict[str, bool] = {}
+    bundle_families: dict[str, set[str]] = {}
 
     for row in rows:
         key = visibility_contract.event_confirmation_key(row)
@@ -74,6 +80,9 @@ def active_unconfirmed_rows(rows: list[Mapping[str, Any]]) -> list[dict[str, Any
         bundle_last_index[bundle_id] = index
         requires_chat = visibility_contract.event_requires_chat_confirmation(row)
         bundle_requires_chat[bundle_id] = bundle_requires_chat.get(bundle_id, False) or requires_chat
+        family = _event_family(row)
+        if family:
+            bundle_families.setdefault(bundle_id, set()).add(family)
 
     if not bundles:
         return []
@@ -83,6 +92,19 @@ def active_unconfirmed_rows(rows: list[Mapping[str, Any]]) -> list[dict[str, Any
         for bundle_id, requires_chat in bundle_requires_chat.items()
         if requires_chat
     ] or list(bundles)
+    candidate_bundle_ids = [
+        bundle_id
+        for bundle_id in candidate_bundle_ids
+        if not (
+            bundle_families.get(bundle_id) == {"teaser"}
+            and any(
+                _event_family(later_row) in {"ambient", "intervention", "assist"}
+                for later_row in rows[bundle_last_index[bundle_id] + 1 :]
+            )
+        )
+    ]
+    if not candidate_bundle_ids:
+        return []
     active_bundle_id = max(candidate_bundle_ids, key=lambda bundle_id: bundle_last_index[bundle_id])
 
     selected: list[dict[str, Any]] = []
