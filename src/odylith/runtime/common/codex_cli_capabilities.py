@@ -28,6 +28,7 @@ _PROJECT_DOC_MAX_BYTES = 65536
 _AGENTS_MAX_THREADS = 6
 _AGENTS_MAX_DEPTH = 1
 _CODEX_CHECKPOINT_MATCHER_TOKENS: tuple[str, ...] = ("Bash",)
+_CODEX_HOST_LAUNCHER_INVOCATION = "python3 ./.agents/bin/odylith-host-launcher.py"
 
 
 @dataclass(frozen=True)
@@ -322,6 +323,73 @@ def inspect_codex_cli_capabilities(
     return _inspect_cached(str(_resolve_repo_root(repo_root)), str(codex_bin or "codex").strip() or "codex", bool(probe_prompt_input))
 
 
+def _baked_hook_command(codex_command: str) -> str:
+    return f"{_CODEX_HOST_LAUNCHER_INVOCATION} codex {codex_command} --repo-root ."
+
+
+def _baked_hooks_payload() -> dict[str, Any]:
+    return {
+        "SessionStart": [
+            {
+                "matcher": "startup|resume",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": _baked_hook_command("session-start-ground"),
+                        "timeout": 30,
+                    }
+                ],
+            }
+        ],
+        "UserPromptSubmit": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": _baked_hook_command("prompt-context"),
+                        "timeout": 20,
+                    }
+                ]
+            }
+        ],
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": _baked_hook_command("bash-guard"),
+                        "timeout": 10,
+                    }
+                ],
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": _baked_hook_command("post-bash-checkpoint"),
+                        "timeout": 20,
+                    }
+                ],
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": _baked_hook_command("stop-summary"),
+                        "timeout": 20,
+                    }
+                ]
+            }
+        ],
+    }
+
+
 def render_effective_codex_project_config(
     *,
     repo_root: Path | str = ".",
@@ -358,6 +426,11 @@ def render_effective_codex_project_config(
     return "\n".join(lines)
 
 
+def render_effective_codex_hooks(*, repo_root: Path | str = ".") -> str:
+    del repo_root
+    return json.dumps(_baked_hooks_payload(), indent=2, sort_keys=False) + "\n"
+
+
 def write_effective_codex_project_config(
     *,
     repo_root: Path | str,
@@ -370,6 +443,18 @@ def write_effective_codex_project_config(
     atomic_write_text(
         target_path,
         render_effective_codex_project_config(repo_root=resolved_root, capabilities=capabilities),
+        encoding="utf-8",
+    )
+    return target_path
+
+
+def write_effective_codex_hooks(*, repo_root: Path | str) -> Path:
+    resolved_root = _resolve_repo_root(repo_root)
+    target_path = resolved_root / ".codex" / "hooks.json"
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    atomic_write_text(
+        target_path,
+        render_effective_codex_hooks(repo_root=resolved_root),
         encoding="utf-8",
     )
     return target_path

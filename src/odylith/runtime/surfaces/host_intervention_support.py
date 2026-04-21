@@ -54,6 +54,29 @@ def preferred_live_replay_markdown(
     )
 
 
+def confirm_last_assistant_message(
+    *,
+    repo_root: Path | str,
+    host_family: str,
+    session_id: str,
+    payload: Mapping[str, Any] | None,
+    render_surface: str,
+) -> list[dict[str, Any]]:
+    """Promote the previous assistant turn to chat-confirmed when the payload carries it."""
+    if not isinstance(payload, Mapping):
+        return []
+    message = str(payload.get("last_assistant_message", "")).strip()
+    if not message:
+        return []
+    return host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=repo_root,
+        host_family=host_family,
+        session_id=session_id,
+        last_assistant_message=message,
+        render_surface=render_surface,
+    )
+
+
 def looks_like_teaser_live_text(value: str) -> bool:
     """Return whether the live text is still only a teaser beat."""
     text = str(value or "").strip()

@@ -606,6 +606,7 @@ def write_effective_codex_project_config(*, repo_root: Path) -> None:
     if not codex_root.is_dir():
         return
     codex_cli_capabilities.write_effective_codex_project_config(repo_root=target_root)
+    codex_cli_capabilities.write_effective_codex_hooks(repo_root=target_root)
 
 
 def write_effective_claude_project_settings(*, repo_root: Path) -> None:

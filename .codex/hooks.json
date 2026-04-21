@@ -5,7 +5,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "./.odylith/bin/odylith codex session-start-ground --repo-root .",
+          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex session-start-ground --repo-root .",
           "timeout": 30
         }
       ]
@@ -16,7 +16,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "./.odylith/bin/odylith codex prompt-context --repo-root .",
+          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex prompt-context --repo-root .",
           "timeout": 20
         }
       ]
@@ -28,7 +28,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "./.odylith/bin/odylith codex bash-guard --repo-root .",
+          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex bash-guard --repo-root .",
           "timeout": 10
         }
       ]
@@ -40,7 +40,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "./.odylith/bin/odylith codex post-bash-checkpoint --repo-root .",
+          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex post-bash-checkpoint --repo-root .",
           "timeout": 20
         }
       ]
@@ -51,7 +51,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "./.odylith/bin/odylith codex stop-summary --repo-root .",
+          "command": "python3 ./.agents/bin/odylith-host-launcher.py codex stop-summary --repo-root .",
           "timeout": 20
         }
       ]

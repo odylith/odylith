@@ -5,7 +5,7 @@
       {
         "hooks": [
           {
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude post-edit-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude post-edit-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 180,
             "type": "command"
           }
@@ -15,7 +15,7 @@
       {
         "hooks": [
           {
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude post-bash-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude post-bash-checkpoint --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 180,
             "type": "command"
           }
@@ -27,7 +27,7 @@
       {
         "hooks": [
           {
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude pre-compact-snapshot --repo-root \"$CLAUDE_PROJECT_DIR\" --quiet",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude pre-compact-snapshot --repo-root \"$CLAUDE_PROJECT_DIR\" --quiet",
             "timeout": 20,
             "type": "command"
           }
@@ -38,7 +38,7 @@
       {
         "hooks": [
           {
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 10,
             "type": "command"
           }
@@ -50,7 +50,7 @@
       {
         "hooks": [
           {
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude session-start --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude session-start --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30,
             "type": "command"
           }
@@ -61,7 +61,7 @@
       {
         "hooks": [
           {
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude stop-summary --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude stop-summary --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 20,
             "type": "command"
           }
@@ -72,7 +72,7 @@
       {
         "hooks": [
           {
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude subagent-start --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude subagent-start --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 20,
             "type": "command"
           }
@@ -84,7 +84,7 @@
         "hooks": [
           {
             "async": true,
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude subagent-stop --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude subagent-stop --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30,
             "type": "command"
           }
@@ -100,12 +100,12 @@
             "type": "command"
           },
           {
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude prompt-context --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude prompt-context --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30,
             "type": "command"
           },
           {
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.odylith/bin/odylith claude prompt-teaser --repo-root \"$CLAUDE_PROJECT_DIR\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.agents/bin/odylith-host-launcher.py claude prompt-teaser --repo-root \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30,
             "type": "command"
           }

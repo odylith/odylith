@@ -154,6 +154,13 @@ def main(argv: list[str] | None = None) -> int:
     payload = claude_host_shared.load_payload(raw)
     prompt = str(payload.get("prompt", "")).strip()
     session_id = claude_host_shared.hook_session_id(payload)
+    host_intervention_support.confirm_last_assistant_message(
+        repo_root=repo_root,
+        host_family="claude",
+        session_id=session_id,
+        payload=payload,
+        render_surface="claude_user_prompt_submit",
+    )
     bundle = _prompt_conversation_bundle(
         repo_root=repo_root,
         prompt=prompt,

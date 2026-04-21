@@ -27,7 +27,7 @@ def _seed_repo(repo_root: Path) -> None:
                         "hooks": [
                             {
                                 "type": "command",
-                                "command": "./.odylith/bin/odylith codex prompt-context --repo-root .",
+                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex prompt-context --repo-root .",
                             }
                         ]
                     }
@@ -38,7 +38,7 @@ def _seed_repo(repo_root: Path) -> None:
                         "hooks": [
                             {
                                 "type": "command",
-                                "command": "./.odylith/bin/odylith codex post-bash-checkpoint --repo-root .",
+                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex post-bash-checkpoint --repo-root .",
                             }
                         ],
                     }
@@ -48,7 +48,7 @@ def _seed_repo(repo_root: Path) -> None:
                         "hooks": [
                             {
                                 "type": "command",
-                                "command": "./.odylith/bin/odylith codex stop-summary --repo-root .",
+                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex stop-summary --repo-root .",
                             }
                         ]
                     }

@@ -8,6 +8,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 LIVE_CLAUDE_ROOT = REPO_ROOT / ".claude"
 LIVE_CODEX_ROOT = REPO_ROOT / ".codex"
+LIVE_AGENTS_ROOT = REPO_ROOT / ".agents"
 LIVE_SKILLS_ROOT = REPO_ROOT / ".agents" / "skills"
 PROJECT_ROOT_BUNDLE = REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "project-root"
 INSTALL_AND_CONTRACT_MODULES = (
@@ -107,6 +108,15 @@ def test_live_claude_hook_scripts_match_bundle_mirror_content() -> None:
         ).read_text(encoding="utf-8")
 
 
+def test_live_agents_bin_matches_bundle_mirror_content() -> None:
+    live_helper = LIVE_AGENTS_ROOT / "bin" / "odylith-host-launcher.py"
+    bundle_helper = PROJECT_ROOT_BUNDLE / ".agents" / "bin" / "odylith-host-launcher.py"
+
+    assert live_helper.is_file()
+    assert bundle_helper.is_file()
+    assert live_helper.read_text(encoding="utf-8") == bundle_helper.read_text(encoding="utf-8")
+
+
 def test_install_and_contract_entry_modules_start_with_docstrings() -> None:
     for path in INSTALL_AND_CONTRACT_MODULES:
         text = path.read_text(encoding="utf-8").lstrip()
@@ -156,11 +166,21 @@ def test_codex_hooks_register_supported_events_only() -> None:
     assert payload["SessionStart"][0]["matcher"] == "startup|resume"
     assert payload["PreToolUse"][0]["matcher"] == "Bash"
     assert payload["PostToolUse"][0]["matcher"] == "Bash"
-    assert payload["SessionStart"][0]["hooks"][0]["command"] == "./.odylith/bin/odylith codex session-start-ground --repo-root ."
-    assert payload["UserPromptSubmit"][0]["hooks"][0]["command"] == "./.odylith/bin/odylith codex prompt-context --repo-root ."
-    assert payload["PreToolUse"][0]["hooks"][0]["command"] == "./.odylith/bin/odylith codex bash-guard --repo-root ."
-    assert payload["PostToolUse"][0]["hooks"][0]["command"] == "./.odylith/bin/odylith codex post-bash-checkpoint --repo-root ."
-    assert payload["Stop"][0]["hooks"][0]["command"] == "./.odylith/bin/odylith codex stop-summary --repo-root ."
+    assert payload["SessionStart"][0]["hooks"][0]["command"] == (
+        "python3 ./.agents/bin/odylith-host-launcher.py codex session-start-ground --repo-root ."
+    )
+    assert payload["UserPromptSubmit"][0]["hooks"][0]["command"] == (
+        "python3 ./.agents/bin/odylith-host-launcher.py codex prompt-context --repo-root ."
+    )
+    assert payload["PreToolUse"][0]["hooks"][0]["command"] == (
+        "python3 ./.agents/bin/odylith-host-launcher.py codex bash-guard --repo-root ."
+    )
+    assert payload["PostToolUse"][0]["hooks"][0]["command"] == (
+        "python3 ./.agents/bin/odylith-host-launcher.py codex post-bash-checkpoint --repo-root ."
+    )
+    assert payload["Stop"][0]["hooks"][0]["command"] == (
+        "python3 ./.agents/bin/odylith-host-launcher.py codex stop-summary --repo-root ."
+    )
 
     live_scripts = {path.name for path in (LIVE_CODEX_ROOT / "hooks").glob("*.py")}
     bundled_scripts = {path.name for path in (PROJECT_ROOT_BUNDLE / ".codex" / "hooks").glob("*.py")}

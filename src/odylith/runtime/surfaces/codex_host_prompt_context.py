@@ -88,6 +88,13 @@ def main(argv: list[str] | None = None) -> int:
     payload = codex_host_shared.load_payload()
     prompt = str(payload.get("prompt", "")).strip()
     session_id = codex_host_shared.hook_session_id(payload)
+    host_intervention_support.confirm_last_assistant_message(
+        repo_root=args.repo_root,
+        host_family="codex",
+        session_id=session_id,
+        payload=payload,
+        render_surface="codex_user_prompt_submit",
+    )
     bundle = _prompt_conversation_bundle(
         repo_root=args.repo_root,
         prompt=prompt,

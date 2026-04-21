@@ -22,18 +22,32 @@ def _seed_codex_repo(repo_root: Path) -> None:
         json.dumps(
             {
                 "UserPromptSubmit": [
-                    {"hooks": [{"command": "./.odylith/bin/odylith codex prompt-context --repo-root ."}]}
+                    {
+                        "hooks": [
+                            {
+                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex prompt-context --repo-root ."
+                            }
+                        ]
+                    }
                 ],
                 "PostToolUse": [
                     {
                         "matcher": "Bash",
                         "hooks": [
-                            {"command": "./.odylith/bin/odylith codex post-bash-checkpoint --repo-root ."}
+                            {
+                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex post-bash-checkpoint --repo-root ."
+                            }
                         ],
                     }
                 ],
                 "Stop": [
-                    {"hooks": [{"command": "./.odylith/bin/odylith codex stop-summary --repo-root ."}]}
+                    {
+                        "hooks": [
+                            {
+                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex stop-summary --repo-root ."
+                            }
+                        ]
+                    }
                 ],
             }
         ),
@@ -51,8 +65,12 @@ def _seed_claude_repo(repo_root: Path) -> None:
         "UserPromptSubmit": [
             {
                 "hooks": [
-                    {"command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"'},
-                    {"command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"'},
+                    {
+                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"'
+                    },
+                    {
+                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"'
+                    },
                 ]
             }
         ],
@@ -60,18 +78,28 @@ def _seed_claude_repo(repo_root: Path) -> None:
             {
                 "matcher": "Write|Edit|MultiEdit",
                 "hooks": [
-                    {"command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude post-edit-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"'}
+                    {
+                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude post-edit-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"'
+                    }
                 ],
             },
             {
                 "matcher": "Bash",
                 "hooks": [
-                    {"command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude post-bash-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"'}
+                    {
+                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude post-bash-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"'
+                    }
                 ],
             },
         ],
         "Stop": [
-            {"hooks": [{"command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude stop-summary --repo-root "$CLAUDE_PROJECT_DIR"'}]}
+            {
+                "hooks": [
+                    {
+                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude stop-summary --repo-root "$CLAUDE_PROJECT_DIR"'
+                    }
+                ]
+            }
         ],
     }
     (repo_root / ".claude").mkdir(parents=True, exist_ok=True)

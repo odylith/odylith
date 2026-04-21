@@ -39,7 +39,7 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 "hooks": [
                                     {
                                         "type": "command",
-                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude bash-guard --repo-root "$CLAUDE_PROJECT_DIR"',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude bash-guard --repo-root "$CLAUDE_PROJECT_DIR"',
                                     }
                                 ],
                             }
@@ -50,7 +50,7 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 "hooks": [
                                     {
                                         "type": "command",
-                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude post-edit-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude post-edit-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"',
                                     }
                                 ],
                             },
@@ -59,7 +59,7 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 "hooks": [
                                     {
                                         "type": "command",
-                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude post-bash-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude post-bash-checkpoint --repo-root "$CLAUDE_PROJECT_DIR"',
                                     }
                                 ],
                             }
@@ -69,7 +69,7 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 "hooks": [
                                     {
                                         "type": "command",
-                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude pre-compact-snapshot --repo-root "$CLAUDE_PROJECT_DIR" --quiet',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude pre-compact-snapshot --repo-root "$CLAUDE_PROJECT_DIR" --quiet',
                                     }
                                 ]
                             }
@@ -79,7 +79,7 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 "hooks": [
                                     {
                                         "type": "command",
-                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude subagent-start --repo-root "$CLAUDE_PROJECT_DIR"',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude subagent-start --repo-root "$CLAUDE_PROJECT_DIR"',
                                     }
                                 ]
                             }
@@ -89,7 +89,7 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 "hooks": [
                                     {
                                         "type": "command",
-                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude subagent-stop --repo-root "$CLAUDE_PROJECT_DIR"',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude subagent-stop --repo-root "$CLAUDE_PROJECT_DIR"',
                                     }
                                 ]
                             }
@@ -99,7 +99,7 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 "hooks": [
                                     {
                                         "type": "command",
-                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude stop-summary --repo-root "$CLAUDE_PROJECT_DIR"',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude stop-summary --repo-root "$CLAUDE_PROJECT_DIR"',
                                     }
                                 ]
                             }
@@ -109,11 +109,11 @@ def _seed_repo(repo_root: Path, *, with_settings: bool = True) -> None:
                                 "hooks": [
                                     {
                                         "type": "command",
-                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"',
                                     },
                                     {
                                         "type": "command",
-                                        "command": '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"',
+                                        "command": 'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"',
                                     },
                                 ]
                             }

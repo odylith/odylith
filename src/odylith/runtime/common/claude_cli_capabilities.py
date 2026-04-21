@@ -342,7 +342,9 @@ def inspect_claude_cli_capabilities(
 
 
 _CLAUDE_PROJECT_DIR_TOKEN = "$CLAUDE_PROJECT_DIR"
-_CLAUDE_LAUNCHER_INVOCATION = f'"{_CLAUDE_PROJECT_DIR_TOKEN}"/.odylith/bin/odylith'
+_CLAUDE_HOST_LAUNCHER_INVOCATION = (
+    f'python3 "{_CLAUDE_PROJECT_DIR_TOKEN}"/.agents/bin/odylith-host-launcher.py'
+)
 _CLAUDE_STATUSLINE_INVOCATION = f'"{_CLAUDE_PROJECT_DIR_TOKEN}"/.claude/statusline.sh'
 
 
@@ -355,7 +357,7 @@ def _project_python_hook_command(script_name: str) -> str:
 
 def _baked_hook_command(claude_command: str, *extra_flags: str) -> str:
     parts = [
-        _CLAUDE_LAUNCHER_INVOCATION,
+        _CLAUDE_HOST_LAUNCHER_INVOCATION,
         "claude",
         claude_command,
         "--repo-root",

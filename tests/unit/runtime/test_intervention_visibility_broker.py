@@ -22,18 +22,32 @@ def _seed_codex_repo(repo_root: Path) -> None:
         json.dumps(
             {
                 "UserPromptSubmit": [
-                    {"hooks": [{"command": "./.odylith/bin/odylith codex prompt-context --repo-root ."}]}
+                    {
+                        "hooks": [
+                            {
+                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex prompt-context --repo-root ."
+                            }
+                        ]
+                    }
                 ],
                 "PostToolUse": [
                     {
                         "matcher": "Bash",
                         "hooks": [
-                            {"command": "./.odylith/bin/odylith codex post-bash-checkpoint --repo-root ."}
+                            {
+                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex post-bash-checkpoint --repo-root ."
+                            }
                         ],
                     }
                 ],
                 "Stop": [
-                    {"hooks": [{"command": "./.odylith/bin/odylith codex stop-summary --repo-root ."}]}
+                    {
+                        "hooks": [
+                            {
+                                "command": "python3 ./.agents/bin/odylith-host-launcher.py codex stop-summary --repo-root ."
+                            }
+                        ]
+                    }
                 ],
             }
         ),

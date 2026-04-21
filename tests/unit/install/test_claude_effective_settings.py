@@ -42,8 +42,8 @@ def test_write_effective_claude_project_settings_writes_byte_stable_json(tmp_pat
     prompt_hooks = payload["hooks"]["UserPromptSubmit"][0]["hooks"]
     assert [hook["command"] for hook in prompt_hooks] == [
         'python3 "$CLAUDE_PROJECT_DIR"/.claude/hooks/show-me-prompt-guard.py "$CLAUDE_PROJECT_DIR"',
-        '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"',
-        '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"',
+        'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-context --repo-root "$CLAUDE_PROJECT_DIR"',
+        'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude prompt-teaser --repo-root "$CLAUDE_PROJECT_DIR"',
     ]
     assert prompt_hooks[0]["timeout"] == 5
     post_edit_hook = payload["hooks"]["PostToolUse"][0]["hooks"][0]
@@ -52,7 +52,7 @@ def test_write_effective_claude_project_settings_writes_byte_stable_json(tmp_pat
     assert "async" not in post_edit_hook
     assert "async" not in post_bash_hook
     assert post_bash_hook["command"] == (
-        '"$CLAUDE_PROJECT_DIR"/.odylith/bin/odylith claude post-bash-checkpoint '
+        'python3 "$CLAUDE_PROJECT_DIR"/.agents/bin/odylith-host-launcher.py claude post-bash-checkpoint '
         '--repo-root "$CLAUDE_PROJECT_DIR"'
     )
     assert subagent_stop_hook["async"] is True

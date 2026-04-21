@@ -5,6 +5,7 @@ import json
 import subprocess
 from pathlib import Path
 
+from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import claude_host_prompt_context
 from odylith.runtime.surfaces import claude_host_prompt_teaser
@@ -255,3 +256,54 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
     assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith is tracking this signal:")
     assert output.rstrip().endswith(surface_runtime.LIVE_BOUNDARY)
     assert not output.lstrip().startswith("{")
+
+
+def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending Claude prompt replay awaiting transcript proof.",
+        session_id="claude-confirm-prompt",
+        host_family="claude",
+        intervention_key="claude-confirm-prompt-key",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="---\n**Odylith Observation:** Claude prompt already rendered this block.\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        render_surface="claude_post_tool_use",
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "prompt": "Continue with the next slice.",
+                    "session_id": "claude-confirm-prompt",
+                    "last_assistant_message": (
+                        "Done.\n\n---\n**Odylith Observation:** Claude prompt already rendered this block.\n---"
+                    ),
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        claude_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        lambda **_: {},
+    )
+
+    exit_code = claude_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert capsys.readouterr().out == ""
+    snapshot = delivery_ledger.delivery_snapshot(
+        repo_root=tmp_path,
+        host_family="claude",
+        session_id="claude-confirm-prompt",
+    )
+    assert snapshot["chat_confirmed_event_count"] == 1
+    assert snapshot["unconfirmed_event_count"] == 0
