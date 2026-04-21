@@ -942,8 +942,14 @@ def _compose_insight_signal(
         cause_phrase = _join_items(latent_causes[:2])
         markdown_refs = _join_items([str(row.get("markdown_ref", "")).strip() for row in refs[:2]])
         plain_refs = _join_items([str(row.get("plain_ref", "")).strip() for row in refs[:2]])
-        markdown_text = f"{_label('insight', markdown=True)} the real pressure here smells more like {cause_phrase} than raw code spread, which is why {markdown_refs or 'the governed surfaces'} matter more than one more repo lap."
-        plain_text = f"{_label('insight', markdown=False)} the real pressure here smells more like {cause_phrase} than raw code spread, which is why {plain_refs or 'the governed surfaces'} matter more than one more repo lap."
+        markdown_text = (
+            f"{_label('insight', markdown=True)} this looks more like {cause_phrase} than code sprawl. "
+            f"Keep {markdown_refs or 'the real anchors'} in frame before widening again."
+        )
+        plain_text = (
+            f"{_label('insight', markdown=False)} this looks more like {cause_phrase} than code sprawl. "
+            f"Keep {plain_refs or 'the real anchors'} in frame before widening again."
+        )
         return _signal_payload(kind="insight", metrics=metrics, markdown_text=markdown_text, plain_text=plain_text, facts=latent_causes[:2], refs=refs[:2], render_hint="explicit_label", confidence="high")
     if not anchor_artifacts:
         return _suppressed_signal_payload(kind="insight", metrics=metrics, reason="no_anchor_artifacts")
@@ -953,16 +959,16 @@ def _compose_insight_signal(
     markdown_refs = _join_items([str(row.get("markdown_ref", "")).strip() for row in refs])
     plain_refs = _join_items([str(row.get("plain_ref", "")).strip() for row in refs])
     facts = [
-        "the packet already carried governed anchors",
+        "the key anchors were already present",
         "staying narrow changed the next move",
     ]
     if metrics["workstream_count"] > 0 and metrics["component_count"] > 0:
         markdown_text = (
-            f"{_label('insight', markdown=True)} the center of gravity was already {markdown_refs}, "
+            f"{_label('insight', markdown=True)} the real work was already in {markdown_refs}, "
             "so widening here would have been theater."
         )
         plain_text = (
-            f"{_label('insight', markdown=False)} the center of gravity was already {plain_refs}, "
+            f"{_label('insight', markdown=False)} the real work was already in {plain_refs}, "
             "so widening here would have been theater."
         )
         return _signal_payload(
@@ -976,11 +982,11 @@ def _compose_insight_signal(
             confidence="high",
         )
     markdown_text = (
-        f"{_label('insight', markdown=True)} the governed anchors were already on the table, "
+        f"{_label('insight', markdown=True)} the key anchors were already on the table, "
         "which is why this stayed smaller than it first looked."
     )
     plain_text = (
-        f"{_label('insight', markdown=False)} the governed anchors were already on the table, "
+        f"{_label('insight', markdown=False)} the key anchors were already on the table, "
         "which is why this stayed smaller than it first looked."
     )
     return _signal_payload(
@@ -1008,8 +1014,8 @@ def _compose_history_signal(
             refs = _tribunal_signal_refs(tribunal_context=tribunal_context, anchor_artifacts=anchor_artifacts)
             markdown_refs = _join_items([str(row.get("markdown_ref", "")).strip() for row in refs[:2]])
             plain_refs = _join_items([str(row.get("plain_ref", "")).strip() for row in refs[:2]])
-            markdown_text = f"{_label('history', markdown=True)} {markdown_refs or 'this slice'} is already sitting in Odylith's diagnosed queue, so treat the next move as a continuation, not a cold start."
-            plain_text = f"{_label('history', markdown=False)} {plain_refs or 'this slice'} is already sitting in Odylith's diagnosed queue, so treat the next move as a continuation, not a cold start."
+            markdown_text = f"{_label('history', markdown=True)} {markdown_refs or 'this slice'} already has an active case here, so treat the next move as a continuation, not a cold start."
+            plain_text = f"{_label('history', markdown=False)} {plain_refs or 'this slice'} already has an active case here, so treat the next move as a continuation, not a cold start."
             return _signal_payload(kind="history", metrics=metrics, markdown_text=markdown_text, plain_text=plain_text, facts=["Tribunal already has a live case on this scope"], refs=refs[:2], render_hint="explicit_label", confidence="medium")
     if not history_refs:
         return _suppressed_signal_payload(kind="history", metrics=metrics, reason="no_strong_prior")
@@ -1018,11 +1024,11 @@ def _compose_history_signal(
     plain_refs = _join_items([str(row.get("plain_ref", "")).strip() for row in refs])
     facts = ["there is already history on this surface"]
     markdown_text = (
-        f"{_label('history', markdown=True)} this slice already left tracks in {markdown_refs}, "
+        f"{_label('history', markdown=True)} this slice already has history in {markdown_refs}, "
         "so treat the next move as a continuation, not a cold start."
     )
     plain_text = (
-        f"{_label('history', markdown=False)} this slice already left tracks in {plain_refs}, "
+        f"{_label('history', markdown=False)} this slice already has history in {plain_refs}, "
         "so treat the next move as a continuation, not a cold start."
     )
     return _signal_payload(
@@ -1065,10 +1071,10 @@ def _compose_risk_signal(
         issue = str(readout.get("issue", "")).strip()
         body = action or issue or "do not let polish outrun proof"
         markdown_text = _sentence_with_terminal_punctuation(
-            f"{_label('risks', markdown=True)} Tribunal already has {scope.get('scope_label') or 'this slice'} in {scenario}, so {body}"
+            f"{_label('risks', markdown=True)} Tribunal already has {scope.get('scope_label') or 'this slice'} flagged for {scenario}, so {body}"
         )
         plain_text = _sentence_with_terminal_punctuation(
-            f"{_label('risks', markdown=False)} Tribunal already has {scope.get('scope_label') or 'this slice'} in {scenario}, so {body}"
+            f"{_label('risks', markdown=False)} Tribunal already has {scope.get('scope_label') or 'this slice'} flagged for {scenario}, so {body}"
         )
         return _signal_payload(kind="risks", metrics=metrics, markdown_text=markdown_text, plain_text=plain_text, facts=[issue or scenario, action], refs=refs[:2], render_hint="explicit_label", severity=str(readout.get('severity', '')).strip() or "watch")
     reasons, severity = _risk_summary(request, adoption)
@@ -1077,10 +1083,10 @@ def _compose_risk_signal(
     risk_phrase = _join_items(reasons[:3])
     refs = list(anchor_artifacts[:2])
     markdown_text = (
-        f"{_label('risks', markdown=True)} {risk_phrase}, so keep the next move evidence-backed and do not let the polish outrun the proof."
+        f"{_label('risks', markdown=True)} {risk_phrase}, so keep the next move grounded in evidence before polishing it."
     )
     plain_text = (
-        f"{_label('risks', markdown=False)} {risk_phrase}, so keep the next move evidence-backed and do not let the polish outrun the proof."
+        f"{_label('risks', markdown=False)} {risk_phrase}, so keep the next move grounded in evidence before polishing it."
     )
     return _signal_payload(
         kind="risks",

@@ -370,7 +370,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Pa
     )
 
     assert bundle["ambient_signals"]["selected_signal"] == "risks"
-    assert "Tribunal already has B-031 in unsafe closeout" in bundle["ambient_signals"]["risks"]["markdown_text"]
+    assert "Tribunal already has B-031 flagged for unsafe closeout" in bundle["ambient_signals"]["risks"]["markdown_text"]
     assert bundle["ambient_signals"]["claim_lint"]["highest_truthful_claim"] == "fixed in code"
     assert bundle["closeout_bundle"]["render_policy"]["claim_terms_require_lint"] is True
     assert bundle["closeout_bundle"]["selected_supplemental"] == "risks"
@@ -599,7 +599,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_insight_signal(tmp_path:
 
     assert bundle["ambient_signals"]["selected_signal"] == "insight"
     assert "authority and ownership gap" in bundle["ambient_signals"]["insight"]["markdown_text"]
-    assert "one more repo lap" in bundle["ambient_signals"]["insight"]["markdown_text"]
+    assert "Keep [B-031]" in bundle["ambient_signals"]["insight"]["markdown_text"]
 
 
 def test_conversation_bundle_reads_precomputed_tribunal_history_signal(tmp_path: Path) -> None:
@@ -638,7 +638,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_history_signal(tmp_path:
     )
 
     assert bundle["ambient_signals"]["selected_signal"] == "history"
-    assert "diagnosed queue" in bundle["ambient_signals"]["history"]["markdown_text"]
+    assert "already has an active case here" in bundle["ambient_signals"]["history"]["markdown_text"]
 
 
 def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artifact(
@@ -683,7 +683,7 @@ def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artif
     )
 
     assert bundle["ambient_signals"]["selected_signal"] == "risks"
-    assert bundle["ambient_signals"]["risks"]["markdown_text"].startswith("**Odylith Risks:** Tribunal already has B-031 in unsafe closeout")
+    assert bundle["ambient_signals"]["risks"]["markdown_text"].startswith("**Odylith Risks:** Tribunal already has B-031 flagged for unsafe closeout")
     assert ".." not in bundle["ambient_signals"]["risks"]["markdown_text"]
 
 

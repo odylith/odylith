@@ -210,14 +210,14 @@ def test_visible_delivery_fallback_strips_extra_odylith_continuity_when_system_m
 
 def test_codex_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
     payload = host_surface_runtime.codex_prompt_payload(
-        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: governed truth is taking shape here.",
-        system_message="Odylith is tracking this signal: governed truth is taking shape here.",
+        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
-    assert payload["systemMessage"] == "Odylith is tracking this signal: governed truth is taking shape here."
+    assert payload["systemMessage"] == "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
     assert "Odylith Assist:" not in payload["hookSpecificOutput"]["additionalContext"]
 
 
@@ -235,8 +235,8 @@ def test_claude_post_tool_payload_uses_additional_context_and_system_message() -
 
 def test_claude_prompt_payload_keeps_prompt_context_discreet() -> None:
     payload = host_surface_runtime.claude_prompt_payload(
-        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: governed truth is taking shape here.",
-        system_message="Odylith is tracking this signal: governed truth is taking shape here.",
+        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
@@ -300,8 +300,8 @@ def test_render_visible_live_intervention_excludes_closeout_text() -> None:
 
 def test_codex_prompt_visible_text_comes_from_system_message_not_hidden_context() -> None:
     payload = host_surface_runtime.codex_prompt_payload(
-        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: governed truth is taking shape here.",
-        system_message="Odylith is tracking this signal: governed truth is taking shape here.",
+        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
     )
 
     visible = host_surface_runtime.chat_visible_text(
@@ -310,24 +310,24 @@ def test_codex_prompt_visible_text_comes_from_system_message_not_hidden_context(
         turn_phase="prompt_submit",
     )
 
-    assert visible == "Odylith is tracking this signal: governed truth is taking shape here."
+    assert visible == "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
     assert "Odylith anchor B-096" not in visible
 
 
 def test_claude_prompt_visible_text_comes_from_teaser_stdout_not_hidden_context() -> None:
     payload = host_surface_runtime.claude_prompt_payload(
-        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: governed truth is taking shape here.",
-        system_message="Odylith is tracking this signal: governed truth is taking shape here.",
+        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
     )
 
     visible = host_surface_runtime.chat_visible_text(
         payload,
         host_family="claude",
         turn_phase="prompt_submit",
-        plain_stdout="Odylith is tracking this signal: governed truth is taking shape here.",
+        plain_stdout="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
     )
 
-    assert visible == "Odylith is tracking this signal: governed truth is taking shape here."
+    assert visible == "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
     assert "systemMessage" not in payload
     assert "Odylith anchor B-096" not in visible
 
@@ -384,9 +384,9 @@ def test_visible_fallback_keeps_non_odylith_context_while_stripping_live_tail() 
     payload = host_surface_runtime.codex_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith is tracking this signal: governed truth is taking shape here."
+            "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
         ),
-        system_message="Odylith is tracking this signal: governed truth is taking shape here.",
+        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
     )
 
     additional_context = payload["hookSpecificOutput"]["additionalContext"]
@@ -394,7 +394,7 @@ def test_visible_fallback_keeps_non_odylith_context_while_stripping_live_tail() 
     assert "Odylith visible delivery fallback:" in additional_context
     assert "Odylith anchor B-096: primary target src/main.py." in additional_context
     assert "Odylith developer continuity:" in additional_context
-    assert additional_context.count("Odylith is tracking this signal: governed truth is taking shape here.") == 1
+    assert additional_context.count("Odylith is tracking this signal: This conversation is ready to be captured in the repo.") == 1
 
 
 def test_stop_visible_text_can_include_assist_closeout() -> None:

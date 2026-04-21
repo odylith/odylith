@@ -126,7 +126,7 @@ def test_prompt_only_bundle_stays_teaser_and_holds_voice_contract(tmp_path: Path
 
     assert bundle["candidate"]["stage"] == "teaser"
     assert bundle["candidate"]["teaser_text"].startswith("Odylith is tracking this signal:")
-    assert "This conversation is ready to become governed truth." in bundle["candidate"]["teaser_text"]
+    assert "This conversation is ready to be captured in the repo." in bundle["candidate"]["teaser_text"]
     assert "One more corroborating signal" not in bundle["candidate"]["teaser_text"]
     assert bundle["candidate"]["markdown_text"] == ""
     assert bundle["proposal"]["eligible"] is False
@@ -659,7 +659,7 @@ def test_preview_only_proposal_keeps_status_centralized_and_drops_inline_boilerp
 
     assert bundle["proposal"]["apply_supported"] is False
     assert proposal_markdown.startswith("-----\nOdylith Proposal: ")
-    assert "Some actions still need a safe apply lane" in proposal_markdown
+    assert "Some actions still need manual review because Odylith cannot apply them safely yet." in proposal_markdown
     assert "There is a clean way" not in proposal_markdown
     assert "safely appliable today" not in proposal_markdown
     assert proposal_markdown.count("-----") >= 2
@@ -833,6 +833,6 @@ def test_execution_memory_tribunal_and_visibility_summaries_feed_same_interventi
     assert ("bug", "CB-122") in refs
     assert any("Execution Engine has an active recovery constraint" in row for row in headlines)
     assert any("Tribunal already has CB-122" in row for row in headlines)
-    assert any("Delivery ledger still has Odylith blocks awaiting chat confirmation" in row for row in headlines)
+    assert any("Odylith still has blocks waiting for transcript confirmation" in row for row in headlines)
     assert "execution_engine_snapshot" in bundle["facts"][0]["evidence_classes"]
     assert bundle["candidate"]["stage"] == "card"

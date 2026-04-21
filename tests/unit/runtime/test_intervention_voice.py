@@ -13,6 +13,11 @@ _BANNED_MECHANICAL_PHRASES = (
     "whole bundle can move",
     "Let the owned boundary",
     "Casebook already has related memory in the frame",
+    "governed truth",
+    "safe apply lane",
+    "living component dossier",
+    "affected surfaces",
+    "supported actions can move through one confirmation",
 )
 
 
@@ -91,7 +96,7 @@ def test_proposal_voice_keeps_shell_fixed_but_derives_body_from_fact_and_actions
             target_kind="diagram",
             target_id="D-038",
             title="Conversation Observation Flow",
-            rationale="Atlas already has D-038, so the next governed move is a review refresh rather than a duplicate map.",
+            rationale="Atlas already has D-038, so refresh that diagram instead of creating another one.",
         ),
         CaptureAction(
             surface="registry",
@@ -99,7 +104,7 @@ def test_proposal_voice_keeps_shell_fixed_but_derives_body_from_fact_and_actions
             target_kind="component",
             target_id="governance-intervention-engine",
             title="Governance Intervention Engine",
-            rationale="Registry already maps the runtime boundary, so the living dossier should carry the voice contract.",
+            rationale="Registry already maps the runtime boundary, so update that dossier instead of creating a duplicate component.",
         ),
     ]
 
@@ -110,10 +115,11 @@ def test_proposal_voice_keeps_shell_fixed_but_derives_body_from_fact_and_actions
     )
 
     assert markdown_text.startswith("-----\nOdylith Proposal: Atlas already carries D-038")
-    assert "The proposed actions touch Atlas and Registry." in markdown_text
-    assert "- Atlas: review refresh D-038." in markdown_text
-    assert "review refresh rather than a duplicate map." in markdown_text
+    assert "This would touch Atlas and Registry." in markdown_text
+    assert "- Atlas: refresh D-038 for review." in markdown_text
+    assert "refresh that diagram instead of creating another one." in markdown_text
     assert "- Registry: update governance-intervention-engine." in markdown_text
+    assert "Some actions still need manual review because Odylith cannot apply them safely yet." in markdown_text
     assert confirmation == "apply this proposal"
     assert plain_text == markdown_text
     assert markdown_text.rstrip().endswith("-----")

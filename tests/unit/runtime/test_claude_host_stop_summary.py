@@ -194,7 +194,7 @@ def test_stop_intervention_bundle_can_recover_prompt_when_last_message_is_short(
             "I still do not see any Odylith ambient highlights or interventions "
             "visible in chat."
         ),
-        display_plain="Odylith is tracking this signal: governed truth is taking shape here.",
+        display_plain="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
     )
     seen: dict[str, object] = {}
 

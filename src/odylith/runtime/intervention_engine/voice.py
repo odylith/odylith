@@ -112,7 +112,7 @@ def _primary_fact(moment: Mapping[str, Any], facts: Sequence[GovernanceFact]) ->
     row = _fact_from_mapping(moment.get("primary_fact"))
     if _normalize_string(row.headline):
         return row
-    return facts[0] if facts else GovernanceFact(kind="capture_opportunity", headline="This slice is ready to become governed truth.")
+    return facts[0] if facts else GovernanceFact(kind="capture_opportunity", headline="This conversation is ready to be captured in the repo.")
 
 
 def _supporting_fact(moment: Mapping[str, Any]) -> GovernanceFact | None:
@@ -124,7 +124,7 @@ def _fact_claim(primary: GovernanceFact) -> str:
     return (
         _strip_terminal_punctuation(primary.headline)
         or _strip_terminal_punctuation(primary.detail)
-        or "This slice is ready to become governed truth"
+        or "This conversation is ready to be captured in the repo"
     )
 
 
@@ -153,8 +153,18 @@ def _action_target(action: CaptureAction) -> str:
 
 
 def _action_delta(action: CaptureAction) -> str:
-    verb = _normalize_string(action.action).replace("_", " ").strip() or "capture"
-    return f"{verb} {_action_target(action)}"
+    verb = _normalize_token(action.action)
+    target = _action_target(action)
+    if verb == "review_refresh":
+        return f"refresh {target} for review"
+    if verb == "update":
+        return f"update {target}"
+    if verb == "create":
+        return f"create {target}"
+    if verb == "reopen":
+        return f"reopen {target}"
+    normalized = _normalize_string(action.action).replace("_", " ").strip() or "capture"
+    return f"{normalized} {target}"
 
 
 def _action_rationale(action: CaptureAction) -> str:
@@ -174,8 +184,8 @@ def _action_sentence(actions: Sequence[CaptureAction]) -> str:
     joined = _join_human_list(surfaces)
     first_rationale = _action_rationale(actions[0])
     if first_rationale:
-        return f"{joined} are the affected surfaces; {first_rationale[0].lower()}{first_rationale[1:]}"
-    return f"{joined} are the affected surfaces for {len(actions)} proposed actions"
+        return first_rationale
+    return f"This would touch {joined}"
 
 
 def _voice_proposition(
@@ -256,8 +266,8 @@ def _join_human_list(values: Sequence[str]) -> str:
 
 def _proposal_status_sentence(*, preview_only: bool) -> str:
     if preview_only:
-        return "Some actions still need a safe apply lane before Odylith can apply them automatically"
-    return "The supported actions can move through one confirmation"
+        return "Some actions still need manual review because Odylith cannot apply them safely yet"
+    return "The supported actions can be applied after one confirmation"
 
 
 def _proposal_intro(
@@ -275,7 +285,7 @@ def _proposal_intro(
     )
     surfaces = collect_action_surfaces(actions)
     action_surface_sentence = (
-        f"The proposed actions touch {_join_human_list(surfaces)}"
+        f"This would touch {_join_human_list(surfaces)}"
         if surfaces
         else ""
     )

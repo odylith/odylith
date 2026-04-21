@@ -499,8 +499,8 @@ def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any
         facts.append(
             _fact(
                 "governance_truth",
-                f"Radar already has a governed slice for {ws_id}.",
-                "Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
+                f"Radar already has {ws_id} for this slice.",
+                "Extend that workstream instead of creating a duplicate backlog record.",
                 evidence_classes,
                 [{"kind": "workstream", "id": ws_id, "label": ws_id}],
                 95,
@@ -537,7 +537,7 @@ def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any
             _fact(
                 "governance_truth",
                 f"Registry already maps this work onto `{component_id}`.",
-                "Odylith can update the living component dossier instead of inventing a shadow component boundary.",
+                "Update the existing component dossier instead of creating a duplicate component boundary.",
                 evidence_classes,
                 [{"kind": "component", "id": component_id, "label": component_id}],
                 84,
@@ -547,8 +547,8 @@ def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any
         facts.append(
             _fact(
                 "invariant",
-                "The conversation is asserting a hard invariant, not just a preference.",
-                "If Odylith captures that invariant late, the runtime and the governance record drift before the brand ever gets to sound smart.",
+                "The conversation is setting a hard rule, not just a preference.",
+                "Capture it now or the runtime and the governed record will drift apart.",
                 evidence_classes,
                 [],
                 82,
@@ -559,7 +559,7 @@ def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any
             _fact(
                 "topology",
                 "The discussion is already reasoning in topology, ownership, or boundary terms.",
-                "That is the point where Atlas-grade clarity becomes product behavior instead of documentation cleanup.",
+                "That is when Atlas should carry the boundary instead of leaving it buried in chat.",
                 evidence_classes,
                 [],
                 80,
@@ -569,8 +569,8 @@ def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any
         facts.append(
             _fact(
                 "capture_opportunity",
-                "This conversation is ready to become governed truth.",
-                "Odylith can turn the live thread into explicit backlog, component, diagram, or bug records while the context is still warm.",
+                "This conversation is ready to be captured in the repo.",
+                "Odylith can turn it into backlog, component, diagram, or bug updates while the context is still fresh.",
                 evidence_classes,
                 [],
                 78,
@@ -743,7 +743,7 @@ def _proposal_actions(
                 target_kind="workstream",
                 target_id=matched_workstream_id,
                 title=title,
-                rationale=f"Radar already tracks {matched_workstream_id}, so Odylith should extend that workstream instead of creating a duplicate slice.",
+                rationale=f"Radar already tracks {matched_workstream_id}, so extend that workstream instead of creating a duplicate slice.",
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",
                 payload={"idea_id": matched_workstream_id},
@@ -757,7 +757,7 @@ def _proposal_actions(
                 target_kind="workstream",
                 target_id="",
                 title=title,
-                rationale="There is no existing workstream anchor for this governed slice yet, and the conversation has enough signal to make the workstream explicit.",
+                rationale="No workstream tracks this yet, and the conversation has enough signal to create one now.",
                 apply_supported=True,
                 cli_command="odylith backlog create",
                 payload=_radar_create_payload(observation=observation, title=title),
@@ -772,7 +772,7 @@ def _proposal_actions(
                 target_kind="component",
                 target_id=matched_component_id,
                 title=title,
-                rationale=f"Registry already maps the changed slice to `{matched_component_id}`, so the living dossier should be updated rather than duplicated.",
+                rationale=f"Registry already maps this slice to `{matched_component_id}`, so update that dossier instead of creating a duplicate component.",
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",
                 payload={"component_id": matched_component_id},
@@ -786,7 +786,7 @@ def _proposal_actions(
                 target_kind="component",
                 target_id=derived_component_id,
                 title=title,
-                rationale="The conversation is introducing an owned runtime boundary that Registry does not track yet.",
+                rationale="This conversation is defining a runtime boundary that Registry does not track yet.",
                 apply_supported=True,
                 cli_command="odylith component register",
                 payload={
@@ -806,7 +806,7 @@ def _proposal_actions(
                 target_kind="diagram",
                 target_id=_normalize_string(matched_diagram.get("id")),
                 title=_normalize_string(matched_diagram.get("label")) or title,
-                rationale="Atlas already has a related diagram, so the next governed move is a review refresh rather than a duplicate map.",
+                rationale="Atlas already has a related diagram, so refresh that diagram instead of creating another one.",
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",
                 payload={"diagram_id": _normalize_string(matched_diagram.get("id"))},
@@ -820,7 +820,7 @@ def _proposal_actions(
                 target_kind="diagram",
                 target_id=f"proposed:{slug}",
                 title=f"{title} Topology",
-                rationale="The conversation is making topology claims without a governed diagram anchor yet.",
+                rationale="This conversation is making topology claims without a diagram anchor yet.",
                 apply_supported=False,
                 cli_command="odylith atlas scaffold",
                 payload={
@@ -839,7 +839,7 @@ def _proposal_actions(
                 target_kind="bug",
                 target_id=matched_bug_id,
                 title=lookup.get("bug_rows", {}).get(matched_bug_id, {}).get("title", title),
-                rationale=f"Casebook already has {matched_bug_id}, so Odylith should reopen or extend that bug instead of creating a duplicate incident record.",
+                rationale=f"Casebook already has {matched_bug_id}, so reopen or extend that bug instead of creating a duplicate incident record.",
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",
                 payload={"bug_id": matched_bug_id},
@@ -853,12 +853,12 @@ def _proposal_actions(
             payload=casebook_payload,
         )
         capture_rationale = (
-            "The conversation is describing failure memory or regression risk that is not yet preserved in Casebook."
+            "This conversation describes a failure or regression risk that Casebook does not track yet."
         )
         if missing_capture_fields:
             capture_rationale = (
-                "The conversation is describing failure memory or regression risk, but Odylith does not yet have enough "
-                "grounded bug-capture evidence to create the Casebook record automatically."
+                "This conversation describes a failure or regression risk, but Odylith still needs grounded "
+                "bug-capture evidence before it can create the Casebook record automatically."
             )
             casebook_payload["missing_capture_fields"] = missing_capture_fields
         actions.append(

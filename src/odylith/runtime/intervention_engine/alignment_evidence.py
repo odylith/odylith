@@ -478,7 +478,7 @@ def governance_facts_from_alignment(
     blocker = _normalize_string(execution.get("execution_engine_blocker"))
     outcome = _normalize_token(execution.get("execution_engine_outcome"))
     if blocker or next_move.startswith("recover.") or outcome == "deny":
-        detail = blocker or next_move or "Execution Engine is holding the current move behind a recovery posture."
+        detail = blocker or next_move or "Execution Engine is holding the next move in recovery."
         facts.append(
             _fact(
                 "invariant",
@@ -506,8 +506,8 @@ def governance_facts_from_alignment(
         facts.append(
             _fact(
                 "history",
-                f"Tribunal already has {case_id} in the decision path.",
-                _normalize_string(row.get("brief") or row.get("headline")) or "A prior adjudicated case is already connected to this slice.",
+                f"Tribunal already has {case_id} on this path.",
+                _normalize_string(row.get("brief") or row.get("headline")) or "A prior case is already connected to this slice.",
                 evidence_classes,
                 case_ref,
                 94 if case_id.startswith("CB-") else 86,
@@ -528,7 +528,7 @@ def governance_facts_from_alignment(
             _fact(
                 "invariant" if severity in {"p0", "p1", "blocked"} else "governance_truth",
                 _normalize_string(issue) or "Tribunal has a high-priority scope signal for this slice.",
-                action or "Respect the Tribunal signal before spending visible Odylith attention.",
+                action or "Handle the Tribunal signal before spending more visible Odylith attention here.",
                 evidence_classes,
                 refs,
                 92 if severity in {"p0", "p1", "blocked"} else 84,
@@ -551,7 +551,7 @@ def governance_facts_from_alignment(
         facts.append(
             _fact(
                 "invariant",
-                "Delivery ledger still has Odylith blocks awaiting chat confirmation.",
+                "Odylith still has blocks waiting for transcript confirmation.",
                 "Replay the exact visible Markdown before treating the signal as proven visible.",
                 evidence_classes,
                 [_ref("component", "governance-intervention-engine", label="Governance Intervention Engine")],

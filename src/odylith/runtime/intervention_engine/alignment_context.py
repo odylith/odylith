@@ -339,8 +339,8 @@ def _tribunal_signals(
                 "operator_readout": {
                     "primary_scenario": "chat_visibility_regression",
                     "severity": "p0",
-                    "issue": "Generated intervention payloads are not proven visible in chat.",
-                    "action": "force assistant-rendered Odylith Markdown until chat confirmation lands.",
+                    "issue": "Odylith generated a block, but this chat has not shown it yet.",
+                    "action": "Render the exact Odylith Markdown in the next assistant reply until the transcript confirms it.",
                 },
             },
             {

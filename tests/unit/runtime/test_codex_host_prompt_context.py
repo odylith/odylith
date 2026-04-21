@@ -38,12 +38,12 @@ def test_render_codex_prompt_context_can_surface_a_teaser_without_anchor() -> No
         intervention_bundle_override={
             "candidate": {
                 "stage": "teaser",
-                "teaser_text": "Odylith is noticing governed truth take shape here.",
+                "teaser_text": "Odylith sees enough signal here to capture it.",
             }
         },
     )
 
-    assert rendered == surface_runtime.wrap_live_text("Odylith is noticing governed truth take shape here.")
+    assert rendered == surface_runtime.wrap_live_text("Odylith sees enough signal here to capture it.")
 
 
 def test_codex_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_path: Path) -> None:
@@ -164,7 +164,7 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith is tracking this signal: This conversation is ready to become governed truth."
+                        "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
                     ),
                 }
             }

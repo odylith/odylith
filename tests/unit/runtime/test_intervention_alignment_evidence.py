@@ -84,8 +84,8 @@ def test_tribunal_case_facts_keep_case_refs_precise() -> None:
         for fact in facts
     }
 
-    assert refs_by_headline["Tribunal already has CB-121 in the decision path."] == {("bug", "CB-121")}
-    assert refs_by_headline["Tribunal already has CB-122 in the decision path."] == {("bug", "CB-122")}
+    assert refs_by_headline["Tribunal already has CB-121 on this path."] == {("bug", "CB-121")}
+    assert refs_by_headline["Tribunal already has CB-122 on this path."] == {("bug", "CB-122")}
 
 
 def test_guidance_behavior_summary_feeds_intervention_alignment_without_visible_noise_on_pass() -> None:
