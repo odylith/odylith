@@ -165,6 +165,106 @@ def test_prompt_submit_does_not_promote_inherited_workstream_context_without_cur
     assert bundle["candidate"]["markdown_text"] == ""
 
 
+def test_prompt_submit_status_review_prefers_current_visibility_truth_over_quoted_workstream_scope(
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+    _seed_workstream(tmp_path, workstream_id="B-096", title="Visible Intervention Hardening")
+
+    prompt = (
+        "Overall posture for this session:\n"
+        "- Activation: ready\n"
+        "- Chat-visible proof: unproven_this_session\n"
+        "- End-to-end gate: not met.\n\n"
+        "**Odylith Observation:** Radar already has B-096 for this slice. Extend that workstream instead of "
+        "creating a duplicate backlog record.\n\n"
+        "Is that observation accurate and relevant?"
+    )
+    bundle = engine.build_intervention_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="codex",
+            turn_phase="prompt_submit",
+            session_id="session-status-review",
+            prompt_excerpt=prompt,
+            active_target_refs=[
+                {"kind": "workstream", "id": "B-096", "path": "", "label": "B-096"},
+                {
+                    "kind": "component",
+                    "id": "governance-intervention-engine",
+                    "path": "",
+                    "label": "governance-intervention-engine",
+                },
+            ],
+            visibility_summary={
+                "chat_visible_proof": "unproven_this_session",
+                "event_count": 0,
+                "visible_event_count": 0,
+                "chat_confirmed_event_count": 0,
+                "unconfirmed_event_count": 0,
+            },
+        ),
+    )
+
+    headlines = [row["headline"] for row in bundle["facts"]]
+
+    assert bundle["candidate"]["stage"] == "teaser"
+    assert "chat visibility is still unproven" in bundle["candidate"]["teaser_text"]
+    assert "Radar already has B-096" not in bundle["candidate"]["teaser_text"]
+    assert "Radar already has B-096" not in " ".join(headlines)
+    assert bundle["proposal"]["eligible"] is False
+
+
+def test_stop_summary_status_review_uses_current_visibility_observation_not_inherited_workstream_scope(
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+    _seed_workstream(tmp_path, workstream_id="B-096", title="Visible Intervention Hardening")
+
+    summary = (
+        "Overall posture for this session:\n"
+        "- Activation: ready\n"
+        "- Chat-visible proof: unproven_this_session\n"
+        "- End-to-end gate: not met.\n\n"
+        "**Odylith Observation:** Radar already has B-096 for this slice. Extend that workstream instead of "
+        "creating a duplicate backlog record."
+    )
+    bundle = engine.build_intervention_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="claude",
+            turn_phase="stop_summary",
+            session_id="session-status-closeout",
+            prompt_excerpt="Is that observation accurate and relevant?",
+            assistant_summary=summary,
+            active_target_refs=[
+                {"kind": "workstream", "id": "B-096", "path": "", "label": "B-096"},
+                {
+                    "kind": "component",
+                    "id": "governance-intervention-engine",
+                    "path": "",
+                    "label": "governance-intervention-engine",
+                },
+            ],
+            visibility_summary={
+                "chat_visible_proof": "unproven_this_session",
+                "event_count": 0,
+                "visible_event_count": 0,
+                "chat_confirmed_event_count": 0,
+                "unconfirmed_event_count": 0,
+            },
+        ),
+    )
+
+    headlines = [row["headline"] for row in bundle["facts"]]
+
+    assert bundle["candidate"]["stage"] == "card"
+    assert "This session is armed, but chat visibility is still unproven." in bundle["candidate"]["markdown_text"]
+    assert "Radar already has B-096" not in bundle["candidate"]["markdown_text"]
+    assert "Radar already has B-096" not in " ".join(headlines)
+    assert bundle["proposal"]["eligible"] is False
+
+
 def test_changed_paths_and_prompt_upgrade_to_card_and_rendered_proposal(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
 

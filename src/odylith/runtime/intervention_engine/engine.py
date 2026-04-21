@@ -22,6 +22,7 @@ from odylith.runtime.intervention_engine.contract import InterventionCandidate
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
 from odylith.runtime.intervention_engine import alignment_evidence
 from odylith.runtime.intervention_engine import continuity_runtime
+from odylith.runtime.intervention_engine import fact_producer_runtime
 from odylith.runtime.intervention_engine import moment_runtime
 from odylith.runtime.intervention_engine import signal_kernel
 from odylith.runtime.intervention_engine import stream_state
@@ -30,9 +31,6 @@ from odylith.runtime.intervention_engine import voice
 from odylith.runtime.intervention_engine import voice_contract
 
 
-_WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
-_BUG_RE = re.compile(r"\bCB-\d{3,}\b")
-_DIAGRAM_RE = re.compile(r"\bD-\d{3,}\b")
 _MEANINGFUL_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{2,}")
 _STOPWORDS: frozenset[str] = frozenset(
     {
@@ -84,31 +82,6 @@ _STOPWORDS: frozenset[str] = frozenset(
         "with",
     }
 )
-_HISTORY_HINTS: tuple[str, ...] = ("history", "historical", "previous", "prior", "regression", "bug", "casebook")
-_TOPOLOGY_HINTS: tuple[str, ...] = (
-    "topology",
-    "diagram",
-    "atlas",
-    "architecture",
-    "ownership",
-    "boundary",
-    "authority",
-    "relationship",
-)
-_INVARIANT_HINTS: tuple[str, ...] = ("invariant", "must", "never", "always", "guardrail", "non-negotiable")
-_GOVERNANCE_HINTS: tuple[str, ...] = (
-    "governance",
-    "workstream",
-    "radar",
-    "registry",
-    "atlas",
-    "casebook",
-    "proposal",
-    "capture",
-    "record",
-)
-_BUG_HINTS: tuple[str, ...] = ("bug", "failure", "regression", "incident", "broken", "crash")
-_EXECUTION_HINTS: tuple[str, ...] = ("implement", "wire", "build", "fix", "ship", "harden", "design")
 _TITLE_STOPWORDS: frozenset[str] = _STOPWORDS.union(
     {
         "clarity",
@@ -124,6 +97,8 @@ _TITLE_STOPWORDS: frozenset[str] = _STOPWORDS.union(
 _normalize_string = visibility_contract.normalize_string
 _normalize_token = visibility_contract.normalize_token
 _normalize_string_list = visibility_contract.normalize_string_list
+
+
 def _slugify(text: str, *, fallback: str) -> str:
     tokens = [
         token.lower()
@@ -132,90 +107,6 @@ def _slugify(text: str, *, fallback: str) -> str:
     ]
     slug = "-".join(tokens[:6]).strip("-")
     return slug or fallback
-
-
-def _explicit_ids(text: str, pattern: re.Pattern[str]) -> list[str]:
-    seen: set[str] = set()
-    rows: list[str] = []
-    for token in pattern.findall(_normalize_string(text)):
-        value = _normalize_string(token).upper()
-        if not value or value in seen:
-            continue
-        seen.add(value)
-        rows.append(value)
-    return rows
-
-
-def _joined_prompt_surface(observation: ObservationEnvelope) -> str:
-    return " ".join(
-        token
-        for token in (observation.prompt_excerpt, observation.assistant_summary)
-        if _normalize_string(token)
-    ).strip()
-
-
-def _contains_any(text: str, hints: Sequence[str]) -> bool:
-    haystack = _normalize_token(text)
-    return any(_normalize_token(hint) in haystack for hint in hints)
-
-
-def _join_labels(values: Sequence[str]) -> str:
-    rows = [_normalize_string(value) for value in values if _normalize_string(value)]
-    if not rows:
-        return ""
-    if len(rows) == 1:
-        return rows[0]
-    if len(rows) == 2:
-        return f"{rows[0]} and {rows[1]}"
-    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
-
-
-def _capture_opportunity_copy(
-    *,
-    prompt_surface: str,
-    signal_profile: Mapping[str, Any],
-) -> tuple[str, str]:
-    lowered = _normalize_token(prompt_surface)
-    if "proposal" in lowered:
-        headline = "This turn is already framing a governed proposal."
-    elif _contains_any(prompt_surface, ("workstream", "radar")) or _normalize_string_list(
-        signal_profile.get("explicit_workstream_ids")
-    ):
-        headline = "This turn is already naming a governed workstream move."
-    elif _contains_any(prompt_surface, ("registry", "component")):
-        headline = "This turn is already naming Registry-owned truth."
-    elif _contains_any(prompt_surface, ("atlas", "diagram", "topology", "architecture", "boundary")) or _normalize_string_list(
-        signal_profile.get("explicit_diagram_ids")
-    ):
-        headline = "This turn is already making Atlas-owned boundary claims."
-    elif _contains_any(prompt_surface, ("casebook", "bug", "failure", "regression", "incident")) or _normalize_string_list(
-        signal_profile.get("explicit_bug_ids")
-    ):
-        headline = "This turn is already describing a governed failure lane."
-    else:
-        headline = "This turn is already naming governed repo truth."
-
-    target_surfaces: list[str] = []
-    if _contains_any(prompt_surface, ("workstream", "radar")) or _normalize_string_list(
-        signal_profile.get("explicit_workstream_ids")
-    ):
-        target_surfaces.append("Radar")
-    if _contains_any(prompt_surface, ("registry", "component")):
-        target_surfaces.append("Registry")
-    if _contains_any(prompt_surface, ("atlas", "diagram", "topology", "architecture", "boundary")) or _normalize_string_list(
-        signal_profile.get("explicit_diagram_ids")
-    ):
-        target_surfaces.append("Atlas")
-    if _contains_any(prompt_surface, ("casebook", "bug", "failure", "regression", "incident")) or _normalize_string_list(
-        signal_profile.get("explicit_bug_ids")
-    ):
-        target_surfaces.append("Casebook")
-
-    if not target_surfaces:
-        detail = "Capture the exact governed change while the request is still current."
-    else:
-        detail = f"Capture the exact {_join_labels(target_surfaces)} move while the request is still current."
-    return headline, detail
 
 
 _REPO_TRUTH_CACHE: dict[tuple[str, tuple[Any, ...]], dict[str, Any]] = {}
@@ -530,183 +421,6 @@ def _merge_lookup(base: Mapping[str, Any], repo_rows: Mapping[str, Any]) -> dict
     }
 
 
-def _fact(kind: str, headline: str, detail: str, evidence_classes: Sequence[str], refs: Sequence[Mapping[str, str]], priority: int) -> GovernanceFact:
-    return GovernanceFact(
-        kind=kind,
-        headline=_normalize_string(headline),
-        detail=_normalize_string(detail),
-        evidence_classes=_normalize_string_list(evidence_classes),
-        refs=[
-            {
-                "kind": _normalize_token(item.get("kind")),
-                "id": _normalize_string(item.get("id")),
-                "path": _normalize_string(item.get("path")),
-                "label": _normalize_string(item.get("label")),
-            }
-            for item in refs
-            if isinstance(item, Mapping)
-        ],
-        priority=priority,
-    )
-
-
-def _allow_repo_fact(
-    *,
-    observation: ObservationEnvelope,
-    signal_profile: Mapping[str, Any],
-    kind: str,
-) -> bool:
-    """Return whether inherited repo truth is current enough for visible narration."""
-
-    phase = _normalize_token(observation.turn_phase)
-    if phase in {"post_bash_checkpoint", "post_edit_checkpoint"}:
-        return True
-    has_changed_paths = bool(observation.changed_paths)
-    has_execution_pressure = bool(signal_profile.get("has_execution_hints"))
-    if kind == "workstream":
-        return bool(
-            has_changed_paths
-            or has_execution_pressure
-            or signal_profile.get("has_governance_hints")
-            or _normalize_string_list(signal_profile.get("explicit_workstream_ids"))
-        )
-    if kind == "bug":
-        return bool(
-            has_changed_paths
-            or signal_profile.get("has_bug_hints")
-            or _normalize_string_list(signal_profile.get("explicit_bug_ids"))
-        )
-    if kind == "diagram":
-        return bool(
-            has_changed_paths
-            or signal_profile.get("has_topology_hints")
-            or _normalize_string_list(signal_profile.get("explicit_diagram_ids"))
-        )
-    if kind == "component":
-        return bool(
-            has_changed_paths
-            or has_execution_pressure
-            or signal_profile.get("has_governance_hints")
-            or signal_profile.get("has_topology_hints")
-        )
-    return has_changed_paths
-
-
-def _collect_facts(
-    *,
-    observation: ObservationEnvelope,
-    lookup: Mapping[str, Any],
-    evidence_classes: Sequence[str],
-    signal_profile: Mapping[str, Any],
-) -> list[GovernanceFact]:
-    facts: list[GovernanceFact] = []
-    prompt_surface = _joined_prompt_surface(observation)
-    if lookup.get("workstream_ids") and _allow_repo_fact(
-        observation=observation,
-        signal_profile=signal_profile,
-        kind="workstream",
-    ):
-        ws_id = lookup["workstream_ids"][0]
-        facts.append(
-            _fact(
-                "governance_truth",
-                f"Radar already has {ws_id} for this slice.",
-                "Extend that workstream instead of creating a duplicate backlog record.",
-                evidence_classes,
-                [{"kind": "workstream", "id": ws_id, "label": ws_id}],
-                95,
-            )
-        )
-    if lookup.get("bug_ids") and _allow_repo_fact(
-        observation=observation,
-        signal_profile=signal_profile,
-        kind="bug",
-    ):
-        bug_id = lookup["bug_ids"][0]
-        bug_title = _normalize_string(lookup["bug_rows"].get(bug_id, {}).get("title"))
-        facts.append(
-            _fact(
-                "history",
-                f"Casebook already remembers {bug_id}.",
-                bug_title or "This conversation is touching a previously captured failure lane.",
-                evidence_classes,
-                [{"kind": "bug", "id": bug_id, "label": bug_id}],
-                90,
-            )
-        )
-    if lookup.get("diagram_refs") and _allow_repo_fact(
-        observation=observation,
-        signal_profile=signal_profile,
-        kind="diagram",
-    ):
-        diagram = lookup["diagram_refs"][0]
-        facts.append(
-            _fact(
-                "topology",
-                f"Atlas already carries topology proof for {diagram.get('id') or 'this slice'}.",
-                _normalize_string(diagram.get("label")) or "The conversation is making architecture claims against an existing diagrammed boundary.",
-                evidence_classes,
-                [diagram],
-                88,
-            )
-        )
-    if lookup.get("component_ids") and _allow_repo_fact(
-        observation=observation,
-        signal_profile=signal_profile,
-        kind="component",
-    ):
-        component_id = lookup["component_ids"][0]
-        facts.append(
-            _fact(
-                "governance_truth",
-                f"Registry already maps this work onto `{component_id}`.",
-                "Update the existing component dossier instead of creating a duplicate component boundary.",
-                evidence_classes,
-                [{"kind": "component", "id": component_id, "label": component_id}],
-                84,
-            )
-        )
-    if _contains_any(prompt_surface, _INVARIANT_HINTS):
-        facts.append(
-            _fact(
-                "invariant",
-                "The conversation is setting a hard rule, not just a preference.",
-                "Capture it now or the runtime and the governed record will drift apart.",
-                evidence_classes,
-                [],
-                82,
-            )
-        )
-    if _contains_any(prompt_surface, _TOPOLOGY_HINTS):
-        facts.append(
-            _fact(
-                "topology",
-                "The discussion is already reasoning in topology, ownership, or boundary terms.",
-                "That is when Atlas should carry the boundary instead of leaving it buried in chat.",
-                evidence_classes,
-                [],
-                80,
-            )
-        )
-    if _contains_any(prompt_surface, _GOVERNANCE_HINTS):
-        headline, detail = _capture_opportunity_copy(
-            prompt_surface=prompt_surface,
-            signal_profile=signal_profile,
-        )
-        facts.append(
-            _fact(
-                "capture_opportunity",
-                headline,
-                detail,
-                evidence_classes,
-                [],
-                78,
-            )
-        )
-    facts.sort(key=lambda row: int(row.priority), reverse=True)
-    return facts[:6]
-
-
 def _derive_title(*, observation: ObservationEnvelope, fallback: str) -> str:
     text = observation.prompt_excerpt or observation.assistant_summary or fallback
     all_tokens = [token for token in _MEANINGFUL_TOKEN_RE.findall(text) if token.lower() not in _STOPWORDS]
@@ -783,7 +497,7 @@ def _entry_field(entry: Any, field: str) -> Any:
 
 
 def _radar_create_payload(*, observation: ObservationEnvelope, title: str) -> dict[str, str]:
-    prompt_surface = _joined_prompt_surface(observation)
+    prompt_surface = fact_producer_runtime.joined_prompt_surface(observation)
     prompt_excerpt = _normalize_string(observation.prompt_excerpt)
     changed_paths = [path for path in _normalize_string_list(observation.changed_paths)[:3] if path]
     path_clause = f" Touched paths include {', '.join(changed_paths)}." if changed_paths else ""
@@ -837,7 +551,10 @@ def _proposal_actions(
     actions: list[CaptureAction] = []
     if not bool(signal_profile.get("proposal_signal")):
         return actions
-    prompt_surface = _normalize_string(signal_profile.get("prompt_surface")) or _joined_prompt_surface(observation)
+    prompt_surface = (
+        _normalize_string(signal_profile.get("prompt_surface"))
+        or fact_producer_runtime.joined_prompt_surface(observation)
+    )
     phase = _normalize_token(observation.turn_phase)
     workstream_ids = list(lookup.get("workstream_ids", []))
     component_ids = list(lookup.get("component_ids", []))
@@ -1004,34 +721,6 @@ def _proposal_actions(
     return actions
 
 
-def _evidence_classes(*, observation: ObservationEnvelope, lookup: Mapping[str, Any]) -> list[str]:
-    classes: list[str] = []
-    prompt_surface = _joined_prompt_surface(observation)
-    if _normalize_string(observation.prompt_excerpt) and (
-        _contains_any(prompt_surface, _GOVERNANCE_HINTS + _TOPOLOGY_HINTS + _BUG_HINTS + _INVARIANT_HINTS + _EXECUTION_HINTS)
-        or _explicit_ids(prompt_surface, _WORKSTREAM_RE)
-        or _explicit_ids(prompt_surface, _BUG_RE)
-        or _explicit_ids(prompt_surface, _DIAGRAM_RE)
-    ):
-        classes.append("prompt")
-    if _normalize_string(observation.assistant_summary):
-        classes.append("assistant")
-    if observation.changed_paths:
-        classes.append("changed_paths")
-    if lookup.get("target_refs"):
-        classes.append("packet")
-    if lookup.get("bug_ids") or lookup.get("workstream_ids") or lookup.get("diagram_refs"):
-        classes.append("history")
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in classes:
-        token = _normalize_token(item)
-        if token and token not in seen:
-            seen.add(token)
-            rows.append(token)
-    return rows
-
-
 def _candidate_stage_without_dedupe(
     *,
     observation: ObservationEnvelope,
@@ -1090,7 +779,7 @@ def _intervention_key(
     moment: Mapping[str, Any],
     signal_profile: Mapping[str, Any],
 ) -> str:
-    prompt_surface = _joined_prompt_surface(observation)
+    prompt_surface = fact_producer_runtime.joined_prompt_surface(observation)
     title = _slugify(
         _derive_title(observation=observation, fallback="governed-observation"),
         fallback="governed-observation",
@@ -1173,12 +862,12 @@ def build_intervention_bundle(*, repo_root: Path, observation: Mapping[str, Any]
             lookup,
             _repo_lookup(repo_root=repo_root, observation=normalized_observation),
         )
-    evidence = list(signal_profile.get("evidence_classes", [])) or _evidence_classes(
+    evidence = list(signal_profile.get("evidence_classes", [])) or fact_producer_runtime.evidence_classes(
         observation=normalized_observation,
         lookup=lookup,
     )
     facts = alignment_evidence.merge_governance_facts(
-        _collect_facts(
+        fact_producer_runtime.collect_facts(
             observation=normalized_observation,
             lookup=lookup,
             evidence_classes=evidence,

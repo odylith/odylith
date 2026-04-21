@@ -10,6 +10,7 @@ from typing import Sequence
 
 from odylith.runtime.intervention_engine.contract import ObservationEnvelope
 from odylith.runtime.intervention_engine import alignment_evidence
+from odylith.runtime.intervention_engine import fact_producer_runtime
 from odylith.runtime.intervention_engine import visibility_contract
 
 
@@ -143,6 +144,39 @@ _GOVERNED_PATH_HINTS: tuple[str, ...] = (
     "src/odylith/runtime/intervention_engine/",
     "src/odylith/runtime/surfaces/",
 )
+_META_RELEVANCE_HINTS: tuple[str, ...] = (
+    "accurate and relevant",
+    "accurate or relevant",
+    "not relevant to this turn",
+    "not relevant",
+    "why was that closeout",
+    "why did that closeout",
+    "why did it mention",
+    "is that observation accurate",
+    "is this observation accurate",
+    "is that observation relevant",
+    "is this observation relevant",
+    "wrong beat",
+    "relevance regression",
+    "fabricated",
+    "generic",
+)
+_STATUS_READOUT_HINTS: tuple[str, ...] = (
+    "overall posture",
+    "activation:",
+    "chat-visible proof",
+    "chat_visible_proof",
+    "end-to-end gate",
+    "ledger-visible events",
+    "ledger-visible",
+    "chat-confirmed events",
+    "chat-confirmed",
+    "pending confirmation",
+    "pending confirmations",
+    "pending proposals",
+    "last visible beat",
+    "all hooks green",
+)
 
 
 _normalize_string = visibility_contract.normalize_string
@@ -151,29 +185,15 @@ _normalize_string_list = visibility_contract.normalize_string_list
 _mapping = visibility_contract.mapping_copy
 
 
-def _explicit_ids(text: str, pattern: re.Pattern[str]) -> list[str]:
-    seen: set[str] = set()
-    rows: list[str] = []
-    for token in pattern.findall(_normalize_string(text)):
-        value = _normalize_string(token).upper()
-        if not value or value in seen:
-            continue
-        seen.add(value)
-        rows.append(value)
-    return rows
-
-
-def _contains_any(text: str, hints: Sequence[str]) -> bool:
-    haystack = _normalize_token(text)
-    return any(_normalize_token(hint) in haystack for hint in hints)
-
-
-def _joined_prompt_surface(observation: ObservationEnvelope) -> str:
-    return " ".join(
-        token
-        for token in (observation.prompt_excerpt, observation.assistant_summary)
-        if _normalize_string(token)
-    ).strip()
+def _review_hint_counts(prompt_excerpt: str) -> tuple[int, int]:
+    text = _normalize_string(prompt_excerpt).casefold()
+    if not text:
+        return 0, 0
+    relevance_hits = sum(1 for marker in _META_RELEVANCE_HINTS if marker in text)
+    status_hits = sum(1 for marker in _STATUS_READOUT_HINTS if marker in text)
+    if "odylith observation:" in text and ("accurate" in text or "relevant" in text):
+        relevance_hits = max(relevance_hits, 1)
+    return relevance_hits, status_hits
 
 
 def semantic_signature(*values: str) -> list[str]:
@@ -231,9 +251,9 @@ def _dimension_score(
     direct_ref_bonus: int = 0,
 ) -> int:
     score = 0
-    if _contains_any(prompt_surface, hints):
+    if fact_producer_runtime.contains_any(prompt_surface, hints):
         score += 32
-    if _contains_any(" ".join(changed_paths), hints):
+    if fact_producer_runtime.contains_any(" ".join(changed_paths), hints):
         score += 12
     if direct_ref_bonus and target_refs:
         score += direct_ref_bonus
@@ -246,7 +266,9 @@ def build_signal_profile(
     session_memory: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     memory = _mapping(session_memory)
-    prompt_surface = _joined_prompt_surface(observation)
+    prompt_excerpt = _normalize_string(observation.prompt_excerpt)
+    assistant_summary = _normalize_string(observation.assistant_summary)
+    prompt_surface = fact_producer_runtime.joined_prompt_surface(observation)
     changed_paths = _normalize_string_list(observation.changed_paths)
     packet_summary = alignment_evidence.merged_packet_summary(observation)
     target_refs = alignment_evidence.active_target_refs(observation)
@@ -283,10 +305,13 @@ def build_signal_profile(
         if _normalize_token(row.get("kind")) == "diagram"
     ]
     if not workstream_ids:
-        workstream_ids = _explicit_ids(prompt_surface, _WORKSTREAM_RE)
-    explicit_workstream_ids = _explicit_ids(prompt_surface, _WORKSTREAM_RE)
-    explicit_bug_ids = _explicit_ids(prompt_surface, _BUG_RE)
-    explicit_diagram_ids = _explicit_ids(prompt_surface, _DIAGRAM_RE)
+        workstream_ids = fact_producer_runtime.explicit_ids(prompt_surface, _WORKSTREAM_RE)
+    explicit_workstream_ids = fact_producer_runtime.explicit_ids(prompt_surface, _WORKSTREAM_RE)
+    explicit_bug_ids = fact_producer_runtime.explicit_ids(prompt_surface, _BUG_RE)
+    explicit_diagram_ids = fact_producer_runtime.explicit_ids(prompt_surface, _DIAGRAM_RE)
+    prompt_explicit_workstream_ids = fact_producer_runtime.explicit_ids(prompt_excerpt, _WORKSTREAM_RE)
+    prompt_explicit_bug_ids = fact_producer_runtime.explicit_ids(prompt_excerpt, _BUG_RE)
+    prompt_explicit_diagram_ids = fact_producer_runtime.explicit_ids(prompt_excerpt, _DIAGRAM_RE)
     if not bug_ids:
         bug_ids = explicit_bug_ids
     if not diagram_refs:
@@ -373,6 +398,16 @@ def build_signal_profile(
         ),
         "continuity": min(100, anchor_pressure + (18 if same_signature_recent else 0)),
     }
+    prompt_has_governance_hints = fact_producer_runtime.contains_any(prompt_excerpt, _GOVERNANCE_HINTS)
+    prompt_has_topology_hints = fact_producer_runtime.contains_any(prompt_excerpt, _TOPOLOGY_HINTS)
+    prompt_has_invariant_hints = fact_producer_runtime.contains_any(prompt_excerpt, _INVARIANT_HINTS)
+    prompt_has_bug_hints = fact_producer_runtime.contains_any(prompt_excerpt, (*_BUG_HINTS, *_HISTORY_HINTS))
+    prompt_has_execution_hints = fact_producer_runtime.contains_any(prompt_excerpt, _EXECUTION_HINTS)
+    relevance_review_hits, status_readout_hits = _review_hint_counts(prompt_excerpt)
+    relevance_review = relevance_review_hits > 0
+    status_readout_review = status_readout_hits >= 2
+    meta_governance_review = bool(relevance_review or status_readout_review)
+    suppress_governance_capture = bool(meta_governance_review and not changed_paths and not prompt_has_execution_hints)
     governed_dimension_max = max(
         dimensions["governance"],
         dimensions["topology"],
@@ -407,7 +442,12 @@ def build_signal_profile(
         or (dimensions["governance"] + dimensions["topology"] + dimensions["history"] + dimensions["invariant"]) >= 54
         or (governed_path_pressure >= 18 and governed_dimension_max >= 28)
     )
+    if suppress_governance_capture:
+        repo_truth_eligible = False
+        proposal_signal = False
     return {
+        "prompt_excerpt": prompt_excerpt,
+        "assistant_summary": assistant_summary,
         "prompt_surface": prompt_surface,
         "target_refs": deduped_target_refs,
         "workstream_ids": workstream_ids,
@@ -432,6 +472,11 @@ def build_signal_profile(
         "has_invariant_hints": dimensions["invariant"] >= 32,
         "has_bug_hints": max(dimensions["bug"], dimensions["history"]) >= 32,
         "has_execution_hints": dimensions["execution"] >= 32,
+        "prompt_has_governance_hints": prompt_has_governance_hints,
+        "prompt_has_topology_hints": prompt_has_topology_hints,
+        "prompt_has_invariant_hints": prompt_has_invariant_hints,
+        "prompt_has_bug_hints": prompt_has_bug_hints,
+        "prompt_has_execution_hints": prompt_has_execution_hints,
         "has_fact_signal": bool(anchor_pressure >= 18 or max_dimension >= 32),
         "repo_truth_eligible": repo_truth_eligible,
         "proposal_signal": proposal_signal,
@@ -439,4 +484,11 @@ def build_signal_profile(
         "explicit_workstream_ids": explicit_workstream_ids,
         "explicit_bug_ids": explicit_bug_ids,
         "explicit_diagram_ids": explicit_diagram_ids,
+        "prompt_explicit_workstream_ids": prompt_explicit_workstream_ids,
+        "prompt_explicit_bug_ids": prompt_explicit_bug_ids,
+        "prompt_explicit_diagram_ids": prompt_explicit_diagram_ids,
+        "relevance_review": relevance_review,
+        "status_readout_review": status_readout_review,
+        "meta_governance_review": meta_governance_review,
+        "suppress_governance_capture": suppress_governance_capture,
     }

@@ -276,6 +276,27 @@ def test_visible_intervention_replaces_generic_teaser_for_visibility_failure(tmp
     assert "One more corroborating signal" not in rendered
 
 
+def test_visible_intervention_status_review_surfaces_current_visibility_truth_not_workstream_scope(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="claude",
+        phase="stop_summary",
+        prompt="Is that observation accurate and relevant?",
+        summary=(
+            "Overall posture for this session:\n"
+            "- Activation: ready\n"
+            "- Chat-visible proof: unproven_this_session\n"
+            "- End-to-end gate: not met.\n\n"
+            "**Odylith Observation:** Radar already has B-096 for this slice. Extend that workstream instead of "
+            "creating a duplicate backlog record."
+        ),
+    )
+
+    assert rendered.startswith("---\n\n**Odylith Observation:** This session is armed, but chat visibility is still unproven.")
+    assert "zero visible Odylith beats confirmed in chat" in rendered
+    assert "Radar already has B-096" not in rendered
+
+
 def test_codex_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, tmp_path, capsys) -> None:
     monkeypatch.setattr(
         host_visible_intervention.host_surface_runtime,
