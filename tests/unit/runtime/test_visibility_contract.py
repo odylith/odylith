@@ -40,10 +40,12 @@ def test_visibility_contract_separates_ledger_visible_from_chat_confirmed() -> N
 
     assert visibility_contract.event_visible(manual_visible) is True
     assert visibility_contract.event_chat_confirmed(manual_visible) is False
+    assert visibility_contract.event_needs_chat_confirmation(manual_visible) is False
     assert visibility_contract.event_visible(chat_confirmed) is True
     assert visibility_contract.event_chat_confirmed(chat_confirmed) is True
     assert visibility_contract.event_visible(hidden_ready) is False
     assert visibility_contract.event_requires_chat_confirmation(hidden_ready) is True
+    assert visibility_contract.event_needs_chat_confirmation(hidden_ready) is True
 
 
 def test_visibility_contract_proof_status_from_counts() -> None:

@@ -268,7 +268,7 @@ def inspect_intervention_status(
         "chat_visible_proof": proof,
         "assistant_visible_replay_markdown": replay_markdown,
         "assistant_visible_replay_count": len(replay_blocks),
-        "assistant_visible_replay_additional_count": max(len(replay_blocks) - (1 if replay_markdown else 0), 0),
+        "assistant_visible_replay_additional_count": 0,
         "assistant_visible_replay_blocks": replay_blocks,
         "active_lanes": delivery_ledger.active_lane_matrix(host_family=host),
         "delivery_ledger": ledger,

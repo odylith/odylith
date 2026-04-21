@@ -128,7 +128,14 @@ def test_claude_prompt_system_message_prefers_pending_ambient_history_over_obser
         session_id="claude-prompt-ambient",
     )
 
-    assert rendered == "---\n\n**Odylith History:** Claude prompt should surface this branded ambient beat first.\n\n---"
+    assert rendered == (
+        "---\n\n"
+        "**Odylith History:** Claude prompt should surface this branded ambient beat first.\n"
+        "\n---\n\n"
+        "---\n\n"
+        "**Odylith Observation:** Claude prompt should not hide the stronger ambient beat.\n"
+        "\n---"
+    )
 
 
 def test_render_prompt_context_falls_back_to_relevant_docs_when_no_targets() -> None:

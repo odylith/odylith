@@ -7,6 +7,7 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visible_delivery_frontier
 from odylith.runtime.intervention_engine import visibility_contract
 
 
@@ -35,6 +36,7 @@ def _compact_event(row: Mapping[str, Any]) -> dict[str, Any]:
         "needs_chat_confirmation": visibility_contract.event_needs_chat_confirmation(row),
         "has_display": has_display,
         "chat_confirmation_key": visibility_contract.event_confirmation_key(row) if has_display else "",
+        "delivery_bundle_id": visible_delivery_frontier.event_bundle_id(row),
         "action_surfaces": _normalize_string_list(row.get("action_surfaces")),
     }
 
@@ -114,24 +116,8 @@ def delivery_snapshot(
             chat_confirmed_rows.append(compact)
             visibility_ratios[family]["chat_confirmed"] += 1
 
-    chat_confirmed_keys = {
-        _normalize_string(row.get("chat_confirmation_key"))
-        for row in chat_confirmed_rows
-        if _normalize_string(row.get("chat_confirmation_key"))
-    }
-    unconfirmed_rows: list[dict[str, Any]] = []
-    unconfirmed_keys: set[str] = set()
-    for row in compact_rows:
-        if not bool(row.get("needs_chat_confirmation")):
-            continue
-        key = _normalize_string(row.get("chat_confirmation_key"))
-        if key and key in chat_confirmed_keys:
-            continue
-        if key and key in unconfirmed_keys:
-            continue
-        if key:
-            unconfirmed_keys.add(key)
-        unconfirmed_rows.append(row)
+    frontier_rows = visible_delivery_frontier.active_unconfirmed_rows(rows)
+    unconfirmed_rows = [_compact_event(row) for row in frontier_rows]
     for row in unconfirmed_rows:
         family = str(row.get("visibility_family") or "other")
         if family not in visibility_ratios:
@@ -170,6 +156,8 @@ def delivery_snapshot(
         "latest_unconfirmed_event": unconfirmed_rows[-1] if unconfirmed_rows else {},
         "recent_events": compact_rows[-8:],
         "recent_unconfirmed_events": unconfirmed_rows[-8:],
+        "active_frontier_bundle_id": _normalize_string(unconfirmed_rows[-1].get("delivery_bundle_id")) if unconfirmed_rows else "",
+        "active_frontier_event_count": len(unconfirmed_rows),
         "pending_proposal_state": pending_state,
     }
 

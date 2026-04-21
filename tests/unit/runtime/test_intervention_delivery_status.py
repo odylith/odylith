@@ -268,7 +268,7 @@ def test_delivery_snapshot_reports_visibility_ratios_by_family(tmp_path: Path) -
     assert ratios["ambient"]["total"] == 2
     assert ratios["ambient"]["ledger_visible"] == 1
     assert ratios["ambient"]["chat_confirmed"] == 0
-    assert ratios["ambient"]["pending_confirmation"] == 2
+    assert ratios["ambient"]["pending_confirmation"] == 1
     assert ratios["ambient"]["ledger_visible_ratio"] == 0.5
     assert ratios["ambient"]["chat_confirmed_ratio"] == 0.0
     assert ratios["intervention"]["total"] == 1
@@ -279,7 +279,7 @@ def test_delivery_snapshot_reports_visibility_ratios_by_family(tmp_path: Path) -
     assert ratios["assist"]["total"] == 1
     assert ratios["assist"]["ledger_visible"] == 1
     assert ratios["assist"]["chat_confirmed"] == 0
-    assert ratios["assist"]["pending_confirmation"] == 1
+    assert ratios["assist"]["pending_confirmation"] == 0
     assert ratios["assist"]["ledger_visible_ratio"] == 1.0
     assert ratios["assist"]["chat_confirmed_ratio"] == 0.0
 
@@ -415,16 +415,19 @@ def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is
     rendered = host_intervention_status.render_intervention_status(report)
 
     assert report["delivery_ledger"]["visible_event_count"] == 1
-    assert report["delivery_ledger"]["unconfirmed_event_count"] == 2
+    assert report["delivery_ledger"]["unconfirmed_event_count"] == 1
     assert report["chat_visible_proof"]["status"] == "ledger_visible_with_pending_confirmation"
     assert "pending chat-confirmation event(s)" in rendered
     assert "ledger-visible-only and pending-confirmation states are partial." in rendered
-    assert report["assistant_visible_replay_count"] == 2
-    assert report["assistant_visible_replay_additional_count"] == 1
+    assert report["assistant_visible_replay_count"] == 1
+    assert report["assistant_visible_replay_additional_count"] == 0
     assert "Next assistant-visible replay:" in rendered
-    assert "Additional pending replay blocks: 1." in rendered
-    assert "**Odylith Observation:** Earlier visible proof." in rendered
-    assert "**Odylith Observation:** New hidden beat still needs proof." not in rendered
+    assert "Additional pending replay blocks:" not in rendered
+    assert report["assistant_visible_replay_markdown"] == (
+        "---\n\n"
+        "**Odylith Observation:** New hidden beat still needs proof.\n"
+        "\n---"
+    )
 
 
 def test_intervention_status_prefers_ambient_risk_for_next_visible_replay(tmp_path: Path) -> None:
@@ -464,14 +467,18 @@ def test_intervention_status_prefers_ambient_risk_for_next_visible_replay(tmp_pa
     rendered = host_intervention_status.render_intervention_status(report)
 
     assert report["assistant_visible_replay_count"] == 2
-    assert report["assistant_visible_replay_additional_count"] == 1
+    assert report["assistant_visible_replay_additional_count"] == 0
     assert report["assistant_visible_replay_markdown"] == (
         "---\n\n"
         "**Odylith Risks:** Surface this ambient replay block before the generic intervention.\n"
+        "\n---\n\n"
+        "---\n\n"
+        "**Odylith Observation:** The generic intervention should not hide the ambient brand signal.\n"
         "\n---"
     )
-    assert "Additional pending replay blocks: 1." in rendered
+    assert "Additional pending replay blocks:" not in rendered
     assert "**Odylith Risks:** Surface this ambient replay block before the generic intervention." in rendered
+    assert "**Odylith Observation:** The generic intervention should not hide the ambient brand signal." in rendered
 
 
 def test_hook_payload_visible_text_without_ledger_proof_stays_unproven(tmp_path: Path) -> None:

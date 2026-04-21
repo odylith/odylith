@@ -1129,6 +1129,7 @@ def append_intervention_events(
             delivery_status=delivery_status,
             render_surface=render_surface,
             delivery_latency_ms=delivery_latency_ms,
+            metadata=event_metadata,
         )
         events.append("assist_closeout")
     return events

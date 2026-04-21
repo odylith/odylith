@@ -14,6 +14,7 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visible_delivery_frontier
 from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine.visibility_contract import normalize_block_string as _normalize_block_string
 from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
@@ -109,22 +110,14 @@ def replayable_chat_blocks(
             if visibility_contract.event_host_family(row) == normalized_host
         ]
 
-    confirmed_keys = {
-        visibility_contract.event_confirmation_key(row)
-        for row in rows
-        if visibility_contract.event_chat_confirmed(row)
-    }
-    selected: list[dict[str, Any]] = []
-    seen_keys: set[str] = set()
-    live_count = 0
-    ambient_count = 0
-    assist_count = 0
+    rows = visible_delivery_frontier.active_unconfirmed_rows(rows)
+    if not rows:
+        return []
     max_live = max(0, int(max_live_blocks))
     max_ambient = max(0, int(ambient_cap))
-
-    for row in reversed(rows):
-        if visibility_contract.event_chat_confirmed(row):
-            continue
+    deduped_rows: list[tuple[int, Mapping[str, Any]]] = []
+    seen_keys: set[str] = set()
+    for index, row in reversed(list(enumerate(rows))):
         display = visibility_contract.event_canonical_display_text(row)
         if not display:
             continue
@@ -136,24 +129,41 @@ def replayable_chat_blocks(
         if family == "assist" and not include_assist:
             continue
         key = visibility_contract.event_confirmation_key(row)
-        if not key or key in confirmed_keys or key in seen_keys:
+        if not key or key in seen_keys:
             continue
-        if family == "assist":
-            if assist_count >= 1:
-                continue
-            assist_count += 1
-        else:
-            if live_count >= max_live:
-                continue
-            if family == "ambient":
-                if ambient_count >= max_ambient:
-                    continue
-                ambient_count += 1
-            live_count += 1
         seen_keys.add(key)
-        selected.append(_candidate_row(row, key=key, display=display))
+        deduped_rows.append((index, row))
+    deduped_rows.reverse()
 
-    return list(reversed(selected))
+    ambient_rows = [(index, row) for index, row in deduped_rows if _family(row) == "ambient"]
+    intervention_rows = [(index, row) for index, row in deduped_rows if _family(row) == "intervention"]
+    teaser_rows = [(index, row) for index, row in deduped_rows if _family(row) == "teaser"]
+    assist_rows = [(index, row) for index, row in deduped_rows if _family(row) == "assist"]
+
+    if max_ambient >= 0:
+        ambient_rows = ambient_rows[-max_ambient:] if max_ambient else []
+    live_rows = [*ambient_rows, *intervention_rows, *teaser_rows]
+    if max_live >= 0:
+        live_rows = live_rows[-max_live:] if max_live else []
+    assist_rows = assist_rows[-1:] if assist_rows else []
+
+    selected_rows = sorted(
+        [*live_rows, *assist_rows],
+        key=lambda item: (
+            _FAMILY_PRIORITY.get(_family(item[1]), 99),
+            _AMBIENT_LABEL_PRIORITY.get(_ambient_label_kind(item[1]), 99) if _family(item[1]) == "ambient" else 0,
+            item[0],
+        ),
+    )
+
+    return [
+        _candidate_row(
+            row,
+            key=visibility_contract.event_confirmation_key(row),
+            display=visibility_contract.event_canonical_display_text(row),
+        )
+        for _, row in selected_rows
+    ]
 
 
 def replayable_chat_markdown(
@@ -195,9 +205,9 @@ def preferred_replayable_chat_markdown(
     include_assist: bool = True,
     include_teaser: bool = False,
 ) -> str:
-    """Return the highest-priority pending block for one clean replay beat."""
+    """Return the current unresolved replay bundle as one clean visible beat."""
 
-    blocks = replayable_chat_blocks(
+    return replayable_chat_markdown(
         repo_root=repo_root,
         host_family=host_family,
         session_id=session_id,
@@ -207,25 +217,6 @@ def preferred_replayable_chat_markdown(
         include_assist=include_assist,
         include_teaser=include_teaser,
     )
-    if not blocks:
-        return ""
-
-    def _priority(row: Mapping[str, Any]) -> tuple[int, int]:
-        family = _normalize_token(row.get("visibility_family"))
-        ambient_label = _normalize_token(row.get("ambient_label_kind"))
-        return (
-            _FAMILY_PRIORITY.get(family, 99),
-            _AMBIENT_LABEL_PRIORITY.get(ambient_label, 99) if family == "ambient" else 0,
-        )
-
-    preferred = min(
-        enumerate(blocks),
-        key=lambda item: (
-            *_priority(item[1]),
-            item[0],
-        ),
-    )[1]
-    return _normalize_block_string(preferred.get("display_markdown"))
 
 
 __all__ = [

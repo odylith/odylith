@@ -67,6 +67,7 @@ def _casebook_header_layout(casebook) -> dict[str, object]:  # noqa: ANN001
 
 def _select_casebook_layout_stress_row(page):  # noqa: ANN001
     casebook = page.frame_locator("#frame-casebook")
+    casebook.locator("button.bug-row").first.wait_for(timeout=15000)
     candidates = casebook.locator("button.bug-row").evaluate_all(
         """nodes => nodes
           .map((node) => ({

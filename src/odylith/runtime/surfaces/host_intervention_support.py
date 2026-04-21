@@ -44,7 +44,7 @@ def preferred_live_replay_markdown(
     host_family: str,
     session_id: str,
 ) -> str:
-    """Return one clean pending live beat for prompt and checkpoint recovery."""
+    """Return the current pending live replay bundle for prompt and checkpoint recovery."""
     return visibility_replay.preferred_replayable_chat_markdown(
         repo_root=repo_root,
         host_family=host_family,

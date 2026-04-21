@@ -42,9 +42,6 @@ def test_replay_returns_visible_and_hidden_blocks_until_transcript_confirmation(
     assert replay == (
         "---\n\n"
         "**Odylith Risks:** Hidden risk still needs chat proof.\n"
-        "\n---\n\n"
-        "---\n\n"
-        "**Odylith Observation:** Manual visible is still not transcript proof.\n"
         "\n---"
     )
 
@@ -56,7 +53,7 @@ def test_replay_returns_visible_and_hidden_blocks_until_transcript_confirmation(
         render_surface="codex_intervention_status",
     )
 
-    assert len(confirmed) == 2
+    assert len(confirmed) == 1
     assert visibility_replay.replayable_chat_markdown(
         repo_root=tmp_path,
         host_family="codex",
@@ -114,8 +111,7 @@ def test_replay_dedupes_latest_blocks_and_keeps_assist_unwrapped(tmp_path: Path)
     assert "**Odylith Insight:** ambient 0." not in replay
     assert replay.count("**Odylith Insight:**") == 3
     assert replay.count("**Odylith Insight:** ambient 3.") == 1
-    assert replay.endswith("**Odylith Assist:** closeout stays outside the live ruler.")
-    assert not replay.endswith("---")
+    assert "**Odylith Assist:** closeout stays outside the live ruler." not in replay
 
 
 def test_preferred_replay_prioritizes_history_and_risks_ambient_over_intervention_blocks(tmp_path: Path) -> None:
@@ -155,6 +151,9 @@ def test_preferred_replay_prioritizes_history_and_risks_ambient_over_interventio
     assert preferred == (
         "---\n\n"
         "**Odylith Risks:** A newer ambient note should not outrank the intervention block.\n"
+        "\n---\n\n"
+        "---\n\n"
+        "**Odylith Observation:** Replay the primary intervention block first.\n"
         "\n---"
     )
 
@@ -196,5 +195,8 @@ def test_preferred_replay_prioritizes_history_and_risks_over_plain_insight_ambie
     assert preferred == (
         "---\n\n"
         "**Odylith History:** Earlier history still matters more than a later generic insight.\n"
+        "\n---\n\n"
+        "---\n\n"
+        "**Odylith Insight:** A newer generic insight should not outrank history or risks.\n"
         "\n---"
     )

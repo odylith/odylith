@@ -231,10 +231,12 @@ def event_requires_chat_confirmation(row: Mapping[str, Any]) -> bool:
 
 
 def event_needs_chat_confirmation(row: Mapping[str, Any]) -> bool:
-    """Return whether a visible-family event still needs assistant confirmation."""
+    """Return whether a visible-family event still needs assistant transcript proof."""
     if event_chat_confirmed(row):
         return False
     if event_visibility_family(row) not in {"ambient", "intervention", "assist", "teaser"}:
+        return False
+    if not event_requires_chat_confirmation(row):
         return False
     return bool(event_display_text(row))
 

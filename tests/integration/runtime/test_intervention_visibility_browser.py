@@ -197,13 +197,12 @@ def test_intervention_status_browser_distinguishes_ledger_visible_session_with_p
     )
     page.locator("#pending", has_text="pending chat-confirmation event(s)").wait_for(timeout=15000)
     page.locator("#pending", has_text="assistant_fallback_ready").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Ledger: 2 recent event(s), 1 ledger-visible event(s), 0 chat-confirmed event(s), 2 pending").wait_for(
+    page.locator("#pending", has_text="Ledger: 2 recent event(s), 1 ledger-visible event(s), 0 chat-confirmed event(s), 1 pending").wait_for(
         timeout=15000
     )
     page.locator("#pending", has_text="Next assistant-visible replay:").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Additional pending replay blocks: 1.").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Earlier browser-visible proof.").wait_for(timeout=15000)
-    assert "Later hidden proof still needs chat." not in page.locator("#pending").inner_text()
+    page.locator("#pending", has_text="Later hidden proof still needs chat.").wait_for(timeout=15000)
+    assert "Additional pending replay blocks:" not in page.locator("#pending").inner_text()
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
@@ -258,7 +257,8 @@ def test_intervention_status_browser_prefers_ambient_replay_block(
 
     page.locator("#pending", has_text="Next assistant-visible replay:").wait_for(timeout=15000)
     page.locator("#pending", has_text="Odylith History:").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Additional pending replay blocks: 1.").wait_for(timeout=15000)
+    page.locator("#pending", has_text="Browser status should not lead with this generic intervention.").wait_for(timeout=15000)
+    assert "Additional pending replay blocks:" not in page.locator("#pending").inner_text()
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 

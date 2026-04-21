@@ -59,9 +59,6 @@ def test_recent_session_live_markdown_recovers_unseen_live_beats_only(tmp_path: 
         session_id="known-session",
     ) == (
         "---\n\n"
-        "**Odylith Observation:** Already shown.\n"
-        "\n---\n\n"
-        "---\n\n"
         "-----\nOdylith Proposal: keep this visible.\n-----\n"
         "\n---"
     )
