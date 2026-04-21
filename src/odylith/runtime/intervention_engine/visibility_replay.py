@@ -20,11 +20,30 @@ from odylith.runtime.intervention_engine.visibility_contract import normalize_st
 from odylith.runtime.intervention_engine.visibility_contract import normalize_token as _normalize_token
 
 _FAMILY_PRIORITY: dict[str, int] = {
-    "intervention": 0,
-    "ambient": 1,
+    "ambient": 0,
+    "intervention": 1,
     "teaser": 2,
     "assist": 3,
 }
+_AMBIENT_LABEL_PRIORITY: dict[str, int] = {
+    "risks": 0,
+    "history": 0,
+    "insight": 1,
+}
+
+
+def _ambient_label_kind(row: Mapping[str, Any]) -> str:
+    label_text = " ".join(
+        _normalize_string(row.get(field)).lower()
+        for field in ("display_markdown", "display_plain", "summary")
+    )
+    if "odylith risks" in label_text:
+        return "risks"
+    if "odylith history" in label_text:
+        return "history"
+    if "odylith insight" in label_text:
+        return "insight"
+    return "insight" if _family(row) == "ambient" else ""
 
 
 def _family(row: Mapping[str, Any]) -> str:
@@ -41,6 +60,7 @@ def _candidate_row(
     return {
         "kind": _normalize_token(row.get("kind")),
         "visibility_family": _family(row),
+        "ambient_label_kind": _ambient_label_kind(row),
         "summary": _normalize_string(row.get("summary")),
         "ts_iso": _normalize_string(row.get("ts_iso")),
         "session_id": _normalize_string(row.get("session_id")),
@@ -189,10 +209,19 @@ def preferred_replayable_chat_markdown(
     )
     if not blocks:
         return ""
+
+    def _priority(row: Mapping[str, Any]) -> tuple[int, int]:
+        family = _normalize_token(row.get("visibility_family"))
+        ambient_label = _normalize_token(row.get("ambient_label_kind"))
+        return (
+            _FAMILY_PRIORITY.get(family, 99),
+            _AMBIENT_LABEL_PRIORITY.get(ambient_label, 99) if family == "ambient" else 0,
+        )
+
     preferred = min(
         enumerate(blocks),
         key=lambda item: (
-            _FAMILY_PRIORITY.get(_normalize_token(item[1].get("visibility_family")), 99),
+            *_priority(item[1]),
             item[0],
         ),
     )[1]

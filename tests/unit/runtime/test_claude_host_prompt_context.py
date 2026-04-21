@@ -95,6 +95,41 @@ def test_claude_prompt_system_message_replays_pending_chat_block(tmp_path: Path)
     assert rendered == "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---"
 
 
+def test_claude_prompt_system_message_prefers_pending_ambient_history_over_observation(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending Claude observation replay.",
+        session_id="claude-prompt-ambient",
+        host_family="claude",
+        intervention_key="claude-prompt-observation",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Observation:** Claude prompt should not hide the stronger ambient beat.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Pending Claude history replay.",
+        session_id="claude-prompt-ambient",
+        host_family="claude",
+        intervention_key="claude-prompt-history",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith History:** Claude prompt should surface this branded ambient beat first.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    rendered = claude_host_prompt_context.render_prompt_system_message(
+        repo_root=tmp_path,
+        prompt="Do we still have a visible block pending?",
+        session_id="claude-prompt-ambient",
+    )
+
+    assert rendered == "---\n\n**Odylith History:** Claude prompt should surface this branded ambient beat first.\n\n---"
+
+
 def test_render_prompt_context_falls_back_to_relevant_docs_when_no_targets() -> None:
     payload = {"relevant_docs": ["odylith/CLAUDE.md"]}
     rendered = claude_host_prompt_context.render_prompt_context(

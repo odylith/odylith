@@ -399,6 +399,53 @@ def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is
     assert "**Odylith Observation:** New hidden beat still needs proof." not in rendered
 
 
+def test_intervention_status_prefers_ambient_risk_for_next_visible_replay(tmp_path: Path) -> None:
+    _seed_codex_repo(tmp_path)
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Observation waiting for replay.",
+        session_id="session-ambient-replay",
+        host_family="codex",
+        intervention_key="iv-observation-replay",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** The generic intervention should not hide the ambient brand signal.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_post_tool_use",
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Odylith Risks: ambient risk replay.",
+        session_id="session-ambient-replay",
+        host_family="codex",
+        intervention_key="ambient-risk-replay",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Risks:** Surface this ambient replay block before the generic intervention.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_post_tool_use",
+    )
+
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="session-ambient-replay",
+    )
+    rendered = host_intervention_status.render_intervention_status(report)
+
+    assert report["assistant_visible_replay_count"] == 2
+    assert report["assistant_visible_replay_additional_count"] == 1
+    assert report["assistant_visible_replay_markdown"] == (
+        "---\n\n"
+        "**Odylith Risks:** Surface this ambient replay block before the generic intervention.\n"
+        "\n---"
+    )
+    assert "Additional pending replay blocks: 1." in rendered
+    assert "**Odylith Risks:** Surface this ambient replay block before the generic intervention." in rendered
+
+
 def test_hook_payload_visible_text_without_ledger_proof_stays_unproven(tmp_path: Path) -> None:
     _seed_codex_repo(tmp_path)
     payload = host_surface_runtime.codex_post_tool_payload(

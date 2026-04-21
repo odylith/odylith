@@ -70,7 +70,7 @@ def test_codex_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
     assert "**Odylith Observation:** Radar already owns this slice." in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Proposal:" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Assist:** kept this grounded." not in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** Radar already owns this slice." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
     assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
@@ -131,7 +131,7 @@ def test_claude_post_edit_checkpoint_cli_dispatch_emits_visible_intervention(
     assert exit_code == 0
     assert "**Odylith Observation:** Registry already owns this boundary." in payload["additionalContext"]
     assert "Odylith Proposal:" in payload["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." in payload["additionalContext"]
+    assert "**Odylith Assist:** kept this grounded." not in payload["additionalContext"]
     assert "**Odylith Observation:** Registry already owns this boundary." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
     assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
@@ -197,7 +197,7 @@ def test_claude_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
     assert exit_code == 0
     assert "**Odylith Observation:** Claude Bash is part of the same governed moment." in payload["additionalContext"]
     assert "Odylith Proposal:" in payload["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." in payload["additionalContext"]
+    assert "**Odylith Assist:** kept this grounded." not in payload["additionalContext"]
     assert "**Odylith Observation:** Claude Bash is part of the same governed moment." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
     assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]

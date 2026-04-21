@@ -193,6 +193,61 @@ def test_intervention_status_browser_distinguishes_ledger_visible_session_with_p
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def test_intervention_status_browser_prefers_ambient_replay_block(
+    browser_context,
+    tmp_path: Path,
+) -> None:  # noqa: ANN001
+    _base_url, context = browser_context
+    _seed_codex_repo(tmp_path)
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Observation waiting for replay.",
+        session_id="browser-ambient-replay",
+        host_family="codex",
+        intervention_key="browser-observation-replay",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** Browser status should not lead with this generic intervention.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_post_tool_use",
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Odylith History: browser ambient replay.",
+        session_id="browser-ambient-replay",
+        host_family="codex",
+        intervention_key="browser-history-replay",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith History:** Browser status should lead with this ambient replay block.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+        render_surface="codex_post_tool_use",
+    )
+
+    rendered = host_intervention_status.render_intervention_status(
+        host_intervention_status.inspect_intervention_status(
+            repo_root=tmp_path,
+            host_family="codex",
+            session_id="browser-ambient-replay",
+        )
+    )
+
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    page.set_content(
+        "<!doctype html><html><body>"
+        f"<section id='pending'><pre>{escape(rendered)}</pre></section>"
+        "</body></html>",
+        wait_until="domcontentloaded",
+    )
+
+    page.locator("#pending", has_text="Next assistant-visible replay:").wait_for(timeout=15000)
+    page.locator("#pending", has_text="Odylith History:").wait_for(timeout=15000)
+    page.locator("#pending", has_text="Additional pending replay blocks: 1.").wait_for(timeout=15000)
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_visible_intervention_fallback_markdown_is_transcript_visible_in_compact_browser(
     compact_browser_context,
     tmp_path: Path,

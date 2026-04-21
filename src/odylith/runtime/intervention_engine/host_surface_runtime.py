@@ -12,6 +12,7 @@ from odylith.runtime.intervention_engine import alignment_context
 from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
+from odylith.runtime.intervention_engine import visible_delivery_runtime
 from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
@@ -296,171 +297,13 @@ def compose_checkpoint_system_message(
     live_intervention: str = "",
     governance_status: str = "",
 ) -> str:
-    live = _canonical_visible_delivery_text(live_intervention)
+    live = visible_delivery_runtime.canonical_visible_delivery_text(live_intervention)
     governance = _normalize_block_string(governance_status)
     if live:
         if governance and any(token in governance.lower() for token in ("failed", "skipped")):
             return f"{live}\n\n{governance}".strip()
         return live
     return governance
-
-
-_VISIBLE_DELIVERY_BEGIN = "<odylith-visible-markdown>"
-_VISIBLE_DELIVERY_END = "</odylith-visible-markdown>"
-_LIVE_DELIVERY_LABELS: tuple[str, ...] = (
-    "**Odylith Observation:**",
-    "Odylith Observation:",
-    "Odylith Proposal:",
-    "**Odylith Insight:**",
-    "Odylith Insight:",
-    "**Odylith History:**",
-    "Odylith History:",
-    "**Odylith Risks:**",
-    "Odylith Risks:",
-)
-_ASSIST_LABELS: tuple[str, ...] = (
-    "**Odylith Assist:**",
-    "Odylith Assist:",
-)
-
-
-def _strip_visible_delivery_boundary(value: str) -> str:
-    text = _normalize_block_string(value)
-    if text.startswith("---\n") and text.endswith("\n---"):
-        return _normalize_block_string(text[4:-4])
-    return text
-
-
-def _split_assist_suffix(value: str) -> tuple[str, str]:
-    text = _normalize_block_string(value)
-    positions = [
-        index
-        for label in _ASSIST_LABELS
-        if (index := text.find(label)) >= 0
-    ]
-    if not positions:
-        return text, ""
-    first = min(positions)
-    return _normalize_block_string(text[:first]), _normalize_block_string(text[first:])
-
-
-def _canonical_live_delivery_text(value: str) -> str:
-    text = _normalize_block_string(value)
-    if not text:
-        return ""
-    body = _strip_visible_delivery_boundary(text)
-    if text.startswith("---\n") and text.endswith("\n---"):
-        return f"---\n\n{body}\n\n---"
-    if any(label in text for label in _LIVE_DELIVERY_LABELS):
-        return f"---\n\n{text}\n\n---"
-    return text
-
-
-def _canonical_visible_delivery_text(value: str) -> str:
-    text = _normalize_block_string(value)
-    if not text:
-        return ""
-    live_part, assist_suffix = _split_assist_suffix(text)
-    live = _canonical_live_delivery_text(live_part)
-    if live and assist_suffix:
-        return f"{live}\n\n{assist_suffix}"
-    return live or assist_suffix
-
-
-def assistant_visible_fallback_context(visible_text: str) -> str:
-    """Return model-context instructions that make hook output fail-visible.
-
-    Host hook `systemMessage` support is useful but not a reliable chat-render
-    guarantee across Codex Desktop, Codex CLI, and Claude Code builds. This
-    context keeps the structured hook payload intact while telling the next
-    assistant turn exactly what to speak if the host kept the hook message
-    hidden.
-    """
-
-    visible = _canonical_visible_delivery_text(visible_text)
-    if not visible:
-        return ""
-    return "\n".join(
-        [
-            "Odylith visible delivery fallback:",
-            "Visible proof is missing or host display is unproven. Start the next visible assistant message with exactly this Markdown once if it is not already visible. Do not mention hooks or use a code fence.",
-            "",
-            _VISIBLE_DELIVERY_BEGIN,
-            visible,
-            _VISIBLE_DELIVERY_END,
-        ]
-    ).strip()
-
-
-def visible_delivery_already_present(*, last_assistant_message: str, visible_text: str) -> bool:
-    last = _normalize_block_string(last_assistant_message)
-    visible = _canonical_visible_delivery_text(visible_text)
-    if not last or not visible:
-        return False
-    if visible in last:
-        return True
-    if visible.startswith("---\n") and visible.endswith("\n---"):
-        return False
-    visible_body = _strip_visible_delivery_boundary(visible)
-    return bool(visible_body and visible_body in last)
-
-
-def stop_visible_delivery_reason(visible_text: str) -> str:
-    visible = _canonical_visible_delivery_text(visible_text)
-    if not visible:
-        return ""
-    return "\n\n".join(
-        [
-            (
-                "Before ending, render the Odylith closeout below in the next visible "
-                "assistant message if it is not already visible. Keep it as normal "
-                "Markdown, do not wrap it in a code fence, and do not mention hook internals."
-            ),
-            visible,
-        ]
-    ).strip()
-
-
-def _visible_delivery_with_assist(
-    *,
-    developer_context: str,
-    visible_text: str,
-    include_assist: bool,
-) -> str:
-    visible = _canonical_visible_delivery_text(visible_text)
-    if not include_assist:
-        return visible
-    if visible and any(label in visible for label in _ASSIST_LABELS):
-        return visible
-    _live_context, assist_suffix = _split_assist_suffix(developer_context)
-    assist = _normalize_block_string(assist_suffix)
-    if visible and assist:
-        return f"{visible}\n\n{assist}"
-    return visible or assist
-
-
-def _developer_context_with_visible_fallback(
-    *,
-    developer_context: str,
-    visible_text: str,
-    include_assist_in_visible_fallback: bool,
-) -> str:
-    context = _normalize_block_string(developer_context)
-    visible = _visible_delivery_with_assist(
-        developer_context=context,
-        visible_text=visible_text,
-        include_assist=include_assist_in_visible_fallback,
-    )
-    fallback = assistant_visible_fallback_context(visible)
-    if not fallback:
-        return context
-    if visible and _canonical_visible_delivery_text(context) == visible:
-        context = ""
-    if visible and visible in context:
-        context = _normalize_block_string(context.replace(visible, "", 1))
-    if not context:
-        return fallback
-    return f"{fallback}\n\nOdylith developer continuity:\n{context}".strip()
 
 
 def codex_post_tool_payload(
@@ -470,8 +313,8 @@ def codex_post_tool_payload(
     include_assist_in_visible_fallback: bool = False,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {}
-    message = _canonical_visible_delivery_text(system_message)
-    context = _developer_context_with_visible_fallback(
+    message = visible_delivery_runtime.canonical_visible_delivery_text(system_message)
+    context = visible_delivery_runtime.developer_context_with_visible_fallback(
         developer_context=developer_context,
         visible_text=message,
         include_assist_in_visible_fallback=include_assist_in_visible_fallback,
@@ -493,8 +336,8 @@ def codex_prompt_payload(
     include_assist_in_visible_fallback: bool = False,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {}
-    message = _canonical_visible_delivery_text(system_message)
-    context = _developer_context_with_visible_fallback(
+    message = visible_delivery_runtime.canonical_visible_delivery_text(system_message)
+    context = visible_delivery_runtime.developer_context_with_visible_fallback(
         developer_context=additional_context,
         visible_text=message,
         include_assist_in_visible_fallback=include_assist_in_visible_fallback,
@@ -510,12 +353,12 @@ def codex_prompt_payload(
 
 
 def stop_payload(*, system_message: str = "", block_for_visible_delivery: bool = False) -> dict[str, Any]:
-    message = _canonical_visible_delivery_text(system_message)
+    message = visible_delivery_runtime.canonical_visible_delivery_text(system_message)
     if not message:
         return {}
     payload: dict[str, Any] = {"systemMessage": message}
     if block_for_visible_delivery:
-        reason = stop_visible_delivery_reason(message)
+        reason = visible_delivery_runtime.stop_visible_delivery_reason(message)
         if reason:
             payload["decision"] = "block"
             payload["reason"] = reason
@@ -529,8 +372,8 @@ def claude_post_tool_payload(
     include_assist_in_visible_fallback: bool = False,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {}
-    message = _canonical_visible_delivery_text(system_message)
-    context = _developer_context_with_visible_fallback(
+    message = visible_delivery_runtime.canonical_visible_delivery_text(system_message)
+    context = visible_delivery_runtime.developer_context_with_visible_fallback(
         developer_context=developer_context,
         visible_text=message,
         include_assist_in_visible_fallback=include_assist_in_visible_fallback,
@@ -557,7 +400,7 @@ def claude_prompt_payload(
     """
 
     payload: dict[str, Any] = {}
-    context = _developer_context_with_visible_fallback(
+    context = visible_delivery_runtime.developer_context_with_visible_fallback(
         developer_context=additional_context,
         visible_text=system_message,
         include_assist_in_visible_fallback=include_assist_in_visible_fallback,

@@ -91,6 +91,41 @@ def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) 
     assert rendered == "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---"
 
 
+def test_codex_prompt_system_message_prefers_pending_ambient_risk_over_observation(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending observation replay.",
+        session_id="codex-prompt-ambient",
+        host_family="codex",
+        intervention_key="codex-prompt-observation",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** Prompt should not hide the stronger ambient beat.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Pending prompt risk replay.",
+        session_id="codex-prompt-ambient",
+        host_family="codex",
+        intervention_key="codex-prompt-risk",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Risks:** Prompt should surface this branded ambient beat first.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    rendered = codex_host_prompt_context.render_codex_prompt_system_message(
+        repo_root=str(tmp_path),
+        prompt="Do we still have a visible block pending?",
+        session_id="codex-prompt-ambient",
+    )
+
+    assert rendered == "---\n\n**Odylith Risks:** Prompt should surface this branded ambient beat first.\n\n---"
+
+
 def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
         "sys.stdin",

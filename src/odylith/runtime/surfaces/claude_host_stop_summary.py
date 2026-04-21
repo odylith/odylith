@@ -24,6 +24,7 @@ from typing import Mapping
 
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
+from odylith.runtime.intervention_engine import visible_delivery_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import claude_host_shared
@@ -176,7 +177,7 @@ def main(argv: list[str] | None = None) -> int:
             json.dumps(
                 host_surface_runtime.stop_payload(
                     system_message=rendered,
-                    block_for_visible_delivery=not host_surface_runtime.visible_delivery_already_present(
+                    block_for_visible_delivery=not visible_delivery_runtime.visible_delivery_already_present(
                         last_assistant_message=str(payload.get("last_assistant_message", "")),
                         visible_text=rendered,
                     ),

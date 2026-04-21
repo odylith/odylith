@@ -118,7 +118,7 @@ def test_replay_dedupes_latest_blocks_and_keeps_assist_unwrapped(tmp_path: Path)
     assert not replay.endswith("---")
 
 
-def test_preferred_replay_prioritizes_intervention_over_newer_ambient_blocks(tmp_path: Path) -> None:
+def test_preferred_replay_prioritizes_history_and_risks_ambient_over_intervention_blocks(tmp_path: Path) -> None:
     stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -154,6 +154,47 @@ def test_preferred_replay_prioritizes_intervention_over_newer_ambient_blocks(tmp
 
     assert preferred == (
         "---\n\n"
-        "**Odylith Observation:** Replay the primary intervention block first.\n"
+        "**Odylith Risks:** A newer ambient note should not outrank the intervention block.\n"
+        "\n---"
+    )
+
+
+def test_preferred_replay_prioritizes_history_and_risks_over_plain_insight_ambient(tmp_path: Path) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Ambient history should stay ahead.",
+        session_id="preferred-ambient-replay",
+        host_family="claude",
+        intervention_key="preferred-history",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith History:** Earlier history still matters more than a later generic insight.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_render_required",
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Newer ambient insight.",
+        session_id="preferred-ambient-replay",
+        host_family="claude",
+        intervention_key="preferred-insight",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Insight:** A newer generic insight should not outrank history or risks.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_render_required",
+    )
+
+    preferred = visibility_replay.preferred_replayable_chat_markdown(
+        repo_root=tmp_path,
+        host_family="claude",
+        session_id="preferred-ambient-replay",
+        include_assist=False,
+        include_teaser=False,
+    )
+
+    assert preferred == (
+        "---\n\n"
+        "**Odylith History:** Earlier history still matters more than a later generic insight.\n"
         "\n---"
     )

@@ -493,12 +493,51 @@
       banner.title = text;
     }
 
+    function syncParentShellCompassUrl(query) {
+      try {
+        if (!window.parent || window.parent === window) return;
+        const parentLocation = window.parent.location;
+        if (!parentLocation || String(parentLocation.origin || "") !== String(window.location.origin || "")) return;
+        const parentUrl = new URL(String(parentLocation.href || ""));
+        const parentQuery = new URLSearchParams();
+        const scopeToken = String(query.get("scope") || "").trim();
+        const windowToken = String(query.get("window") || "").trim().toLowerCase();
+        const dateToken = String(query.get("date") || "").trim();
+        const auditDayToken = String(query.get("audit_day") || "").trim();
+
+        parentQuery.set("tab", "compass");
+        if (WORKSTREAM_RE.test(scopeToken)) {
+          parentQuery.set("scope", scopeToken);
+        }
+        if (windowToken === "24h" || windowToken === "48h") {
+          parentQuery.set("window", windowToken);
+        }
+        if (dateToken === "live" || DATE_RE.test(dateToken)) {
+          parentQuery.set("date", dateToken);
+        }
+        if (DATE_RE.test(auditDayToken)) {
+          parentQuery.set("audit_day", auditDayToken);
+        }
+
+        const nextSearch = parentQuery.toString();
+        const nextUrl = `${parentUrl.pathname}${nextSearch ? `?${nextSearch}` : ""}${parentUrl.hash || ""}`;
+        const currentUrl = `${parentLocation.pathname}${parentLocation.search}${parentLocation.hash}`;
+        if (nextUrl !== currentUrl) {
+          window.parent.history.replaceState(null, "", nextUrl);
+        }
+      } catch (_error) {
+        // Fall back to parent postMessage sync when direct same-origin history access is unavailable.
+      }
+    }
+
     function navigateCompass(nextQuery) {
       const query = nextQuery instanceof URLSearchParams
         ? nextQuery
         : new URLSearchParams(String(nextQuery || ""));
       query.delete("workstream");
       const localSearch = query.toString();
+
+      syncParentShellCompassUrl(query);
 
       try {
         if (window.parent && window.parent !== window) {

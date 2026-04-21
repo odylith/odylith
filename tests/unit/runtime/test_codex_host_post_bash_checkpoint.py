@@ -526,9 +526,10 @@ def test_main_routes_checkpoint_context_through_additional_context(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
+    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** The signal is real." in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Proposal:" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Assist:** kept this grounded." not in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** The signal is real." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
     assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]

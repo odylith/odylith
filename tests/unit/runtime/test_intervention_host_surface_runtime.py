@@ -184,13 +184,13 @@ def test_codex_post_tool_payload_uses_additional_context_and_system_message() ->
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
     assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "<odylith-visible-markdown>" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "Odylith developer continuity:" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Observation:** The signal is real." in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith developer continuity:" not in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Observation:** The signal is real." not in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Assist:** kept this grounded." not in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"] == "Odylith governance refresh completed."
 
 
-def test_visible_delivery_fallback_keeps_assist_in_continuity_when_system_message_is_live_only() -> None:
+def test_visible_delivery_fallback_strips_extra_odylith_continuity_when_system_message_is_live_only() -> None:
     payload = host_surface_runtime.codex_post_tool_payload(
         developer_context="**Odylith Observation:** The signal is real.\n\n**Odylith Assist:** kept this grounded.",
         system_message="**Odylith Observation:** The signal is real.",
@@ -200,7 +200,8 @@ def test_visible_delivery_fallback_keeps_assist_in_continuity_when_system_messag
 
     assert "<odylith-visible-markdown>" in additional_context
     assert "---\n\n**Odylith Observation:** The signal is real.\n\n---" in additional_context
-    assert "**Odylith Assist:** kept this grounded." in additional_context
+    assert "**Odylith Assist:** kept this grounded." not in additional_context
+    assert "Odylith developer continuity:" not in additional_context
     assert payload["systemMessage"] == "---\n\n**Odylith Observation:** The signal is real.\n\n---"
     assert payload["systemMessage"] != (
         "---\n\n**Odylith Observation:** The signal is real.\n\n---\n\n**Odylith Assist:** kept this grounded."
@@ -227,8 +228,8 @@ def test_claude_post_tool_payload_uses_additional_context_and_system_message() -
     )
 
     assert "Odylith visible delivery fallback:" in payload["additionalContext"]
-    assert "Odylith developer continuity:" in payload["additionalContext"]
-    assert "**Odylith Observation:** The signal is real." in payload["additionalContext"]
+    assert "Odylith developer continuity:" not in payload["additionalContext"]
+    assert "**Odylith Observation:** The signal is real." not in payload["additionalContext"]
     assert payload["systemMessage"] == "Odylith governance refresh completed."
 
 
@@ -259,89 +260,6 @@ def test_stop_payload_can_force_one_visible_delivery_continuation() -> None:
     assert payload["decision"] == "block"
     assert "**Odylith Assist:** kept this grounded." in payload["reason"]
     assert "code fence" in payload["reason"]
-
-
-def test_visible_delivery_already_present_suppresses_stop_block() -> None:
-    assert host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message="Implemented the fix.\n\n**Odylith Assist:** kept this grounded.",
-        visible_text="**Odylith Assist:** kept this grounded.",
-    )
-
-
-def test_visible_delivery_already_present_requires_the_same_visible_labels() -> None:
-    assert not host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message="Implemented the fix.\n\n**Odylith Observation:** The signal is real.",
-        visible_text="**Odylith Assist:** kept this grounded.",
-    )
-    assert not host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message="Implemented the fix.\n\n**Odylith Observation:** The signal is real.",
-        visible_text=(
-            "**Odylith Observation:** The signal is real.\n\n"
-            "**Odylith Assist:** kept this grounded."
-        ),
-    )
-    assert not host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message="Implemented the fix.\n\n**Odylith Observation:** The signal is real.",
-        visible_text="---\n**Odylith Observation:** The signal is real.\n---",
-    )
-    assert not host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message="Implemented the fix.\n\n---\n**Odylith Observation:** The signal is real.\n---",
-        visible_text="---\n**Odylith Observation:** The signal is real.\n---",
-    )
-    assert host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message="Implemented the fix.\n\n---\n\n**Odylith Observation:** The signal is real.\n\n---",
-        visible_text="---\n**Odylith Observation:** The signal is real.\n---",
-    )
-    assert not host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message=(
-            "Implemented the fix.\n\n"
-            "**Odylith Observation:** Older signal.\n\n"
-            "**Odylith Assist:** Older closeout."
-        ),
-        visible_text=(
-            "**Odylith Observation:** New signal.\n\n"
-            "**Odylith Assist:** New closeout."
-        ),
-    )
-    assert not host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message=(
-            "Implemented the fix.\n\n"
-            "**Odylith Observation:** The signal is real.\n\n"
-            "**Odylith Assist:** kept this grounded."
-        ),
-        visible_text=(
-            "**Odylith Observation:** The signal is real.\n\n"
-            "**Odylith Assist:** kept this grounded."
-        ),
-    )
-    assert not host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message=(
-            "Implemented the fix.\n\n"
-            "---\n\n"
-            "**Odylith Observation:** The signal is real.\n\n"
-            "**Odylith Assist:** kept this grounded.\n\n"
-            "---"
-        ),
-        visible_text=(
-            "**Odylith Observation:** The signal is real.\n\n"
-            "**Odylith Assist:** kept this grounded."
-        ),
-    )
-    assert host_surface_runtime.visible_delivery_already_present(
-        last_assistant_message=(
-            "Implemented the fix.\n\n"
-            "---\n\n"
-            "**Odylith Observation:** The signal is real.\n\n"
-            "---\n\n"
-            "**Odylith Assist:** kept this grounded."
-        ),
-        visible_text=(
-            "**Odylith Observation:** The signal is real.\n\n"
-            "**Odylith Assist:** kept this grounded."
-        ),
-    )
-
-
 def test_normalized_session_id_falls_back_when_host_payload_is_missing() -> None:
     token = host_surface_runtime.normalized_session_id("", host_family="codex")
     assert token
@@ -446,8 +364,8 @@ def test_checkpoint_visible_text_includes_observation_and_proposal_but_keeps_ass
     assert "Odylith Proposal:" in codex_visible
     assert "Odylith Assist:" not in codex_visible
     assert "Odylith visible delivery fallback:" in codex_payload["hookSpecificOutput"]["additionalContext"]
-    assert "Odylith Assist:" in codex_payload["hookSpecificOutput"]["additionalContext"]
-    assert "Odylith Assist:" in claude_payload["additionalContext"]
+    assert "Odylith Assist:" not in codex_payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith Assist:" not in claude_payload["additionalContext"]
 
 
 def test_visible_fallback_context_does_not_duplicate_live_text_when_continuity_matches() -> None:
@@ -460,6 +378,23 @@ def test_visible_fallback_context_does_not_duplicate_live_text_when_continuity_m
 
     assert additional_context.count("**Odylith Insight:**") == 1
     assert "Odylith developer continuity:" not in additional_context
+
+
+def test_visible_fallback_keeps_non_odylith_context_while_stripping_live_tail() -> None:
+    payload = host_surface_runtime.codex_prompt_payload(
+        additional_context=(
+            "Odylith anchor B-096: primary target src/main.py.\n\n"
+            "Odylith is tracking this signal: governed truth is taking shape here."
+        ),
+        system_message="Odylith is tracking this signal: governed truth is taking shape here.",
+    )
+
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+
+    assert "Odylith visible delivery fallback:" in additional_context
+    assert "Odylith anchor B-096: primary target src/main.py." in additional_context
+    assert "Odylith developer continuity:" in additional_context
+    assert additional_context.count("Odylith is tracking this signal: governed truth is taking shape here.") == 1
 
 
 def test_stop_visible_text_can_include_assist_closeout() -> None:

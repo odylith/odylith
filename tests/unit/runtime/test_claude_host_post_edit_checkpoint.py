@@ -104,7 +104,7 @@ def test_main_skips_non_governed_edits_silently(monkeypatch, tmp_path: Path, cap
     assert called == []
     payload = json.loads(capsys.readouterr().out)
     assert "additionalContext" in payload
-    assert "Odylith Assist:" in payload["additionalContext"]
+    assert "Odylith Assist:" not in payload["additionalContext"]
 
 
 def test_main_prioritizes_pending_chat_replay(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -140,10 +140,10 @@ def test_main_prioritizes_pending_chat_replay(monkeypatch, tmp_path: Path, capsy
 
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
+    assert "Odylith visible delivery fallback:" in payload["additionalContext"]
     assert payload["systemMessage"] == (
         "---\n\n**Odylith Observation:** Edit checkpoint must carry this pending block.\n\n---"
     )
-    assert "Odylith visible delivery fallback:" in payload["additionalContext"]
 
 
 def test_main_emits_observation_and_proposal_for_correlated_edit(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -192,7 +192,7 @@ def test_main_emits_observation_and_proposal_for_correlated_edit(monkeypatch, tm
     assert exit_code == 0
     assert "**Odylith Observation:**" in payload["additionalContext"]
     assert "Odylith Proposal:" in payload["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." in payload["additionalContext"]
+    assert "**Odylith Assist:** kept this grounded." not in payload["additionalContext"]
     assert "**Odylith Observation:**" in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
     assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]

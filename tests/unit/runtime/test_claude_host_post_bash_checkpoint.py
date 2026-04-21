@@ -127,9 +127,10 @@ def test_post_bash_checkpoint_emits_visible_observation_and_proposal(
 
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
+    assert "Odylith visible delivery fallback:" in payload["additionalContext"]
     assert "**Odylith Observation:** The Bash edit is governed now." in payload["additionalContext"]
     assert "Odylith Proposal:" in payload["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." in payload["additionalContext"]
+    assert "**Odylith Assist:** kept this grounded." not in payload["additionalContext"]
     assert "**Odylith Observation:** The Bash edit is governed now." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
     assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
