@@ -6,6 +6,7 @@ from pathlib import Path
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import surface_runtime
+from odylith.runtime.surfaces import host_intervention_status
 
 
 def test_recent_session_helpers_do_not_bleed_without_session_id(tmp_path: Path) -> None:
@@ -89,10 +90,8 @@ def test_compose_host_conversation_bundle_recovers_recent_checkpoint_context(tmp
 
     assist = dict(bundle["closeout_bundle"]["assist"])
     assert bundle["intervention_bundle"]
-    assert assist["eligible"] is True
-    assert "1 candidate path" in assist["markdown_text"]
-    assert "[B-096](?tab=radar&workstream=B-096)" in assist["markdown_text"]
-    assert "[governance-intervention-engine](?tab=registry&component=governance-intervention-engine)" in assist["markdown_text"]
+    assert assist["eligible"] is False
+    assert assist["suppressed_reason"] == "missing_user_facing_delta"
     assert [row["id"] for row in assist["affected_contracts"]] == ["B-096", "governance-intervention-engine"]
 
 
@@ -205,16 +204,41 @@ def test_visible_delivery_fallback_strips_extra_odylith_continuity_when_system_m
     )
 
 
+def test_claude_status_does_not_borrow_codex_thread_id(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("CODEX_THREAD_ID", "codex-thread-123")
+    monkeypatch.delenv("CLAUDE_CODE_SESSION_ID", raising=False)
+    monkeypatch.delenv("CLAUDE_SESSION_ID", raising=False)
+
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="claude",
+    )
+
+    assert report["host_family"] == "claude"
+    assert report["session_id"] != "codex-thread-123"
+    assert report["session_id"].startswith("claude-agent-")
+
+
 def test_codex_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
     payload = host_surface_runtime.codex_prompt_payload(
-        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: This conversation is ready to be captured in the repo.",
-        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        additional_context=(
+            "Odylith anchor B-096: primary target src/main.py.\n\n"
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
+        system_message=(
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
-    assert payload["systemMessage"] == "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
+    assert payload["systemMessage"] == (
+        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "Capture the exact governed change while the request is still current."
+    )
     assert "Odylith Assist:" not in payload["hookSpecificOutput"]["additionalContext"]
 
 
@@ -232,8 +256,15 @@ def test_claude_post_tool_payload_uses_additional_context_and_system_message() -
 
 def test_claude_prompt_payload_keeps_prompt_context_discreet() -> None:
     payload = host_surface_runtime.claude_prompt_payload(
-        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: This conversation is ready to be captured in the repo.",
-        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        additional_context=(
+            "Odylith anchor B-096: primary target src/main.py.\n\n"
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
+        system_message=(
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
@@ -297,8 +328,15 @@ def test_render_visible_live_intervention_excludes_closeout_text() -> None:
 
 def test_codex_prompt_visible_text_comes_from_system_message_not_hidden_context() -> None:
     payload = host_surface_runtime.codex_prompt_payload(
-        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: This conversation is ready to be captured in the repo.",
-        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        additional_context=(
+            "Odylith anchor B-096: primary target src/main.py.\n\n"
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
+        system_message=(
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
     )
 
     visible = host_surface_runtime.chat_visible_text(
@@ -307,24 +345,40 @@ def test_codex_prompt_visible_text_comes_from_system_message_not_hidden_context(
         turn_phase="prompt_submit",
     )
 
-    assert visible == "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
+    assert visible == (
+        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "Capture the exact governed change while the request is still current."
+    )
     assert "Odylith anchor B-096" not in visible
 
 
 def test_claude_prompt_visible_text_comes_from_teaser_stdout_not_hidden_context() -> None:
     payload = host_surface_runtime.claude_prompt_payload(
-        additional_context="Odylith anchor B-096: primary target src/main.py.\n\nOdylith is tracking this signal: This conversation is ready to be captured in the repo.",
-        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        additional_context=(
+            "Odylith anchor B-096: primary target src/main.py.\n\n"
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
+        system_message=(
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
     )
 
     visible = host_surface_runtime.chat_visible_text(
         payload,
         host_family="claude",
         turn_phase="prompt_submit",
-        plain_stdout="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        plain_stdout=(
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
     )
 
-    assert visible == "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
+    assert visible == (
+        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "Capture the exact governed change while the request is still current."
+    )
     assert "systemMessage" not in payload
     assert "Odylith anchor B-096" not in visible
 
@@ -381,9 +435,13 @@ def test_visible_fallback_keeps_non_odylith_context_while_stripping_live_tail() 
     payload = host_surface_runtime.codex_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
         ),
-        system_message="Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
+        system_message=(
+            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Capture the exact governed change while the request is still current."
+        ),
     )
 
     additional_context = payload["hookSpecificOutput"]["additionalContext"]
@@ -391,7 +449,10 @@ def test_visible_fallback_keeps_non_odylith_context_while_stripping_live_tail() 
     assert "Odylith visible delivery fallback:" in additional_context
     assert "Odylith anchor B-096: primary target src/main.py." in additional_context
     assert "Odylith developer continuity:" in additional_context
-    assert additional_context.count("Odylith is tracking this signal: This conversation is ready to be captured in the repo.") == 1
+    assert additional_context.count(
+        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "Capture the exact governed change while the request is still current."
+    ) == 1
 
 
 def test_stop_visible_text_can_include_assist_closeout() -> None:

@@ -103,6 +103,18 @@ _VISIBILITY_DELIVERY_TOKENS = {
     "visibility",
     "ux",
 }
+_VISIBILITY_COMPLAINT_PHRASES = (
+    "do not see",
+    "don't see",
+    "not visible",
+    "still do not see",
+    "still don't see",
+    "zero signals",
+    "not showing",
+    "hidden hook",
+    "hidden hooks",
+    "unproven this session",
+)
 
 
 def _sequence_count(value: Any) -> int:
@@ -640,8 +652,39 @@ def _visibility_feedback_phrase(*, request: Any, assistant_summary: str = "") ->
         return "", ""
     if "odylith" not in tokens and len(product_hits | delivery_hits) < 3:
         return "", ""
-    phrase = "carrying the intervention visibility feedback into this closeout"
+    lowered = text.casefold()
+    if not any(phrase in lowered for phrase in _VISIBILITY_COMPLAINT_PHRASES):
+        return "", ""
+    phrase = "naming the chat-visibility complaint in this closeout"
     return phrase, phrase
+
+
+def _assist_has_material_turn_evidence(
+    *,
+    metrics: Mapping[str, Any],
+    artifact_markdown_phrase: str,
+    contract_update_markdown_phrase: str,
+    validation_phrase: str,
+    visibility_markdown_phrase: str,
+) -> bool:
+    """Return whether the current turn earned a user-visible closeout line.
+
+    Scope alone is not proof. A closeout beat needs current-turn evidence such
+    as changed governed artifacts, focused validation, bounded delegated
+    execution, or an explicit visibility complaint that should stay alive at
+    closeout.
+    """
+
+    return bool(
+        artifact_markdown_phrase
+        or contract_update_markdown_phrase
+        or validation_phrase
+        or visibility_markdown_phrase
+        or (
+            bool(metrics.get("grounded_delegate"))
+            and int(metrics.get("delegated_leaf_count") or 0) > 0
+        )
+    )
 
 
 def _meaningful_tokens(*values: str) -> set[str]:
@@ -1222,19 +1265,20 @@ def compose_closeout_assist(
         request=request,
         assistant_summary=assistant_summary,
     )
+    has_material_turn_evidence = _assist_has_material_turn_evidence(
+        metrics=metrics,
+        artifact_markdown_phrase=artifact_markdown_phrase,
+        contract_update_markdown_phrase=contract_update_markdown_phrase,
+        validation_phrase=validation_phrase,
+        visibility_markdown_phrase=visibility_markdown_phrase,
+    )
 
     style = ""
-    user_win = ""
-    delta_markdown = ""
-    delta_plain = ""
     proof_parts_markdown: list[str] = []
     proof_parts_plain: list[str] = []
 
     if metrics["grounded_delegate"] and metrics["delegated_leaf_count"] > 0 and focus_phrase:
         style = "grounded_bounded_execution"
-        user_win = "kept the work moving"
-        delta_markdown = "without turning the repo into the usual broader `odylith_off` scavenger hunt"
-        delta_plain = "without turning the repo into the usual broader odylith_off scavenger hunt"
         if contract_update_markdown_phrase or artifact_markdown_phrase:
             proof_parts_markdown.append(contract_update_markdown_phrase or artifact_markdown_phrase)
             proof_parts_plain.append(contract_update_plain_phrase or artifact_plain_phrase)
@@ -1252,35 +1296,33 @@ def compose_closeout_assist(
         if validation_phrase:
             proof_parts_markdown.append(f"closing with {validation_phrase}")
             proof_parts_plain.append(f"closing with {validation_phrase}")
-    elif governance_phrase:
+    elif visibility_markdown_phrase:
+        style = "visibility_continuity"
+        proof_parts_markdown.append(visibility_markdown_phrase)
+        proof_parts_plain.append(visibility_plain_phrase)
+        if contract_scope_markdown_phrase:
+            proof_parts_markdown.append(contract_scope_markdown_phrase)
+            proof_parts_plain.append(contract_scope_plain_phrase)
+    elif governance_phrase and has_material_turn_evidence:
         style = "governed_lane"
-        user_win = "kept this change honest"
-        delta_markdown = "instead of letting the code outrun the governed record"
-        delta_plain = delta_markdown
         if contract_update_markdown_phrase or artifact_markdown_phrase:
             proof_parts_markdown.append(contract_update_markdown_phrase or artifact_markdown_phrase)
             proof_parts_plain.append(contract_update_plain_phrase or artifact_plain_phrase)
-        elif contract_scope_markdown_phrase:
+        elif validation_phrase and contract_scope_markdown_phrase:
             proof_parts_markdown.append(contract_scope_markdown_phrase)
             proof_parts_plain.append(contract_scope_plain_phrase)
-        else:
-            proof_parts_markdown.append(f"staying inside {governance_phrase}")
-            proof_parts_plain.append(f"staying inside {governance_phrase}")
         if validation_phrase:
             proof_parts_markdown.append(f"closing with {validation_phrase}")
             proof_parts_plain.append(f"closing with {validation_phrase}")
         elif focus_phrase:
             proof_parts_markdown.append(f"keeping the slice to {focus_phrase}")
             proof_parts_plain.append(f"keeping the slice to {focus_phrase}")
-    elif focus_phrase:
+    elif focus_phrase and has_material_turn_evidence:
         style = "shortest_safe_path"
-        user_win = "kept this on the shortest safe path"
-        delta_markdown = "instead of cracking open an `odylith_off`-style repo sweep"
-        delta_plain = "instead of cracking open an odylith_off-style repo sweep"
         if contract_update_markdown_phrase or artifact_markdown_phrase:
             proof_parts_markdown.append(contract_update_markdown_phrase or artifact_markdown_phrase)
             proof_parts_plain.append(contract_update_plain_phrase or artifact_plain_phrase)
-        elif contract_scope_markdown_phrase:
+        elif validation_phrase and contract_scope_markdown_phrase:
             proof_parts_markdown.append(contract_scope_markdown_phrase)
             proof_parts_plain.append(contract_scope_plain_phrase)
         proof_parts_markdown.append(f"grounding the work to {focus_phrase}")
@@ -1290,9 +1332,6 @@ def compose_closeout_assist(
             proof_parts_plain.append(f"closing with {validation_phrase}")
     elif validation_phrase:
         style = "focused_validation"
-        user_win = "kept the proof tight"
-        delta_markdown = "instead of widening just to feel busy"
-        delta_plain = delta_markdown
         if contract_update_markdown_phrase or artifact_markdown_phrase:
             proof_parts_markdown.append(contract_update_markdown_phrase or artifact_markdown_phrase)
             proof_parts_plain.append(contract_update_plain_phrase or artifact_plain_phrase)
@@ -1301,17 +1340,6 @@ def compose_closeout_assist(
             proof_parts_plain.append(contract_scope_plain_phrase)
         proof_parts_markdown.append(f"closing with {validation_phrase}")
         proof_parts_plain.append(f"closing with {validation_phrase}")
-    elif visibility_markdown_phrase:
-        style = "visibility_continuity"
-        user_win = "kept the UX signal from disappearing"
-        delta_markdown = "instead of treating quiet hooks as proof Odylith had nothing useful to say"
-        delta_plain = delta_markdown
-        if contract_scope_markdown_phrase:
-            proof_parts_markdown.append(contract_scope_markdown_phrase)
-            proof_parts_plain.append(contract_scope_plain_phrase)
-        proof_parts_markdown.append(visibility_markdown_phrase)
-        proof_parts_plain.append(visibility_plain_phrase)
-
     proof_markdown = _join_phrases(proof_parts_markdown)
     proof_plain = _join_phrases(proof_parts_plain)
     if not style or not proof_markdown or not proof_plain:
@@ -1323,14 +1351,8 @@ def compose_closeout_assist(
             changed_path_source=changed_path_source,
         )
 
-    markdown_text = f"{_label('assist', markdown=True)} {user_win}"
-    plain_text = f"{_label('assist', markdown=False)} {user_win}"
-    if delta_markdown:
-        markdown_text += f" {delta_markdown}"
-    if delta_plain:
-        plain_text += f" {delta_plain}"
-    markdown_text += f" by {proof_markdown}."
-    plain_text += f" by {proof_plain}."
+    markdown_text = f"{_label('assist', markdown=True)} {proof_markdown}."
+    plain_text = f"{_label('assist', markdown=False)} {proof_plain}."
 
     return {
         "eligible": True,
@@ -1340,8 +1362,8 @@ def compose_closeout_assist(
         "text": markdown_text,
         "plain_text": plain_text,
         "markdown_text": markdown_text,
-        "user_win": user_win,
-        "delta": delta_markdown,
+        "user_win": "",
+        "delta": "",
         "proof": proof_markdown,
         "updated_artifacts": updated_artifacts,
         "affected_contracts": affected_contracts,

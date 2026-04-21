@@ -226,10 +226,16 @@ def default_host_session_id(
 ) -> str:
     """Return the best available host session id from the environment."""
     env = os.environ if environ is None else environ
-    for key in _ordered_host_session_env_keys(host_family):
+    family = str(host_family or "").strip().lower()
+    preferred_keys = _ordered_host_session_env_keys(host_family)
+    if family:
+        preferred_keys = _HOST_SESSION_ENV_KEYS_BY_FAMILY.get(family, ())
+    for key in preferred_keys:
         token = normalize_session_token(env.get(key, ""))
         if token:
             return token
+    if family:
+        return ""
     for key, value in env.items():
         normalized_key = str(key or "").strip().upper()
         if not normalized_key.endswith(("_THREAD_ID", "_SESSION_ID")):
@@ -266,7 +272,7 @@ def resolve_hook_session_id(
     turn_id = normalize_session_token(mapping.get("turn_id", ""))
     if turn_id:
         return turn_id
-    return fallback_session_token(host_family)
+    return synthetic_host_session_token(host_family)
 
 
 def fallback_session_token(value: Any = "", *, pid: int | None = None) -> str:
@@ -275,6 +281,13 @@ def fallback_session_token(value: Any = "", *, pid: int | None = None) -> str:
     if token:
         return token
     return f"{_DEFAULT_SESSION_TOKEN_PREFIX}-{pid if pid is not None else os.getpid()}"
+
+
+def synthetic_host_session_token(host_family: Any = "", *, pid: int | None = None) -> str:
+    """Return a host-local synthetic session id that cannot bleed across hosts."""
+    family = normalize_token(host_family) or "host"
+    suffix = pid if pid is not None else os.getpid()
+    return normalize_session_token(f"{family}-{_DEFAULT_SESSION_TOKEN_PREFIX}-{suffix}")
 
 
 def timeline_event_id(*, kind: Any, index: Any, ts_iso: Any) -> str:

@@ -26,6 +26,12 @@ def test_default_host_session_id_prefers_matching_host_family_key() -> None:
     assert agent_runtime_contract.default_host_session_id(environ=environ, host_family="codex") == "codex-thread-7"
 
 
+def test_default_host_session_id_fails_closed_on_cross_host_environment() -> None:
+    environ = {"CODEX_THREAD_ID": "codex-thread-7"}
+
+    assert agent_runtime_contract.default_host_session_id(environ=environ, host_family="claude") == ""
+
+
 def test_resolve_hook_session_id_prefers_payload_session_id() -> None:
     assert agent_runtime_contract.resolve_hook_session_id(
         {"session_id": "codex-session-1", "thread_id": "thread-1", "turn_id": "turn-1"},
@@ -59,6 +65,10 @@ def test_resolve_hook_session_id_uses_turn_id_without_stable_host_session() -> N
 
 def test_fallback_session_token_uses_neutral_prefix_when_missing() -> None:
     assert agent_runtime_contract.fallback_session_token("", pid=42) == "agent-42"
+
+
+def test_synthetic_host_session_token_is_host_local_and_pid_scoped() -> None:
+    assert agent_runtime_contract.synthetic_host_session_token("claude", pid=42) == "claude-agent-42"
 
 
 def test_timeline_event_id_uses_agent_prefix() -> None:

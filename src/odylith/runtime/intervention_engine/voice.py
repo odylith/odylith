@@ -112,7 +112,7 @@ def _primary_fact(moment: Mapping[str, Any], facts: Sequence[GovernanceFact]) ->
     row = _fact_from_mapping(moment.get("primary_fact"))
     if _normalize_string(row.headline):
         return row
-    return facts[0] if facts else GovernanceFact(kind="capture_opportunity", headline="This conversation is ready to be captured in the repo.")
+    return facts[0] if facts else GovernanceFact(kind="capture_opportunity", headline="This turn has grounded intervention signal.")
 
 
 def _supporting_fact(moment: Mapping[str, Any]) -> GovernanceFact | None:
@@ -124,7 +124,7 @@ def _fact_claim(primary: GovernanceFact) -> str:
     return (
         _strip_terminal_punctuation(primary.headline)
         or _strip_terminal_punctuation(primary.detail)
-        or "This conversation is ready to be captured in the repo"
+        or "This turn has grounded intervention signal"
     )
 
 
@@ -353,7 +353,7 @@ def render_observation(
         supporting=supporting,
         proposal_actions=proposal_actions,
     )
-    headline = _normalize_string(primary.headline) or line or "Odylith has enough evidence to intervene."
+    headline = _normalize_string(primary.headline) or line or "This turn has enough grounded signal to surface."
     markdown_text = f"{voice_contract.OBSERVATION_LABEL_MARKDOWN} {line}".strip()
     plain_text = f"{voice_contract.OBSERVATION_LABEL_PLAIN} {line}".strip()
     teaser_text = _sentence(

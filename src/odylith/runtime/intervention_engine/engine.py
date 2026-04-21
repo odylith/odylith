@@ -159,6 +159,65 @@ def _contains_any(text: str, hints: Sequence[str]) -> bool:
     return any(_normalize_token(hint) in haystack for hint in hints)
 
 
+def _join_labels(values: Sequence[str]) -> str:
+    rows = [_normalize_string(value) for value in values if _normalize_string(value)]
+    if not rows:
+        return ""
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) == 2:
+        return f"{rows[0]} and {rows[1]}"
+    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
+
+
+def _capture_opportunity_copy(
+    *,
+    prompt_surface: str,
+    signal_profile: Mapping[str, Any],
+) -> tuple[str, str]:
+    lowered = _normalize_token(prompt_surface)
+    if "proposal" in lowered:
+        headline = "This turn is already framing a governed proposal."
+    elif _contains_any(prompt_surface, ("workstream", "radar")) or _normalize_string_list(
+        signal_profile.get("explicit_workstream_ids")
+    ):
+        headline = "This turn is already naming a governed workstream move."
+    elif _contains_any(prompt_surface, ("registry", "component")):
+        headline = "This turn is already naming Registry-owned truth."
+    elif _contains_any(prompt_surface, ("atlas", "diagram", "topology", "architecture", "boundary")) or _normalize_string_list(
+        signal_profile.get("explicit_diagram_ids")
+    ):
+        headline = "This turn is already making Atlas-owned boundary claims."
+    elif _contains_any(prompt_surface, ("casebook", "bug", "failure", "regression", "incident")) or _normalize_string_list(
+        signal_profile.get("explicit_bug_ids")
+    ):
+        headline = "This turn is already describing a governed failure lane."
+    else:
+        headline = "This turn is already naming governed repo truth."
+
+    target_surfaces: list[str] = []
+    if _contains_any(prompt_surface, ("workstream", "radar")) or _normalize_string_list(
+        signal_profile.get("explicit_workstream_ids")
+    ):
+        target_surfaces.append("Radar")
+    if _contains_any(prompt_surface, ("registry", "component")):
+        target_surfaces.append("Registry")
+    if _contains_any(prompt_surface, ("atlas", "diagram", "topology", "architecture", "boundary")) or _normalize_string_list(
+        signal_profile.get("explicit_diagram_ids")
+    ):
+        target_surfaces.append("Atlas")
+    if _contains_any(prompt_surface, ("casebook", "bug", "failure", "regression", "incident")) or _normalize_string_list(
+        signal_profile.get("explicit_bug_ids")
+    ):
+        target_surfaces.append("Casebook")
+
+    if not target_surfaces:
+        detail = "Capture the exact governed change while the request is still current."
+    else:
+        detail = f"Capture the exact {_join_labels(target_surfaces)} move while the request is still current."
+    return headline, detail
+
+
 _REPO_TRUTH_CACHE: dict[tuple[str, tuple[Any, ...]], dict[str, Any]] = {}
 
 
@@ -491,10 +550,62 @@ def _fact(kind: str, headline: str, detail: str, evidence_classes: Sequence[str]
     )
 
 
-def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any], evidence_classes: Sequence[str]) -> list[GovernanceFact]:
+def _allow_repo_fact(
+    *,
+    observation: ObservationEnvelope,
+    signal_profile: Mapping[str, Any],
+    kind: str,
+) -> bool:
+    """Return whether inherited repo truth is current enough for visible narration."""
+
+    phase = _normalize_token(observation.turn_phase)
+    if phase in {"post_bash_checkpoint", "post_edit_checkpoint"}:
+        return True
+    has_changed_paths = bool(observation.changed_paths)
+    has_execution_pressure = bool(signal_profile.get("has_execution_hints"))
+    if kind == "workstream":
+        return bool(
+            has_changed_paths
+            or has_execution_pressure
+            or signal_profile.get("has_governance_hints")
+            or _normalize_string_list(signal_profile.get("explicit_workstream_ids"))
+        )
+    if kind == "bug":
+        return bool(
+            has_changed_paths
+            or signal_profile.get("has_bug_hints")
+            or _normalize_string_list(signal_profile.get("explicit_bug_ids"))
+        )
+    if kind == "diagram":
+        return bool(
+            has_changed_paths
+            or signal_profile.get("has_topology_hints")
+            or _normalize_string_list(signal_profile.get("explicit_diagram_ids"))
+        )
+    if kind == "component":
+        return bool(
+            has_changed_paths
+            or has_execution_pressure
+            or signal_profile.get("has_governance_hints")
+            or signal_profile.get("has_topology_hints")
+        )
+    return has_changed_paths
+
+
+def _collect_facts(
+    *,
+    observation: ObservationEnvelope,
+    lookup: Mapping[str, Any],
+    evidence_classes: Sequence[str],
+    signal_profile: Mapping[str, Any],
+) -> list[GovernanceFact]:
     facts: list[GovernanceFact] = []
     prompt_surface = _joined_prompt_surface(observation)
-    if lookup.get("workstream_ids"):
+    if lookup.get("workstream_ids") and _allow_repo_fact(
+        observation=observation,
+        signal_profile=signal_profile,
+        kind="workstream",
+    ):
         ws_id = lookup["workstream_ids"][0]
         facts.append(
             _fact(
@@ -506,7 +617,11 @@ def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any
                 95,
             )
         )
-    if lookup.get("bug_ids"):
+    if lookup.get("bug_ids") and _allow_repo_fact(
+        observation=observation,
+        signal_profile=signal_profile,
+        kind="bug",
+    ):
         bug_id = lookup["bug_ids"][0]
         bug_title = _normalize_string(lookup["bug_rows"].get(bug_id, {}).get("title"))
         facts.append(
@@ -519,7 +634,11 @@ def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any
                 90,
             )
         )
-    if lookup.get("diagram_refs"):
+    if lookup.get("diagram_refs") and _allow_repo_fact(
+        observation=observation,
+        signal_profile=signal_profile,
+        kind="diagram",
+    ):
         diagram = lookup["diagram_refs"][0]
         facts.append(
             _fact(
@@ -531,7 +650,11 @@ def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any
                 88,
             )
         )
-    if lookup.get("component_ids"):
+    if lookup.get("component_ids") and _allow_repo_fact(
+        observation=observation,
+        signal_profile=signal_profile,
+        kind="component",
+    ):
         component_id = lookup["component_ids"][0]
         facts.append(
             _fact(
@@ -566,11 +689,15 @@ def _collect_facts(*, observation: ObservationEnvelope, lookup: Mapping[str, Any
             )
         )
     if _contains_any(prompt_surface, _GOVERNANCE_HINTS):
+        headline, detail = _capture_opportunity_copy(
+            prompt_surface=prompt_surface,
+            signal_profile=signal_profile,
+        )
         facts.append(
             _fact(
                 "capture_opportunity",
-                "This conversation is ready to be captured in the repo.",
-                "Odylith can turn it into backlog, component, diagram, or bug updates while the context is still fresh.",
+                headline,
+                detail,
                 evidence_classes,
                 [],
                 78,
@@ -1051,7 +1178,12 @@ def build_intervention_bundle(*, repo_root: Path, observation: Mapping[str, Any]
         lookup=lookup,
     )
     facts = alignment_evidence.merge_governance_facts(
-        _collect_facts(observation=normalized_observation, lookup=lookup, evidence_classes=evidence),
+        _collect_facts(
+            observation=normalized_observation,
+            lookup=lookup,
+            evidence_classes=evidence,
+            signal_profile=signal_profile,
+        ),
         alignment_evidence.governance_facts_from_alignment(
             observation=normalized_observation,
             evidence_classes=evidence,

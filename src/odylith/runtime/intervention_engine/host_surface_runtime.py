@@ -57,8 +57,7 @@ def normalized_session_id(value: Any, *, host_family: str = "") -> str:
     default = agent_runtime_contract.default_host_session_id(host_family=host_family)
     if default:
         return default
-    family = _normalize_string(host_family).lower() or "host"
-    return agent_runtime_contract.fallback_session_token(f"{family}-session")
+    return agent_runtime_contract.synthetic_host_session_token(host_family)
 
 
 def compose_host_conversation_bundle(

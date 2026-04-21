@@ -172,7 +172,8 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith is tracking this signal: This conversation is ready to be captured in the repo."
+                        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+                        "Capture the exact governed change while the request is still current."
                     ),
                 }
             }

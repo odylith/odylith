@@ -126,12 +126,43 @@ def test_prompt_only_bundle_stays_teaser_and_holds_voice_contract(tmp_path: Path
 
     assert bundle["candidate"]["stage"] == "teaser"
     assert bundle["candidate"]["teaser_text"].startswith("Odylith is tracking this signal:")
-    assert "This conversation is ready to be captured in the repo." in bundle["candidate"]["teaser_text"]
+    assert "This turn is already framing a governed proposal." in bundle["candidate"]["teaser_text"]
+    assert "Capture the exact governed change while the request is still current." in bundle["candidate"]["teaser_text"]
     assert "One more corroborating signal" not in bundle["candidate"]["teaser_text"]
     assert bundle["candidate"]["markdown_text"] == ""
     assert bundle["proposal"]["eligible"] is False
     assert bundle["render_policy"]["voice_contract"]["templated_or_mechanical_forbidden"] is True
     assert bundle["render_policy"]["voice_contract"]["voice_pack_ready"] is True
+
+
+def test_prompt_submit_does_not_promote_inherited_workstream_context_without_current_turn_signal(
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+    _seed_workstream(tmp_path, workstream_id="B-096", title="Visible Intervention Hardening")
+
+    bundle = engine.build_intervention_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="claude",
+            turn_phase="prompt_submit",
+            session_id="session-meta",
+            prompt_excerpt="Why was that closeout not relevant to this turn?",
+            active_target_refs=[
+                {"kind": "workstream", "id": "B-096", "path": "", "label": "B-096"},
+                {
+                    "kind": "component",
+                    "id": "governance-intervention-engine",
+                    "path": "",
+                    "label": "governance-intervention-engine",
+                },
+            ],
+        ),
+    )
+
+    assert bundle["candidate"]["stage"] == "silent"
+    assert bundle["candidate"]["teaser_text"] == ""
+    assert bundle["candidate"]["markdown_text"] == ""
 
 
 def test_changed_paths_and_prompt_upgrade_to_card_and_rendered_proposal(tmp_path: Path) -> None:

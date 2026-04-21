@@ -284,12 +284,15 @@ def build_signal_profile(
     ]
     if not workstream_ids:
         workstream_ids = _explicit_ids(prompt_surface, _WORKSTREAM_RE)
+    explicit_workstream_ids = _explicit_ids(prompt_surface, _WORKSTREAM_RE)
+    explicit_bug_ids = _explicit_ids(prompt_surface, _BUG_RE)
+    explicit_diagram_ids = _explicit_ids(prompt_surface, _DIAGRAM_RE)
     if not bug_ids:
-        bug_ids = _explicit_ids(prompt_surface, _BUG_RE)
+        bug_ids = explicit_bug_ids
     if not diagram_refs:
         diagram_refs = [
             {"kind": "diagram", "id": token, "path": "", "label": token}
-            for token in _explicit_ids(prompt_surface, _DIAGRAM_RE)
+            for token in explicit_diagram_ids
         ]
     semantic_rows = semantic_signature(
         prompt_surface,
@@ -433,4 +436,7 @@ def build_signal_profile(
         "repo_truth_eligible": repo_truth_eligible,
         "proposal_signal": proposal_signal,
         "governed_dimension_max": governed_dimension_max,
+        "explicit_workstream_ids": explicit_workstream_ids,
+        "explicit_bug_ids": explicit_bug_ids,
+        "explicit_diagram_ids": explicit_diagram_ids,
     }

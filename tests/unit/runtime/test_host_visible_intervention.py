@@ -84,7 +84,7 @@ def test_stop_visible_intervention_recovers_assist_from_summary_validation(tmp_p
         include_closeout=True,
     )
 
-    assert "**Odylith Assist:** kept the proof tight" in rendered
+    assert "**Odylith Assist:**" in rendered
     assert "closing with 1 focused check" in rendered
 
 

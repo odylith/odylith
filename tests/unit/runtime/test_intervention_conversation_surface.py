@@ -50,7 +50,8 @@ def test_prompt_submit_live_surface_keeps_top_level_observation_and_teaser(tmp_p
         include_proposal=False,
     )
     assert rendered.startswith("---\n\nOdylith is tracking this signal:")
-    assert "This conversation is ready to be captured in the repo." in rendered
+    assert "This turn is already framing a governed proposal." in rendered
+    assert "Capture the exact governed change while the request is still current." in rendered
     assert "One more corroborating signal" not in rendered
     assert rendered.endswith("\n\n---")
 
@@ -70,7 +71,10 @@ def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> No
             "candidate": {
                 "stage": "teaser",
                 "suppressed_reason": "",
-                "teaser_text": "Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
+                "teaser_text": (
+                    "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+                    "Capture the exact governed change while the request is still current."
+                ),
             },
             "proposal": {"eligible": False, "suppressed_reason": ""},
         },
@@ -91,7 +95,10 @@ def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> No
     assert rendered == surface_runtime.wrap_live_text(
         "**Odylith Insight:** this is now grounded enough to keep visible."
     )
-    assert old_order == surface_runtime.wrap_live_text("Odylith is tracking this signal: This conversation is ready to be captured in the repo.")
+    assert old_order == surface_runtime.wrap_live_text(
+        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "Capture the exact governed change while the request is still current."
+    )
 
 
 def test_render_live_text_can_stack_distinct_high_value_ambient_signals() -> None:
@@ -125,7 +132,10 @@ def test_render_live_text_can_stack_distinct_high_value_ambient_signals() -> Non
             "candidate": {
                 "stage": "teaser",
                 "suppressed_reason": "",
-                "teaser_text": "Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
+                "teaser_text": (
+                    "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+                    "Capture the exact governed change while the request is still current."
+                ),
             },
             "proposal": {"eligible": False, "suppressed_reason": ""},
         },
@@ -501,7 +511,10 @@ def test_append_intervention_events_records_each_distinct_ambient_signal(tmp_pat
                 "stage": "teaser",
                 "moment": {"semantic_signature": ["ambient", "events"]},
                 "suppressed_reason": "",
-                "teaser_text": "Odylith is tracking this signal: This conversation is ready to be captured in the repo.",
+                "teaser_text": (
+                    "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+                    "Capture the exact governed change while the request is still current."
+                ),
             },
             "proposal": {"eligible": False, "suppressed_reason": ""},
         },

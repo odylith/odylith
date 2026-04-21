@@ -138,7 +138,7 @@ def test_delivery_snapshot_reports_proven_visible_events(tmp_path: Path) -> None
     stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="assist_closeout",
-        summary="Odylith Assist kept the proof tight.",
+        summary="Odylith Assist closing with 1 focused check.",
         session_id="session-1",
         host_family="codex",
         intervention_key="assist",

@@ -219,6 +219,8 @@ def inspect_intervention_status(
     resolved_session = _normalize_string(session_id) or agent_runtime_contract.default_host_session_id(
         host_family=host
     )
+    if not resolved_session:
+        resolved_session = agent_runtime_contract.synthetic_host_session_token(host)
     readiness = _static_readiness(repo_root=root, host_family=host)
     confirmed_events = visibility_broker.confirm_assistant_chat_delivery(
         repo_root=root,

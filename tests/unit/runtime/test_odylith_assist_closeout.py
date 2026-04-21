@@ -74,11 +74,10 @@ def test_closeout_assist_builds_shortest_safe_path_line_semantically() -> None:
     assert assist["preferred_markdown_label"] == "**Odylith Assist:**"
     assert assist["changed_path_source"] == "request_seed_paths"
     assert assist["updated_artifacts"] == []
-    assert assist["markdown_text"].startswith("**Odylith Assist:** kept this on the shortest safe path")
+    assert assist["markdown_text"].startswith("**Odylith Assist:** grounding the work to 3 candidate paths")
     assert "3 candidate paths" in assist["markdown_text"]
     assert "closing with 2 focused checks" in assist["markdown_text"]
-    assert "`odylith_off`" in assist["markdown_text"]
-    assert "broader unguided repo hunt" not in assist["markdown_text"]
+    assert "`odylith_off`" not in assist["markdown_text"]
 
 
 def test_closeout_assist_includes_linked_updated_governance_artifacts() -> None:
@@ -119,7 +118,7 @@ def test_closeout_assist_includes_linked_updated_governance_artifacts() -> None:
     assert "[B-031](?tab=radar&workstream=B-031)" in assist["markdown_text"]
     assert "[odylith-chatter](?tab=registry&component=odylith-chatter)" in assist["markdown_text"]
     assert "closing with 1 focused check" in assist["markdown_text"]
-    assert "governed record" in assist["markdown_text"]
+    assert "updating affected governance contracts" in assist["markdown_text"]
 
 
 def test_closeout_assist_names_contract_ids_without_changed_governance_paths() -> None:
@@ -155,6 +154,61 @@ def test_closeout_assist_names_contract_ids_without_changed_governance_paths() -
     assert "1 component" not in assist["markdown_text"]
 
 
+def test_closeout_assist_suppresses_scope_only_governance_context_without_current_turn_proof() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Why did that closeout mention B-096 at all?",
+        workstreams=["B-096"],
+        components=["governance-intervention-engine"],
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+        repo_root=Path("/tmp"),
+    )
+
+    assert assist["eligible"] is False
+    assert assist["suppressed_reason"] == "missing_user_facing_delta"
+    assert [row["id"] for row in assist["affected_contracts"]] == ["B-096", "governance-intervention-engine"]
+
+
+def test_closeout_assist_prefers_visibility_continuity_over_inherited_governance_scope() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt=(
+            "I still do not see any Odylith ambient highlights or interventions "
+            "visible in chat."
+        ),
+        workstreams=["B-096"],
+        components=["governance-intervention-engine"],
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+        repo_root=Path("/tmp"),
+    )
+
+    assert assist["eligible"] is True
+    assert assist["style"] == "visibility_continuity"
+    assert "naming the chat-visibility complaint in this closeout" in assist["markdown_text"]
+
+
 def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_or_ids() -> None:
     request = orchestrator.OrchestrationRequest(
         prompt=(
@@ -180,8 +234,7 @@ def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_
     assert assist["style"] == "visibility_continuity"
     assert assist["updated_artifacts"] == []
     assert assist["affected_contracts"] == []
-    assert "kept the UX signal from disappearing" in assist["markdown_text"]
-    assert "intervention visibility feedback" in assist["markdown_text"]
+    assert "naming the chat-visibility complaint in this closeout" in assist["markdown_text"]
     assert "candidate path" not in assist["markdown_text"]
     assert "focused check" not in assist["markdown_text"]
 
@@ -373,7 +426,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Pa
     assert "Tribunal already has B-031 flagged for unsafe closeout" in bundle["ambient_signals"]["risks"]["markdown_text"]
     assert bundle["ambient_signals"]["claim_lint"]["highest_truthful_claim"] == "fixed in code"
     assert bundle["closeout_bundle"]["render_policy"]["claim_terms_require_lint"] is True
-    assert bundle["closeout_bundle"]["selected_supplemental"] == "risks"
+    assert bundle["closeout_bundle"]["selected_supplemental"] == ""
 
 
 def test_conversation_bundle_does_not_lint_live_verified_claims(tmp_path: Path) -> None:
@@ -981,8 +1034,8 @@ def test_orchestrator_threads_conversation_bundle_into_odylith_adoption(tmp_path
     assert assist["eligible"] is True
     assert assist["label"] == "Odylith Assist:"
     assert assist["changed_path_source"] == "request_seed_paths"
-    assert assist["markdown_text"].startswith("**Odylith Assist:** kept this")
-    assert "odylith_off" in assist["markdown_text"]
+    assert assist["markdown_text"].startswith("**Odylith Assist:** grounding the work to 3 candidate paths")
+    assert "closing with 2 focused checks" in assist["markdown_text"]
     assert adoption["ambient_signals"]["selected_signal"] in {"", "insight", "history", "risks"}
     assert bundle["closeout_bundle"]["assist"]["label"] == "Odylith Assist:"
     assert bundle["closeout_bundle"]["render_policy"]["benchmark_safe"] is True
