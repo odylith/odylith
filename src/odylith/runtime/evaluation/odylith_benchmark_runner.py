@@ -1282,6 +1282,53 @@ def load_latest_benchmark_report(*, repo_root: Path, benchmark_profile: str | No
     return canonical_report
 
 
+def _runtime_latest_report_candidates(*, repo_root: Path) -> list[dict[str, Any]]:
+    root = Path(repo_root).resolve()
+    candidates: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for profile in (None, BENCHMARK_PROFILE_PROOF, BENCHMARK_PROFILE_QUICK, BENCHMARK_PROFILE_DIAGNOSTIC):
+        report = odylith_context_cache.read_json_object(latest_report_path(repo_root=root, benchmark_profile=profile))
+        if not report:
+            continue
+        dedupe_key = (
+            str(report.get("report_id", "")).strip(),
+            _normalize_benchmark_profile(str(report.get("benchmark_profile", "")).strip()),
+            str(report.get("generated_utc", "")).strip(),
+        )
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        candidates.append(report)
+    return candidates
+
+
+def _runtime_latest_report_sort_key(report: Mapping[str, Any]) -> tuple[str, int, int, str]:
+    profile_rank = {
+        BENCHMARK_PROFILE_PROOF: 3,
+        BENCHMARK_PROFILE_QUICK: 2,
+        BENCHMARK_PROFILE_DIAGNOSTIC: 1,
+    }
+    normalized_profile = _normalize_benchmark_profile(str(report.get("benchmark_profile", "")).strip())
+    return (
+        str(report.get("generated_utc", "")).strip(),
+        1 if bool(report.get("latest_eligible")) else 0,
+        profile_rank.get(normalized_profile, 0),
+        str(report.get("report_id", "")).strip(),
+    )
+
+
+def load_latest_runtime_benchmark_report(*, repo_root: Path) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    candidates = _runtime_latest_report_candidates(repo_root=root)
+    if not candidates:
+        return {}
+    current_tree_candidates = [
+        report for report in candidates if benchmark_report_matches_current_tree(repo_root=root, report=report)
+    ]
+    selected_pool = current_tree_candidates or candidates
+    return dict(max(selected_pool, key=_runtime_latest_report_sort_key))
+
+
 def load_benchmark_progress(*, repo_root: Path) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     _prune_stale_benchmark_progress(repo_root=root, clear_shared_progress=False)
@@ -8507,6 +8554,7 @@ __all__ = [
     "latest_report_path",
     "load_benchmark_scenarios",
     "load_latest_benchmark_report",
+    "load_latest_runtime_benchmark_report",
     "profile_latest_report_path",
     "progress_report_path",
     "run_benchmarks",

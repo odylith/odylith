@@ -261,7 +261,7 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
     learning_loop = _mapping(optimization.get("learning_loop"))
     architecture_evaluation = _mapping(evaluation.get("architecture"))
     benchmark_report = odylith_benchmark_runner.compact_report_summary(
-        odylith_benchmark_runner.load_latest_benchmark_report(repo_root=repo_root)
+        odylith_benchmark_runner.load_latest_runtime_benchmark_report(repo_root=repo_root)
     )
     control_advisories = _merge_control_advisories(
         _mapping(optimization.get("control_advisories")),

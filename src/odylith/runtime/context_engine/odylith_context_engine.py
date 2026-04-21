@@ -30,6 +30,7 @@ from odylith.runtime.context_engine import odylith_context_engine_daemon_wait_ru
 from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
+from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon as workspace_daemon
 from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.common.command_surface import module_invocation
 
@@ -690,7 +691,7 @@ def _runtime_status_payload(*, repo_root: Path) -> dict[str, Any]:
         evaluation_snapshot=evaluation_snapshot,
     )
     benchmark_report = odylith_benchmark_runner.compact_report_summary(
-        odylith_benchmark_runner.load_latest_benchmark_report(repo_root=repo_root)
+        odylith_benchmark_runner.load_latest_runtime_benchmark_report(repo_root=repo_root)
     )
     benchmark_progress = odylith_benchmark_runner.compact_progress_summary(
         odylith_benchmark_runner.load_benchmark_progress(repo_root=repo_root)
@@ -1030,10 +1031,16 @@ def _print_runtime_status(payload: Mapping[str, Any]) -> None:
         print(
             "- benchmark_report: "
             f"status={benchmark_report.get('status', '')}, "
+            f"profile={benchmark_report.get('benchmark_profile', '') or '-'}, "
             f"scenarios={int(benchmark_report.get('scenario_count', 0) or 0)}, "
             f"comparison={benchmark_report.get('candidate_mode', '') or '-'} vs "
             f"{benchmark_report.get('baseline_mode', '') or '-'}"
         )
+        if "current_tree_identity_match" in benchmark_report:
+            print(
+                "- benchmark_tree_match: "
+                f"{'yes' if bool(benchmark_report.get('current_tree_identity_match')) else 'no'}"
+            )
         print(
             "- benchmark_deltas: "
             f"latency_ms={float(benchmark_report.get('latency_delta_ms', 0.0) or 0.0):.3f}, "
@@ -1049,6 +1056,23 @@ def _daemon_socket_available(*, repo_root: Path) -> bool:
     if not (pid and _pid_alive(pid)):
         return False
     return _read_daemon_transport(repo_root=repo_root) is not None
+
+
+def _wait_for_daemon_ready(*, repo_root: Path, timeout_seconds: float) -> bool:
+    deadline = time.monotonic() + max(0.0, float(timeout_seconds))
+    while time.monotonic() < deadline:
+        remaining = max(0.0, deadline - time.monotonic())
+        payload = _daemon_request(
+            repo_root=repo_root,
+            command="ready",
+            payload={},
+            required=False,
+            timeout_seconds=min(0.25, max(0.05, remaining)),
+        )
+        if isinstance(payload, Mapping) and bool(payload.get("ready")):
+            return True
+        time.sleep(0.05)
+    return False
 
 
 def _normalize_loopback_host(value: Any) -> str:
@@ -1133,7 +1157,6 @@ def _daemon_request(
     timeout_seconds: float = 5.0,
 ) -> dict[str, Any] | None:
     started_at = time.perf_counter()
-    daemon_metadata = _read_daemon_metadata(repo_root=repo_root)
     transport = _read_daemon_transport(repo_root=repo_root)
     if transport is None:
         if required:
@@ -1158,73 +1181,43 @@ def _daemon_request(
             metadata={"required": bool(required), "transport": "inproc"},
         )
         return dict(daemon_payload) if isinstance(daemon_payload, Mapping) else {"value": daemon_payload}
-    if str(transport.get("transport", "")).strip() == "tcp":
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        connect_target: Any = (
-            str(transport.get("host", "")).strip() or "127.0.0.1",
-            int(transport.get("port", 0) or 0),
-        )
-    else:
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        connect_target = str(transport.get("path", "")).strip() or str(store.socket_path(repo_root=repo_root))
-    sock.settimeout(timeout_seconds)
-    try:
-        sock.connect(connect_target)
-        request = {
-            "command": str(command).strip(),
-            "payload": dict(payload or {}),
+
+    def _socket_transport_reader(**kwargs: Any) -> dict[str, Any] | None:
+        resolved_root = Path(str(kwargs.get("repo_root", repo_root))).resolve()
+        active_transport = _read_daemon_transport(repo_root=resolved_root)
+        if not isinstance(active_transport, Mapping):
+            return None
+        if str(active_transport.get("transport", "")).strip() == "inproc":
+            return None
+        return dict(active_transport)
+
+    def _unscoped_namespace_builder(**kwargs: Any) -> dict[str, Any]:
+        return {
+            "workspace_key": "",
+            "request_namespace": "",
+            "session_namespaced": False,
+            "session_namespace": "",
+            "working_tree_scope": "",
+            "session_id_present": False,
+            "claim_path_count": 0,
+            "changed_path_count": 0,
         }
-        auth_token = str(daemon_metadata.get("auth_token", "")).strip()
-        if auth_token:
-            request["auth_token"] = auth_token
-        rendered = json.dumps(request, sort_keys=True).encode("utf-8") + b"\n"
-        sock.sendall(rendered)
-        sock.shutdown(socket.SHUT_WR)
-        chunks: list[bytes] = []
-        while True:
-            data = sock.recv(65536)
-            if not data:
-                break
-            chunks.append(data)
-    except OSError as exc:
-        if required:
-            raise RuntimeError("odylith context engine daemon request failed") from exc
-        return None
-    finally:
-        with contextlib.suppress(OSError):
-            sock.close()
-    if not chunks:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned no response")
-        return None
-    try:
-        response = json.loads(b"".join(chunks).decode("utf-8"))
-    except json.JSONDecodeError as exc:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned invalid JSON") from exc
-        return None
-    if not isinstance(response, Mapping):
-        if required:
-            raise RuntimeError("odylith context engine daemon returned an invalid payload")
-        return None
-    if not bool(response.get("ok", False)):
-        message = str(response.get("error", "")).strip() or "odylith context engine daemon request failed"
-        if required:
-            raise RuntimeError(message)
-        return None
-    daemon_payload = response.get("payload", {})
-    store.record_runtime_timing(
+
+    result = workspace_daemon.request_runtime_daemon(
         repo_root=repo_root,
-        category="daemon",
-        operation=str(command).strip() or "request",
-        duration_ms=(time.perf_counter() - started_at) * 1000.0,
-        metadata={
-            "required": bool(required),
-            "transport": str(transport.get("transport", "")).strip() or "unknown",
-            "authenticated": bool(str(daemon_metadata.get("auth_token", "")).strip()),
-        },
+        command=command,
+        payload=payload,
+        required=required,
+        timeout_seconds=timeout_seconds,
+        transport_reader=_socket_transport_reader,
+        metadata_reader=_read_daemon_metadata,
+        namespace_builder=_unscoped_namespace_builder,
+        timing_recorder=store.record_runtime_timing,
     )
-    return dict(daemon_payload) if isinstance(daemon_payload, Mapping) else {"value": daemon_payload}
+    if result is None:
+        return None
+    daemon_payload, _runtime_execution = result
+    return daemon_payload
 
 
 def _client_mode_required(client_mode: str) -> bool:
@@ -1336,13 +1329,7 @@ def _spawn_daemon_background(*, repo_root: Path, scope: str = "full") -> bool:
             except OSError:
                 spawned = False
     if spawned or waiting_for_existing:
-        for _ in range(50):
-            if _daemon_socket_available(repo_root=repo_root):
-                ready = True
-                break
-            if waiting_for_existing and existing_pid and not _pid_alive(existing_pid):
-                break
-            time.sleep(0.1)
+        ready = _wait_for_daemon_ready(repo_root=repo_root, timeout_seconds=5.0)
     if spawned and not ready and spawned_process is not None:
         startup_reaped = _terminate_background_process(spawned_process)
         _clear_stale_daemon_artifacts(repo_root=repo_root)
@@ -1989,6 +1976,8 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             projection_fingerprint=str(summary.get("projection_fingerprint", "")).strip(),
         )
         return summary
+    if command == "ready":
+        return {"ready": True}
     if command == "status":
         return _runtime_status_payload(repo_root=repo_root)
     if command == "wait-projection-change":
@@ -2661,6 +2650,13 @@ def _run_serve(
         auth_token=str(_read_daemon_metadata(repo_root=repo_root).get("auth_token", "")).strip(),
     )
     daemon_server.start()
+    if not _wait_for_daemon_ready(repo_root=repo_root, timeout_seconds=5.0):
+        with contextlib.suppress(Exception):
+            daemon_server.close()
+        _clear_pid(repo_root=repo_root)
+        _clear_daemon_metadata(repo_root=repo_root)
+        print("odylith context engine serve failed to become request-ready")
+        return 1
     watcher = _build_runtime_watcher(repo_root=repo_root, backend=watcher_backend)
     try:
         first = True

@@ -3489,6 +3489,46 @@ def test_load_latest_benchmark_report_falls_back_to_canonical_proof_snapshot(tmp
     assert report["report_id"] == "proof-canonical"
 
 
+def test_load_latest_runtime_benchmark_report_prefers_current_tree_profile_latest_over_stale_canonical(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    canonical_path = runner.latest_report_path(repo_root=tmp_path)
+    canonical_path.parent.mkdir(parents=True, exist_ok=True)
+    canonical_path.write_text(
+        json.dumps(
+            {
+                "report_id": "proof-stale",
+                "benchmark_profile": "proof",
+                "generated_utc": "2026-04-20T15:26:01Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    quick_path = runner.latest_report_path(repo_root=tmp_path, benchmark_profile="quick")
+    quick_path.write_text(
+        json.dumps(
+            {
+                "report_id": "quick-current",
+                "benchmark_profile": "quick",
+                "generated_utc": "2026-04-21T15:26:01Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        runner,
+        "benchmark_report_matches_current_tree",
+        lambda *, repo_root, report: str(report.get("report_id", "")) == "quick-current",
+    )
+
+    report = runner.load_latest_runtime_benchmark_report(repo_root=tmp_path)
+
+    assert report["report_id"] == "quick-current"
+
+
 def test_run_benchmarks_writes_and_clears_progress_checkpoint(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001

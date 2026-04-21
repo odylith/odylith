@@ -16,6 +16,9 @@ from odylith.runtime.context_engine import odylith_context_engine_runtime_artifa
 from odylith.runtime.context_engine import odylith_context_engine_runtime_support
 from odylith.runtime.governance import agent_governance_intelligence as governance
 
+_MAX_REQUIRED_REQUEST_ATTEMPT_TIMEOUT_SECONDS = 0.75
+_REQUIRED_REQUEST_RETRY_SLEEP_SECONDS = 0.05
+
 
 def workspace_daemon_key(*, repo_root: Path) -> str:
     """Return the stable workspace key used to group daemon reuse and usage."""
@@ -201,13 +204,8 @@ def request_runtime_daemon(
     runtime_timing_recorder = timing_recorder or odylith_context_engine_runtime_support.record_runtime_timing
     open_socket = socket_factory or socket.socket
     resolve_socket_path = socket_path_resolver or odylith_context_engine_runtime_artifacts.socket_path
-    daemon_metadata = daemon_metadata_loader(repo_root=root)
-    transport = transport_loader(repo_root=root)
-    if transport is None:
-        if required:
-            raise RuntimeError("odylith context engine daemon unavailable")
-        return None
     started_at = time.perf_counter()
+    deadline = started_at + max(0.0, float(timeout_seconds))
     command_token = str(command or "").strip()
     request_payload = dict(payload or {})
     session_scope = request_namespace_builder(
@@ -215,68 +213,96 @@ def request_runtime_daemon(
         command=command_token,
         payload=request_payload,
     )
-    if str(transport.get("transport", "")).strip() == "tcp":
-        sock = open_socket(socket.AF_INET, socket.SOCK_STREAM)
-        connect_target: Any = (
-            str(transport.get("host", "")).strip() or "127.0.0.1",
-            int(transport.get("port", 0) or 0),
-        )
-    else:
-        sock = open_socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        connect_target = str(transport.get("path", "")).strip() or str(resolve_socket_path(repo_root=root))
-    sock.settimeout(timeout_seconds)
-    try:
-        sock.connect(connect_target)
-        rendered = json.dumps(
-            {
-                "command": command_token,
-                "payload": request_payload,
-                **(
-                    {"auth_token": str(daemon_metadata.get("auth_token", "")).strip()}
-                    if str(daemon_metadata.get("auth_token", "")).strip()
-                    else {}
-                ),
-            },
-            sort_keys=True,
-        ).encode("utf-8") + b"\n"
-        sock.sendall(rendered)
-        sock.shutdown(socket.SHUT_WR)
-        chunks: list[bytes] = []
-        while True:
-            data = sock.recv(65536)
-            if not data:
-                break
-            chunks.append(data)
-    except OSError as exc:
+    attempt_count = 0
+    while True:
+        attempt_count += 1
+        daemon_metadata = daemon_metadata_loader(repo_root=root)
+        transport = transport_loader(repo_root=root)
+        if transport is None:
+            if not required or time.perf_counter() >= deadline:
+                if required:
+                    raise RuntimeError("odylith context engine daemon unavailable")
+                return None
+            time.sleep(_REQUIRED_REQUEST_RETRY_SLEEP_SECONDS)
+            continue
+        transport_kind = str(transport.get("transport", "")).strip()
+        if transport_kind == "tcp":
+            sock = open_socket(socket.AF_INET, socket.SOCK_STREAM)
+            connect_target: Any = (
+                str(transport.get("host", "")).strip() or "127.0.0.1",
+                int(transport.get("port", 0) or 0),
+            )
+        else:
+            sock = open_socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            connect_target = str(transport.get("path", "")).strip() or str(resolve_socket_path(repo_root=root))
+        remaining = max(0.0, deadline - time.perf_counter())
         if required:
-            raise RuntimeError("odylith context engine daemon request failed") from exc
-        return None
-    finally:
-        with contextlib.suppress(OSError):
-            sock.close()
-    if not chunks:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned no response")
-        return None
-    try:
-        response = json.loads(b"".join(chunks).decode("utf-8"))
-    except json.JSONDecodeError as exc:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned invalid JSON") from exc
-        return None
-    if not isinstance(response, Mapping):
-        if required:
-            raise RuntimeError("odylith context engine daemon returned an invalid payload")
-        return None
-    if not bool(response.get("ok", False)):
-        message = str(response.get("error", "")).strip() or "odylith context engine daemon request failed"
-        if required:
-            raise RuntimeError(message)
-        return None
-    daemon_payload = response.get("payload", {})
+            attempt_timeout = min(
+                max(remaining, _REQUIRED_REQUEST_RETRY_SLEEP_SECONDS),
+                _MAX_REQUIRED_REQUEST_ATTEMPT_TIMEOUT_SECONDS,
+            )
+        else:
+            attempt_timeout = max(float(timeout_seconds), _REQUIRED_REQUEST_RETRY_SLEEP_SECONDS)
+        sock.settimeout(attempt_timeout)
+        try:
+            sock.connect(connect_target)
+            rendered = json.dumps(
+                {
+                    "command": command_token,
+                    "payload": request_payload,
+                    **(
+                        {"auth_token": str(daemon_metadata.get("auth_token", "")).strip()}
+                        if str(daemon_metadata.get("auth_token", "")).strip()
+                        else {}
+                    ),
+                },
+                sort_keys=True,
+            ).encode("utf-8") + b"\n"
+            sock.sendall(rendered)
+            sock.shutdown(socket.SHUT_WR)
+            chunks: list[bytes] = []
+            while True:
+                data = sock.recv(65536)
+                if not data:
+                    break
+                chunks.append(data)
+        except OSError as exc:
+            if not required:
+                return None
+            if time.perf_counter() >= deadline:
+                raise RuntimeError("odylith context engine daemon request failed") from exc
+            time.sleep(_REQUIRED_REQUEST_RETRY_SLEEP_SECONDS)
+            continue
+        finally:
+            with contextlib.suppress(OSError):
+                sock.close()
+        if not chunks:
+            if not required:
+                return None
+            if time.perf_counter() >= deadline:
+                raise RuntimeError("odylith context engine daemon returned no response")
+            time.sleep(_REQUIRED_REQUEST_RETRY_SLEEP_SECONDS)
+            continue
+        try:
+            response = json.loads(b"".join(chunks).decode("utf-8"))
+        except json.JSONDecodeError as exc:
+            if required:
+                raise RuntimeError("odylith context engine daemon returned invalid JSON") from exc
+            return None
+        if not isinstance(response, Mapping):
+            if required:
+                raise RuntimeError("odylith context engine daemon returned an invalid payload")
+            return None
+        if not bool(response.get("ok", False)):
+            message = str(response.get("error", "")).strip() or "odylith context engine daemon request failed"
+            if required:
+                raise RuntimeError(message)
+            return None
+        daemon_payload = response.get("payload", {})
+        break
     runtime_execution = {
         "source": "workspace_daemon",
-        "transport": str(transport.get("transport", "")).strip() or "unknown",
+        "transport": transport_kind or "unknown",
         "workspace_daemon_reused": True,
         "workspace_key": str(session_scope.get("workspace_key", "")).strip(),
         "request_namespace": str(session_scope.get("request_namespace", "")).strip(),
@@ -286,6 +312,7 @@ def request_runtime_daemon(
         "session_id_present": bool(session_scope.get("session_id_present")),
         "claim_path_count": int(session_scope.get("claim_path_count", 0) or 0),
         "changed_path_count": int(session_scope.get("changed_path_count", 0) or 0),
+        "retry_count": max(0, attempt_count - 1),
     }
     runtime_timing_recorder(
         repo_root=root,
@@ -300,6 +327,7 @@ def request_runtime_daemon(
             "session_namespaced": bool(runtime_execution["session_namespaced"]),
             "session_namespace": str(runtime_execution["session_namespace"]),
             "request_namespace": str(runtime_execution["request_namespace"]),
+            "retry_count": int(runtime_execution["retry_count"]),
         },
     )
     return (

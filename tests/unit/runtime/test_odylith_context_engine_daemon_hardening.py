@@ -82,9 +82,9 @@ def test_store_runtime_daemon_transport_rejects_non_loopback_tcp_host(tmp_path: 
 
 
 def test_spawn_daemon_background_waits_for_existing_starting_daemon(tmp_path: Path, monkeypatch) -> None:
-    availability = iter([False, False, True])
     monkeypatch.setattr(engine.odylith_context_cache, "advisory_lock", lambda **kwargs: contextlib.nullcontext())
-    monkeypatch.setattr(engine, "_daemon_socket_available", lambda **kwargs: next(availability))
+    monkeypatch.setattr(engine, "_daemon_socket_available", lambda **kwargs: False)
+    monkeypatch.setattr(engine, "_wait_for_daemon_ready", lambda **kwargs: True)
     monkeypatch.setattr(engine, "_daemon_owner_pid", lambda **kwargs: 4242)
     monkeypatch.setattr(engine, "_pid_alive", lambda pid: True)
     monkeypatch.setattr(engine.time, "sleep", lambda _: None)
@@ -126,6 +126,7 @@ def test_spawn_daemon_background_reaps_failed_startup_process(tmp_path: Path, mo
 
     monkeypatch.setattr(engine.odylith_context_cache, "advisory_lock", lambda **kwargs: contextlib.nullcontext())
     monkeypatch.setattr(engine, "_daemon_socket_available", lambda **kwargs: False)
+    monkeypatch.setattr(engine, "_wait_for_daemon_ready", lambda **kwargs: False)
     monkeypatch.setattr(engine, "_daemon_owner_pid", lambda **kwargs: None)
     monkeypatch.setattr(engine.time, "sleep", lambda _: None)
     monkeypatch.setattr(engine.store, "record_runtime_timing", lambda **kwargs: runtime_timing.append(kwargs))
@@ -176,7 +177,7 @@ def test_daemon_request_includes_auth_token_for_socket_transport(tmp_path: Path,
     monkeypatch.setattr(engine, "_read_daemon_transport", lambda **kwargs: {"transport": "tcp", "host": "127.0.0.1", "port": 8123})
     monkeypatch.setattr(engine, "_read_daemon_metadata", lambda **kwargs: {"auth_token": "secret-token"})
     monkeypatch.setattr(engine.store, "record_runtime_timing", lambda **kwargs: None)
-    monkeypatch.setattr(engine.socket, "socket", lambda *args, **kwargs: fake_socket)
+    monkeypatch.setattr(engine.workspace_daemon.socket, "socket", lambda *args, **kwargs: fake_socket)
 
     payload = engine._daemon_request(  # noqa: SLF001
         repo_root=tmp_path,
@@ -242,7 +243,7 @@ def test_store_daemon_request_includes_auth_token_for_socket_transport(tmp_path:
             "changed_path_count": 0,
         },
     )
-    monkeypatch.setattr(store.socket, "socket", lambda *args, **kwargs: fake_socket)
+    monkeypatch.setattr(store.odylith_context_engine_workspace_daemon.socket, "socket", lambda *args, **kwargs: fake_socket)
 
     payload = store.request_runtime_daemon(
         repo_root=tmp_path,
@@ -265,12 +266,141 @@ def test_store_daemon_request_includes_auth_token_for_socket_transport(tmp_path:
             "session_id_present": False,
             "claim_path_count": 0,
             "changed_path_count": 0,
+            "retry_count": 0,
         },
     )
     rendered = json.loads(fake_socket.sent.decode("utf-8").strip())
     assert rendered["auth_token"] == "secret-token"
     assert rendered["command"] == "status"
     assert rendered["payload"] == {"check": True}
+
+
+def test_store_daemon_request_retries_transient_no_response_when_required(tmp_path: Path, monkeypatch) -> None:
+    class _FakeSocket:
+        def __init__(self, responses: list[bytes]) -> None:
+            self.sent = b""
+            self.target = None
+            self._responses = list(responses)
+
+        def settimeout(self, _value: float) -> None:
+            return None
+
+        def connect(self, target) -> None:  # noqa: ANN001
+            self.target = target
+
+        def sendall(self, data: bytes) -> None:
+            self.sent += data
+
+        def shutdown(self, _how: int) -> None:
+            return None
+
+        def recv(self, _size: int) -> bytes:
+            return self._responses.pop(0) if self._responses else b""
+
+        def close(self) -> None:
+            return None
+
+    sockets = iter(
+        [
+            _FakeSocket([b""]),
+            _FakeSocket([json.dumps({"ok": True, "payload": {"status": "ok"}}).encode("utf-8"), b""]),
+        ]
+    )
+    timings: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        store,
+        "runtime_daemon_transport",
+        lambda **kwargs: {"transport": "tcp", "host": "127.0.0.1", "port": 8123, "pid": 5150},
+    )
+    monkeypatch.setattr(store, "_read_runtime_daemon_metadata", lambda **kwargs: {"auth_token": "secret-token"})
+    monkeypatch.setattr(store, "record_runtime_timing", lambda **kwargs: timings.append(kwargs))
+    monkeypatch.setattr(
+        store,
+        "runtime_request_namespace_from_payload",
+        lambda **kwargs: {
+            "workspace_key": "workspace",
+            "request_namespace": "request-ns",
+            "session_namespaced": False,
+            "session_namespace": "",
+            "working_tree_scope": "repo",
+            "session_id_present": False,
+            "claim_path_count": 0,
+            "changed_path_count": 0,
+        },
+    )
+    monkeypatch.setattr(
+        store.odylith_context_engine_workspace_daemon.socket,
+        "socket",
+        lambda *args, **kwargs: next(sockets),
+    )
+    monkeypatch.setattr(store.odylith_context_engine_workspace_daemon.time, "sleep", lambda _: None)
+
+    payload = store.request_runtime_daemon(
+        repo_root=tmp_path,
+        command="status",
+        payload={"check": True},
+        required=True,
+        timeout_seconds=0.2,
+    )
+
+    assert payload == (
+        {"status": "ok"},
+        {
+            "source": "workspace_daemon",
+            "transport": "tcp",
+            "workspace_daemon_reused": True,
+            "workspace_key": "workspace",
+            "request_namespace": "request-ns",
+            "session_namespaced": False,
+            "session_namespace": "",
+            "working_tree_scope": "repo",
+            "session_id_present": False,
+            "claim_path_count": 0,
+            "changed_path_count": 0,
+            "retry_count": 1,
+        },
+    )
+    assert timings[-1]["metadata"]["retry_count"] == 1
+
+
+def test_build_status_payload_uses_runtime_latest_benchmark_report(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(engine.store, "prune_runtime_records", lambda **kwargs: {"bootstrap_packets": 0})
+    monkeypatch.setattr(engine.store, "read_runtime_state", lambda **kwargs: {})
+    monkeypatch.setattr(engine.store, "watcher_backend_report", lambda **kwargs: {"preferred_backend": "watchdog"})
+    monkeypatch.setattr(engine.store, "preferred_watcher_backend", lambda **kwargs: "watchdog")
+    monkeypatch.setattr(engine.store, "list_session_states", lambda **kwargs: [])
+    monkeypatch.setattr(engine.store, "load_runtime_optimization_snapshot", lambda **kwargs: {})
+    monkeypatch.setattr(engine.store, "load_runtime_evaluation_snapshot", lambda **kwargs: {})
+    monkeypatch.setattr(engine.store, "load_orchestration_adoption_snapshot", lambda **kwargs: {})
+    monkeypatch.setattr(engine.store, "load_runtime_memory_snapshot", lambda **kwargs: {})
+    monkeypatch.setattr(engine.store, "load_runtime_timing_summary", lambda **kwargs: [])
+    monkeypatch.setattr(engine.store, "read_runtime_daemon_usage", lambda **kwargs: {})
+    monkeypatch.setattr(engine.odylith_ablation, "build_odylith_switch_snapshot", lambda **kwargs: {})
+    monkeypatch.setattr(
+        engine.odylith_benchmark_runner,
+        "load_latest_runtime_benchmark_report",
+        lambda **kwargs: {"report_id": "quick-current"},
+    )
+    monkeypatch.setattr(
+        engine.odylith_benchmark_runner,
+        "load_latest_benchmark_report",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("status should use runtime latest benchmark report")),
+    )
+    monkeypatch.setattr(
+        engine.odylith_benchmark_runner,
+        "compact_report_summary",
+        lambda report: {"report_id": str(report["report_id"]), "benchmark_profile": "quick", "status": "provisional_pass"},
+    )
+    monkeypatch.setattr(engine.odylith_benchmark_runner, "load_benchmark_progress", lambda **kwargs: {})
+    monkeypatch.setattr(engine.odylith_benchmark_runner, "compact_progress_summary", lambda progress: {})
+
+    payload = engine._runtime_status_payload(repo_root=tmp_path)  # noqa: SLF001
+
+    assert payload["benchmark_report"] == {
+        "report_id": "quick-current",
+        "benchmark_profile": "quick",
+        "status": "provisional_pass",
+    }
 
 
 def test_runtime_request_handler_ignores_broken_pipe_on_response_write(tmp_path: Path, monkeypatch) -> None:

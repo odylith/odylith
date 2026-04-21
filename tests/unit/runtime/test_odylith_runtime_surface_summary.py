@@ -467,3 +467,45 @@ def test_load_runtime_surface_summary_returns_unavailable_payload_on_store_failu
     assert summary["evaluation_decision_quality_state"] == ""
     assert summary["evaluation_decision_quality_confidence_score"] == 0
     assert summary["evaluation_followup_churn_rate"] == 0.0
+
+
+def test_load_runtime_surface_summary_uses_runtime_latest_benchmark_report(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    monkeypatch.setattr(
+        runtime_summary.odylith_context_engine_store,
+        "load_runtime_optimization_snapshot",
+        lambda *, repo_root: {},
+    )
+    monkeypatch.setattr(
+        runtime_summary.odylith_context_engine_store,
+        "load_runtime_evaluation_snapshot",
+        lambda *, repo_root: {},
+    )
+    monkeypatch.setattr(
+        runtime_summary.odylith_context_engine_store,
+        "load_runtime_memory_snapshot",
+        lambda *, repo_root, optimization_snapshot, evaluation_snapshot: {},
+    )
+    monkeypatch.setattr(
+        runtime_summary.odylith_benchmark_runner,
+        "load_latest_runtime_benchmark_report",
+        lambda **kwargs: {"report_id": "quick-current"},
+    )
+    monkeypatch.setattr(
+        runtime_summary.odylith_benchmark_runner,
+        "load_latest_benchmark_report",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("surface summary should use runtime latest benchmark report")),
+    )
+    monkeypatch.setattr(
+        runtime_summary.odylith_benchmark_runner,
+        "compact_report_summary",
+        lambda report: {
+            "benchmark_profile": "quick",
+            "status": "provisional_pass",
+            "scenario_count": 7,
+        },
+    )
+
+    summary = runtime_summary.load_runtime_surface_summary(repo_root=tmp_path)
+
+    assert summary["benchmark_status"] == "provisional_pass"
+    assert summary["benchmark_scenario_count"] == 7
