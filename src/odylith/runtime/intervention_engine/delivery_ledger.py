@@ -72,23 +72,6 @@ def _ratio_identity(row: Mapping[str, Any]) -> tuple[str, str]:
     return key, family if family in visibility_contract.VISIBILITY_FAMILIES else "other"
 
 
-def _hidden_teaser_superseded_by_later_live_beat(
-    rows: list[Mapping[str, Any]],
-    *,
-    latest_index: int,
-    visible: bool,
-    chat_confirmed: bool,
-    family: str,
-) -> bool:
-    """Return whether a hidden teaser was retired by a later stronger beat."""
-    if family != "teaser" or visible or chat_confirmed:
-        return False
-    return any(
-        visibility_contract.event_visibility_family(row) in {"ambient", "intervention", "assist"}
-        for row in rows[latest_index + 1 :]
-    )
-
-
 def delivery_snapshot(
     *,
     repo_root: Path | str,
@@ -153,7 +136,7 @@ def delivery_snapshot(
 
     for state in ratio_states.values():
         family = str(state.get("family") or "other")
-        if _hidden_teaser_superseded_by_later_live_beat(
+        if visible_delivery_frontier.teaser_superseded_by_later_live_beat(
             rows,
             latest_index=int(state.get("latest_index") or -1),
             visible=bool(state.get("ledger_visible")),

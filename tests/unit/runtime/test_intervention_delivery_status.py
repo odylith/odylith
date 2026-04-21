@@ -384,6 +384,149 @@ def test_later_live_beats_supersede_stale_teaser_confirmation_debt(
     assert report["delivery_ledger"]["visibility_ratios"]["teaser"]["total"] == 0
 
 
+@pytest.mark.parametrize(
+    ("host_family", "seed_repo"),
+    [
+        ("codex", _seed_codex_repo),
+        ("claude", _seed_claude_repo),
+    ],
+)
+def test_all_visible_lanes_clear_to_proven_session_for_both_hosts(
+    tmp_path: Path,
+    host_family: str,
+    seed_repo,
+) -> None:
+    seed_repo(tmp_path)
+    session_id = f"{host_family}-all-lanes"
+
+    def _append(*, key: str, kind: str, text: str, phase: str, bundle: str) -> None:
+        stream_state.append_intervention_event(
+            repo_root=tmp_path,
+            kind=kind,
+            summary=text,
+            session_id=session_id,
+            host_family=host_family,
+            intervention_key=key,
+            turn_phase=phase,
+            display_markdown=text,
+            delivery_channel="assistant_visible_fallback",
+            delivery_status="assistant_render_required",
+            render_surface=f"{host_family}_{phase}",
+            metadata={"selected_block_set_id": bundle},
+        )
+
+    _append(
+        key="teaser",
+        kind="intervention_teaser",
+        text="---\n\nOdylith is tracking this signal: teaser pending.\n\n---",
+        phase="prompt_submit",
+        bundle="prompt-1",
+    )
+    _append(
+        key="history",
+        kind="ambient_signal",
+        text="---\n\n**Odylith History:** Earlier bug still matters.\n\n---",
+        phase="post_bash_checkpoint",
+        bundle="checkpoint-1",
+    )
+    _append(
+        key="risk",
+        kind="ambient_signal",
+        text="---\n\n**Odylith Risks:** New risk must surface.\n\n---",
+        phase="post_bash_checkpoint",
+        bundle="checkpoint-1",
+    )
+    _append(
+        key="observation",
+        kind="intervention_card",
+        text="---\n\n**Odylith Observation:** The repo is ready for capture.\n\n---",
+        phase="post_bash_checkpoint",
+        bundle="checkpoint-1",
+    )
+    _append(
+        key="proposal",
+        kind="capture_proposed",
+        text=(
+            "---\n\n"
+            "**Odylith Proposal:**\n"
+            "Update governed truth now.\n\n"
+            "- Refresh the component dossier.\n"
+            "- Refresh the proof surface.\n\n"
+            "Reply with yes to continue.\n\n"
+            "---"
+        ),
+        phase="post_bash_checkpoint",
+        bundle="checkpoint-1",
+    )
+
+    checkpoint_report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family=host_family,
+        session_id=session_id,
+    )
+    host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=tmp_path,
+        host_family=host_family,
+        session_id=session_id,
+        last_assistant_message=checkpoint_report["assistant_visible_replay_markdown"],
+        render_surface=f"{host_family}_post_tool_use",
+    )
+
+    _append(
+        key="assist",
+        kind="assist_closeout",
+        text="**Odylith Assist:** closeout is visible.",
+        phase="stop_summary",
+        bundle="stop-1",
+    )
+
+    stop_report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family=host_family,
+        session_id=session_id,
+    )
+    host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=tmp_path,
+        host_family=host_family,
+        session_id=session_id,
+        last_assistant_message=stop_report["assistant_visible_replay_markdown"],
+        render_surface=f"{host_family}_stop_summary",
+    )
+
+    final_report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family=host_family,
+        session_id=session_id,
+    )
+    ratios = final_report["delivery_ledger"]["visibility_ratios"]
+
+    assert checkpoint_report["assistant_visible_replay_markdown"] == (
+        "---\n\n"
+        "**Odylith History:** Earlier bug still matters.\n"
+        "\n---\n\n"
+        "---\n\n"
+        "**Odylith Risks:** New risk must surface.\n"
+        "\n---\n\n"
+        "---\n\n"
+        "**Odylith Observation:** The repo is ready for capture.\n"
+        "\n---\n\n"
+        "---\n\n"
+        "**Odylith Proposal:**\n"
+        "Update governed truth now.\n\n"
+        "- Refresh the component dossier.\n"
+        "- Refresh the proof surface.\n\n"
+        "Reply with yes to continue.\n\n"
+        "---"
+    )
+    assert final_report["chat_visible_proof"]["status"] == "proven_this_session"
+    assert final_report["delivery_ledger"]["unconfirmed_event_count"] == 0
+    assert final_report["assistant_visible_replay_markdown"] == ""
+    assert ratios["ambient"]["chat_confirmed_ratio"] == 1.0
+    assert ratios["intervention"]["chat_confirmed_ratio"] == 1.0
+    assert ratios["assist"]["chat_confirmed_ratio"] == 1.0
+    assert ratios["teaser"]["total"] == 0
+
+
 def test_codex_intervention_status_is_low_latency_and_human_readable(tmp_path: Path) -> None:
     _seed_codex_repo(tmp_path)
     stream_state.append_intervention_event(

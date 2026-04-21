@@ -21,6 +21,23 @@ def _event_family(row: Mapping[str, Any]) -> str:
     return visibility_contract.event_visibility_family(row)
 
 
+def teaser_superseded_by_later_live_beat(
+    rows: list[Mapping[str, Any]],
+    *,
+    latest_index: int,
+    family: str,
+    visible: bool = False,
+    chat_confirmed: bool = False,
+) -> bool:
+    """Return whether a hidden teaser was retired by a later stronger beat."""
+    if family != "teaser" or visible or chat_confirmed:
+        return False
+    return any(
+        _event_family(later_row) in {"ambient", "intervention", "assist"}
+        for later_row in rows[latest_index + 1 :]
+    )
+
+
 def event_bundle_id(row: Mapping[str, Any]) -> str:
     """Return the stable delivery-bundle id for one intervention event row."""
     metadata = row.get("metadata")
@@ -96,10 +113,10 @@ def active_unconfirmed_rows(rows: list[Mapping[str, Any]]) -> list[dict[str, Any
         bundle_id
         for bundle_id in candidate_bundle_ids
         if not (
-            bundle_families.get(bundle_id) == {"teaser"}
-            and any(
-                _event_family(later_row) in {"ambient", "intervention", "assist"}
-                for later_row in rows[bundle_last_index[bundle_id] + 1 :]
+            teaser_superseded_by_later_live_beat(
+                rows,
+                latest_index=bundle_last_index[bundle_id],
+                family="teaser" if bundle_families.get(bundle_id) == {"teaser"} else "",
             )
         )
     ]
@@ -119,4 +136,4 @@ def active_unconfirmed_rows(rows: list[Mapping[str, Any]]) -> list[dict[str, Any
     return selected
 
 
-__all__ = ["active_unconfirmed_rows", "event_bundle_id"]
+__all__ = ["active_unconfirmed_rows", "event_bundle_id", "teaser_superseded_by_later_live_beat"]
