@@ -6,6 +6,10 @@ import ast
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.python_source_parse import (
+    parse_python_source_for_static_analysis,
+)
+
 
 def _python_module_name(*, rel_path: str, source_root: str, module_root: str) -> str:
     relative = Path(rel_path).relative_to(source_root)
@@ -93,7 +97,10 @@ def _parse_python_artifact(
         odylith_context_engine_store._extract_path_refs(text=source, repo_root=repo_root)  # noqa: SLF001
     )
     try:
-        tree = ast.parse(source or "", filename=rel_path)
+        tree = parse_python_source_for_static_analysis(
+            source or "",
+            filename=rel_path,
+        )
     except SyntaxError:
         return (
             {

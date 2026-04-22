@@ -22,9 +22,15 @@ from typing import Callable
 from typing import Iterable
 from typing import Mapping
 from typing import Sequence
+
+from odylith.runtime.common.python_source_parse import (
+    parse_python_source_for_static_analysis,
+)
 from odylith.runtime.common.value_coercion import normalize_string_list
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_contracts
+
+
 def _normalize_entity_kind(kind: str | None) -> str:
     token = str(kind or "").strip().lower()
     return context_engine_store._ENTITY_KIND_ALIASES.get(token, token)
@@ -801,7 +807,10 @@ def _load_test_graph(
         )
         source = _raw_text(path)
         try:
-            tree = ast.parse(source or "", filename=rel_path)
+            tree = parse_python_source_for_static_analysis(
+                source or "",
+                filename=rel_path,
+            )
         except SyntaxError:
             continue
         test_functions = _iter_test_functions(tree)
@@ -1123,4 +1132,3 @@ load_registry_list = odylith_context_engine_projection_registry_runtime.load_reg
 load_component_registry_snapshot = odylith_context_engine_projection_registry_runtime.load_component_registry_snapshot
 
 load_registry_detail = odylith_context_engine_projection_registry_runtime.load_registry_detail
-

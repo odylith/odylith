@@ -13,6 +13,9 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.common.python_source_parse import (
+    parse_python_source_for_static_analysis,
+)
 from odylith.runtime.analysis_engine.types import (
     ImportArtifact,
     ImportEdge,
@@ -185,7 +188,7 @@ def _parse_python_file(
     module_index[module_name] = rel_path
 
     try:
-        tree = ast.parse(source, filename=rel_path)
+        tree = parse_python_source_for_static_analysis(source, filename=rel_path)
     except SyntaxError:
         return ImportArtifact(path=rel_path, module_name=module_name, language="python", imports=()), []
 

@@ -40,6 +40,9 @@ from typing import Any, Iterator, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.value_coercion import mapping_copy as _mapping
+from odylith.runtime.common.python_source_parse import (
+    parse_python_source_for_static_analysis,
+)
 from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_acceptance
@@ -4617,7 +4620,10 @@ def _validation_companion_file_paths(*, repo_root: Path, validation_paths: Seque
         if not candidate.is_file() or candidate.suffix != ".py":
             continue
         try:
-            tree = ast.parse(candidate.read_text(encoding="utf-8"))
+            tree = parse_python_source_for_static_analysis(
+                candidate.read_text(encoding="utf-8"),
+                filename=candidate.as_posix(),
+            )
         except (OSError, SyntaxError, UnicodeDecodeError):
             continue
         literal_candidates: list[str] = []
@@ -4789,7 +4795,10 @@ def _imported_python_module_candidates(*, repo_root: Path, path: str) -> list[st
     if not candidate.is_file() or candidate.suffix != ".py":
         return []
     try:
-        tree = ast.parse(candidate.read_text(encoding="utf-8"))
+        tree = parse_python_source_for_static_analysis(
+            candidate.read_text(encoding="utf-8"),
+            filename=candidate.as_posix(),
+        )
     except (OSError, SyntaxError, UnicodeDecodeError):
         return []
 
