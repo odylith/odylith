@@ -42,6 +42,13 @@
           "AGENTS.md",
           "odylith/AGENTS.md"
         ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff tests/unit/runtime/test_odylith_benchmark_runner.py::test_hot_path_broad_shared_scope_skips_runtime_warm_and_db tests/unit/runtime/test_odylith_benchmark_runner.py::test_hot_path_bootstrap_session_skips_optimization_snapshot_load"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff tests/unit/runtime/test_odylith_benchmark_runner.py::test_hot_path_broad_shared_scope_skips_runtime_warm_and_db tests/unit/runtime/test_odylith_benchmark_runner.py::test_hot_path_bootstrap_session_skips_optimization_snapshot_load"
+        ],
+        "allow_noop_completion": true,
         "acceptance_criteria": [
           "Keep the packet fail-closed and narrowing-first for broad shared scope.",
           "Do not spend deep reasoning or delegation on broad shared guidance alone."
@@ -79,6 +86,13 @@
         "required_paths": [
           "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"
         ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_exact_path_ambiguity_hot_path_drops_dead_ambiguous_scaffolding"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_exact_path_ambiguity_hot_path_drops_dead_ambiguous_scaffolding"
+        ],
+        "allow_noop_completion": true,
         "acceptance_criteria": [
           "Stay grounded on the exact runtime path.",
           "Keep ambiguity bounded instead of broadening to unrelated surfaces."
@@ -118,6 +132,13 @@
           ".agents/skills/odylith-session-brief/SKILL.md",
           "odylith/skills/odylith-session-brief/SKILL.md"
         ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_broad_shared_hot_path_stays_compact_and_narrowing_first"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_broad_shared_hot_path_stays_compact_and_narrowing_first"
+        ],
+        "allow_noop_completion": true,
         "acceptance_criteria": [
           "Keep the session brief fail-closed for shared-only guidance edits.",
           "Do not reintroduce broad routing scaffolding into Codex-visible delivery."
@@ -159,6 +180,13 @@
           ".agents/skills/odylith-session-brief/SKILL.md",
           "odylith/skills/odylith-session-brief/SKILL.md"
         ],
+        "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
+        ],
+        "allow_noop_completion": true,
         "acceptance_criteria": [
           "Stay grounded on the exact runtime path.",
           "Keep the session brief within budget without dropping the core routing and intent signals."
@@ -198,6 +226,10 @@
         "validation_commands": [
           "odylith subagent-orchestrator --repo-root . --help"
         ],
+        "focused_local_checks": [
+          "odylith subagent-orchestrator --repo-root . --help"
+        ],
+        "allow_noop_completion": true,
         "needs_write": false
       },
       "match": {
@@ -233,8 +265,12 @@
           "odylith/skills/odylith-start/SKILL.md"
         ],
         "validation_commands": [
-          "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
-        ]
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_cheatsheet_drawer_filters_and_copies_commands"
+        ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_cheatsheet_drawer_filters_and_copies_commands"
+        ],
+        "allow_noop_completion": true
       },
       "match": {
         "paths_any": [
@@ -269,7 +305,12 @@
         "validation_commands": [
           "odylith subagent-orchestrator --repo-root . --help",
           "odylith context-engine --repo-root . status"
-        ]
+        ],
+        "focused_local_checks": [
+          "odylith subagent-orchestrator --repo-root . --help",
+          "odylith context-engine --repo-root . status"
+        ],
+        "allow_noop_completion": true
       },
       "match": {
         "paths_any": [
@@ -298,7 +339,11 @@
         ],
         "validation_commands": [
           "odylith context-engine --repo-root . status"
-        ]
+        ],
+        "focused_local_checks": [
+          "odylith context-engine --repo-root . status"
+        ],
+        "allow_noop_completion": true
       },
       "match": {
         "paths_any": [
@@ -649,10 +694,10 @@
           "verify.selected_matrix"
         ],
         "execution_engine_current_phase": [
-          "in_progress"
+          "verify"
         ],
         "execution_engine_last_successful_phase": [
-          "in_progress"
+          "verify"
         ],
         "execution_engine_closure": [
           "incomplete"
@@ -1758,7 +1803,12 @@
         "validation_commands": [
           "odylith subagent-orchestrator --repo-root . --help",
           "odylith context-engine --repo-root . status"
-        ]
+        ],
+        "focused_local_checks": [
+          "odylith subagent-orchestrator --repo-root . --help",
+          "odylith context-engine --repo-root . status"
+        ],
+        "allow_noop_completion": true
       },
       "match": {
         "paths_any": [
@@ -1804,9 +1854,8 @@
           "PYTHONPATH=src .venv/bin/pytest -q tests/integration/install/test_manager.py tests/unit/install/test_runtime.py tests/unit/test_cli.py"
         ],
         "focused_local_checks": [
-          "Legacy runtime launcher subset: `tests/unit/install/test_runtime.py::test_legacy_consumer_launcher_bootstraps_plain_upgrade_via_installer` and `tests/unit/install/test_runtime.py::test_install_release_runtime_reuses_existing_verified_runtime`.",
-          "Manager latest-adoption subset: `tests/integration/install/test_manager.py::test_consumer_upgrade_without_target_advances_to_latest_and_updates_pin` and `tests/integration/install/test_manager.py::test_reinstall_install_repairs_same_version_runtime_when_upgrade_requires_doctor`.",
-          "CLI latest-adoption subset: `tests/unit/test_cli.py::test_install_adopt_latest_reinstalls_and_updates_repo_pin` and `tests/unit/test_cli.py::test_reinstall_defaults_to_latest_verified_release`."
+          "odylith install --help",
+          "PYTHONPATH=src .venv/bin/pytest -q tests/integration/install/test_manager.py tests/unit/install/test_runtime.py tests/unit/test_cli.py"
         ],
         "allow_noop_completion": true,
         "correctness_critical": true,
@@ -2218,9 +2267,7 @@
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/install/test_agents.py tests/integration/install/test_manager.py"
         ],
         "focused_local_checks": [
-          "Unit AGENTS block subset: `tests/unit/install/test_agents.py::test_managed_block_defaults_consumers_to_odylith_guidance_and_skills`.",
-          "Unit product-scope truth subset: `tests/unit/install/test_agents.py::test_managed_block_matches_repo_root_product_scope_truth`.",
-          "Integration activation subset: `tests/integration/install/test_manager.py::test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_bundle`."
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/install/test_agents.py tests/integration/install/test_manager.py"
         ],
         "allow_noop_completion": true,
         "needs_write": true,
@@ -2366,7 +2413,7 @@
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_graphs.py"
         ],
         "focused_local_checks": [
-          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_run_benchmarks_publishes_conservative_multi_profile_view"
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_graphs.py"
         ],
         "needs_write": true,
         "allow_noop_completion": true,
@@ -2511,6 +2558,10 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py"
+        ],
+        "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-022"
       },
@@ -3360,7 +3411,7 @@
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_runner.py"
         ],
         "focused_local_checks": [
-          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py::test_run_live_scenario_records_declared_preflight_evidence_and_observed_path_sources tests/unit/runtime/test_odylith_benchmark_runner.py::test_fairness_findings_require_raw_prompt_visible_path_attribution_for_raw_lane"
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_runner.py"
         ],
         "allow_noop_completion": true,
         "correctness_critical": true,
@@ -4012,7 +4063,7 @@
           "odylith validate discipline --repo-root . --case-id discipline-credit-safe-hot-path"
         ],
         "focused_local_checks": [
-          "odylith validate discipline --repo-root . --case-id discipline-credit-safe-hot-path --json"
+          "odylith validate discipline --repo-root . --case-id discipline-credit-safe-hot-path"
         ],
         "needs_write": false,
         "allow_noop_completion": true,

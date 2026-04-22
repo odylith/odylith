@@ -396,6 +396,20 @@ def test_runtime_summary_is_compact_and_does_not_claim_full_validation(tmp_path:
     assert payload["validator_command"].endswith("validate guidance-behavior --repo-root .")
 
 
+def test_platform_contract_tracks_prompt_visible_benchmark_eval_token() -> None:
+    benchmark_eval = next(
+        contract
+        for contract in guidance_behavior_platform_contracts.PLATFORM_CONTRACTS
+        if contract.get("domain") == "benchmark_eval"
+    )
+    benchmark_tokens = tuple(
+        benchmark_eval["source_tokens"]["tests/unit/runtime/test_odylith_benchmark_corpus.py"]
+    )
+
+    assert "guidance_behavior_observed_paths_stay_prompt_visible_only" in benchmark_tokens
+    assert "guidance_behavior_observed_paths_include_runtime_summary_sources" not in benchmark_tokens
+
+
 def test_runtime_packet_summary_keeps_case_scoped_validation_command(tmp_path: Path) -> None:
     _write_corpus(tmp_path, cases=[_case("guidance-a"), _case("guidance-b")])
 

@@ -63,7 +63,6 @@ from odylith.runtime.context_engine import odylith_context_engine_packet_adaptiv
 from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import path_bundle_codec
-from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.orchestration import subagent_orchestrator
 from odylith.runtime.orchestration import subagent_router as leaf_router
@@ -3747,22 +3746,9 @@ def _observed_packet_paths(payload: Mapping[str, Any]) -> list[str]:
         related_refs = guidance_behavior_summary.get("related_guidance_refs", [])
         if isinstance(related_refs, list):
             rows.extend(path_bundle_codec.expand_path_rows(related_refs))
-        source_refs = guidance_behavior_summary.get("source_refs", [])
-        if isinstance(source_refs, list):
-            rows.extend(
-                path
-                for path in path_bundle_codec.expand_path_rows(source_refs)
-                if path.endswith("guidance-behavior-evaluation-corpus.v1.json")
-            )
-    discipline_summary = discipline_runtime.summary_from_sources(payload, context_packet, limit=6)
-    if discipline_summary:
-        source_refs = discipline_summary.get("source_refs", [])
-        if isinstance(source_refs, list):
-            rows.extend(
-                path
-                for path in path_bundle_codec.expand_path_rows(source_refs)
-                if path.endswith("discipline-evaluation-corpus.v1.json")
-            )
+    # Guidance and discipline summary source refs are runtime diagnostics, not
+    # prompt-visible task evidence. Counting them here inflates hallucinated-
+    # surface metrics on strict-boundary packet families.
     anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), Mapping) else {}
     for key in ("changed_paths", "explicit_paths"):
         value = anchors.get(key, [])
@@ -4569,13 +4555,72 @@ def _validation_command_file_paths(*, repo_root: Path, commands: Sequence[str]) 
 
 
 def _source_local_cli_snapshot_paths(*, repo_root: Path, commands: Sequence[str]) -> list[str]:
-    if not any(re.match(r"^(?:[A-Za-z_][A-Za-z0-9_]*=[^\s]+\s+)*odylith(?:\s|$)", str(raw or "").strip()) for raw in commands):
-        return []
     root = Path(repo_root).resolve()
-    candidate = root / "src" / "odylith" / "cli.py"
-    if not candidate.is_file():
-        return []
-    return [candidate.relative_to(root).as_posix()]
+    cli_path = root / "src" / "odylith" / "cli.py"
+    rows: list[str] = []
+    saw_odylith_command = False
+    command_module_paths = {
+        "benchmark": "odylith.runtime.context_engine.odylith_context_engine",
+        "context-engine": "odylith.runtime.context_engine.odylith_context_engine",
+        "subagent-orchestrator": "odylith.runtime.orchestration.subagent_orchestrator",
+        "subagent-router": "odylith.runtime.orchestration.subagent_router",
+    }
+    validate_command_module_paths = {
+        "discipline": "odylith.runtime.governance.validate_discipline",
+        "guidance-behavior": "odylith.runtime.governance.validate_guidance_behavior",
+    }
+
+    for raw in commands:
+        command = str(raw or "").strip()
+        if not command:
+            continue
+        with contextlib.suppress(ValueError):
+            tokens = shlex.split(command)
+            while tokens and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=.*$", str(tokens[0]).strip()):
+                tokens = tokens[1:]
+            if not tokens or str(tokens[0]).strip() != "odylith":
+                continue
+            saw_odylith_command = True
+            backend_module = ""
+            if len(tokens) >= 2:
+                backend_module = command_module_paths.get(str(tokens[1]).strip(), "")
+                if str(tokens[1]).strip() == "validate" and len(tokens) >= 3:
+                    backend_module = validate_command_module_paths.get(str(tokens[2]).strip(), backend_module)
+            if backend_module:
+                backend_path = _repo_python_module_path(repo_root=root, module_name=backend_module)
+                if backend_path:
+                    rows.append(backend_path)
+    if saw_odylith_command and cli_path.is_file():
+        rows.insert(0, cli_path.relative_to(root).as_posix())
+    return _dedupe_path_strings(rows)
+
+
+def _expand_import_dependency_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
+    base_paths = _dedupe_path_strings(snapshot_paths)
+    expanded = list(base_paths)
+    seen_paths = set(expanded)
+    pending = [path for path in base_paths if Path(path).suffix == ".py"]
+    scanned_paths: set[str] = set()
+    scan_budget = 512
+
+    while pending and scan_budget > 0:
+        current = pending.pop()
+        if current in scanned_paths:
+            continue
+        scanned_paths.add(current)
+        scan_budget -= 1
+        for module_name in _imported_python_module_candidates(repo_root=repo_root, path=current):
+            target = _repo_python_module_path(repo_root=repo_root, module_name=module_name)
+            if not target or not target.startswith(("src/", "tests/")):
+                continue
+            if target in seen_paths:
+                if target not in scanned_paths:
+                    pending.append(target)
+                continue
+            seen_paths.add(target)
+            expanded.append(target)
+            pending.append(target)
+    return _dedupe_path_strings(expanded)
 
 
 def _path_expression_literal(node: ast.AST) -> str:
@@ -4833,6 +4878,24 @@ def _imported_python_module_candidates(*, repo_root: Path, path: str) -> list[st
     return _dedupe_path_strings(rows)
 
 
+def _expand_python_package_init_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
+    root = Path(repo_root).resolve()
+    rows = list(_dedupe_path_strings(snapshot_paths))
+    for raw in list(rows):
+        candidate = Path(str(raw or "").strip())
+        if candidate.suffix != ".py":
+            continue
+        current = root
+        relative_parts: list[str] = []
+        for part in candidate.parent.parts:
+            current = current / part
+            relative_parts.append(str(part))
+            init_path = current / "__init__.py"
+            if init_path.is_file():
+                rows.append(Path(*relative_parts, "__init__.py").as_posix())
+    return _dedupe_path_strings(rows)
+
+
 def _expand_dirty_import_dependency_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
     base_paths = _dedupe_path_strings(snapshot_paths)
     dirty_python_paths = {
@@ -5050,6 +5113,21 @@ def _expand_atlas_catalog_reference_snapshot_paths(
     return _dedupe_path_strings([*base_paths, *companion_paths])
 
 
+def _expand_projection_runtime_snapshot_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
+    base_paths = _dedupe_path_strings(snapshot_paths)
+    if "src/odylith/runtime/memory/odylith_projection_snapshot.py" not in set(base_paths):
+        return base_paths
+    return _dedupe_path_strings(
+        [
+            *base_paths,
+            *_existing_repo_file_paths(
+                repo_root=repo_root,
+                candidates=[".odylith/runtime/odylith-compiler/projection-snapshot.v1.json"],
+            ),
+        ]
+    )
+
+
 def _prompt_payload_snapshot_paths(prompt_payload: Mapping[str, Any] | None) -> list[str]:
     payload = dict(prompt_payload or {})
     context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
@@ -5132,25 +5210,34 @@ def _live_workspace_snapshot_paths(
     )
     return _expand_dirty_import_dependency_paths(
         repo_root=repo_root,
-        snapshot_paths=_expand_atlas_catalog_reference_snapshot_paths(
+        snapshot_paths=_expand_projection_runtime_snapshot_paths(
             repo_root=repo_root,
-            validation_commands=validation_commands,
-            snapshot_paths=_expand_governance_validator_snapshot_paths(
+            snapshot_paths=_expand_import_dependency_paths(
                 repo_root=repo_root,
-                snapshot_paths=_expand_sync_validator_snapshot_paths(
+                snapshot_paths=_expand_python_package_init_paths(
                     repo_root=repo_root,
-                    validation_commands=validation_commands,
-                    snapshot_paths=_expand_same_package_dirty_paths(
+                    snapshot_paths=_expand_atlas_catalog_reference_snapshot_paths(
                         repo_root=repo_root,
-                        snapshot_paths=_expand_dirty_benchmark_runtime_snapshot_paths(
+                        validation_commands=validation_commands,
+                        snapshot_paths=_expand_governance_validator_snapshot_paths(
                             repo_root=repo_root,
-                            snapshot_paths=[
-                                *scenario_paths,
-                                *validation_paths,
-                                *source_local_cli_paths,
-                                *validation_companion_paths,
-                                *prompt_paths,
-                            ],
+                            snapshot_paths=_expand_sync_validator_snapshot_paths(
+                                repo_root=repo_root,
+                                validation_commands=validation_commands,
+                                snapshot_paths=_expand_same_package_dirty_paths(
+                                    repo_root=repo_root,
+                                    snapshot_paths=_expand_dirty_benchmark_runtime_snapshot_paths(
+                                        repo_root=repo_root,
+                                        snapshot_paths=[
+                                            *scenario_paths,
+                                            *validation_paths,
+                                            *source_local_cli_paths,
+                                            *validation_companion_paths,
+                                            *prompt_paths,
+                                        ],
+                                    ),
+                                ),
+                            ),
                         ),
                     ),
                 ),

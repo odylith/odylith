@@ -414,7 +414,7 @@ def test_guidance_behavior_validator_summary_prevents_hot_path_widening() -> Non
     )
 
 
-def test_guidance_behavior_observed_paths_include_runtime_summary_sources() -> None:
+def test_guidance_behavior_observed_paths_stay_prompt_visible_only() -> None:
     paths = runner._observed_packet_paths(  # noqa: SLF001
         {
             "context_packet": {
@@ -433,12 +433,12 @@ def test_guidance_behavior_observed_paths_include_runtime_summary_sources() -> N
         }
     )
 
-    assert "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json" in paths
     assert "AGENTS.md" in paths
+    assert "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json" not in paths
     assert "src/odylith/runtime/context_engine/execution_engine_handshake.py" not in paths
 
 
-def test_discipline_observed_paths_include_corpus_summary_source() -> None:
+def test_discipline_observed_paths_ignore_runtime_summary_metadata() -> None:
     paths = runner._observed_packet_paths(  # noqa: SLF001
         {
             "context_packet": {
@@ -452,7 +452,7 @@ def test_discipline_observed_paths_include_corpus_summary_source() -> None:
         }
     )
 
-    assert "odylith/runtime/source/discipline-evaluation-corpus.v1.json" in paths
+    assert "odylith/runtime/source/discipline-evaluation-corpus.v1.json" not in paths
     assert "src/odylith/runtime/discipline" not in paths
 
 
@@ -650,10 +650,38 @@ def test_live_preflight_evidence_case_declares_narrow_preflight_check_and_timeou
     benchmark = dict(scenarios["live-preflight-evidence-disposable-workspace-contract"].get("benchmark", {}))
     focused_checks = [str(token).strip() for token in benchmark.get("focused_local_checks", []) if str(token).strip()]
 
-    assert focused_checks == [
-        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py::test_run_live_scenario_records_declared_preflight_evidence_and_observed_path_sources tests/unit/runtime/test_odylith_benchmark_runner.py::test_fairness_findings_require_raw_prompt_visible_path_attribution_for_raw_lane"
-    ]
+    assert focused_checks == benchmark["validation_commands"]
     assert float(benchmark.get("live_timeout_seconds", 0.0) or 0.0) == 420.0
+
+
+def test_focused_local_checks_stay_executable_commands() -> None:
+    invalid: list[tuple[str, str]] = []
+    for scenario in _load_normalized():
+        for raw in scenario.get("focused_local_checks", []) or []:
+            token = str(raw).strip()
+            if not token:
+                continue
+            if token.startswith(("odylith ", "PYTHONPATH=", ".venv/bin/", "./.venv/bin/", "python ", "/")):
+                continue
+            invalid.append((str(scenario.get("scenario_id", "")).strip(), token))
+
+    assert not invalid, f"focused_local_checks must stay executable, not prose: {invalid}"
+
+
+def test_packet_guardrail_noop_cases_use_validator_backed_commands() -> None:
+    scenarios = {str(row.get("scenario_id", "")).strip(): row for row in _load_normalized()}
+    for scenario_id in (
+        "broad-shared-guarding",
+        "runtime-path-ambiguity",
+        "session-brief-broad-shared-guarding",
+        "session-brief-runtime-path-ambiguity",
+        "wave3-explicit-workstream",
+        "orchestration-control-advisory-loop",
+        "wave4-runtime-sparse-miss-recovery",
+    ):
+        scenario = scenarios[scenario_id]
+        assert scenario["allow_noop_completion"] is True
+        assert scenario["focused_local_checks"] == scenario["validation_commands"]
 
 
 def test_correctness_critical_allow_noop_cases_declare_focused_local_checks() -> None:

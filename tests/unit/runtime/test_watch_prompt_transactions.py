@@ -93,6 +93,43 @@ def test_wait_for_runtime_change_uses_daemon_wait_when_available(
     }
 
 
+def test_wait_for_runtime_change_falls_back_to_local_watcher_when_daemon_wait_stays_idle(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    class _LocalWatcher:
+        def __init__(self) -> None:
+            self.calls: list[tuple[Path, int]] = []
+
+        def wait_for_change(self, *, stop_file: Path, poll_seconds: int) -> bool:
+            self.calls.append((stop_file, poll_seconds))
+            return True
+
+    monkeypatch.setattr(watcher.odylith_context_engine, "_daemon_socket_available", lambda *, repo_root: True)  # noqa: SLF001
+    monkeypatch.setattr(
+        watcher.odylith_context_engine,
+        "_daemon_request",
+        lambda **kwargs: {"changed": False, "projection_fingerprint": "previous-fingerprint"},
+    )  # noqa: SLF001
+    local_watcher = _LocalWatcher()
+
+    changed, fingerprint = watcher._wait_for_runtime_change(  # noqa: SLF001
+        tmp_path,
+        runtime_mode="auto",
+        since_fingerprint="previous-fingerprint",
+        interval_seconds=1,
+        local_watcher=local_watcher,
+    )
+
+    assert (changed, fingerprint) == (True, "")
+    assert local_watcher.calls == [
+        (
+            (tmp_path / watcher._LOCAL_WATCHER_STOP_FILE).resolve(),  # noqa: SLF001
+            watcher._LOCAL_WATCHER_POLL_SECONDS,  # noqa: SLF001
+        )
+    ]
+
+
 def test_wait_for_runtime_change_uses_local_watcher_without_daemon(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001

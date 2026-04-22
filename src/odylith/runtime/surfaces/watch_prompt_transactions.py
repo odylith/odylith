@@ -178,6 +178,7 @@ def _wait_for_runtime_change(
     local_watcher: object | None,
 ) -> tuple[bool, str]:
     normalized = str(runtime_mode).strip().lower()
+    baseline = str(since_fingerprint or "").strip()
     daemon_available = normalized == "daemon" or (
         normalized == "auto" and odylith_context_engine._daemon_socket_available(repo_root=repo_root)  # noqa: SLF001
     )
@@ -194,8 +195,9 @@ def _wait_for_runtime_change(
         )
         if isinstance(response, Mapping):
             fingerprint = str(response.get("projection_fingerprint", "")).strip()
-            changed = bool(response.get("changed")) or (bool(fingerprint) and fingerprint != str(since_fingerprint or "").strip())
-            return changed, fingerprint
+            changed = bool(response.get("changed")) or (bool(fingerprint) and fingerprint != baseline)
+            if changed:
+                return True, fingerprint
     if local_watcher is not None:
         changed = bool(
             local_watcher.wait_for_change(

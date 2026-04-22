@@ -1792,6 +1792,94 @@ def test_live_workspace_snapshot_paths_include_imported_validator_runtime_depend
     assert "src/odylith/runtime/reasoning/odylith_reasoning.py" in paths
 
 
+def test_live_workspace_snapshot_paths_include_projection_snapshot_for_projection_backed_validator_tests(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    validator = repo_root / "tests" / "unit" / "runtime" / "test_odylith_benchmark_runner.py"
+    benchmark_runner = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py"
+    packet_session = (
+        repo_root / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_packet_session_runtime.py"
+    )
+    grounding_runtime = (
+        repo_root / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_grounding_runtime.py"
+    )
+    projection_search = (
+        repo_root / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_search_runtime.py"
+    )
+    projection_snapshot = repo_root / "src" / "odylith" / "runtime" / "memory" / "odylith_projection_snapshot.py"
+    runtime_snapshot = (
+        repo_root / ".odylith" / "runtime" / "odylith-compiler" / "projection-snapshot.v1.json"
+    )
+    for path in (
+        validator,
+        benchmark_runner,
+        packet_session,
+        grounding_runtime,
+        projection_search,
+        projection_snapshot,
+        runtime_snapshot,
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    validator.write_text(
+        "from odylith.runtime.evaluation import odylith_benchmark_runner as runner\n",
+        encoding="utf-8",
+    )
+    benchmark_runner.write_text(
+        "from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime\n",
+        encoding="utf-8",
+    )
+    packet_session.write_text(
+        "from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime\n",
+        encoding="utf-8",
+    )
+    grounding_runtime.write_text(
+        "from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime\n",
+        encoding="utf-8",
+    )
+    projection_search.write_text(
+        "from odylith.runtime.memory import odylith_projection_snapshot\n",
+        encoding="utf-8",
+    )
+    projection_snapshot.write_text("SNAPSHOT_FILENAME = 'projection-snapshot.v1.json'\n", encoding="utf-8")
+    runtime_snapshot.write_text('{"ready": true}\n', encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = ""
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = "\n".join(
+                [
+                    "tests/unit/runtime/test_odylith_benchmark_runner.py",
+                    "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+                    "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py",
+                    "src/odylith/runtime/context_engine/odylith_context_engine_grounding_runtime.py",
+                    "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+                    "src/odylith/runtime/memory/odylith_projection_snapshot.py",
+                ]
+            )
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "required_paths": ["odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"],
+                "validation_commands": [
+                    "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
+                ],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/runtime/memory/odylith_projection_snapshot.py" in paths
+    assert ".odylith/runtime/odylith-compiler/projection-snapshot.v1.json" in paths
+
+
 def test_live_workspace_snapshot_paths_include_non_dirty_local_imports_needed_by_dirty_runtime_files(
     tmp_path: Path,
 ) -> None:
@@ -1865,6 +1953,79 @@ def test_live_workspace_snapshot_paths_include_non_dirty_local_imports_needed_by
             prompt_payload={},
         )
 
+    assert "src/odylith/runtime/reasoning/tribunal_engine.py" in paths
+
+
+def test_live_workspace_snapshot_paths_include_cli_backend_runtime_dependencies(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    cli_path = repo_root / "src" / "odylith" / "cli.py"
+    orchestrator = repo_root / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py"
+    delivery_intelligence = repo_root / "src" / "odylith" / "runtime" / "governance" / "delivery_intelligence_engine.py"
+    reasoning_init = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "__init__.py"
+    reasoning_reasoning = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "odylith_reasoning.py"
+    tribunal_engine = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "tribunal_engine.py"
+    for path in (
+        cli_path,
+        orchestrator,
+        delivery_intelligence,
+        reasoning_init,
+        reasoning_reasoning,
+        tribunal_engine,
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    cli_path.write_text('"""cli"""\n', encoding="utf-8")
+    orchestrator.write_text(
+        "from odylith.runtime.governance import delivery_intelligence_engine\n",
+        encoding="utf-8",
+    )
+    delivery_intelligence.write_text(
+        "from odylith.runtime.reasoning import odylith_reasoning\n",
+        encoding="utf-8",
+    )
+    reasoning_init.write_text('"""reasoning package"""\n', encoding="utf-8")
+    reasoning_reasoning.write_text(
+        "from odylith.runtime.reasoning import tribunal_engine\n",
+        encoding="utf-8",
+    )
+    tribunal_engine.write_text("def decide():\n    return True\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = ""
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = "\n".join(
+                [
+                    "src/odylith/cli.py",
+                    "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+                    "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+                    "src/odylith/runtime/reasoning/__init__.py",
+                    "src/odylith/runtime/reasoning/odylith_reasoning.py",
+                    "src/odylith/runtime/reasoning/tribunal_engine.py",
+                ]
+            )
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "required_paths": ["odylith/skills/odylith-subagent-orchestrator/SKILL.md"],
+                "validation_commands": ["odylith subagent-orchestrator --repo-root . --help"],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/cli.py" in paths
+    assert "src/odylith/runtime/orchestration/subagent_orchestrator.py" in paths
+    assert "src/odylith/runtime/governance/delivery_intelligence_engine.py" in paths
+    assert "src/odylith/runtime/reasoning/__init__.py" in paths
+    assert "src/odylith/runtime/reasoning/odylith_reasoning.py" in paths
     assert "src/odylith/runtime/reasoning/tribunal_engine.py" in paths
 
 
@@ -6011,10 +6172,59 @@ def test_live_preflight_evidence_hot_path_declares_focused_check_and_timeout_bud
     )
 
     assert scenario["allow_noop_completion"] is True
-    assert scenario["focused_local_checks"] == [
-        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py::test_run_live_scenario_records_declared_preflight_evidence_and_observed_path_sources tests/unit/runtime/test_odylith_benchmark_runner.py::test_fairness_findings_require_raw_prompt_visible_path_attribution_for_raw_lane"
-    ]
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
     assert scenario["live_timeout_seconds"] == 420.0
+
+
+def test_consumer_install_governance_hot_path_uses_executable_validator_focused_checks() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "consumer-install-upgrade-runtime-contract")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_dashboard_shell_hot_path_allows_validator_backed_noop_completion() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "dashboard-shell-optimization-surface")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == [
+        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_cheatsheet_drawer_filters_and_copies_commands"
+    ]
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_install_agent_activation_hot_path_uses_executable_validator_focused_checks() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "install-time-agent-activation-contract")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_benchmark_corpus_expansion_hot_path_allows_validator_backed_noop_completion() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "benchmark-corpus-expansion-mirror-integrity")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_orchestration_feedback_hot_path_allows_validator_backed_noop_completion() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "orchestration-control-advisory-loop")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_wave3_explicit_workstream_hot_path_allows_validator_backed_noop_completion() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "wave3-explicit-workstream")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
 
 
 def test_governed_surface_sync_hot_path_allows_validator_backed_noop_completion() -> None:
@@ -6063,6 +6273,53 @@ def test_live_workspace_snapshot_paths_include_focused_local_check_validator_tar
         )
 
     assert "tests/unit/runtime/test_sync_cli_compat.py" in paths
+
+
+def test_live_workspace_snapshot_paths_include_package_inits_for_validator_test_nodeids(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    changed = repo_root / "odylith" / "surfaces" / "GOVERNANCE_SURFACES.md"
+    tests_pkg = repo_root / "tests" / "__init__.py"
+    unit_test = repo_root / "tests" / "unit" / "runtime" / "test_sync_cli_compat.py"
+    integration_pkg = repo_root / "tests" / "integration" / "__init__.py"
+    browser_test = repo_root / "tests" / "integration" / "runtime" / "test_tooling_dashboard_onboarding_browser.py"
+    for path in (changed, tests_pkg, unit_test, integration_pkg, browser_test):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# file\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = "odylith/surfaces/GOVERNANCE_SURFACES.md"
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["odylith/surfaces/GOVERNANCE_SURFACES.md"],
+                "required_paths": [
+                    "odylith/surfaces/GOVERNANCE_SURFACES.md",
+                    "odylith/index.html",
+                ],
+                "validation_commands": [
+                    "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_cheatsheet_drawer_filters_and_copies_commands",
+                ],
+                "focused_local_checks": [
+                    "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_cheatsheet_drawer_filters_and_copies_commands",
+                ],
+            },
+            prompt_payload={},
+        )
+
+    assert "tests/unit/runtime/test_sync_cli_compat.py" in paths
+    assert "tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py" in paths
+    assert "tests/__init__.py" in paths
+    assert "tests/integration/__init__.py" in paths
 
 
 def test_install_agent_activation_governance_hot_path_keeps_spawn_contract_companions() -> None:
@@ -6860,9 +7117,7 @@ def test_benchmark_runner_gate_hot_path_allows_noop_after_focused_runner_check()
     scenario = next(row for row in scenarios if row["scenario_id"] == "benchmark-raw-baseline-runner-gate")
 
     assert scenario["allow_noop_completion"] is True
-    assert scenario["focused_local_checks"] == [
-        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_run_benchmarks_publishes_conservative_multi_profile_view"
-    ]
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
 
 
 def test_run_scenario_mode_passes_selected_docs_to_live_prompt_payload(monkeypatch) -> None:  # noqa: ANN001
@@ -7933,6 +8188,10 @@ def test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff() -> N
     assert context_packet["retrieval_plan"]["selected_counts"] == "g1"
     assert context_packet["retrieval_plan"]["guidance_coverage"] == "direct"
     assert context_packet["guidance_behavior_summary"]["status"] == "available"
+    assert context_packet["guidance_behavior_summary"]["related_guidance_refs"] == [
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+    ]
     assert context_packet["guidance_behavior_summary"]["guidance_surface_contract"]["hosts"] == ["codex", "claude"]
     assert context_packet["guidance_behavior_summary"]["platform_contract"]["domains"] == [
         "benchmark_eval",
@@ -7949,6 +8208,10 @@ def test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff() -> N
         "required": True,
         "reason": "Need one code path.",
     }
+    assert runner._observed_packet_paths(payload) == [  # noqa: SLF001
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+    ]
     assert context_packet.get("optimization") is None
     for key in ("contract", "version", "engine", "provenance_summary", "security_posture"):
         assert key not in context_packet
@@ -8268,6 +8531,41 @@ def test_exact_path_ambiguity_hot_path_drops_dead_ambiguous_scaffolding() -> Non
     }
     assert context_packet.get("execution_profile") is None
     assert context_packet.get("optimization") is None
+
+
+def test_session_brief_broad_shared_hot_path_stays_compact_and_narrowing_first() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "session-brief-broad-shared-guarding")
+
+    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        existing_paths=scenario["changed_paths"],
+    )
+    context_packet = dict(payload["context_packet"])
+
+    assert packet_source == "session_brief"
+    assert context_packet["anchors"] == {"anchor_quality": "shared_only"}
+    assert context_packet["guidance_behavior_summary"]["related_guidance_refs"] == [
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+    ]
+    assert context_packet["route"] == {
+        "narrowing_required": True,
+        "b": "guarded_narrowing",
+        "p": "serial_guarded",
+    }
+    assert payload["narrowing_guidance"] == {
+        "required": True,
+        "reason": "Need one code path.",
+    }
+    assert payload["presentation_policy"] == {"commentary_mode": "task_first"}
+    assert payload["turn_context"] == {"intent": "analysis benchmark"}
+    assert runner._observed_packet_paths(payload) == [  # noqa: SLF001
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+    ]
 
 
 def test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal() -> None:

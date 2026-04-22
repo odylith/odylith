@@ -372,6 +372,36 @@ def guidance_behavior_relevant(
     )
 
 
+def _bounded_summary_for_packet(
+    *,
+    family_hint: str,
+    changed_paths: Sequence[str],
+    explicit_paths: Sequence[str],
+    summary: Mapping[str, Any],
+) -> dict[str, Any]:
+    family = str(family_hint or "").strip()
+    if family != "broad_shared_scope":
+        return dict(summary)
+    allowed_refs = {
+        token
+        for token in _strings(changed_paths, explicit_paths, limit=24)
+        if token == "AGENTS.md" or token.endswith("/AGENTS.md")
+    }
+    if not allowed_refs:
+        return dict(summary)
+    bounded = dict(summary)
+    related_refs = [
+        token
+        for token in _strings(summary.get("related_guidance_refs"), limit=24)
+        if token in allowed_refs
+    ]
+    if related_refs:
+        bounded["related_guidance_refs"] = related_refs
+    else:
+        bounded.pop("related_guidance_refs", None)
+    return bounded
+
+
 def summary_for_packet(
     *,
     repo_root: Path,
@@ -392,10 +422,15 @@ def summary_for_packet(
     ):
         return {}
     case_ids = _case_ids_from_commands(recommended_commands)
-    return guidance_behavior_runtime_summary(
-        repo_root=repo_root,
-        case_ids=case_ids,
-        include_validation=False,
+    return _bounded_summary_for_packet(
+        family_hint=family_hint,
+        changed_paths=changed_paths,
+        explicit_paths=explicit_paths,
+        summary=guidance_behavior_runtime_summary(
+            repo_root=repo_root,
+            case_ids=case_ids,
+            include_validation=False,
+        ),
     )
 
 

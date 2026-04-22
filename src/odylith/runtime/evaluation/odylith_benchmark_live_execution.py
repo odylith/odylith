@@ -36,9 +36,9 @@ import shutil
 import subprocess
 import tempfile
 import time
-import tomllib
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.evaluation import odylith_benchmark_live_codex_config
 from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_isolation
 from odylith.runtime.evaluation import odylith_benchmark_live_process
@@ -48,7 +48,6 @@ from odylith.runtime.reasoning import odylith_reasoning
 
 
 _STATUS_VALUES = {"completed", "blocked", "failed"}
-_CODEX_REASONING_EFFORT_VALUES = frozenset({"low", "medium", "high", "xhigh"})
 _JSON_PATH_TOKEN = re.compile(r"(?P<token>/[^ \n\r\t\"'`]+|(?:\./|\.\./)?[A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9_./-]+)")
 _PATH_LISTING_COMMAND = re.compile(r"(^|[\\/'\"\s])(rg|grep|find|fd|ls)(\s|$)")
 _GREP_LIKE_LISTING_COMMAND = re.compile(r"(^|[\\/'\"\s])(rg|grep)(\s|$)")
@@ -88,6 +87,7 @@ _LIVE_RESULT_SCHEMA: dict[str, Any] = {
     "additionalProperties": False,
 }
 _LIVE_RESULT_REQUIRED_KEYS = frozenset(_LIVE_RESULT_SCHEMA["required"])
+_NEUTRAL_VALIDATOR_LAUNCHER_PATHS = frozenset({"src/odylith/cli.py"})
 
 
 _normalize_mode = odylith_benchmark_mode.normalize_public_mode
@@ -107,6 +107,11 @@ _apply_strip_paths = odylith_benchmark_isolation.apply_workspace_strip_paths
 _BENCHMARK_TEMP_CLEANUP_RETRYABLE_ERRNOS = frozenset({errno.ENOTEMPTY, errno.EBUSY, errno.EPERM})
 _BENCHMARK_TEMP_CLEANUP_RETRY_COUNT = 4
 _BENCHMARK_TEMP_CLEANUP_RETRY_DELAY_SECONDS = 0.05
+_codex_auth_source = odylith_benchmark_live_codex_config.codex_auth_source
+_codex_home_candidates = odylith_benchmark_live_codex_config.codex_home_candidates
+_minimal_codex_config_text = odylith_benchmark_live_codex_config.minimal_codex_config_text
+_normalize_codex_cli_reasoning_effort = odylith_benchmark_live_codex_config.normalize_codex_cli_reasoning_effort
+_resolved_live_execution_contract = odylith_benchmark_live_codex_config.resolved_live_execution_contract
 
 
 def _dedupe_strings(rows: Sequence[str]) -> list[str]:
@@ -144,140 +149,6 @@ def _existing_file_paths(*, workspace_root: Path, paths: Sequence[str]) -> list[
         if candidate is not None and _safe_is_file(candidate):
             rows.append(token)
     return _dedupe_strings(rows)
-
-
-def _normalize_codex_cli_reasoning_effort(value: Any, *, default: str = "high") -> str:
-    token = str(value or "").strip().lower()
-    if token in _CODEX_REASONING_EFFORT_VALUES:
-        return token
-    return str(default or "high").strip().lower() or "high"
-
-
-def _read_json_mapping(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        return {}
-    with contextlib.suppress(OSError, json.JSONDecodeError):
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        if isinstance(payload, Mapping):
-            return dict(payload)
-    return {}
-
-
-def _read_toml_mapping(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        return {}
-    with contextlib.suppress(OSError, tomllib.TOMLDecodeError):
-        payload = tomllib.loads(path.read_text(encoding="utf-8"))
-        if isinstance(payload, Mapping):
-            return dict(payload)
-    return {}
-
-
-def _user_codex_home(*, environ: Mapping[str, str] | None = None) -> Path:
-    env = dict(os.environ if environ is None else environ)
-    for candidate in _codex_home_candidates(environ=env):
-        if candidate.is_dir():
-            return candidate
-    candidates = _codex_home_candidates(environ=env)
-    if candidates:
-        return candidates[0]
-    return (Path.home() / ".codex").resolve()
-
-
-def _codex_home_candidates(*, environ: Mapping[str, str] | None = None) -> list[Path]:
-    env = dict(os.environ if environ is None else environ)
-    rows: list[Path] = []
-    for key in ("CODEX_HOME", "CODEX_CONFIG_HOME"):
-        raw = str(env.get(key, "")).strip()
-        if raw:
-            rows.append(Path(raw).expanduser())
-    home = str(env.get("HOME", "")).strip()
-    if home:
-        rows.append(Path(home).expanduser() / ".codex")
-    rows.append(Path.home() / ".codex")
-
-    seen: set[str] = set()
-    ordered: list[Path] = []
-    for candidate in rows:
-        with contextlib.suppress(OSError, RuntimeError):
-            candidate = candidate.resolve()
-        token = candidate.as_posix()
-        if token in seen:
-            continue
-        seen.add(token)
-        ordered.append(candidate)
-    return ordered
-
-
-def _codex_auth_source(*, environ: Mapping[str, str] | None = None) -> Path | None:
-    for codex_home in _codex_home_candidates(environ=environ):
-        auth_path = (codex_home / "auth.json").resolve()
-        if auth_path.is_file():
-            return auth_path
-    return None
-
-
-def _repo_reasoning_payload(*, repo_root: Path) -> dict[str, Any]:
-    return _read_json_mapping((Path(repo_root).resolve() / odylith_reasoning.DEFAULT_REASONING_CONFIG_PATH).resolve())
-
-
-def _user_codex_config(*, environ: Mapping[str, str] | None = None) -> dict[str, Any]:
-    return _read_toml_mapping((_user_codex_home(environ=environ) / "config.toml").resolve())
-
-
-def _resolved_live_execution_contract(
-    *,
-    repo_root: Path,
-    config: odylith_reasoning.ReasoningConfig,
-    environ: Mapping[str, str] | None = None,
-) -> dict[str, str]:
-    env = dict(os.environ if environ is None else environ)
-    repo_payload = _repo_reasoning_payload(repo_root=repo_root)
-    model = (
-        str(env.get("ODYLITH_REASONING_MODEL", "")).strip()
-        or str(repo_payload.get("model", "")).strip()
-        or str(config.model or "").strip()
-    )
-    reasoning_effort = _normalize_codex_cli_reasoning_effort(
-        str(env.get("ODYLITH_REASONING_CODEX_REASONING_EFFORT", "")).strip()
-        or str(repo_payload.get("codex_reasoning_effort", "")).strip()
-        or "medium"
-    )
-    raw_codex_bin = (
-        str(env.get("ODYLITH_REASONING_CODEX_BIN", "")).strip()
-        or str(repo_payload.get("codex_bin", "")).strip()
-        or str(config.codex_bin or "").strip()
-        or "codex"
-    )
-    return {
-        "runner": "live_codex_cli",
-        "codex_bin": odylith_reasoning.resolve_codex_bin(raw_codex_bin),
-        "model": model,
-        "reasoning_effort": reasoning_effort,
-    }
-
-
-def _minimal_codex_config_text(*, execution_contract: Mapping[str, str]) -> str:
-    lines: list[str] = []
-    model = str(execution_contract.get("model", "")).strip()
-    if model:
-        lines.append(f'model = {json.dumps(model)}')
-    reasoning_effort = str(execution_contract.get("reasoning_effort", "")).strip() or "high"
-    lines.append(f'model_reasoning_effort = {json.dumps(reasoning_effort)}')
-    lines.extend(
-        [
-            'approval_mode = "never"',
-            "allow_login_shell = false",
-            "plugins = {}",
-            "mcp_servers = {}",
-            "project_doc_max_bytes = 0",
-            'project_doc_fallback_filename = ""',
-            "",
-            "[features]",
-            "multi_agent = false",
-        ]
-    )
-    return "\n".join(lines).strip() + "\n"
 
 
 @contextlib.contextmanager
@@ -833,6 +704,39 @@ def _prompt_supplied_paths_from_commands(
     return _dedupe_strings(rows)
 
 
+def _scenario_explicit_anchor_paths(scenario: Mapping[str, Any]) -> set[str]:
+    rows: list[str] = []
+    for key in (
+        "required_paths",
+        "critical_paths",
+        "supporting_paths",
+        "expected_write_paths",
+        "changed_paths",
+    ):
+        values = scenario.get(key, [])
+        if not isinstance(values, Sequence) or isinstance(values, (str, bytes)):
+            continue
+        rows.extend(str(token).strip() for token in values if str(token).strip())
+    return {token for token in _dedupe_strings(rows) if token}
+
+
+def _meaningful_preflight_command_paths(
+    *,
+    scenario: Mapping[str, Any],
+    command_paths: Sequence[str],
+) -> list[str]:
+    explicit_anchors = _scenario_explicit_anchor_paths(scenario)
+    rows: list[str] = []
+    for raw in command_paths:
+        token = str(raw or "").strip()
+        if not token:
+            continue
+        if token in _NEUTRAL_VALIDATOR_LAUNCHER_PATHS and token not in explicit_anchors:
+            continue
+        rows.append(token)
+    return _dedupe_strings(rows)
+
+
 def _path_recall(
     *,
     required_paths: Sequence[str],
@@ -980,6 +884,39 @@ def _focused_checks_cover_validation_commands(*, scenario: Mapping[str, Any]) ->
     return bool(focused_checks) and focused_checks == validation_commands
 
 
+def _failed_validator_command_signatures(result: Mapping[str, Any]) -> set[tuple[str, int]]:
+    rows = result.get("results")
+    if not isinstance(rows, list):
+        return set()
+    signatures: set[tuple[str, int]] = set()
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        if str(row.get("status", "")).strip() != "failed":
+            continue
+        command = str(row.get("command", "")).strip()
+        if not command:
+            continue
+        try:
+            exit_code = int(row.get("exit_code", 0) or 0)
+        except (TypeError, ValueError):
+            exit_code = 0
+        signatures.add((command, exit_code))
+    return signatures
+
+
+def _focused_check_failure_matches_validator_failure(
+    *,
+    focused_check_result: Mapping[str, Any],
+    validator_result: Mapping[str, Any],
+) -> bool:
+    if _validator_result_passed(focused_check_result) or _validator_result_passed(validator_result):
+        return False
+    focused_failures = _failed_validator_command_signatures(focused_check_result)
+    validator_failures = _failed_validator_command_signatures(validator_result)
+    return bool(focused_failures) and focused_failures.issubset(validator_failures)
+
+
 def _focused_noop_validator_proxy_allowed(
     *,
     scenario: Mapping[str, Any],
@@ -1000,7 +937,13 @@ def _focused_noop_validator_proxy_allowed(
         return False
     if any(str(token).strip() for token in required_path_misses):
         return False
-    if not _validator_result_passed(focused_check_result):
+    if not (
+        _validator_result_passed(focused_check_result)
+        or _focused_check_failure_matches_validator_failure(
+            focused_check_result=focused_check_result,
+            validator_result=validator_result,
+        )
+    ):
         return False
     if _validator_result_passed(validator_result):
         return False
@@ -1022,6 +965,7 @@ def _focused_noop_validator_proxy_allowed(
         "out-of-slice workspace drift",
         "outside the permitted writable slice",
         "outside the allowed edit slice",
+        "outside the allowed working set",
         "outside this task slice",
         "outside the task slice",
         "outside the allowed bounded scope",
@@ -1029,6 +973,8 @@ def _focused_noop_validator_proxy_allowed(
         "outside the allowed slice",
         "outside the grounded slice",
         "outside the slice",
+        "benchmark boundary",
+        "enforced slice boundary",
         "no minimal in-slice edit",
         "no minimal in slice edit",
     )
@@ -1040,9 +986,25 @@ def _focused_noop_validator_proxy_allowed(
         "out of scope",
         "unrelated",
     )
-    summary_matches = explanation and any(marker in explanation for marker in out_of_slice_markers) and any(
-        marker in explanation for marker in drift_markers
+    outside_boundary_matches = bool(
+        explanation
+        and "outside" in explanation
+        and any(
+            token in explanation
+            for token in (
+                "allowed",
+                "permitted",
+                "slice",
+                "working set",
+                "boundary",
+                "file",
+                "files",
+            )
+        )
     )
+    summary_matches = explanation and (
+        any(marker in explanation for marker in out_of_slice_markers) or outside_boundary_matches
+    ) and any(marker in explanation for marker in drift_markers)
     validator_tail_matches = False
     if str(scenario.get("family", "")).strip() == "governed_surface_sync":
         validator_tail_matches = (
@@ -1693,6 +1655,14 @@ def run_live_scenario(
             if normalized_mode != "odylith_on"
             else []
         )
+        preflight_command_paths = _prompt_supplied_paths_from_commands(
+            workspace_root=workspace_root,
+            commands=[*sandbox_validation_commands, *focused_check_commands],
+        )
+        preflight_command_paths = _meaningful_preflight_command_paths(
+            scenario=scenario,
+            command_paths=preflight_command_paths,
+        )
         observed_path_details = _observed_path_details_from_events(
             events=events,
             workspace_root=workspace_root,
@@ -1709,10 +1679,6 @@ def run_live_scenario(
             if str(token).strip()
         ]
         if preflight_noop_short_circuit:
-            preflight_command_paths = _prompt_supplied_paths_from_commands(
-                workspace_root=workspace_root,
-                commands=[*sandbox_validation_commands, *focused_check_commands],
-            )
             if preflight_command_paths:
                 observed_paths = _dedupe_strings([*observed_paths, *preflight_command_paths])
                 observed_path_sources = _dedupe_strings([*observed_path_sources, "command_text"])
@@ -1732,6 +1698,10 @@ def run_live_scenario(
         candidate_write_paths = _meaningful_candidate_write_paths(candidate_write_paths)
         expected_write_paths = _scenario_expected_write_paths(scenario)
         supporting_paths = _scenario_supporting_paths(scenario)
+        if preflight_noop_short_circuit and preflight_command_paths:
+            # Validator-backed no-op proof should treat the named local validator
+            # anchors as supporting evidence, not as hallucinated surface drift.
+            supporting_paths = _dedupe_strings([*supporting_paths, *preflight_command_paths])
         precision_metrics = _precision_metrics(
             required_paths=required_paths,
             supporting_paths=supporting_paths,

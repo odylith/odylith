@@ -175,6 +175,31 @@ def test_capture_workspace_validator_truth_prefers_hardlinks_for_files_on_same_d
     assert copied_agents.samefile(workspace_root / "AGENTS.md")
 
 
+def test_overlay_workspace_repo_snapshot_copies_allowed_ignored_runtime_files(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    workspace_root = tmp_path / "workspace"
+    runtime_snapshot = repo_root / ".odylith" / "runtime" / "odylith-compiler" / "projection-snapshot.v1.json"
+    _write(runtime_snapshot, '{"ready": true}\n')
+
+    def _git_no_paths(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        return type("Completed", (), {"returncode": 0, "stdout": "", "stderr": "", "args": command})()
+
+    monkeypatch.setattr(isolation.subprocess, "run", _git_no_paths)
+
+    isolation.overlay_workspace_repo_snapshot(
+        repo_root=repo_root,
+        workspace_root=workspace_root,
+        allowed_paths=[".odylith/runtime/odylith-compiler/projection-snapshot.v1.json"],
+    )
+
+    copied_snapshot = workspace_root / ".odylith" / "runtime" / "odylith-compiler" / "projection-snapshot.v1.json"
+    assert copied_snapshot.read_text(encoding="utf-8") == '{"ready": true}\n'
+
+
 def test_capture_workspace_validator_truth_falls_back_to_copy_when_hardlinks_are_unavailable(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

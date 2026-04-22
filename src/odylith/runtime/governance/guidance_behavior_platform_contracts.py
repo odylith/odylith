@@ -39,7 +39,7 @@ PLATFORM_CONTRACTS: tuple[dict[str, Any], ...] = (
             "tests/unit/runtime/test_odylith_benchmark_corpus.py": (
                 "guidance_behavior_family_filter_selects_only_guidance_cases",
                 "guidance_behavior_family_is_curated_low_latency_and_taxonomized",
-                "guidance_behavior_observed_paths_include_runtime_summary_sources",
+                "guidance_behavior_observed_paths_stay_prompt_visible_only",
             ),
         },
     },

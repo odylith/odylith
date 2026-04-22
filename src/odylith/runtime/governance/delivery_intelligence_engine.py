@@ -180,16 +180,12 @@ def _surface_list_for_scope(
     *,
     workstreams: Sequence[str],
     diagrams: Sequence[str],
-    component_ids: Sequence[str],
-    include_operator_surface: bool = False,
 ) -> list[str]:
     rows = ["Registry"]
     if workstreams:
         rows.extend(["Radar", "Compass"])
     if diagrams:
         rows.append("Atlas")
-    if include_operator_surface:
-        rows.append("Shell")
     rows.append("Shell")
     deduped: list[str] = []
     seen: set[str] = set()
@@ -785,12 +781,6 @@ def _build_component_snapshot(
     linked_surfaces = _surface_list_for_scope(
         workstreams=linked_workstreams,
         diagrams=linked_diagrams,
-        component_ids=[component_id],
-        include_operator_surface=False,
-    )
-    linked_paths = _normalize_event_artifacts(
-        [*(event.artifacts for event in timeline)] if False else [],
-        repo_root=repo_root,
     )
     # Flatten event artifacts after stable dedupe.
     flattened_paths = _normalize_event_artifacts(
@@ -1005,8 +995,6 @@ def _build_workstream_snapshot(
     linked_surfaces = _surface_list_for_scope(
         workstreams=[workstream_id],
         diagrams=related_diagrams,
-        component_ids=linked_components,
-        include_operator_surface=("shell" in linked_components),
     )
     trace = traceability_row.get("plan_traceability", {}) if isinstance(traceability_row.get("plan_traceability"), Mapping) else {}
     runbook_count = len(trace.get("runbooks", [])) if isinstance(trace.get("runbooks"), list) else 0
@@ -1210,8 +1198,6 @@ def _build_diagram_snapshot(
     linked_surfaces = _surface_list_for_scope(
         workstreams=linked_workstreams,
         diagrams=[diagram_id],
-        component_ids=component_ids,
-        include_operator_surface=("shell" in component_ids),
     )
     explicit_events: list[registry.MappedEvent] = []
     synthetic_events: list[registry.MappedEvent] = []

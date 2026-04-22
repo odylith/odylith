@@ -347,12 +347,17 @@ def overlay_workspace_repo_snapshot(
         if token == ".git" or token.startswith(".git/"):
             continue
         source = root / relative_path
-        if not source.is_dir():
+        if source.is_dir():
+            # Atlas and governance validators can watch whole directories. Mirror
+            # allowed directory trees explicitly so empty or untracked children stay
+            # visible inside the disposable benchmark workspace.
+            _copy_tree_if_exists(source=source, target=workspace / relative_path)
             continue
-        # Atlas and governance validators can watch whole directories. Mirror
-        # allowed directory trees explicitly so empty or untracked children stay
-        # visible inside the disposable benchmark workspace.
-        _copy_tree_if_exists(source=source, target=workspace / relative_path)
+        if source.is_file():
+            # Runtime state under `.odylith/` is usually ignored by Git, so the
+            # overlay must still copy explicitly allowed files even when Git
+            # plumbing would never surface them as dirty or untracked paths.
+            _copy_tree_if_exists(source=source, target=workspace / relative_path)
     copy_paths = _dedupe_relative_paths(
         [
             *_git_path_lines(
