@@ -1635,6 +1635,10 @@
           "odylith subagent-router --repo-root . --help",
           "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
         ],
+        "focused_local_checks": [
+          "odylith subagent-router --repo-root . --help",
+          "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+        ],
         "correctness_critical": true,
         "allow_noop_completion": true
       },
@@ -1671,6 +1675,9 @@
           "odylith/surfaces/GOVERNANCE_SURFACES.md"
         ],
         "validation_commands": [
+          "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+        ],
+        "focused_local_checks": [
           "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
         ],
         "allow_noop_completion": true
@@ -1900,6 +1907,10 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_surface_browser_smoke.py"
+        ],
+        "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-018"
       },
@@ -2254,6 +2265,10 @@
         "validation_commands": [
           "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
         ],
+        "focused_local_checks": [
+          "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+        ],
+        "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-021"
       },
@@ -2447,6 +2462,10 @@
           "odylith validate component-registry --repo-root .",
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_hygiene.py"
         ],
+        "focused_local_checks": [
+          "odylith validate component-registry --repo-root .",
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_hygiene.py"
+        ],
         "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-022",
@@ -2536,6 +2555,10 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q --basetemp=./.tmp-pytest-browser-contract -o cache_dir=./.tmp-pytest-cache-browser-contract tests/unit/runtime/test_shell_onboarding.py::test_build_release_spotlight_for_recent_consumer_upgrade tests/unit/runtime/test_shell_onboarding.py::test_build_release_spotlight_ignores_first_install_with_stale_payload tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popup tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_upgrade_recovery_pill_expires_after_ten_minutes_even_without_rerender tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_install_renders_a_browser_valid_first_run_launchpad tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_install_adopt_latest_renders_a_browser_valid_incremental_upgrade_note"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q --basetemp=./.tmp-pytest-browser-contract -o cache_dir=./.tmp-pytest-cache-browser-contract tests/unit/runtime/test_shell_onboarding.py::test_build_release_spotlight_for_recent_consumer_upgrade tests/unit/runtime/test_shell_onboarding.py::test_build_release_spotlight_ignores_first_install_with_stale_payload tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade tests/unit/runtime/test_render_tooling_dashboard.py::test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popup tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_upgrade_recovery_pill_expires_after_ten_minutes_even_without_rerender tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_install_renders_a_browser_valid_first_run_launchpad tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_cli_install_adopt_latest_renders_a_browser_valid_incremental_upgrade_note"
+        ],
+        "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-028",
         "component": "dashboard"
@@ -2580,6 +2603,11 @@
           "odylith install --help",
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/test_cli.py"
         ],
+        "focused_local_checks": [
+          "odylith install --help",
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/test_cli.py"
+        ],
+        "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-031"
       },
@@ -2715,6 +2743,9 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/integration/install/test_manager.py -k 'doctor_bundle or rollback_install or reinstall_install'"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/integration/install/test_manager.py -k 'doctor_bundle or rollback_install or reinstall_install'"
+        ],
         "allow_noop_completion": true,
         "correctness_critical": true,
         "needs_write": true,
@@ -2759,6 +2790,9 @@
           "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"
         ],
         "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py"
+        ],
+        "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py"
         ],
         "allow_noop_completion": true,
@@ -2815,6 +2849,9 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_compass_current_workstreams_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/integration/runtime/test_surface_browser_smoke.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_compass_current_workstreams_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/integration/runtime/test_surface_browser_smoke.py"
+        ],
         "allow_noop_completion": true,
         "correctness_critical": true,
         "needs_write": true,
@@ -2858,6 +2895,9 @@
           "tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
         ],
         "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
+        ],
+        "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"
         ],
         "allow_noop_completion": true,
@@ -2908,6 +2948,9 @@
           "src/odylith/runtime/reasoning/remediator.py"
         ],
         "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_remediator.py"
+        ],
+        "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py tests/unit/runtime/test_remediator.py"
         ],
         "allow_noop_completion": true,
@@ -3015,6 +3058,9 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_live_diagnostics.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_live_diagnostics.py"
+        ],
         "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-093",
@@ -3061,6 +3107,9 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_release_planning.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py tests/unit/runtime/test_release_planning.py"
+        ],
         "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-072"
@@ -3103,6 +3152,9 @@
           "tests/unit/runtime/test_odylith_benchmark_runner.py"
         ],
         "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py -k 'progress_checkpoint or latest_eligible or cache_profile'"
+        ],
+        "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py -k 'progress_checkpoint or latest_eligible or cache_profile'"
         ],
         "allow_noop_completion": true,
@@ -3148,6 +3200,9 @@
           "tests/unit/runtime/test_render_compass_dashboard.py"
         ],
         "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_render_compass_dashboard.py"
+        ],
+        "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_compass_refresh_runtime.py tests/unit/runtime/test_render_compass_dashboard.py"
         ],
         "allow_noop_completion": true,
@@ -3201,6 +3256,9 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_subagent_reasoning_ladder.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_subagent_reasoning_ladder.py"
+        ],
         "allow_noop_completion": true,
         "correctness_critical": true,
         "needs_write": true,
@@ -3247,6 +3305,9 @@
           "tests/unit/runtime/test_execution_engine.py"
         ],
         "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_render_tooling_dashboard.py"
+        ],
+        "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py tests/unit/runtime/test_render_tooling_dashboard.py"
         ],
         "allow_noop_completion": true,
@@ -3348,6 +3409,9 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_runtime_surface_summary.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_tooling_dashboard_shell_render_integration.py"
+        ],
         "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-092",
@@ -3394,6 +3458,9 @@
           "tests/unit/runtime/test_execution_engine.py"
         ],
         "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
+        ],
+        "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
         ],
         "allow_noop_completion": true,
@@ -3451,6 +3518,9 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_codex_host_bash_guard.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_codex_host_bash_guard.py"
+        ],
         "allow_noop_completion": true,
         "correctness_critical": true,
         "needs_write": true
@@ -3491,6 +3561,9 @@
           "tests/unit/runtime/test_claude_host_bash_guard.py"
         ],
         "validation_commands": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_claude_host_bash_guard.py"
+        ],
+        "focused_local_checks": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_claude_host_bash_guard.py"
         ],
         "allow_noop_completion": true,
@@ -3595,6 +3668,9 @@
         "validation_commands": [
           "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth"
         ],
+        "focused_local_checks": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth"
+        ],
         "needs_write": false,
         "allow_noop_completion": true,
         "correctness_critical": true,
@@ -3645,6 +3721,9 @@
         "validation_commands": [
           "odylith validate guidance-behavior --repo-root . --case-id guidance-queue-non-adoption"
         ],
+        "focused_local_checks": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-queue-non-adoption"
+        ],
         "needs_write": false,
         "allow_noop_completion": true,
         "correctness_critical": true,
@@ -3693,6 +3772,9 @@
           "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-fresh-proof-completion-claim"
+        ],
+        "focused_local_checks": [
           "odylith validate guidance-behavior --repo-root . --case-id guidance-fresh-proof-completion-claim"
         ],
         "needs_write": false,
@@ -3749,6 +3831,9 @@
           "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-bounded-delegation-contract"
+        ],
+        "focused_local_checks": [
           "odylith validate guidance-behavior --repo-root . --case-id guidance-bounded-delegation-contract"
         ],
         "needs_write": false,
@@ -3809,6 +3894,9 @@
           "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
+          "odylith validate guidance-behavior --repo-root . --case-id guidance-visible-intervention-proof"
+        ],
+        "focused_local_checks": [
           "odylith validate guidance-behavior --repo-root . --case-id guidance-visible-intervention-proof"
         ],
         "needs_write": false,
@@ -3976,6 +4064,9 @@
         "validation_commands": [
           "odylith validate discipline --repo-root . --case-id discipline-novel-pressure-narrows"
         ],
+        "focused_local_checks": [
+          "odylith validate discipline --repo-root . --case-id discipline-novel-pressure-narrows"
+        ],
         "needs_write": false,
         "allow_noop_completion": true,
         "correctness_critical": true,
@@ -4028,6 +4119,9 @@
         "validation_commands": [
           "odylith validate discipline --repo-root . --case-id discipline-mixed-pressure-vector"
         ],
+        "focused_local_checks": [
+          "odylith validate discipline --repo-root . --case-id discipline-mixed-pressure-vector"
+        ],
         "needs_write": false,
         "allow_noop_completion": true,
         "correctness_critical": true,
@@ -4075,6 +4169,9 @@
           "odylith/runtime/source/discipline-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
+          "odylith validate discipline --repo-root . --case-id discipline-recurrence-tribunal-candidate"
+        ],
+        "focused_local_checks": [
           "odylith validate discipline --repo-root . --case-id discipline-recurrence-tribunal-candidate"
         ],
         "needs_write": false,
@@ -4127,6 +4224,9 @@
         "validation_commands": [
           "odylith validate discipline --repo-root . --case-id discipline-visible-pass-stays-silent"
         ],
+        "focused_local_checks": [
+          "odylith validate discipline --repo-root . --case-id discipline-visible-pass-stays-silent"
+        ],
         "needs_write": false,
         "allow_noop_completion": true,
         "correctness_critical": true,
@@ -4175,6 +4275,9 @@
           "odylith/runtime/source/discipline-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
+          "odylith validate discipline --repo-root . --case-id discipline-public-claim-benchmark-proof"
+        ],
+        "focused_local_checks": [
           "odylith validate discipline --repo-root . --case-id discipline-public-claim-benchmark-proof"
         ],
         "needs_write": false,

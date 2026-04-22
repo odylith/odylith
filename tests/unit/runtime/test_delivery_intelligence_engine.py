@@ -162,6 +162,65 @@ def test_delivery_intelligence_main_guard_tracks_local_head(
     assert captured["extra"] == {"max_review_age_days": 21, "local_head": "abc123"}
 
 
+def test_delivery_evidence_refs_normalize_repo_local_absolute_paths(tmp_path: Path) -> None:
+    refs = engine._build_evidence_refs(  # noqa: SLF001
+        repo_root=tmp_path,
+        linked_workstreams=[],
+        linked_components=[],
+        linked_diagrams=[],
+        linked_paths=[
+            str(tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "idea.md"),
+            "odylith/INSTALL.md",
+        ],
+    )
+
+    assert refs == [
+        {
+            "kind": "path",
+            "value": "odylith/radar/source/ideas/2026-04/idea.md",
+            "label": "odylith/radar/source/ideas/2026-04/idea.md",
+        },
+        {
+            "kind": "path",
+            "value": "odylith/INSTALL.md",
+            "label": "odylith/INSTALL.md",
+        },
+    ]
+
+
+def test_load_workstream_contexts_normalize_idea_file_to_repo_relative_path(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    idea_path = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "idea.md"
+    idea_path.parent.mkdir(parents=True, exist_ok=True)
+    idea_path.write_text("# idea\n", encoding="utf-8")
+
+    class _Spec:
+        def __init__(self, *, path: Path, metadata: dict[str, str]) -> None:
+            self.path = path
+            self.metadata = metadata
+
+    monkeypatch.setattr(
+        engine.backlog_contract,
+        "_validate_idea_specs",
+        lambda _ideas_root: (
+            {
+                "B-777": _Spec(
+                    path=idea_path,
+                    metadata={"title": "Example", "status": "finished"},
+                )
+            },
+            [],
+        ),
+    )
+    monkeypatch.setattr(engine, "_read_markdown_sections", lambda _path: {})
+
+    contexts = engine._load_workstream_contexts(ideas_root=tmp_path / "odylith" / "radar" / "source" / "ideas")  # noqa: SLF001
+
+    assert contexts["B-777"]["idea_file"] == "odylith/radar/source/ideas/2026-04/idea.md"
+
+
 def test_delivery_intelligence_refresh_guard_tracks_local_head(
     monkeypatch,
     tmp_path: Path,

@@ -2513,9 +2513,9 @@ def main(argv: list[str] | None = None) -> int:
         if tokens[0] == "benchmark":
             repo_root, forwarded = _extract_repo_root(tokens[1:])
             if _help_requested(forwarded):
-                parser = build_parser()
-                args = parser.parse_args(tokens)
-                return _cmd_benchmark(args)
+                if forwarded and str(forwarded[0]).strip() == "compare":
+                    return _cmd_benchmark(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
+                return _run_module_main(_CONTEXT_ENGINE_MODULE, ["--repo-root", repo_root, "benchmark", *forwarded])
             if forwarded and str(forwarded[0]).strip() == "compare":
                 return _cmd_benchmark(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
             return _run_module_main(_CONTEXT_ENGINE_MODULE, ["--repo-root", repo_root, "benchmark", *forwarded])

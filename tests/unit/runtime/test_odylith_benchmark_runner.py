@@ -1560,7 +1560,9 @@ def test_live_workspace_snapshot_paths_include_dirty_governance_roots_for_sync_v
         "odylith/registry/source/component_registry.v1.json",
         "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
         "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
         "odylith/runtime/delivery_intelligence.v4.json",
+        "src/odylith/runtime/intervention_engine/value_engine.py",
     ]
     for relative in [*required_paths, *companion_paths, "src/odylith/cli.py"]:
         path = repo_root / relative
@@ -1594,7 +1596,9 @@ def test_live_workspace_snapshot_paths_include_dirty_governance_roots_for_sync_v
     assert "odylith/registry/source/component_registry.v1.json" in paths
     assert "odylith/registry/source/components/benchmark/CURRENT_SPEC.md" in paths
     assert "odylith/atlas/source/catalog/diagrams.v1.json" in paths
+    assert "odylith/compass/runtime/agent-stream.v1.jsonl" in paths
     assert "odylith/runtime/delivery_intelligence.v4.json" in paths
+    assert "src/odylith/runtime/intervention_engine/value_engine.py" in paths
     assert "src/odylith/cli.py" in paths
 
 
@@ -1612,6 +1616,7 @@ def test_live_workspace_snapshot_paths_include_selected_atlas_catalog_references
     related_plan = repo_root / "odylith" / "technical-plans" / "in-progress" / "2026-03" / "plan.md"
     related_doc = repo_root / "odylith" / "maintainer" / "agents-guidelines" / "RELEASE_BENCHMARKS.md"
     related_code = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_graphs.py"
+    watched_dir = repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "calibration"
     watched_svg = repo_root / "docs" / "benchmarks" / "odylith-benchmark-frontier.svg"
     for path in (
         catalog,
@@ -1626,6 +1631,7 @@ def test_live_workspace_snapshot_paths_include_selected_atlas_catalog_references
         watched_svg,
     ):
         path.parent.mkdir(parents=True, exist_ok=True)
+    watched_dir.mkdir(parents=True, exist_ok=True)
     diagram.write_text("flowchart LR\n", encoding="utf-8")
     diagram_svg.write_text("<svg></svg>\n", encoding="utf-8")
     diagram_png.write_text("png\n", encoding="utf-8")
@@ -1644,7 +1650,10 @@ def test_live_workspace_snapshot_paths_include_selected_atlas_catalog_references
                         "source_mmd": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
                         "source_svg": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.svg",
                         "source_png": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.png",
-                        "change_watch_paths": ["docs/benchmarks/odylith-benchmark-frontier.svg"],
+                        "change_watch_paths": [
+                            "docs/benchmarks/odylith-benchmark-frontier.svg",
+                            "src/odylith/runtime/intervention_engine",
+                        ],
                         "related_plans": ["odylith/technical-plans/in-progress/2026-03/plan.md"],
                         "related_docs": ["odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md"],
                         "related_code": ["src/odylith/runtime/evaluation/odylith_benchmark_graphs.py"],
@@ -1703,6 +1712,7 @@ def test_live_workspace_snapshot_paths_include_selected_atlas_catalog_references
     assert "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md" in paths
     assert "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py" in paths
     assert "docs/benchmarks/odylith-benchmark-frontier.svg" in paths
+    assert "src/odylith/runtime/intervention_engine" in paths
     assert "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.svg" in paths
     assert "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.png" in paths
     assert "odylith/atlas/source/odylith-product-runtime-boundary-map.svg" in paths
@@ -1782,6 +1792,82 @@ def test_live_workspace_snapshot_paths_include_imported_validator_runtime_depend
     assert "src/odylith/runtime/reasoning/odylith_reasoning.py" in paths
 
 
+def test_live_workspace_snapshot_paths_include_non_dirty_local_imports_needed_by_dirty_runtime_files(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    validator = repo_root / "tests" / "unit" / "runtime" / "test_render_mermaid_catalog.py"
+    render_catalog = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "render_mermaid_catalog.py"
+    delivery_intelligence = repo_root / "src" / "odylith" / "runtime" / "governance" / "delivery_intelligence_engine.py"
+    reasoning_init = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "__init__.py"
+    reasoning_reasoning = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "odylith_reasoning.py"
+    tribunal_engine = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "tribunal_engine.py"
+    surfaces_init = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "__init__.py"
+    for path in (
+        validator,
+        render_catalog,
+        delivery_intelligence,
+        reasoning_init,
+        reasoning_reasoning,
+        tribunal_engine,
+        surfaces_init,
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    validator.write_text(
+        "from odylith.runtime.surfaces import render_mermaid_catalog as renderer\n",
+        encoding="utf-8",
+    )
+    render_catalog.write_text(
+        "from odylith.runtime.governance import delivery_intelligence_engine\n",
+        encoding="utf-8",
+    )
+    delivery_intelligence.write_text(
+        "from odylith.runtime.reasoning import odylith_reasoning\n",
+        encoding="utf-8",
+    )
+    reasoning_init.write_text('"""reasoning package"""\n', encoding="utf-8")
+    reasoning_reasoning.write_text(
+        "from odylith.runtime.reasoning import tribunal_engine\n",
+        encoding="utf-8",
+    )
+    tribunal_engine.write_text("def judge():\n    return True\n", encoding="utf-8")
+    surfaces_init.write_text('"""surfaces package"""\n', encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = ""
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = "\n".join(
+                [
+                    "tests/unit/runtime/test_render_mermaid_catalog.py",
+                    "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+                    "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+                    "src/odylith/runtime/reasoning/__init__.py",
+                    "src/odylith/runtime/reasoning/odylith_reasoning.py",
+                    "src/odylith/runtime/surfaces/__init__.py",
+                ]
+            )
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "required_paths": ["tests/unit/runtime/test_render_mermaid_catalog.py"],
+                "validation_commands": [
+                    "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_render_mermaid_catalog.py"
+                ],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/runtime/reasoning/tribunal_engine.py" in paths
+
+
 def test_live_workspace_snapshot_paths_include_benchmark_corpus_for_runner_and_graph_validator_tests(
     tmp_path: Path,
 ) -> None:
@@ -1830,6 +1916,54 @@ def test_live_workspace_snapshot_paths_include_benchmark_corpus_for_runner_and_g
 
     assert "odylith/runtime/source/optimization-evaluation-corpus.v1.json" in paths
     assert "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json" in paths
+
+
+def test_live_workspace_snapshot_paths_include_dirty_benchmark_runtime_dependencies_even_when_not_explicit(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    changed = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_graphs.py"
+    validator = repo_root / "tests" / "unit" / "runtime" / "test_odylith_benchmark_graphs.py"
+    prompt_payloads = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_prompt_payloads.py"
+    prompt_family_rules = (
+        repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_prompt_family_rules.py"
+    )
+    cli_path = repo_root / "src" / "odylith" / "cli.py"
+    for path in (changed, validator, prompt_payloads, prompt_family_rules, cli_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# file\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = "\n".join(
+                [
+                    "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+                    "src/odylith/runtime/evaluation/odylith_benchmark_prompt_payloads.py",
+                    "src/odylith/runtime/evaluation/odylith_benchmark_prompt_family_rules.py",
+                    "src/odylith/cli.py",
+                ]
+            )
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_graphs.py"],
+                "validation_commands": ["pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py"],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/runtime/evaluation/odylith_benchmark_prompt_payloads.py" in paths
+    assert "src/odylith/runtime/evaluation/odylith_benchmark_prompt_family_rules.py" in paths
+    assert "src/odylith/cli.py" in paths
 
 
 def test_acceptance_requires_critical_metric_coverage() -> None:
@@ -5892,6 +6026,11 @@ def test_install_agent_activation_governance_hot_path_keeps_spawn_contract_compa
 def test_cross_surface_governance_sync_hot_path_keeps_registry_and_workstream_truth() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "cross-surface-governance-sync-truth")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == [
+        "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+    ]
 
     packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
         repo_root=REPO_ROOT,

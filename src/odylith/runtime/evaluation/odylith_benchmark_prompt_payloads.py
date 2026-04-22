@@ -11,6 +11,7 @@ from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_stri
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.evaluation.odylith_benchmark_prompt_family_rules import (
     family_anchors_all_required_docs,
+    family_disallows_weak_support_doc_fallback,
     family_uses_curated_doc_overrides,
     family_zero_support_doc_expansion,
     support_doc_family_rank,
@@ -299,12 +300,10 @@ def _filter_component_scoped_support_docs(
     required_paths: Sequence[str],
     family: str = "",
 ) -> list[str]:
-    component_id = str(scenario_component or "").strip().lower()
-    if not component_id:
-        return _dedupe_strings([str(token).strip() for token in docs if str(token).strip()])
     required = {str(token).strip() for token in required_paths if str(token).strip()}
-    component_fragment = f"/registry/source/components/{component_id}/"
     normalized_family = str(family or "").strip()
+    component_id = str(scenario_component or "").strip().lower()
+    component_fragment = f"/registry/source/components/{component_id}/" if component_id else ""
     rows: list[str] = []
     for raw in docs:
         token = str(raw or "").strip()
@@ -314,13 +313,21 @@ def _filter_component_scoped_support_docs(
         if token in required:
             rows.append(token)
             continue
+        if normalized_family == "cli_contract_regression":
+            if lowered.endswith("/install_and_upgrade_runbook.md"):
+                rows.append(token)
+                continue
+            if "/registry/source/components/" in lowered:
+                continue
+            if lowered.endswith(".md"):
+                continue
         if normalized_family == "install_upgrade_runtime":
             if lowered.endswith("/install_and_upgrade_runbook.md"):
                 rows.append(token)
                 continue
             if lowered.endswith(".md") and "/registry/source/components/" not in lowered:
                 continue
-        if "/registry/source/components/" in lowered and component_fragment not in lowered:
+        if component_fragment and "/registry/source/components/" in lowered and component_fragment not in lowered:
             continue
         rows.append(token)
     return _dedupe_strings(rows)
@@ -458,6 +465,33 @@ def _filter_first_pass_implementation_anchors(
 ) -> list[str]:
     family = str((scenario or {}).get("family", "")).strip()
     required_paths = {str(token).strip() for token in _normalized_string_list((scenario or {}).get("required_paths"))}
+    normalized_changed = {str(token).strip() for token in changed_paths if str(token).strip()}
+    if bool((scenario or {}).get("allow_noop_completion")) and family == "api_contract_evolution":
+        return _dedupe_strings(
+            [
+                str(token).strip()
+                for token in anchors
+                if str(token).strip()
+                and _looks_like_code_anchor(str(token).strip())
+                and (
+                    str(token).strip() in normalized_changed
+                    or str(token).strip() in required_paths
+                )
+            ]
+        )
+    if family == "governed_surface_sync":
+        return _dedupe_strings(
+            [
+                str(token).strip()
+                for token in anchors
+                if str(token).strip()
+                and _looks_like_code_anchor(str(token).strip())
+                and (
+                    str(token).strip() in normalized_changed
+                    or str(token).strip() in required_paths
+                )
+            ]
+        )
     if not bool((scenario or {}).get("allow_noop_completion")) or family not in {"install_upgrade_runtime", "agent_activation"}:
         if family == "cross_surface_governance_sync":
             return _dedupe_strings(
@@ -476,7 +510,6 @@ def _filter_first_pass_implementation_anchors(
                 ]
             )
         return _dedupe_strings([str(token).strip() for token in anchors if str(token).strip()])
-    normalized_changed = {str(token).strip() for token in changed_paths if str(token).strip()}
     install_test_prefixes = ("tests/unit/install/", "tests/integration/install/")
     return _dedupe_strings(
         [
@@ -529,6 +562,8 @@ def select_live_prompt_support_docs(
     strong_docs = [token for token in ordered if _support_doc_priority(token)[0] <= 4]
     if strong_docs:
         return strong_docs[:bounded_limit]
+    if family_disallows_weak_support_doc_fallback(family):
+        return []
     return ordered[:bounded_limit]
 
 
@@ -794,12 +829,36 @@ def _extend_boundary_hints_for_family(
         boundary_hints.append(
             "For docs closeout slices, keep writes on the listed README/docs surfaces and any explicit graph or source anchor. Do not widen into unrelated Registry specs, plans, Atlas, Casebook, or other documentation families unless a listed anchor or validator failure points there directly."
         )
+        boundary_hints.append(
+            "When the required paths also name a graph renderer, validator test, or other code anchor, treat that source/test pair as part of the same bounded closeout instead of widening into adjacent benchmark helpers or publication machinery."
+        )
+    if family == "api_contract_evolution":
+        boundary_hints.append(
+            "For contract-evolution slices, keep writes on the listed runtime, docs, spec, and validator-test anchors that define the contract. Do not widen into adjacent helpers, publication docs, or release machinery unless they are explicit required paths or a focused validator failure points there directly."
+        )
+    if family == "cross_file_feature":
+        boundary_hints.append(
+            "For implementation-heavy cross-file feature slices, keep the first-pass read set on the listed implementation, test, and named doc/spec anchors. Do not treat skills, runbooks, or broader governance surfaces as default reads unless they are explicit required paths or a focused validator failure points there directly."
+        )
+        boundary_hints.append(
+            "Read the listed implementation and validator-test anchors before widening into adjacent runtime helpers, shell renderers, or orchestration scaffolding."
+        )
     if family == "merge_heavy_change":
         boundary_hints.append(
             "For merge-heavy router or governed-doc slices, treat the listed router skill and governed operations docs as the whole writable boundary. If those anchors already agree and the focused validator passes, close successfully with no file changes."
         )
         boundary_hints.append(
             "Unrelated Registry, Atlas, or other governance drift elsewhere in the repo is a follow-up note, not a blocker for this bounded closeout."
+        )
+        boundary_hints.append(
+            "Keep historical bug records, casebook entries, and other retrospective evidence out of the first-pass read list unless they are explicit required paths or a focused validator failure points there directly."
+        )
+    if family == "destructive_scope_control":
+        boundary_hints.append(
+            "For destructive scope-control fixes, keep reads and writes on the listed guard, policy, test, and required AGENTS/spec anchors only. Do not widen into host-contract docs, product-surface guidance, or unrelated runtime helpers unless they are explicit required paths or a focused validator failure points there directly."
+        )
+        boundary_hints.append(
+            "Treat the destructive-command or resource-closure validator as the authority for any expansion. If that validator does not point at an adjacent guidance doc, keep that doc out of the first-pass evidence cone."
         )
     if family == "component_governance":
         boundary_hints.append(
@@ -888,7 +947,7 @@ def _extend_boundary_hints_for_family(
             boundary_hints.append(
                 "If the listed consumer-profile validator already passes on that bounded compatibility slice, stop with no file changes instead of rebinding truth roots or widening into broader Registry governance."
             )
-    if family in {"cross_file_feature", "exact_anchor_recall", "explicit_workstream", "orchestration_feedback", "orchestration_intelligence"}:
+    if family in {"exact_anchor_recall", "explicit_workstream", "orchestration_feedback", "orchestration_intelligence"}:
         boundary_hints.append(
             "For narrow anchored orchestration slices, keep the boundary on the listed skills and named runtime anchor only. Do not widen into Registry specs, runbooks, Radar ideas, or unrelated orchestration helpers unless they are explicit required paths or a focused validator failure points there directly."
         )
@@ -915,6 +974,13 @@ def supplement_live_prompt_payload(
 ) -> dict[str, Any]:
     payload = dict(prompt_payload or {})
     raw_payload = dict(full_payload or {})
+    if changed_paths:
+        payload["changed_paths"] = _dedupe_strings(
+            [
+                *_normalized_string_list(payload.get("changed_paths")),
+                *[str(token).strip() for token in changed_paths if str(token).strip()],
+            ]
+        )
     strict_bounded_slice = _strict_bounded_slice(scenario)
     family = str(scenario.get("family", "")).strip()
     scenario_required_paths = _scenario_required_paths_for_live_prompt(
@@ -1065,7 +1131,7 @@ def supplement_live_prompt_payload(
         component_ids=spec_component_ids,
         limit=5 if normalized_packet_source == "governance_slice" else 3,
     )
-    if family == "browser_surface_reliability":
+    if family in {"browser_surface_reliability", "cli_contract_regression"}:
         component_specs = []
 
     support_doc_limit = 5 if normalized_packet_source == "governance_slice" else 3

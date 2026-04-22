@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
+from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_prompt_family_rules
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
 from odylith.runtime.evaluation import odylith_benchmark_taxonomy
@@ -653,3 +654,110 @@ def test_live_preflight_evidence_case_declares_narrow_preflight_check_and_timeou
         "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py::test_run_live_scenario_records_declared_preflight_evidence_and_observed_path_sources tests/unit/runtime/test_odylith_benchmark_runner.py::test_fairness_findings_require_raw_prompt_visible_path_attribution_for_raw_lane"
     ]
     assert float(benchmark.get("live_timeout_seconds", 0.0) or 0.0) == 420.0
+
+
+def test_correctness_critical_allow_noop_cases_declare_focused_local_checks() -> None:
+    missing: list[tuple[str, str]] = []
+    for scenario in _load_normalized():
+        if not bool(scenario.get("allow_noop_completion")):
+            continue
+        if not bool(scenario.get("correctness_critical")):
+            continue
+        focused_checks = [str(token).strip() for token in scenario.get("focused_local_checks", []) if str(token).strip()]
+        if not focused_checks:
+            missing.append(
+                (
+                    str(scenario.get("scenario_id", "")).strip(),
+                    str(scenario.get("family", "")).strip(),
+                )
+            )
+
+    assert not missing, f"correctness-critical allow-noop cases missing focused checks: {missing}"
+
+
+def test_allow_noop_cases_with_validators_declare_focused_local_checks() -> None:
+    missing: list[tuple[str, str]] = []
+    for scenario in _load_normalized():
+        if not bool(scenario.get("allow_noop_completion")):
+            continue
+        validation_commands = [str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()]
+        if not validation_commands:
+            continue
+        focused_checks = [str(token).strip() for token in scenario.get("focused_local_checks", []) if str(token).strip()]
+        if not focused_checks:
+            missing.append(
+                (
+                    str(scenario.get("scenario_id", "")).strip(),
+                    str(scenario.get("family", "")).strip(),
+                )
+            )
+
+    assert not missing, f"allow-noop validator-backed cases missing focused checks: {missing}"
+
+
+def test_cli_and_browser_contract_cases_allow_validator_backed_noop_completion() -> None:
+    scenarios = {
+        str(scenario.get("scenario_id", "")).strip(): scenario
+        for scenario in _load_normalized()
+    }
+
+    for scenario_id in (
+        "shell-and-compass-browser-reliability",
+        "tooling-dashboard-onboarding-browser-contract",
+        "cli-install-first-run-onboarding-contract",
+    ):
+        scenario = dict(scenarios[scenario_id])
+        validation_commands = [str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()]
+        focused_checks = [str(token).strip() for token in scenario.get("focused_local_checks", []) if str(token).strip()]
+
+        assert scenario.get("allow_noop_completion") is True
+        assert focused_checks == validation_commands
+
+
+def test_cross_surface_governance_sync_truth_allows_validator_backed_noop_completion() -> None:
+    scenarios = {
+        str(scenario.get("scenario_id", "")).strip(): scenario
+        for scenario in _load_normalized()
+    }
+    scenario = dict(scenarios["cross-surface-governance-sync-truth"])
+    validation_commands = [str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()]
+    focused_checks = [str(token).strip() for token in scenario.get("focused_local_checks", []) if str(token).strip()]
+
+    assert scenario.get("allow_noop_completion") is True
+    assert focused_checks == validation_commands
+
+
+def test_odylith_on_prompt_payloads_stay_within_declared_benchmark_surfaces() -> None:
+    overreach: list[tuple[str, str, list[str]]] = []
+
+    for scenario in _load_normalized():
+        request = runner._prepare_live_scenario_request(  # noqa: SLF001
+            repo_root=ROOT,
+            scenario=scenario,
+            mode="odylith_on",
+            benchmark_profile="quick",
+        )
+        prompt_payload = dict(request.get("prompt_payload", {}))
+        observed_paths = odylith_benchmark_live_diagnostics.prompt_payload_observed_paths(
+            prompt_payload=prompt_payload
+        )
+        relevant_paths = {
+            str(token).strip()
+            for token in [
+                *(scenario.get("changed_paths", []) or []),
+                *(scenario.get("required_paths", []) or []),
+                *(scenario.get("supporting_paths", []) or []),
+            ]
+            if str(token).strip()
+        }
+        extras = [token for token in observed_paths if token not in relevant_paths]
+        if extras:
+            overreach.append(
+                (
+                    str(scenario.get("scenario_id", "")).strip(),
+                    str(scenario.get("family", "")).strip(),
+                    extras,
+                )
+            )
+
+    assert not overreach, f"odylith_on prompt payload overreach: {overreach}"

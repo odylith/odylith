@@ -4826,6 +4826,11 @@ def _expand_dirty_import_dependency_paths(*, repo_root: Path, snapshot_paths: Se
         if Path(path).suffix == ".py"
     ]
     seen_paths = set(expanded)
+    closure_required_paths = {
+        path
+        for path in pending
+        if path in dirty_python_paths
+    }
     scanned_paths: set[str] = set()
     scan_budget = 256
 
@@ -4841,10 +4846,39 @@ def _expand_dirty_import_dependency_paths(*, repo_root: Path, snapshot_paths: Se
                 continue
             if target not in scanned_paths:
                 pending.append(target)
-            if target not in dirty_python_paths or target in seen_paths:
+            target_requires_closure = current in closure_required_paths or target in dirty_python_paths
+            if not target_requires_closure or target in seen_paths:
                 continue
             seen_paths.add(target)
+            closure_required_paths.add(target)
             expanded.append(target)
+    return _dedupe_path_strings(expanded)
+
+
+def _expand_dirty_benchmark_runtime_snapshot_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
+    base_paths = _dedupe_path_strings(snapshot_paths)
+    dirty_paths = _dirty_repo_paths(repo_root)
+    if not dirty_paths:
+        return base_paths
+
+    expanded = list(base_paths)
+    for path in dirty_paths:
+        token = str(path or "").strip()
+        if not token:
+            continue
+        if token.startswith("src/odylith/runtime/evaluation/"):
+            expanded.append(token)
+            continue
+        if token.startswith("tests/unit/runtime/test_odylith_benchmark_"):
+            expanded.append(token)
+            continue
+        if token in {
+            "src/odylith/cli.py",
+            "tests/unit/test_cli.py",
+            "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+            "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        }:
+            expanded.append(token)
     return _dedupe_path_strings(expanded)
 
 
@@ -4918,6 +4952,7 @@ def _expand_sync_validator_snapshot_paths(
                 "odylith/atlas/source/catalog/diagrams.v1.json",
                 "odylith/runtime/delivery_intelligence.v4.json",
                 "odylith/casebook/bugs/INDEX.md",
+                *agent_runtime_contract.candidate_stream_tokens(),
             ],
         )
     )
@@ -4925,14 +4960,11 @@ def _expand_sync_validator_snapshot_paths(
         token = str(path or "").strip()
         if not token:
             continue
-        if token.startswith(
-            (
-                "odylith/radar/source/ideas/",
-                "odylith/technical-plans/in-progress/",
-                "odylith/registry/source/components/",
-            )
-        ):
-            expanded.append(token)
+        # `odylith sync --check-only` can fail on current dirty-tree forensic
+        # evidence, not just the scenario's declared governance roots. Mirror
+        # the full dirty slice into the disposable workspace so validator-
+        # backed no-op proof measures the current tree truthfully.
+        expanded.append(token)
     return _dedupe_path_strings(expanded)
 
 
@@ -4990,7 +5022,7 @@ def _expand_atlas_catalog_reference_snapshot_paths(
             if not isinstance(value, list):
                 continue
             reference_candidates.extend(str(token).strip() for token in value if str(token).strip())
-    companion_paths = _existing_repo_file_paths(repo_root=root, candidates=reference_candidates)
+    companion_paths = _existing_repo_paths(repo_root=root, paths=reference_candidates)
     return _dedupe_path_strings([*base_paths, *companion_paths])
 
 
@@ -5086,13 +5118,16 @@ def _live_workspace_snapshot_paths(
                     validation_commands=validation_commands,
                     snapshot_paths=_expand_same_package_dirty_paths(
                         repo_root=repo_root,
-                        snapshot_paths=[
-                            *scenario_paths,
-                            *validation_paths,
-                            *source_local_cli_paths,
-                            *validation_companion_paths,
-                            *prompt_paths,
-                        ],
+                        snapshot_paths=_expand_dirty_benchmark_runtime_snapshot_paths(
+                            repo_root=repo_root,
+                            snapshot_paths=[
+                                *scenario_paths,
+                                *validation_paths,
+                                *source_local_cli_paths,
+                                *validation_companion_paths,
+                                *prompt_paths,
+                            ],
+                        ),
                     ),
                 ),
             ),

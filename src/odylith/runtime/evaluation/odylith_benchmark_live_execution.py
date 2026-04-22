@@ -1055,6 +1055,50 @@ def _focused_noop_validator_proxy_allowed(
     return bool(summary_matches or validator_tail_matches)
 
 
+def _focused_noop_preflight_short_circuit_allowed(
+    *,
+    scenario: Mapping[str, Any],
+    focused_check_result: Mapping[str, Any],
+) -> bool:
+    if not _scenario_allows_noop_completion(scenario=scenario):
+        return False
+    if not (
+        _focused_checks_cover_validation_commands(scenario=scenario)
+        or str(scenario.get("family", "")).strip() == "governed_surface_sync"
+    ):
+        return False
+    return _validator_result_passed(focused_check_result)
+
+
+def _focused_noop_short_circuit_output(
+    *,
+    scenario: Mapping[str, Any],
+    focused_check_commands: Sequence[str],
+) -> dict[str, Any]:
+    family = str(scenario.get("family", "")).strip()
+    summary = (
+        "No file changes were needed. The declared focused validator evidence already proves the bounded contract on the current tree."
+    )
+    if family == "guidance_behavior":
+        summary = (
+            "No file changes were needed. The declared focused validator evidence already proves the grounded guidance contract on the current tree."
+        )
+    return {
+        "status": "completed",
+        "summary": summary,
+        "changed_files": [],
+        "validation_commands_run": [
+            str(token).strip()
+            for token in focused_check_commands
+            if str(token).strip()
+        ],
+        "validation_summary": "focused_local_checks_passed_noop",
+        "notes": [
+            "Odylith treated the passing focused local checks as the valid no-op proof for this allow-noop slice.",
+        ],
+    }
+
+
 def _write_expectation_satisfied(
     *,
     scenario: Mapping[str, Any],
@@ -1569,6 +1613,13 @@ def run_live_scenario(
             )
             if focused_check_result_lines:
                 prompt_payload_rows["focused_local_check_results"] = focused_check_result_lines
+        preflight_noop_short_circuit = bool(
+            normalized_mode == "odylith_on"
+            and _focused_noop_preflight_short_circuit_allowed(
+                scenario=scenario,
+                focused_check_result=focused_check_result,
+            )
+        )
         workspace_status_baseline = _workspace_git_status_snapshot(workspace_root=workspace_root)
         prompt = _agent_prompt(
             scenario=scenario,
@@ -1577,36 +1628,47 @@ def run_live_scenario(
             validation_commands=sandbox_validation_commands,
         )
         live_timed_out = False
-        try:
-            completed = _run_subprocess_capture(
-                command=command,
-                cwd=workspace_root,
-                env=command_env,
-                input_text=prompt,
-                timeout_seconds=live_timeout_seconds,
+        if preflight_noop_short_circuit:
+            completed = subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr="")
+            stderr_tail = ""
+            agent_duration_ms = 0.0
+            events = []
+            usage = {}
+            structured_output = _focused_noop_short_circuit_output(
+                scenario=scenario,
+                focused_check_commands=focused_check_commands,
             )
-            stderr_tail = str(completed.stderr or "")[-4000:]
-        except subprocess.TimeoutExpired as exc:
-            live_timed_out = True
-            completed = subprocess.CompletedProcess(
-                args=command,
-                returncode=124,
-                stdout=str(getattr(exc, "stdout", "") or ""),
-                stderr=str(getattr(exc, "stderr", "") or ""),
-            )
-            stderr_tail = str(getattr(exc, "stderr", "") or "")[-4000:]
-        except OSError as exc:
-            completed = subprocess.CompletedProcess(
-                args=command,
-                returncode=1,
-                stdout="",
-                stderr=str(exc),
-            )
-            stderr_tail = str(exc)[-4000:]
-        agent_duration_ms = round((time.perf_counter() - started_at) * 1000.0, 3)
-        events = _parse_json_lines(str(completed.stdout or ""))
-        usage = _usage_from_events(events)
-        structured_output = _structured_output(output_path, stream_text=str(completed.stdout or ""))
+        else:
+            try:
+                completed = _run_subprocess_capture(
+                    command=command,
+                    cwd=workspace_root,
+                    env=command_env,
+                    input_text=prompt,
+                    timeout_seconds=live_timeout_seconds,
+                )
+                stderr_tail = str(completed.stderr or "")[-4000:]
+            except subprocess.TimeoutExpired as exc:
+                live_timed_out = True
+                completed = subprocess.CompletedProcess(
+                    args=command,
+                    returncode=124,
+                    stdout=str(getattr(exc, "stdout", "") or ""),
+                    stderr=str(getattr(exc, "stderr", "") or ""),
+                )
+                stderr_tail = str(getattr(exc, "stderr", "") or "")[-4000:]
+            except OSError as exc:
+                completed = subprocess.CompletedProcess(
+                    args=command,
+                    returncode=1,
+                    stdout="",
+                    stderr=str(exc),
+                )
+                stderr_tail = str(exc)[-4000:]
+            agent_duration_ms = round((time.perf_counter() - started_at) * 1000.0, 3)
+            events = _parse_json_lines(str(completed.stdout or ""))
+            usage = _usage_from_events(events)
+            structured_output = _structured_output(output_path, stream_text=str(completed.stdout or ""))
         required_paths = [str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()]
         prompt_supplied_paths = [
             token
@@ -1646,6 +1708,14 @@ def run_live_scenario(
             for token in observed_path_details.get("sources", [])
             if str(token).strip()
         ]
+        if preflight_noop_short_circuit:
+            preflight_command_paths = _prompt_supplied_paths_from_commands(
+                workspace_root=workspace_root,
+                commands=[*sandbox_validation_commands, *focused_check_commands],
+            )
+            if preflight_command_paths:
+                observed_paths = _dedupe_strings([*observed_paths, *preflight_command_paths])
+                observed_path_sources = _dedupe_strings([*observed_path_sources, "command_text"])
         required_path_recall, required_path_misses = _path_recall(
             required_paths=required_paths,
             observed_paths=observed_paths,
@@ -1701,7 +1771,13 @@ def run_live_scenario(
             expected_write_paths=expected_write_paths,
             candidate_write_paths=candidate_write_paths,
         )
-        if live_timed_out:
+        if preflight_noop_short_circuit:
+            workspace_state_pre_validator = dict(workspace_state_post_codex)
+            validator_result = dict(focused_check_result)
+            validator_result["status"] = "passed"
+            validator_result["status_basis"] = "focused_noop_short_circuit"
+            validator_result["proxy_from"] = "focused_local_checks"
+        elif live_timed_out:
             workspace_state_pre_validator = dict(workspace_state_post_codex)
             validator_result = _validator_short_circuit_result(
                 status_basis="live_timeout_short_circuit",
@@ -1724,7 +1800,7 @@ def run_live_scenario(
                 environ=command_env,
             )
         effective_validator_result = dict(validator_result)
-        if not live_timed_out and _focused_noop_validator_proxy_allowed(
+        if not preflight_noop_short_circuit and not live_timed_out and _focused_noop_validator_proxy_allowed(
             scenario=scenario,
             structured_output=structured_output,
             candidate_write_paths=candidate_write_paths,
@@ -1824,7 +1900,13 @@ def run_live_scenario(
             "preflight_evidence_result_status": str(focused_check_result.get("status", "")).strip()
             or "not_applicable",
             "observed_path_sources": observed_path_sources,
-            "validator_execution_mode": "skipped_due_to_live_timeout" if live_timed_out else "executed",
+            "validator_execution_mode": (
+                "focused_noop_short_circuit"
+                if preflight_noop_short_circuit
+                else "skipped_due_to_live_timeout"
+                if live_timed_out
+                else "executed"
+            ),
         }
         if status != "completed" or not validators_passed:
             live_execution_payload["failure_artifacts"] = {

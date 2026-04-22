@@ -5,12 +5,14 @@ from __future__ import annotations
 
 _ZERO_SUPPORT_DOC_EXPANSION_FAMILIES = frozenset(
     {
+        "api_contract_evolution",
         "component_governance",
         "context_engine_grounding",
         "execution_engine",
         "compass_brief_freshness",
         "consumer_profile_compatibility",
         "cross_file_feature",
+        "destructive_scope_control",
         "daemon_security",
         "exact_anchor_recall",
         "explicit_workstream",
@@ -20,6 +22,22 @@ _ZERO_SUPPORT_DOC_EXPANSION_FAMILIES = frozenset(
         "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
+    }
+)
+
+_NO_WEAK_SUPPORT_DOC_FALLBACK_FAMILIES = frozenset(
+    {
+        "api_contract_evolution",
+        "browser_surface_reliability",
+        "cli_contract_regression",
+        "cross_file_feature",
+        "destructive_scope_control",
+        "docs_code_closeout",
+        "external_dependency_recovery",
+        "merge_heavy_change",
+        "runtime_state_integrity",
+        "stateful_bug_recovery",
+        "validation_heavy_fix",
     }
 )
 
@@ -54,6 +72,10 @@ def family_uses_curated_doc_overrides(family: str) -> bool:
 
 def family_anchors_all_required_docs(family: str) -> bool:
     return _normalized_family(family) in _REQUIRED_DOC_ANCHOR_FAMILIES
+
+
+def family_disallows_weak_support_doc_fallback(family: str) -> bool:
+    return _normalized_family(family) in _NO_WEAK_SUPPORT_DOC_FALLBACK_FAMILIES
 
 
 def support_doc_family_rank(*, path: str, family: str) -> int:
@@ -218,6 +240,7 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
 
 __all__ = [
     "family_anchors_all_required_docs",
+    "family_disallows_weak_support_doc_fallback",
     "family_uses_curated_doc_overrides",
     "family_zero_support_doc_expansion",
     "support_doc_family_rank",

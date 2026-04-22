@@ -7,6 +7,8 @@ from pathlib import Path, PurePosixPath
 from typing import Callable, Sequence
 
 _READ_CHUNK_SIZE = 64 * 1024
+_IGNORED_DIRECTORY_FINGERPRINT_PARTS = frozenset({"__pycache__"})
+_IGNORED_DIRECTORY_FINGERPRINT_SUFFIXES = frozenset({".pyc", ".pyo"})
 
 
 def normalize_mermaid_render_source(definition: str) -> str:
@@ -94,6 +96,8 @@ class ContentFingerprintCache:
                 rel = node.relative_to(target).as_posix()
             except ValueError:
                 rel = str(node)
+            if _path_ignored_for_directory_fingerprint(node=node, relative_path=rel):
+                continue
             if node.is_dir():
                 hasher.update(f"dir\0{rel}\0".encode("utf-8"))
                 continue
@@ -115,6 +119,15 @@ class ContentFingerprintCache:
                     hasher.update(chunk)
         except OSError:
             hasher.update(f"unreadable\0{target}".encode("utf-8"))
+
+
+def _path_ignored_for_directory_fingerprint(*, node: Path, relative_path: str) -> bool:
+    rel = PurePosixPath(relative_path)
+    if any(part in _IGNORED_DIRECTORY_FINGERPRINT_PARTS for part in rel.parts):
+        return True
+    if node.is_file() and rel.suffix in _IGNORED_DIRECTORY_FINGERPRINT_SUFFIXES:
+        return True
+    return False
 
 
 def watched_path_fingerprints(

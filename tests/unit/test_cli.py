@@ -1785,6 +1785,20 @@ def test_context_engine_help_dispatches_to_context_engine_parser(monkeypatch, tm
     assert captured["argv"] == ["--repo-root", str(tmp_path), "--help"]
 
 
+def test_benchmark_help_dispatches_to_context_engine_benchmark_parser(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 314
+
+    monkeypatch.setattr(cli.odylith_context_engine, "main", fake_main)
+    rc = cli.main(["benchmark", "--repo-root", str(tmp_path), "--help"])
+
+    assert rc == 314
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "benchmark", "--help"]
+
+
 def test_release_list_dispatch_accepts_option_only_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
 

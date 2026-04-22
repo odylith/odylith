@@ -584,6 +584,7 @@ def _next_forcing_function(
 
 def _build_evidence_refs(
     *,
+    repo_root: Path | None,
     linked_workstreams: Sequence[str],
     linked_components: Sequence[str],
     linked_diagrams: Sequence[str],
@@ -597,7 +598,10 @@ def _build_evidence_refs(
     for token in linked_diagrams[:4]:
         rows.append({"kind": "diagram", "value": token, "label": token})
     for token in linked_paths[:6]:
-        rows.append({"kind": "path", "value": token, "label": token})
+        normalized = workstream_inference.normalize_repo_token(str(token).strip(), repo_root=repo_root)
+        if not normalized:
+            continue
+        rows.append({"kind": "path", "value": normalized, "label": normalized})
     return rows
 
 
@@ -638,6 +642,7 @@ def _snapshot_dict(
 def _load_workstream_contexts(*, ideas_root: Path) -> dict[str, dict[str, Any]]:
     specs, _errors = backlog_contract._validate_idea_specs(ideas_root)
     rows: dict[str, dict[str, Any]] = {}
+    repo_root = ideas_root.resolve().parents[3]
     for idea_id, spec in specs.items():
         token = registry.normalize_workstream_id(idea_id)
         if not token:
@@ -647,7 +652,7 @@ def _load_workstream_contexts(*, ideas_root: Path) -> dict[str, dict[str, Any]]:
             "idea_id": token,
             "title": str(spec.metadata.get("title", "")).strip() or token,
             "status": str(spec.metadata.get("status", "")).strip().lower(),
-            "idea_file": spec.path,
+            "idea_file": workstream_inference.normalize_repo_token(str(spec.path), repo_root=repo_root),
             "why_now": sections.get("Why Now", ""),
             "opportunity": sections.get("Opportunity", ""),
             "founder_pov": sections.get("Product View", sections.get("Founder POV", "")),
@@ -905,6 +910,7 @@ def _build_component_snapshot(
         evidence_context=evidence_context,
         explanation_facts=explanation_facts,
         evidence_refs=_build_evidence_refs(
+            repo_root=repo_root,
             linked_workstreams=linked_workstreams,
             linked_components=[component_id],
             linked_diagrams=linked_diagrams,
@@ -1134,6 +1140,7 @@ def _build_workstream_snapshot(
         evidence_context=evidence_context,
         explanation_facts=explanation_facts,
         evidence_refs=_build_evidence_refs(
+            repo_root=repo_root,
             linked_workstreams=[workstream_id],
             linked_components=linked_components,
             linked_diagrams=related_diagrams,
@@ -1176,6 +1183,7 @@ def _build_workstream_snapshot(
 
 def _build_diagram_snapshot(
     *,
+    repo_root: Path,
     row: Mapping[str, Any],
     components: Mapping[str, registry.ComponentEntry],
     mapped_events: Sequence[registry.MappedEvent],
@@ -1334,6 +1342,7 @@ def _build_diagram_snapshot(
         evidence_context=evidence_context,
         explanation_facts=explanation_facts,
         evidence_refs=_build_evidence_refs(
+            repo_root=repo_root,
             linked_workstreams=linked_workstreams,
             linked_components=component_ids,
             linked_diagrams=[diagram_id],
@@ -1547,6 +1556,7 @@ def _aggregate_scope(
             f"Linked surfaces: {_join_labels(linked_surfaces) or 'none'}.",
         ],
         evidence_refs=_build_evidence_refs(
+            repo_root=None,
             linked_workstreams=linked_workstreams,
             linked_components=linked_components,
             linked_diagrams=linked_diagrams,
@@ -2548,6 +2558,7 @@ def build_delivery_intelligence_artifact(
             continue
         scopes.append(
             _build_diagram_snapshot(
+                repo_root=repo_root,
                 row=row,
                 components=report.components,
                 mapped_events=report.mapped_events,

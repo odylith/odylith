@@ -312,6 +312,18 @@ def overlay_workspace_repo_snapshot(
     root = Path(repo_root).resolve()
     workspace = Path(workspace_root).resolve()
     allowed = _normalized_allowed_paths(allowed_paths)
+    for allowed_token in sorted(allowed):
+        relative_path = Path(allowed_token)
+        token = relative_path.as_posix()
+        if token == ".git" or token.startswith(".git/"):
+            continue
+        source = root / relative_path
+        if not source.is_dir():
+            continue
+        # Atlas and governance validators can watch whole directories. Mirror
+        # allowed directory trees explicitly so empty or untracked children stay
+        # visible inside the disposable benchmark workspace.
+        _copy_tree_if_exists(source=source, target=workspace / relative_path)
     copy_paths = _dedupe_relative_paths(
         [
             *_git_path_lines(
@@ -355,7 +367,7 @@ def capture_workspace_validator_truth(
     target_root = Path(truth_root).resolve()
     for relative_path in strip_paths:
         source = (workspace / relative_path).resolve()
-        if not source.exists() or source.is_dir():
+        if not source.exists():
             continue
         _copy_tree_if_exists(source=source, target=target_root / relative_path)
 
@@ -373,7 +385,7 @@ def restore_workspace_validator_truth(
     for relative_path in strip_paths:
         source = (root / relative_path).resolve()
         target = (workspace / relative_path).resolve()
-        if not source.exists() or source.is_dir():
+        if not source.exists():
             continue
         if target.exists():
             if target.is_dir():
@@ -381,6 +393,31 @@ def restore_workspace_validator_truth(
             else:
                 target.unlink()
         _copy_tree_if_exists(source=source, target=target)
+
+
+def _host_playwright_browsers_path() -> str:
+    explicit = str(os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "")).strip()
+    candidates: list[Path] = []
+    if explicit and explicit != "0":
+        candidates.append(Path(explicit).expanduser())
+
+    home = str(os.environ.get("HOME", "")).strip()
+    if home:
+        home_path = Path(home).expanduser()
+        candidates.extend(
+            [
+                home_path / "Library" / "Caches" / "ms-playwright",
+                home_path / ".cache" / "ms-playwright",
+            ]
+        )
+    xdg_cache_home = str(os.environ.get("XDG_CACHE_HOME", "")).strip()
+    if xdg_cache_home:
+        candidates.append(Path(xdg_cache_home).expanduser() / "ms-playwright")
+
+    for candidate in candidates:
+        if candidate.is_dir():
+            return str(candidate.resolve())
+    return ""
 
 
 def sandbox_process_env(
@@ -483,4 +520,7 @@ def sandbox_process_env(
         value = str(os.environ.get(key, "")).strip()
         if value:
             env[key] = value
+    playwright_browsers_path = _host_playwright_browsers_path()
+    if playwright_browsers_path:
+        env["PLAYWRIGHT_BROWSERS_PATH"] = playwright_browsers_path
     return env
