@@ -3,15 +3,22 @@
 from __future__ import annotations
 
 import contextlib
+import errno
 import hashlib
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import time
 from typing import Iterator, Mapping, Sequence
 
 from odylith.runtime.reasoning import odylith_reasoning
+
+
+_TEMPORARY_DIRECTORY_CLEANUP_RETRYABLE_ERRNOS = frozenset({errno.ENOTEMPTY, errno.EBUSY, errno.EPERM})
+_TEMPORARY_DIRECTORY_CLEANUP_RETRY_COUNT = 4
+_TEMPORARY_DIRECTORY_CLEANUP_RETRY_DELAY_SECONDS = 0.05
 
 
 def _copy_tree_if_exists(*, source: Path, target: Path) -> None:
@@ -120,6 +127,28 @@ def benchmark_workspace_parent(*, repo_root: Path, create: bool = True) -> Path:
     return root
 
 
+def cleanup_temporary_directory(path: Path) -> None:
+    target = Path(path)
+    last_error: OSError | None = None
+    for attempt in range(_TEMPORARY_DIRECTORY_CLEANUP_RETRY_COUNT + 1):
+        try:
+            shutil.rmtree(target)
+            return
+        except FileNotFoundError:
+            return
+        except OSError as exc:
+            last_error = exc
+            if exc.errno not in _TEMPORARY_DIRECTORY_CLEANUP_RETRYABLE_ERRNOS:
+                break
+            if attempt >= _TEMPORARY_DIRECTORY_CLEANUP_RETRY_COUNT:
+                break
+            time.sleep(_TEMPORARY_DIRECTORY_CLEANUP_RETRY_DELAY_SECONDS)
+    if last_error is None:
+        return
+    with contextlib.suppress(OSError, FileNotFoundError):
+        shutil.rmtree(target, ignore_errors=True)
+
+
 @contextlib.contextmanager
 def temporary_workspace_checkout(
     repo_root: Path,
@@ -128,12 +157,15 @@ def temporary_workspace_checkout(
     snapshot_paths: Sequence[str],
 ) -> Iterator[tuple[Path, Path]]:
     root = Path(repo_root).resolve()
-    with tempfile.TemporaryDirectory(
-        prefix="odylith-benchmark-live-",
-        dir=str(benchmark_workspace_parent(repo_root=root, create=True)),
-    ) as tmp_dir:
-        workspace_root = (Path(tmp_dir) / "workspace").resolve()
-        validator_truth_root = (Path(tmp_dir) / "validator-truth").resolve()
+    temp_root = Path(
+        tempfile.mkdtemp(
+            prefix="odylith-benchmark-live-",
+            dir=str(benchmark_workspace_parent(repo_root=root, create=True)),
+        )
+    ).resolve()
+    try:
+        workspace_root = (temp_root / "workspace").resolve()
+        validator_truth_root = (temp_root / "validator-truth").resolve()
         subprocess.run(
             ["git", "clone", "--quiet", "--local", "--no-checkout", str(root), str(workspace_root)],
             cwd=str(root),
@@ -161,6 +193,8 @@ def temporary_workspace_checkout(
         )
         apply_workspace_strip_paths(workspace_root=workspace_root, strip_paths=strip_paths)
         yield workspace_root, validator_truth_root
+    finally:
+        cleanup_temporary_directory(temp_root)
 
 
 _BENCHMARK_SELF_REFERENCE_ALLOWED_FAMILIES = frozenset(

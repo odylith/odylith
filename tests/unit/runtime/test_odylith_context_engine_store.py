@@ -1121,6 +1121,96 @@ def test_load_delivery_surface_payload_reuses_sync_session_cache(
     assert calls == {"artifact": 1, "slice": 1}
 
 
+def test_load_delivery_surface_payload_includes_shell_snapshots_when_enabled(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.projection_search_runtime,
+        "_warm_runtime",
+        lambda **_: False,
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.runtime_learning_runtime,
+        "_odylith_switch_snapshot",
+        lambda **_: {"enabled": True},
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.runtime_learning_runtime,
+        "load_orchestration_adoption_snapshot",
+        lambda **_: {"status": "ready"},
+    )
+    monkeypatch.setattr(
+        store.delivery_intelligence_engine,
+        "load_delivery_intelligence_artifact",
+        lambda *, repo_root: {"shell": {"summary": {"count": 1}}},
+    )
+    monkeypatch.setattr(
+        store.delivery_intelligence_engine,
+        "slice_delivery_intelligence_for_surface",
+        lambda *, payload, surface: {
+            "surface": surface,
+            "summary": dict(payload.get("shell", {}).get("summary", {})),
+        },
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.runtime_learning_runtime,
+        "load_runtime_optimization_snapshot",
+        lambda **_: {"contract": "optimization_snapshot.v1", "status": "active"},
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.memory_snapshot_runtime,
+        "load_runtime_evaluation_snapshot",
+        lambda **_: {"contract": "evaluation_snapshot.v1", "status": "active"},
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.memory_snapshot_runtime,
+        "load_runtime_memory_snapshot",
+        lambda **kwargs: {
+            "contract": "memory_snapshot.v1",
+            "optimization_status": str(kwargs["optimization_snapshot"].get("status", "")).strip(),
+            "evaluation_status": str(kwargs["evaluation_snapshot"].get("status", "")).strip(),
+        },
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.runtime_learning_runtime,
+        "load_odylith_drawer_history",
+        lambda **_: {"contract": "odylith_drawer_history.v1", "packet_events": []},
+    )
+
+    payload = delivery_surface_payload_runtime.load_delivery_surface_payload(
+        repo_root=repo_root,
+        surface="shell",
+        runtime_mode="standalone",
+        include_shell_snapshots=True,
+    )
+
+    assert payload["surface"] == "shell"
+    assert payload["summary"] == {"count": 1}
+    assert payload["odylith_switch"] == {"enabled": True}
+    assert payload["orchestration_adoption_snapshot"] == {"status": "ready"}
+    assert payload["optimization_snapshot"] == {
+        "contract": "optimization_snapshot.v1",
+        "status": "active",
+    }
+    assert payload["evaluation_snapshot"] == {
+        "contract": "evaluation_snapshot.v1",
+        "status": "active",
+    }
+    assert payload["memory_snapshot"] == {
+        "contract": "memory_snapshot.v1",
+        "optimization_status": "active",
+        "evaluation_status": "active",
+    }
+    assert payload["odylith_drawer_history"] == {
+        "contract": "odylith_drawer_history.v1",
+        "packet_events": [],
+    }
+
+
 def test_warm_runtime_reuses_sync_session_cache(
     monkeypatch,
     tmp_path: Path,

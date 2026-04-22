@@ -8,13 +8,14 @@ The source of truth is
 ## Coverage At A Glance
 
 - Tracked corpus:
-  `60` implementation scenarios plus `5` architecture scenarios, `65` total
+  `77` implementation scenarios plus `5` architecture scenarios, `82` total
 - Current seriousness floor in tracked source truth:
-  `43` write-plus-validator scenarios, `18` correctness-critical scenarios,
-  and a mechanism-heavy implementation share of `0.30`
-- Required real-world families now present in tracked source truth:
+  `42` write-plus-validator scenarios, `31` correctness-critical scenarios,
+  and a mechanism-heavy implementation share of `0.286`
+- Required coding-work and control families now present in tracked source truth:
   `api_contract_evolution`, `stateful_bug_recovery`,
-  `external_dependency_recovery`, and `destructive_scope_control`
+  `external_dependency_recovery`, `destructive_scope_control`,
+  `guidance_behavior`, and `discipline`
 - Current published proof snapshot:
   read [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
 - Current published diagnostic snapshot:
@@ -38,7 +39,7 @@ author sorts by token delta.
 | Docs + Code Closeout | 5 | `docs_code_closeout`, `governed_surface_sync`, `cross_surface_governance_sync` | Keeps code, docs, specs, and generated mirrors aligned. |
 | Governance / Release Integrity | 9 | `component_governance`, `destructive_scope_control`, `live_proof_discipline`, `release_publication` | Now includes destructive-scope and fail-closed benchmark safety, not only publication truth. |
 | Architecture Review | 5 | `architecture` | Keeps grounded design-review quality visible after direct implementation work. |
-| Grounding / Orchestration Control | 22 | `broad_shared_scope`, `context_engine_grounding`, `execution_engine`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains Odylith's mechanism without dominating the public story, while still holding Context Engine and Execution Engine quality to exacting standards. |
+| Grounding / Orchestration Control | 35 | `broad_shared_scope`, `context_engine_grounding`, `execution_engine`, `guidance_behavior`, `discipline`, `exact_path_ambiguity`, `exact_anchor_recall`, `explicit_workstream`, `retrieval_miss_recovery`, `orchestration_feedback`, `orchestration_intelligence` | Explains how Odylith stays bounded on real coding work without pretending that control-plane metrics are the headline product claim. |
 
 ## Current Published Attention Areas
 
@@ -93,6 +94,7 @@ repo context.
 | `daemon_security` | 1 | Context Engine daemon transport, lifecycle, and local security hardening |
 | `dashboard_surface` | 1 | shell-renderer and runtime drawer work |
 | `destructive_scope_control` | 3 | fail-closed destructive-command and destructive-subset blocking |
+| `discipline` | 7 | hard-law, adaptive-stance, parity, silence, and learning-sovereignty pressure behavior on real host contracts |
 | `docs_code_closeout` | 2 | governed closeout where docs, specs, README, and code all have to agree |
 | `exact_anchor_recall` | 1 | dense grounded packets on exact workstream and path anchors |
 | `exact_path_ambiguity` | 2 | exact-path boundedness even when historical fanout is ambiguous |
@@ -100,6 +102,7 @@ repo context.
 | `explicit_workstream` | 1 | explicit workstream grounding with compact route-ready packet shape |
 | `external_dependency_recovery` | 3 | semantic waits, resumability, and external-state carry-through into public surfaces |
 | `governed_surface_sync` | 1 | lifecycle closeout propagation across governed surfaces |
+| `guidance_behavior` | 6 | high-risk guidance pressure cases around grounding, CLI-first truth, proof claims, delegation contracts, and visible intervention proof |
 | `install_upgrade_runtime` | 2 | install or upgrade regressions across runtime activation and release truth |
 | `live_proof_discipline` | 2 | live blocker proof control, claim-tier enforcement, and no-fake-precision packet behavior |
 | `merge_heavy_change` | 3 | coordination-heavy multi-owner change with validation pressure |
@@ -125,18 +128,20 @@ repo context.
 | `component_governance` | `benchmark-component-governance-truth`, `benchmark-component-honesty-governance` |
 | `consumer_profile_compatibility` | `consumer-profile-truth-root-compatibility` |
 | `context_engine_grounding` | `context-engine-split-adaptive-grounding`, `context-engine-governance-boundary-grounding`, `context-engine-broad-scope-fail-closed`, `context-engine-release-resolution-grounding` |
-| `cross_file_feature` | `cross-file-feature-budget-discipline`, `benchmark-taxonomy-and-heatmap-family-order-evolution`, `tooling-dashboard-governance-shell-render-contract` |
+| `cross_file_feature` | `cross-file-feature-budget-discipline`, `benchmark-taxonomy-and-heatmap-family-order-evolution`, `tooling-dashboard-shell-render-contract` |
 | `cross_surface_governance_sync` | `cross-surface-governance-sync-truth`, `benchmark-corpus-expansion-mirror-integrity` |
 | `daemon_security` | `context-engine-daemon-security-hardening` |
 | `dashboard_surface` | `dashboard-shell-optimization-surface` |
 | `destructive_scope_control` | `resource-closure-destructive-subset-blocking`, `codex-bash-guard-destructive-command-blocking`, `claude-bash-guard-destructive-command-blocking` |
+| `discipline` | `discipline-hard-law-zero-credit`, `discipline-unknown-pressure-adaptive-stance`, `discipline-host-lane-parity-matrix`, `discipline-benchmark-sovereignty-public-claim` |
 | `docs_code_closeout` | `docs-code-governed-closeout`, `benchmark-docs-and-readme-closeout` |
 | `exact_anchor_recall` | `exact-workstream-anchor-density` |
 | `exact_path_ambiguity` | `runtime-path-ambiguity`, `session-brief-runtime-path-ambiguity` |
-| `execution_engine` | `execution-engine-contract-verify-closure-discipline`, `execution-engine-runtime-surface-phase-carry-through`, `execution-engine-router-recovery-posture`, `execution-engine-broad-scope-recover-fail-closed`, `execution-engine-governance-slice-ambiguity-recovery` |
+| `execution_engine` | `execution-engine-contract-verify-closure-discipline`, `execution-engine-runtime-surface-phase-carry-through`, `execution-engine-router-recovery-posture`, `execution-engine-claude-external-wait-resume`, `execution-engine-historical-id-fails-closed` |
 | `explicit_workstream` | `wave3-explicit-workstream` |
 | `external_dependency_recovery` | `github-actions-semantic-wait-and-resume-token-contract`, `live-preflight-evidence-disposable-workspace-contract`, `runtime-surface-wait-status-carry-through` |
 | `governed_surface_sync` | `closeout-surface-path-normalization` |
+| `guidance_behavior` | `guidance-ground-before-broad-search`, `guidance-cli-first-governed-truth`, `guidance-fresh-proof-completion-claim`, `guidance-visible-intervention-proof` |
 | `install_upgrade_runtime` | `consumer-install-upgrade-runtime-contract`, `managed-runtime-repair-and-rollback-contract` |
 | `live_proof_discipline` | `live-proof-frontier-verified-control-panel`, `live-proof-no-fake-precision-without-a-lane` |
 | `merge_heavy_change` | `merge-heavy-router-doc-sync`, `compass-wave-and-release-posture-surface-sync`, `subagent-routing-and-remediator-guardrail-carry-through` |

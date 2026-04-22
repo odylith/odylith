@@ -1344,14 +1344,18 @@ def _render_operating_posture_svg(report: Mapping[str, Any]) -> str:
     return _svg_canvas(title=POSTURE_TITLE, body=body, height=svg_height)
 
 
-def render_graph_assets(report: Mapping[str, Any], *, out_dir: Path) -> list[Path]:
-    out_dir.mkdir(parents=True, exist_ok=True)
-    outputs = {
+def render_graph_asset_contents(report: Mapping[str, Any]) -> dict[str, str]:
+    return {
         **marketing_graphs.render_marketing_graph_assets(report),
         FRONTIER_FILENAME: _render_frontier_svg(report),
         HEATMAP_FILENAME: _render_family_heatmap_svg(report),
         POSTURE_FILENAME: _render_operating_posture_svg(report),
     }
+
+
+def render_graph_assets(report: Mapping[str, Any], *, out_dir: Path) -> list[Path]:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    outputs = render_graph_asset_contents(report)
     written: list[Path] = []
     for name, contents in outputs.items():
         target = (out_dir / name).resolve()

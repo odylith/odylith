@@ -28,6 +28,7 @@ import shlex
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 from typing import Any, Callable, Iterable, Mapping, Sequence
@@ -41,7 +42,9 @@ from odylith.runtime.context_engine import odylith_context_engine_code_graph_run
 from odylith.runtime.context_engine import odylith_context_engine_contracts
 from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.context_engine import odylith_context_engine_engineering_notes_runtime
+from odylith.runtime.context_engine import odylith_context_engine_evaluation_contract_runtime
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime
+from odylith.runtime.context_engine import odylith_context_engine_judgment_memory_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_architecture_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
@@ -919,15 +922,38 @@ _judgment_memory_area = odylith_context_engine_runtime_learning_runtime._judgmen
 
 _provenance_item = odylith_context_engine_runtime_learning_runtime._provenance_item
 
-_derive_retrieval_memory_state = odylith_context_engine_runtime_learning_runtime._derive_retrieval_memory_state
+def _derive_retrieval_memory_state(
+    *,
+    transition_status: str,
+    indexed_entities: int,
+    evidence_documents: int,
+    compiler_ready: bool,
+) -> str:
+    return odylith_context_engine_evaluation_contract_runtime.derive_retrieval_memory_state(
+        transition_status=transition_status,
+        indexed_entities=indexed_entities,
+        evidence_documents=evidence_documents,
+        compiler_ready=compiler_ready,
+    )
 
-_load_latest_benchmark_report_snapshot = odylith_context_engine_runtime_learning_runtime._load_latest_benchmark_report_snapshot
 
-_build_judgment_memory_snapshot = odylith_context_engine_runtime_learning_runtime._build_judgment_memory_snapshot
+def _load_latest_benchmark_report_snapshot(*, repo_root: Path) -> dict[str, Any]:
+    return odylith_context_engine_evaluation_contract_runtime.load_latest_benchmark_report_snapshot(
+        context_engine_store=sys.modules[__name__],
+        repo_root=repo_root,
+    )
 
-_build_memory_areas_snapshot = odylith_context_engine_runtime_learning_runtime._build_memory_areas_snapshot
 
-_odylith_disabled_memory_snapshot = odylith_context_engine_runtime_learning_runtime._odylith_disabled_memory_snapshot
+def _build_judgment_memory_snapshot(**kwargs: Any) -> dict[str, Any]:
+    return odylith_context_engine_judgment_memory_runtime.build_judgment_memory_snapshot(
+        context_engine_store=sys.modules[__name__],
+        **kwargs,
+    )
+
+
+_build_memory_areas_snapshot = odylith_context_engine_memory_snapshot_runtime._build_memory_areas_snapshot
+
+_odylith_disabled_memory_snapshot = odylith_context_engine_memory_snapshot_runtime._odylith_disabled_memory_snapshot
 
 _odylith_disabled_optimization_snapshot = odylith_context_engine_runtime_learning_runtime._odylith_disabled_optimization_snapshot
 
@@ -945,7 +971,7 @@ _odylith_query_targets_disabled = odylith_context_engine_runtime_learning_runtim
 
 _filter_odylith_search_results = odylith_context_engine_runtime_learning_runtime._filter_odylith_search_results
 
-load_runtime_memory_snapshot = odylith_context_engine_runtime_learning_runtime.load_runtime_memory_snapshot
+load_runtime_memory_snapshot = odylith_context_engine_memory_snapshot_runtime.load_runtime_memory_snapshot
 
 _load_recent_bootstrap_packets = odylith_context_engine_runtime_learning_runtime._load_recent_bootstrap_packets
 
@@ -971,11 +997,29 @@ _packet_matches_evaluation_case = odylith_context_engine_runtime_learning_runtim
 
 _packet_satisfies_evaluation_expectations = odylith_context_engine_runtime_learning_runtime._packet_satisfies_evaluation_expectations
 
-_architecture_timing_matches_evaluation_case = odylith_context_engine_runtime_learning_runtime._architecture_timing_matches_evaluation_case
+def _architecture_timing_matches_evaluation_case(
+    timing_row: Mapping[str, Any],
+    match_spec: Mapping[str, Any],
+) -> bool:
+    return odylith_context_engine_evaluation_contract_runtime.architecture_timing_matches_evaluation_case(
+        context_engine_store=sys.modules[__name__],
+        timing_row=timing_row,
+        match_spec=match_spec,
+    )
 
-_architecture_timing_satisfies_evaluation_expectations = odylith_context_engine_runtime_learning_runtime._architecture_timing_satisfies_evaluation_expectations
 
-_architecture_evaluation_snapshot = odylith_context_engine_runtime_learning_runtime._architecture_evaluation_snapshot
+def _architecture_timing_satisfies_evaluation_expectations(
+    timing_row: Mapping[str, Any],
+    expect_spec: Mapping[str, Any],
+) -> tuple[bool, dict[str, Any]]:
+    return odylith_context_engine_evaluation_contract_runtime.architecture_timing_satisfies_evaluation_expectations(
+        context_engine_store=sys.modules[__name__],
+        timing_row=timing_row,
+        expect_spec=expect_spec,
+    )
+
+
+_architecture_evaluation_snapshot = odylith_context_engine_memory_snapshot_runtime._architecture_evaluation_snapshot
 
 orchestration_decision_ledgers_root = odylith_context_engine_runtime_learning_runtime.orchestration_decision_ledgers_root
 

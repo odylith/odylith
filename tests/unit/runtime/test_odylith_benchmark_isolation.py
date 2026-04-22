@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import errno
 from pathlib import Path
+import shutil
 
+import pytest
 from odylith.runtime.evaluation import odylith_benchmark_isolation as isolation
 
 
@@ -95,3 +98,52 @@ def test_scenario_workspace_self_reference_strip_paths_skip_benchmark_families(t
     )
 
     assert rows == []
+
+
+def test_cleanup_temporary_directory_retries_enotempty(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "workspace"
+    (target / "nested").mkdir(parents=True, exist_ok=True)
+    (target / "nested" / "artifact.pyc").write_text("bytecode", encoding="utf-8")
+    calls: list[bool] = []
+    real_rmtree = shutil.rmtree
+
+    def _flaky_rmtree(path, *args, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(bool(kwargs.get("ignore_errors")))
+        if len(calls) == 1:
+            raise OSError(errno.ENOTEMPTY, "Directory not empty")
+        return real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(isolation.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(isolation.shutil, "rmtree", _flaky_rmtree)
+
+    isolation.cleanup_temporary_directory(target)
+
+    assert not target.exists()
+    assert calls[0] is False
+    assert len(calls) >= 2
+
+
+def test_cleanup_temporary_directory_swallows_persistent_cleanup_noise(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "workspace"
+    (target / "nested").mkdir(parents=True, exist_ok=True)
+    calls: list[bool] = []
+
+    def _always_fail(path, *args, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(bool(kwargs.get("ignore_errors")))
+        if kwargs.get("ignore_errors"):
+            return None
+        raise OSError(errno.ENOTEMPTY, "Directory not empty")
+
+    monkeypatch.setattr(isolation.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(isolation.shutil, "rmtree", _always_fail)
+
+    isolation.cleanup_temporary_directory(target)
+
+    assert calls[-1] is True
+    shutil.rmtree(target, ignore_errors=True)

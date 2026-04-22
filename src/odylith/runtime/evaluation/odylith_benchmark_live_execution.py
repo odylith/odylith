@@ -1618,7 +1618,7 @@ def run_live_scenario(
         ]
         raw_prompt_visible_paths = (
             odylith_benchmark_live_diagnostics.raw_prompt_visible_paths(
-                repo_root=workspace_root,
+                repo_root=repo_root,
                 raw_prompt={
                     "prompt": str(scenario.get("prompt", "")).strip(),
                     "acceptance_criteria": [

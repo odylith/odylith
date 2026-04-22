@@ -7,6 +7,8 @@ from typing import Any, Mapping
 
 from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.evaluation import odylith_benchmark_runner
+from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime as memory_snapshot_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime as runtime_learning_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
 
 def _string(value: Any) -> str:
@@ -58,9 +60,9 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
     """Return one bounded Odylith posture summary for Compass/Registry/shells."""
 
     try:
-        optimization = odylith_context_engine_store.load_runtime_optimization_snapshot(repo_root=repo_root)
-        evaluation = odylith_context_engine_store.load_runtime_evaluation_snapshot(repo_root=repo_root)
-        memory = odylith_context_engine_store.load_runtime_memory_snapshot(
+        optimization = runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=repo_root)
+        evaluation = memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=repo_root)
+        memory = memory_snapshot_runtime.load_runtime_memory_snapshot(
             repo_root=repo_root,
             optimization_snapshot=optimization,
             evaluation_snapshot=evaluation,

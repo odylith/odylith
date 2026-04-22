@@ -29,7 +29,7 @@ Odylith evaluates benchmark outcomes in this order:
 
 ## Gate Semantics
 
-The benchmark uses three layers:
+The benchmark uses four layers:
 
 - `Hard quality gate`
   tiers `1-4` are status blockers. If Odylith gets less correct, less
@@ -41,10 +41,15 @@ The benchmark uses three layers:
   full-session token spend stay published, but they are not primary status
   gates because they are not measured on the same basis as solo-user latency
   or initial prompt size.
+- `Fairness and contract integrity`
+  the public `odylith_on` versus `odylith_off` pair fails closed when the live
+  comparison drifts from the declared contract or the report stops surfacing
+  the comparison basis explicitly. These checks are release-blocking because
+  they decide whether the paired benchmark is honest at all.
 - `Advisory mechanism checks`
-  packet coverage, widening frequency, route posture, fairness findings, and
-  similar mechanism signals stay visible for diagnosis, but they are
-  explanatory unless they show up as real outcome regressions.
+  packet coverage, widening frequency, route posture, and similar mechanism
+  signals stay visible for diagnosis, but they are explanatory unless they
+  show up as real outcome regressions.
 
 Current live-proof secondary guardrail:
 

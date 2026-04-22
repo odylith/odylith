@@ -52,6 +52,7 @@ from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_live_execution
 from odylith.runtime.evaluation import odylith_benchmark_proof_discipline
 from odylith.runtime.evaluation import odylith_benchmark_prompt_payloads
+from odylith.runtime.evaluation import odylith_benchmark_runtime_posture_runtime as benchmark_runtime_posture_runtime
 from odylith.runtime.common import odylith_benchmark_contract
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import governance_signal_codec
@@ -121,7 +122,6 @@ _FAMILY_ALIASES = {
 }
 _LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "discipline"})
 _MIN_BENCHMARK_RUNTIME_FREE_BYTES = 256 * 1024 * 1024
-_RUNTIME_POSTURE_MANAGED_HELPER_ENV = "ODYLITH_BENCHMARK_RUNTIME_POSTURE_MANAGED_HELPER"
 _VALID_PACKET_SOURCES = frozenset({"adaptive", "impact", "governance_slice", "session_brief", "bootstrap_session"})
 _ANALYSIS_FAMILIES = frozenset({"analysis", "architecture", "broad_shared_scope"})
 _WRITE_FAMILIES = frozenset(
@@ -192,7 +192,6 @@ _SERIOUS_REQUIRED_FAMILIES = frozenset(
 _REPORT_FILENAME = "latest.v1.json"
 _PROGRESS_FILENAME = "in-progress.v1.json"
 _ACTIVE_RUNS_FILENAME = "active-runs.v1.json"
-_BENCHMARK_WARM_CACHE_SECONDS = 30.0
 _BENCHMARK_ADOPTION_PROOF_SAMPLE_TIMEOUT_SECONDS = 60.0
 _BENCHMARK_ADOPTION_PROOF_TERMINATION_GRACE_SECONDS = 1.0
 _BENCHMARK_LOCK_KEY = "odylith-benchmark-runner"
@@ -829,6 +828,19 @@ def _history_report_exists_for_progress(*, repo_root: Path, progress: Mapping[st
     return _history_report_for_progress(repo_root=repo_root, progress=progress).is_file()
 
 
+def _progress_requires_persisted_report(progress: Mapping[str, Any]) -> bool:
+    raw = progress.get("write_report")
+    if raw is None:
+        return True
+    if isinstance(raw, str):
+        normalized = raw.strip().lower()
+        if normalized in {"0", "false", "no", "off"}:
+            return False
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+    return bool(raw)
+
+
 def _active_run_entry(*, repo_root: Path, progress: Mapping[str, Any]) -> dict[str, Any]:
     report_id, benchmark_profile, shard_index, shard_count, owning_pid = _active_run_identity(progress)
     progress_path = _active_run_progress_path(
@@ -850,6 +862,7 @@ def _active_run_entry(*, repo_root: Path, progress: Mapping[str, Any]) -> dict[s
         "shard_index": shard_index,
         "shard_count": shard_count,
         "owning_pid": owning_pid,
+        "write_report": _progress_requires_persisted_report(progress),
         "progress_path": str(progress_path),
     }
 
@@ -987,7 +1000,10 @@ def _clear_active_run_progress(
         shard_count=shard_count,
         owning_pid=owning_pid,
     )
-    if _history_report_exists_for_progress(repo_root=root, progress=payload):
+    if (
+        not _progress_requires_persisted_report(payload)
+        or _history_report_exists_for_progress(repo_root=root, progress=payload)
+    ):
         _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
     else:
         _benchmark_runtime_write_json_if_changed(
@@ -1095,6 +1111,8 @@ def _persist_orphaned_progress_failed_report(
     progress_payload: Mapping[str, Any],
     error: BaseException | str,
 ) -> bool:
+    if not _progress_requires_persisted_report(progress_payload):
+        return False
     root = Path(repo_root).resolve()
     history_path = _history_report_for_progress(repo_root=root, progress=progress_payload)
     if history_path.is_file():
@@ -1601,10 +1619,9 @@ def _cleanup_benchmark_worktrees(*, repo_root: Path) -> dict[str, Any]:
     removed: list[str] = []
     failed: list[str] = []
     for worktree in _benchmark_temp_worktrees(repo_root=root):
-        detached_clone_workspace = (worktree / "workspace" / ".git").resolve()
+        detached_clone_workspace = (worktree / "workspace").resolve()
         if detached_clone_workspace.exists():
-            with contextlib.suppress(OSError):
-                shutil.rmtree(worktree)
+            odylith_benchmark_isolation.cleanup_temporary_directory(worktree)
             if not worktree.exists():
                 removed.append(str(worktree))
             else:
@@ -1694,14 +1711,15 @@ def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: b
             )
             if progress_path:
                 processed_progress_paths.add(progress_path.resolve())
+            progress_reference = progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry
             if status != "running":
                 if not _history_report_exists_for_progress(
                     repo_root=root,
-                    progress=progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry,
+                    progress=progress_reference,
                 ):
                     if _persist_orphaned_progress_failed_report(
                         repo_root=root,
-                        progress_payload=progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry,
+                        progress_payload=progress_reference,
                         error=BenchmarkRunInterrupted("benchmark shard entered teardown without a persisted final report"),
                     ):
                         synthesized_failed_reports.append(str(entry.get("report_id", "")).strip())
@@ -1725,11 +1743,11 @@ def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: b
                 continue
             if not _history_report_exists_for_progress(
                 repo_root=root,
-                progress=progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry,
+                progress=progress_reference,
             ):
                 if _persist_orphaned_progress_failed_report(
                     repo_root=root,
-                    progress_payload=progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry,
+                    progress_payload=progress_reference,
                     error=BenchmarkRunInterrupted("benchmark process exited before persisting final report"),
                 ):
                     synthesized_failed_reports.append(str(entry.get("report_id", "")).strip())
@@ -1756,12 +1774,23 @@ def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: b
                             error=BenchmarkRunInterrupted("benchmark process exited before persisting final report"),
                         ):
                             synthesized_failed_reports.append(str(progress_payload.get("report_id", "")).strip())
-                    if _history_report_exists_for_progress(repo_root=root, progress=progress_payload):
+                    if (
+                        _history_report_exists_for_progress(repo_root=root, progress=progress_payload)
+                        or not _progress_requires_persisted_report(progress_payload)
+                    ):
                         _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
         if stale_entries:
             for entry in stale_entries:
                 progress_path = Path(str(entry.get("progress_path", "")).strip())
-                if progress_path.exists() and _history_report_exists_for_progress(repo_root=root, progress=entry):
+                progress_reference: Mapping[str, Any] = entry
+                if progress_path.exists():
+                    stored_progress = odylith_context_cache.read_json_object(progress_path)
+                    if isinstance(stored_progress, Mapping) and stored_progress:
+                        progress_reference = stored_progress
+                if progress_path.exists() and (
+                    _history_report_exists_for_progress(repo_root=root, progress=progress_reference)
+                    or not _progress_requires_persisted_report(progress_reference)
+                ):
                     _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
             _write_active_runs(repo_root=root, runs=retained_entries)
     shared_progress_path = progress_report_path(repo_root=root)
@@ -6094,95 +6123,6 @@ def _live_adoption_proof_scenarios(
     ordered.extend(("governance_slice", row) for row in governance[:3])
     ordered.extend(("architecture", row) for row in architecture[:3])
     return ordered[:12]
-
-
-def _runtime_posture_summary(*, repo_root: Path) -> dict[str, Any]:
-    optimization = store.load_runtime_optimization_snapshot(repo_root=repo_root)
-    evaluation = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
-    memory = store.load_runtime_memory_snapshot(
-        repo_root=repo_root,
-        optimization_snapshot=optimization,
-        evaluation_snapshot=evaluation,
-    )
-    backend_transition = dict(memory.get("backend_transition", {})) if isinstance(memory.get("backend_transition"), Mapping) else {}
-    actual_backend = dict(backend_transition.get("actual_local_backend", {})) if isinstance(backend_transition.get("actual_local_backend"), Mapping) else {}
-    target_backend = dict(backend_transition.get("target_local_backend", {})) if isinstance(backend_transition.get("target_local_backend"), Mapping) else {}
-    local_backend_status = dict(backend_transition.get("local_backend_status", {})) if isinstance(backend_transition.get("local_backend_status"), Mapping) else {}
-    signature = dict(backend_transition.get("signature", {})) if isinstance(backend_transition.get("signature"), Mapping) else {}
-    degraded_fallback = dict(memory.get("repo_scan_degraded_fallback", {})) if isinstance(memory.get("repo_scan_degraded_fallback"), Mapping) else {}
-    governance_runtime_first = dict(memory.get("governance_runtime_first", {})) if isinstance(memory.get("governance_runtime_first"), Mapping) else {}
-    entity_counts = dict(memory.get("entity_counts", {})) if isinstance(memory.get("entity_counts"), Mapping) else {}
-    remote_retrieval = dict(memory.get("remote_retrieval", {})) if isinstance(memory.get("remote_retrieval"), Mapping) else {}
-    quality_posture = dict(optimization.get("quality_posture", {})) if isinstance(optimization.get("quality_posture"), Mapping) else {}
-    architecture = dict(evaluation.get("architecture", {})) if isinstance(evaluation.get("architecture"), Mapping) else {}
-    storage = str(actual_backend.get("storage", "")).strip()
-    sparse_recall = str(actual_backend.get("sparse_recall", "")).strip()
-    projection_scope = str(signature.get("projection_scope", "")).strip()
-    indexed_entities = int(entity_counts.get("indexed_entity_count", 0) or 0)
-    evidence_documents = int(entity_counts.get("evidence_documents", 0) or 0)
-    memory_backed_retrieval_ready = bool(local_backend_status.get("ready")) and storage == "lance_local_columnar" and sparse_recall == "tantivy_sparse_recall" and indexed_entities > 0 and evidence_documents > 0
-    payload = {
-        "memory_standardization_state": str(backend_transition.get("status", "")).strip(),
-        "memory_backend_actual": {
-            "storage": storage,
-            "sparse_recall": sparse_recall,
-        },
-        "memory_backend_target": {
-            "storage": str(target_backend.get("storage", "")).strip(),
-            "sparse_recall": str(target_backend.get("sparse_recall", "")).strip(),
-        },
-        "memory_backed_retrieval_ready": memory_backed_retrieval_ready,
-        "memory_local_backend_ready": bool(local_backend_status.get("ready")),
-        "memory_projection_scope": projection_scope,
-        "memory_indexed_entity_count": indexed_entities,
-        "memory_evidence_document_count": evidence_documents,
-        "remote_retrieval_enabled": bool(remote_retrieval.get("enabled")),
-        "remote_retrieval_configured": bool(remote_retrieval.get("configured")),
-        "remote_retrieval_mode": str(remote_retrieval.get("mode", "")).strip() or "disabled",
-        "remote_retrieval_provider": str(remote_retrieval.get("provider", "")).strip(),
-        "remote_retrieval_status": str(remote_retrieval.get("status", "")).strip() or "disabled",
-        "repo_scan_degraded_fallback_rate": float(
-            degraded_fallback.get("repo_scan_degraded_fallback_rate", 0.0) or 0.0
-        ),
-        "repo_scan_degraded_reason_distribution": dict(
-            degraded_fallback.get("repo_scan_degraded_reason_distribution", {})
-        )
-        if isinstance(degraded_fallback.get("repo_scan_degraded_reason_distribution"), Mapping)
-        else {},
-        "governance_runtime_first_usage_rate": float(governance_runtime_first.get("usage_rate", 0.0) or 0.0),
-        "governance_runtime_first_fallback_rate": float(governance_runtime_first.get("fallback_rate", 0.0) or 0.0),
-        "governance_runtime_first_fallback_reason_distribution": dict(
-            governance_runtime_first.get("fallback_reason_distribution", {})
-        )
-        if isinstance(governance_runtime_first.get("fallback_reason_distribution"), Mapping)
-        else {},
-        "route_ready_rate": float(quality_posture.get("route_ready_rate", 0.0) or 0.0),
-        "native_spawn_ready_rate": float(quality_posture.get("native_spawn_ready_rate", 0.0) or 0.0),
-        "architecture_covered_case_count": int(architecture.get("covered_case_count", 0) or 0),
-        "architecture_satisfied_case_count": int(architecture.get("satisfied_case_count", 0) or 0),
-        "architecture_coverage_rate": float(architecture.get("coverage_rate", 0.0) or 0.0),
-        "architecture_satisfaction_rate": float(architecture.get("satisfaction_rate", 0.0) or 0.0),
-    }
-    if payload["memory_backed_retrieval_ready"]:
-        return payload
-    managed_payload = _managed_runtime_posture_summary(repo_root=repo_root)
-    if not managed_payload:
-        return payload
-    managed_actual_backend = (
-        dict(managed_payload.get("memory_backend_actual", {}))
-        if isinstance(managed_payload.get("memory_backend_actual"), Mapping)
-        else {}
-    )
-    if (
-        bool(managed_payload.get("memory_backed_retrieval_ready"))
-        and bool(managed_payload.get("memory_local_backend_ready"))
-        and str(managed_actual_backend.get("storage", "")).strip() == "lance_local_columnar"
-        and str(managed_actual_backend.get("sparse_recall", "")).strip() == "tantivy_sparse_recall"
-    ):
-        return managed_payload
-    return payload
-
-
 def _run_live_adoption_proof(
     *,
     repo_root: Path,
@@ -6287,129 +6227,6 @@ def _run_live_adoption_proof(
             source="benchmark_live_adoption_proof",
         )
     return payload
-
-
-def _runtime_posture_python_candidates(*, repo_root: Path) -> list[Path]:
-    root = Path(repo_root).resolve()
-    rows = [
-        root / ".odylith" / "runtime" / "current" / "bin" / "python",
-        root / ".venv" / "bin" / "python",
-    ]
-    deduped: list[Path] = []
-    seen: set[str] = set()
-    for candidate in rows:
-        token = str(candidate.resolve()) if candidate.exists() else str(candidate)
-        if token in seen:
-            continue
-        seen.add(token)
-        deduped.append(candidate)
-    return deduped
-
-
-def _managed_runtime_posture_summary(*, repo_root: Path) -> dict[str, Any] | None:
-    if os.environ.get(_RUNTIME_POSTURE_MANAGED_HELPER_ENV) == "1":
-        return None
-    root = Path(repo_root).resolve()
-    current_python = Path(sys.executable).resolve()
-    script = (
-        "import json\n"
-        "from pathlib import Path\n"
-        "from odylith.runtime.evaluation import odylith_benchmark_runner as runner\n"
-        f"print(json.dumps(runner._runtime_posture_summary(repo_root=Path({str(root)!r})), sort_keys=True))\n"
-    )
-    for candidate in _runtime_posture_python_candidates(repo_root=root):
-        if not candidate.is_file():
-            continue
-        with contextlib.suppress(OSError):
-            if candidate.resolve() == current_python:
-                continue
-        env = os.environ.copy()
-        existing_pythonpath = str(env.get("PYTHONPATH", "")).strip()
-        env["PYTHONPATH"] = os.pathsep.join(
-            token
-            for token in [str((root / "src").resolve()), existing_pythonpath]
-            if token
-        )
-        env[_RUNTIME_POSTURE_MANAGED_HELPER_ENV] = "1"
-        completed = subprocess.run(  # noqa: S603
-            [str(candidate), "-c", script],
-            cwd=root,
-            env=env,
-            capture_output=True,
-            text=True,
-            timeout=60,
-            check=False,
-        )
-        if completed.returncode != 0:
-            continue
-        output = str(completed.stdout or "").strip().splitlines()
-        if not output:
-            continue
-        with contextlib.suppress(json.JSONDecodeError):
-            payload = json.loads(output[-1])
-            if isinstance(payload, Mapping):
-                return dict(payload)
-    return None
-
-
-def _prime_benchmark_runtime_cache(*, repo_root: Path) -> None:
-    root = Path(repo_root).resolve()
-    store.warm_projections(repo_root=root, reason="benchmark", scope="full")
-    store.prime_reasoning_projection_cache(repo_root=root)
-    guidance_catalog = store.tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
-    guidance_chunk_count = int(guidance_catalog.get("chunk_count", 0) or 0)
-    guidance_source_doc_count = int(guidance_catalog.get("source_doc_count", 0) or 0)
-    guidance_task_family_count = int(guidance_catalog.get("task_family_count", 0) or 0)
-    if guidance_chunk_count <= 0 or guidance_source_doc_count <= 0 or guidance_task_family_count <= 0:
-        raise RuntimeError(
-            "Benchmark warm cache requires a populated guidance catalog before proof runs."
-        )
-    store._judgment_memory_snapshot_cached(repo_root=root)  # noqa: SLF001
-    store._git_branch_name(repo_root=root)  # noqa: SLF001
-    store._git_head_oid(repo_root=root)  # noqa: SLF001
-    memory_snapshot = store.load_runtime_memory_snapshot(repo_root=root)
-    backend_transition = (
-        dict(memory_snapshot.get("backend_transition", {}))
-        if isinstance(memory_snapshot.get("backend_transition"), Mapping)
-        else {}
-    )
-    actual_backend = (
-        dict(backend_transition.get("actual_local_backend", {}))
-        if isinstance(backend_transition.get("actual_local_backend"), Mapping)
-        else {}
-    )
-    local_backend_status = (
-        dict(backend_transition.get("local_backend_status", {}))
-        if isinstance(backend_transition.get("local_backend_status"), Mapping)
-        else {}
-    )
-    entity_counts = (
-        dict(memory_snapshot.get("entity_counts", {}))
-        if isinstance(memory_snapshot.get("entity_counts"), Mapping)
-        else {}
-    )
-    if not (
-        bool(local_backend_status.get("ready"))
-        and str(actual_backend.get("storage", "")).strip() == "lance_local_columnar"
-        and str(actual_backend.get("sparse_recall", "")).strip() == "tantivy_sparse_recall"
-        and int(entity_counts.get("indexed_entity_count", 0) or 0) > 0
-        and int(entity_counts.get("evidence_documents", 0) or 0) > 0
-    ):
-        raise RuntimeError(
-            "Benchmark warm cache requires an active local LanceDB/Tantivy memory substrate before proof runs."
-        )
-    cache_until = time.monotonic() + _BENCHMARK_WARM_CACHE_SECONDS
-    full_fingerprint = store.projection_input_fingerprint(repo_root=root, scope="full")
-    reasoning_fingerprint = store.projection_input_fingerprint(repo_root=root, scope="reasoning")
-    default_fingerprint = store.projection_input_fingerprint(repo_root=root, scope="default")
-    store._PROCESS_WARM_CACHE[f"{root}:full"] = cache_until  # noqa: SLF001
-    store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{root}:full"] = full_fingerprint  # noqa: SLF001
-    store._PROCESS_WARM_CACHE[f"{root}:reasoning"] = cache_until  # noqa: SLF001
-    store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{root}:reasoning"] = reasoning_fingerprint  # noqa: SLF001
-    store._PROCESS_WARM_CACHE[f"{root}:default"] = cache_until  # noqa: SLF001
-    store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{root}:default"] = default_fingerprint  # noqa: SLF001
-
-
 def _normalize_cache_profiles(cache_profiles: Sequence[str]) -> list[str]:
     normalized = [str(token).strip().lower() for token in cache_profiles if str(token).strip().lower() in _VALID_CACHE_PROFILES]
     if not normalized:
@@ -6433,7 +6250,7 @@ def _prepare_benchmark_runtime_cache(*, repo_root: Path, cache_profile: str) -> 
     profile = str(cache_profile or "warm").strip().lower() or "warm"
     store.clear_runtime_process_caches(repo_root=repo_root)
     if profile == "warm":
-        _prime_benchmark_runtime_cache(repo_root=repo_root)
+        benchmark_runtime_posture_runtime.prime_benchmark_runtime_cache(repo_root=repo_root)
 
 
 def _benchmark_report_id(
@@ -7840,6 +7657,7 @@ def run_benchmarks(
             "report_id": report_id,
             "repo_root": str(root),
             "owning_pid": os.getpid(),
+            "write_report": write_report,
             "benchmark_profile": normalized_profile,
             "benchmark_profile_label": _benchmark_profile_label(normalized_profile),
             "benchmark_profile_description": _benchmark_profile_description(normalized_profile),
@@ -8209,7 +8027,11 @@ def run_benchmarks(
                 if post_run_probe_eligible
                 else {}
             )
-            runtime_posture = {} if sharded_run else _runtime_posture_summary(repo_root=root)
+            runtime_posture = (
+                {}
+                if sharded_run
+                else benchmark_runtime_posture_runtime.runtime_posture_summary(repo_root=root)
+            )
             if not sharded_run and int(adoption_proof.get("sample_size", 0) or 0) > 0:
                 runtime_posture["route_ready_rate"] = float(adoption_proof.get("route_ready_rate", 0.0) or 0.0)
                 runtime_posture["native_spawn_ready_rate"] = float(

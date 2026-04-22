@@ -72,10 +72,12 @@ still benefit from the same grounding and governance surfaces, but that is not
 yet Claude-host benchmark proof.
 
 Tracked source truth now carries a more serious benchmark corpus than the last
-published reports: `64` tracked scenarios, including explicit API-evolution,
-stateful-recovery, external-dependency, destructive-scope, Context Engine, and
-Execution Engine families. Publication claims must be refreshed from a rerun
-before they can speak for that expanded corpus.
+published reports: `82` tracked scenarios (`77` implementation plus `5`
+architecture), including explicit API evolution, stateful recovery,
+external-dependency recovery, destructive-scope control, Context Engine,
+Execution Engine, Guidance Behavior, and Discipline families. Publication
+claims must be refreshed from a rerun before they can speak for that expanded
+corpus.
 
 ## Closeout Framing
 
@@ -125,12 +127,14 @@ not copied into this overview by hand:
 - [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
 - [Benchmark Tables](BENCHMARK_TABLES.md)
 - `docs/benchmarks/latest-summary.v1.json`
+- `docs/benchmarks/proof/*.svg`
+- `docs/benchmarks/diagnostic/*.svg`
 
 Tracked source truth is currently ahead of some older published artifacts, so
 do not infer release-safe benchmark posture from stale report ids embedded in
 overview prose. The serious claim only refreshes when the selected proof report,
-generated snapshot docs, graph artifacts, and registry or governance truth all
-move together on the same validated tree.
+generated snapshot docs, README-linked profile graph artifacts, and registry or
+governance truth all move together on the same validated tree.
 
 ## Fair Comparison Protocol
 

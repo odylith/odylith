@@ -203,6 +203,37 @@ INTERVENTION_CONTRACT_BUNDLE_EXPECTATIONS: tuple[tuple[str, bool], ...] = (
         False,
     ),
 )
+RUNTIME_HOTFILE_LIMITS = {
+    "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": 8561,
+    "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py": 4174,
+    "src/odylith/runtime/orchestration/subagent_orchestrator.py": 3490,
+    "src/odylith/runtime/surfaces/render_mermaid_catalog.py": 3346,
+    "src/odylith/runtime/surfaces/render_registry_dashboard.py": 3313,
+    "src/odylith/runtime/context_engine/odylith_architecture_mode.py": 3289,
+    "src/odylith/runtime/orchestration/subagent_router.py": 3150,
+    "src/odylith/runtime/context_engine/odylith_context_engine.py": 3105,
+    "src/odylith/runtime/context_engine/odylith_context_engine_store.py": 3049,
+    "src/odylith/runtime/governance/sync_workstream_artifacts.py": 2967,
+    "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py": 2966,
+    "src/odylith/runtime/governance/delivery_intelligence_engine.py": 2898,
+    "src/odylith/runtime/governance/component_registry_intelligence.py": 2775,
+    "src/odylith/runtime/surfaces/render_casebook_dashboard.py": 2593,
+    "src/odylith/runtime/context_engine/tooling_context_packet_builder.py": 2534,
+    "src/odylith/runtime/surfaces/dashboard_ui_primitives.py": 2521,
+    "src/odylith/runtime/reasoning/tribunal_engine.py": 2469,
+    "src/odylith/runtime/context_engine/tooling_context_routing.py": 2244,
+    "src/odylith/runtime/governance/validate_backlog_contract.py": 2158,
+    "src/odylith/runtime/surfaces/compass_standup_brief_batch.py": 2076,
+    "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py": 1996,
+    "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py": 1985,
+    "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py": 1940,
+    "src/odylith/runtime/memory/odylith_memory_backend.py": 1849,
+    "src/odylith/runtime/intervention_engine/conversation_runtime.py": 1599,
+    "src/odylith/runtime/evaluation/odylith_evaluation_ledger.py": 1576,
+    "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py": 1576,
+    "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": 1556,
+    "src/odylith/runtime/context_engine/odylith_context_engine_grounding_runtime.py": 1508,
+}
 
 
 def test_public_tree_contains_no_legacy_contract_leaks() -> None:
@@ -813,6 +844,22 @@ def test_anti_slop_guidance_and_skill_bundle_assets_stay_synced() -> None:
     assert "@../../../odylith/skills/odylith-code-hygiene-guard/SKILL.md" in shim_text
 
 
+def test_runtime_hotfile_inventory_stays_explicit_and_non_expanding() -> None:
+    observed: dict[str, int] = {}
+    for path in (ROOT / "src" / "odylith" / "runtime").rglob("*.py"):
+        relative = str(path.relative_to(ROOT))
+        line_count = sum(1 for _ in path.read_text(encoding="utf-8").splitlines())
+        if line_count >= 1500:
+            observed[relative] = line_count
+
+    assert set(observed) == set(RUNTIME_HOTFILE_LIMITS), (
+        "oversized runtime-file inventory drifted; update the inventory only when the "
+        "decomposition pass or a newly accepted exception is intentional"
+    )
+    for relative, limit in RUNTIME_HOTFILE_LIMITS.items():
+        assert observed[relative] <= limit, f"oversized runtime owner grew past pinned limit: {relative}"
+
+
 def test_claude_hygiene_bridge_and_reviewer_stay_aligned() -> None:
     paths = (
         ROOT / ".claude" / "CLAUDE.md",
@@ -936,6 +983,80 @@ def test_context_engine_bind_shims_are_eliminated_from_remaining_extracts() -> N
         assert "def _store():" not in text, f"store shim resurfaced in {path.relative_to(ROOT)}"
         assert "class _Store" not in text, f"store proxy resurfaced in {path.relative_to(ROOT)}"
         assert "_LazyModuleProxy" not in text, f"lazy module proxy resurfaced in {path.relative_to(ROOT)}"
+
+
+def test_runtime_learning_runtime_does_not_shadow_numeric_helper_owners() -> None:
+    path = (
+        ROOT
+        / "src"
+        / "odylith"
+        / "runtime"
+        / "context_engine"
+        / "odylith_context_engine_runtime_learning_runtime.py"
+    )
+    text = path.read_text(encoding="utf-8")
+    assert "\n    def _safe_float(" not in text, "nested _safe_float helper resurfaced in runtime learning runtime"
+    assert "\n    def _safe_int(" not in text, "nested _safe_int helper resurfaced in runtime learning runtime"
+
+
+def test_selected_runtime_consumers_use_direct_snapshot_owners() -> None:
+    runtime_learning_path = (
+        ROOT
+        / "src"
+        / "odylith"
+        / "runtime"
+        / "context_engine"
+        / "odylith_context_engine_runtime_learning_runtime.py"
+    )
+    runtime_learning_text = runtime_learning_path.read_text(encoding="utf-8")
+    assert "def load_runtime_memory_snapshot(" not in runtime_learning_text
+
+    direct_owner_expectations = {
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine.py": (
+            "store.load_runtime_optimization_snapshot(",
+            "store.load_runtime_evaluation_snapshot(",
+            "store.load_runtime_memory_snapshot(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_runtime_surface_summary.py": (
+            "odylith_context_engine_store.load_runtime_optimization_snapshot(",
+            "odylith_context_engine_store.load_runtime_evaluation_snapshot(",
+            "odylith_context_engine_store.load_runtime_memory_snapshot(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_packet_session_runtime.py": (
+            "context_engine_store.load_runtime_optimization_snapshot(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_delivery_surface_payload_runtime.py": (
+            "runtime_learning_runtime.load_runtime_memory_snapshot(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_memory_snapshot_runtime.py": (
+            "context_engine_store.load_runtime_optimization_snapshot(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py": (
+            "store.load_runtime_optimization_snapshot(",
+            "store.load_runtime_evaluation_snapshot(",
+            "store.load_runtime_memory_snapshot(",
+        ),
+    }
+    for path, banned_fragments in direct_owner_expectations.items():
+        text = path.read_text(encoding="utf-8")
+        for fragment in banned_fragments:
+            assert fragment not in text, f"snapshot-owner alias wall resurfaced in {path.relative_to(ROOT)}: {fragment}"
+
+
+def test_benchmark_runner_uses_runtime_posture_owner_directly() -> None:
+    runner_path = (
+        ROOT
+        / "src"
+        / "odylith"
+        / "runtime"
+        / "evaluation"
+        / "odylith_benchmark_runner.py"
+    )
+    runner_text = runner_path.read_text(encoding="utf-8")
+    assert "def _runtime_posture_summary(" not in runner_text
+    assert "def _prime_benchmark_runtime_cache(" not in runner_text
+    assert "benchmark_runtime_posture_runtime.runtime_posture_summary(" in runner_text
+    assert "benchmark_runtime_posture_runtime.prime_benchmark_runtime_cache(" in runner_text
 
 
 def test_session_brief_runtime_uses_dossier_compaction_owner_directly() -> None:

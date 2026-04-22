@@ -28,7 +28,9 @@ from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_compass_runtime_cache
 from odylith.runtime.context_engine import odylith_context_engine_daemon_wait_runtime
 from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
+from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime as memory_snapshot_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime as runtime_learning_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon as workspace_daemon
 from odylith.runtime.context_engine import runtime_read_session
@@ -682,14 +684,10 @@ def _runtime_status_payload(*, repo_root: Path) -> dict[str, Any]:
     )
     preferred_backend = watcher_report.get("preferred_backend", store.preferred_watcher_backend(repo_root=repo_root))
     odylith_switch = odylith_ablation.build_odylith_switch_snapshot(repo_root=repo_root)
-    optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)
-    evaluation_snapshot = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
+    optimization_snapshot = runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=repo_root)
+    evaluation_snapshot = memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=repo_root)
     orchestration_adoption_snapshot = store.load_orchestration_adoption_snapshot(repo_root=repo_root)
-    memory_snapshot = store.load_runtime_memory_snapshot(
-        repo_root=repo_root,
-        optimization_snapshot=optimization_snapshot,
-        evaluation_snapshot=evaluation_snapshot,
-    )
+    memory_snapshot = memory_snapshot_runtime.load_runtime_memory_snapshot(repo_root=repo_root, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
     benchmark_report = odylith_benchmark_runner.compact_report_summary(
         odylith_benchmark_runner.load_latest_runtime_benchmark_report(repo_root=repo_root)
     )
@@ -1437,13 +1435,9 @@ def _run_status(*, repo_root: Path) -> int:
 def _run_memory_snapshot(*, repo_root: Path) -> int:
     with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="full"):
         store._warm_runtime(repo_root=repo_root, runtime_mode="auto", reason="memory_snapshot", scope="full")  # noqa: SLF001
-        optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)
-        evaluation_snapshot = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
-        payload = store.load_runtime_memory_snapshot(
-            repo_root=repo_root,
-            optimization_snapshot=optimization_snapshot,
-            evaluation_snapshot=evaluation_snapshot,
-        )
+        optimization_snapshot = runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=repo_root)
+        evaluation_snapshot = memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=repo_root)
+        payload = memory_snapshot_runtime.load_runtime_memory_snapshot(repo_root=repo_root, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -2006,13 +2000,9 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             payload=dict(payload.get("runtime_payload", {})) if isinstance(payload.get("runtime_payload"), Mapping) else {},
         )
     if command == "memory-snapshot":
-        optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)
-        evaluation_snapshot = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
-        return store.load_runtime_memory_snapshot(
-            repo_root=repo_root,
-            optimization_snapshot=optimization_snapshot,
-            evaluation_snapshot=evaluation_snapshot,
-        )
+        optimization_snapshot = runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=repo_root)
+        evaluation_snapshot = memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=repo_root)
+        return memory_snapshot_runtime.load_runtime_memory_snapshot(repo_root=repo_root, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
     if command == "query":
         return store.search_entities_payload(
             repo_root=repo_root,

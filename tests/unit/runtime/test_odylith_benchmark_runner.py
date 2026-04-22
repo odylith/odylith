@@ -362,8 +362,8 @@ def test_run_benchmarks_emits_corpus_and_family_summaries(tmp_path: Path, monkey
         },
     )
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -630,8 +630,8 @@ def test_run_benchmarks_quick_profile_defaults_to_bounded_sentinel_matched_pair(
     )
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": len(list(scenarios))})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -696,6 +696,10 @@ def test_run_benchmarks_quick_profile_defaults_to_bounded_sentinel_matched_pair(
     assert report["cache_profiles"] == ["warm"]
     assert report["scenario_count"] == 3
     assert report["latest_eligible"] is False
+    assert not runner.history_report_path(repo_root=tmp_path, report_id=str(report["report_id"])).exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+    assert not runner.progress_report_path(repo_root=tmp_path).exists()  # noqa: SLF001
+    assert not list(runner.benchmark_root(repo_root=tmp_path).glob("progress-*.json"))  # noqa: SLF001
     assert ("release-high", "odylith_on") not in seen_calls
     assert ("release-critical", "odylith_on") in seen_calls
     assert ("release-critical", "raw_agent_baseline") in seen_calls
@@ -808,8 +812,8 @@ def test_run_benchmarks_supports_family_filtered_shards(
     )
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": len(list(scenarios))})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -1943,6 +1947,73 @@ def test_acceptance_holds_when_local_memory_substrate_is_inactive() -> None:
     assert "Vespa is optional and currently disabled; the current benchmark proof is local-first, not remote-assisted." in acceptance["notes"]
 
 
+def test_acceptance_holds_when_fairness_contract_fails() -> None:
+    acceptance = runner._acceptance(  # noqa: SLF001
+        mode_summaries={
+            "odylith_on": {
+                "scenario_count": 1,
+                "within_budget_rate": 1.0,
+                "validation_success_rate": 1.0,
+                "expectation_success_rate": 1.0,
+                "critical_required_path_recall_rate": 1.0,
+                "critical_validation_success_rate": 1.0,
+                "write_surface_backed_scenario_count": 0,
+            },
+            "raw_agent_baseline": {
+                "scenario_count": 1,
+                "within_budget_rate": 1.0,
+                "validation_success_rate": 1.0,
+                "expectation_success_rate": 1.0,
+                "critical_required_path_recall_rate": 1.0,
+                "critical_validation_success_rate": 1.0,
+                "write_surface_backed_scenario_count": 0,
+            },
+        },
+        primary_comparison={
+            "required_path_recall_delta": 0.0,
+            "required_path_precision_delta": 0.0,
+            "hallucinated_surface_rate_delta": 0.0,
+            "validation_success_delta": 0.0,
+            "critical_required_path_recall_delta": 0.0,
+            "critical_validation_success_delta": 0.0,
+            "expectation_success_delta": 0.0,
+            "median_latency_delta_ms": 0.0,
+            "median_prompt_token_delta": 0.0,
+            "median_total_payload_token_delta": 0.0,
+        },
+        family_summaries={
+            "validation_heavy_fix": {
+                "odylith_on": {
+                    "required_path_recall_rate": 1.0,
+                    "required_path_precision_rate": 1.0,
+                    "hallucinated_surface_rate": 0.0,
+                    "validation_success_rate": 1.0,
+                    "expectation_success_rate": 1.0,
+                },
+                "raw_agent_baseline": {
+                    "required_path_recall_rate": 1.0,
+                    "required_path_precision_rate": 1.0,
+                    "hallucinated_surface_rate": 0.0,
+                    "validation_success_rate": 1.0,
+                    "expectation_success_rate": 1.0,
+                },
+            }
+        },
+        corpus_summary={
+            "correctness_critical_scenario_count": 0,
+            "critical_required_path_backed_scenario_count": 0,
+            "critical_validation_backed_scenario_count": 0,
+        },
+        fairness_findings=["case-a/raw_agent_baseline is missing raw prompt-visible path attribution"],
+        comparison_contract="live_end_to_end",
+    )
+
+    assert acceptance["status"] == "hold"
+    assert acceptance["hard_quality_gate_cleared"] is False
+    assert acceptance["checks"]["fairness_contract_passed"] is False
+    assert any("fairness contract findings are present" in note for note in acceptance["notes"])
+
+
 def test_live_acceptance_keeps_latency_and_token_deltas_diagnostic_for_live_proof() -> None:
     acceptance = runner._acceptance(  # noqa: SLF001
         mode_summaries={
@@ -2328,236 +2399,6 @@ def test_safe_orchestration_summary_preserves_supplied_packet_adoption_on_router
     assert adoption["native_spawn_ready"] is True
     assert adoption["requires_widening"] is False
     assert adoption["routing_confidence"] == "high"
-
-
-def test_prime_benchmark_runtime_cache_warms_once(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
-    calls: list[tuple[Path, str, str]] = []
-    primed: list[Path] = []
-    guidance_primed: list[Path] = []
-    judgment_primed: list[Path] = []
-    git_branch_primed: list[Path] = []
-    git_head_primed: list[Path] = []
-
-    def _fake_warm_projections(*, repo_root: Path, reason: str, scope: str):  # noqa: ANN001
-        calls.append((repo_root, reason, scope))
-        return {"ok": True}
-
-    monkeypatch.setattr(runner.store, "warm_projections", _fake_warm_projections)
-    monkeypatch.setattr(
-        runner.store,
-        "prime_reasoning_projection_cache",
-        lambda *, repo_root: primed.append(repo_root),
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "projection_input_fingerprint",
-        lambda *, repo_root, scope="default": f"{scope}-fingerprint",
-    )
-    monkeypatch.setattr(
-        runner.store.tooling_guidance_catalog,
-        "load_guidance_catalog",
-        lambda *, repo_root: guidance_primed.append(repo_root)
-        or {"chunk_count": 1, "source_doc_count": 1, "task_family_count": 1},
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "_judgment_memory_snapshot_cached",
-        lambda *, repo_root: judgment_primed.append(repo_root) or {},
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "_git_branch_name",
-        lambda *, repo_root: git_branch_primed.append(repo_root) or "main",
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "_git_head_oid",
-        lambda *, repo_root: git_head_primed.append(repo_root) or "abc123",
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "load_runtime_memory_snapshot",
-        lambda *, repo_root: {
-            "backend_transition": {
-                "actual_local_backend": {
-                    "storage": "lance_local_columnar",
-                    "sparse_recall": "tantivy_sparse_recall",
-                },
-                "local_backend_status": {"ready": True},
-            },
-            "entity_counts": {
-                "indexed_entity_count": 12,
-                "evidence_documents": 14,
-            },
-        },
-    )
-    monkeypatch.setattr(runner.store, "_PROCESS_WARM_CACHE", {})
-    monkeypatch.setattr(runner.store, "_PROCESS_WARM_CACHE_FINGERPRINTS", {})
-
-    runner._prime_benchmark_runtime_cache(repo_root=tmp_path)  # noqa: SLF001
-
-    assert calls == [(tmp_path.resolve(), "benchmark", "full")]
-    assert primed == [tmp_path.resolve()]
-    assert guidance_primed == [tmp_path.resolve()]
-    assert judgment_primed == [tmp_path.resolve()]
-    assert git_branch_primed == [tmp_path.resolve()]
-    assert git_head_primed == [tmp_path.resolve()]
-    assert runner.store._PROCESS_WARM_CACHE[f"{tmp_path.resolve()}:full"] > 0  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE[f"{tmp_path.resolve()}:reasoning"] > 0  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE[f"{tmp_path.resolve()}:default"] > 0  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:full"] == "full-fingerprint"  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:reasoning"] == "reasoning-fingerprint"  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:default"] == "default-fingerprint"  # noqa: SLF001
-
-
-def test_prime_benchmark_runtime_cache_requires_active_local_memory_substrate(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
-    monkeypatch.setattr(runner.store, "warm_projections", lambda **_: {"ok": True})
-    monkeypatch.setattr(runner.store, "prime_reasoning_projection_cache", lambda **_: None)
-    monkeypatch.setattr(
-        runner.store.tooling_guidance_catalog,
-        "load_guidance_catalog",
-        lambda **_: {"chunk_count": 1, "source_doc_count": 1, "task_family_count": 1},
-    )
-    monkeypatch.setattr(runner.store, "_judgment_memory_snapshot_cached", lambda **_: {})
-    monkeypatch.setattr(runner.store, "_git_branch_name", lambda **_: "main")
-    monkeypatch.setattr(runner.store, "_git_head_oid", lambda **_: "abc123")
-    monkeypatch.setattr(
-        runner.store,
-        "load_runtime_memory_snapshot",
-        lambda *, repo_root: {
-            "backend_transition": {
-                "actual_local_backend": {
-                    "storage": "compiler_projection_snapshot",
-                    "sparse_recall": "repo_scan_fallback",
-                },
-                "local_backend_status": {"ready": False},
-            },
-            "entity_counts": {
-                "indexed_entity_count": 0,
-                "evidence_documents": 0,
-            },
-        },
-    )
-
-    with pytest.raises(RuntimeError, match="active local LanceDB/Tantivy memory substrate"):
-        runner._prime_benchmark_runtime_cache(repo_root=tmp_path)  # noqa: SLF001
-
-
-def test_runtime_posture_summary_reports_memory_and_remote_posture(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(runner.store, "load_runtime_optimization_snapshot", lambda *, repo_root: {"quality_posture": {"route_ready_rate": 0.8, "native_spawn_ready_rate": 0.6}})
-    monkeypatch.setattr(runner.store, "load_runtime_evaluation_snapshot", lambda *, repo_root: {"architecture": {"covered_case_count": 4, "satisfied_case_count": 3, "coverage_rate": 1.0, "satisfaction_rate": 0.75}})
-    monkeypatch.setattr(
-        runner.store,
-        "load_runtime_memory_snapshot",
-        lambda *, repo_root, optimization_snapshot=None, evaluation_snapshot=None: {
-            "backend_transition": {
-                "status": "standardized",
-                "actual_local_backend": {
-                    "storage": "lance_local_columnar",
-                    "sparse_recall": "tantivy_sparse_recall",
-                },
-                "target_local_backend": {
-                    "storage": "lance_local_columnar",
-                    "sparse_recall": "tantivy_sparse_recall",
-                },
-                "local_backend_status": {"ready": True},
-                "signature": {"projection_scope": "full"},
-            },
-            "repo_scan_degraded_fallback": {"repo_scan_degraded_fallback_rate": 0.02},
-            "governance_runtime_first": {"usage_rate": 1.0, "fallback_rate": 0.0},
-            "entity_counts": {"indexed_entity_count": 120, "evidence_documents": 145},
-            "remote_retrieval": {
-                "enabled": False,
-                "configured": False,
-                "mode": "disabled",
-                "provider": "vespa_http",
-                "status": "disabled",
-            },
-        },
-    )
-
-    posture = runner._runtime_posture_summary(repo_root=tmp_path)  # noqa: SLF001
-
-    assert posture["memory_backed_retrieval_ready"] is True
-    assert posture["memory_local_backend_ready"] is True
-    assert posture["memory_projection_scope"] == "full"
-    assert posture["memory_indexed_entity_count"] == 120
-    assert posture["memory_evidence_document_count"] == 145
-    assert posture["remote_retrieval_status"] == "disabled"
-    assert posture["remote_retrieval_mode"] == "disabled"
-    assert posture["remote_retrieval_enabled"] is False
-
-
-def test_runtime_posture_summary_prefers_managed_runtime_when_host_python_lacks_memory_backend(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
-    monkeypatch.setattr(runner.store, "load_runtime_optimization_snapshot", lambda *, repo_root: {"quality_posture": {}})
-    monkeypatch.setattr(runner.store, "load_runtime_evaluation_snapshot", lambda *, repo_root: {"architecture": {}})
-    monkeypatch.setattr(
-        runner.store,
-        "load_runtime_memory_snapshot",
-        lambda *, repo_root, optimization_snapshot=None, evaluation_snapshot=None: {
-            "backend_transition": {
-                "status": "pending_target_swap",
-                "actual_local_backend": {
-                    "storage": "compiler_projection_snapshot",
-                    "sparse_recall": "repo_scan_fallback",
-                },
-                "target_local_backend": {
-                    "storage": "lance_local_columnar",
-                    "sparse_recall": "tantivy_sparse_recall",
-                },
-                "local_backend_status": {"ready": False},
-                "signature": {"projection_scope": "reasoning"},
-            },
-            "entity_counts": {"indexed_entity_count": 120, "evidence_documents": 145},
-        },
-    )
-    managed_posture = {
-        "memory_standardization_state": "standardized",
-        "memory_backend_actual": {
-            "storage": "lance_local_columnar",
-            "sparse_recall": "tantivy_sparse_recall",
-        },
-        "memory_backend_target": {
-            "storage": "lance_local_columnar",
-            "sparse_recall": "tantivy_sparse_recall",
-        },
-        "memory_backed_retrieval_ready": True,
-        "memory_local_backend_ready": True,
-        "memory_projection_scope": "reasoning",
-        "memory_indexed_entity_count": 120,
-        "memory_evidence_document_count": 145,
-        "remote_retrieval_enabled": False,
-        "remote_retrieval_configured": False,
-        "remote_retrieval_mode": "disabled",
-        "remote_retrieval_provider": "vespa_http",
-        "remote_retrieval_status": "disabled",
-        "repo_scan_degraded_fallback_rate": 0.0,
-        "repo_scan_degraded_reason_distribution": {},
-        "governance_runtime_first_usage_rate": 1.0,
-        "governance_runtime_first_fallback_rate": 0.0,
-        "governance_runtime_first_fallback_reason_distribution": {},
-        "route_ready_rate": 1.0,
-        "native_spawn_ready_rate": 1.0,
-        "architecture_covered_case_count": 0,
-        "architecture_satisfied_case_count": 0,
-        "architecture_coverage_rate": 0.0,
-        "architecture_satisfaction_rate": 0.0,
-    }
-    monkeypatch.setattr(runner, "_managed_runtime_posture_summary", lambda *, repo_root: dict(managed_posture))
-
-    posture = runner._runtime_posture_summary(repo_root=tmp_path)  # noqa: SLF001
-
-    assert posture["memory_backed_retrieval_ready"] is True
-    assert posture["memory_local_backend_ready"] is True
-    assert posture["memory_backend_actual"] == managed_posture["memory_backend_actual"]
-
-
 def test_run_benchmarks_records_cache_profile_summaries_without_overwriting_latest(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
@@ -2604,8 +2445,8 @@ def test_run_benchmarks_records_cache_profile_summaries_without_overwriting_late
     )
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -2690,8 +2531,8 @@ def test_run_benchmarks_publishes_conservative_multi_profile_view(
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -3414,8 +3255,8 @@ def test_run_benchmarks_keeps_partial_sample_out_of_latest_report(
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -3426,7 +3267,11 @@ def test_run_benchmarks_keeps_partial_sample_out_of_latest_report(
             "architecture_satisfied_case_count": 0,
         },
     )
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(
         runner,
         "_run_scenario_mode",
@@ -3554,8 +3399,8 @@ def test_run_benchmarks_writes_and_clears_progress_checkpoint(
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -3566,7 +3411,11 @@ def test_run_benchmarks_writes_and_clears_progress_checkpoint(
             "architecture_satisfied_case_count": 0,
         },
     )
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
 
     def _fake_run_scenario_mode(
         *,
@@ -3678,8 +3527,8 @@ def test_run_benchmarks_shards_do_not_touch_shared_progress_or_profile_latest(
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -3690,7 +3539,11 @@ def test_run_benchmarks_shards_do_not_touch_shared_progress_or_profile_latest(
             "architecture_satisfied_case_count": 0,
         },
     )
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(
         runner,
         "_run_scenario_mode",
@@ -3791,8 +3644,8 @@ def test_run_benchmarks_shards_use_shard_specific_lock_key(
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -3803,7 +3656,11 @@ def test_run_benchmarks_shards_use_shard_specific_lock_key(
             "architecture_satisfied_case_count": 0,
         },
     )
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(
         runner,
         "_run_scenario_mode",
@@ -3861,7 +3718,11 @@ def test_run_benchmarks_shards_persist_failed_history_report_on_exception(
     ]
 
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(runner, "_benchmark_report_id", lambda **_: "failed-shard")
     monkeypatch.setattr(runner, "_utc_now", lambda: "2026-04-13T12:00:00Z")
     monkeypatch.setattr(
@@ -3907,7 +3768,11 @@ def test_run_benchmarks_shards_persist_failed_history_report_on_keyboard_interru
     ]
 
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(runner, "_benchmark_report_id", lambda **_: "failed-shard-interrupt")
     monkeypatch.setattr(runner, "_utc_now", lambda: "2026-04-13T12:00:00Z")
     monkeypatch.setattr(
@@ -4004,10 +3869,18 @@ def test_run_benchmarks_shards_skip_merge_only_post_run_metrics(
     ]
 
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(runner, "_singleton_family_latency_probes", lambda **_: (_ for _ in ()).throw(AssertionError("skip latency probes")))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda **_: (_ for _ in ()).throw(AssertionError("skip adoption proof")))
-    monkeypatch.setattr(runner, "_runtime_posture_summary", lambda **_: (_ for _ in ()).throw(AssertionError("skip runtime posture")))
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
+        lambda **_: (_ for _ in ()).throw(AssertionError("skip runtime posture")),
+    )
     monkeypatch.setattr(runner, "_robustness_summary", lambda **_: (_ for _ in ()).throw(AssertionError("skip robustness")))
     monkeypatch.setattr(
         runner,
@@ -4086,10 +3959,18 @@ def test_run_benchmarks_manual_selection_skips_extra_post_run_probe_fanout(
             "architecture_scenarios": [],
         },
     )
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(runner, "_singleton_family_latency_probes", lambda **_: (_ for _ in ()).throw(AssertionError("skip latency probes")))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda **_: (_ for _ in ()).throw(AssertionError("skip adoption proof")))
-    monkeypatch.setattr(runner, "_runtime_posture_summary", lambda **_: {"route_ready_rate": 1.0, "native_spawn_ready_rate": 1.0})
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
+        lambda **_: {"route_ready_rate": 1.0, "native_spawn_ready_rate": 1.0},
+    )
     monkeypatch.setattr(runner, "_robustness_summary", lambda **_: {})
     monkeypatch.setattr(
         runner,
@@ -4182,7 +4063,11 @@ def test_run_benchmarks_shards_skip_live_batch_pairing(
     ]
 
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(
         runner,
         "_run_live_scenario_batch",
@@ -4261,8 +4146,8 @@ def test_diagnostic_profile_keeps_public_pair_packet_only(
         lambda *, repo_root, scenarios: adoption_proof_calls.append(len(list(scenarios))) or {"sample_size": 0},
     )
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -4273,7 +4158,11 @@ def test_diagnostic_profile_keeps_public_pair_packet_only(
             "architecture_satisfied_case_count": 0,
         },
     )
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
     monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
     monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
@@ -5474,7 +5363,11 @@ def test_live_explicit_workstream_proof_slice_delegates_when_grounded(monkeypatc
 
 def test_live_explicit_workstream_packet_keeps_docs_bounded(monkeypatch: pytest.MonkeyPatch) -> None:
     repo_root = REPO_ROOT
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda *, repo_root: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda *, repo_root: None,
+    )
     runner._prepare_benchmark_runtime_cache(repo_root=repo_root, cache_profile="warm")  # noqa: SLF001
     scenarios = runner.load_benchmark_scenarios(repo_root=repo_root)
     scenario = next(row for row in scenarios if row["scenario_id"] == "wave3-explicit-workstream")
@@ -7121,6 +7014,23 @@ def test_cleanup_benchmark_worktrees_removes_detached_clone_workspace(tmp_path: 
     assert not live_dir.exists()
 
 
+def test_cleanup_benchmark_worktrees_removes_orphaned_detached_clone_workspace_without_git_dir(tmp_path: Path) -> None:
+    clone_parent = runner.odylith_benchmark_isolation.benchmark_workspace_parent(  # noqa: SLF001
+        repo_root=tmp_path,
+        create=True,
+    )
+    live_dir = clone_parent / "odylith-benchmark-live-orphaned"
+    (live_dir / "workspace").mkdir(parents=True, exist_ok=True)
+    (live_dir / ".DS_Store").write_text("", encoding="utf-8")
+    (live_dir / "workspace" / ".DS_Store").write_text("", encoding="utf-8")
+
+    cleanup = runner._cleanup_benchmark_worktrees(repo_root=tmp_path)  # noqa: SLF001
+
+    assert cleanup["removed_worktree_count"] == 1
+    assert str(live_dir.resolve()) in cleanup["removed_worktrees"]
+    assert not live_dir.exists()
+
+
 def test_sync_active_run_progress_keeps_failed_progress_out_of_active_runs(tmp_path: Path) -> None:
     payload = {
         "report_id": "report-1",
@@ -7185,6 +7095,37 @@ def test_clear_active_run_progress_preserves_progress_when_history_report_is_mis
         owning_pid=55555,
     )
     assert progress_path.exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+
+
+def test_clear_active_run_progress_discards_ephemeral_progress_when_history_report_is_missing(tmp_path: Path) -> None:
+    payload = {
+        "report_id": "report-ephemeral",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:01:00Z",
+        "status": "provisional_pass",
+        "phase": "final_cleanup",
+        "shard_index": 1,
+        "shard_count": 4,
+        "owning_pid": 55556,
+        "write_report": False,
+    }
+
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+    runner._clear_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-ephemeral",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=4,
+        owning_pid=55556,
+    )
+    assert not progress_path.exists()
     assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
 
 
@@ -7391,6 +7332,53 @@ def test_prune_stale_benchmark_progress_synthesizes_failed_report_for_orphaned_p
     assert cleanup["synthesized_failed_report_count"] == 1
     assert report["status"] == "failed"
     assert report["acceptance"]["status"] == "failed"
+    assert not progress_path.exists()
+
+
+def test_prune_stale_benchmark_progress_discards_orphaned_ephemeral_progress_without_failed_report(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: False)
+
+    payload = {
+        "report_id": "report-ephemeral-orphaned",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:10:00Z",
+        "status": "provisional_pass",
+        "phase": "final_cleanup",
+        "write_report": False,
+        "shard_index": 1,
+        "shard_count": 1,
+        "scenario_count": 1,
+        "total_results": 2,
+        "completed_cache_profiles": 1,
+        "completed_scenarios": 1,
+        "completed_results": 2,
+        "owning_pid": 42425,
+    }
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-ephemeral-orphaned",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=1,
+        owning_pid=42425,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    cleanup = runner._prune_stale_benchmark_progress(repo_root=tmp_path, clear_shared_progress=False)  # noqa: SLF001
+
+    assert cleanup["removed_active_run_count"] == 0
+    assert cleanup["synthesized_failed_report_count"] == 0
+    assert not runner.history_report_path(repo_root=tmp_path, report_id="report-ephemeral-orphaned").exists()
     assert not progress_path.exists()
 
 

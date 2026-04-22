@@ -179,7 +179,11 @@ def _stub_merge_helpers(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(shard_merge.runner, "_singleton_family_latency_probes", lambda **kwargs: {})
     monkeypatch.setattr(shard_merge.runner, "_benchmark_runtime_hygiene_snapshot", lambda **kwargs: {})
     monkeypatch.setattr(shard_merge.runner, "_run_live_adoption_proof", lambda **kwargs: {"sample_size": 0})
-    monkeypatch.setattr(shard_merge.runner, "_runtime_posture_summary", lambda **kwargs: {})
+    monkeypatch.setattr(
+        shard_merge.runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
+        lambda **kwargs: {},
+    )
     monkeypatch.setattr(
         shard_merge.runner,
         "_mode_summary",
@@ -286,6 +290,27 @@ def test_merge_shard_reports_rejects_incomplete_shard_set(tmp_path: Path) -> Non
             report_refs=["shard-a"],
             write_report=False,
         )
+
+
+def test_merge_shard_reports_no_write_clears_progress_runtime_artifacts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _write_corpus(tmp_path, ["case-a", "case-b"])
+    _write_history_report(tmp_path, report_id="shard-a", shard_index=1, shard_count=2, case_ids=["case-a"])
+    _write_history_report(tmp_path, report_id="shard-b", shard_index=2, shard_count=2, case_ids=["case-b"])
+    _stub_merge_helpers(monkeypatch)
+
+    report = shard_merge.merge_shard_reports(
+        repo_root=tmp_path,
+        report_refs=["shard-a", "shard-b"],
+        write_report=False,
+    )
+
+    assert not runner.history_report_path(repo_root=tmp_path, report_id=report["report_id"]).exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+    assert not runner.progress_report_path(repo_root=tmp_path).exists()  # noqa: SLF001
+    assert not list(runner.benchmark_root(repo_root=tmp_path).glob("progress-*.json"))  # noqa: SLF001
 
 
 def test_merge_shard_reports_rejects_missing_full_corpus_coverage(

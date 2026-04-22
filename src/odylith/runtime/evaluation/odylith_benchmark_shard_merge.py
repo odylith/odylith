@@ -253,6 +253,7 @@ def merge_shard_reports(
         "report_id": report_id,
         "repo_root": str(root),
         "owning_pid": os.getpid(),
+        "write_report": write_report,
         "benchmark_profile": benchmark_profile,
         "benchmark_profile_label": runner._benchmark_profile_label(benchmark_profile),  # noqa: SLF001
         "benchmark_profile_description": runner._benchmark_profile_description(benchmark_profile),  # noqa: SLF001
@@ -470,7 +471,7 @@ def merge_shard_reports(
             compare=runner._summary_comparison,  # noqa: SLF001
         )
         adoption_proof: dict[str, Any] = {}
-        runtime_posture = runner._runtime_posture_summary(repo_root=root)  # noqa: SLF001
+        runtime_posture = runner.benchmark_runtime_posture_runtime.runtime_posture_summary(repo_root=root)
         if int(adoption_proof.get("sample_size", 0) or 0) > 0:
             runtime_posture["route_ready_rate"] = float(adoption_proof.get("route_ready_rate", 0.0) or 0.0)
             runtime_posture["native_spawn_ready_rate"] = float(

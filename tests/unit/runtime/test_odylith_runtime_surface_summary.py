@@ -7,7 +7,7 @@ from odylith.runtime.context_engine import odylith_runtime_surface_summary as ru
 
 def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.runtime_learning_runtime,
         "load_runtime_optimization_snapshot",
         lambda *, repo_root: {
             "sample_size": 9,
@@ -187,7 +187,7 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
         },
     )
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.memory_snapshot_runtime,
         "load_runtime_evaluation_snapshot",
         lambda *, repo_root: {
             "status": "active",
@@ -200,7 +200,7 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
         },
     )
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.memory_snapshot_runtime,
         "load_runtime_memory_snapshot",
         lambda *, repo_root, optimization_snapshot, evaluation_snapshot: {
             "status": "active",
@@ -327,7 +327,7 @@ def test_load_runtime_surface_summary_merges_split_control_advisories(monkeypatc
 
 def test_runtime_surface_summary_accepts_tuple_backed_execution_engine_lists(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.runtime_learning_runtime,
         "load_runtime_optimization_snapshot",
         lambda *, repo_root: {
             "latest_packet": {
@@ -340,12 +340,12 @@ def test_runtime_surface_summary_accepts_tuple_backed_execution_engine_lists(mon
         },
     )
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.memory_snapshot_runtime,
         "load_runtime_evaluation_snapshot",
         lambda *, repo_root: {},
     )
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.memory_snapshot_runtime,
         "load_runtime_memory_snapshot",
         lambda *, repo_root, optimization_snapshot, evaluation_snapshot: {"status": "active", "odylith_switch": {"enabled": True}},
     )
@@ -365,7 +365,7 @@ def test_runtime_surface_summary_accepts_tuple_backed_execution_engine_lists(mon
 
 def test_load_runtime_surface_summary_uses_disabled_remote_and_repo_scan_labels(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.runtime_learning_runtime,
         "load_runtime_optimization_snapshot",
         lambda *, repo_root: {
             "overall": {"level": "medium", "score": 2.2},
@@ -377,12 +377,12 @@ def test_load_runtime_surface_summary_uses_disabled_remote_and_repo_scan_labels(
         },
     )
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.memory_snapshot_runtime,
         "load_runtime_evaluation_snapshot",
         lambda *, repo_root: {"status": "idle"},
     )
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.memory_snapshot_runtime,
         "load_runtime_memory_snapshot",
         lambda *, repo_root, optimization_snapshot, evaluation_snapshot: {
             "status": "degraded",
@@ -435,7 +435,7 @@ def test_load_runtime_surface_summary_returns_unavailable_payload_on_store_failu
         raise RuntimeError("boom")
 
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.runtime_learning_runtime,
         "load_runtime_optimization_snapshot",
         _raise,
     )
@@ -471,17 +471,17 @@ def test_load_runtime_surface_summary_returns_unavailable_payload_on_store_failu
 
 def test_load_runtime_surface_summary_uses_runtime_latest_benchmark_report(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.runtime_learning_runtime,
         "load_runtime_optimization_snapshot",
         lambda *, repo_root: {},
     )
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.memory_snapshot_runtime,
         "load_runtime_evaluation_snapshot",
         lambda *, repo_root: {},
     )
     monkeypatch.setattr(
-        runtime_summary.odylith_context_engine_store,
+        runtime_summary.memory_snapshot_runtime,
         "load_runtime_memory_snapshot",
         lambda *, repo_root, optimization_snapshot, evaluation_snapshot: {},
     )

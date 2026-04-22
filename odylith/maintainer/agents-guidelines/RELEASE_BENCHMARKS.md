@@ -149,9 +149,14 @@ The benchmark itself must also stay representative:
 - Published README benchmark section:
   repo-root `README.md`
 - Published SVG outputs:
-  - `docs/benchmarks/odylith-benchmark-family-heatmap.svg`
-  - `docs/benchmarks/odylith-benchmark-operating-posture.svg`
-  - `docs/benchmarks/odylith-benchmark-frontier.svg`
+  - `docs/benchmarks/proof/odylith-benchmark-family-heatmap.svg`
+  - `docs/benchmarks/proof/odylith-benchmark-quality-frontier.svg`
+  - `docs/benchmarks/proof/odylith-benchmark-frontier.svg`
+  - `docs/benchmarks/proof/odylith-benchmark-operating-posture.svg`
+  - `docs/benchmarks/diagnostic/odylith-benchmark-family-heatmap.svg`
+  - `docs/benchmarks/diagnostic/odylith-benchmark-quality-frontier.svg`
+  - `docs/benchmarks/diagnostic/odylith-benchmark-frontier.svg`
+  - `docs/benchmarks/diagnostic/odylith-benchmark-operating-posture.svg`
 
 ## Required Maintainer Flow
 1. Run the current Codex benchmark corpus:
@@ -168,17 +173,20 @@ The benchmark itself must also stay representative:
    `PYTHONPATH=src python3 -m odylith.runtime.evaluation.odylith_benchmark_shard_merge --repo-root . <report-id>...`
    so `latest.v1.json` still comes from one complete proof artifact rather than
    a partial shard snapshot.
-2. Regenerate the README SVG assets from the latest report:
-   `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --report .odylith/runtime/odylith-benchmarks/latest.v1.json --out-dir docs/benchmarks`
-3. Refresh the benchmark snapshot docs and tracked summary from that same
-   selected report:
+2. Refresh the benchmark snapshot docs, tracked summary, and README-linked
+   `proof/` and `diagnostic/` SVG assets from that same selected report set:
    `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_publication --repo-root .`
    This refreshes:
    - `docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md`
    - `docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md`
    - `docs/benchmarks/BENCHMARK_TABLES.md`
    - `docs/benchmarks/latest-summary.v1.json`
-4. Update the repo-root `README.md` benchmark snapshot from that same
+   - `docs/benchmarks/proof/*.svg`
+   - `docs/benchmarks/diagnostic/*.svg`
+   The lower-level graph renderer remains available for explicit graph-only or
+   single-report refreshes:
+   `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --repo-root . --out-dir docs/benchmarks --profiles proof diagnostic`
+3. Update the repo-root `README.md` benchmark snapshot from that same
    `latest.v1.json` report.
    README numbers and wording must describe the conservative published view,
    not the easiest single-profile snapshot. The public table should center on
@@ -187,8 +195,8 @@ The benchmark itself must also stay representative:
    If the report came from detached `source-local`, say that explicitly and
    keep the first-release baseline warning visible until
    `docs/benchmarks/release-baselines.v1.json` records a shipped proof.
-5. Keep the README benchmark section explicitly Codex-labeled.
-6. Validate the graph contract with:
+4. Keep the README benchmark section explicitly Codex-labeled.
+5. Validate the graph contract with:
    `PYTHONPATH=src pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py`
 
 ## Publication Contract

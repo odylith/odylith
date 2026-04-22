@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime as memory_snapshot_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime as projection_search_runtime
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime as runtime_learning_runtime
 from odylith.runtime.governance import delivery_intelligence_engine
@@ -134,24 +135,18 @@ def _load_delivery_surface_payload_uncached(
         evaluation_snapshot = (
             dict(payload.get("evaluation_snapshot", {}))
             if isinstance(payload.get("evaluation_snapshot"), Mapping)
-            else _load_runtime_evaluation_snapshot(repo_root=root)
+            else memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=root)
         )
         payload["optimization_snapshot"] = optimization_snapshot
         payload["evaluation_snapshot"] = evaluation_snapshot
         if "memory_snapshot" not in payload:
-            payload["memory_snapshot"] = runtime_learning_runtime.load_runtime_memory_snapshot(
+            payload["memory_snapshot"] = memory_snapshot_runtime.load_runtime_memory_snapshot(
                 repo_root=root,
                 optimization_snapshot=optimization_snapshot,
                 evaluation_snapshot=evaluation_snapshot,
             )
         payload["odylith_drawer_history"] = runtime_learning_runtime.load_odylith_drawer_history(repo_root=root)
     return payload
-
-
-def _load_runtime_evaluation_snapshot(*, repo_root: Path) -> dict[str, Any]:
-    from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime
-
-    return odylith_context_engine_memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=repo_root)
 
 
 __all__ = ["load_delivery_surface_payload"]

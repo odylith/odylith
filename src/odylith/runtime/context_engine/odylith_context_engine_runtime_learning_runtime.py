@@ -107,52 +107,6 @@ def load_odylith_drawer_history(
     def _bool_score(value: Any) -> int:
         return 100 if bool(value) else 0
 
-    def _safe_float(value: Any, default: float = 0.0, *, minimum: float | None = None, maximum: float | None = None) -> float:
-        try:
-            numeric = float(value or 0.0)
-        except (TypeError, ValueError):
-            numeric = float(default)
-        if math.isnan(numeric):
-            numeric = float(default)
-        elif math.isinf(numeric):
-            if numeric > 0 and maximum is not None:
-                numeric = float(maximum)
-            elif numeric < 0 and minimum is not None:
-                numeric = float(minimum)
-            else:
-                numeric = float(default)
-        if minimum is not None:
-            numeric = max(float(minimum), numeric)
-        if maximum is not None:
-            numeric = min(float(maximum), numeric)
-        return numeric
-
-    def _safe_int(
-        value: Any,
-        default: int = 0,
-        *,
-        minimum: int | None = None,
-        maximum: int | None = None,
-    ) -> int:
-        try:
-            numeric_float = float(value or 0)
-            if math.isnan(numeric_float):
-                raise ValueError("non-finite numeric value")
-            if math.isinf(numeric_float):
-                if numeric_float > 0 and maximum is not None:
-                    return int(maximum)
-                if numeric_float < 0 and minimum is not None:
-                    return int(minimum)
-                raise ValueError("non-finite numeric value")
-            numeric = int(round(numeric_float))
-        except (TypeError, ValueError, OverflowError):
-            numeric = int(default)
-        if minimum is not None:
-            numeric = max(int(minimum), numeric)
-        if maximum is not None:
-            numeric = min(int(maximum), numeric)
-        return numeric
-
     packet_rows = _ordered_events("packet", limit=packet_limit)
     router_rows = _ordered_events("router_outcome", limit=router_limit)
     orchestration_rows = _ordered_events("orchestration_feedback", limit=orchestration_limit)
@@ -547,69 +501,6 @@ def _provenance_item(
         "trust": str(trust or "").strip(),
     }
 
-def _derive_retrieval_memory_state(
-    *,
-    transition_status: str,
-    indexed_entities: int,
-    evidence_documents: int,
-    compiler_ready: bool,
-) -> str:
-    if transition_status == "standardized" and indexed_entities > 0:
-        return "strong"
-    if indexed_entities > 0 or evidence_documents > 0 or compiler_ready:
-        return "partial"
-    return "cold"
-
-def _load_latest_benchmark_report_snapshot(*, repo_root: Path) -> dict[str, Any]:
-    path = (context_engine_store.runtime_root(repo_root=repo_root) / "odylith-benchmarks" / "latest.v1.json").resolve()
-    payload = context_engine_store.odylith_context_cache.read_json_object(path)
-    return dict(payload) if isinstance(payload, context_engine_store.Mapping) else {}
-
-def _build_judgment_memory_snapshot(
-    *,
-    repo_root: Path,
-    projection_updated_utc: str,
-    backlog_projection: Mapping[str, Any],
-    plan_projection: Mapping[str, Any],
-    bug_projection: Sequence[Mapping[str, Any]],
-    diagram_projection: Sequence[Mapping[str, Any]],
-    runtime_state: Mapping[str, Any],
-    optimization: Mapping[str, Any],
-    evaluation: Mapping[str, Any],
-    benchmark_report: Mapping[str, Any],
-    recent_bootstrap_packets: Sequence[Mapping[str, Any]],
-    active_sessions: Sequence[Mapping[str, Any]],
-    repo_dirty_paths: Sequence[str],
-    welcome_state: Mapping[str, Any],
-    previous_snapshot: Mapping[str, Any] | None,
-    retrieval_state: str,
-) -> dict[str, Any]:
-    return context_engine_store.odylith_context_engine_memory_snapshot_runtime._build_judgment_memory_snapshot(repo_root=repo_root, projection_updated_utc=projection_updated_utc, backlog_projection=backlog_projection, plan_projection=plan_projection, bug_projection=bug_projection, diagram_projection=diagram_projection, runtime_state=runtime_state, optimization=optimization, evaluation=evaluation, benchmark_report=benchmark_report, recent_bootstrap_packets=recent_bootstrap_packets, active_sessions=active_sessions, repo_dirty_paths=repo_dirty_paths, welcome_state=welcome_state, previous_snapshot=previous_snapshot, retrieval_state=retrieval_state)
-
-def _build_memory_areas_snapshot(
-    *,
-    enabled: bool,
-    authoritative_truth: Mapping[str, Any],
-    compiler_state: Mapping[str, Any],
-    guidance_catalog: Mapping[str, Any],
-    runtime_state: Mapping[str, Any],
-    entity_counts: Mapping[str, Any],
-    backend_transition: Mapping[str, Any],
-    optimization: Mapping[str, Any],
-    evaluation: Mapping[str, Any],
-    judgment_memory: Mapping[str, Any] | None = None,
-) -> dict[str, Any]:
-    return context_engine_store.odylith_context_engine_memory_snapshot_runtime._build_memory_areas_snapshot(enabled=enabled, authoritative_truth=authoritative_truth, compiler_state=compiler_state, guidance_catalog=guidance_catalog, runtime_state=runtime_state, entity_counts=entity_counts, backend_transition=backend_transition, optimization=optimization, evaluation=evaluation, judgment_memory=judgment_memory)
-
-def _odylith_disabled_memory_snapshot(
-    *,
-    repo_root: Path,
-    switch_snapshot: Mapping[str, Any],
-    optimization_snapshot: Mapping[str, Any],
-    evaluation_snapshot: Mapping[str, Any],
-) -> dict[str, Any]:
-    return context_engine_store.odylith_context_engine_memory_snapshot_runtime._odylith_disabled_memory_snapshot(repo_root=repo_root, switch_snapshot=switch_snapshot, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
-
 def _odylith_disabled_optimization_snapshot(
     *,
     repo_root: Path,
@@ -844,14 +735,6 @@ def _filter_odylith_search_results(
             continue
         filtered.append(dict(row))
     return filtered
-
-def load_runtime_memory_snapshot(
-    *,
-    repo_root: Path,
-    optimization_snapshot: Mapping[str, Any] | None = None,
-    evaluation_snapshot: Mapping[str, Any] | None = None,
-) -> dict[str, Any]:
-    return context_engine_store.odylith_context_engine_memory_snapshot_runtime.load_runtime_memory_snapshot(repo_root=repo_root, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
 
 def _load_recent_bootstrap_packets(
     *,
@@ -1192,68 +1075,6 @@ def _architecture_timing_matches_evaluation_case(
     if domains_any and not domain_ids.intersection(domains_any):
         return False
     return True
-
-def _architecture_timing_satisfies_evaluation_expectations(
-    timing_row: Mapping[str, Any],
-    expect_spec: Mapping[str, Any],
-) -> tuple[bool, dict[str, Any]]:
-    metadata = dict(timing_row.get("metadata", {})) if isinstance(timing_row.get("metadata"), context_engine_store.Mapping) else {}
-    details = {
-        "observed_confidence_tier": str(metadata.get("confidence_tier", "")).strip(),
-        "observed_full_scan_recommended": bool(metadata.get("full_scan_recommended")),
-        "observed_contract_touchpoint_count": int(metadata.get("contract_touchpoint_count", 0) or 0),
-        "observed_execution_hint_mode": str(metadata.get("execution_hint_mode", "")).strip(),
-        "observed_risk_tier": str(metadata.get("risk_tier", "")).strip(),
-    }
-    if not isinstance(expect_spec, context_engine_store.Mapping) or not expect_spec:
-        return True, details
-    matched = True
-    expected_confidence = _expected_token_set(expect_spec.get("confidence_tier"))
-    if expected_confidence:
-        details["expected_confidence_tier"] = sorted(expected_confidence)
-        if details["observed_confidence_tier"] not in expected_confidence:
-            matched = False
-    for field_name in ("full_scan_recommended", "resolved"):
-        if field_name not in expect_spec:
-            continue
-        expected_bool = bool(expect_spec.get(field_name))
-        observed_bool = bool(metadata.get(field_name))
-        details[f"expected_{field_name}"] = expected_bool
-        details[f"observed_{field_name}"] = observed_bool
-        if observed_bool != expected_bool:
-            matched = False
-    expected_execution_modes = _expected_token_set(expect_spec.get("execution_hint_mode"))
-    if expected_execution_modes:
-        details["expected_execution_hint_mode"] = sorted(expected_execution_modes)
-        if details["observed_execution_hint_mode"] not in expected_execution_modes:
-            matched = False
-    expected_risk_tiers = _expected_token_set(expect_spec.get("risk_tier"))
-    if expected_risk_tiers:
-        details["expected_risk_tier"] = sorted(expected_risk_tiers)
-        if details["observed_risk_tier"] not in expected_risk_tiers:
-            matched = False
-    if "contract_touchpoints_min" in expect_spec:
-        expected_min = int(expect_spec.get("contract_touchpoints_min", 0) or 0)
-        details["expected_contract_touchpoints_min"] = expected_min
-        if details["observed_contract_touchpoint_count"] < expected_min:
-            matched = False
-    if "authority_graph_edges_min" in expect_spec:
-        expected_min = int(expect_spec.get("authority_graph_edges_min", 0) or 0)
-        observed_count = int(metadata.get("authority_graph_edge_count", 0) or 0)
-        details["expected_authority_graph_edges_min"] = expected_min
-        details["observed_authority_graph_edge_count"] = observed_count
-        if observed_count < expected_min:
-            matched = False
-    return matched, details
-
-def _architecture_evaluation_snapshot(
-    *,
-    repo_root: Path,
-    corpus: Mapping[str, Any],
-    focus_limit: int = 4,
-    timing_limit: int = 48,
-) -> dict[str, Any]:
-    return context_engine_store.odylith_context_engine_memory_snapshot_runtime._architecture_evaluation_snapshot(repo_root=repo_root, corpus=corpus, focus_limit=focus_limit, timing_limit=timing_limit)
 
 def orchestration_decision_ledgers_root(*, repo_root: Path) -> Path:
     return (context_engine_store.Path(repo_root).resolve() / ".odylith" / "subagent_orchestrator" / "decision-ledgers").resolve()

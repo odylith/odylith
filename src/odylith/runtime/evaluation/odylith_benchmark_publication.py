@@ -9,6 +9,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.evaluation import odylith_benchmark_graphs
 from odylith.runtime.evaluation import odylith_benchmark_runner
 
 
@@ -16,17 +17,54 @@ _LIVE_SNAPSHOT_PATH = Path("docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md")
 _DIAGNOSTIC_SNAPSHOT_PATH = Path("docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md")
 _TABLES_PATH = Path("docs/benchmarks/BENCHMARK_TABLES.md")
 _LATEST_SUMMARY_PATH = Path("docs/benchmarks/latest-summary.v1.json")
+_PROOF_GRAPH_DIR = Path("docs/benchmarks/proof")
+_DIAGNOSTIC_GRAPH_DIR = Path("docs/benchmarks/diagnostic")
 
 
 def _load_report(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, Mapping):
         raise ValueError(f"benchmark report must be an object: {path}")
-    return dict(payload)
+    report = dict(payload)
+    report.setdefault("_report_path", str(path.resolve()))
+    return report
 
 
 def _summary(report: Mapping[str, Any]) -> dict[str, Any]:
     return odylith_benchmark_runner.compact_report_summary(report)
+
+
+def _public_benchmark_name(*, diagnostic: bool) -> str:
+    return "Internal Diagnostic Benchmark" if diagnostic else "Live Benchmark"
+
+
+def _cache_profiles(summary: Mapping[str, Any]) -> list[str]:
+    published = summary.get("published_cache_profiles", [])
+    if isinstance(published, list):
+        normalized = [str(token).strip() for token in published if str(token).strip()]
+        if normalized:
+            return normalized
+    fallback = str(summary.get("primary_cache_profile", "")).strip()
+    return [fallback] if fallback else []
+
+
+def _quoted_list(tokens: Sequence[str]) -> str:
+    normalized = [str(token).strip() for token in tokens if str(token).strip()]
+    if not normalized:
+        return "`-`"
+    if len(normalized) == 1:
+        return f"`{normalized[0]}`"
+    if len(normalized) == 2:
+        return f"`{normalized[0]}` and `{normalized[1]}`"
+    head = ", ".join(f"`{token}`" for token in normalized[:-1])
+    return f"{head}, and `{normalized[-1]}`"
+
+
+def _human_duration_label(value: Any) -> str:
+    milliseconds = float(value or 0.0)
+    if abs(milliseconds) < 1000.0:
+        return f"{milliseconds:.3f} ms"
+    return odylith_benchmark_runner._human_duration_label(milliseconds)  # noqa: SLF001
 
 
 def _format_rate(value: Any) -> str:
@@ -41,6 +79,10 @@ def _format_count(value: Any) -> str:
     return f"{int(value or 0):,}"
 
 
+def _format_percent(value: Any) -> str:
+    return f"{float(value or 0.0) * 100:.1f}%"
+
+
 def _format_token_delta(value: Any) -> str:
     return f"{float(value or 0.0):+,.0f}"
 
@@ -51,40 +93,65 @@ def _format_duration_delta(value: Any) -> str:
     return f"{sign}{odylith_benchmark_runner._human_duration_label(abs(raw))}"  # noqa: SLF001
 
 
-def _status_sentence(summary: Mapping[str, Any]) -> str:
+def _status_sentence(summary: Mapping[str, Any], *, diagnostic: bool) -> str:
     status = str(summary.get("status", "")).strip() or "unknown"
     report_id = str(summary.get("report_id", "")).strip() or "-"
     generated_utc = str(summary.get("generated_utc", "")).strip() or "-"
-    sentence = f"Current report: `{report_id}` from `{generated_utc}` with status `{status}`."
+    sentence = (
+        f"Current {_public_benchmark_name(diagnostic=diagnostic)} report: "
+        f"`{report_id}` from `{generated_utc}` with status `{status}`."
+    )
     if summary.get("current_tree_identity_match") is False:
         sentence += " This report does not match the current repo tree and is not current-head proof."
     return sentence
 
 
-def _profile_sentence(summary: Mapping[str, Any]) -> str:
+def _current_result_lines(summary: Mapping[str, Any], *, diagnostic: bool) -> list[str]:
     scenario_count = _format_count(summary.get("scenario_count", 0))
-    published_cache_profiles = [
-        str(token).strip()
-        for token in summary.get("published_cache_profiles", [])
-        if isinstance(summary.get("published_cache_profiles"), list) and str(token).strip()
-    ]
-    cache_profiles = ", ".join(published_cache_profiles) or str(summary.get("primary_cache_profile", "warm")).strip() or "warm"
+    cache_profiles = _quoted_list(_cache_profiles(summary))
     claim = str(summary.get("comparison_primary_claim", "")).strip() or str(summary.get("comparison_contract", "")).strip()
-    return (
-        f"The current published view covers `{scenario_count}` scenarios on cache profile(s) `{cache_profiles}` "
-        f"under the declared comparison contract `{claim}`."
+    published_pair_count = _format_count(summary.get("published_pair_count", 0))
+    lines: list[str] = []
+    if diagnostic:
+        lines.append(
+            f"The latest internal diagnostic benchmark ran `{scenario_count}` seeded scenarios on cache profile(s) "
+            f"{cache_profiles} comparing `odylith_on` versus `odylith_off` on packet and prompt construction only."
+        )
+        lines.append(
+            f"Across the `{published_pair_count}` diagnostic pairs, wall clock was "
+            f"`{_human_duration_label(summary.get('published_pair_median_wall_clock_ms', 0.0))}` median, "
+            f"`{_human_duration_label(summary.get('published_pair_p95_wall_clock_ms', 0.0))}` at `p95`, and "
+            f"`{_human_duration_label(summary.get('published_pair_total_wall_clock_ms', 0.0))}` total."
+        )
+        return lines
+    full_pair_count = _format_count(summary.get("full_pair_count", 0))
+    lines.append(
+        f"The latest live benchmark ran `{scenario_count}` seeded scenarios across matched cache profile(s) "
+        f"{cache_profiles} under the declared comparison contract `{claim}`."
     )
+    lines.append(
+        f"That produced `{full_pair_count}` full matched pairs. The published comparison keeps the conservative "
+        f"same-scenario view at `{published_pair_count}` pairs."
+    )
+    return lines
 
 
-def _fairness_sentence(summary: Mapping[str, Any]) -> str:
-    fairness_passed = bool(summary.get("fairness_contract_passed"))
-    seriousness_passed = bool(summary.get("corpus_seriousness_floor_passed"))
-    full_coverage = float(summary.get("corpus_full_coverage_rate", 0.0) or 0.0)
-    return (
-        f"Fairness contract passed: `{fairness_passed}`. "
-        f"Corpus seriousness floor passed: `{seriousness_passed}`. "
-        f"Tracked full-corpus coverage rate: `{full_coverage:.3f}`."
-    )
+def _memory_posture_sentence(summary: Mapping[str, Any], *, diagnostic: bool) -> str:
+    storage = str(summary.get("runtime_memory_storage", "")).strip()
+    sparse = str(summary.get("runtime_memory_sparse_recall", "")).strip()
+    remote = str(summary.get("runtime_remote_retrieval_status", "")).strip() or "unknown"
+    readiness = bool(summary.get("runtime_memory_backed_retrieval_ready"))
+    posture = "Current diagnostic posture" if diagnostic else "Current proof posture"
+    substrate_bits = [f"`{storage}`" for storage in (storage,) if storage]
+    if sparse:
+        substrate_bits.append(f"`{sparse}`")
+    if substrate_bits:
+        return (
+            f"{posture} is local-first on {' plus '.join(substrate_bits)}. "
+            f"Remote retrieval is `{remote}` in the selected report. "
+            f"Local memory-backed retrieval ready: `{readiness}`."
+        )
+    return f"{posture} reports remote retrieval as `{remote}`. Local memory-backed retrieval ready: `{readiness}`."
 
 
 def _metric_lines(summary: Mapping[str, Any], *, diagnostic: bool) -> list[str]:
@@ -93,6 +160,7 @@ def _metric_lines(summary: Mapping[str, Any], *, diagnostic: bool) -> list[str]:
         metrics = [
             ("required-path recall", _format_rate(summary.get("required_path_recall_delta"))),
             ("required-path precision", _format_rate(summary.get("required_path_precision_delta"))),
+            ("hallucinated-surface rate", _format_rate(summary.get("hallucinated_surface_rate_delta"))),
             ("validation-success proxy", _format_rate(summary.get("validation_success_delta"))),
             ("critical required-path recall", _format_rate(summary.get("critical_required_path_recall_delta"))),
             ("critical validation-success proxy", _format_rate(summary.get("critical_validation_success_delta"))),
@@ -122,11 +190,16 @@ def _metric_lines(summary: Mapping[str, Any], *, diagnostic: bool) -> list[str]:
     return [f"- {label} by `{value}`" for label, value in metrics]
 
 
-def _status_block(summary: Mapping[str, Any]) -> list[str]:
+def _status_block(summary: Mapping[str, Any], *, diagnostic: bool) -> list[str]:
     hard_gate_failures = [
         str(token).strip()
         for token in summary.get("hard_gate_failure_labels", [])
         if isinstance(summary.get("hard_gate_failure_labels"), list) and str(token).strip()
+    ]
+    secondary_guardrail_failures = [
+        str(token).strip()
+        for token in summary.get("secondary_guardrail_failure_labels", [])
+        if isinstance(summary.get("secondary_guardrail_failure_labels"), list) and str(token).strip()
     ]
     fairness_findings = [
         str(token).strip()
@@ -149,13 +222,16 @@ def _status_block(summary: Mapping[str, Any]) -> list[str]:
             ]
         )
     if hard_gate_failures:
-        lines.append("There are hard-gate blockers on this report.")
+        lines.append("The current report is on `hold` because these hard-gate blockers remain:")
         lines.extend(f"- {label}" for label in hard_gate_failures)
     else:
         lines.append("There are no hard-gate blockers on this report.")
+    if secondary_guardrail_failures:
+        lines.extend(["", "Secondary guardrail blockers:"])
+        lines.extend(f"- {label}" for label in secondary_guardrail_failures)
     if fairness_findings:
         lines.append("")
-        lines.append("Fairness findings:")
+        lines.append("Fairness findings stay release-blocking until they are resolved:")
         lines.extend(f"- {token}" for token in fairness_findings)
     lines.extend(
         [
@@ -170,8 +246,39 @@ def _status_block(summary: Mapping[str, Any]) -> list[str]:
         ]
     )
     if weak_families:
-        lines.extend(["", "Current attention families:"])
+        lines.extend(
+            [
+                "",
+                "Current diagnostic weak families:" if diagnostic else "Current attention families on the published view:",
+            ]
+        )
         lines.extend(f"- `{family}`" for family in weak_families)
+    return lines
+
+
+def _reading_notes(summary: Mapping[str, Any], *, diagnostic: bool) -> list[str]:
+    if diagnostic:
+        return [
+            "- `odylith_off` is the raw prompt-bundle control, not the product-claim lane.",
+            "- Prompt-visible path credit and preflight evidence must remain explicit in the report contract.",
+            f"- {_memory_posture_sentence(summary, diagnostic=True)}",
+            "- Diagnostic gains only matter if they preserve or improve the live proof lane.",
+        ]
+    lines = [
+        "- Time to valid outcome and full-session token spend stay published as diagnostics, not status blockers.",
+        f"- {_memory_posture_sentence(summary, diagnostic=False)}",
+        (
+            "- Operating-posture diagnostics: auto-grounded "
+            f"`{_format_percent(summary.get('odylith_auto_grounded_rate'))}`, delegated "
+            f"`{_format_percent(summary.get('odylith_grounded_delegate_rate'))}`, widening "
+            f"`{_format_percent(summary.get('odylith_requires_widening_rate'))}`, and workspace-daemon reuse "
+            f"`{_format_percent(summary.get('odylith_workspace_daemon_reuse_rate'))}`."
+        ),
+    ]
+    if len(_cache_profiles(summary)) > 1:
+        lines.append(
+            f"- Warm/cold robustness consistency cleared: `{bool(summary.get('robustness_warm_cold_consistency_cleared'))}`."
+        )
     return lines
 
 
@@ -185,11 +292,11 @@ def render_live_snapshot_markdown(report: Mapping[str, Any]) -> str:
         "",
         "## Current Result",
         "",
-        _status_sentence(summary),
+        _status_sentence(summary, diagnostic=False),
         "",
-        _profile_sentence(summary),
+        *_current_result_lines(summary, diagnostic=False),
         "",
-        _fairness_sentence(summary),
+        _memory_posture_sentence(summary, diagnostic=False),
         "",
         "## Headline Movement",
         "",
@@ -197,14 +304,11 @@ def render_live_snapshot_markdown(report: Mapping[str, Any]) -> str:
         "",
         *_metric_lines(summary, diagnostic=False),
         "",
-        *_status_block(summary),
+        *_status_block(summary, diagnostic=False),
         "",
         "## Reading Notes",
         "",
-        "- This is the full-product assistance lane, not the narrower packet-only diagnostic lane.",
-        "- Timing is matched-pair benchmark wall clock to a valid outcome, not solo-user interactive latency.",
-        "- Token totals are full multi-turn host-session spend, not just the first prompt.",
-        "- Publication claims should be refreshed only from a validated proof report selected for publication.",
+        *_reading_notes(summary, diagnostic=False),
         "",
     ]
     return "\n".join(lines)
@@ -220,25 +324,23 @@ def render_diagnostic_snapshot_markdown(report: Mapping[str, Any]) -> str:
         "",
         "## Current Result",
         "",
-        _status_sentence(summary),
+        _status_sentence(summary, diagnostic=True),
         "",
-        _profile_sentence(summary),
+        *_current_result_lines(summary, diagnostic=True),
         "",
-        _fairness_sentence(summary),
+        _memory_posture_sentence(summary, diagnostic=True),
         "",
         "## Headline Movement",
         "",
-        "Compared with `odylith_off`, Odylith moved:",
+        "Compared with the `odylith_off` prompt bundle, Odylith moved:",
         "",
         *_metric_lines(summary, diagnostic=True),
         "",
-        *_status_block(summary),
+        *_status_block(summary, diagnostic=True),
         "",
         "## Reading Notes",
         "",
-        "- This is the internal packet-and-prompt diagnostic lane, not the product-claim lane.",
-        "- Prompt-visible path credit and preflight evidence must remain explicit in the report contract.",
-        "- Diagnostic gains only matter if they preserve or improve the live proof lane.",
+        *_reading_notes(summary, diagnostic=True),
         "",
     ]
     return "\n".join(lines)
@@ -354,6 +456,22 @@ def _write_json_if_changed(path: Path, payload: Mapping[str, Any]) -> bool:
     return _write_text_if_changed(path, rendered)
 
 
+def _write_profile_graphs_if_changed(
+    *,
+    repo_root: Path,
+    profile: str,
+    report: Mapping[str, Any],
+) -> list[str]:
+    root = Path(repo_root).resolve()
+    target_dir = root / (_PROOF_GRAPH_DIR if profile == "proof" else _DIAGNOSTIC_GRAPH_DIR)
+    changed: list[str] = []
+    for name, content in odylith_benchmark_graphs.render_graph_asset_contents(report).items():
+        path = target_dir / name
+        if _write_text_if_changed(path, content):
+            changed.append(str(path.relative_to(root)))
+    return changed
+
+
 def write_publication_artifacts(
     *,
     repo_root: Path,
@@ -379,6 +497,8 @@ def write_publication_artifacts(
     latest_summary = _summary(live_report)
     if _write_json_if_changed(root / _LATEST_SUMMARY_PATH, latest_summary):
         changed.append(str(_LATEST_SUMMARY_PATH))
+    changed.extend(_write_profile_graphs_if_changed(repo_root=root, profile="proof", report=live_report))
+    changed.extend(_write_profile_graphs_if_changed(repo_root=root, profile="diagnostic", report=diagnostic_report))
     return changed
 
 
@@ -395,7 +515,10 @@ def _validate_selected_report(*, repo_root: Path, path: Path, report: Mapping[st
 
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Refresh benchmark publication markdown and latest-summary JSON from selected reports."
+        description=(
+            "Refresh benchmark publication markdown, latest-summary JSON, and README-linked profile SVGs "
+            "from selected reports."
+        )
     )
     parser.add_argument("--repo-root", required=True)
     parser.add_argument("--live-report")

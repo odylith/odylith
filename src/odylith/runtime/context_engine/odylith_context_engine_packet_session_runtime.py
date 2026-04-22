@@ -13,6 +13,7 @@ from odylith.runtime.context_engine import odylith_context_engine_dossier_compac
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
 from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime as runtime_learning_runtime
 from odylith.runtime.context_engine import session_bootstrap_payload_compactor
 from odylith.runtime.context_engine import tooling_context_packet_builder
 from odylith.runtime.context_engine import turn_context_runtime
@@ -66,7 +67,7 @@ def build_session_brief(
     semantic_intent = turn_context_runtime.operator_ask_text(normalized_turn_context) or str(intent or "").strip()
     stage_started = time.perf_counter()
     guidance_catalog = context_engine_store.tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
-    optimization_snapshot = {} if hot_path else context_engine_store.load_runtime_optimization_snapshot(repo_root=root)
+    optimization_snapshot = {} if hot_path else runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=root)
     stage_timings["guidance_catalog"] = context_engine_store._elapsed_stage_ms(stage_started)
     stage_started = time.perf_counter()
     effective_session_id = agent_runtime_contract.fallback_session_token(session_id)
@@ -473,7 +474,7 @@ def build_session_bootstrap(
     started_at = time.perf_counter()
     stage_timings: dict[str, float] = {}
     hot_path = context_engine_store._delivery_profile_hot_path(delivery_profile)
-    optimization_snapshot = {} if hot_path else context_engine_store.load_runtime_optimization_snapshot(repo_root=root)
+    optimization_snapshot = {} if hot_path else runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=root)
     stage_started = time.perf_counter()
     guidance_catalog = context_engine_store.tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
     stage_timings["guidance_catalog"] = context_engine_store._elapsed_stage_ms(stage_started)
@@ -702,7 +703,9 @@ def build_session_bootstrap(
             repo_root=root,
             packet=packet_summary,
         )
-        control_advisories = dict(context_engine_store.load_runtime_optimization_snapshot(repo_root=root).get("control_advisories", {}))
+        control_advisories = dict(
+            runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=root).get("control_advisories", {})
+        )
         context_engine_store.odylith_evaluation_ledger.append_event(
             repo_root=root,
             event_type="packet",

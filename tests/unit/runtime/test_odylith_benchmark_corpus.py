@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
 from odylith.runtime.evaluation import odylith_benchmark_prompt_family_rules
@@ -477,6 +478,52 @@ def test_benchmark_corpus_meets_seriousness_floor() -> None:
     assert family_counts.get("external_dependency_recovery", 0) >= 3
     assert family_counts.get("destructive_scope_control", 0) >= 3
     assert family_counts.get("cross_file_feature", 0) + family_counts.get("merge_heavy_change", 0) >= 6
+
+
+def test_public_family_catalog_stays_aligned_with_tracked_corpus() -> None:
+    scenarios = _load_normalized()
+    implementation = [row for row in scenarios if str(row.get("kind", "")).strip() != "architecture"]
+    architecture = [row for row in scenarios if str(row.get("kind", "")).strip() == "architecture"]
+    write_plus_validator = [row for row in implementation if bool(row.get("needs_write")) and row.get("validation_commands")]
+    correctness_critical = [row for row in implementation if bool(row.get("correctness_critical"))]
+    mechanism_heavy = [
+        row
+        for row in implementation
+        if str(row.get("family", "")).strip() in runner._MECHANISM_HEAVY_IMPLEMENTATION_FAMILIES
+    ]
+
+    family_counts: dict[str, int] = {}
+    for row in implementation:
+        family = str(row.get("family", "")).strip()
+        family_counts[family] = family_counts.get(family, 0) + 1
+    family_counts["architecture"] = len(architecture)
+
+    catalog = (ROOT / "docs" / "benchmarks" / "FAMILIES_AND_EVALS.md").read_text(encoding="utf-8")
+    tracked = re.search(
+        r"`(\d+)` implementation scenarios plus `(\d+)` architecture scenarios, `(\d+)` total",
+        catalog,
+    )
+    assert tracked is not None
+    assert tuple(int(token) for token in tracked.groups()) == (
+        len(implementation),
+        len(architecture),
+        len(implementation) + len(architecture),
+    )
+
+    seriousness = re.search(
+        r"`(\d+)` write-plus-validator scenarios, `(\d+)` correctness-critical scenarios,\n\s+and a mechanism-heavy implementation share of `([0-9.]+)`",
+        catalog,
+    )
+    assert seriousness is not None
+    assert int(seriousness.group(1)) == len(write_plus_validator)
+    assert int(seriousness.group(2)) == len(correctness_critical)
+    assert float(seriousness.group(3)) == round(len(mechanism_heavy) / len(implementation), 3)
+
+    documented_family_counts = {
+        family: int(count)
+        for family, count in re.findall(r"\| `([^`]+)` \| (\d+) \|", catalog)
+    }
+    assert documented_family_counts == family_counts
 
 
 def test_benchmark_corpus_keeps_final_only_odylith_assist_closeout_contract() -> None:
