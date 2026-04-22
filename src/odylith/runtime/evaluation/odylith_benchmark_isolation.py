@@ -19,16 +19,45 @@ from odylith.runtime.reasoning import odylith_reasoning
 _TEMPORARY_DIRECTORY_CLEANUP_RETRYABLE_ERRNOS = frozenset({errno.ENOTEMPTY, errno.EBUSY, errno.EPERM})
 _TEMPORARY_DIRECTORY_CLEANUP_RETRY_COUNT = 4
 _TEMPORARY_DIRECTORY_CLEANUP_RETRY_DELAY_SECONDS = 0.05
+_HARDLINK_COPY_FALLBACK_ERRNOS = frozenset(
+    {
+        errno.EXDEV,
+        errno.EPERM,
+        errno.ENOTSUP,
+        getattr(errno, "EOPNOTSUPP", errno.ENOTSUP),
+    }
+)
 
 
-def _copy_tree_if_exists(*, source: Path, target: Path) -> None:
+def _copy_file(source: Path, target: Path) -> None:
+    source_path = Path(source)
+    target_path = Path(target)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source_path, target_path)
+
+
+def _hardlink_or_copy_file(source: Path, target: Path) -> None:
+    source_path = Path(source)
+    target_path = Path(target)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    with contextlib.suppress(FileNotFoundError):
+        target_path.unlink()
+    try:
+        os.link(source_path, target_path)
+    except OSError as exc:
+        if exc.errno not in _HARDLINK_COPY_FALLBACK_ERRNOS:
+            raise
+        shutil.copy2(source_path, target_path)
+
+
+def _copy_tree_if_exists(*, source: Path, target: Path, prefer_hardlinks: bool = False) -> None:
     if not source.exists():
         return
+    copy_function = _hardlink_or_copy_file if prefer_hardlinks else _copy_file
     if source.is_dir():
-        shutil.copytree(source, target, dirs_exist_ok=True)
+        shutil.copytree(source, target, dirs_exist_ok=True, copy_function=copy_function)
         return
-    target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, target)
+    copy_function(source, target)
 
 
 def provision_workspace_odylith_root(*, repo_root: Path, workspace_root: Path) -> None:
@@ -369,7 +398,11 @@ def capture_workspace_validator_truth(
         source = (workspace / relative_path).resolve()
         if not source.exists():
             continue
-        _copy_tree_if_exists(source=source, target=target_root / relative_path)
+        _copy_tree_if_exists(
+            source=source,
+            target=target_root / relative_path,
+            prefer_hardlinks=True,
+        )
 
 
 def restore_workspace_validator_truth(

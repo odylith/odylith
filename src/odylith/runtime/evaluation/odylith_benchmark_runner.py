@@ -190,6 +190,7 @@ _SERIOUS_REQUIRED_FAMILIES = frozenset(
     }
 )
 _REPORT_FILENAME = "latest.v1.json"
+_RETIRED_LATEST_REPORT_FILENAMES = ("odylith-benchmark.json",)
 _PROGRESS_FILENAME = "in-progress.v1.json"
 _ACTIVE_RUNS_FILENAME = "active-runs.v1.json"
 _BENCHMARK_ADOPTION_PROOF_SAMPLE_TIMEOUT_SECONDS = 60.0
@@ -658,6 +659,11 @@ def latest_report_path(*, repo_root: Path, benchmark_profile: str | None = None)
     return (benchmark_root(repo_root=repo_root) / _REPORT_FILENAME).resolve()
 
 
+def retired_latest_report_paths(*, repo_root: Path) -> list[Path]:
+    root = benchmark_root(repo_root=repo_root)
+    return [(root / filename).resolve() for filename in _RETIRED_LATEST_REPORT_FILENAMES]
+
+
 def history_report_path(*, repo_root: Path, report_id: str) -> Path:
     token = str(report_id or "").strip() or "odylith-benchmark"
     return (benchmark_root(repo_root=repo_root) / f"{token}.json").resolve()
@@ -779,6 +785,15 @@ def _benchmark_runtime_remove_file(*, repo_root: Path, path: Path) -> bool:
         with contextlib.suppress(OSError):
             target.unlink()
         return not target.exists()
+
+
+def remove_retired_latest_reports(*, repo_root: Path) -> list[str]:
+    root = Path(repo_root).resolve()
+    removed_paths: list[str] = []
+    for path in retired_latest_report_paths(repo_root=root):
+        if _benchmark_runtime_remove_file(repo_root=root, path=path):
+            removed_paths.append(str(path))
+    return removed_paths
 
 
 def _active_run_token(value: Any, *, fallback: str) -> str:
@@ -8324,6 +8339,7 @@ def run_benchmarks(
                         payload=report,
                         lock_key=str(latest_path),
                     )
+                remove_retired_latest_reports(repo_root=root)
             progress_payload.update(
                 {
                     "updated_utc": _utc_now(),
@@ -8414,5 +8430,7 @@ __all__ = [
     "load_latest_runtime_benchmark_report",
     "profile_latest_report_path",
     "progress_report_path",
+    "remove_retired_latest_reports",
+    "retired_latest_report_paths",
     "run_benchmarks",
 ]

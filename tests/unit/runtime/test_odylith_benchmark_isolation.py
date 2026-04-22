@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import errno
+import os
 from pathlib import Path
 import shutil
 
@@ -147,3 +148,57 @@ def test_cleanup_temporary_directory_swallows_persistent_cleanup_noise(
 
     assert calls[-1] is True
     shutil.rmtree(target, ignore_errors=True)
+
+
+def test_capture_workspace_validator_truth_prefers_hardlinks_for_files_on_same_device(tmp_path: Path) -> None:
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "validator-truth"
+    benchmark_report = workspace_root / ".odylith" / "runtime" / "odylith-benchmarks" / "latest.v1.json"
+    _write(benchmark_report, "{}\n")
+    _write(workspace_root / "AGENTS.md", "root instructions\n")
+
+    isolation.capture_workspace_validator_truth(
+        workspace_root=workspace_root,
+        truth_root=truth_root,
+        strip_paths=[
+            Path(".odylith/runtime/odylith-benchmarks/latest.v1.json"),
+            Path("AGENTS.md"),
+        ],
+    )
+
+    copied_report = truth_root / ".odylith" / "runtime" / "odylith-benchmarks" / "latest.v1.json"
+    copied_agents = truth_root / "AGENTS.md"
+
+    assert copied_report.read_text(encoding="utf-8") == "{}\n"
+    assert copied_agents.read_text(encoding="utf-8") == "root instructions\n"
+    assert copied_report.samefile(benchmark_report)
+    assert copied_agents.samefile(workspace_root / "AGENTS.md")
+
+
+def test_capture_workspace_validator_truth_falls_back_to_copy_when_hardlinks_are_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "validator-truth"
+    benchmark_report = workspace_root / ".odylith" / "runtime" / "odylith-benchmarks" / "latest.v1.json"
+    _write(benchmark_report, "{}\n")
+
+    real_link = os.link
+
+    def _raise_cross_device(source, target, *args, **kwargs):  # type: ignore[no-untyped-def]
+        raise OSError(errno.EXDEV, "cross-device link")
+
+    monkeypatch.setattr(isolation.os, "link", _raise_cross_device)
+
+    isolation.capture_workspace_validator_truth(
+        workspace_root=workspace_root,
+        truth_root=truth_root,
+        strip_paths=[Path(".odylith/runtime/odylith-benchmarks/latest.v1.json")],
+    )
+
+    copied_report = truth_root / ".odylith" / "runtime" / "odylith-benchmarks" / "latest.v1.json"
+    assert copied_report.read_text(encoding="utf-8") == "{}\n"
+    assert not copied_report.samefile(benchmark_report)
+
+    monkeypatch.setattr(isolation.os, "link", real_link)

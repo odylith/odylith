@@ -263,6 +263,9 @@ def test_merge_shard_reports_writes_full_corpus_report(
     _write_history_report(tmp_path, report_id="shard-a", shard_index=1, shard_count=2, case_ids=["case-a"])
     _write_history_report(tmp_path, report_id="shard-b", shard_index=2, shard_count=2, case_ids=["case-b"])
     _stub_merge_helpers(monkeypatch)
+    retired_path = runner.retired_latest_report_paths(repo_root=tmp_path)[0]
+    retired_path.parent.mkdir(parents=True, exist_ok=True)
+    retired_path.write_text('{"status":"failed"}\n', encoding="utf-8")
 
     report = shard_merge.merge_shard_reports(
         repo_root=tmp_path,
@@ -278,6 +281,7 @@ def test_merge_shard_reports_writes_full_corpus_report(
     assert runner.latest_report_path(repo_root=tmp_path).is_file()
     assert runner.latest_report_path(repo_root=tmp_path, benchmark_profile=runner.BENCHMARK_PROFILE_PROOF).is_file()
     assert runner.history_report_path(repo_root=tmp_path, report_id=report["report_id"]).is_file()
+    assert not retired_path.exists()
 
 
 def test_merge_shard_reports_rejects_incomplete_shard_set(tmp_path: Path) -> None:

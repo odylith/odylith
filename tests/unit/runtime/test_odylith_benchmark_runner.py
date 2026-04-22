@@ -3453,6 +3453,79 @@ def test_profile_latest_report_path_uses_profile_specific_snapshot_names(tmp_pat
     assert runner.latest_report_path(repo_root=tmp_path, benchmark_profile="diagnostic") == (
         tmp_path / ".odylith" / "runtime" / "odylith-benchmarks" / "latest-diagnostic.v1.json"
     ).resolve()
+    assert runner.retired_latest_report_paths(repo_root=tmp_path) == [
+        (tmp_path / ".odylith" / "runtime" / "odylith-benchmarks" / "odylith-benchmark.json").resolve()
+    ]
+
+
+def test_run_benchmarks_removes_retired_latest_report_file_on_success(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "release-critical",
+            "kind": "packet",
+            "label": "Release critical",
+            "summary": "release critical",
+            "family": "release_publication",
+            "priority": "high",
+            "prompt": "Keep release publication bounded.",
+            "acceptance_criteria": [],
+            "changed_paths": ["scripts/release.py"],
+            "required_paths": ["scripts/release.py"],
+            "validation_commands": [],
+            "workstream": "",
+            "correctness_critical": True,
+            "expect": {"within_budget": True},
+        }
+    ]
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(
+        runner,
+        "_require_benchmark_runtime_space",
+        lambda *, repo_root: {"used_bytes": 0, "free_bytes": 1, "total_bytes": 1},
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "mode": kwargs["mode"],
+            "latency_ms": 20.0 if kwargs["mode"] == "odylith_on" else 40.0,
+            "instrumented_reasoning_duration_ms": 12.0 if kwargs["mode"] == "odylith_on" else 25.0,
+            "uninstrumented_overhead_ms": 8.0 if kwargs["mode"] == "odylith_on" else 15.0,
+            "required_path_precision": 1.0,
+            "required_path_recall": 1.0,
+            "validation_success_proxy": 1.0,
+            "expectation_ok": True,
+            "critical_path_misses": [],
+            "required_path_misses": [],
+            "observed_paths": ["scripts/release.py"],
+            "effective_estimated_tokens": 50,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+    monkeypatch.setattr(runner, "_prepare_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(runner, "_singleton_family_latency_probes", lambda **_: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda **_: {})  # type: ignore[arg-type]
+    monkeypatch.setattr(runner, "_benchmark_runtime_hygiene_snapshot", lambda **_: {"active_run_count": 0})  # type: ignore[arg-type]
+    monkeypatch.setattr(runner, "_cleanup_stale_benchmark_state", lambda **_: {"stale_progress_cleared": False})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
+        lambda **_: {},
+    )
+
+    retired_path = runner.retired_latest_report_paths(repo_root=tmp_path)[0]
+    retired_path.parent.mkdir(parents=True, exist_ok=True)
+    retired_path.write_text('{"status":"failed"}\n', encoding="utf-8")
+
+    report = runner.run_benchmarks(repo_root=tmp_path, limit=1)
+
+    assert report["status"] in {"hold", "provisional_pass"}
+    assert runner.history_report_path(repo_root=tmp_path, report_id=report["report_id"]).is_file()
+    assert not retired_path.exists()
 
 
 def test_load_latest_benchmark_report_falls_back_to_canonical_proof_snapshot(tmp_path: Path) -> None:

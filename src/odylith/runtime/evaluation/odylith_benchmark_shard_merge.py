@@ -713,6 +713,7 @@ def merge_shard_reports(
                 payload=report,
                 lock_key=str(history_path),
             )
+            runner.remove_retired_latest_reports(repo_root=root)
         progress_payload.update(
             {
                 "updated_utc": runner._utc_now(),  # noqa: SLF001
