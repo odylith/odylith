@@ -4225,10 +4225,10 @@
           "odylith/runtime/source/discipline-evaluation-corpus.v1.json"
         ],
         "validation_commands": [
-          "odylith validate discipline --repo-root . --case-id discipline-recurrence-tribunal-candidate"
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_discipline.py::test_discipline_recurrence_sets_tribunal_candidate_without_model_calls"
         ],
         "focused_local_checks": [
-          "odylith validate discipline --repo-root . --case-id discipline-recurrence-tribunal-candidate"
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_discipline.py::test_discipline_recurrence_sets_tribunal_candidate_without_model_calls"
         ],
         "needs_write": false,
         "allow_noop_completion": true,

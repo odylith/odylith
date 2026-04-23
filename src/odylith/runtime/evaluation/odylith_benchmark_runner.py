@@ -5211,7 +5211,7 @@ def _live_workspace_snapshot_paths(
     )
     validation_companion_paths = _validation_companion_file_paths(
         repo_root=repo_root,
-        validation_paths=validation_paths,
+        validation_paths=[*validation_paths, *source_local_cli_paths],
     )
     prompt_paths = _existing_repo_file_paths(
         repo_root=repo_root,

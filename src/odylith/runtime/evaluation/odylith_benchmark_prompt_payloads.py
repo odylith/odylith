@@ -816,6 +816,19 @@ def _supplement_architecture_live_prompt_payload(
     else:
         architecture_audit.pop("required_reads", None)
     payload["architecture_audit"] = architecture_audit
+    if scenario_required_paths:
+        payload = _set_context_anchor_explicit_paths(
+            payload,
+            explicit_paths=scenario_required_paths,
+        )
+        boundary_hints = _normalized_string_list(payload.get("boundary_hints"))
+        boundary_hints.extend(
+            [
+                "For architecture dossier slices, read only the listed required anchors and named required reads before making a claim.",
+                "Do not run broad directory listings or inspect sibling benchmark, release, or install docs unless they are explicit required paths.",
+            ]
+        )
+        payload["boundary_hints"] = _dedupe_strings(boundary_hints)
     return payload
 
 

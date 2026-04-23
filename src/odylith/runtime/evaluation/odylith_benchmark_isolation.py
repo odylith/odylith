@@ -133,7 +133,48 @@ def _normalized_allowed_paths(values: Sequence[str]) -> set[str]:
     return rows
 
 
+def _tracked_strip_file_paths(*, workspace_root: Path, strip_paths: Sequence[Path]) -> list[Path]:
+    pathspecs = [path.as_posix() for path in strip_paths if path.as_posix()]
+    if not pathspecs:
+        return []
+    completed = subprocess.run(
+        ["git", "-C", str(Path(workspace_root).resolve()), "ls-files", "-z", "--", *pathspecs],
+        text=False,
+        capture_output=True,
+        check=False,
+    )
+    if int(completed.returncode or 0) != 0:
+        return []
+    rows: list[Path] = []
+    for raw_line in bytes(completed.stdout or b"").split(b"\0"):
+        token = raw_line.decode("utf-8", errors="ignore").strip()
+        if token:
+            rows.append(Path(token))
+    return _dedupe_relative_paths(rows)
+
+
+def _mark_strip_paths_skip_worktree(*, workspace_root: Path, strip_paths: Sequence[Path]) -> None:
+    tracked_files = _tracked_strip_file_paths(workspace_root=workspace_root, strip_paths=strip_paths)
+    if not tracked_files:
+        return
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(Path(workspace_root).resolve()),
+            "update-index",
+            "--skip-worktree",
+            "--",
+            *[path.as_posix() for path in tracked_files],
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
 def apply_workspace_strip_paths(*, workspace_root: Path, strip_paths: Sequence[Path]) -> None:
+    _mark_strip_paths_skip_worktree(workspace_root=workspace_root, strip_paths=strip_paths)
     for relative_path in strip_paths:
         path = (workspace_root / relative_path).resolve()
         if not path.exists():

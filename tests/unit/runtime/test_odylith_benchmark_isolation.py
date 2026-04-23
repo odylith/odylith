@@ -4,6 +4,7 @@ import errno
 import os
 from pathlib import Path
 import shutil
+import subprocess
 
 import pytest
 from odylith.runtime.evaluation import odylith_benchmark_isolation as isolation
@@ -198,6 +199,37 @@ def test_overlay_workspace_repo_snapshot_copies_allowed_ignored_runtime_files(
 
     copied_snapshot = workspace_root / ".odylith" / "runtime" / "odylith-compiler" / "projection-snapshot.v1.json"
     assert copied_snapshot.read_text(encoding="utf-8") == '{"ready": true}\n'
+
+
+def test_temporary_workspace_checkout_hides_stripped_tracked_files_from_git_status(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.email", "bench@example.com"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Benchmark"], cwd=repo_root, check=True)
+    _write(repo_root / "README.md", "repo\n")
+    _write(repo_root / "AGENTS.md", "root guidance\n")
+    _write(repo_root / "docs" / "benchmarks" / "README.md", "benchmark doc\n")
+    subprocess.run(["git", "add", "README.md", "AGENTS.md", "docs/benchmarks/README.md"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+
+    with isolation.temporary_workspace_checkout(
+        repo_root,
+        strip_paths=[Path("AGENTS.md"), Path("docs/benchmarks/README.md")],
+        snapshot_paths=[],
+    ) as workspace_pair:
+        workspace_root, _ = workspace_pair
+        assert not (workspace_root / "AGENTS.md").exists()
+        assert not (workspace_root / "docs" / "benchmarks" / "README.md").exists()
+        assert (workspace_root / "README.md").read_text(encoding="utf-8") == "repo\n"
+        status = subprocess.run(
+            ["git", "-C", str(workspace_root), "status", "--short"],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+
+    assert status == ""
 
 
 def test_capture_workspace_validator_truth_falls_back_to_copy_when_hardlinks_are_unavailable(

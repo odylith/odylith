@@ -1546,6 +1546,66 @@ def test_live_workspace_snapshot_paths_include_source_local_cli_for_odylith_vali
     assert "src/odylith/cli.py" in paths
 
 
+def test_live_workspace_snapshot_paths_include_companion_corpora_for_source_local_validate_discipline(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    cli_path = repo_root / "src" / "odylith" / "cli.py"
+    validate_discipline = repo_root / "src" / "odylith" / "runtime" / "governance" / "validate_discipline.py"
+    source_corpus = repo_root / "odylith" / "runtime" / "source" / "optimization-evaluation-corpus.v1.json"
+    bundle_corpus = (
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "runtime"
+        / "source"
+        / "optimization-evaluation-corpus.v1.json"
+    )
+    cli_path.parent.mkdir(parents=True, exist_ok=True)
+    cli_path.write_text("# file\n", encoding="utf-8")
+    validate_discipline.parent.mkdir(parents=True, exist_ok=True)
+    validate_discipline.write_text(
+        'from pathlib import Path\n'
+        'BENCHMARK_CORPUS_RELATIVE_PATH = Path("odylith/runtime/source/optimization-evaluation-corpus.v1.json")\n'
+        'BUNDLE_BENCHMARK_CORPUS_RELATIVE_PATH = Path(\n'
+        '    "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json"\n'
+        ')\n',
+        encoding="utf-8",
+    )
+    for path in (source_corpus, bundle_corpus):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            return subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr="")
+        if command[:3] == ["git", "ls-files", "--others"]:
+            return subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr="")
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "validation_commands": [
+                    "odylith validate discipline --repo-root . --case-id discipline-recurrence-tribunal-candidate"
+                ],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/cli.py" in paths
+    assert "src/odylith/runtime/governance/validate_discipline.py" in paths
+    assert "odylith/runtime/source/optimization-evaluation-corpus.v1.json" in paths
+    assert "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json" in paths
+
+
 def test_live_workspace_snapshot_paths_include_dirty_governance_roots_for_sync_validators(
     tmp_path: Path,
 ) -> None:
@@ -6242,6 +6302,17 @@ def test_governed_surface_sync_hot_path_allows_validator_backed_noop_completion(
     ]
 
 
+def test_discipline_learning_hot_path_uses_narrow_recurrence_proof() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "discipline-learning-replay-tribunal-candidate")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["validation_commands"] == [
+        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_discipline.py::test_discipline_recurrence_sets_tribunal_candidate_without_model_calls"
+    ]
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
 def test_live_workspace_snapshot_paths_include_focused_local_check_validator_targets(
     tmp_path: Path,
 ) -> None:
@@ -7261,8 +7332,45 @@ def test_prepare_live_scenario_request_keeps_architecture_honest_baseline_suppor
         "README.md",
         "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
     ]
+    assert prompt_payload["context_packet"]["anchors"]["explicit_paths"] == [
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "README.md",
+        "docs/benchmarks/README.md",
+    ]
+    assert any(
+        "Do not run broad directory listings" in hint
+        for hint in prompt_payload["boundary_hints"]
+    )
     assert "odylith/MAINTAINER_RELEASE_RUNBOOK.md" not in audit["required_reads"]
     assert "odylith/registry/source/components/atlas/CURRENT_SPEC.md" not in audit["required_reads"]
+
+
+def test_prepare_live_scenario_request_sets_explicit_doc_boundary_for_architecture_publication_lane() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "architecture-benchmark-proof-publication-lane")
+
+    prepared = runner._prepare_live_scenario_request(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+    )
+
+    prompt_payload = prepared["prompt_payload"]
+    assert isinstance(prompt_payload, dict)
+    audit = dict(prompt_payload["architecture_audit"])
+    assert audit["required_reads"] == [
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "README.md",
+    ]
+    assert prompt_payload["context_packet"]["anchors"]["explicit_paths"] == [
+        "README.md",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+    ]
+    assert any(
+        "Do not run broad directory listings" in hint
+        for hint in prompt_payload["boundary_hints"]
+    )
 
 
 def test_run_scenario_mode_uses_local_packet_path_on_diagnostic_profile() -> None:
