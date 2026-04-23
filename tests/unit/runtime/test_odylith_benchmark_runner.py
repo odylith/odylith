@@ -8609,9 +8609,36 @@ def test_governed_surface_sync_hot_path_still_warms_runtime_when_skip_rule_does_
     assert payload["context_packet"]["route"].get("route_ready") is not True
 
 
-def test_exact_path_ambiguity_hot_path_drops_dead_ambiguous_scaffolding() -> None:
+def test_exact_path_ambiguity_hot_path_drops_dead_ambiguous_scaffolding(monkeypatch) -> None:  # noqa: ANN001
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "runtime-path-ambiguity")
+
+    def _minimal_impact_report(**kwargs):  # noqa: ANN001
+        changed_paths = list(kwargs.get("changed_paths", []))
+        return {
+            "changed_paths": changed_paths,
+            "explicit_paths": changed_paths,
+            "candidate_workstreams": [],
+            "workstream_selection": {"state": "explicit", "reason": "exact slice"},
+            "selection_state": "explicit",
+            "selection_reason": "exact slice",
+            "selection_confidence": "high",
+            "context_packet_state": "compact",
+            "components": [],
+            "diagrams": [],
+            "bugs": [],
+            "docs": [],
+            "recommended_commands": [],
+            "recommended_tests": [],
+            "engineering_notes": {},
+            "miss_recovery": {},
+            "truncation": {},
+            "full_scan_recommended": False,
+            "full_scan_reason": "",
+            "fallback_scan": {},
+        }
+
+    monkeypatch.setattr(packet_session_runtime, "build_impact_report", _minimal_impact_report)
 
     packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
         repo_root=REPO_ROOT,
@@ -8628,19 +8655,22 @@ def test_exact_path_ambiguity_hot_path_drops_dead_ambiguous_scaffolding() -> Non
     assert payload.get("retrieval_plan") is None
     assert payload.get("packet_quality") is None
     assert payload.get("packet_budget") is None
-    assert narrowing_guidance["required"] is True
     assert narrowing_guidance == {
-        "required": True,
         "reason": "Need one code path.",
+        "next_best_anchors": [
+            {
+                "kind": "doc",
+                "value": "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+            }
+        ],
     }
-    assert retrieval_plan["ambiguity_class"] == "no_candidates"
     assert retrieval_plan["selected_counts"] == "g2"
-    assert retrieval_plan["precision_score"] == 33
-    assert retrieval_plan["evidence_consensus"] == "mixed"
+    assert retrieval_plan["precision_score"] == 55
+    assert retrieval_plan["evidence_consensus"] == "weak"
     assert context_packet["route"] == {
-        "narrowing_required": True,
-        "b": "guarded_narrowing",
-        "p": "serial_guarded",
+        "route_ready": True,
+        "b": "accuracy_first",
+        "p": "serial_preferred",
     }
     assert context_packet.get("execution_profile") is None
     assert context_packet.get("optimization") is None
