@@ -685,6 +685,13 @@ def test_packet_guardrail_noop_cases_use_validator_backed_commands() -> None:
         assert scenario["focused_local_checks"] == scenario["validation_commands"]
 
 
+def test_docs_closeout_noop_case_uses_validator_backed_commands() -> None:
+    scenarios = {str(row.get("scenario_id", "")).strip(): row for row in _load_normalized()}
+    scenario = scenarios["benchmark-docs-and-readme-closeout"]
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
 def test_correctness_critical_allow_noop_cases_declare_focused_local_checks() -> None:
     missing: list[tuple[str, str]] = []
     for scenario in _load_normalized():

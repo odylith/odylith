@@ -2474,6 +2474,10 @@
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py tests/unit/runtime/test_hygiene.py"
         ],
+        "focused_local_checks": [
+          "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py tests/unit/runtime/test_hygiene.py"
+        ],
+        "allow_noop_completion": true,
         "needs_write": true,
         "workstream": "B-022"
       },
