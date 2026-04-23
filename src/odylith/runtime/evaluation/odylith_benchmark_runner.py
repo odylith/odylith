@@ -63,6 +63,7 @@ from odylith.runtime.context_engine import odylith_context_engine_packet_adaptiv
 from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import path_bundle_codec
+from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.orchestration import subagent_orchestrator
 from odylith.runtime.orchestration import subagent_router as leaf_router
@@ -3747,13 +3748,27 @@ def _observed_packet_paths(payload: Mapping[str, Any]) -> list[str]:
             rows.extend(path_bundle_codec.expand_path_rows(value))
     context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
     guidance_behavior_summary = guidance_behavior_runtime.summary_from_sources(payload, context_packet, limit=6)
+    discipline_summary = discipline_runtime.summary_from_sources(payload, context_packet, limit=6)
     if guidance_behavior_summary:
         related_refs = guidance_behavior_summary.get("related_guidance_refs", [])
         if isinstance(related_refs, list):
             rows.extend(path_bundle_codec.expand_path_rows(related_refs))
+    discipline_source_refs = (
+        discipline_summary.get("source_refs", [])
+        if isinstance(discipline_summary.get("source_refs", []), list)
+        else []
+    )
+    discipline_runtime_contract_present = bool(
+        guidance_behavior_summary
+        or discipline_summary
+        or any(
+            "discipline-evaluation-corpus.v1.json" in str(token)
+            for token in discipline_source_refs
+        )
+    )
     # Guidance and discipline summary source refs are runtime diagnostics, not
-    # prompt-visible task evidence. Counting them here inflates hallucinated-
-    # surface metrics on strict-boundary packet families.
+    # prompt-visible task evidence. Keep the discipline runtime contract live
+    # for validator proof, but do not count those refs as observed paths.
     anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), Mapping) else {}
     for key in ("changed_paths", "explicit_paths"):
         value = anchors.get(key, [])

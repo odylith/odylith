@@ -8711,6 +8711,47 @@ def test_session_brief_broad_shared_hot_path_stays_compact_and_narrowing_first()
     ]
 
 
+def test_observed_packet_paths_keeps_discipline_runtime_contract_without_counting_source_refs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[object, ...]] = []
+
+    def _discipline_summary_from_sources(*sources: object, limit: int = 6) -> dict[str, object]:
+        calls.append((*sources, limit))
+        return {
+            "status": "available",
+            "validator_command": "odylith validate discipline --repo-root .",
+            "source_refs": [
+                "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+                "src/odylith/runtime/governance/validate_discipline.py",
+            ],
+        }
+
+    monkeypatch.setattr(
+        runner.discipline_runtime,
+        "summary_from_sources",
+        _discipline_summary_from_sources,
+    )
+    monkeypatch.setattr(
+        runner.guidance_behavior_runtime,
+        "summary_from_sources",
+        lambda *args, **kwargs: {},
+    )
+
+    observed_paths = runner._observed_packet_paths(  # noqa: SLF001
+        {
+            "changed_paths": [
+                "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+            ],
+            "context_packet": {},
+        }
+    )
+
+    assert calls
+    assert observed_paths == ["odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md"]
+    assert "odylith/runtime/source/discipline-evaluation-corpus.v1.json" not in observed_paths
+
+
 def test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "session-brief-runtime-path-ambiguity")
