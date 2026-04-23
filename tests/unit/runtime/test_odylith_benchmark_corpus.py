@@ -672,6 +672,7 @@ def test_packet_guardrail_noop_cases_use_validator_backed_commands() -> None:
     scenarios = {str(row.get("scenario_id", "")).strip(): row for row in _load_normalized()}
     for scenario_id in (
         "broad-shared-guarding",
+        "cross-file-feature-budget-discipline",
         "runtime-path-ambiguity",
         "session-brief-broad-shared-guarding",
         "session-brief-runtime-path-ambiguity",

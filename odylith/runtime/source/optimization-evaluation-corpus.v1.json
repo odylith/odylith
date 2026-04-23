@@ -1598,7 +1598,12 @@
         "validation_commands": [
           "odylith subagent-router --repo-root . --help",
           "odylith subagent-orchestrator --repo-root . --help"
-        ]
+        ],
+        "focused_local_checks": [
+          "odylith subagent-router --repo-root . --help",
+          "odylith subagent-orchestrator --repo-root . --help"
+        ],
+        "allow_noop_completion": true
       },
       "match": {
         "paths_all": [
