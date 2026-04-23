@@ -26,7 +26,7 @@ _ACCEPTANCE_CHECK_LABELS = {
     "unnecessary_widening_not_worse": "unnecessary write-surface widening is worse than the raw baseline",
     "critical_required_path_recall_not_worse": "critical-path recall fell below the raw baseline",
     "critical_validation_success_not_worse": "critical validation success fell below the raw baseline",
-    "live_execution_contract_match": "odylith_on and odylith_off did not use the same Codex CLI model and reasoning contract",
+    "live_execution_contract_match": "odylith_on and odylith_off did not use the same host CLI model and reasoning contract",
     "expectation_success_not_worse": "execution fit fell below the raw baseline",
     "candidate_expectation_success_positive": "odylith_on did not finish any sampled live task successfully",
     "candidate_validation_success_positive": "odylith_on did not reach any validator-backed successful outcome on sampled validation-backed work",
@@ -157,7 +157,7 @@ def live_execution_contract_match(
     baseline = dict(lookup_mode_mapping(execution_contracts, baseline_mode) or {})
     if not candidate or not baseline:
         return True
-    fields = ("runner", "codex_bin", "model", "reasoning_effort")
+    fields = ("runner", "provider", "host_family", "bin", "model", "reasoning_effort")
     return all(str(candidate.get(field, "")).strip() == str(baseline.get(field, "")).strip() for field in fields)
 
 
@@ -624,7 +624,7 @@ def build_acceptance(
     hard_gate_families: list[str] = []
     advisory_families: list[str] = []
     if not baseline:
-        notes.append("`odylith_off` summary is unavailable; rerun with the raw Codex CLI lane enabled.")
+        notes.append("`odylith_off` summary is unavailable; rerun with the raw host CLI lane enabled.")
     if fairness_findings:
         notes.append("Benchmark fairness contract findings are present; the published pair is not release-safe until they are resolved.")
 
@@ -672,7 +672,7 @@ def build_acceptance(
     _append_failed_check_notes(notes, hard_quality_checks)
 
     if not hard_quality_checks["live_execution_contract_match"]:
-        notes.append("`odylith_on` and `odylith_off` did not run on the same Codex CLI model/reasoning contract.")
+        notes.append("`odylith_on` and `odylith_off` did not run on the same host CLI model/reasoning contract.")
     if hard_quality_checks["memory_backed_retrieval_ready"]:
         notes.append("Benchmark proof used active local LanceDB plus Tantivy retrieval memory.")
     else:
@@ -715,11 +715,11 @@ def build_acceptance(
         notes.append("Secondary guardrails needing attention: " + "; ".join(secondary_guardrail_failure_labels[:4]) + ".")
     if float(primary_comparison.get("median_latency_delta_ms", 0.0) or 0.0) > 0.0:
         notes.append(
-            "Odylith takes longer than raw Codex CLI to reach a valid outcome on the benchmark pair; this stays published as a secondary tradeoff and only blocks status when the comparative live-efficiency guardrail is actually status-blocking."
+            "Odylith takes longer than raw host CLI to reach a valid outcome on the benchmark pair; this stays published as a secondary tradeoff and only blocks status when the comparative live-efficiency guardrail is actually status-blocking."
         )
     if prompt_token_delta > 0.0:
         notes.append(
-            "Odylith uses more full-session input tokens than raw Codex CLI on the live run; that overhead stays visible, but it is not the same thing as initial prompt size."
+            "Odylith uses more full-session input tokens than raw host CLI on the live run; that overhead stays visible, but it is not the same thing as initial prompt size."
         )
     if hard_gate_families:
         notes.append(f"Hard-gate families needing attention: {', '.join(hard_gate_families[:5])}.")

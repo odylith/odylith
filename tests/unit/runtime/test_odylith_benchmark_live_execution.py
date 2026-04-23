@@ -116,7 +116,7 @@ def test_resolved_live_execution_contract_prefers_env_over_repo_and_ignores_user
         },
     )
 
-    assert contract["runner"] == "live_codex_cli"
+    assert contract["runner"] == "live_host_cli"
     assert contract["model"] == "env-model"
     assert contract["reasoning_effort"] == "low"
     assert contract["codex_bin"]
@@ -162,6 +162,57 @@ def test_resolved_live_execution_contract_prefers_env_over_repo_and_ignores_user
 
     assert contract_with_defaults_only["model"] == "config-model"
     assert contract_with_defaults_only["reasoning_effort"] == "medium"
+
+
+def test_resolved_live_execution_contract_supports_claude_provider(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reasoning_path = tmp_path / odylith_reasoning.DEFAULT_REASONING_CONFIG_PATH
+    reasoning_path.parent.mkdir(parents=True, exist_ok=True)
+    reasoning_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "model": "claude-repo-model",
+                "claude_reasoning_effort": "xhigh",
+                "claude_bin": "claude",
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        odylith_reasoning,
+        "resolve_claude_bin",
+        lambda raw: f"/tmp/{Path(str(raw)).name}",
+    )
+
+    contract = live_execution._resolved_live_execution_contract(  # noqa: SLF001
+        repo_root=tmp_path,
+        config=odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="claude-cli",
+            model="claude-config-model",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            claude_bin="claude",
+            claude_reasoning_effort="medium",
+        ),
+        environ={
+            "HOME": str(tmp_path / "home"),
+            "ODYLITH_REASONING_MODEL": "claude-env-model",
+            "ODYLITH_REASONING_CLAUDE_REASONING_EFFORT": "max",
+        },
+    )
+
+    assert contract["runner"] == "live_host_cli"
+    assert contract["provider"] == "claude-cli"
+    assert contract["host_family"] == "claude"
+    assert contract["model"] == "claude-env-model"
+    assert contract["reasoning_effort"] == "max"
+    assert contract["claude_bin"].endswith("/claude")
 
 
 def test_minimal_codex_config_text_disables_guidance_surfaces() -> None:
@@ -230,6 +281,32 @@ def test_temporary_codex_home_reports_all_checked_auth_candidates(
     message = str(exc_info.value)
     assert str(explicit_codex_home / "auth.json") in message
     assert str(stripped_home / ".codex" / "auth.json") in message
+
+
+def test_temporary_codex_home_dispatches_to_claude_home_copy(tmp_path: Path) -> None:
+    source_home = tmp_path / "source-home"
+    (source_home / ".claude").mkdir(parents=True, exist_ok=True)
+    (source_home / ".claude" / "settings.json").write_text(
+        json.dumps({"apiKeyHelper": "helper --print-key"}),
+        encoding="utf-8",
+    )
+    (source_home / ".claude.json").write_text('{"user":"local"}\n', encoding="utf-8")
+    buddy_tokens = source_home / "Library" / "Application Support" / "Claude" / "buddy-tokens.json"
+    buddy_tokens.parent.mkdir(parents=True, exist_ok=True)
+    buddy_tokens.write_text('{"token":"local"}\n', encoding="utf-8")
+
+    with live_execution._temporary_codex_home(  # noqa: SLF001
+        execution_contract={"provider": "claude-cli", "model": "sonnet", "reasoning_effort": "high"},
+        repo_root=tmp_path,
+        environ={"HOME": str(source_home)},
+    ) as temp_home:
+        copied_settings = json.loads((temp_home / ".claude" / "settings.json").read_text(encoding="utf-8"))
+        assert copied_settings["apiKeyHelper"] == "helper --print-key"
+        assert copied_settings["model"] == "sonnet"
+        assert (temp_home / ".claude.json").read_text(encoding="utf-8") == '{"user":"local"}\n'
+        assert (
+            temp_home / "Library" / "Application Support" / "Claude" / "buddy-tokens.json"
+        ).read_text(encoding="utf-8") == '{"token":"local"}\n'
 
 
 def test_resolved_live_timeout_budget_prefers_env_override_then_scenario_timeout() -> None:
@@ -1746,6 +1823,26 @@ def test_sandbox_process_env_prefers_explicit_playwright_browsers_path(tmp_path:
     assert env["PLAYWRIGHT_BROWSERS_PATH"] == str(explicit_browsers.resolve())
 
 
+def test_sandbox_process_env_passes_claude_auth_and_config_dir(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    host_home_root = tmp_path / "claude-home"
+    repo_root = tmp_path / "repo"
+    sandbox_root = tmp_path / "sandbox"
+    host_home_root.mkdir(parents=True, exist_ok=True)
+    (repo_root / ".venv" / "bin").mkdir(parents=True, exist_ok=True)
+
+    env = live_execution._sandbox_process_env(  # noqa: SLF001
+        repo_root=repo_root,
+        execution_contract={"provider": "claude-cli", "claude_bin": "claude"},
+        host_home_root=host_home_root,
+        sandbox_root=sandbox_root,
+    )
+
+    assert env["HOME"] == str(host_home_root)
+    assert env["CLAUDE_CONFIG_DIR"] == str((host_home_root / ".claude").resolve())
+    assert env["ANTHROPIC_API_KEY"] == "test-key"
+
+
 def test_codex_exec_command_disables_plugins_multi_agent_and_personality(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -1763,6 +1860,31 @@ def test_codex_exec_command_disables_plugins_multi_agent_and_personality(
     assert command[1] == "exec"
     assert ["--disable", "plugins"] == command[2:4]
     assert "--disable" in command and "multi_agent" in command and "personality" in command
+
+
+def test_codex_exec_command_supports_claude_cli_contract(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(live_execution, "_host_binary_available", lambda _binary: True)
+    monkeypatch.setattr(
+        odylith_reasoning,
+        "resolve_claude_bin",
+        lambda raw: f"/Applications/{Path(str(raw)).name}",
+    )
+
+    command = live_execution._codex_exec_command(  # noqa: SLF001
+        execution_contract={"provider": "claude-cli", "claude_bin": "claude", "model": "sonnet", "reasoning_effort": "max"},
+        workspace_root=tmp_path,
+        schema_path=tmp_path / "schema.json",
+        output_path=tmp_path / "out.json",
+    )
+
+    assert command[0].endswith("/claude")
+    assert "--output-format" in command and "stream-json" in command
+    assert "--json-schema" in command
+    assert "--tools" in command and "Bash,Edit,Glob,Grep,Read,Write" in command
+    assert "--effort" in command and "max" in command
 
 
 def test_run_validators_uses_non_login_bash(monkeypatch, tmp_path: Path) -> None:
@@ -2058,7 +2180,7 @@ def test_run_live_scenario_preserves_snapshot_validator_paths_for_self_reference
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -2221,7 +2343,7 @@ def test_run_live_scenario_returns_failed_payload_when_workspace_disappears_midf
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -2384,7 +2506,7 @@ def test_run_live_scenario_records_declared_preflight_evidence_and_observed_path
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -2542,7 +2664,7 @@ def test_run_live_scenario_keeps_raw_prompt_visible_paths_when_workspace_strips_
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -2558,7 +2680,7 @@ def test_run_live_scenario_keeps_raw_prompt_visible_paths_when_workspace_strips_
             "needs_write": False,
         },
         mode="raw_agent_baseline",
-        packet_source="raw_codex_cli",
+        packet_source="raw_host_cli",
         prompt_payload={},
         snapshot_paths=[],
     )
@@ -2682,7 +2804,7 @@ def test_run_live_scenario_short_circuits_validators_after_live_timeout(
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -2802,7 +2924,7 @@ def test_run_live_scenario_uses_focused_noop_preflight_short_circuit(
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -2938,7 +3060,7 @@ def test_run_live_scenario_treats_noop_validator_paths_as_supporting_evidence(
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -3066,7 +3188,7 @@ def test_run_live_scenario_noop_preflight_ignores_benchmark_cli_launcher_artifac
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -3188,7 +3310,7 @@ def test_run_live_scenario_noop_preflight_keeps_cli_launcher_when_scenario_targe
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -3335,7 +3457,7 @@ def test_run_live_scenario_preserves_carried_packet_summary_truth(
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",

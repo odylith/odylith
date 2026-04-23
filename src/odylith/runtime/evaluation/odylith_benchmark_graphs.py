@@ -571,11 +571,13 @@ def _scenario_rows(report: Mapping[str, Any]) -> list[dict[str, Any]]:
                 "family": str(scenario.get("family", "")).strip(),
                 "candidate_prompt": benchmark_metric_helpers.numeric_value(
                     candidate,
-                    "codex_prompt_estimated_tokens",
+                    "host_prompt_estimated_tokens",
+                    fallback_fields=("codex_prompt_estimated_tokens",),
                 ),
                 "baseline_prompt": benchmark_metric_helpers.numeric_value(
                     baseline,
-                    "codex_prompt_estimated_tokens",
+                    "host_prompt_estimated_tokens",
+                    fallback_fields=("codex_prompt_estimated_tokens",),
                 ),
                 "candidate_latency": benchmark_metric_helpers.numeric_value(candidate, "latency_ms"),
                 "baseline_latency": benchmark_metric_helpers.numeric_value(baseline, "latency_ms"),

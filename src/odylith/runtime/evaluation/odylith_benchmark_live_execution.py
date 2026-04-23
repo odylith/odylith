@@ -1,6 +1,6 @@
-"""Run honest live benchmark scenarios through the local Codex CLI.
+"""Run honest live benchmark scenarios through the local host CLI.
 
-This module executes the same benchmark task through the same Codex CLI in a
+This module executes the same benchmark task through the same host CLI in a
 disposable git worktree for both public comparison lanes:
 
 - ``odylith_on``: the task prompt plus the declared full-product Odylith
@@ -13,7 +13,7 @@ The runner neutralizes repo-local guidance in two places:
 - the disposable workspace strips auto-consumed instruction entrypoints such as
   ``AGENTS.md``, ``CLAUDE.md``, ``.cursor/``, ``.windsurf/``, and
   ``.codex/`` while preserving truth-bearing repo docs for explicit reads; and
-- the Codex CLI runs from a temporary ``HOME`` that keeps auth plus the pinned
+- the host CLI runs from a temporary ``HOME`` that keeps auth plus the pinned
   model/reasoning contract while dropping user-authored guidance config,
   plugins, MCP config, and project-doc fallback.
 
@@ -36,10 +36,10 @@ import shutil
 import subprocess
 import tempfile
 import time
-from typing import Any, Mapping, Sequence
+from typing import Any, Iterator, Mapping, Sequence
 
-from odylith.runtime.evaluation import odylith_benchmark_live_codex_config
 from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
+from odylith.runtime.evaluation import odylith_benchmark_live_host_config
 from odylith.runtime.evaluation import odylith_benchmark_isolation
 from odylith.runtime.evaluation import odylith_benchmark_live_process
 from odylith.runtime.evaluation import odylith_benchmark_mode
@@ -107,11 +107,23 @@ _apply_strip_paths = odylith_benchmark_isolation.apply_workspace_strip_paths
 _BENCHMARK_TEMP_CLEANUP_RETRYABLE_ERRNOS = frozenset({errno.ENOTEMPTY, errno.EBUSY, errno.EPERM})
 _BENCHMARK_TEMP_CLEANUP_RETRY_COUNT = 4
 _BENCHMARK_TEMP_CLEANUP_RETRY_DELAY_SECONDS = 0.05
-_codex_auth_source = odylith_benchmark_live_codex_config.codex_auth_source
-_codex_home_candidates = odylith_benchmark_live_codex_config.codex_home_candidates
-_minimal_codex_config_text = odylith_benchmark_live_codex_config.minimal_codex_config_text
-_normalize_codex_cli_reasoning_effort = odylith_benchmark_live_codex_config.normalize_codex_cli_reasoning_effort
-_resolved_live_execution_contract = odylith_benchmark_live_codex_config.resolved_live_execution_contract
+_claude_auth_sources = odylith_benchmark_live_host_config.claude_auth_sources
+_claude_home_candidates = odylith_benchmark_live_host_config.claude_home_candidates
+_codex_auth_source = odylith_benchmark_live_host_config.codex_auth_source
+_codex_home_candidates = odylith_benchmark_live_host_config.codex_home_candidates
+_minimal_claude_settings = odylith_benchmark_live_host_config.minimal_claude_settings
+_minimal_codex_config_text = odylith_benchmark_live_host_config.minimal_codex_config_text
+_normalize_claude_cli_reasoning_effort = odylith_benchmark_live_host_config.normalize_claude_cli_reasoning_effort
+_normalize_codex_cli_reasoning_effort = odylith_benchmark_live_host_config.normalize_codex_cli_reasoning_effort
+_normalize_live_cli_reasoning_effort = odylith_benchmark_live_host_config.normalize_live_cli_reasoning_effort
+_resolved_live_execution_contract = odylith_benchmark_live_host_config.resolved_live_execution_contract
+_user_claude_config = odylith_benchmark_live_host_config.user_claude_config
+
+_CLAUDE_ALLOWED_TOOLS = "Bash,Edit,Glob,Grep,Read,Write"
+_CLAUDE_COMMAND_TOOL_NAMES = frozenset({"Bash", "Read", "Glob", "Grep", "Edit", "Write"})
+_CLAUDE_WRITE_TOOL_NAMES = frozenset({"Edit", "Write"})
+_LIVE_HOST_CLI = "live_host_cli"
+_RAW_HOST_CLI = "raw_host_cli"
 
 
 def _dedupe_strings(rows: Sequence[str]) -> list[str]:
@@ -151,6 +163,65 @@ def _existing_file_paths(*, workspace_root: Path, paths: Sequence[str]) -> list[
     return _dedupe_strings(rows)
 
 
+def _execution_provider(execution_contract: Mapping[str, str]) -> str:
+    provider = str(execution_contract.get("provider", "")).strip().lower()
+    if provider in {"codex-cli", "claude-cli"}:
+        return provider
+    if str(execution_contract.get("host_family", "")).strip().lower() == "claude":
+        return "claude-cli"
+    return "codex-cli"
+
+
+def _execution_host_family(execution_contract: Mapping[str, str]) -> str:
+    token = str(execution_contract.get("host_family", "")).strip().lower()
+    if token in {"codex", "claude"}:
+        return token
+    return "claude" if _execution_provider(execution_contract) == "claude-cli" else "codex"
+
+
+def _execution_bin(execution_contract: Mapping[str, str]) -> str:
+    provider = _execution_provider(execution_contract)
+    if provider == "claude-cli":
+        return str(
+            execution_contract.get("bin")
+            or execution_contract.get("claude_bin")
+            or "claude"
+        ).strip()
+    return str(
+        execution_contract.get("bin")
+        or execution_contract.get("codex_bin")
+        or "codex"
+    ).strip()
+
+
+def _execution_runner(execution_contract: Mapping[str, str]) -> str:
+    token = str(execution_contract.get("runner", "")).strip()
+    return token or _LIVE_HOST_CLI
+
+
+def _execution_transport(execution_contract: Mapping[str, str]) -> str:
+    return "claude_stream_json" if _execution_provider(execution_contract) == "claude-cli" else "codex_exec_jsonl"
+
+
+def _host_binary_available(binary: str) -> bool:
+    token = str(binary or "").strip()
+    if not token:
+        return False
+    if shutil.which(token):
+        return True
+    if "/" in token or token.startswith("."):
+        candidate = Path(token).expanduser()
+        return candidate.is_file() and os.access(candidate, os.X_OK)
+    return False
+
+
+def _claude_env_auth_available(environ: Mapping[str, str]) -> bool:
+    return any(
+        str(environ.get(key, "")).strip()
+        for key in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+    )
+
+
 @contextlib.contextmanager
 def _temporary_codex_home(
     *,
@@ -159,6 +230,14 @@ def _temporary_codex_home(
     environ: Mapping[str, str] | None = None,
 ) -> Iterator[Path]:
     env = dict(os.environ if environ is None else environ)
+    if _execution_provider(execution_contract) == "claude-cli":
+        with _temporary_claude_home(
+            execution_contract=execution_contract,
+            repo_root=repo_root,
+            environ=env,
+        ) as home_root:
+            yield home_root
+        return
     auth_source = _codex_auth_source(environ=env)
     if auth_source is None:
         checked = ", ".join((candidate / "auth.json").as_posix() for candidate in _codex_home_candidates(environ=env))
@@ -177,6 +256,58 @@ def _temporary_codex_home(
             _minimal_codex_config_text(execution_contract=execution_contract),
             encoding="utf-8",
         )
+        yield home_root
+
+
+@contextlib.contextmanager
+def _temporary_claude_home(
+    *,
+    execution_contract: Mapping[str, str],
+    repo_root: Path,
+    environ: Mapping[str, str] | None = None,
+) -> Iterator[Path]:
+    env = dict(os.environ if environ is None else environ)
+    auth_sources = _claude_auth_sources(environ=env)
+    user_settings = _user_claude_config(environ=env)
+    has_api_key_helper = bool(str(user_settings.get("apiKeyHelper", "")).strip())
+    if not auth_sources and not has_api_key_helper and not _claude_env_auth_available(env):
+        checked = ", ".join(candidate.as_posix() for candidate in _claude_home_candidates(environ=env))
+        raise RuntimeError(
+            "Claude CLI auth is unavailable; checked "
+            f"{checked or '`~/.claude`, `~/.claude.json`, and `~/Library/Application Support/Claude/buddy-tokens.json`'} "
+            "and cannot run live benchmark scenarios."
+        )
+    with _temporary_benchmark_temp_dir(
+        repo_root=repo_root,
+        prefix="odylith-benchmark-claude-home-",
+    ) as home_root:
+        claude_home = (home_root / ".claude").resolve()
+        claude_home.mkdir(parents=True, exist_ok=True)
+        auto_memory_directory = (home_root / "claude-auto-memory").resolve()
+        auto_memory_directory.mkdir(parents=True, exist_ok=True)
+        settings_path = (claude_home / "settings.json").resolve()
+        settings_path.write_text(
+            json.dumps(
+                _minimal_claude_settings(
+                    execution_contract=execution_contract,
+                    auto_memory_directory=str(auto_memory_directory),
+                    user_settings=user_settings,
+                ),
+                sort_keys=True,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        claude_json = auth_sources.get("claude_json")
+        if isinstance(claude_json, Path) and claude_json.is_file():
+            target = (home_root / ".claude.json").resolve()
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(claude_json, target)
+        buddy_tokens = auth_sources.get("buddy_tokens")
+        if isinstance(buddy_tokens, Path) and buddy_tokens.is_file():
+            target = (home_root / "Library" / "Application Support" / "Claude" / "buddy-tokens.json").resolve()
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(buddy_tokens, target)
         yield home_root
 
 
@@ -329,8 +460,14 @@ def _codex_exec_command(
     schema_path: Path,
     output_path: Path,
 ) -> list[str]:
+    if _execution_provider(execution_contract) == "claude-cli":
+        return _claude_exec_command(
+            execution_contract=execution_contract,
+            workspace_root=workspace_root,
+            schema_path=schema_path,
+        )
     codex_bin = odylith_reasoning.resolve_codex_bin(execution_contract.get("codex_bin", "codex"))
-    if not shutil.which(codex_bin):
+    if not _host_binary_available(codex_bin):
         raise RuntimeError(f"Codex CLI binary `{codex_bin}` is not available.")
     command = [
         codex_bin,
@@ -363,6 +500,48 @@ def _codex_exec_command(
     return command
 
 
+def _claude_exec_command(
+    *,
+    execution_contract: Mapping[str, str],
+    workspace_root: Path,
+    schema_path: Path,
+) -> list[str]:
+    claude_bin = odylith_reasoning.resolve_claude_bin(_execution_bin(execution_contract))
+    if not _host_binary_available(claude_bin):
+        raise RuntimeError(f"Claude CLI binary `{claude_bin}` is not available.")
+    command = [
+        claude_bin,
+        "-p",
+        (
+            "Read the full benchmark task prompt from stdin. Work only inside the current repository. "
+            "Use only the allowed local tools and return only JSON matching the provided schema."
+        ),
+        "--output-format",
+        "stream-json",
+        "--verbose",
+        "--input-format",
+        "text",
+        "--permission-mode",
+        "bypassPermissions",
+        "--max-turns",
+        "12",
+        "--no-session-persistence",
+        "--setting-sources",
+        "user",
+        "--tools",
+        _CLAUDE_ALLOWED_TOOLS,
+        "--json-schema",
+        str(schema_path),
+    ]
+    model = str(execution_contract.get("model", "")).strip()
+    if model:
+        command.extend(["--model", model])
+    reasoning_effort = _normalize_claude_cli_reasoning_effort(execution_contract.get("reasoning_effort", "high"))
+    if reasoning_effort:
+        command.extend(["--effort", reasoning_effort])
+    return command
+
+
 def _parse_json_lines(stream_text: str) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for raw_line in str(stream_text or "").splitlines():
@@ -376,14 +555,49 @@ def _parse_json_lines(stream_text: str) -> list[dict[str, Any]]:
     return rows
 
 
+def _event_content_blocks(payload: Any) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    if isinstance(payload, Mapping):
+        content = payload.get("content")
+        if isinstance(content, list):
+            for item in content:
+                if isinstance(item, Mapping):
+                    rows.append(dict(item))
+        for key in ("message", "item"):
+            nested = payload.get(key)
+            if isinstance(nested, Mapping):
+                rows.extend(_event_content_blocks(nested))
+    return rows
+
+
+def _text_candidates(value: Any) -> list[str]:
+    rows: list[str] = []
+    if isinstance(value, str):
+        token = value.strip()
+        if token:
+            rows.append(token)
+        return rows
+    if isinstance(value, Mapping):
+        for key in ("text", "result", "output", "content"):
+            rows.extend(_text_candidates(value.get(key)))
+        return rows
+    if isinstance(value, list):
+        for item in value:
+            rows.extend(_text_candidates(item))
+    return rows
+
+
 def _structured_output_from_events(events: Sequence[Mapping[str, Any]]) -> dict[str, Any] | None:
     for event in reversed(events):
         text_candidates: list[str] = []
         item = dict(event.get("item", {})) if isinstance(event.get("item"), Mapping) else {}
         if str(item.get("type", "")).strip() == "agent_message":
-            text_candidates.append(str(item.get("text", "")).strip())
+            text_candidates.extend(_text_candidates(item.get("text")))
         if str(event.get("type", "")).strip() in {"agent_message", "assistant_message"}:
-            text_candidates.append(str(event.get("text", "")).strip())
+            text_candidates.extend(_text_candidates(event.get("text")))
+        text_candidates.extend(_text_candidates(event.get("result")))
+        for block in _event_content_blocks(event):
+            text_candidates.extend(_text_candidates(block))
         for candidate in text_candidates:
             payload = odylith_reasoning._parse_structured_mapping_text(candidate)  # noqa: SLF001
             rows = _normalized_structured_output_payload(payload)
@@ -406,15 +620,84 @@ def _normalized_structured_output_payload(payload: Mapping[str, Any] | None) -> 
 
 def _usage_from_events(events: Sequence[Mapping[str, Any]]) -> dict[str, int]:
     for event in reversed(events):
-        if str(event.get("type", "")).strip() != "turn.completed":
+        usage = _usage_mapping(event)
+        if usage is None:
             continue
-        usage = dict(event.get("usage", {})) if isinstance(event.get("usage"), Mapping) else {}
-        return {
-            "input_tokens": int(usage.get("input_tokens", 0) or 0),
-            "cached_input_tokens": int(usage.get("cached_input_tokens", 0) or 0),
-            "output_tokens": int(usage.get("output_tokens", 0) or 0),
-        }
+        return usage
     return {"input_tokens": 0, "cached_input_tokens": 0, "output_tokens": 0}
+
+
+def _usage_mapping(payload: Any) -> dict[str, int] | None:
+    if isinstance(payload, Mapping):
+        usage = payload.get("usage")
+        if isinstance(usage, Mapping):
+            return {
+                "input_tokens": int(usage.get("input_tokens", 0) or 0),
+                "cached_input_tokens": int(usage.get("cached_input_tokens", 0) or 0),
+                "output_tokens": int(usage.get("output_tokens", 0) or 0),
+            }
+        if any(key in payload for key in ("input_tokens", "cached_input_tokens", "output_tokens")):
+            return {
+                "input_tokens": int(payload.get("input_tokens", 0) or 0),
+                "cached_input_tokens": int(payload.get("cached_input_tokens", 0) or 0),
+                "output_tokens": int(payload.get("output_tokens", 0) or 0),
+            }
+        for key in ("result", "message", "item"):
+            nested = _usage_mapping(payload.get(key))
+            if nested is not None:
+                return nested
+    return None
+
+
+def _tool_result_text_by_id(events: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+    rows: dict[str, str] = {}
+    for event in events:
+        for block in _event_content_blocks(event):
+            if str(block.get("type", "")).strip() != "tool_result":
+                continue
+            tool_use_id = str(block.get("tool_use_id", "")).strip() or str(block.get("id", "")).strip()
+            if not tool_use_id or tool_use_id in rows:
+                continue
+            text = "\n".join(_text_candidates(block))
+            if text.strip():
+                rows[tool_use_id] = text.strip()
+    return rows
+
+
+def _tool_use_blocks(events: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    tool_results = _tool_result_text_by_id(events)
+    rows: list[dict[str, Any]] = []
+    for event in events:
+        for block in _event_content_blocks(event):
+            if str(block.get("type", "")).strip() != "tool_use":
+                continue
+            tool_id = str(block.get("id", "")).strip()
+            rows.append(
+                {
+                    "id": tool_id,
+                    "name": str(block.get("name", "")).strip(),
+                    "input": dict(block.get("input", {})) if isinstance(block.get("input"), Mapping) else {},
+                    "output_text": tool_results.get(tool_id, ""),
+                }
+            )
+    return rows
+
+
+def _claude_tool_command(tool_name: str, tool_input: Mapping[str, Any]) -> str:
+    name = str(tool_name or "").strip()
+    payload = dict(tool_input)
+    if name == "Bash":
+        return str(payload.get("command", "") or payload.get("cmd", "")).strip()
+    if name == "Grep":
+        path = str(payload.get("path", "") or payload.get("file_path", "")).strip()
+        pattern = str(payload.get("pattern", "")).strip()
+        return " ".join(token for token in ("Grep", pattern, path) if token)
+    if name == "Glob":
+        path = str(payload.get("path", "")).strip()
+        pattern = str(payload.get("pattern", "")).strip()
+        return " ".join(token for token in ("Glob", pattern, path) if token)
+    path = str(payload.get("path", "") or payload.get("file_path", "")).strip()
+    return " ".join(token for token in (name, path) if token)
 
 
 def _command_events(events: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -424,6 +707,17 @@ def _command_events(events: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]
         if str(item.get("type", "")).strip() != "command_execution":
             continue
         rows.append(item)
+    for block in _tool_use_blocks(events):
+        tool_name = str(block.get("name", "")).strip()
+        if tool_name not in _CLAUDE_COMMAND_TOOL_NAMES:
+            continue
+        rows.append(
+            {
+                "type": "command_execution",
+                "command": _claude_tool_command(tool_name, dict(block.get("input", {}))),
+                "aggregated_output": str(block.get("output_text", "")).strip(),
+            }
+        )
     return rows
 
 
@@ -459,6 +753,17 @@ def _file_change_paths(events: Sequence[Mapping[str, Any]], *, workspace_root: P
             token = _resolve_workspace_file(str(change.get("path", "")).strip(), workspace_root=workspace_root)
             if token:
                 rows.append(token)
+    for block in _tool_use_blocks(events):
+        tool_name = str(block.get("name", "")).strip()
+        if tool_name not in _CLAUDE_WRITE_TOOL_NAMES:
+            continue
+        tool_input = dict(block.get("input", {}))
+        token = _resolve_workspace_file(
+            str(tool_input.get("path", "") or tool_input.get("file_path", "")).strip(),
+            workspace_root=workspace_root,
+        )
+        if token:
+            rows.append(token)
     return _dedupe_strings(rows)
 
 
@@ -1314,7 +1619,7 @@ def _structured_output(output_path: Path, *, stream_text: str = "") -> dict[str,
             return rows
         return {
             "status": "failed",
-            "summary": "Codex CLI did not emit a schema-valid final JSON message.",
+            "summary": "Host CLI did not emit a schema-valid final JSON message.",
             "changed_files": [],
             "validation_commands_run": [],
             "validation_summary": "missing_schema_output",
@@ -1335,7 +1640,7 @@ def _structured_output(output_path: Path, *, stream_text: str = "") -> dict[str,
         return rows
     return {
         "status": "failed",
-        "summary": "Codex CLI final JSON output was unreadable.",
+        "summary": "Host CLI final JSON output was unreadable.",
         "changed_files": [],
         "validation_commands_run": [],
         "validation_summary": "invalid_schema_output",
@@ -1345,6 +1650,7 @@ def _structured_output(output_path: Path, *, stream_text: str = "") -> dict[str,
 
 def _live_orchestration_summary(
     *,
+    execution_contract: Mapping[str, str] | None = None,
     mode: str,
     packet_source: str,
     required_path_recall: float,
@@ -1355,16 +1661,17 @@ def _live_orchestration_summary(
     packet_present = normalized_mode == "odylith_on"
     requires_widening = float(precision_metrics.get("unnecessary_widening_rate", 0.0) or 0.0) > 0.0
     session_namespace = str(benchmark_session_namespace or "").strip()
+    runner = _execution_runner(dict(execution_contract or {}))
     return {
-        "native_mode": "live_codex_cli",
-        "mode": "live_codex_cli",
+        "native_mode": runner,
+        "mode": runner,
         "delegate": False,
         "leaf_count": 0,
         "native_leaf_count": 0,
         "parallel_safety": "local_only",
         "manual_review_recommended": False,
         "clamped_no_fanout": False,
-        "local_only_reasons": ["benchmark_live_codex_cli"],
+        "local_only_reasons": ["benchmark_live_host_cli"],
         "odylith_adoption": {
             "packet_present": packet_present,
             "auto_grounding_applied": packet_present,
@@ -1376,9 +1683,9 @@ def _live_orchestration_summary(
             "session_namespaced": bool(session_namespace),
             "mixed_local_fallback": False,
             "grounding_source": packet_source if packet_present else "none",
-            "operation": "live_codex_cli",
+            "operation": runner,
             "runtime_source": "benchmark_live_runner",
-            "runtime_transport": "codex_exec_jsonl",
+            "runtime_transport": _execution_transport(dict(execution_contract or {})),
         },
     }
 
@@ -1467,9 +1774,16 @@ def run_live_scenario(
     resolved_repo_root = Path(repo_root).resolve()
     config = odylith_reasoning.reasoning_config_from_env(repo_root=resolved_repo_root)
     execution_contract = _resolved_live_execution_contract(repo_root=resolved_repo_root, config=config)
-    resolved_codex_bin = str(execution_contract.get("codex_bin", "")).strip()
-    reasoning_effort = str(execution_contract.get("reasoning_effort", "")).strip().lower() or "high"
+    execution_provider = _execution_provider(execution_contract)
+    execution_host_family = _execution_host_family(execution_contract)
+    resolved_host_bin = _execution_bin(execution_contract)
+    reasoning_effort = _normalize_live_cli_reasoning_effort(
+        execution_provider,
+        execution_contract.get("reasoning_effort", "high"),
+        default="high",
+    )
     resolved_model = str(execution_contract.get("model", "")).strip()
+    runner_name = _execution_runner(execution_contract)
     normalized_benchmark_profile = str(benchmark_profile or "").strip().lower()
     live_timeout_seconds, live_timeout_policy = _resolved_live_timeout_budget(
         scenario=scenario,
@@ -1499,9 +1813,9 @@ def run_live_scenario(
         _temporary_codex_home,
         execution_contract=execution_contract,
         repo_root=resolved_repo_root,
-    ) as codex_home_root, _temporary_benchmark_temp_dir(
+    ) as host_home_root, _temporary_benchmark_temp_dir(
         repo_root=resolved_repo_root,
-        prefix="odylith-benchmark-codex-",
+        prefix="odylith-benchmark-host-",
     ) as temp_root:
         workspace_root, validator_truth_root = workspace_pair
         sandbox_root = (temp_root / "sandbox").resolve()
@@ -1519,13 +1833,14 @@ def run_live_scenario(
             output_path=output_path,
         )
         sandbox = _live_codex_sandbox(scenario)
-        command[command.index("--skip-git-repo-check")] = "--sandbox"
-        command.insert(command.index("--sandbox") + 1, sandbox)
-        command.insert(command.index("--sandbox") + 2, "--skip-git-repo-check")
+        if "--skip-git-repo-check" in command:
+            command[command.index("--skip-git-repo-check")] = "--sandbox"
+            command.insert(command.index("--sandbox") + 1, sandbox)
+            command.insert(command.index("--sandbox") + 2, "--skip-git-repo-check")
         command_env = _sandbox_process_env(
             repo_root=repo_root,
             execution_contract=execution_contract,
-            codex_home_root=codex_home_root,
+            host_home_root=host_home_root,
             sandbox_root=sandbox_root,
         )
         started_at = time.perf_counter()
@@ -1814,11 +2129,11 @@ def run_live_scenario(
         total_latency_ms = round(agent_duration_ms + float(effective_validator_result.get("duration_ms", 0.0) or 0.0), 3)
         timing_trace = {
             "operations": {
-                "live_codex_exec": {
+                "live_host_exec": {
                     "duration_ms": agent_duration_ms,
                     "stage_timings": {
                         "focused_local_checks": float(focused_check_result.get("duration_ms", 0.0) or 0.0),
-                        "codex_exec": agent_duration_ms,
+                        "host_exec": agent_duration_ms,
                     },
                 },
                 "validators": {
@@ -1836,7 +2151,7 @@ def run_live_scenario(
         selected_doc_paths = odylith_benchmark_live_diagnostics.prompt_payload_selected_docs(
             prompt_payload=prompt_payload_rows
         )
-        token_basis = "codex_exec_input_tokens"
+        token_basis = "host_exec_input_tokens"
         validator_status = str(effective_validator_result.get("status", "")).strip()
         live_execution_payload: dict[str, Any] = {
             "command": command,
@@ -1844,7 +2159,12 @@ def run_live_scenario(
             "structured_output": structured_output,
             "stdout_tail": str(completed.stdout or "")[-4000:],
             "stderr_tail": stderr_tail,
-            "codex_bin": resolved_codex_bin,
+            "provider": execution_provider,
+            "host_family": execution_host_family,
+            "runner": runner_name,
+            "bin": resolved_host_bin,
+            "codex_bin": resolved_host_bin if execution_provider == "codex-cli" else "",
+            "claude_bin": resolved_host_bin if execution_provider == "claude-cli" else "",
             "model": resolved_model,
             "reasoning_effort": reasoning_effort,
             "benchmark_profile": normalized_benchmark_profile,
@@ -1853,15 +2173,16 @@ def run_live_scenario(
             "timeout_policy": live_timeout_policy,
             "timed_out": live_timed_out,
             "latency_measurement_basis": "validated_task_cycle",
-            "isolated_codex_home": True,
+            "isolated_host_home": True,
+            "isolated_codex_home": execution_provider == "codex-cli",
             "workspace_odylith_isolated": True,
             "workspace_venv_symlinked": False,
             "sandboxed_validation_commands": True,
             "sandboxed_cache_env": True,
             "project_doc_injection_disabled": True,
-            "plugins_disabled": True,
-            "mcp_disabled": True,
-            "multi_agent_disabled": True,
+            "plugins_disabled": execution_provider == "codex-cli",
+            "mcp_disabled": execution_provider == "codex-cli",
+            "multi_agent_disabled": execution_provider == "codex-cli",
             "repo_guidance_removed": ["AGENTS.md", "CLAUDE.md", ".cursor/", ".windsurf/", ".codex/"],
             "effective_snapshot_paths": list(effective_snapshot_paths),
             "focused_local_checks": focused_check_result,
@@ -1903,7 +2224,7 @@ def run_live_scenario(
         return {
             "kind": str(scenario.get("kind", "")).strip() or "packet",
             "mode": normalized_mode,
-            "packet_source": packet_source if normalized_mode == "odylith_on" else "raw_codex_cli",
+            "packet_source": packet_source if normalized_mode == "odylith_on" else _RAW_HOST_CLI,
             "execution_contract": dict(execution_contract),
             "latency_ms": total_latency_ms,
             "instrumented_reasoning_duration_ms": agent_duration_ms,
@@ -1912,6 +2233,7 @@ def run_live_scenario(
             "expectation_ok": expectation_ok,
             "expectation_details": {
                 "live_runner": True,
+                "host_status": status,
                 "codex_status": status,
                 "validator_status": str(effective_validator_result.get("status", "")).strip() or "not_applicable",
                 "validator_status_basis": str(effective_validator_result.get("status_basis", "")).strip()
@@ -1949,6 +2271,10 @@ def run_live_scenario(
             "effective_token_basis": token_basis,
             "initial_prompt_estimated_tokens": initial_prompt_tokens,
             "initial_prompt_token_basis": "utf8_bytes_div4",
+            "host_prompt_estimated_tokens": prompt_tokens,
+            "host_prompt_input_tokens": prompt_tokens,
+            "host_cached_input_tokens": int(usage.get("cached_input_tokens", 0) or 0),
+            "host_output_tokens": output_tokens,
             "codex_prompt_estimated_tokens": prompt_tokens,
             "codex_prompt_input_tokens": prompt_tokens,
             "codex_cached_input_tokens": int(usage.get("cached_input_tokens", 0) or 0),
@@ -1957,14 +2283,14 @@ def run_live_scenario(
             "total_model_tokens": total_tokens,
             "runtime_contract_estimated_tokens": 0,
             "operator_diag_estimated_tokens": 0,
-            "prompt_artifact_tokens": {"live_codex_cli": prompt_tokens},
+            "prompt_artifact_tokens": {runner_name: prompt_tokens},
             "runtime_contract_artifact_tokens": {},
             "operator_diag_artifact_tokens": {},
             "selector_diagnostics": {},
             "adaptive_escalation": {
-                "stage": "live_codex_cli",
-                "initial_source": packet_source if normalized_mode == "odylith_on" else "raw_codex_cli",
-                "final_source": packet_source if normalized_mode == "odylith_on" else "raw_codex_cli",
+                "stage": runner_name,
+                "initial_source": packet_source if normalized_mode == "odylith_on" else _RAW_HOST_CLI,
+                "final_source": packet_source if normalized_mode == "odylith_on" else _RAW_HOST_CLI,
                 "auto_escalated": False,
                 "reasons": [],
             },
@@ -1976,6 +2302,7 @@ def run_live_scenario(
             or "not_applicable",
             "full_scan": {},
             "orchestration": _live_orchestration_summary(
+                execution_contract=execution_contract,
                 mode=normalized_mode,
                 packet_source=packet_source,
                 required_path_recall=required_path_recall,

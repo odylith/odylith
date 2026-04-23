@@ -462,11 +462,26 @@ def sandbox_process_env(
     *,
     repo_root: Path,
     execution_contract: Mapping[str, str],
-    codex_home_root: Path,
+    host_home_root: Path | None = None,
+    codex_home_root: Path | None = None,
     sandbox_root: Path,
 ) -> dict[str, str]:
     repo_root = Path(repo_root).resolve()
-    resolved_codex = shutil.which(odylith_reasoning.resolve_codex_bin(execution_contract.get("codex_bin", "codex")))
+    provider = str(execution_contract.get("provider", "")).strip().lower()
+    if provider == "claude-cli":
+        resolved_host_bin = odylith_reasoning.resolve_claude_bin(
+            str(execution_contract.get("claude_bin", "")).strip() or "claude"
+        )
+    else:
+        resolved_host_bin = odylith_reasoning.resolve_codex_bin(
+            str(execution_contract.get("codex_bin", "")).strip() or "codex"
+        )
+    resolved_host = shutil.which(resolved_host_bin) or (
+        str(Path(resolved_host_bin).expanduser().resolve())
+        if Path(resolved_host_bin).expanduser().exists()
+        else ""
+    )
+    effective_home_root = Path(host_home_root or codex_home_root or sandbox_root).resolve()
     xdg_cache_home = (sandbox_root / "xdg-cache").resolve()
     xdg_config_home = (sandbox_root / "xdg-config").resolve()
     xdg_data_home = (sandbox_root / "xdg-data").resolve()
@@ -487,7 +502,7 @@ def sandbox_process_env(
             str(path)
             for path in (
                 (repo_root / ".venv" / "bin").resolve(),
-                Path(resolved_codex).resolve().parent if resolved_codex else None,
+                Path(resolved_host).resolve().parent if resolved_host else None,
                 Path("/opt/homebrew/bin"),
                 Path("/opt/homebrew/sbin"),
                 Path("/usr/bin"),
@@ -517,7 +532,7 @@ def sandbox_process_env(
     pip_config.write_text("[global]\ndisable-pip-version-check = true\nno-input = true\n", encoding="utf-8")
     empty_env.write_text("", encoding="utf-8")
     env = {
-        "HOME": str(codex_home_root),
+        "HOME": str(effective_home_root),
         "PATH": tool_path,
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
@@ -554,7 +569,15 @@ def sandbox_process_env(
         "BASH_ENV": str(empty_env),
         "ENV": str(empty_env),
     }
+    if provider == "claude-cli":
+        env["CLAUDE_CONFIG_DIR"] = str((effective_home_root / ".claude").resolve())
+    else:
+        env["CODEX_HOME"] = str((effective_home_root / ".codex").resolve())
     for key in ("CODEX_THREAD_ID", "CODEX_SHELL", "__CFBundleIdentifier"):
+        value = str(os.environ.get(key, "")).strip()
+        if value:
+            env[key] = value
+    for key in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL"):
         value = str(os.environ.get(key, "")).strip()
         if value:
             env[key] = value

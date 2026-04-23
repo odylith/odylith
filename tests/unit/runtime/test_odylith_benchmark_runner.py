@@ -297,14 +297,16 @@ def test_packet_token_breakdown_separates_prompt_runtime_and_operator_weight() -
         full_scan={},
     )
 
-    assert breakdown["effective_token_basis"] == "codex_prompt_bundle"
+    assert breakdown["effective_token_basis"] == "host_prompt_bundle"
+    assert breakdown["host_prompt_estimated_tokens"] > 0
     assert breakdown["codex_prompt_estimated_tokens"] > 0
+    assert breakdown["host_prompt_estimated_tokens"] == breakdown["codex_prompt_estimated_tokens"]
     assert breakdown["runtime_contract_estimated_tokens"] > 0
     assert breakdown["operator_diag_estimated_tokens"] > 0
     assert breakdown["prompt_artifact_tokens"]["context_packet"] > 0
     assert breakdown["runtime_contract_artifact_tokens"]["routing_handoff"] > 0
     assert breakdown["operator_diag_artifact_tokens"]["impact_summary"] > 0
-    assert breakdown["total_payload_estimated_tokens"] >= breakdown["codex_prompt_estimated_tokens"]
+    assert breakdown["total_payload_estimated_tokens"] >= breakdown["host_prompt_estimated_tokens"]
 
 
 def test_run_benchmarks_emits_corpus_and_family_summaries(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -1030,7 +1032,7 @@ def test_run_live_scenario_batch_converts_mode_exceptions_into_failed_results(
             "scenario": dict(kwargs["scenario"]),
             "mode": mode,
             "benchmark_profile": kwargs["benchmark_profile"],
-            "packet_source": "impact" if mode == "odylith_on" else "raw_codex_cli",
+            "packet_source": "impact" if mode == "odylith_on" else "raw_host_cli",
             "prompt_payload": {},
             "packet_summary": {},
         }
@@ -2883,6 +2885,7 @@ def test_run_benchmarks_publishes_conservative_multi_profile_view(
             "unnecessary_widening_count": 0,
             "unnecessary_widening_rate": 0.0,
             "effective_estimated_tokens": prompt,
+            "host_prompt_estimated_tokens": prompt,
             "codex_prompt_estimated_tokens": prompt,
             "total_payload_estimated_tokens": prompt,
             "validation_success_proxy": validation,
@@ -2915,7 +2918,9 @@ def test_run_benchmarks_publishes_conservative_multi_profile_view(
         row["mode"]: row
         for row in report["published_scenarios"][0]["results"]
     }
+    assert published_results["odylith_on"]["host_prompt_estimated_tokens"] == 150.0
     assert published_results["odylith_on"]["codex_prompt_estimated_tokens"] == 150.0
+    assert published_results["raw_agent_baseline"]["host_prompt_estimated_tokens"] == 280.0
     assert published_results["raw_agent_baseline"]["codex_prompt_estimated_tokens"] == 280.0
     assert report["published_mode_summaries"]["odylith_on"]["median_effective_tokens"] == 150.0
     assert report["published_mode_summaries"]["raw_agent_baseline"]["median_effective_tokens"] == 280.0
@@ -7272,7 +7277,7 @@ def test_run_scenario_mode_uses_local_packet_path_on_diagnostic_profile() -> Non
     )
 
     assert result["kind"] == "packet"
-    assert result["packet_source"] in {"impact", "governance_slice", "context_scan", "raw_codex_cli"}
+    assert result["packet_source"] in {"impact", "governance_slice", "context_scan", "raw_host_cli"}
     assert float(result["latency_ms"]) > 0.0
     assert "live_execution" not in result
 

@@ -712,7 +712,8 @@
           "context_engine.governance_slice.authoritative"
         ],
         "execution_engine_host_family": [
-          "codex"
+          "codex",
+          "claude"
         ],
         "execution_engine_component_id": [
           "execution-engine"
@@ -822,7 +823,8 @@
           "context_engine.governance_slice.authoritative"
         ],
         "execution_engine_host_family": [
-          "codex"
+          "codex",
+          "claude"
         ],
         "execution_engine_component_id": [
           "execution-engine"
@@ -942,7 +944,8 @@
           "context_engine.impact.authoritative"
         ],
         "execution_engine_host_family": [
-          "codex"
+          "codex",
+          "claude"
         ],
         "execution_engine_component_id": [
           "execution-engine"
@@ -1026,7 +1029,8 @@
           "recover"
         ],
         "execution_engine_host_family": [
-          "codex"
+          "codex",
+          "claude"
         ],
         "execution_engine_component_id": [
           "execution-engine"
@@ -1113,7 +1117,8 @@
           "context_engine.governance_slice.narrowing"
         ],
         "execution_engine_host_family": [
-          "codex"
+          "codex",
+          "claude"
         ],
         "execution_engine_component_id": [
           "execution-engine"

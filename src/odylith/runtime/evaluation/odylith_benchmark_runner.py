@@ -1,4 +1,4 @@
-"""Benchmark Odylith against honest live Codex CLI baseline modes.
+"""Benchmark Odylith against honest live host-CLI baseline modes.
 
 This module keeps the benchmark harness local-first and non-destructive:
 
@@ -309,6 +309,7 @@ _LOWER_BETTER_RESULT_FIELDS = frozenset(
         "uninstrumented_overhead_ms",
         "initial_prompt_estimated_tokens",
         "effective_estimated_tokens",
+        "host_prompt_estimated_tokens",
         "codex_prompt_estimated_tokens",
         "total_payload_estimated_tokens",
         "runtime_contract_estimated_tokens",
@@ -385,16 +386,16 @@ _BENCHMARK_PROFILE_LABELS = {
 }
 _BENCHMARK_PROFILE_DESCRIPTIONS = {
     BENCHMARK_PROFILE_QUICK: (
-        "Fast inner-loop signal: Odylith ON versus raw Codex CLI, warm cache only, "
+        "Fast inner-loop signal: Odylith ON versus raw host CLI, warm cache only, "
         "and a bounded sentinel smoke subset unless the operator narrows explicitly."
     ),
     BENCHMARK_PROFILE_PROOF: (
         "Strict publication proof: the full benchmark corpus, warm and cold cache profiles, "
-        "and the live end-to-end Odylith ON versus raw Codex CLI pair unless the operator narrows explicitly."
+        "and the live end-to-end Odylith ON versus raw host CLI pair unless the operator narrows explicitly."
     ),
     BENCHMARK_PROFILE_DIAGNOSTIC: (
-        "Internal tuning diagnostic: isolate Odylith packet and prompt creation versus the raw Codex CLI prompt bundle "
-        "without running the live end-to-end Codex comparison."
+        "Internal tuning diagnostic: isolate Odylith packet and prompt creation versus the raw host CLI prompt bundle "
+        "without running the live end-to-end host comparison."
     ),
 }
 _PROFILE_DEFAULT_MODES = {
@@ -411,17 +412,17 @@ _MODE_ROLES = {
     _ODYLITH_ON_MODE: "primary candidate",
     _ODYLITH_ON_NO_FANOUT_MODE: "fanout-clamped Odylith",
     _REPO_SCAN_BASELINE_MODE: "repo-scan scaffold control",
-    _RAW_AGENT_BASELINE_MODE: "odylith_off / raw Codex CLI honest baseline",
+    _RAW_AGENT_BASELINE_MODE: "odylith_off / raw host CLI honest baseline",
 }
 _PUBLISHED_TABLE_WHY_IT_MATTERS = {
-    "lane_role": "Keeps the public claim honest: full Odylith scaffold versus raw Codex CLI on the same task.",
+    "lane_role": "Keeps the public claim honest: full Odylith scaffold versus raw host CLI on the same task.",
     "scenario_count": "Both lanes run the exact same corpus, so the comparison stays apples-to-apples.",
     "median_latency_ms": "Shows matched-pair benchmark time to valid outcome for the live run plus the harness validator, not interactive product latency.",
     "avg_latency_ms": "Shows the mean matched-pair benchmark time to valid outcome so long-tail slow cases stay visible.",
     "p95_latency_ms": "Shows the tail completion time for the slowest benchmark cases instead of letting the median hide them.",
-    "median_instrumented_reasoning_duration_ms": "Shows time spent inside the live Codex CLI session itself.",
-    "median_uninstrumented_overhead_ms": "Shows harness validator overhead added after the live Codex session completes.",
-    "median_effective_tokens": "Shows full live Codex session input across the multi-turn run, not just the first prompt.",
+    "median_instrumented_reasoning_duration_ms": "Shows time spent inside the live host CLI session itself.",
+    "median_uninstrumented_overhead_ms": "Shows harness validator overhead added after the live host session completes.",
+    "median_effective_tokens": "Shows full live host session input across the multi-turn run, not just the first prompt.",
     "median_total_payload_tokens": "Shows total live model-token spend across the multi-turn session.",
     "required_path_recall_rate": "Higher means Odylith finds more of the repo surfaces the task truly depends on.",
     "required_path_precision_rate": "Higher means Odylith keeps the evidence cone tighter and more relevant.",
@@ -461,7 +462,7 @@ def _comparison_contract_label_bundle(comparison_contract: str) -> dict[str, str
             "expectation_why": _PUBLISHED_TABLE_WHY_IT_MATTERS["expectation_success_rate"],
         }
     return {
-        "lane_role_why": "Keeps the internal diagnostic benchmark honest: full Odylith packet and prompt construction versus the raw Codex CLI prompt bundle on the same task.",
+        "lane_role_why": "Keeps the internal diagnostic benchmark honest: full Odylith packet and prompt construction versus the raw host CLI prompt bundle on the same task.",
         "scenario_count_why": _PUBLISHED_TABLE_WHY_IT_MATTERS["scenario_count"],
         "latency_median": "Median packet time",
         "latency_avg": "Mean packet time",
@@ -1426,7 +1427,7 @@ def _scenario_exception_result(
     error_text = _benchmark_exception_text(error)
     resolved_packet_source = (
         str(packet_source).strip()
-        or ("raw_codex_cli" if normalized_mode == _RAW_AGENT_BASELINE_MODE else "benchmark_exception")
+        or ("raw_host_cli" if normalized_mode == _RAW_AGENT_BASELINE_MODE else "benchmark_exception")
     )
     result: dict[str, Any] = {
         "kind": str(scenario.get("kind", "")).strip() or "packet",
@@ -1443,6 +1444,7 @@ def _scenario_exception_result(
         "expectation_ok": False,
         "expectation_details": {
             "live_runner": bool(live_runner or _is_live_public_mode(normalized_mode)),
+            "host_status": "failed" if live_runner or _is_live_public_mode(normalized_mode) else "not_applicable",
             "codex_status": "failed" if live_runner or _is_live_public_mode(normalized_mode) else "not_applicable",
             "validator_status": "failed",
             "validator_status_basis": "benchmark_exception",
@@ -3139,7 +3141,8 @@ def _packet_token_breakdown(
         prompt_tokens = _estimate_json_tokens(full_scan)
         return {
             "effective_estimated_tokens": prompt_tokens,
-            "effective_token_basis": "codex_prompt_bundle",
+            "effective_token_basis": "host_prompt_bundle",
+            "host_prompt_estimated_tokens": prompt_tokens,
             "codex_prompt_estimated_tokens": prompt_tokens,
             "total_payload_estimated_tokens": prompt_tokens,
             "runtime_contract_estimated_tokens": 0,
@@ -3154,7 +3157,8 @@ def _packet_token_breakdown(
         prompt_tokens = _estimate_json_tokens(raw_prompt_payload)
         return {
             "effective_estimated_tokens": prompt_tokens,
-            "effective_token_basis": "codex_prompt_bundle",
+            "effective_token_basis": "host_prompt_bundle",
+            "host_prompt_estimated_tokens": prompt_tokens,
             "codex_prompt_estimated_tokens": prompt_tokens,
             "total_payload_estimated_tokens": prompt_tokens,
             "runtime_contract_estimated_tokens": 0,
@@ -3181,7 +3185,8 @@ def _packet_token_breakdown(
     operator_diag_artifacts = _artifact_token_map(payload, keys=sorted(operator_keys))
     return {
         "effective_estimated_tokens": prompt_tokens,
-        "effective_token_basis": "codex_prompt_bundle",
+        "effective_token_basis": "host_prompt_bundle",
+        "host_prompt_estimated_tokens": prompt_tokens,
         "codex_prompt_estimated_tokens": prompt_tokens,
         "total_payload_estimated_tokens": _estimate_json_tokens(payload),
         "runtime_contract_estimated_tokens": _estimate_json_tokens(runtime_payload),
@@ -4082,7 +4087,8 @@ def _packet_result(
         "selected_command_count": int(packet_summary.get("selected_command_count", 0) or 0),
         "strict_gate_command_count": int(packet_summary.get("strict_gate_command_count", 0) or 0),
         "effective_estimated_tokens": int(token_breakdown.get("effective_estimated_tokens", 0) or 0),
-        "effective_token_basis": str(token_breakdown.get("effective_token_basis", "")).strip() or "codex_prompt_bundle",
+        "effective_token_basis": str(token_breakdown.get("effective_token_basis", "")).strip() or "host_prompt_bundle",
+        "host_prompt_estimated_tokens": int(token_breakdown.get("host_prompt_estimated_tokens", 0) or 0),
         "codex_prompt_estimated_tokens": int(token_breakdown.get("codex_prompt_estimated_tokens", 0) or 0),
         "total_payload_estimated_tokens": int(token_breakdown.get("total_payload_estimated_tokens", 0) or 0),
         "runtime_contract_estimated_tokens": int(token_breakdown.get("runtime_contract_estimated_tokens", 0) or 0),
@@ -4212,7 +4218,8 @@ def _architecture_result(
             "selected_command_count": 0,
             "strict_gate_command_count": 0,
             "effective_estimated_tokens": max(1, full_scan_bytes // 4),
-            "effective_token_basis": "codex_prompt_bundle",
+            "effective_token_basis": "host_prompt_bundle",
+            "host_prompt_estimated_tokens": max(1, full_scan_bytes // 4),
             "codex_prompt_estimated_tokens": max(1, full_scan_bytes // 4),
             "total_payload_estimated_tokens": max(1, full_scan_bytes // 4),
             "runtime_contract_estimated_tokens": 0,
@@ -4298,7 +4305,8 @@ def _architecture_result(
             "selected_command_count": 0,
             "strict_gate_command_count": 0,
             "effective_estimated_tokens": raw_prompt_tokens,
-            "effective_token_basis": "codex_prompt_bundle",
+            "effective_token_basis": "host_prompt_bundle",
+            "host_prompt_estimated_tokens": raw_prompt_tokens,
             "codex_prompt_estimated_tokens": raw_prompt_tokens,
             "total_payload_estimated_tokens": raw_prompt_tokens,
             "runtime_contract_estimated_tokens": 0,
@@ -4444,7 +4452,8 @@ def _architecture_result(
         "unnecessary_widening_rate": 0.0,
         "unnecessary_widening_paths": [],
         "effective_estimated_tokens": max(1, len(encoded) // 4),
-        "effective_token_basis": "codex_prompt_bundle",
+        "effective_token_basis": "host_prompt_bundle",
+        "host_prompt_estimated_tokens": max(1, len(encoded) // 4),
         "codex_prompt_estimated_tokens": max(1, len(encoded) // 4),
         "total_payload_estimated_tokens": max(1, len(encoded) // 4),
         "runtime_contract_estimated_tokens": 0,
@@ -5264,7 +5273,7 @@ def _prepare_live_scenario_request(
     existing_paths = _existing_repo_paths(repo_root=repo_root, paths=changed_paths)
     if str(scenario.get("kind", "")).strip() == "architecture":
         prompt_payload: dict[str, Any] = {}
-        packet_source = "raw_codex_cli"
+        packet_source = "raw_host_cli"
         if normalized_mode == _ODYLITH_ON_MODE:
             with _odylith_enabled_override(True):
                 audit_payload = store.build_architecture_audit(
@@ -5293,7 +5302,7 @@ def _prepare_live_scenario_request(
             "prompt_payload": prompt_payload,
         }
     prompt_payload = {}
-    packet_source = "raw_codex_cli"
+    packet_source = "raw_host_cli"
     if normalized_mode == _ODYLITH_ON_MODE:
         packet_source, payload, _adaptive_escalation = _build_packet_payload(
             repo_root=repo_root,
@@ -5344,14 +5353,14 @@ def _prepare_live_scenario_request(
 def _run_prepared_live_scenario(prepared_request: Mapping[str, Any]) -> dict[str, Any]:
     benchmark_profile = _normalize_benchmark_profile(str(prepared_request.get("benchmark_profile", "")).strip())
     if benchmark_profile == BENCHMARK_PROFILE_DIAGNOSTIC:
-        raise RuntimeError("diagnostic benchmark attempted live Codex execution")
+        raise RuntimeError("diagnostic benchmark attempted live host execution")
     result = odylith_benchmark_live_execution.run_live_scenario(
         repo_root=Path(prepared_request.get("repo_root", ".")),
         scenario=dict(prepared_request.get("scenario", {})),
         mode=str(prepared_request.get("mode", "")).strip(),
         benchmark_profile=benchmark_profile,
         benchmark_session_namespace=str(prepared_request.get("benchmark_session_namespace", "")).strip(),
-        packet_source=str(prepared_request.get("packet_source", "")).strip() or "raw_codex_cli",
+        packet_source=str(prepared_request.get("packet_source", "")).strip() or "raw_host_cli",
         prompt_payload=dict(prepared_request.get("prompt_payload", {}))
         if isinstance(prepared_request.get("prompt_payload"), Mapping)
         else {},
@@ -7546,8 +7555,8 @@ def _aggregate_published_scenarios(
                             candidate,
                             baseline,
                             candidate_field="effective_estimated_tokens",
-                            candidate_fallback_fields=("codex_prompt_estimated_tokens",),
-                            baseline_fallback_fields=("codex_prompt_estimated_tokens",),
+                            candidate_fallback_fields=("host_prompt_estimated_tokens", "codex_prompt_estimated_tokens"),
+                            baseline_fallback_fields=("host_prompt_estimated_tokens", "codex_prompt_estimated_tokens"),
                         ),
                         benchmark_metric_helpers.numeric_delta(
                             candidate,

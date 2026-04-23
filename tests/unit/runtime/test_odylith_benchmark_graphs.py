@@ -24,6 +24,7 @@ def test_render_graph_assets_writes_codex_benchmark_svgs(tmp_path: Path) -> None
                 "results": [
                     {
                         "mode": "odylith_on",
+                        "host_prompt_estimated_tokens": 119,
                         "codex_prompt_estimated_tokens": 119,
                         "latency_ms": 26.554,
                         "total_payload_estimated_tokens": 119,
@@ -32,6 +33,7 @@ def test_render_graph_assets_writes_codex_benchmark_svgs(tmp_path: Path) -> None
                     },
                     {
                         "mode": "odylith_repo_scan_baseline",
+                        "host_prompt_estimated_tokens": 520,
                         "codex_prompt_estimated_tokens": 520,
                         "latency_ms": 36.99,
                         "total_payload_estimated_tokens": 520,
@@ -108,6 +110,36 @@ def test_render_graph_assets_writes_codex_benchmark_svgs(tmp_path: Path) -> None
     assert "Focus window" in frontier
     assert "How to read" in frontier
     assert "Repo-scan baseline" in frontier
+
+
+def test_scenario_rows_prefer_host_prompt_tokens_over_compat_alias() -> None:
+    report = {
+        "scenarios": [
+            {
+                "scenario_id": "host-neutral-prompt",
+                "family": "cross_file_feature",
+                "results": [
+                    {
+                        "mode": "odylith_on",
+                        "host_prompt_estimated_tokens": 144,
+                        "codex_prompt_estimated_tokens": 19,
+                        "latency_ms": 10.0,
+                    },
+                    {
+                        "mode": "raw_agent_baseline",
+                        "host_prompt_estimated_tokens": 96,
+                        "codex_prompt_estimated_tokens": 11,
+                        "latency_ms": 5.0,
+                    },
+                ],
+            }
+        ]
+    }
+
+    rows = graphs._scenario_rows(report)  # noqa: SLF001
+
+    assert rows[0]["candidate_prompt"] == 144.0
+    assert rows[0]["baseline_prompt"] == 96.0
 
 
 def test_render_graph_assets_prefers_published_conservative_view(tmp_path: Path) -> None:
