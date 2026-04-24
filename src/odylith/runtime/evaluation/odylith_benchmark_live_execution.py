@@ -1799,16 +1799,23 @@ def _run_live_scenario_once(
         }
 
 
-def _retryable_live_host_interruption(result: Mapping[str, Any]) -> bool:
+_MAX_INFRA_RETRY_ATTEMPTS = 2
+_TRANSIENT_HOST_OUTPUT_MARKERS = (
+    "selected model is at capacity",
+    "please try a different model",
+)
+
+
+def _retryable_live_host_interruption_reason(result: Mapping[str, Any]) -> str:
     live_execution = result.get("live_execution", {})
     if not isinstance(live_execution, Mapping):
-        return False
+        return ""
     try:
         exit_code = int(live_execution.get("exit_code", 0) or 0)
     except (TypeError, ValueError):
         exit_code = 0
-    if exit_code >= 0 or bool(live_execution.get("timed_out", False)):
-        return False
+    if bool(live_execution.get("timed_out", False)):
+        return ""
     structured_output = live_execution.get("structured_output", {})
     validation_summary = (
         str(structured_output.get("validation_summary", "")).strip()
@@ -1819,7 +1826,21 @@ def _retryable_live_host_interruption(result: Mapping[str, Any]) -> bool:
         candidate_write_path_count = int(result.get("candidate_write_path_count", 0) or 0)
     except (TypeError, ValueError):
         candidate_write_path_count = 0
-    return validation_summary == "missing_schema_output" and candidate_write_path_count == 0
+    if validation_summary != "missing_schema_output" or candidate_write_path_count != 0:
+        return ""
+    if exit_code < 0:
+        return "negative_host_exit_missing_schema_output"
+    host_output = " ".join(
+        str(live_execution.get(key, "") or "").lower()
+        for key in ("stdout_tail", "stderr_tail")
+    )
+    if any(marker in host_output for marker in _TRANSIENT_HOST_OUTPUT_MARKERS):
+        return "transient_host_capacity_missing_schema_output"
+    return ""
+
+
+def _retryable_live_host_interruption(result: Mapping[str, Any]) -> bool:
+    return bool(_retryable_live_host_interruption_reason(result))
 
 
 def run_live_scenario(
@@ -1834,40 +1855,39 @@ def run_live_scenario(
     packet_summary: Mapping[str, Any] | None = None,
     snapshot_paths: Sequence[str] | None = None,
 ) -> dict[str, Any]:
-    first_result = _run_live_scenario_once(
-        repo_root=repo_root,
-        scenario=scenario,
-        mode=mode,
-        benchmark_profile=benchmark_profile,
-        benchmark_session_namespace=benchmark_session_namespace,
-        packet_source=packet_source,
-        prompt_payload=prompt_payload,
-        packet_summary=packet_summary,
-        snapshot_paths=snapshot_paths,
-    )
-    if not _retryable_live_host_interruption(first_result):
-        return first_result
-
-    retry_result = _run_live_scenario_once(
-        repo_root=repo_root,
-        scenario=scenario,
-        mode=mode,
-        benchmark_profile=benchmark_profile,
-        benchmark_session_namespace=benchmark_session_namespace,
-        packet_source=packet_source,
-        prompt_payload=prompt_payload,
-        packet_summary=packet_summary,
-        snapshot_paths=snapshot_paths,
-    )
-    live_execution = retry_result.get("live_execution")
-    if isinstance(live_execution, dict):
-        replaced_live_execution = first_result.get("live_execution", {})
-        live_execution["infra_retry_attempts"] = 1
-        live_execution["infra_retry_reason"] = "negative_host_exit_missing_schema_output"
-        if isinstance(replaced_live_execution, Mapping):
-            live_execution["infra_retry_replaced_exit_code"] = replaced_live_execution.get("exit_code", 0)
-            live_execution["infra_retry_replaced_timed_out"] = bool(replaced_live_execution.get("timed_out", False))
-    return retry_result
+    attempts = 0
+    replaced_live_execution: Mapping[str, Any] = {}
+    retry_reasons: list[str] = []
+    while True:
+        result = _run_live_scenario_once(
+            repo_root=repo_root,
+            scenario=scenario,
+            mode=mode,
+            benchmark_profile=benchmark_profile,
+            benchmark_session_namespace=benchmark_session_namespace,
+            packet_source=packet_source,
+            prompt_payload=prompt_payload,
+            packet_summary=packet_summary,
+            snapshot_paths=snapshot_paths,
+        )
+        if attempts:
+            live_execution = result.get("live_execution")
+            if isinstance(live_execution, dict):
+                live_execution["infra_retry_attempts"] = attempts
+                live_execution["infra_retry_reason"] = retry_reasons[-1] if retry_reasons else "live_host_infra_retry"
+                live_execution["infra_retry_reasons"] = list(retry_reasons)
+                if isinstance(replaced_live_execution, Mapping):
+                    live_execution["infra_retry_replaced_exit_code"] = replaced_live_execution.get("exit_code", 0)
+                    live_execution["infra_retry_replaced_timed_out"] = bool(
+                        replaced_live_execution.get("timed_out", False)
+                    )
+        retry_reason = _retryable_live_host_interruption_reason(result)
+        if not retry_reason or attempts >= _MAX_INFRA_RETRY_ATTEMPTS:
+            return result
+        attempts += 1
+        retry_reasons.append(retry_reason)
+        replaced = result.get("live_execution", {})
+        replaced_live_execution = replaced if isinstance(replaced, Mapping) else {}
 
 
 __all__ = [
