@@ -8,6 +8,7 @@ from odylith.runtime.governance import guidance_behavior_platform_contracts
 from odylith.runtime.governance import guidance_behavior_runtime_contracts
 from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.governance import validate_guidance_behavior
+from odylith.runtime.surfaces import source_bundle_mirror
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -408,6 +409,16 @@ def test_platform_contract_tracks_prompt_visible_benchmark_eval_token() -> None:
 
     assert "guidance_behavior_observed_paths_stay_prompt_visible_only" in benchmark_tokens
     assert "guidance_behavior_observed_paths_include_runtime_summary_sources" not in benchmark_tokens
+
+
+def test_platform_bundle_mirror_parity_paths_stay_consumer_safe() -> None:
+    unsafe = []
+    for relative_path in guidance_behavior_platform_contracts.ODYLITH_BUNDLE_MIRROR_PARITY_PATHS:
+        bundle_relative_path = Path(relative_path).relative_to("odylith").as_posix()
+        if not source_bundle_mirror.is_consumer_safe_bundle_relative_path(bundle_relative_path):
+            unsafe.append(relative_path)
+
+    assert unsafe == []
 
 
 def test_runtime_packet_summary_keeps_case_scoped_validation_command(tmp_path: Path) -> None:

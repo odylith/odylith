@@ -188,12 +188,12 @@ INTERVENTION_CONTRACT_BUNDLE_EXPECTATIONS: tuple[tuple[str, bool], ...] = (
     ("odylith/agents-guidelines/CODEX_HOST_CONTRACT.md", True),
     ("odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md", True),
     ("odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md", True),
-    ("odylith/registry/source/components/compass/CURRENT_SPEC.md", True),
-    ("odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md", True),
-    ("odylith/registry/source/components/execution-engine/CURRENT_SPEC.md", True),
-    ("odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md", True),
-    ("odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md", True),
-    ("odylith/registry/source/components/proof-state/CURRENT_SPEC.md", True),
+    ("odylith/registry/source/components/compass/CURRENT_SPEC.md", False),
+    ("odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md", False),
+    ("odylith/registry/source/components/execution-engine/CURRENT_SPEC.md", False),
+    ("odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md", False),
+    ("odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md", False),
+    ("odylith/registry/source/components/proof-state/CURRENT_SPEC.md", False),
     (
         "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
         False,
@@ -301,12 +301,21 @@ def test_public_architecture_corpus_stays_product_generic() -> None:
 
 
 def test_public_registry_truth_contains_no_internal_bundle_asset_paths() -> None:
-    for path in (
-        ROOT / "odylith" / "registry" / "source" / "component_registry.v1.json",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "registry" / "source" / "component_registry.v1.json",
-    ):
-        text = path.read_text(encoding="utf-8")
-        assert "src/odylith/bundle/assets/odylith" not in text
+    source_text = (ROOT / "odylith" / "registry" / "source" / "component_registry.v1.json").read_text(encoding="utf-8")
+    bundle_registry = (
+        ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "registry"
+        / "source"
+        / "component_registry.v1.json"
+    )
+
+    assert "src/odylith/bundle/assets/odylith" not in source_text
+    assert not bundle_registry.exists()
 
 
 def test_bundle_does_not_ship_public_live_governance_records_into_consumer_truth_roots() -> None:
