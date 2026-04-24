@@ -45,6 +45,7 @@ from odylith.runtime.common.python_source_parse import (
 )
 from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import benchmark_metric_helpers
+from odylith.runtime.evaluation import odylith_benchmark_snapshot_paths
 from odylith.runtime.evaluation import odylith_benchmark_acceptance
 from odylith.runtime.evaluation import odylith_benchmark_mode
 from odylith.runtime.evaluation import odylith_benchmark_isolation
@@ -2625,12 +2626,12 @@ def _apply_scenario_shard(
     shard_count: int,
     shard_index: int,
 ) -> list[dict[str, Any]]:
-    if shard_count <= 1:
-        return [dict(row) for row in scenarios]
     if shard_count < 1:
         raise ValueError("`shard_count` must be at least 1.")
     if shard_index < 1 or shard_index > shard_count:
         raise ValueError("`shard_index` must be between 1 and `shard_count` inclusive.")
+    if shard_count <= 1:
+        return [dict(row) for row in scenarios]
     selected: list[dict[str, Any]] = []
     for index, raw in enumerate(scenarios, start=1):
         if ((index - 1) % shard_count) + 1 != shard_index:
@@ -2828,8 +2829,8 @@ def _resolve_benchmark_scenario_selection(
     limit: int = 0,
 ) -> dict[str, Any]:
     normalized_profile = _normalize_benchmark_profile(benchmark_profile)
-    normalized_shard_count = max(1, int(shard_count or 1))
-    normalized_shard_index = max(1, int(shard_index or 1))
+    normalized_shard_count = int(1 if shard_count is None else shard_count)
+    normalized_shard_index = int(1 if shard_index is None else shard_index)
     selected_case_ids = {str(token).strip() for token in case_ids if str(token).strip()}
     selected_families = set(_normalize_family_filters(families))
     all_case_ids = {
@@ -5204,16 +5205,10 @@ def _live_workspace_snapshot_paths(
     snapshot_commands = _dedupe_strings([*validation_commands, *focused_local_checks])
     scenario_paths = _dedupe_path_strings(
         [
-            *(
-                [str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()]
-                if isinstance(scenario.get("changed_paths"), list)
-                else []
-            ),
-            *(
-                [str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()]
-                if isinstance(scenario.get("required_paths"), list)
-                else []
-            ),
+            str(token).strip()
+            for key in ("changed_paths", "required_paths", "supporting_paths")
+            for token in (scenario.get(key, []) if isinstance(scenario.get(key), list) else [])
+            if str(token).strip()
         ]
     )
     validation_paths = _validation_command_file_paths(
@@ -5232,33 +5227,40 @@ def _live_workspace_snapshot_paths(
         repo_root=repo_root,
         candidates=_prompt_payload_snapshot_paths(prompt_payload),
     )
-    return _expand_dirty_import_dependency_paths(
+    return odylith_benchmark_snapshot_paths.expand_deleted_repo_snapshot_paths(
         repo_root=repo_root,
-        snapshot_paths=_expand_projection_runtime_snapshot_paths(
+        snapshot_paths=_expand_dirty_import_dependency_paths(
             repo_root=repo_root,
-            snapshot_paths=_expand_import_dependency_paths(
+            snapshot_paths=_expand_projection_runtime_snapshot_paths(
                 repo_root=repo_root,
-                snapshot_paths=_expand_python_package_init_paths(
+                snapshot_paths=_expand_import_dependency_paths(
                     repo_root=repo_root,
-                    snapshot_paths=_expand_atlas_catalog_reference_snapshot_paths(
+                    snapshot_paths=_expand_python_package_init_paths(
                         repo_root=repo_root,
-                        validation_commands=validation_commands,
-                        snapshot_paths=_expand_governance_validator_snapshot_paths(
+                        snapshot_paths=_expand_atlas_catalog_reference_snapshot_paths(
                             repo_root=repo_root,
-                            snapshot_paths=_expand_sync_validator_snapshot_paths(
+                            validation_commands=validation_commands,
+                            snapshot_paths=_expand_governance_validator_snapshot_paths(
                                 repo_root=repo_root,
-                                validation_commands=validation_commands,
-                                snapshot_paths=_expand_same_package_dirty_paths(
+                                snapshot_paths=_expand_sync_validator_snapshot_paths(
                                     repo_root=repo_root,
-                                    snapshot_paths=_expand_dirty_benchmark_runtime_snapshot_paths(
+                                    validation_commands=validation_commands,
+                                    snapshot_paths=odylith_benchmark_snapshot_paths.expand_browser_surface_snapshot_paths(
                                         repo_root=repo_root,
-                                        snapshot_paths=[
-                                            *scenario_paths,
-                                            *validation_paths,
-                                            *source_local_cli_paths,
-                                            *validation_companion_paths,
-                                            *prompt_paths,
-                                        ],
+                                        validation_paths=validation_paths,
+                                        snapshot_paths=_expand_same_package_dirty_paths(
+                                            repo_root=repo_root,
+                                            snapshot_paths=_expand_dirty_benchmark_runtime_snapshot_paths(
+                                                repo_root=repo_root,
+                                                snapshot_paths=[
+                                                    *scenario_paths,
+                                                    *validation_paths,
+                                                    *source_local_cli_paths,
+                                                    *validation_companion_paths,
+                                                    *prompt_paths,
+                                                ],
+                                            ),
+                                        ),
                                     ),
                                 ),
                             ),
@@ -7742,8 +7744,8 @@ def run_benchmarks(
     root = Path(repo_root).resolve()
     live_batching_available = (root / ".git").exists()
     normalized_profile = _normalize_benchmark_profile(benchmark_profile)
-    normalized_shard_count = int(shard_count or 1)
-    normalized_shard_index = int(shard_index or 1)
+    normalized_shard_count = int(1 if shard_count is None else shard_count)
+    normalized_shard_index = int(1 if shard_index is None else shard_index)
     requested_modes = [_normalize_mode(str(token).strip()) for token in modes if str(token).strip() in _VALID_MODES]
     explicit_mode_selection = bool(requested_modes)
     normalized_modes = list(dict.fromkeys(requested_modes)) or list(_PROFILE_DEFAULT_MODES[normalized_profile])

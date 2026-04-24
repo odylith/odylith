@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import shutil
 import subprocess
 
 from odylith.runtime.governance import delivery_intelligence_engine as engine
@@ -113,6 +114,17 @@ def test_delivery_support_current_local_head_returns_empty_on_git_failure(monkey
     monkeypatch.setattr(subprocess, "run", _raise)
 
     assert support.current_local_head(tmp_path) == ""
+
+
+def test_delivery_support_current_local_head_does_not_inherit_parent_worktree(tmp_path: Path) -> None:
+    if shutil.which("git") is None:
+        return
+    repo_root = tmp_path / "repo"
+    child_root = repo_root / "nested"
+    child_root.mkdir(parents=True)
+    subprocess.run(["git", "init", str(repo_root)], check=True, capture_output=True, text=True)
+
+    assert support.current_local_head(child_root) == ""
 
 
 def test_delivery_intelligence_main_skips_rebuild_when_inputs_are_unchanged(

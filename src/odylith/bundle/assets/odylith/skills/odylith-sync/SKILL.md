@@ -19,4 +19,4 @@ to refresh governed Odylith surfaces for the current changed slice.
    `./.odylith/bin/odylith compass deep-refresh --repo-root .` when the
    rerender also needs standup-brief settlement.
 4. Report what refreshed, what still needs manual follow-through, and whether
-   generated bundle mirrors also changed.
+   consumer-safe generated bundle mirrors also changed.

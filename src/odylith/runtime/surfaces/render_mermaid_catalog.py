@@ -3143,7 +3143,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     ]
     if source_bundle_mirror.source_bundle_root(repo_root=repo_root).is_dir():
         for live_path in tuple(output_paths):
-            output_paths.append(source_bundle_mirror.bundle_mirror_path(repo_root=repo_root, live_path=live_path))
+            if source_bundle_mirror.should_mirror_live_path(repo_root=repo_root, live_path=live_path):
+                output_paths.append(source_bundle_mirror.bundle_mirror_path(repo_root=repo_root, live_path=live_path))
     input_fingerprint = ""
     if not args.check_only and not args.diagram_id:
         skip_rebuild, input_fingerprint, cached_metadata = generated_refresh_guard.should_skip_rebuild(
@@ -3340,7 +3341,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 3
 
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -24,6 +24,7 @@ affordance explicit instead of silently widening the benchmark story.
 
 from __future__ import annotations
 
+import atexit
 import contextlib
 import errno
 import inspect
@@ -117,6 +118,9 @@ _user_claude_config = odylith_benchmark_live_host_config.user_claude_config
 _CLAUDE_ALLOWED_TOOLS = "Bash,Edit,Glob,Grep,Read,Write"
 _LIVE_HOST_CLI = "live_host_cli"
 _RAW_HOST_CLI = "raw_host_cli"
+_CODEX_AUTH_SNAPSHOT_DIR: Path | None = None
+_CODEX_AUTH_SNAPSHOT_PATH: Path | None = None
+_CODEX_AUTH_SNAPSHOT_CANDIDATES: tuple[str, ...] = ()
 
 _dedupe_strings = odylith_benchmark_live_artifacts._dedupe_strings
 _parse_json_lines = odylith_benchmark_live_artifacts._parse_json_lines
@@ -139,6 +143,19 @@ _path_recall = odylith_benchmark_live_artifacts._path_recall
 _scenario_supporting_paths = odylith_benchmark_live_artifacts._scenario_supporting_paths
 _scenario_expected_write_paths = odylith_benchmark_live_artifacts._scenario_expected_write_paths
 _precision_metrics = odylith_benchmark_live_artifacts._precision_metrics
+
+
+def _cleanup_codex_auth_snapshot() -> None:
+    global _CODEX_AUTH_SNAPSHOT_CANDIDATES, _CODEX_AUTH_SNAPSHOT_DIR, _CODEX_AUTH_SNAPSHOT_PATH
+    snapshot_dir = _CODEX_AUTH_SNAPSHOT_DIR
+    _CODEX_AUTH_SNAPSHOT_DIR = None
+    _CODEX_AUTH_SNAPSHOT_PATH = None
+    _CODEX_AUTH_SNAPSHOT_CANDIDATES = ()
+    if snapshot_dir is not None:
+        _cleanup_benchmark_temp_dir(snapshot_dir)
+
+
+atexit.register(_cleanup_codex_auth_snapshot)
 
 
 def _call_with_supported_kwargs(function: Any, /, **kwargs: Any) -> Any:
@@ -213,6 +230,32 @@ def _claude_env_auth_available(environ: Mapping[str, str]) -> bool:
     )
 
 
+def _codex_auth_snapshot_source(*, environ: Mapping[str, str]) -> Path | None:
+    global _CODEX_AUTH_SNAPSHOT_CANDIDATES, _CODEX_AUTH_SNAPSHOT_DIR, _CODEX_AUTH_SNAPSHOT_PATH
+    candidate_tokens = tuple(candidate.as_posix() for candidate in _codex_home_candidates(environ=environ))
+    if (
+        _CODEX_AUTH_SNAPSHOT_PATH is not None
+        and _CODEX_AUTH_SNAPSHOT_PATH.is_file()
+        and _CODEX_AUTH_SNAPSHOT_CANDIDATES == candidate_tokens
+    ):
+        return _CODEX_AUTH_SNAPSHOT_PATH
+    auth_source = _codex_auth_source(environ=environ)
+    if auth_source is None:
+        return None
+    try:
+        snapshot_dir = Path(tempfile.mkdtemp(prefix="odylith-benchmark-codex-auth-")).resolve()
+        snapshot_path = snapshot_dir / "auth.json"
+        shutil.copy2(auth_source, snapshot_path)
+        with contextlib.suppress(OSError):
+            snapshot_path.chmod(0o600)
+    except OSError:
+        return auth_source if auth_source.is_file() else None
+    _CODEX_AUTH_SNAPSHOT_DIR = snapshot_dir
+    _CODEX_AUTH_SNAPSHOT_PATH = snapshot_path
+    _CODEX_AUTH_SNAPSHOT_CANDIDATES = candidate_tokens
+    return snapshot_path
+
+
 @contextlib.contextmanager
 def _temporary_codex_home(
     *,
@@ -229,7 +272,7 @@ def _temporary_codex_home(
         ) as home_root:
             yield home_root
         return
-    auth_source = _codex_auth_source(environ=env)
+    auth_source = _codex_auth_snapshot_source(environ=env)
     if auth_source is None:
         checked = ", ".join((candidate / "auth.json").as_posix() for candidate in _codex_home_candidates(environ=env))
         raise RuntimeError(
@@ -308,14 +351,14 @@ def _sandbox_validation_command(*, repo_root: Path, command: str) -> str:
     token = str(command or "").strip()
     if not token:
         return ""
-    venv_bin = str((Path(repo_root).resolve() / ".venv" / "bin").resolve())
-    token = re.sub(r"(?<!\S)(?:\./)?\.venv/bin/", f"{venv_bin}/", token)
+    tool_bin = str(odylith_benchmark_isolation.benchmark_tool_bin(repo_root=Path(repo_root).resolve()))
+    token = re.sub(r"(?<!\S)(?:\./)?\.venv/bin/", f"{tool_bin}/", token)
     match = _LEADING_ENV_AND_ODYLITH_COMMAND.match(token)
     if match is not None:
         prefix = str(match.group("prefix") or "")
         if "PYTHONPATH=" not in prefix:
             prefix = f"{prefix}PYTHONPATH=src "
-        token = f"{prefix}{venv_bin}/python src/odylith/cli.py{match.group('suffix')}"
+        token = f"{prefix}{tool_bin}/python src/odylith/cli.py{match.group('suffix')}"
     return token
 
 
@@ -1073,6 +1116,87 @@ def _live_workspace_preserve_paths(
     )
 
 
+_BENCHMARK_RUNTIME_VALIDATOR_TEST_NAMES = frozenset(
+    {
+        "test_odylith_benchmark_completion_semantics.py",
+        "test_odylith_benchmark_context_engine.py",
+        "test_odylith_benchmark_corpus.py",
+        "test_odylith_benchmark_execution_engine.py",
+        "test_odylith_benchmark_graphs.py",
+        "test_odylith_benchmark_isolation.py",
+        "test_odylith_benchmark_live_diagnostics.py",
+        "test_odylith_benchmark_live_execution.py",
+        "test_odylith_benchmark_preflight.py",
+        "test_odylith_benchmark_prompt_payloads.py",
+        "test_odylith_benchmark_prompt_regressions.py",
+        "test_odylith_benchmark_proof_discipline.py",
+        "test_odylith_benchmark_publication.py",
+        "test_odylith_benchmark_runner.py",
+        "test_odylith_benchmark_runtime_posture_runtime.py",
+        "test_odylith_benchmark_shard_merge.py",
+        "test_execution_engine.py",
+    }
+)
+_BENCHMARK_RUNTIME_VALIDATOR_SUPPORT_PATHS = (
+    "src/odylith/__init__.py",
+    "src/odylith/cli.py",
+    "src/odylith/runtime",
+)
+_SESSION_BRIEF_VALIDATOR_SUPPORT_PATHS = (
+    ".odylith/runtime/odylith-compiler/projection-snapshot.v1.json",
+)
+_VALIDATION_COMMAND_REPO_PATH = re.compile(
+    r"(?P<path>(?:\.odylith|docs|odylith|src|tests)/[A-Za-z0-9_./{}@%+=:,~-]+)"
+)
+
+
+def _scenario_command_rows(scenario: Mapping[str, Any]) -> list[str]:
+    rows: list[str] = []
+    for key in ("validation_commands", "focused_local_checks"):
+        raw_rows = scenario.get(key, [])
+        if not isinstance(raw_rows, list):
+            continue
+        rows.extend(str(token).strip() for token in raw_rows if str(token).strip())
+    return _dedupe_strings(rows)
+
+
+def _repo_paths_from_validation_commands(*, repo_root: Path, scenario: Mapping[str, Any]) -> list[str]:
+    root = Path(repo_root).resolve()
+    rows: list[str] = []
+    for command in _scenario_command_rows(scenario):
+        for match in _VALIDATION_COMMAND_REPO_PATH.finditer(command):
+            token = str(match.group("path") or "").strip()
+            if not token:
+                continue
+            token = token.split("::", 1)[0].rstrip(".,;:)]}'\"")
+            if token and (root / token).exists():
+                rows.append(token)
+    return _dedupe_strings(rows)
+
+
+def _benchmark_live_validator_support_paths(*, repo_root: Path, scenario: Mapping[str, Any]) -> list[str]:
+    commands = _scenario_command_rows(scenario)
+    root = Path(repo_root).resolve()
+    rows: list[str] = []
+    runtime_validator = any(
+        test_name in command for command in commands for test_name in _BENCHMARK_RUNTIME_VALIDATOR_TEST_NAMES
+    ) or any(
+        "tests/unit/runtime/" in command for command in commands
+    )
+    if runtime_validator:
+        rows.extend(_BENCHMARK_RUNTIME_VALIDATOR_SUPPORT_PATHS)
+        rows.extend(_repo_paths_from_validation_commands(repo_root=root, scenario=scenario))
+    if str(scenario.get("scenario_id", "")).strip() == "session-brief-runtime-path-ambiguity" or any(
+        "session_brief_exact_path" in command for command in commands
+    ):
+        rows.extend(_SESSION_BRIEF_VALIDATOR_SUPPORT_PATHS)
+    return [
+        path
+        for path in _dedupe_strings(rows)
+        if (root / path).is_file() or (root / path).is_dir()
+    ]
+
+
 def _benchmark_temp_root(*, repo_root: Path) -> Path:
     root = (Path(repo_root).resolve() / ".odylith" / "runtime" / "odylith-benchmark-temp").resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -1115,7 +1239,7 @@ def _temporary_benchmark_temp_dir(
         _cleanup_benchmark_temp_dir(temp_dir)
 
 
-def run_live_scenario(
+def _run_live_scenario_once(
     *,
     repo_root: Path,
     scenario: Mapping[str, Any],
@@ -1151,6 +1275,8 @@ def run_live_scenario(
     explicit_task_paths = [
         *[str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()],
         *[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
+        *[str(token).strip() for token in scenario.get("supporting_paths", []) if str(token).strip()],
+        *_benchmark_live_validator_support_paths(repo_root=resolved_repo_root, scenario=scenario),
     ]
     effective_snapshot_paths = _live_workspace_preserve_paths(
         explicit_task_paths=explicit_task_paths,
@@ -1671,6 +1797,77 @@ def run_live_scenario(
             "timing_trace": timing_trace,
             "live_execution": live_execution_payload,
         }
+
+
+def _retryable_live_host_interruption(result: Mapping[str, Any]) -> bool:
+    live_execution = result.get("live_execution", {})
+    if not isinstance(live_execution, Mapping):
+        return False
+    try:
+        exit_code = int(live_execution.get("exit_code", 0) or 0)
+    except (TypeError, ValueError):
+        exit_code = 0
+    if exit_code >= 0 or bool(live_execution.get("timed_out", False)):
+        return False
+    structured_output = live_execution.get("structured_output", {})
+    validation_summary = (
+        str(structured_output.get("validation_summary", "")).strip()
+        if isinstance(structured_output, Mapping)
+        else ""
+    )
+    try:
+        candidate_write_path_count = int(result.get("candidate_write_path_count", 0) or 0)
+    except (TypeError, ValueError):
+        candidate_write_path_count = 0
+    return validation_summary == "missing_schema_output" and candidate_write_path_count == 0
+
+
+def run_live_scenario(
+    *,
+    repo_root: Path,
+    scenario: Mapping[str, Any],
+    mode: str,
+    benchmark_profile: str = "",
+    benchmark_session_namespace: str = "",
+    packet_source: str,
+    prompt_payload: Mapping[str, Any] | None = None,
+    packet_summary: Mapping[str, Any] | None = None,
+    snapshot_paths: Sequence[str] | None = None,
+) -> dict[str, Any]:
+    first_result = _run_live_scenario_once(
+        repo_root=repo_root,
+        scenario=scenario,
+        mode=mode,
+        benchmark_profile=benchmark_profile,
+        benchmark_session_namespace=benchmark_session_namespace,
+        packet_source=packet_source,
+        prompt_payload=prompt_payload,
+        packet_summary=packet_summary,
+        snapshot_paths=snapshot_paths,
+    )
+    if not _retryable_live_host_interruption(first_result):
+        return first_result
+
+    retry_result = _run_live_scenario_once(
+        repo_root=repo_root,
+        scenario=scenario,
+        mode=mode,
+        benchmark_profile=benchmark_profile,
+        benchmark_session_namespace=benchmark_session_namespace,
+        packet_source=packet_source,
+        prompt_payload=prompt_payload,
+        packet_summary=packet_summary,
+        snapshot_paths=snapshot_paths,
+    )
+    live_execution = retry_result.get("live_execution")
+    if isinstance(live_execution, dict):
+        replaced_live_execution = first_result.get("live_execution", {})
+        live_execution["infra_retry_attempts"] = 1
+        live_execution["infra_retry_reason"] = "negative_host_exit_missing_schema_output"
+        if isinstance(replaced_live_execution, Mapping):
+            live_execution["infra_retry_replaced_exit_code"] = replaced_live_execution.get("exit_code", 0)
+            live_execution["infra_retry_replaced_timed_out"] = bool(replaced_live_execution.get("timed_out", False))
+    return retry_result
 
 
 __all__ = [

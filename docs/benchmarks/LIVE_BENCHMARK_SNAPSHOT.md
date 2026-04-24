@@ -5,7 +5,7 @@ published in the root [README](../../README.md).
 
 ## Current Result
 
-Current Live Benchmark report: `1ffca7bdddac338d` from `2026-04-22T19:09:30Z` with status `hold`.
+Current Live Benchmark report: `2d8444952aef28d2` from `2026-04-24T00:57:09Z` with status `hold`.
 
 The latest live benchmark ran `82` seeded scenarios across matched cache profile(s) `warm` and `cold` under the declared comparison contract `full_product_assistance_vs_raw_agent`.
 That produced `164` full matched pairs. The published comparison keeps the conservative same-scenario view at `82` pairs.
@@ -16,18 +16,18 @@ Current proof posture is local-first on `lance_local_columnar` plus `tantivy_spa
 
 Compared with `odylith_off`, Odylith moved:
 
-- required-path recall by `0.238`
-- required-path precision by `0.227`
-- hallucinated-surface rate by `-0.227`
-- validation success by `0.057`
-- critical required-path recall by `0.215`
-- critical validation success by `0.065`
-- expectation success by `0.607`
-- write-surface precision by `-0.039`
-- unnecessary widening by `-0.054`
-- median live-session input tokens by `-99,370`
-- median total model tokens by `-101,205`
-- median time to valid outcome by `-1m 07s`
+- required-path recall by `0.252`
+- required-path precision by `0.260`
+- hallucinated-surface rate by `-0.260`
+- validation success by `0.068`
+- critical required-path recall by `0.237`
+- critical validation success by `0.032`
+- expectation success by `0.692`
+- write-surface precision by `-0.403`
+- unnecessary widening by `-0.014`
+- median live-session input tokens by `-101,010`
+- median total model tokens by `-103,238`
+- median time to valid outcome by `-1m 12s`
 
 ## Publication Read
 
@@ -44,12 +44,10 @@ The current report is on `hold` because these hard-gate blockers remain:
 - mechanism-heavy implementation ratio: `0.29`
 
 Current attention families on the published view:
-- `broad_shared_scope`
-- `context_engine_grounding`
-- `cross_file_feature`
-- `dashboard_surface`
-- `discipline`
-- `exact_path_ambiguity`
+- `architecture`
+- `live_proof_discipline`
+- `release_publication`
+- `runtime_state_integrity`
 
 ## Reading Notes
 

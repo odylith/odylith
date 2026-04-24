@@ -141,11 +141,6 @@ _SYNC_DEBUG_CACHE_ENV = "ODYLITH_SYNC_DEBUG_CACHE"
 _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES: tuple[str, ...] = (
     "odylith/agents-guidelines/",
     "odylith/skills/",
-    "odylith/registry/source/",
-    "odylith/radar/source/",
-    "odylith/technical-plans/",
-    "odylith/casebook/bugs/",
-    "odylith/atlas/source/",
     "odylith/runtime/source/",
 )
 _PROJECTION_INVALIDATION_PREFIXES: tuple[str, ...] = (
@@ -162,22 +157,7 @@ _DELIVERY_SURFACE_INVALIDATION_PREFIXES: tuple[str, ...] = (
     *_PROJECTION_INVALIDATION_PREFIXES,
     "odylith/runtime/delivery_intelligence.v4.json",
 )
-# Live Odylith product-repo governance records that must never be shipped into
-# consumer truth roots through the source-truth bundle mirror. The mirror is
-# meant to carry shared guidance and shipped-contract surfaces into installed
-# consumer repos, but the in-progress plan stream and the raw radar idea
-# stream are Odylith's own development backlog. Mirroring those into the
-# bundle would seed a consumer install with Odylith product chatter inside
-# their own `odylith/radar/source/ideas/` and
-# `odylith/technical-plans/in-progress/` trees, which is exactly what
-# `tests/unit/runtime/test_hygiene.py::test_bundle_does_not_ship_public_live_governance_records_into_consumer_truth_roots`
-# guards against. The exclusion stays minimal to the leak the hygiene test
-# actually forbids; broader workstream-artifact triage (e.g. `done/`,
-# `parked/`, `radar/source/releases/`) belongs in a separate slice.
-_SOURCE_TRUTH_BUNDLE_MIRROR_EXCLUDE_PREFIXES: tuple[str, ...] = (
-    "odylith/radar/source/ideas/",
-    "odylith/technical-plans/in-progress/",
-)
+_SOURCE_TRUTH_BUNDLE_MIRROR_EXCLUDE_PREFIXES: tuple[str, ...] = ()
 _TRUTH_ONLY_SELECTIVE_EXACT_PATHS: frozenset[str] = frozenset(
     {
         "odylith/casebook/bugs/INDEX.md",
@@ -333,7 +313,9 @@ def _sync_changed_source_truth_bundle_mirrors(
             values=governance.collect_git_changed_paths(repo_root=repo_root),
         )
     live_paths: list[Path] = []
-    removed_paths: list[Path] = []
+    removed_paths: list[Path] = list(
+        source_bundle_mirror.prune_unsafe_bundle_paths(repo_root=repo_root)
+    )
     seen_live_paths: set[Path] = set()
 
     for token in candidate_paths:

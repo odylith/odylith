@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-21
+Last updated (UTC): 2026-04-24
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-124 | 2026-04-24 | Benchmark disposable worktrees resolve validators against a non benchmark ready | P1 | benchmark | Open | [2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md](2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md) |
 | CB-122 | 2026-04-17 | Intervention hooks report ready while chat sees zero visible odylith beats | P0 | governance-intervention-engine | Open | [2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md](2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md) |
 | CB-123 | 2026-04-17 | Bootstrap signal corpus can be mistaken for calibrated ml quality | P1 | governance-intervention-engine, benchmark, odylith-context-engine | Open | [2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md](2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md) |
 | CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Resolved | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |

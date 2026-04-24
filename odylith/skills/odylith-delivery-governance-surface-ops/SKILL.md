@@ -13,6 +13,10 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
   - pinned dogfood posture proves the shipped runtime
   - detached `source-local` posture is the explicit live-source dev lane
 - Interpreter choice does not control which repo files the agent may edit.
+- Consumer source truth must never be seeded from product-repo maintainer
+  truth. The install bundle may ship reusable shells, static assets, guidance,
+  skills, release notes, brand assets, and runtime corpora only; raw Radar,
+  Casebook, Compass, Registry, Atlas, and plan truth stay in maintainer source.
 
 ## Default Flow
 - ground the slice through Odylith packets first
@@ -176,9 +180,9 @@ Use this skill for substantive grounded repo work when Odylith should keep backl
   shells must stay free of status drawers, cockpit panels, recorder tapes, and
   chart hydrators.
 - If a surface owns source-generated shell assets, keep one canonical loader
-  or generator path, refresh live and bundled mirrors together, and do not
-  keep a static fork of generated shared CSS when shared plus thin overrides
-  will do.
+  or generator path, refresh live and consumer-safe bundled mirrors together,
+  and do not keep a static fork of generated shared CSS when shared plus thin
+  overrides will do.
 - When a slice touches operator-owned shell layout or workstream-button
   contracts, rerun headless browser proof in both standard and compact shell
   layouts instead of relying on static selector checks alone.

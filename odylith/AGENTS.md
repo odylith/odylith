@@ -221,7 +221,8 @@ Scope: applies to Odylith paths under `odylith/`.
 - Before final handoff, reconcile lifecycle truth across the touched plan, workstream, bug, and rendered governance surfaces by following the source contracts under `odylith/`.
 
 ## Product Boundary
-- Shared Odylith product code, shared guidance, and shared runtime/surface files under `odylith/` should be fixed in `/Users/freedom/code/odylith` first.
+- Shared Odylith product code, shared guidance, and shared runtime/surface
+  files under `odylith/` should be fixed in the Odylith product repo first.
 - In consumer repos, stop at diagnosis and maintainer feedback for Odylith
   product issues; do not patch `odylith/` or `.odylith/` locally as a
   self-directed fix.

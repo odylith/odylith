@@ -1135,6 +1135,114 @@ def test_live_workspace_snapshot_paths_include_dirty_same_package_python_depende
     assert "src/odylith/runtime/context_engine/odylith_context_engine.py" not in paths
 
 
+def test_live_workspace_snapshot_paths_include_declared_supporting_paths(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    changed = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py"
+    support = repo_root / "docs" / "benchmarks" / "FAMILIES_AND_EVALS.md"
+    for path in (changed, support):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# file\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+                "supporting_paths": ["docs/benchmarks/FAMILIES_AND_EVALS.md"],
+            },
+            prompt_payload={},
+        )
+
+    assert "docs/benchmarks/FAMILIES_AND_EVALS.md" in paths
+
+
+def test_live_workspace_snapshot_paths_include_dirty_browser_surface_assets_and_deletions(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    renderer = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "compass_dashboard_shell.py"
+    browser_test = repo_root / "tests" / "integration" / "runtime" / "test_surface_browser_smoke.py"
+    payload = repo_root / "odylith" / "compass" / "compass-payload.v1.js"
+    ignored_bundle = repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "compass" / "compass-payload.v1.js"
+    casebook_index = repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md"
+    ignored_markdown = repo_root / "docs" / "benchmarks" / "FAMILIES_AND_EVALS.md"
+    for path in (renderer, browser_test, payload, ignored_bundle, casebook_index, ignored_markdown):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# file\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = "\n".join(
+                [
+                    "odylith/compass/compass-payload.v1.js",
+                    "src/odylith/bundle/assets/odylith/compass/compass-payload.v1.js",
+                    "odylith/casebook/bugs/INDEX.md",
+                    "docs/benchmarks/FAMILIES_AND_EVALS.md",
+                ]
+            )
+        elif command[:4] == ["git", "diff", "--name-only", "--diff-filter=D"]:
+            stdout = "odylith/compass/runtime/history/2026-04-05.v1.json"
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["src/odylith/runtime/surfaces/compass_dashboard_shell.py"],
+                "validation_commands": ["pytest -q tests/integration/runtime/test_surface_browser_smoke.py"],
+            },
+            prompt_payload={},
+        )
+
+    assert "odylith/compass/compass-payload.v1.js" in paths
+    assert "odylith/casebook/bugs/INDEX.md" in paths
+    assert "odylith/compass/runtime/history/2026-04-05.v1.json" in paths
+    assert "src/odylith/bundle/assets/odylith/compass/compass-payload.v1.js" not in paths
+    assert "docs/benchmarks/FAMILIES_AND_EVALS.md" not in paths
+
+
+def test_live_workspace_snapshot_paths_include_deleted_tracked_files_for_validator_fidelity(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    validator = repo_root / "tests" / "integration" / "install" / "test_manager.py"
+    validator.parent.mkdir(parents=True, exist_ok=True)
+    validator.write_text("def test_placeholder():\n    assert True\n", encoding="utf-8")
+    deleted_bundle_path = "src/odylith/bundle/assets/odylith/compass/compass-payload.v1.js"
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = deleted_bundle_path if command[:4] == ["git", "diff", "--name-only", "--diff-filter=D"] else ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["src/odylith/install/manager.py"],
+                "validation_commands": ["pytest -q tests/integration/install/test_manager.py"],
+            },
+            prompt_payload={},
+        )
+
+    assert deleted_bundle_path in paths
+
+
 def test_live_workspace_snapshot_paths_include_dirty_imported_cross_package_python_dependencies(
     tmp_path: Path,
 ) -> None:
@@ -4127,6 +4235,21 @@ def test_run_benchmarks_shards_use_shard_specific_lock_key(
 
     assert seen_lock_keys[0] == "odylith-benchmark-runner:proof:2-of-3"
     assert seen_lock_keys.count("odylith-benchmark-runner:proof:2-of-3") == 1
+
+
+def test_run_benchmarks_rejects_zero_shard_index(tmp_path: Path) -> None:
+    _write_corpus(tmp_path, {"version": "v1", "program": {}, "cases": [], "architecture_cases": []})
+    with pytest.raises(ValueError, match="`shard_index` must be between 1 and `shard_count` inclusive"):
+        runner.run_benchmarks(repo_root=tmp_path, shard_count=3, shard_index=0, write_report=False)
+
+
+def test_apply_scenario_shard_rejects_zero_shard_count() -> None:
+    with pytest.raises(ValueError, match="`shard_count` must be at least 1"):
+        runner._apply_scenario_shard(  # noqa: SLF001
+            scenarios=[{"scenario_id": "case-a"}],
+            shard_count=0,
+            shard_index=1,
+        )
 
 
 def test_run_benchmarks_shards_persist_failed_history_report_on_exception(

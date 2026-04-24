@@ -2182,6 +2182,10 @@
           "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
           "tests/unit/runtime/test_odylith_benchmark_corpus.py"
         ],
+        "supporting_paths": [
+          "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+          "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+        ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_corpus.py"
         ],
@@ -2568,6 +2572,9 @@
           "tests/unit/runtime/test_hygiene.py",
           "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
           "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+        ],
+        "supporting_paths": [
+          "docs/benchmarks/FAMILIES_AND_EVALS.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py"
@@ -3104,15 +3111,17 @@
       "label": "Live observed-path attribution stays lane-symmetric",
       "family": "api_contract_evolution",
       "priority": "high",
-      "summary": "Live benchmark attribution work should stay grounded across the prompt builder, live execution harness, and diagnostics helper instead of quietly giving the Odylith lane easier path credit.",
+      "summary": "Live benchmark attribution work should stay grounded across the prompt builder, live execution harness, diagnostics helper, and live artifact extraction helper instead of quietly giving the Odylith lane easier path credit.",
       "benchmark": {
-        "prompt": "Repair the live observed-path attribution contract so prompt-visible repo anchors are credited symmetrically across the Odylith-on and raw-agent lanes.",
+        "prompt": "Repair or confirm the live observed-path attribution contract so prompt-visible repo anchors are credited symmetrically across the Odylith-on and raw-agent lanes.",
         "paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_artifacts.py",
           "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
           "src/odylith/runtime/evaluation/odylith_benchmark_live_diagnostics.py",
           "src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py"
         ],
         "required_paths": [
+          "src/odylith/runtime/evaluation/odylith_benchmark_live_artifacts.py",
           "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py",
           "src/odylith/runtime/evaluation/odylith_benchmark_live_diagnostics.py",
           "src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py",
@@ -3127,7 +3136,7 @@
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_live_diagnostics.py"
         ],
         "allow_noop_completion": true,
-        "needs_write": true,
+        "needs_write": false,
         "workstream": "B-093",
         "component": "benchmark"
       },

@@ -7,6 +7,7 @@ import pytest
 
 from odylith.runtime.surfaces import compass_dashboard_frontend_contract
 from odylith.runtime.surfaces import dashboard_ui_primitives
+from odylith.runtime.surfaces import source_bundle_mirror
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -17,53 +18,33 @@ _COMPASS_SHELL_ASSET_NAMES = tuple(
         *compass_dashboard_frontend_contract.compass_shell_support_js_assets(),
     )
 )
+_BUNDLE_COMPASS_SHELL_ASSET_NAMES = tuple(
+    asset_name
+    for asset_name in _COMPASS_SHELL_ASSET_NAMES
+    if source_bundle_mirror.is_consumer_safe_bundle_relative_path(f"compass/{asset_name}")
+)
 _SURFACE_LIVE_BUNDLE_MIRROR_PATHS = (
     ("odylith/index.html", "src/odylith/bundle/assets/odylith/index.html"),
     ("odylith/tooling-app.v1.js", "src/odylith/bundle/assets/odylith/tooling-app.v1.js"),
-    ("odylith/tooling-payload.v1.js", "src/odylith/bundle/assets/odylith/tooling-payload.v1.js"),
     ("odylith/radar/radar.html", "src/odylith/bundle/assets/odylith/radar/radar.html"),
     ("odylith/radar/backlog-app.v1.js", "src/odylith/bundle/assets/odylith/radar/backlog-app.v1.js"),
-    ("odylith/radar/backlog-payload.v1.js", "src/odylith/bundle/assets/odylith/radar/backlog-payload.v1.js"),
-    ("odylith/radar/standalone-pages.v1.js", "src/odylith/bundle/assets/odylith/radar/standalone-pages.v1.js"),
     ("odylith/registry/registry.html", "src/odylith/bundle/assets/odylith/registry/registry.html"),
     ("odylith/registry/registry-app.v1.js", "src/odylith/bundle/assets/odylith/registry/registry-app.v1.js"),
-    ("odylith/registry/registry-payload.v1.js", "src/odylith/bundle/assets/odylith/registry/registry-payload.v1.js"),
-    (
-        "odylith/registry/registry-detail-shard-001.v1.js",
-        "src/odylith/bundle/assets/odylith/registry/registry-detail-shard-001.v1.js",
-    ),
     ("odylith/casebook/casebook.html", "src/odylith/bundle/assets/odylith/casebook/casebook.html"),
     (
         "odylith/casebook/casebook-app.v1.js",
         "src/odylith/bundle/assets/odylith/casebook/casebook-app.v1.js",
     ),
-    (
-        "odylith/casebook/casebook-payload.v1.js",
-        "src/odylith/bundle/assets/odylith/casebook/casebook-payload.v1.js",
-    ),
     ("odylith/atlas/atlas.html", "src/odylith/bundle/assets/odylith/atlas/atlas.html"),
     ("odylith/atlas/mermaid-app.v1.js", "src/odylith/bundle/assets/odylith/atlas/mermaid-app.v1.js"),
-    (
-        "odylith/atlas/mermaid-payload.v1.js",
-        "src/odylith/bundle/assets/odylith/atlas/mermaid-payload.v1.js",
-    ),
     ("odylith/compass/compass.html", "src/odylith/bundle/assets/odylith/compass/compass.html"),
     ("odylith/compass/compass-app.v1.js", "src/odylith/bundle/assets/odylith/compass/compass-app.v1.js"),
-    (
-        "odylith/compass/compass-payload.v1.js",
-        "src/odylith/bundle/assets/odylith/compass/compass-payload.v1.js",
-    ),
 )
 _SURFACE_LIVE_BUNDLE_MIRROR_GLOBS = (
     (
-        REPO_ROOT / "odylith" / "radar",
-        "backlog-detail-shard-*.v1.js",
-        REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "radar",
-    ),
-    (
-        REPO_ROOT / "odylith" / "radar",
-        "backlog-document-shard-*.v1.js",
-        REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "radar",
+        REPO_ROOT / "odylith" / "compass",
+        "compass-style-*.css",
+        REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "compass",
     ),
 )
 
@@ -428,7 +409,7 @@ def test_live_compass_shell_assets_match_source_owned_frontend_contract(asset_na
     assert _read(f"odylith/compass/{asset_name}") == expected
 
 
-@pytest.mark.parametrize("asset_name", _COMPASS_SHELL_ASSET_NAMES)
+@pytest.mark.parametrize("asset_name", _BUNDLE_COMPASS_SHELL_ASSET_NAMES)
 def test_bundle_compass_shell_assets_match_source_owned_frontend_contract(asset_name: str) -> None:
     expected = compass_dashboard_frontend_contract.load_compass_shell_asset_text(asset_name)
 

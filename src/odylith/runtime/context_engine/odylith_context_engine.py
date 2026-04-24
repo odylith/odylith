@@ -2204,8 +2204,8 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             families=[str(token).strip() for token in payload.get("families", []) if str(token).strip()]
             if isinstance(payload.get("families"), list)
             else [],
-            shard_count=max(1, int(payload.get("shard_count", 1) or 1)),
-            shard_index=max(1, int(payload.get("shard_index", 1) or 1)),
+            shard_count=int(1 if payload.get("shard_count") is None else payload.get("shard_count")),
+            shard_index=int(1 if payload.get("shard_index") is None else payload.get("shard_index")),
             limit=max(0, int(payload.get("limit", 0) or 0)),
             write_report=bool(payload.get("write_report", True)),
         )
@@ -3057,8 +3057,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             cache_profiles=[str(token).strip() for token in args.cache_profile if str(token).strip()],
             case_ids=[str(token).strip() for token in args.case_id if str(token).strip()],
             families=[str(token).strip() for token in args.family if str(token).strip()],
-            shard_count=max(1, int(args.shard_count)),
-            shard_index=max(1, int(args.shard_index)),
+            shard_count=int(args.shard_count),
+            shard_index=int(args.shard_index),
             limit=max(0, int(args.limit)),
             write_report=not bool(args.no_write_report),
             json_output=bool(args.json),

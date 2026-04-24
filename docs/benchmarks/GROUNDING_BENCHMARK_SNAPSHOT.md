@@ -5,10 +5,10 @@ published in the root [README](../../README.md).
 
 ## Current Result
 
-Current Internal Diagnostic Benchmark report: `4dfde9ab25d7149c` from `2026-04-22T19:10:57Z` with status `hold`.
+Current Internal Diagnostic Benchmark report: `dd35a4aab061f49f` from `2026-04-24T00:57:12Z` with status `provisional_pass`.
 
 The latest internal diagnostic benchmark ran `82` seeded scenarios on cache profile(s) `warm` comparing `odylith_on` versus `odylith_off` on packet and prompt construction only.
-Across the `82` diagnostic pairs, wall clock was `30.381 ms` median, `70.469 ms` at `p95`, and `2.69s` total.
+Across the `82` diagnostic pairs, wall clock was `24.255 ms` median, `51.265 ms` at `p95`, and `2.01s` total.
 
 Current diagnostic posture is local-first on `lance_local_columnar` plus `tantivy_sparse_recall`. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
 
@@ -17,23 +17,19 @@ Current diagnostic posture is local-first on `lance_local_columnar` plus `tantiv
 Compared with the `odylith_off` prompt bundle, Odylith moved:
 
 - required-path recall by `0.325`
-- required-path precision by `0.030`
-- hallucinated-surface rate by `0.019`
-- validation-success proxy by `0.657`
+- required-path precision by `0.049`
+- hallucinated-surface rate by `0.000`
+- validation-success proxy by `0.689`
 - critical required-path recall by `0.278`
 - critical validation-success proxy by `0.613`
-- expectation-success proxy by `0.951`
+- expectation-success proxy by `0.963`
 - median prompt-bundle input tokens by `+834`
 - median total prompt-bundle payload tokens by `+1,076`
-- median packet time by `+30 ms`
+- median packet time by `+24 ms`
 
 ## Publication Read
 
-The current report is on `hold` because these hard-gate blockers remain:
-- observed-surface drift is worse than the raw baseline
-- execution-engine benchmark slices resolved the wrong current phase
-- execution-engine benchmark slices resolved the wrong last successful phase
-- selected cache profiles do not all clear the hard quality gate
+There are no hard-gate blockers on this report.
 
 - fairness contract passed: `True`
 - corpus seriousness floor passed: `True`
@@ -42,11 +38,6 @@ The current report is on `hold` because these hard-gate blockers remain:
 - write-plus-validator scenarios in tracked corpus: `42`
 - correctness-critical scenarios in tracked corpus: `31`
 - mechanism-heavy implementation ratio: `0.29`
-
-Current diagnostic weak families:
-- `broad_shared_scope`
-- `execution_engine`
-- `live_proof_discipline`
 
 ## Reading Notes
 

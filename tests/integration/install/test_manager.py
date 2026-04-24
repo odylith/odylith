@@ -102,11 +102,6 @@ def _seed_legacy_casebook_bug_pair(repo_root: Path) -> tuple[Path, Path]:
     return retained, missing
 
 
-def _load_bundle_js_assignment(relative_path: str) -> dict[str, object]:
-    payload_js = (BUNDLE_ROOT / relative_path).read_text(encoding="utf-8")
-    return json.loads(payload_js.split(" = ", 1)[1].rsplit(";", 1)[0])
-
-
 def _write_fake_source_checkout(root: Path) -> Path:
     source_root = root / "odylith-source"
     (source_root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
@@ -788,62 +783,31 @@ def test_install_bundle_derives_effective_codex_config_from_local_capabilities(m
 def test_bundle_surfaces_ship_stable_product_bundle_assets() -> None:
     project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")).get("project", {})
     current_version = str(project.get("version", "")).strip()
-    registry_source = json.loads((BUNDLE_ROOT / "registry" / "source" / "component_registry.v1.json").read_text(encoding="utf-8"))
-    atlas_source = json.loads(
-        (BUNDLE_ROOT / "atlas" / "source" / "catalog" / "diagrams.v1.json").read_text(encoding="utf-8")
-    )
     bundle_shell_source = json.loads(
         (BUNDLE_ROOT / "runtime" / "source" / "tooling_shell.v1.json").read_text(encoding="utf-8")
     )
-    radar_payload = _load_bundle_js_assignment("radar/backlog-payload.v1.js")
-    registry_payload = _load_bundle_js_assignment("registry/registry-payload.v1.js")
-    casebook_payload = _load_bundle_js_assignment("casebook/casebook-payload.v1.js")
-    compass_payload = _load_bundle_js_assignment("compass/compass-payload.v1.js")
-    atlas_payload = _load_bundle_js_assignment("atlas/mermaid-payload.v1.js")
-    tooling_payload = _load_bundle_js_assignment("tooling-payload.v1.js")
-    tooling_payload_text = (BUNDLE_ROOT / "tooling-payload.v1.js").read_text(encoding="utf-8")
-    registry_payload_text = (BUNDLE_ROOT / "registry" / "registry-payload.v1.js").read_text(encoding="utf-8")
     shell_index_text = (BUNDLE_ROOT / "index.html").read_text(encoding="utf-8")
 
-    assert registry_source["version"] == "v1"
-    assert isinstance(registry_source["components"], list)
-    assert atlas_source["version"] == "v1"
-    assert isinstance(atlas_source["diagrams"], list)
     assert bundle_shell_source == {"maintainer_notes": [], "shell_repo_label": "Repo · repo"}
     assert current_version
     bundled_release_note_path = BUNDLE_ROOT / "runtime" / "source" / "release-notes" / f"v{current_version}.md"
     assert bundled_release_note_path.is_file()
     assert f"version: {current_version}" in bundled_release_note_path.read_text(encoding="utf-8")
-    assert isinstance(radar_payload["entries"], list)
-    assert isinstance(radar_payload["detail_manifest"], dict)
-    assert isinstance(registry_payload["components"], list)
-    assert isinstance(registry_payload["diagnostics"], list)
-    assert isinstance(registry_payload["delivery_intelligence"], dict)
-    assert isinstance(registry_payload["detail_manifest"], dict)
-    assert isinstance(casebook_payload["bugs"], list)
-    assert isinstance(casebook_payload["detail_manifest"], dict)
-    assert isinstance(atlas_payload["diagrams"], list)
-    assert isinstance(tooling_payload["case_queue"], list)
-    assert isinstance(tooling_payload["components"], dict)
-    assert isinstance(tooling_payload["diagrams"], dict)
-    assert isinstance(tooling_payload["maintainer_notes"], list)
-    assert "odylith_drawer" not in tooling_payload
-    assert "benchmark_story" not in tooling_payload
-    assert str(tooling_payload["shell_repo_label"]).strip()
-    assert isinstance(tooling_payload["shell_version_label"], str)
-    assert isinstance(tooling_payload["welcome_state"], dict)
-    assert "show" in tooling_payload["welcome_state"]
-    assert isinstance(tooling_payload["workstreams"], dict)
-    assert str(compass_payload["runtime_json_href"]).startswith("runtime/current.v1.json")
-    assert (BUNDLE_ROOT / "registry" / "source" / "components" / "README.md").is_file()
-    assert list((BUNDLE_ROOT / "registry" / "source" / "components").glob("*/CURRENT_SPEC.md"))
-    assert list((BUNDLE_ROOT / "atlas" / "source").glob("*.mmd"))
+    assert (BUNDLE_ROOT / "agents-guidelines" / "CLI_FIRST_POLICY.md").is_file()
+    assert (BUNDLE_ROOT / "skills" / "odylith-start" / "SKILL.md").is_file()
+    assert (BUNDLE_ROOT / "surfaces" / "brand").is_dir()
+    assert (BUNDLE_ROOT / "compass" / "compass-app.v1.js").is_file()
+    assert (BUNDLE_ROOT / "compass" / "compass-style-base.v1.css").is_file()
+    assert not (BUNDLE_ROOT / "compass" / "compass-payload.v1.js").exists()
+    assert not (BUNDLE_ROOT / "compass" / "compass-source-truth.v1.json").exists()
+    casebook_records = [
+        path
+        for path in (BUNDLE_ROOT / "casebook" / "bugs").glob("*.md")
+        if path.name not in {"AGENTS.md", "CLAUDE.md"}
+    ]
+    assert not casebook_records
+    assert not list((BUNDLE_ROOT / "registry" / "source").glob("**/FORENSICS.v1.json"))
     assert not (BUNDLE_ROOT / "runtime" / "delivery_intelligence.v4.json").exists()
-    assert "/private/var/folders/" not in tooling_payload_text
-    assert "/private/var/folders/" not in registry_payload_text
-    assert "tmp." not in tooling_payload_text
-    assert "tmp." not in registry_payload_text
-    assert "v0.0.0-test" not in tooling_payload_text
     assert "v0.0.0-test" not in shell_index_text
 
 

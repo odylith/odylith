@@ -61,6 +61,11 @@ def surface_output_paths(
     output_paths = list(resolved_live_paths)
     if source_bundle_mirror.source_bundle_root(repo_root=repo_root).is_dir():
         for live_path in resolved_live_paths:
+            if not source_bundle_mirror.should_mirror_live_path(
+                repo_root=repo_root,
+                live_path=live_path,
+            ):
+                continue
             output_paths.append(
                 source_bundle_mirror.bundle_mirror_path(
                     repo_root=repo_root,

@@ -1843,6 +1843,33 @@ def test_sandbox_process_env_passes_claude_auth_and_config_dir(tmp_path: Path, m
     assert env["ANTHROPIC_API_KEY"] == "test-key"
 
 
+def test_sandbox_process_env_uses_benchmark_tool_bin_when_repo_local_venv_is_not_ready(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    codex_home_root = tmp_path / "codex-home"
+    repo_root = tmp_path / "repo"
+    sandbox_root = tmp_path / "sandbox"
+    fallback_bin = tmp_path / "shared-runtime" / "bin"
+    codex_home_root.mkdir(parents=True, exist_ok=True)
+    fallback_bin.mkdir(parents=True, exist_ok=True)
+    (repo_root / ".venv" / "bin").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_isolation,
+        "benchmark_tool_bin",
+        lambda *, repo_root: fallback_bin.resolve(),
+    )
+
+    env = live_execution._sandbox_process_env(  # noqa: SLF001
+        repo_root=repo_root,
+        execution_contract={"codex_bin": "codex"},
+        codex_home_root=codex_home_root,
+        sandbox_root=sandbox_root,
+    )
+
+    assert env["PATH"].split(":")[0] == str(fallback_bin.resolve())
+
+
 def test_codex_exec_command_disables_plugins_multi_agent_and_personality(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -2140,6 +2167,114 @@ def test_live_workspace_preserve_paths_include_snapshot_validator_companions() -
         "odylith/radar/source/INDEX.md",
         "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
     ]
+
+
+def test_benchmark_live_validator_support_paths_preserve_runtime_package(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    support_paths = [
+        "src/odylith/runtime",
+    ]
+    for relative in support_paths:
+        path = repo_root / relative
+        path.mkdir(parents=True, exist_ok=True)
+
+    rows = live_execution._benchmark_live_validator_support_paths(  # noqa: SLF001
+        repo_root=repo_root,
+        scenario={
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py"
+            ],
+        },
+    )
+
+    assert rows == support_paths
+
+
+def test_benchmark_runtime_validator_support_paths_preserve_import_graph_and_command_tests(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    support_paths = [
+        "src/odylith/__init__.py",
+        "src/odylith/cli.py",
+        "src/odylith/runtime",
+        "tests/unit/runtime/test_odylith_benchmark_runner.py",
+    ]
+    for relative in support_paths:
+        path = repo_root / relative
+        if relative.endswith(".py"):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# file\n", encoding="utf-8")
+        else:
+            path.mkdir(parents=True, exist_ok=True)
+
+    rows = live_execution._benchmark_live_validator_support_paths(  # noqa: SLF001
+        repo_root=repo_root,
+        scenario={
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_run_benchmarks_publishes_conservative_multi_profile_view"
+            ],
+        },
+    )
+
+    assert rows == support_paths
+
+
+def test_runtime_unit_validator_support_paths_preserve_import_graph_and_command_tests(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    support_paths = [
+        "src/odylith/__init__.py",
+        "src/odylith/cli.py",
+        "src/odylith/runtime",
+        "tests/unit/runtime/test_proof_state_runtime.py",
+        "tests/unit/runtime/test_delivery_intelligence_engine.py",
+    ]
+    for relative in support_paths:
+        path = repo_root / relative
+        if relative.endswith(".py"):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# file\n", encoding="utf-8")
+        else:
+            path.mkdir(parents=True, exist_ok=True)
+
+    rows = live_execution._benchmark_live_validator_support_paths(  # noqa: SLF001
+        repo_root=repo_root,
+        scenario={
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q "
+                "tests/unit/runtime/test_proof_state_runtime.py "
+                "tests/unit/runtime/test_delivery_intelligence_engine.py"
+            ],
+        },
+    )
+
+    assert rows == support_paths
+
+
+def test_session_brief_validator_support_paths_preserve_projection_snapshot(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    for relative in (
+        "src/odylith/__init__.py",
+        "src/odylith/cli.py",
+        "tests/unit/runtime/test_odylith_benchmark_runner.py",
+        ".odylith/runtime/odylith-compiler/projection-snapshot.v1.json",
+    ):
+        path = repo_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}\n", encoding="utf-8")
+    (repo_root / "src/odylith/runtime").mkdir(parents=True, exist_ok=True)
+
+    rows = live_execution._benchmark_live_validator_support_paths(  # noqa: SLF001
+        repo_root=repo_root,
+        scenario={
+            "scenario_id": "session-brief-runtime-path-ambiguity",
+            "focused_local_checks": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
+            ],
+        },
+    )
+
+    assert ".odylith/runtime/odylith-compiler/projection-snapshot.v1.json" in rows
+    assert "src/odylith/runtime" in rows
+    assert "tests/unit/runtime/test_odylith_benchmark_runner.py" in rows
 
 
 def test_run_live_scenario_preserves_snapshot_validator_paths_for_self_reference_strip(
@@ -2533,8 +2668,10 @@ def test_run_live_scenario_records_declared_preflight_evidence_and_observed_path
     assert result["preflight_evidence_mode"] == "scenario_declared_focused_local_checks"
     assert result["preflight_evidence_result_status"] == "passed"
     assert len(result["preflight_evidence_commands"]) == 1
-    assert result["preflight_evidence_commands"][0].endswith(
-        ".venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_compact_report_summary_includes_candidate_odylith_adoption_rates"
+    expected_pytest = live_execution.odylith_benchmark_isolation.benchmark_tool_bin(repo_root=repo_root) / "pytest"
+    assert result["preflight_evidence_commands"][0] == (
+        f"PYTHONPATH=src {expected_pytest} -q "
+        "tests/unit/runtime/test_odylith_benchmark_runner.py::test_compact_report_summary_includes_candidate_odylith_adoption_rates"
     )
     assert result["observed_path_sources"] == ["odylith_prompt_payload"]
     assert result["live_execution"]["preflight_evidence_mode"] == "scenario_declared_focused_local_checks"
@@ -2968,6 +3105,38 @@ def test_run_live_scenario_uses_focused_noop_preflight_short_circuit(
     assert result["live_execution"]["preflight_evidence_result_status"] == "passed"
     assert result["preflight_evidence_mode"] == "scenario_declared_focused_local_checks"
     assert result["preflight_evidence_result_status"] == "passed"
+
+
+def test_sandbox_validation_command_uses_benchmark_tool_bin_for_pytest_and_odylith_commands(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root = tmp_path / "repo"
+    fallback_bin = tmp_path / "shared-runtime" / "bin"
+    fallback_bin.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_isolation,
+        "benchmark_tool_bin",
+        lambda *, repo_root: fallback_bin.resolve(),
+    )
+
+    pytest_command = live_execution._sandbox_validation_command(  # noqa: SLF001
+        repo_root=repo_root,
+        command="PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py",
+    )
+    odylith_command = live_execution._sandbox_validation_command(  # noqa: SLF001
+        repo_root=repo_root,
+        command="odylith subagent-orchestrator --repo-root . --help",
+    )
+
+    assert pytest_command == (
+        f"PYTHONPATH=src {fallback_bin.resolve() / 'pytest'} -q "
+        "tests/unit/runtime/test_program_wave_authoring.py"
+    )
+    assert odylith_command == (
+        f"PYTHONPATH=src {fallback_bin.resolve() / 'python'} "
+        "src/odylith/cli.py subagent-orchestrator --repo-root . --help"
+    )
 
 
 def test_run_live_scenario_treats_noop_validator_paths_as_supporting_evidence(

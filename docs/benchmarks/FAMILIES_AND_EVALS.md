@@ -10,7 +10,7 @@ The source of truth is
 - Tracked corpus:
   `77` implementation scenarios plus `5` architecture scenarios, `82` total
 - Current seriousness floor in tracked source truth:
-  `42` write-plus-validator scenarios, `31` correctness-critical scenarios,
+  `41` write-plus-validator scenarios, `31` correctness-critical scenarios,
   and a mechanism-heavy implementation share of `0.286`
 - Required coding-work and control families now present in tracked source truth:
   `api_contract_evolution`, `stateful_bug_recovery`,

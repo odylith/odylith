@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
-import subprocess
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.value_coercion import normalize_string as _normalize_token
+from odylith.runtime.governance.delivery_intelligence_support import current_local_head as _current_local_head
 from .contract import PROOF_STATUSES
 from .contract import WORK_CATEGORIES
 from .contract import build_claim_guard
@@ -65,19 +65,6 @@ def _parse_plan_fields(lines: Sequence[str]) -> dict[str, str]:
 
 def _extract_workstreams(text: str) -> list[str]:
     return sorted({token.upper() for token in _WORKSTREAM_RE.findall(str(text or "").upper())})
-
-
-def _current_local_head(repo_root: Path) -> str:
-    try:
-        completed = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return ""
-    return _normalize_token(completed.stdout)
 
 
 def _bug_proof_rows(repo_root: Path) -> list[dict[str, Any]]:

@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from typing import Iterator, Mapping, Sequence
@@ -19,6 +20,9 @@ from odylith.runtime.reasoning import odylith_reasoning
 _TEMPORARY_DIRECTORY_CLEANUP_RETRYABLE_ERRNOS = frozenset({errno.ENOTEMPTY, errno.EBUSY, errno.EPERM})
 _TEMPORARY_DIRECTORY_CLEANUP_RETRY_COUNT = 4
 _TEMPORARY_DIRECTORY_CLEANUP_RETRY_DELAY_SECONDS = 0.05
+_BENCHMARK_TOOL_SUPPORT_MODULES = ("pytest", "httpx")
+_BENCHMARK_TOOL_SUPPORT_CACHE: dict[str, bool] = {}
+_BENCHMARK_TOOL_BIN_CACHE: dict[str, Path] = {}
 _HARDLINK_COPY_FALLBACK_ERRNOS = frozenset(
     {
         errno.EXDEV,
@@ -27,6 +31,76 @@ _HARDLINK_COPY_FALLBACK_ERRNOS = frozenset(
         getattr(errno, "EOPNOTSUPP", errno.ENOTSUP),
     }
 )
+
+
+def _python_supports_benchmark_tools(python_path: Path) -> bool:
+    resolved_python = Path(python_path).resolve()
+    cache_key = str(resolved_python)
+    cached = _BENCHMARK_TOOL_SUPPORT_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+    try:
+        completed = subprocess.run(
+            [
+                str(resolved_python),
+                "-c",
+                (
+                    "import importlib.util; "
+                    f"mods={_BENCHMARK_TOOL_SUPPORT_MODULES!r}; "
+                    "raise SystemExit(0 if all(importlib.util.find_spec(m) is not None for m in mods) else 1)"
+                ),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        _BENCHMARK_TOOL_SUPPORT_CACHE[cache_key] = False
+        return False
+    supported = int(completed.returncode or 0) == 0
+    _BENCHMARK_TOOL_SUPPORT_CACHE[cache_key] = supported
+    return supported
+
+
+def benchmark_tool_bin(*, repo_root: Path) -> Path:
+    root = Path(repo_root).resolve()
+    cache_key = f"{root}::{Path(sys.executable).resolve()}"
+    cached = _BENCHMARK_TOOL_BIN_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
+    local_bin = (root / ".venv" / "bin").resolve()
+    local_python = local_bin / "python"
+    if local_bin.is_dir() and not local_python.exists():
+        _BENCHMARK_TOOL_BIN_CACHE[cache_key] = local_bin
+        return local_bin
+
+    candidates: list[Path] = []
+    seen_candidates: set[str] = set()
+    for candidate in (
+        local_python,
+        Path(sys.executable).resolve(),
+        (Path(sys.prefix).resolve() / "bin" / Path(sys.executable).name).resolve(),
+    ):
+        token = str(candidate)
+        if token in seen_candidates:
+            continue
+        seen_candidates.add(token)
+        candidates.append(candidate)
+
+    chosen: Path | None = None
+    for candidate in candidates:
+        if not candidate.is_file() or not os.access(candidate, os.X_OK):
+            continue
+        if _python_supports_benchmark_tools(candidate):
+            chosen = candidate.parent.resolve()
+            break
+
+    if chosen is None:
+        chosen = local_bin if local_bin.is_dir() else Path(sys.executable).resolve().parent
+    _BENCHMARK_TOOL_BIN_CACHE[cache_key] = chosen
+    return chosen
 
 
 def _copy_file(source: Path, target: Path) -> None:
@@ -75,6 +149,8 @@ def provision_workspace_odylith_root(*, repo_root: Path, workspace_root: Path) -
         Path("runtime/odylith-benchmarks/latest.v1.json"),
         Path("runtime/odylith-benchmarks/latest-proof.v1.json"),
         Path("runtime/odylith-benchmarks/latest-diagnostic.v1.json"),
+        Path("runtime/odylith-context-engine-state.v1.js"),
+        Path("runtime/odylith-context-engine-state.v1.json"),
     ):
         _copy_tree_if_exists(source=source_root / relative, target=target_root / relative)
     for relative in (
@@ -508,6 +584,8 @@ def sandbox_process_env(
     sandbox_root: Path,
 ) -> dict[str, str]:
     repo_root = Path(repo_root).resolve()
+    tool_bin = benchmark_tool_bin(repo_root=repo_root)
+    local_venv_bin = (repo_root / ".venv" / "bin").resolve()
     provider = str(execution_contract.get("provider", "")).strip().lower()
     if provider == "claude-cli":
         resolved_host_bin = odylith_reasoning.resolve_claude_bin(
@@ -542,7 +620,8 @@ def sandbox_process_env(
         dict.fromkeys(
             str(path)
             for path in (
-                (repo_root / ".venv" / "bin").resolve(),
+                tool_bin,
+                local_venv_bin if local_venv_bin != tool_bin else None,
                 Path(resolved_host).resolve().parent if resolved_host else None,
                 Path("/opt/homebrew/bin"),
                 Path("/opt/homebrew/sbin"),

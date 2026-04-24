@@ -86,6 +86,12 @@ def test_execution_engine_corpus_hard_gates_identity_for_every_execution_case() 
 
 
 def test_benchmark_corpus_declares_supporting_paths_and_write_targets_separately() -> None:
+    public_corpus = _load(PUBLIC_CORPUS)
+    raw_scenarios = {
+        str(row.get("case_id", "")).strip(): row
+        for row in public_corpus.get("scenarios", [])
+        if isinstance(row, dict)
+    }
     scenarios = {str(row.get("scenario_id", "")).strip(): row for row in _load_normalized()}
 
     cross_file = scenarios["cross-file-feature-budget-discipline"]
@@ -100,6 +106,28 @@ def test_benchmark_corpus_declares_supporting_paths_and_write_targets_separately
 
     benchmark_component = scenarios["benchmark-component-governance-truth"]
     assert "odylith/atlas/source/catalog/diagrams.v1.json" in benchmark_component["expected_write_paths"]
+
+    live_attribution = scenarios["live-observed-path-attribution-contract-parity"]
+    assert live_attribution["needs_write"] is False
+    assert (
+        "src/odylith/runtime/evaluation/odylith_benchmark_live_artifacts.py"
+        in live_attribution["required_paths"]
+    )
+    raw_live_attribution = raw_scenarios["live-observed-path-attribution-contract-parity"]
+    assert (
+        "src/odylith/runtime/evaluation/odylith_benchmark_live_artifacts.py"
+        in raw_live_attribution["benchmark"]["paths"]
+    )
+
+    no_fake_lane = scenarios["live-proof-no-fake-precision-without-a-lane"]
+    assert "odylith/runtime/source/optimization-evaluation-corpus.v1.json" in no_fake_lane["supporting_paths"]
+    assert (
+        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+        in no_fake_lane["supporting_paths"]
+    )
+
+    corpus_expansion = scenarios["benchmark-corpus-expansion-mirror-integrity"]
+    assert "docs/benchmarks/FAMILIES_AND_EVALS.md" in corpus_expansion["supporting_paths"]
 
 
 def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:

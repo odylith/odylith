@@ -17,14 +17,23 @@ from odylith.runtime.common import repo_path_resolver
 def current_local_head(repo_root: Path) -> str:
     """Return the current local Git HEAD for cache invalidation context."""
 
+    root = Path(repo_root).resolve()
     try:
-        completed = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+        top_level = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--show-toplevel"],
             check=True,
             capture_output=True,
             text=True,
         )
-    except (OSError, subprocess.CalledProcessError):
+        if Path(str(top_level.stdout or "").strip()).resolve() != root:
+            return ""
+        completed = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, RuntimeError, subprocess.CalledProcessError):
         return ""
     return str(completed.stdout or "").strip()
 

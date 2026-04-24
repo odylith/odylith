@@ -201,6 +201,22 @@ def test_overlay_workspace_repo_snapshot_copies_allowed_ignored_runtime_files(
     assert copied_snapshot.read_text(encoding="utf-8") == '{"ready": true}\n'
 
 
+def test_provision_workspace_odylith_root_copies_context_engine_runtime_state(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    workspace_root = tmp_path / "workspace"
+    state_js = repo_root / ".odylith" / "runtime" / "odylith-context-engine-state.v1.js"
+    state_json = repo_root / ".odylith" / "runtime" / "odylith-context-engine-state.v1.json"
+    _write(state_js, 'window["__ODYLITH_CONTEXT_ENGINE_STATE__"] = {"ready": true};\n')
+    _write(state_json, '{"ready": true}\n')
+
+    isolation.provision_workspace_odylith_root(repo_root=repo_root, workspace_root=workspace_root)
+
+    copied_js = workspace_root / ".odylith" / "runtime" / "odylith-context-engine-state.v1.js"
+    copied_json = workspace_root / ".odylith" / "runtime" / "odylith-context-engine-state.v1.json"
+    assert copied_js.read_text(encoding="utf-8") == state_js.read_text(encoding="utf-8")
+    assert copied_json.read_text(encoding="utf-8") == state_json.read_text(encoding="utf-8")
+
+
 def test_temporary_workspace_checkout_hides_stripped_tracked_files_from_git_status(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir(parents=True, exist_ok=True)
@@ -259,3 +275,40 @@ def test_capture_workspace_validator_truth_falls_back_to_copy_when_hardlinks_are
     assert not copied_report.samefile(benchmark_report)
 
     monkeypatch.setattr(isolation.os, "link", real_link)
+
+
+def test_benchmark_tool_bin_falls_back_to_current_runtime_when_repo_local_venv_lacks_benchmark_deps(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    local_bin = repo_root / ".venv" / "bin"
+    local_bin.mkdir(parents=True, exist_ok=True)
+    local_python = local_bin / "python"
+    local_python.write_text("#!/bin/sh\n", encoding="utf-8")
+    local_python.chmod(0o755)
+
+    current_bin = tmp_path / "current-runtime" / "bin"
+    current_bin.mkdir(parents=True, exist_ok=True)
+    current_python = current_bin / "python"
+    current_python.write_text("#!/bin/sh\n", encoding="utf-8")
+    current_python.chmod(0o755)
+
+    isolation._BENCHMARK_TOOL_BIN_CACHE.clear()  # noqa: SLF001
+    isolation._BENCHMARK_TOOL_SUPPORT_CACHE.clear()  # noqa: SLF001
+    monkeypatch.setattr(isolation.sys, "executable", str(current_python))
+
+    def _fake_run(command, **kwargs):  # type: ignore[no-untyped-def]
+        del kwargs
+        return type(
+            "Completed",
+            (),
+            {"returncode": 0 if Path(command[0]) == current_python else 1},
+        )()
+
+    monkeypatch.setattr(isolation.subprocess, "run", _fake_run)
+
+    assert isolation.benchmark_tool_bin(repo_root=repo_root) == current_bin.resolve()
+
+    isolation._BENCHMARK_TOOL_BIN_CACHE.clear()  # noqa: SLF001
+    isolation._BENCHMARK_TOOL_SUPPORT_CACHE.clear()  # noqa: SLF001

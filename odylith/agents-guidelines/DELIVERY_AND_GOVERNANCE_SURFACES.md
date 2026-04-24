@@ -19,6 +19,14 @@
 ## Consumer Boundary
 - In consumer repos, an Odylith product issue uses these surfaces for diagnosis, not self-directed mutation.
 - Gather evidence from Radar, Atlas, Registry, Casebook, Compass, and plans as usual, but stop at maintainer-ready feedback unless the operator explicitly authorizes Odylith mutation.
+- Consumer source truth must never be seeded from Odylith product-repo
+  maintainer truth. The source-owned install bundle may ship reusable product
+  shells, static assets, managed guidance, skills, release notes, brand assets,
+  and runtime corpora, but it must not carry raw Radar, Casebook, Compass,
+  Registry, Atlas, or technical-plan truth from this maintainer repo.
+- `src/odylith/runtime/surfaces/source_bundle_mirror.py` owns that fail-closed
+  bundle boundary. Any new bundle mirror path must pass its consumer-safe
+  filter and be covered by a contract test before it ships.
 
 ## Governance Autopilot
 - Treat this as the default for substantive grounded repo work when the slice is repo-owned or maintainer-authorized Odylith work.
@@ -210,8 +218,8 @@
   `B-###` controls; broader chip styling must never resize or repad workstream
   buttons by accident.
 - When a surface owns source-generated shell assets, keep one canonical
-  generator or loader path and make live checked-in artifacts plus shipped
-  bundle mirrors match that output exactly.
+  generator or loader path and make live checked-in artifacts plus
+  consumer-safe shipped bundle mirrors match that output exactly.
 - Do not keep static forks of generated shared CSS in local surface templates.
   Compose shared generated CSS plus thin surface-specific overrides only.
 - If the workstream-button contract changes, update the shared primitive,

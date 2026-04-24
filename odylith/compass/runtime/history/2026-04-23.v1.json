@@ -42,16 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Completed in this window: Benchmark proof landed with tighter precision and better workspace isolation, so results should reflect actual behavior instead of environment noise. | The benchmark runtime contract is back in place, which restores a stable baseline for the next implementation pass.",
-      "Current execution: Work is moving in B-038, where the focus is genuine benchmark performance gains over narrative polishing. | Most of the active effort is concentrated in B-038, with Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening also moving, but checklist capture is still uneven in some lanes. | ETA is still about three days with high confidence, so there is enough runway to keep the same implementation path and finish cleanly.",
-      "Next planned: B-022 is extending the corpus past the current 30-scenario set with deeper weak cases, which is the next meaningful expansion step. | The next proof rerun must clear both cache profiles, otherwise the B-022 improvement cannot be treated as complete.",
-      "Risks to watch: P1 risk stays open: disposable benchmark worktrees can resolve validators against a non-benchmark-ready target, so proof can look clean while hiding a real failure path."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Completed in this window: Benchmark host CLI contracts were generalized, which closes an execution mismatch and makes benchmark wiring easier to reuse. The proof side was tightened too, so parity and diagnostics are now less likely to hide true regressions. | The benchmark proof path got cleaner at the same time, with better parity checks and sharper diagnostics. That matters because failures should become cheaper to triage when they happen instead of being explained away.",
-      "Current execution: Work is now centered on B-038, because the fastest honest benchmark win is in benchmark hot-path selector, compaction, and cold-path improvements, not in framing or wording. The implementation focus is concrete and user-visible. | Most movement is in B-038, with active effort also in Integrity, conservative multi-profile proof, and README hardening. Those supporting lanes are helping the same reliability push even where full checklist bookkeeping still lags. | The projection is still a three-day ETA with high confidence. That is useful because it gives a clear near window for the biggest behavior-bearing work to land without overcommitting.",
-      "Next planned: Corpus depth is the immediate need now. The B-022 track is moving beyond the current 30-scenario suite so weak spots get covered, then anti-gaming behavior can be judged on a less narrow sample. | The next proof run needs both cache profiles to clear. That check is the right gate before this work can be treated as stable and moved forward.",
-      "Risks to watch: One P1 seam stays open: disposable worktrees can still resolve validators against a benchmark state that is not ready. If unhandled, that can keep signal quality from matching the new proof rigor."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -60,7 +54,7 @@
         "Nothing moved in this window: B-021 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-022": [
-        "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-025": [
         "Nothing moved in this window: B-025 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -72,7 +66,7 @@
         "Nothing moved in this window: B-033 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-038": [
-        "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-040": [
         "Nothing moved in this window: B-040 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -249,10 +243,7 @@
         "Nothing moved in this window: B-019 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-020": [
-        "Completed in this window: Benchmark proof precision and workspace isolation were tightened, supporting cleaner validation around the completed B-020 hardening work.",
-        "Current execution: B-020 is complete. The default full benchmark lane now runs warm and cold profiles and publishes a conservative summary.",
-        "Next planned: Immediate next work is capturing the next verified checkpoint so the hardening remains reproducible and observable over time.",
-        "Risks to watch: No critical blockers are surfaced right now, which keeps this lane moving without urgent dependency pressure."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-023": [
         "Nothing moved in this window: B-023 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -443,7 +434,7 @@
         "Nothing moved in this window: B-021 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-022": [
-        "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-025": [
         "Nothing moved in this window: B-025 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -455,7 +446,7 @@
         "Nothing moved in this window: B-033 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-038": [
-        "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-040": [
         "Nothing moved in this window: B-040 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -632,10 +623,7 @@
         "Nothing moved in this window: B-019 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-020": [
-        "Completed in this window: Benchmark publication and context-engine evaluation flow were tightened, so the completed B-020 behavior is now easier to compare and maintain.",
-        "Current execution: B-020 is finished, with the benchmark runner now covering both warm and cold cache profiles and publishing a conservative summary by default.",
-        "Next planned: Next, capture the next verified checkpoint to keep the finished lane observable and avoid it becoming stale documentation.",
-        "Risks to watch: No critical blockers are currently surfaced, so the immediate lane risk is contained if we keep verification cadence steady."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-023": [
         "Nothing moved in this window: B-023 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -825,295 +813,39 @@
   "standup_brief": {
     "24h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "provider",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "ca1883e571a8a93dc90e87ac2aaf36e8754305336900bd372f701790823789fb",
-      "generated_utc": "2026-04-24T01:09:08Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Benchmark proof landed with tighter precision and better workspace isolation, so results should reflect actual behavior instead of environment noise.",
-              "fact_ids": [
-                "F-001",
-                "F-002"
-              ]
-            },
-            {
-              "text": "The benchmark runtime contract is back in place, which restores a stable baseline for the next implementation pass.",
-              "fact_ids": [
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "Work is moving in B-038, where the focus is genuine benchmark performance gains over narrative polishing.",
-              "fact_ids": [
-                "F-004"
-              ]
-            },
-            {
-              "text": "Most of the active effort is concentrated in B-038, with Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening also moving, but checklist capture is still uneven in some lanes.",
-              "fact_ids": [
-                "F-006"
-              ]
-            },
-            {
-              "text": "ETA is still about three days with high confidence, so there is enough runway to keep the same implementation path and finish cleanly.",
-              "fact_ids": [
-                "F-005"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "B-022 is extending the corpus past the current 30-scenario set with deeper weak cases, which is the next meaningful expansion step.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "The next proof rerun must clear both cache profiles, otherwise the B-022 improvement cannot be treated as complete.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "P1 risk stays open: disposable benchmark worktrees can resolve validators against a non-benchmark-ready target, so proof can look clean while hiding a real failure path.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Tighten benchmark proof precision and workspace isolation.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "Restore discipline benchmark runtime contract.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 24 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Land The fastest honest benchmark improvement is not narrative tuning; Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-038"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 3 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have checklist progress captured Heaviest movement is in Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038), Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work moved across 3 workstreams: B-038, B-020, and B-022.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-038",
-            "B-020",
-            "B-022"
-          ]
-        },
-        "F-008": {
-          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The next proof rerun must clear both cache profiles, keep.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Benchmark disposable worktrees resolve validators against a non benchmark ready. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "ca1883e571a8a93dc90e87ac2aaf36e8754305336900bd372f701790823789fb",
-      "bundle_fingerprint": "796d685b9e4267a68655d7b2dea353513b7c8aa469aac239003e7596fec59778",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "ca1883e571a8a93dc90e87ac2aaf36e8754305336900bd372f701790823789fb"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-04-24T01:09:08Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      },
+      "evidence_lookup": {}
     },
     "48h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "provider",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "d3015cbc72c9704e090e02f9a55aa001176172fa3278a9ca7dbe6bc9da4dcbae",
-      "generated_utc": "2026-04-24T01:09:08Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Benchmark host CLI contracts were generalized, which closes an execution mismatch and makes benchmark wiring easier to reuse. The proof side was tightened too, so parity and diagnostics are now less likely to hide true regressions.",
-              "fact_ids": [
-                "F-001",
-                "F-002"
-              ]
-            },
-            {
-              "text": "The benchmark proof path got cleaner at the same time, with better parity checks and sharper diagnostics. That matters because failures should become cheaper to triage when they happen instead of being explained away.",
-              "fact_ids": [
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "Work is now centered on B-038, because the fastest honest benchmark win is in benchmark hot-path selector, compaction, and cold-path improvements, not in framing or wording. The implementation focus is concrete and user-visible.",
-              "fact_ids": [
-                "F-004"
-              ]
-            },
-            {
-              "text": "Most movement is in B-038, with active effort also in Integrity, conservative multi-profile proof, and README hardening. Those supporting lanes are helping the same reliability push even where full checklist bookkeeping still lags.",
-              "fact_ids": [
-                "F-006"
-              ]
-            },
-            {
-              "text": "The projection is still a three-day ETA with high confidence. That is useful because it gives a clear near window for the biggest behavior-bearing work to land without overcommitting.",
-              "fact_ids": [
-                "F-005"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "Corpus depth is the immediate need now. The B-022 track is moving beyond the current 30-scenario suite so weak spots get covered, then anti-gaming behavior can be judged on a less narrow sample.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "The next proof run needs both cache profiles to clear. That check is the right gate before this work can be treated as stable and moved forward.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "One P1 seam stays open: disposable worktrees can still resolve validators against a benchmark state that is not ready. If unhandled, that can keep signal quality from matching the new proof rigor.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Generalize benchmark host CLI contracts.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "Tighten benchmark proof parity and diagnostics.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 48 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Land The fastest honest benchmark improvement is not narrative tuning; Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-038"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 3 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have checklist progress captured Heaviest movement is in Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038), Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work moved across 3 workstreams: B-038, B-020, and B-022.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-038",
-            "B-020",
-            "B-022"
-          ]
-        },
-        "F-008": {
-          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The next proof rerun must clear both cache profiles, keep.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Benchmark disposable worktrees resolve validators against a non benchmark ready. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "d3015cbc72c9704e090e02f9a55aa001176172fa3278a9ca7dbe6bc9da4dcbae",
-      "bundle_fingerprint": "8bc605d4fa5e3a37202140c2acea86ae4cfd880163b275d782cbe0a0330bb9e9",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "d3015cbc72c9704e090e02f9a55aa001176172fa3278a9ca7dbe6bc9da4dcbae"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-04-24T01:09:08Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      },
+      "evidence_lookup": {}
     }
   },
   "standup_brief_scoped": {
@@ -1135,19 +867,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "c7cf5123908b45d091e36bf19aa69f9937c0253d4608e01cc6a3a99f0b4aa061",
+        "substrate_fingerprint": "c7cf5123908b45d091e36bf19aa69f9937c0253d4608e01cc6a3a99f0b4aa061",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-24T01:09:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief stayed on wallet-safe local truth",
-          "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -1194,19 +924,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "791be20aee0b4ee8b8cda7a998ba09c4da519085af7f502ae34ce84f3382fbc5",
+        "substrate_fingerprint": "791be20aee0b4ee8b8cda7a998ba09c4da519085af7f502ae34ce84f3382fbc5",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-24T01:09:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief stayed on wallet-safe local truth",
-          "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -1966,130 +1694,21 @@
       },
       "B-020": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "c8909ddb149a76d26533c757fe7010a1174dda8c4fe9ae966c16123ae226e618",
-        "generated_utc": "2026-04-24T01:09:08Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Benchmark proof precision and workspace isolation were tightened, supporting cleaner validation around the completed B-020 hardening work.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "B-020 is complete. The default full benchmark lane now runs warm and cold profiles and publishes a conservative summary.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Immediate next work is capturing the next verified checkpoint so the hardening remains reproducible and observable over time.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced right now, which keeps this lane moving without urgent dependency pressure.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Tighten benchmark proof precision and workspace isolation.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-002": {
-            "text": "Restore discipline benchmark runtime contract.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) in the last 24 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-004": {
-            "text": "Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary; Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 24/24; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-020"
-            ]
-          }
-        },
         "substrate_fingerprint": "c8909ddb149a76d26533c757fe7010a1174dda8c4fe9ae966c16123ae226e618",
-        "bundle_fingerprint": "aea453144b7b062422c14d4c21ddb45bcd3ad23a699ad2be6af3ece7d6f102ff",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "c8909ddb149a76d26533c757fe7010a1174dda8c4fe9ae966c16123ae226e618"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-24T01:09:08Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-023": {
         "status": "unavailable",
@@ -2903,19 +2522,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "5618ccce7a590f40965091d362cc88cb6f9bc6f1ff31e514615afe15e3f4842d",
+        "substrate_fingerprint": "5618ccce7a590f40965091d362cc88cb6f9bc6f1ff31e514615afe15e3f4842d",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-24T01:09:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief stayed on wallet-safe local truth",
-          "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -2962,19 +2579,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "f92f316d9c8cfa7bd2b07f955b8349fbc1ccecc4b91ccbd2dec2fd00319084b4",
+        "substrate_fingerprint": "f92f316d9c8cfa7bd2b07f955b8349fbc1ccecc4b91ccbd2dec2fd00319084b4",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-24T01:09:08Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief stayed on wallet-safe local truth",
-          "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -3734,130 +3349,21 @@
       },
       "B-020": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "18788bf72072c08355c2246f72bbfcc75d270409c699af535d39428561e1aaea",
-        "generated_utc": "2026-04-24T01:09:08Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Benchmark publication and context-engine evaluation flow were tightened, so the completed B-020 behavior is now easier to compare and maintain.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "B-020 is finished, with the benchmark runner now covering both warm and cold cache profiles and publishing a conservative summary by default.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Next, capture the next verified checkpoint to keep the finished lane observable and avoid it becoming stale documentation.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced, so the immediate lane risk is contained if we keep verification cadence steady.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Tighten benchmark publication and context-engine evaluation flow.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-002": {
-            "text": "Harden benchmark workspace sync proof paths.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) in the last 48 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-004": {
-            "text": "Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary; Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 24/24; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-020"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-020"
-            ]
-          }
-        },
         "substrate_fingerprint": "18788bf72072c08355c2246f72bbfcc75d270409c699af535d39428561e1aaea",
-        "bundle_fingerprint": "aea453144b7b062422c14d4c21ddb45bcd3ad23a699ad2be6af3ece7d6f102ff",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "18788bf72072c08355c2246f72bbfcc75d270409c699af535d39428561e1aaea"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-24T01:09:08Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-023": {
         "status": "unavailable",

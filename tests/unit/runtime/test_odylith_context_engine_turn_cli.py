@@ -79,3 +79,30 @@ def test_bootstrap_session_cli_preserves_turn_context_fields(monkeypatch, tmp_pa
     assert captured["active_tab"] == "releases"
     assert captured["user_turn_id"] == "turn-3"
     assert captured["supersedes_turn_id"] == "turn-2"
+
+
+def test_benchmark_cli_preserves_zero_shard_index_for_runner_validation(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        odylith_context_engine,
+        "_run_benchmark",
+        lambda **kwargs: captured.update(kwargs) or 0,
+    )
+
+    rc = odylith_context_engine.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "benchmark",
+            "--shard-count",
+            "3",
+            "--shard-index",
+            "0",
+            "--no-write-report",
+        ]
+    )
+
+    assert rc == 0
+    assert captured["shard_count"] == 3
+    assert captured["shard_index"] == 0
