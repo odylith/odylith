@@ -40,7 +40,10 @@ def test_consumer_safe_bundle_contract_rejects_known_maintainer_truth_leak_class
         "compass/compass-source-truth.v1.json",
         "compass/runtime/current.v1.json",
         "radar/source/INDEX.md",
+        "radar/source/programs/B-096.execution-waves.v1.json",
         "technical-plans/done/2026-04/example.md",
+        "registry/source/component_registry.v1.json",
+        "registry/source/components/compass/CURRENT_SPEC.md",
         "registry/source/components/compass/FORENSICS.v1.json",
     )
     allowed = (
@@ -48,9 +51,6 @@ def test_consumer_safe_bundle_contract_rejects_known_maintainer_truth_leak_class
         "compass/runtime/CLAUDE.md",
         "compass/compass-app.v1.js",
         "compass/compass-style-base.v1.css",
-        "radar/source/programs/B-096.execution-waves.v1.json",
-        "registry/source/component_registry.v1.json",
-        "registry/source/components/compass/CURRENT_SPEC.md",
         "runtime/source/release-notes/v0.1.11.md",
         "skills/odylith-start/SKILL.md",
     )

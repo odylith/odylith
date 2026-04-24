@@ -44,7 +44,6 @@ _MAINTAINER_GENERATED_PREFIXES = (
     "radar/backlog-document-shard-",
     "registry/registry-detail-shard-",
 )
-_SHIP_SAFE_RADAR_SOURCE_EXACT = frozenset({"radar/source/programs/B-096.execution-waves.v1.json"})
 
 
 def _live_surface_root(*, repo_root: Path) -> Path:
@@ -77,13 +76,6 @@ def _is_scoped_guidance(token: str) -> bool:
     return Path(token).name in _SCOPED_GUIDANCE_FILENAMES
 
 
-def _is_ship_safe_registry_truth(token: str) -> bool:
-    return token == "registry/source/component_registry.v1.json" or (
-        token.startswith("registry/source/components/")
-        and token.endswith("/CURRENT_SPEC.md")
-    )
-
-
 def is_consumer_safe_bundle_relative_path(path: Path | str) -> bool:
     """Return whether a bundle asset is safe to ship into consumer installs.
 
@@ -100,8 +92,6 @@ def is_consumer_safe_bundle_relative_path(path: Path | str) -> bool:
         return False
     if any(token.startswith(prefix) for prefix in _MAINTAINER_GENERATED_PREFIXES):
         return False
-    if _is_ship_safe_registry_truth(token) or token in _SHIP_SAFE_RADAR_SOURCE_EXACT:
-        return True
     if any(token.startswith(prefix) for prefix in _MAINTAINER_TRUTH_PREFIXES):
         return _is_scoped_guidance(token)
     return True
