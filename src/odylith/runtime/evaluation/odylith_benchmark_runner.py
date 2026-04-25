@@ -1221,7 +1221,13 @@ def _safe_resolve_path(path: Path) -> Path | None:
 
 
 def _snapshot_overlay_fingerprint(*, repo_root: Path, snapshot_paths: Sequence[str]) -> str:
-    normalized_paths = _dedupe_path_strings(snapshot_paths)
+    normalized_paths = _dedupe_path_strings(
+        [
+            normalized
+            for token in snapshot_paths
+            if (normalized := _stable_snapshot_overlay_path(token))
+        ]
+    )
     if not normalized_paths:
         return ""
     existing_paths = [
@@ -5416,11 +5422,24 @@ def _run_prepared_live_scenario(prepared_request: Mapping[str, Any]) -> dict[str
 
 def _result_snapshot_overlay_paths(result: Mapping[str, Any]) -> list[str]:
     live_execution = dict(result.get("live_execution", {})) if isinstance(result.get("live_execution"), Mapping) else {}
-    return [
-        str(token).strip()
-        for token in live_execution.get("effective_snapshot_paths", [])
-        if isinstance(live_execution.get("effective_snapshot_paths"), list) and str(token).strip()
-    ]
+    effective_paths = live_execution.get("effective_snapshot_paths", [])
+    if not isinstance(effective_paths, list):
+        return []
+    paths: list[str] = []
+    for token in effective_paths:
+        normalized = _stable_snapshot_overlay_path(token)
+        if normalized:
+            paths.append(normalized)
+    return paths
+
+
+def _stable_snapshot_overlay_path(token: object) -> str:
+    path = str(token).strip().replace("\\", "/")
+    while path.startswith("./"):
+        path = path[2:]
+    if not path or path == ".odylith" or path.startswith(".odylith/"):
+        return ""
+    return path
 
 
 def _report_snapshot_overlay_paths(scenario_reports: Sequence[Mapping[str, Any]]) -> list[str]:
