@@ -12,6 +12,7 @@ from odylith.runtime.intervention_engine import conversation_closeout
 from odylith.runtime.intervention_engine import conversation_common
 from odylith.runtime.intervention_engine import conversation_metrics
 from odylith.runtime.intervention_engine import conversation_runtime
+from odylith.runtime.intervention_engine import conversation_surface_signal_selection
 from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import delivery_runtime
 
@@ -24,6 +25,14 @@ def test_conversation_signaling_modules_live_under_intervention_engine() -> None
     assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "conversation_closeout.py").is_file()
     assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "conversation_common.py").is_file()
     assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "conversation_metrics.py").is_file()
+    assert (
+        repo_root
+        / "src"
+        / "odylith"
+        / "runtime"
+        / "intervention_engine"
+        / "conversation_surface_signal_selection.py"
+    ).is_file()
     assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "delivery_runtime.py").is_file()
     assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "delivery_ledger.py").is_file()
     assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "claim_runtime.py").is_file()
@@ -38,6 +47,9 @@ def test_conversation_signaling_modules_live_under_intervention_engine() -> None
     assert "runtime/intervention_engine/conversation_closeout.py" in Path(conversation_closeout.__file__).as_posix()
     assert "runtime/intervention_engine/conversation_common.py" in Path(conversation_common.__file__).as_posix()
     assert "runtime/intervention_engine/conversation_metrics.py" in Path(conversation_metrics.__file__).as_posix()
+    assert "runtime/intervention_engine/conversation_surface_signal_selection.py" in Path(
+        conversation_surface_signal_selection.__file__
+    ).as_posix()
     assert "runtime/intervention_engine/delivery_runtime.py" in Path(delivery_runtime.__file__).as_posix()
     assert "runtime/intervention_engine/delivery_ledger.py" in Path(delivery_ledger.__file__).as_posix()
     assert "runtime/intervention_engine/claim_runtime.py" in Path(claim_runtime.__file__).as_posix()

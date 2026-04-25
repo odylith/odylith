@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import conversation_surface_signal_selection
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.intervention_engine import visibility_broker
@@ -215,7 +216,9 @@ def test_ambient_candidate_id_is_not_just_the_signal_label() -> None:
         "duplicate_group": "risk:duplicate-writes",
     }
 
-    assert conversation_surface._ambient_candidate_id(first) != conversation_surface._ambient_candidate_id(second)
+    assert conversation_surface_signal_selection.ambient_candidate_id(
+        first
+    ) != conversation_surface_signal_selection.ambient_candidate_id(second)
 
 
 def test_ambient_payload_candidates_prefilter_fact_flood_before_rendering(monkeypatch) -> None:
@@ -228,8 +231,8 @@ def test_ambient_payload_candidates_prefilter_fact_flood_before_rendering(monkey
         prefix = "**Odylith Risks:**" if markdown else "Odylith Risks:"
         return "risks", f"{prefix} {detail}"
 
-    monkeypatch.setattr(conversation_surface.voice, "render_ambient_signal", fake_render_ambient_signal)
-    observation = conversation_surface.ObservationEnvelope.from_mapping(
+    monkeypatch.setattr(conversation_surface_signal_selection.voice, "render_ambient_signal", fake_render_ambient_signal)
+    observation = conversation_surface_signal_selection.ObservationEnvelope.from_mapping(
         surface_runtime.observation_envelope(
             host_family="codex",
             turn_phase="post_bash_checkpoint",
@@ -256,7 +259,7 @@ def test_ambient_payload_candidates_prefilter_fact_flood_before_rendering(monkey
         ],
     }
 
-    payloads = conversation_surface._ambient_payload_candidates(
+    payloads = conversation_surface_signal_selection.ambient_payload_candidates(
         observation=observation,
         intervention=intervention,
     )

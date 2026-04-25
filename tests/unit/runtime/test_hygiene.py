@@ -1359,6 +1359,34 @@ def test_conversation_closeout_ownership_stays_decomposed() -> None:
     assert "conversation_runtime.visibility_feedback_requested(" not in host_visible_text
 
 
+def test_conversation_surface_signal_selection_ownership_stays_decomposed() -> None:
+    conversation_surface_text = (
+        ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "conversation_surface.py"
+    ).read_text(encoding="utf-8")
+    signal_selection_text = (
+        ROOT
+        / "src"
+        / "odylith"
+        / "runtime"
+        / "intervention_engine"
+        / "conversation_surface_signal_selection.py"
+    ).read_text(encoding="utf-8")
+
+    assert len(conversation_surface_text.splitlines()) < 800
+    assert "conversation_surface_signal_selection as signal_selection" in conversation_surface_text
+    assert "def _ambient_payload_candidates(" not in conversation_surface_text
+    assert "def _ambient_candidate_id(" not in conversation_surface_text
+    assert "def _value_selection_decision(" not in conversation_surface_text
+    assert "def _value_option_from_observation(" not in conversation_surface_text
+    assert "def _value_option_from_proposal(" not in conversation_surface_text
+    assert "_ambient_payload_candidates = signal_selection." not in conversation_surface_text
+    assert "_ambient_candidate_id = signal_selection." not in conversation_surface_text
+    assert "def ambient_payload_candidates(" in signal_selection_text
+    assert "def ambient_candidate_id(" in signal_selection_text
+    assert "def value_selection_decision(" in signal_selection_text
+    assert "def value_payload_fields(" in signal_selection_text
+
+
 def test_selected_runtime_and_install_slices_use_shared_json_release_and_severity_owners() -> None:
     json_owner_paths = (
         ROOT / "src" / "odylith" / "runtime" / "governance" / "guidance_behavior_benchmark_contracts.py",
