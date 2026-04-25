@@ -228,6 +228,20 @@ The example below shows case `CB-009` inside the Casebook shell.
 
 ## Benchmarks
 
+In chess, the first move does not decide the entire game. But it shapes the
+position. It defines the risk. It opens some lines and quietly closes others.
+Working with coding agents feels the same: the opening matters.
+
+Odylith treats grounding as that opening move. In the v0.1.11 Grounding
+Benchmark, Odylith spends a median `+834` prompt-bundle input tokens and
+`+23 ms` packet time before the live agent run. That upfront cost is measured
+against substantially better grounding signals: required-path recall `+0.326`,
+validation-success proxy `+0.689`, and expectation-success proxy `+0.951`.
+Downstream, the matching Live Benchmark shows the payoff in the full task:
+median total model tokens `-209,404` and median time to valid outcome
+`-1m 28s`, while live required-path recall, validation success, and expectation
+success also improve.
+
 ### v0.1.11 Current Benchmark Report
 
 Odylith publishes two benchmark views and keeps their claims separate:
