@@ -237,7 +237,7 @@ Benchmark, Odylith spends a median `+834` prompt-bundle input tokens and
 `+23 ms` packet time before the live agent run. That upfront cost is measured
 against substantially better grounding signals: required-path recall `+0.326`,
 validation-success proxy `+0.689`, and expectation-success proxy `+0.951`.
-Downstream, the matching Live Benchmark shows the payoff in the full task:
+In the matching Live Benchmark, that produces significant downstream savings:
 median total model tokens `-209,404` and median time to valid outcome
 `-1m 28s`, while live required-path recall, validation success, and expectation
 success also improve.
@@ -249,9 +249,10 @@ Odylith publishes two benchmark views and keeps their claims separate:
 - `Grounding Benchmark`: measures how well Odylith builds the right grounded
   context before the live agent run
 - `Live Benchmark`: measures how well Odylith completes the real task end to
-  end against the raw host CLI
+  end against Codex or Claude Code running without Odylith
 
-In README framing, `odylith_off` is the raw host CLI lane.
+In README framing, `odylith_off` means Codex or Claude Code running without
+Odylith.
 
 Current v0.1.11 public proof posture is local-first on the Odylith Memory
 Substrate. These are first public eval runs and should be read as a baseline,
@@ -328,7 +329,8 @@ generated `2026-04-25T11:20:25Z`, status `provisional_pass`.
 
 The Live Benchmark answers:
 
-- "Does Odylith beat the raw host CLI on the same live end-to-end task contract?"
+- "Does Odylith beat Codex or Claude Code without Odylith on the same live
+  end-to-end task contract?"
 - "What is the full matched-pair time to valid outcome?"
 - "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
 
