@@ -4152,12 +4152,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -4176,12 +4170,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -4275,12 +4275,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -4299,12 +4293,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -4396,12 +4396,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -4420,12 +4414,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -4555,12 +4555,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -4579,12 +4573,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -4686,12 +4686,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -4710,12 +4704,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -4926,12 +4926,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -4950,12 +4944,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -5049,12 +5049,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -5073,12 +5067,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -5249,12 +5249,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -5273,12 +5267,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -5366,12 +5366,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -5390,12 +5384,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -5535,12 +5535,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -5559,12 +5553,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -5660,12 +5660,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -5684,12 +5678,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -5791,12 +5791,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -5815,12 +5809,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -5925,12 +5925,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -5949,12 +5943,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -6058,12 +6058,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -6082,12 +6076,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -6192,12 +6192,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -6216,12 +6210,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -6320,12 +6320,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -6344,12 +6338,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -6450,12 +6450,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -6474,12 +6468,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -6580,12 +6580,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -6604,12 +6598,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -6710,12 +6710,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -6734,12 +6728,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -6842,12 +6842,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -6866,12 +6860,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -6979,12 +6979,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -7003,12 +6997,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -7037,7 +7037,7 @@
     {
       "idea_id": "B-111",
       "title": "Discipline Governance Alignment",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-110",
       "workstream_children": [],
@@ -7051,82 +7051,14 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-governance-alignment.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088",
-          "B-092",
-          "B-093",
-          "B-096",
-          "B-097",
-          "B-099",
-          "B-100",
-          "B-101",
-          "B-102",
-          "B-103",
-          "B-104",
-          "B-105",
-          "B-106",
-          "B-107",
-          "B-108",
-          "B-109",
-          "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
-          "B-117"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069",
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -7139,9 +7071,21 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-111",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-25T15:24:12Z",
+          "note": "Completed B-110 child wave closure.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -7163,7 +7107,7 @@
     {
       "idea_id": "B-112",
       "title": "Discipline Runtime And Budget Kernel",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-110",
       "workstream_children": [],
@@ -7177,82 +7121,14 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-runtime-and-budget-kernel.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088",
-          "B-092",
-          "B-093",
-          "B-096",
-          "B-097",
-          "B-099",
-          "B-100",
-          "B-101",
-          "B-102",
-          "B-103",
-          "B-104",
-          "B-105",
-          "B-106",
-          "B-107",
-          "B-108",
-          "B-109",
-          "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
-          "B-117"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069",
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -7265,9 +7141,21 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-112",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-25T15:24:12Z",
+          "note": "Completed B-110 child wave closure.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -7289,7 +7177,7 @@
     {
       "idea_id": "B-113",
       "title": "Discipline Learning Spine",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-110",
       "workstream_children": [],
@@ -7303,82 +7191,14 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-learning-spine.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088",
-          "B-092",
-          "B-093",
-          "B-096",
-          "B-097",
-          "B-099",
-          "B-100",
-          "B-101",
-          "B-102",
-          "B-103",
-          "B-104",
-          "B-105",
-          "B-106",
-          "B-107",
-          "B-108",
-          "B-109",
-          "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
-          "B-117"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069",
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -7391,9 +7211,21 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-113",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-25T15:24:13Z",
+          "note": "Completed B-110 child wave closure.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -7415,7 +7247,7 @@
     {
       "idea_id": "B-114",
       "title": "Discipline Subsystem Integration",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-110",
       "workstream_children": [],
@@ -7429,82 +7261,14 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-subsystem-integration.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088",
-          "B-092",
-          "B-093",
-          "B-096",
-          "B-097",
-          "B-099",
-          "B-100",
-          "B-101",
-          "B-102",
-          "B-103",
-          "B-104",
-          "B-105",
-          "B-106",
-          "B-107",
-          "B-108",
-          "B-109",
-          "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
-          "B-117"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069",
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -7517,9 +7281,21 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-114",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-25T15:24:13Z",
+          "note": "Completed B-110 child wave closure.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -7541,7 +7317,7 @@
     {
       "idea_id": "B-115",
       "title": "Discipline Tooling And Host Parity",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-110",
       "workstream_children": [],
@@ -7557,82 +7333,14 @@
         "D-041"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-tooling-and-host-parity.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088",
-          "B-092",
-          "B-093",
-          "B-096",
-          "B-097",
-          "B-099",
-          "B-100",
-          "B-101",
-          "B-102",
-          "B-103",
-          "B-104",
-          "B-105",
-          "B-106",
-          "B-107",
-          "B-108",
-          "B-109",
-          "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
-          "B-117"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069",
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -7645,9 +7353,21 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-115",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-25T15:24:14Z",
+          "note": "Completed B-110 child wave closure.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 1,
@@ -7669,7 +7389,7 @@
     {
       "idea_id": "B-116",
       "title": "Discipline Benchmark Sovereignty",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-110",
       "workstream_children": [],
@@ -7683,82 +7403,14 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-benchmark-sovereignty.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "release-0-1-11",
-      "active_release": {
-        "release_id": "release-0-1-11",
-        "status": "active",
-        "version": "0.1.11",
-        "tag": "v0.1.11",
-        "name": "",
-        "inherited_name": "Proof Without Drift",
-        "effective_name": "0.1.11",
-        "display_label": "0.1.11",
-        "notes": "",
-        "created_utc": "2026-04-08",
-        "shipped_utc": "",
-        "closed_utc": "",
-        "aliases": [
-          "current"
-        ],
-        "active_workstreams": [
-          "B-083",
-          "B-084",
-          "B-085",
-          "B-087",
-          "B-088",
-          "B-092",
-          "B-093",
-          "B-096",
-          "B-097",
-          "B-099",
-          "B-100",
-          "B-101",
-          "B-102",
-          "B-103",
-          "B-104",
-          "B-105",
-          "B-106",
-          "B-107",
-          "B-108",
-          "B-109",
-          "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
-          "B-117"
-        ],
-        "completed_workstreams": [
-          "B-061",
-          "B-062",
-          "B-063",
-          "B-066",
-          "B-067",
-          "B-068",
-          "B-069",
-          "B-072",
-          "B-073",
-          "B-074",
-          "B-075",
-          "B-076",
-          "B-077",
-          "B-078",
-          "B-079",
-          "B-082"
-        ],
-        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-        "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
-      },
+      "active_release_id": "",
+      "active_release": {},
       "release_history": [
         {
           "action": "add",
@@ -7771,9 +7423,21 @@
           "release_label": "0.1.11",
           "from_release_label": "",
           "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-116",
+          "release_id": "release-0-1-11",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-25T15:24:14Z",
+          "note": "Completed B-110 child wave closure.",
+          "release_label": "0.1.11",
+          "from_release_label": "",
+          "to_release_label": ""
         }
       ],
-      "release_history_summary": "Active: 0.1.11 \u00b7 Added to 0.1.11",
+      "release_history_summary": "Removed from 0.1.11",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -7857,12 +7521,6 @@
           "B-108",
           "B-109",
           "B-110",
-          "B-111",
-          "B-112",
-          "B-113",
-          "B-114",
-          "B-115",
-          "B-116",
           "B-117"
         ],
         "completed_workstreams": [
@@ -7881,12 +7539,18 @@
           "B-077",
           "B-078",
           "B-079",
-          "B-082"
+          "B-082",
+          "B-111",
+          "B-112",
+          "B-113",
+          "B-114",
+          "B-115",
+          "B-116"
         ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 28,
-        "completed_workstream_count": 16
+        "active_workstream_count": 22,
+        "completed_workstream_count": 22
       },
       "release_history": [
         {
@@ -8699,12 +8363,6 @@
         "B-108",
         "B-109",
         "B-110",
-        "B-111",
-        "B-112",
-        "B-113",
-        "B-114",
-        "B-115",
-        "B-116",
         "B-117"
       ],
       "completed_workstreams": [
@@ -8723,12 +8381,18 @@
         "B-077",
         "B-078",
         "B-079",
-        "B-082"
+        "B-082",
+        "B-111",
+        "B-112",
+        "B-113",
+        "B-114",
+        "B-115",
+        "B-116"
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 28,
-      "completed_workstream_count": 16
+      "active_workstream_count": 22,
+      "completed_workstream_count": 22
     },
     {
       "release_id": "release-0-1-12",
@@ -8804,12 +8468,6 @@
         "B-108",
         "B-109",
         "B-110",
-        "B-111",
-        "B-112",
-        "B-113",
-        "B-114",
-        "B-115",
-        "B-116",
         "B-117"
       ],
       "completed_workstreams": [
@@ -8828,12 +8486,18 @@
         "B-077",
         "B-078",
         "B-079",
-        "B-082"
+        "B-082",
+        "B-111",
+        "B-112",
+        "B-113",
+        "B-114",
+        "B-115",
+        "B-116"
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 28,
-      "completed_workstream_count": 16
+      "active_workstream_count": 22,
+      "completed_workstream_count": 22
     },
     "next": {
       "release_id": "release-0-1-12",
@@ -8908,12 +8572,6 @@
       "B-108",
       "B-109",
       "B-110",
-      "B-111",
-      "B-112",
-      "B-113",
-      "B-114",
-      "B-115",
-      "B-116",
       "B-117"
     ],
     "completed_workstreams": [
@@ -8932,12 +8590,18 @@
       "B-077",
       "B-078",
       "B-079",
-      "B-082"
+      "B-082",
+      "B-111",
+      "B-112",
+      "B-113",
+      "B-114",
+      "B-115",
+      "B-116"
     ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 28,
-    "completed_workstream_count": 16
+    "active_workstream_count": 22,
+    "completed_workstream_count": 22
   },
   "next_release": {
     "release_id": "release-0-1-12",
@@ -8976,7 +8640,7 @@
   "release_summary": {
     "release_count": 2,
     "alias_count": 2,
-    "active_assignment_count": 38
+    "active_assignment_count": 32
   },
   "execution_programs": [
     {
@@ -9363,7 +9027,7 @@
           "gate_refs": [
             {
               "workstream_id": "B-111",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
               "label": "Governance alignment gate"
             }
           ]
@@ -9384,7 +9048,7 @@
           "gate_refs": [
             {
               "workstream_id": "B-112",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
               "label": "Runtime and budget kernel gate"
             }
           ]
@@ -9405,7 +9069,7 @@
           "gate_refs": [
             {
               "workstream_id": "B-113",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
               "label": "Learning spine gate"
             }
           ]
@@ -9426,7 +9090,7 @@
           "gate_refs": [
             {
               "workstream_id": "B-114",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
               "label": "Subsystem integration gate"
             }
           ]
@@ -9447,7 +9111,7 @@
           "gate_refs": [
             {
               "workstream_id": "B-115",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
               "label": "Tooling and host parity gate"
             }
           ]
@@ -9468,7 +9132,7 @@
           "gate_refs": [
             {
               "workstream_id": "B-116",
-              "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+              "plan_path": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
               "label": "Benchmark sovereignty gate"
             }
           ]
@@ -10272,42 +9936,42 @@
       "id": "B-111",
       "type": "workstream",
       "label": "Discipline Governance Alignment",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-governance-alignment.md"
     },
     {
       "id": "B-112",
       "type": "workstream",
       "label": "Discipline Runtime And Budget Kernel",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-runtime-and-budget-kernel.md"
     },
     {
       "id": "B-113",
       "type": "workstream",
       "label": "Discipline Learning Spine",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-learning-spine.md"
     },
     {
       "id": "B-114",
       "type": "workstream",
       "label": "Discipline Subsystem Integration",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-subsystem-integration.md"
     },
     {
       "id": "B-115",
       "type": "workstream",
       "label": "Discipline Tooling And Host Parity",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-tooling-and-host-parity.md"
     },
     {
       "id": "B-116",
       "type": "workstream",
       "label": "Discipline Benchmark Sovereignty",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-benchmark-sovereignty.md"
     },
     {
@@ -11164,6 +10828,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-04/2026-04-15-radar-backlog-detail-fail-closed-completeness-and-authoring-hardening.md",
       "file": "odylith/technical-plans/done/2026-04/2026-04-15-radar-backlog-detail-fail-closed-completeness-and-authoring-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
@@ -14393,43 +14063,23 @@
     },
     {
       "source": "B-111",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
-      "edge_type": "promoted_to_plan"
-    },
-    {
-      "source": "B-111",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
-    },
-    {
-      "source": "B-112",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-112",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
-    },
-    {
-      "source": "B-113",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-113",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
-    },
-    {
-      "source": "B-114",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-114",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-115",
@@ -14438,23 +14088,13 @@
     },
     {
       "source": "B-115",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
-      "edge_type": "promoted_to_plan"
-    },
-    {
-      "source": "B-115",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
-    },
-    {
-      "source": "B-116",
-      "target": "plan:odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
       "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-116",
-      "target": "release:release-0-1-11",
-      "edge_type": "active_release"
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-117",
@@ -15473,13 +15113,13 @@
   "summary": {
     "workstream_count": 126,
     "release_count": 2,
-    "active_release_assignment_count": 38,
+    "active_release_assignment_count": 32,
     "execution_program_count": 4,
     "execution_wave_count": 23,
-    "node_count": 278,
-    "edge_count": 629,
+    "node_count": 279,
+    "edge_count": 623,
     "warning_count": 5,
     "warning_item_count": 5
   },
-  "generated_utc": "2026-04-20 03:28:27Z"
+  "generated_utc": "2026-04-25 15:34:11Z"
 }

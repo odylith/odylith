@@ -1127,7 +1127,7 @@ def test_sync_changed_source_truth_bundle_mirrors_updates_guidance_behavior_corp
     assert mirror_path.read_text(encoding="utf-8") == "{\"version\": \"guidance_behavior_evaluation_corpus.v1\", \"cases\": [\"fresh\"]}\n"
 
 
-def test_sync_changed_source_truth_bundle_mirrors_scopes_to_explicit_paths_without_git_scan(
+def test_sync_changed_source_truth_bundle_mirrors_prunes_unsafe_explicit_paths_without_git_scan(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -1161,7 +1161,7 @@ def test_sync_changed_source_truth_bundle_mirrors_scopes_to_explicit_paths_witho
     )
 
     assert rc == 0
-    assert mirror_path.read_text(encoding="utf-8") == "fresh bug\n"
+    assert not mirror_path.exists()
 
 
 def test_build_sync_execution_plan_appends_source_bundle_mirror_step(tmp_path: Path) -> None:
@@ -1263,7 +1263,7 @@ def test_build_sync_execution_plan_uses_owned_surface_selective_lane_for_governa
     assert "Render Casebook for the updated bug index." in labels
     assert "Render Radar without widening into the full governance sync pipeline." in labels
     assert "Render Registry without re-running broader governance reconciliation." in labels
-    assert "Mirror the touched source-truth docs into the shipped bundle asset tree." in labels
+    assert "Mirror the touched source-truth docs into the shipped bundle asset tree." not in labels
     assert "Validate Registry contract and deep-skill policy bindings." not in labels
     assert "Sync Registry component spec requirements after Atlas mutations settle." not in labels
     assert "Render the top-level Odylith shell after the selected surfaces settle." not in labels

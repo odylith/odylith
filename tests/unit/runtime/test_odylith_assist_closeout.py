@@ -206,7 +206,7 @@ def test_closeout_assist_prefers_visibility_continuity_over_inherited_governance
 
     assert assist["eligible"] is True
     assert assist["style"] == "visibility_continuity"
-    assert "naming the chat-visibility complaint in this closeout" in assist["markdown_text"]
+    assert "keeping Odylith visibility honest by naming the chat-visible complaint" in assist["markdown_text"]
 
 
 def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_or_ids() -> None:
@@ -234,7 +234,7 @@ def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_
     assert assist["style"] == "visibility_continuity"
     assert assist["updated_artifacts"] == []
     assert assist["affected_contracts"] == []
-    assert "naming the chat-visibility complaint in this closeout" in assist["markdown_text"]
+    assert "keeping Odylith visibility honest by naming the chat-visible complaint" in assist["markdown_text"]
     assert "candidate path" not in assist["markdown_text"]
     assert "focused check" not in assist["markdown_text"]
 
@@ -345,6 +345,8 @@ def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> 
     assert intervention["render_policy"]["voice_contract"]["templated_or_mechanical_forbidden"] is True
     assert closeout["selected_supplemental"] == "risks"
     assert closeout["risks"]["render_hint"] == "supplemental_line"
+    assert closeout["markdown_text"].splitlines()[-1].startswith("**Odylith Assist:**")
+    assert closeout["markdown_text"].index("**Odylith Risks:**") < closeout["markdown_text"].index("**Odylith Assist:**")
     assert closeout["render_policy"]["max_lines"] == 2
     assert closeout["render_policy"]["benchmark_safe"] is True
 

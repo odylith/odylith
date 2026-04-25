@@ -183,9 +183,10 @@ Do not use this skill in consumer repos.
 - Post-run adoption-proof sampling is supplementary. It must be bounded and
   degrade cleanly on timeout or transport loss instead of blocking
   persistence of a completed full proof report.
-- Any Odylith-by-name closeout note must stay final-only, soulful,
-  friendly, authentic, and factual, and it must point to concrete measured
-  proof rather than generic product praise. Follow the canonical closeout
+- Any Odylith-by-name closeout or explicit visibility-feedback fallback note
+  must stay evidence-backed, soulful, friendly, authentic, and factual, and it
+  must point to concrete measured proof rather than generic product praise.
+  Follow the canonical closeout
   contract in
   [Odylith Chatter](../../registry/source/components/odylith-chatter/CURRENT_SPEC.md).
 - If the style changes intentionally, update the generator, README, and graph

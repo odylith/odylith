@@ -1,7 +1,7 @@
 Status: In progress
 Created: 2026-04-17
-Updated: 2026-04-19
-Backlog: B-110, B-111, B-112, B-113, B-114, B-115, B-116, B-117
+Updated: 2026-04-25
+Backlog: B-110, B-117
 
 # Odylith Discipline, Credit-Safe And Benchmark-Proved
 
@@ -16,6 +16,9 @@ The runtime loop is:
 
 ## Decisions
 - B-110 is the release-bound umbrella for this effort; B-111 through B-117 are its execution-wave children.
+- B-111 through B-116 are closed in the child-wave closure record; this active
+  umbrella plan remains open for B-117 release-proof closure and B-110 final
+  umbrella accountability.
 - Anti-slop hardening is a release-bound part of Odylith Discipline: guidance,
   skills, install-generated mirrors, Codex and Claude host surfaces, Atlas,
   Compass, and enforcement proof must move together or the cleanup is

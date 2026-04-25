@@ -7,6 +7,7 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import alignment_context
+from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
@@ -43,13 +44,14 @@ def preferred_live_replay_markdown(
     repo_root: Path | str,
     host_family: str,
     session_id: str,
+    include_assist: bool = False,
 ) -> str:
     """Return the current pending live replay bundle for prompt and checkpoint recovery."""
     return visibility_replay.preferred_replayable_chat_markdown(
         repo_root=repo_root,
         host_family=host_family,
         session_id=session_id,
-        include_assist=False,
+        include_assist=include_assist,
         include_teaser=False,
     )
 
@@ -92,10 +94,10 @@ def merge_replay_with_closeout(*, replay: str, closeout_text: str) -> str:
     visible_replay = str(replay or "").strip()
     closeout = str(closeout_text or "").strip()
     if not visible_replay:
-        return closeout
+        return visibility_contract.compose_visible_markdown(closeout)
     if not closeout or "Odylith Assist:" in visible_replay or "**Odylith Assist:**" in visible_replay:
-        return visible_replay
-    return join_sections(visible_replay, closeout)
+        return visibility_contract.compose_visible_markdown(visible_replay)
+    return visibility_contract.compose_visible_markdown(visible_replay, closeout)
 
 
 def build_prompt_conversation_bundle(
@@ -163,6 +165,15 @@ def render_prompt_system_message(
         bundle_override=conversation_bundle_override,
         intervention_bundle_override=intervention_bundle_override,
     )
+    include_closeout = conversation_runtime.visibility_feedback_requested(prompt=prompt)
+    if include_closeout and not conversation_surface.render_closeout_text(bundle, markdown=True):
+        bundle = host_surface_runtime.compose_host_conversation_bundle(
+            repo_root=root,
+            host_family=normalized_host,
+            turn_phase="prompt_submit",
+            session_id=session_id,
+            prompt_excerpt=prompt,
+        )
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=root,
         bundle=bundle,
@@ -170,15 +181,22 @@ def render_prompt_system_message(
         turn_phase="prompt_submit",
         session_id=session_id,
         include_proposal=False,
-        include_closeout=False,
+        include_closeout=include_closeout,
+        developer_include_closeout=include_closeout,
     )
     replay = preferred_live_replay_markdown(
         repo_root=root,
         host_family=normalized_host,
         session_id=session_id,
+        include_assist=include_closeout,
     )
     if replay:
-        return replay
+        closeout_text = (
+            conversation_surface.render_closeout_text(bundle, markdown=True)
+            if include_closeout
+            else ""
+        )
+        return merge_replay_with_closeout(replay=replay, closeout_text=closeout_text)
     return decision.visible_markdown or conversation_surface.render_live_text(
         bundle,
         markdown=False,

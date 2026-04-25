@@ -640,7 +640,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "literal commands" not in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
-    assert "At closeout, you may add at most one short `Odylith Assist:` line" in guidance_text
+    assert "At closeout, or when explicit visibility feedback needs a visible fallback" in guidance_text
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
     assert "Lead with the user win" in guidance_text
     assert "link updated governance IDs inline when they were actually changed" in guidance_text
@@ -648,6 +648,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Frame the edge against `odylith_off` or the broader unguided path" in guidance_text
     assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in guidance_text
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
+    assert "explicit visibility feedback may also ground it in a concrete chat-visibility complaint" in guidance_text
     assert "Silence is better than filler." in guidance_text
     assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in guidance_text
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
@@ -696,7 +697,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "literal commands" not in root_agents
     assert "Keep normal commentary task-first and human." in root_agents
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents
-    assert "At closeout, you may add at most one short `Odylith Assist:` line" in root_agents
+    assert "At closeout, or when explicit visibility feedback needs a visible fallback" in root_agents
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
     assert "Lead with the user win" in root_agents
     assert "link updated governance IDs inline when they were actually changed" in root_agents
@@ -704,6 +705,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Frame the edge against `odylith_off` or the broader unguided path" in root_agents
     assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in root_agents
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
+    assert "explicit visibility feedback may also ground it in a concrete chat-visibility complaint" in root_agents
     assert "Silence is better than filler." in root_agents
     assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in root_agents
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in root_agents
@@ -1360,13 +1362,14 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
-    assert "At closeout, you may add at most one short `Odylith Assist:` line" in guidance_text
+    assert "At closeout, or when explicit visibility feedback needs a visible fallback" in guidance_text
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
     assert "Lead with the user win" in guidance_text
     assert "link updated governance IDs inline when they were actually changed" in guidance_text
     assert "name the affected governance-contract IDs" in guidance_text
     assert "Frame the edge against `odylith_off` or the broader unguided path" in guidance_text
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
+    assert "explicit visibility feedback may also ground it in a concrete chat-visibility complaint" in guidance_text
     assert "Silence is better than filler." in guidance_text
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in guidance_text
     assert "Odylith grounding:" not in guidance_text
@@ -1412,13 +1415,14 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in root_agents
     assert "Keep normal commentary task-first and human." in root_agents
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents
-    assert "At closeout, you may add at most one short `Odylith Assist:` line" in root_agents
+    assert "At closeout, or when explicit visibility feedback needs a visible fallback" in root_agents
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
     assert "Lead with the user win" in root_agents
     assert "link updated governance IDs inline when they were actually changed" in root_agents
     assert "name the affected governance-contract IDs" in root_agents
     assert "Frame the edge against `odylith_off` or the broader unguided path" in root_agents
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
+    assert "explicit visibility feedback may also ground it in a concrete chat-visibility complaint" in root_agents
     assert "Silence is better than filler." in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents
     assert "Odylith grounding:" not in root_agents

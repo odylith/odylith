@@ -555,12 +555,12 @@ def test_public_family_catalog_stays_aligned_with_tracked_corpus() -> None:
     assert documented_family_counts == family_counts
 
 
-def test_benchmark_corpus_keeps_final_only_odylith_assist_closeout_contract() -> None:
+def test_benchmark_corpus_keeps_evidence_backed_odylith_assist_contract() -> None:
     corpus = _load(PUBLIC_CORPUS)
     program = dict(corpus.get("program", {}))
     contract = dict(program.get("closeout_contract", {}))
 
-    assert contract.get("odylith_brand_note") == "final_only_evidence_backed"
+    assert contract.get("odylith_brand_note") == "closeout_or_visibility_feedback_evidence_backed"
     assert contract.get("allowed_label") == "Odylith Assist:"
     assert contract.get("preferred_markdown_label") == "**Odylith Assist:**"
     assert contract.get("benchmark_tax_policy") == "metadata_only"
@@ -570,6 +570,7 @@ def test_benchmark_corpus_keeps_final_only_odylith_assist_closeout_contract() ->
     assert any("mid-task narration task-first" in rule or "weave Odylith facts into normal updates" in rule for rule in rules)
     assert any("Odylith Insight" in rule and "Odylith History" in rule and "Odylith Risks" in rule for rule in rules)
     assert any("at most one short Odylith Assist line" in rule for rule in rules)
+    assert any("explicit visibility feedback" in rule and "visible fallback" in rule for rule in rules)
     assert any("bold Markdown label" in rule for rule in rules)
     assert any("Lead with the user win" in rule and "updated governance IDs inline" in rule for rule in rules)
     assert any("affected governance-contract IDs" in rule for rule in rules)

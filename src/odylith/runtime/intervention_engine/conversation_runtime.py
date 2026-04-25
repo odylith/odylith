@@ -104,16 +104,10 @@ _VISIBILITY_DELIVERY_TOKENS = {
     "ux",
 }
 _VISIBILITY_COMPLAINT_PHRASES = (
-    "do not see",
-    "don't see",
-    "not visible",
-    "still do not see",
-    "still don't see",
-    "zero signals",
-    "not showing",
-    "hidden hook",
-    "hidden hooks",
-    "unproven this session",
+    "do not see", "don't see", "cannot see", "can't see", "not seeing", "not visible",
+    "still do not see", "still don't see", "no ambient", "no intervention", "no interventions", "no assist",
+    "no signal", "no signals", "zero ambient", "zero intervention", "zero interventions", "zero assist",
+    "zero signals", "not showing", "hidden hook", "hidden hooks", "unproven this session", "not sure", "unsure",
 )
 
 
@@ -635,14 +629,7 @@ def _visibility_feedback_phrase(*, request: Any, assistant_summary: str = "") ->
     closeout even when no files changed.
     """
 
-    text = _normalize_string(
-        " ".join(
-            [
-                str(_field(request, "prompt") or ""),
-                str(assistant_summary or ""),
-            ]
-        )
-    )
+    text = _normalize_string(f"{_field(request, 'prompt') or ''} {assistant_summary or ''}")
     if not text:
         return "", ""
     tokens = _meaningful_tokens(text)
@@ -655,8 +642,13 @@ def _visibility_feedback_phrase(*, request: Any, assistant_summary: str = "") ->
     lowered = text.casefold()
     if not any(phrase in lowered for phrase in _VISIBILITY_COMPLAINT_PHRASES):
         return "", ""
-    phrase = "naming the chat-visibility complaint in this closeout"
+    phrase = "keeping Odylith visibility honest by naming the chat-visible complaint"
     return phrase, phrase
+
+
+def visibility_feedback_requested(*, prompt: Any = "", assistant_summary: str = "") -> bool:
+    markdown_phrase, _ = _visibility_feedback_phrase(request={"prompt": prompt}, assistant_summary=assistant_summary)
+    return bool(markdown_phrase)
 
 
 def _assist_has_material_turn_evidence(
@@ -1485,11 +1477,14 @@ def compose_conversation_bundle(
         for key, payload in closeout_signals.items():
             if payload.get("eligible"):
                 closeout_signals[key] = _suppressed_closeout_signal(payload, reason="assist_suppressed")
-    closeout_markdown_lines = [assist["markdown_text"]] if assist.get("eligible") else []
-    closeout_plain_lines = [assist["plain_text"]] if assist.get("eligible") else []
+    closeout_markdown_lines: list[str] = []
+    closeout_plain_lines: list[str] = []
     if selected_supplemental:
         closeout_markdown_lines.append(closeout_signals[selected_supplemental]["markdown_text"])
         closeout_plain_lines.append(closeout_signals[selected_supplemental]["plain_text"])
+    if assist.get("eligible"):
+        closeout_markdown_lines.append(assist["markdown_text"])
+        closeout_plain_lines.append(assist["plain_text"])
     claim_enforcement = claim_runtime.build_claim_enforcement_summary(
         claim_lint=claim_lint,
         ambient_payloads={"risks": risks, "insight": insight, "history": history},

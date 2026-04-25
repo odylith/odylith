@@ -187,13 +187,15 @@ view changes the next move, weave that fact into the update instead of
 branding it by default; explicit `Odylith Insight:`, `Odylith History:`, or
 `Odylith Risks:` lines should feel rare and earned.
 
-If a final handoff benefits from naming Odylith directly, keep it to one short
+If a final handoff benefits from naming Odylith directly, or explicit
+visibility feedback needs a visible fallback, keep it to one short
 `Odylith Assist:` line. Prefer `**Odylith Assist:**` when Markdown formatting
 is available. Lead with the user win, link updated governance IDs inline when
 they were actually changed, and when no governed file moved, name the affected
 governance-contract IDs from bounded request or packet truth without calling
 them updated. Ground the line in concrete observed counts, measured deltas, or
-validation outcomes. When the evidence supports it, frame the edge against
+validation outcomes; visibility feedback may also ground it in a concrete
+chat-visibility complaint. When the evidence supports it, frame the edge against
 `odylith_off` or the broader unguided path. Keep it crisp, authentic, clear,
 simple, insightful, soulful, friendly, free-flowing, human, and factual.
 Explicit feedback that Odylith's ambient highlights, interventions, Assist,

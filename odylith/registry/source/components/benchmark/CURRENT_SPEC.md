@@ -30,7 +30,7 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-04-18
+Last updated: 2026-04-25
 
 
 Last updated (UTC): 2026-04-18
@@ -216,12 +216,14 @@ reviewer framing that explains how Odylith should be compared.
   execution delta, not the primary scorecard.
 - Simulation, reviewer, and closeout artifacts should suppress mid-analysis
   Odylith brand narration. If a writeup or agent handoff names Odylith
-  directly beyond lane labels, reserve that for one short end-of-work
-  `Odylith Assist:` line, and prefer `**Odylith Assist:**` when Markdown
-  formatting is available. Follow the detailed closeout contract in
-  [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md) and keep benchmark
-  storytelling anchored in measured proof rather than duplicated branding
-  rubric.
+  directly beyond lane labels, reserve that for one short evidence-backed
+  `Odylith Assist:` line at closeout or for explicit visibility-feedback
+  fallback, and prefer `**Odylith Assist:**` when Markdown formatting is
+  available. Follow the detailed closeout contract in
+  [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md), including the rule
+  that any supplemental line renders before the final Assist line, and keep
+  benchmark storytelling anchored in measured proof rather than duplicated
+  branding rubric.
 - That closeout rule is metadata-only for benchmark families: do not add
   benchmark required paths, hot-path docs, or validation commands just to
   repeat the chatter contract.
@@ -792,6 +794,9 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-25 · Implementation:** v0.1.11 benchmark reproof published proof report 44f2a3d83d2c9975 and diagnostic report 9dcae95d5bb62c75 on head 1cfca107 after fixing CB-125 and CB-126.
+  - Scope: B-093
+  - Evidence: docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md, docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md +1 more
 - **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
   - Scope: B-110
   - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md

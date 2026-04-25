@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
+from odylith.runtime.intervention_engine import conversation_runtime
+from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import visibility_replay
@@ -36,26 +38,24 @@ def render_visible_intervention(
     proposal = normalized_phase not in {"prompt_submit", "userpromptsubmit", "stop_summary"}
     if include_proposal is not None:
         proposal = bool(include_proposal)
-    closeout = normalized_phase == "stop_summary"
+    visibility_feedback = conversation_runtime.visibility_feedback_requested(
+        prompt=prompt,
+        assistant_summary=summary,
+    )
+    closeout = normalized_phase == "stop_summary" or (
+        visibility_feedback and normalized_phase in {"prompt_submit", "userpromptsubmit"}
+    )
     if include_closeout is not None:
         closeout = bool(include_closeout)
     resolved_session = host_surface_runtime.normalized_session_id(session_id, host_family=host_family)
-    replay = (
-        visibility_replay.replayable_chat_markdown(
-            repo_root=repo_root,
-            host_family=host_family,
-            session_id=resolved_session,
-            include_assist=closeout,
-            include_teaser=False,
-        )
-        if closeout
-        else host_intervention_support.preferred_live_replay_markdown(
-            repo_root=repo_root,
-            host_family=host_family,
-            session_id=resolved_session,
-        )
+    replay = visibility_replay.replayable_chat_markdown(
+        repo_root=repo_root,
+        host_family=host_family,
+        session_id=resolved_session,
+        include_assist=closeout,
+        include_teaser=False,
     )
-    if replay:
+    if replay and not (closeout and normalized_phase != "stop_summary"):
         return replay
     bundle = host_surface_runtime.compose_host_conversation_bundle(
         repo_root=repo_root,
@@ -66,6 +66,14 @@ def render_visible_intervention(
         assistant_summary=summary,
         changed_paths=changed_paths,
     )
+    visible_override = ""
+    if replay and closeout:
+        visible_override = host_intervention_support.merge_replay_with_closeout(
+            replay=replay,
+            closeout_text=conversation_surface.render_closeout_text(bundle, markdown=True),
+        )
+        if visible_override == replay:
+            return replay
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=repo_root,
         bundle=bundle,
@@ -77,6 +85,7 @@ def render_visible_intervention(
         developer_include_closeout=closeout,
         delivery_channel="manual_visible_command",
         delivery_status="manual_visible",
+        visible_markdown_override=visible_override,
     )
     rendered = decision.visible_markdown
     if rendered and record_delivery:

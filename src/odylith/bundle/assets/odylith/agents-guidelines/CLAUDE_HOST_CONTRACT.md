@@ -236,7 +236,9 @@
   ambient highlights, interventions, Observations, Proposals, Assist, hooks,
   or chat output are not visible. Claude should recover that prompt from the
   session ledger even if the last assistant message is too short to be a
-  meaningful implementation summary. Low-signal short turns still stay silent.
+  meaningful implementation summary. The manual `visible-intervention`
+  fallback may also append that one Assist line after the ruled live block for
+  the same explicit feedback. Low-signal short turns still stay silent.
 - Stop blocking must dedupe against the generated labels in the current
   visible text. A prior Observation label does not prove the current Assist
   closeout was already visible.

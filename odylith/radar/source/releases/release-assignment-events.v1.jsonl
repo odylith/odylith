@@ -74,3 +74,9 @@
 {"action": "add", "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.", "recorded_at": "2026-04-18T00:10:51Z", "release_id": "release-0-1-12", "workstream_id": "B-124"}
 {"action": "add", "note": "Target queued v0.1.12 Governed Harness backlog slice while preserving queued status until v0.1.11 closes.", "recorded_at": "2026-04-18T00:10:51Z", "release_id": "release-0-1-12", "workstream_id": "B-125"}
 {"action": "add", "note": "Target queued v0.1.12 governance-authoring ergonomics slice for conditional release-targeted backlog creation while preserving queued status.", "recorded_at": "2026-04-18T00:28:02Z", "release_id": "release-0-1-12", "workstream_id": "B-126"}
+{"action": "remove", "note": "Completed B-110 child wave closure.", "recorded_at": "2026-04-25T15:24:12Z", "release_id": "release-0-1-11", "workstream_id": "B-111"}
+{"action": "remove", "note": "Completed B-110 child wave closure.", "recorded_at": "2026-04-25T15:24:12Z", "release_id": "release-0-1-11", "workstream_id": "B-112"}
+{"action": "remove", "note": "Completed B-110 child wave closure.", "recorded_at": "2026-04-25T15:24:13Z", "release_id": "release-0-1-11", "workstream_id": "B-113"}
+{"action": "remove", "note": "Completed B-110 child wave closure.", "recorded_at": "2026-04-25T15:24:13Z", "release_id": "release-0-1-11", "workstream_id": "B-114"}
+{"action": "remove", "note": "Completed B-110 child wave closure.", "recorded_at": "2026-04-25T15:24:14Z", "release_id": "release-0-1-11", "workstream_id": "B-115"}
+{"action": "remove", "note": "Completed B-110 child wave closure.", "recorded_at": "2026-04-25T15:24:14Z", "release_id": "release-0-1-11", "workstream_id": "B-116"}

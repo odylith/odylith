@@ -47,10 +47,12 @@ Keep these buckets separate:
 Do not collapse those into one judgment.
 
 If the final review needs to name Odylith directly beyond lane labels, keep it
-to one final-only `Odylith Assist:` line backed by measured proof or a
-measured report, and follow
+to one evidence-backed `Odylith Assist:` line at closeout or for explicit
+visibility-feedback fallback, backed by measured proof or a measured report,
+and follow
 [Odylith Chatter](../../odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md)
-for the detailed closeout wording contract.
+for the detailed closeout wording contract, including the rule that any
+supplemental line must render before the final Assist line.
 
 ## Required Evaluation Order
 

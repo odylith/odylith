@@ -120,6 +120,123 @@ def join_blocks(*values: Any) -> str:
     return "\n\n".join(rows).strip()
 
 
+def _split_visible_lines(value: Any) -> tuple[list[str], list[str]]:
+    """Split rendered Markdown into live bodies and non-live closeout lines."""
+    text = normalize_block_string(value)
+    if not text:
+        return [], []
+    live_bodies: list[str] = []
+    outside_rows: list[str] = []
+    active: list[str] = []
+    in_live_block = False
+    for raw_line in text.split("\n"):
+        line = raw_line.rstrip()
+        if line.strip() == LIVE_BOUNDARY:
+            if in_live_block:
+                body = normalize_block_string("\n".join(active))
+                if body:
+                    for paragraph in _visible_paragraphs(body):
+                        if _visible_line_label(paragraph):
+                            outside_rows.append(paragraph)
+                        else:
+                            live_bodies.append(paragraph)
+                active = []
+                in_live_block = False
+            else:
+                outside = normalize_block_string("\n".join(active))
+                if outside:
+                    outside_rows.extend(_visible_paragraphs(outside))
+                active = []
+                in_live_block = True
+            continue
+        active.append(line)
+    tail = normalize_block_string("\n".join(active))
+    if tail:
+        if in_live_block:
+            for paragraph in _visible_paragraphs(tail):
+                if _visible_line_label(paragraph):
+                    outside_rows.append(paragraph)
+                else:
+                    live_bodies.append(paragraph)
+        else:
+            outside_rows.extend(_visible_paragraphs(tail))
+    return live_bodies, outside_rows
+
+
+def _visible_paragraphs(value: Any) -> list[str]:
+    """Return display paragraphs, keeping one-line supplemental labels separable."""
+    text = normalize_block_string(value)
+    if not text:
+        return []
+    paragraphs = [normalize_block_string(part) for part in text.split("\n\n")]
+    rows: list[str] = []
+    for paragraph in paragraphs:
+        if not paragraph:
+            continue
+        lines = [normalize_block_string(line) for line in paragraph.split("\n")]
+        label_lines = [line for line in lines if _visible_line_label(line)]
+        if label_lines and len(label_lines) == len(lines):
+            rows.extend(label_lines)
+        else:
+            rows.append(paragraph)
+    return rows
+
+
+def _visible_line_label(value: Any) -> str:
+    text = normalize_block_string(value)
+    lowered = text.casefold()
+    if "odylith assist:" in lowered:
+        return "assist"
+    for label in ("odylith risks:", "odylith insight:", "odylith history:"):
+        if label in lowered:
+            return "supplemental"
+    return ""
+
+
+def compose_visible_markdown(*values: Any) -> str:
+    """Compose a clean visible intervention with one live fence and Assist last."""
+    live_rows: list[str] = []
+    other_rows: list[str] = []
+    supplemental_rows: list[str] = []
+    assist_rows: list[str] = []
+    for value in values:
+        live_bodies, outside_rows = _split_visible_lines(value)
+        for body in live_bodies:
+            token = normalize_block_string(body)
+            if token and token not in live_rows:
+                live_rows.append(token)
+        for row in outside_rows:
+            token = normalize_block_string(row)
+            if not token:
+                continue
+            label = _visible_line_label(token)
+            if label == "assist":
+                if token not in assist_rows:
+                    assist_rows.append(token)
+            elif label == "supplemental":
+                if token not in supplemental_rows:
+                    supplemental_rows.append(token)
+            elif token not in other_rows:
+                other_rows.append(token)
+    sections: list[str] = []
+    if not assist_rows:
+        live = join_blocks(*supplemental_rows, *live_rows)
+        if live:
+            sections.append(wrap_live_boundary(live))
+        for row in other_rows:
+            if row and row not in sections:
+                sections.append(row)
+        return join_blocks(*sections)
+    live = join_blocks(*live_rows)
+    if live:
+        sections.append(wrap_live_boundary(live))
+    for rows in (other_rows, supplemental_rows, assist_rows):
+        for row in rows:
+            if row and row not in sections:
+                sections.append(row)
+    return join_blocks(*sections)
+
+
 def event_requires_live_boundary(row: Mapping[str, Any]) -> bool:
     """Return whether this event kind must render inside the live fence."""
     return normalize_token(row.get("kind")) in LIVE_BOUNDARY_REQUIRED_KINDS

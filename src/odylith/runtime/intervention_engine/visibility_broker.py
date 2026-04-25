@@ -219,7 +219,7 @@ def _render_visible(
         if include_closeout
         else ""
     )
-    return _parts(live, closeout)
+    return visibility_contract.compose_visible_markdown(live, closeout)
 
 
 def _render_developer_context(
@@ -302,7 +302,10 @@ def build_visible_intervention_decision(
         visibility_failure
         and "**Odylith Observation:**" not in visible
     ):
-        visible = _visibility_failure_observation(host_family=normalized_host)
+        visible = visibility_contract.compose_visible_markdown(
+            _visibility_failure_observation(host_family=normalized_host),
+            visible,
+        )
         forced_visible = True
     developer_context = _render_developer_context(
         bundle,

@@ -74,8 +74,9 @@ claiming ML calibration.
   and spend voice-render cost only on candidates that survived support and
   strength prefilters.
 - Ruled live-block canonicalization for Ambient/Observation/Proposal output;
-  missing rulers are repaired, while `Odylith Assist` remains closeout-owned
-  and outside the live ruled block.
+  missing rulers are repaired, while `Odylith Assist` remains chatter-owned,
+  outside the live ruled block, and may follow that block only when closeout
+  or explicit visibility-feedback continuity is already eligible.
 - The live mid-turn conversation surface fast path used by Codex and Claude
   hooks, including teaser rendering, low-signal suppression, and host-parity
   shaping.
@@ -610,7 +611,8 @@ claiming ML calibration.
   visibly bounded by Markdown horizontal rules (`---`) before and after the
   Odylith-owned text so operators can distinguish Odylith intervention copy
   from host-agent narration. `Odylith Assist` is exempt because it remains the
-  final blended closeout paragraph.
+  blended chatter-owned closeout or explicit visibility-feedback fallback line
+  that follows, rather than lives inside, the ruled block.
 - Confirmation phrase is fixed in this release:
   - `apply this proposal`
 - The rendered confirmation cue must stay visually quiet.

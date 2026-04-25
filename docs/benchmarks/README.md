@@ -82,12 +82,13 @@ corpus.
 ## Closeout Framing
 
 Benchmark summaries should lead with measured proof, not product narration.
-If Odylith is named directly beyond lane labels, keep it to one final-only
-`Odylith Assist:` line backed by measured proof or a measured report, and
-follow
+If Odylith is named directly beyond lane labels, keep it to one evidence-backed
+`Odylith Assist:` line at closeout or for explicit visibility-feedback
+fallback, backed by measured proof or a measured report, and follow
 [Odylith Chatter](../../odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md)
-for the detailed closeout wording contract. Keep the benchmark lane metadata-
-only: do not widen required paths, hot-path docs, or validation commands just
+for the detailed closeout wording contract, including the rule that any
+supplemental line must render before the final Assist line. Keep the benchmark
+lane metadata-only: do not widen required paths, hot-path docs, or validation commands just
 to narrate Odylith.
 
 ## Run Views

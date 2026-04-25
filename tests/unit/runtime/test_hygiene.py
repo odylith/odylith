@@ -81,28 +81,28 @@ README_PROOF_BENCHMARK_GRAPH_BLOCK = """<p align="center">
 
 README_DIAGNOSTIC_BENCHMARK_GRAPH_BLOCK = """<p align="center">
   <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-family-heatmap.svg"
+    src="docs/benchmarks/grounding/odylith-benchmark-family-heatmap.svg"
     alt="Odylith grounding benchmark family heatmap"
     width="100%"
   />
 </p>
 <p align="center">
   <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-quality-frontier.svg"
+    src="docs/benchmarks/grounding/odylith-benchmark-quality-frontier.svg"
     alt="Odylith grounding benchmark quality frontier"
     width="100%"
   />
 </p>
 <p align="center">
   <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-frontier.svg"
+    src="docs/benchmarks/grounding/odylith-benchmark-frontier.svg"
     alt="Odylith grounding benchmark frontier"
     width="100%"
   />
 </p>
 <p align="center">
   <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-operating-posture.svg"
+    src="docs/benchmarks/grounding/odylith-benchmark-operating-posture.svg"
     alt="Odylith grounding benchmark operating posture"
     width="100%"
   />
@@ -111,6 +111,7 @@ README_DIAGNOSTIC_BENCHMARK_GRAPH_BLOCK = """<p align="center">
 
 BENCHMARK_ANTI_GAMING_LINE = "- Never game the eval."
 BENCHMARK_HONEST_BASELINE_LINES = (
+    "`odylith_off` means Codex or Claude Code running without Odylith",
     "`odylith_off` means `raw_agent_baseline`",
     "`Odylith off` means `raw_agent_baseline`",
     "`odylith_off` is the raw host CLI lane",

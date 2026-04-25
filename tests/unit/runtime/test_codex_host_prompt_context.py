@@ -127,8 +127,7 @@ def test_codex_prompt_system_message_prefers_pending_ambient_risk_over_observati
     assert rendered == (
         "---\n\n"
         "**Odylith Risks:** Prompt should surface this branded ambient beat first.\n"
-        "\n---\n\n"
-        "---\n\n"
+        "\n"
         "**Odylith Observation:** Prompt should not hide the stronger ambient beat.\n"
         "\n---"
     )

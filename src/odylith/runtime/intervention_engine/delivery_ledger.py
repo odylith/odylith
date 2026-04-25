@@ -240,8 +240,8 @@ def active_lane_matrix(*, host_family: str) -> list[dict[str, str]]:
         },
         {
             "lane": "Odylith Assist",
-            "phase": "stop_summary closeout only",
-            "visibility": "stop one-shot continuation guard plus assistant fallback",
+            "phase": "stop_summary closeout plus explicit visibility-feedback fallback",
+            "visibility": "stop one-shot continuation guard plus assistant fallback when the operator reports hidden Odylith output",
         },
     ]
 

@@ -131,8 +131,7 @@ def test_claude_prompt_system_message_prefers_pending_ambient_history_over_obser
     assert rendered == (
         "---\n\n"
         "**Odylith History:** Claude prompt should surface this branded ambient beat first.\n"
-        "\n---\n\n"
-        "---\n\n"
+        "\n"
         "**Odylith Observation:** Claude prompt should not hide the stronger ambient beat.\n"
         "\n---"
     )

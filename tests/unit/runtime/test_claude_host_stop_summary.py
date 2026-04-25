@@ -296,9 +296,8 @@ def test_render_stop_summary_replays_unseen_live_beat_through_stop_lane(tmp_path
     )
 
     assert rendered == (
-        "---\n\n"
         "**Odylith Insight:** this beat was computed earlier but still needs a visible lane.\n"
-        "\n---\n\n"
+        "\n"
         "**Odylith Assist:** kept this grounded."
     )
 

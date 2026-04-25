@@ -269,9 +269,11 @@ def _odylith_payload_component_ids(payload: Mapping[str, Any]) -> list[str]:
     if not isinstance(component_rows, list):
         return []
     return _dedupe_strings(
-        str(row.get("entity_id", "")).strip()
-        for row in component_rows
-        if isinstance(row, Mapping) and str(row.get("entity_id", "")).strip()
+        [
+            str(row.get("entity_id", "")).strip()
+            for row in component_rows
+            if isinstance(row, Mapping) and str(row.get("entity_id", "")).strip()
+        ]
     )
 
 

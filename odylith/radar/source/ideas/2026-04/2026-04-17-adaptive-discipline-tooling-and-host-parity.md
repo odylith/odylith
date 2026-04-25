@@ -1,4 +1,4 @@
-status: implementation
+status: finished
 
 idea_id: B-115
 
@@ -28,7 +28,7 @@ confidence: high
 
 founder_override: yes
 
-promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md
 
 execution_model: standard
 

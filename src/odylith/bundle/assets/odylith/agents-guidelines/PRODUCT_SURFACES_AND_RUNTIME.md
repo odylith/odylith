@@ -70,8 +70,8 @@
   Codex and Claude.
 - The live mid-turn hot path for teaser, Observation, and Proposal belongs to
   the intervention engine. `Odylith Chatter` owns the broader narration
-  posture and the final `Odylith Assist:` closeout instead of recomputing the
-  hook-time surface.
+  posture and the evidence-backed `Odylith Assist:` closeout or explicit
+  visibility-feedback fallback instead of recomputing the hook-time surface.
 - The lane may change what evidence is available or whether apply is allowed,
   but it must not fork the labels, confirmation phrase, or overall markdown UX
   across detached `source-local`, pinned dogfood, and consumer pinned-runtime
@@ -107,8 +107,9 @@
     that same moment
 - The primary visible intervention moment is the edit/bash checkpoint, not the
   stop fallback. Stop may still recover a late Observation or a closeout
-  Assist line, but the product should not make users wait until stop to feel a
-  live intervention.
+  Assist line, and explicit visibility-feedback fallbacks may append Assist
+  after the ruled live block, but the product should not make users wait until
+  stop to feel a live intervention.
 - When a host keeps checkpoint output hidden, Stop is the hard visibility
   fallback for all earned Odylith live beats, not only Assist. Replay the
   latest unseen Ambient Highlight, Observation, or Proposal before the Assist
@@ -180,6 +181,9 @@
   Observations, Proposals, Assist, hooks, or chat output are not visible. This
   is a narrow continuity lane; ordinary short acknowledgements still stay
   silent.
+- If a closeout also earns `Odylith Risks:`, `Odylith Insight:`, or
+  `Odylith History:`, that supplemental line renders before
+  `Odylith Assist:`. Assist remains the final visible closeout line.
 - Stop visible-delivery dedupe must match the exact generated Odylith labels.
   Do not suppress an Assist closeout merely because an Observation, Insight,
   History, Risks, or Proposal label already appeared earlier.

@@ -101,6 +101,20 @@ def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_pa
     assert "show the Odylith Markdown directly" in rendered
 
 
+def test_visible_intervention_visibility_feedback_adds_assist_after_live_block(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="I still do not see any Odylith ambient highlights, interventions, or Assist in chat.",
+    )
+
+    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert rendered.count("---") == 2
+    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
+    assert "keeping Odylith visibility honest by naming the chat-visible complaint" in rendered
+
+
 def test_visible_intervention_replays_pending_chat_block_before_generic_failure(tmp_path) -> None:
     stream_state.append_intervention_event(
         repo_root=tmp_path,
@@ -124,7 +138,9 @@ def test_visible_intervention_replays_pending_chat_block_before_generic_failure(
         session_id="visible-replay",
     )
 
-    assert rendered == "---\n\n**Odylith Observation:** Replay this exact earned block in chat.\n\n---"
+    assert rendered.startswith("---\n\n**Odylith Observation:** Replay this exact earned block in chat.\n\n---")
+    assert "\n\n**Odylith Assist:**" in rendered
+    assert "keeping Odylith visibility honest by naming the chat-visible complaint" in rendered
     assert "This is a visibility failure" not in rendered
 
 
@@ -137,8 +153,8 @@ def test_visible_intervention_detects_only_assist_visibility_feedback(tmp_path) 
     )
 
     assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
-    assert rendered.endswith("\n---")
     assert "Codex may be computing intervention payloads" in rendered
+    assert "**Odylith Assist:**" in rendered
 
 
 def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> None:
@@ -271,8 +287,9 @@ def test_visible_intervention_replaces_generic_teaser_for_visibility_failure(tmp
     )
 
     assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
-    assert rendered.endswith("\n---")
     assert "Claude may be computing intervention payloads" in rendered
+    assert rendered.count("---") == 2
+    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
     assert "One more corroborating signal" not in rendered
 
 

@@ -91,7 +91,7 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "literal commands" not in block
     assert "Keep normal commentary task-first and human." in block
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in block
-    assert "At closeout, you may add at most one short `Odylith Assist:` line" in block
+    assert "At closeout, or when explicit visibility feedback needs a visible fallback" in block
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in block
     assert "Lead with the user win" in block
     assert "link updated governance IDs inline when they were actually changed" in block
@@ -99,6 +99,7 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "Frame the edge against `odylith_off` or the broader unguided path" in block
     assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in block
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in block
+    assert "explicit visibility feedback may also ground it in a concrete chat-visibility complaint" in block
     assert "Use only concrete observed counts, measured deltas, or validation outcomes, and ground the line in concrete observed counts, measured deltas, or validation outcomes" not in block
     assert "Silence is better than filler." in block
     assert "At most one supplemental closeout line may appear" in block
