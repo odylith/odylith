@@ -80,7 +80,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "75df30fb39167504d921c682ab0c14fbb8305f540075231722359a3166f9a30e",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "91e9b8922d87db1df5d0557b8ee0928df37a1929a7362f2651c6543c83a339a8",
-        "odylith/radar/source/INDEX.md": "cbe7bec3f3c5ecaf20848952553cd6b72b6fd3a27da21e02ebf4b1cb4f355229",
+        "odylith/radar/source/INDEX.md": "8cb8a17471c98f2f340d13648f17eff54d7da91e3daed84a8ce70e504473963e",
         "odylith/technical-plans/INDEX.md": "bc545f009aa8be9e843c18f5e7c49fc91b2cef1f1df190d1098ae8846c4463dd"
       }
     },
@@ -231,8 +231,8 @@
         "src/odylith/runtime/orchestration/subagent_orchestrator.py": "4bb563bad5979bee61969b69ab66a2799716de76e088fdb5ef48a6e64d5498ce",
         "src/odylith/runtime/intervention_engine/alignment_evidence.py": "de189a29d9018da712e805daa1e781321dd2eafedf949658529f94f09b8df311",
         "src/odylith/runtime/intervention_engine/alignment_context.py": "3aea0629a492b11e476fb3587da575821ea77a7ea2c442625b7d2a48374b5788",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "06cc067b4f141cad04f30c470ab175e219d2892eccd2de491f3876dd4451e21e",
-        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "18653f1e237ddd22a1aab3663cd7b211d5cfdac45252be35caaa460103c70b52",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "a444ebe674aab4732760beaea16e9e0dd3923d44815fdfcc96f7f81709c7e88f",
+        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "0bbf8e103c91b9acadd03d7b5f4d974f718c4017c250bd63680681e74aecb157",
         "src/odylith/runtime/intervention_engine/delivery_runtime.py": "35318abc7537a18210b97181efca5d83a7082070146229b7201430954c71ddfc",
         "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "ef154db2abb91e081038bbf5342e7035ea43846d819733ffbb436bef28bd7b0c"
       },
@@ -1655,7 +1655,7 @@
         "src/odylith/runtime/reasoning/tribunal_engine.py": "2351fffa53bd1f49ae0948b5369518bbf1ec2ba56a8d18d5f4b7930720e31baf",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py": "4bb563bad5979bee61969b69ab66a2799716de76e088fdb5ef48a6e64d5498ce",
         "src/odylith/runtime/orchestration/subagent_router.py": "8b44560b90edb457049c48ef171052d3086fe91669d808670198a2eb97262111",
-        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "18653f1e237ddd22a1aab3663cd7b211d5cfdac45252be35caaa460103c70b52",
+        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "0bbf8e103c91b9acadd03d7b5f4d974f718c4017c250bd63680681e74aecb157",
         "src/odylith/runtime/intervention_engine/delivery_runtime.py": "35318abc7537a18210b97181efca5d83a7082070146229b7201430954c71ddfc"
       }
     },
@@ -1981,7 +1981,7 @@
         "src/odylith/runtime/reasoning/remediator.py": "05862baf74c737c753fbff665fa1673ceb69e438ae951945bcc169cc0fec37dd",
         "src/odylith/runtime/orchestration/subagent_orchestrator.py": "4bb563bad5979bee61969b69ab66a2799716de76e088fdb5ef48a6e64d5498ce",
         "src/odylith/runtime/orchestration/subagent_router.py": "8b44560b90edb457049c48ef171052d3086fe91669d808670198a2eb97262111",
-        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "18653f1e237ddd22a1aab3663cd7b211d5cfdac45252be35caaa460103c70b52",
+        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "0bbf8e103c91b9acadd03d7b5f4d974f718c4017c250bd63680681e74aecb157",
         "src/odylith/runtime/intervention_engine/delivery_runtime.py": "35318abc7537a18210b97181efca5d83a7082070146229b7201430954c71ddfc"
       }
     },
@@ -2520,7 +2520,7 @@
         "src/odylith/runtime/context_engine/execution_engine_handshake.py": "f695619e6cae06d65d46b29d63a11e67adb40fef1047a7dc8f6760ede938b6cc",
         "src/odylith/runtime/execution_engine": "41d0fdff25f9a41d3c0ac9fd97e0b86dd04040431769eadbbdf2da5b177a4393",
         "src/odylith/runtime/intervention_engine/alignment_context.py": "3aea0629a492b11e476fb3587da575821ea77a7ea2c442625b7d2a48374b5788",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "06cc067b4f141cad04f30c470ab175e219d2892eccd2de491f3876dd4451e21e",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "a444ebe674aab4732760beaea16e9e0dd3923d44815fdfcc96f7f81709c7e88f",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "2351fffa53bd1f49ae0948b5369518bbf1ec2ba56a8d18d5f4b7930720e31baf",
         "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "ef154db2abb91e081038bbf5342e7035ea43846d819733ffbb436bef28bd7b0c"
       }
@@ -2616,7 +2616,7 @@
         "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py": "398c7fa299964f12138a22abfab65f13405e52c42bfdc0cfdbf372d7fc4ab7f6",
         "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py": "a5ab53c8c30d0ee46a398cae84a1687fb5f12984b7410c7a3c2eb5bf690edb77",
         "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py": "0ba6782c4f1c1fe3be5bf9ddc49fee2bf51194143f2d6a935155e4629ae58498",
-        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "18653f1e237ddd22a1aab3663cd7b211d5cfdac45252be35caaa460103c70b52"
+        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "0bbf8e103c91b9acadd03d7b5f4d974f718c4017c250bd63680681e74aecb157"
       }
     },
     {
@@ -2949,7 +2949,7 @@
         "src/odylith/runtime/execution_engine/validation.py": "9b4c52ea51dc5824d09f75d54f4b2d0e8d4a579c41c02efcb3f0f805ee4080b4",
         "src/odylith/runtime/execution_engine/contradictions.py": "1adac1306d8eb4a8b644a8a8a10508029c753199f65e57357eb7db17754f5616",
         "src/odylith/runtime/context_engine/execution_engine_handshake.py": "f695619e6cae06d65d46b29d63a11e67adb40fef1047a7dc8f6760ede938b6cc",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "06cc067b4f141cad04f30c470ab175e219d2892eccd2de491f3876dd4451e21e",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "a444ebe674aab4732760beaea16e9e0dd3923d44815fdfcc96f7f81709c7e88f",
         "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "ef154db2abb91e081038bbf5342e7035ea43846d819733ffbb436bef28bd7b0c",
         "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md": "668208763751ee13271549baa9c18d517074a2f2c59e72790b29d1b456e7e9b9"
       },
@@ -3496,7 +3496,7 @@
         "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py": "b0fd8cb3734280d4b04ac7bf9a24c9545dba2d3c351c809d615eec27443d6357",
         "src/odylith/runtime/context_engine/execution_engine_handshake.py": "f695619e6cae06d65d46b29d63a11e67adb40fef1047a7dc8f6760ede938b6cc",
         "src/odylith/runtime/execution_engine": "41d0fdff25f9a41d3c0ac9fd97e0b86dd04040431769eadbbdf2da5b177a4393",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "06cc067b4f141cad04f30c470ab175e219d2892eccd2de491f3876dd4451e21e",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "a444ebe674aab4732760beaea16e9e0dd3923d44815fdfcc96f7f81709c7e88f",
         "src/odylith/runtime/evaluation/odylith_benchmark_execution_engine.py": "ef154db2abb91e081038bbf5342e7035ea43846d819733ffbb436bef28bd7b0c",
         "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md": "c7af6e5fb7e985eba2f9701fb5eabb53acf008fc79f955c046c838227a24fa41"
       },
@@ -3607,18 +3607,18 @@
         "odylith/registry/source/components/compass/CURRENT_SPEC.md": "fd50f5f2c09bb57c9407ac3cf37fa9f57cfb8d685b5ae7ce291643ed90b45367",
         "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md": "668208763751ee13271549baa9c18d517074a2f2c59e72790b29d1b456e7e9b9",
         "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md": "44c9e86bffa706d03b933cdcd6052d604b32fccb432d19696265f0c319dc4d20",
-        "src/odylith/runtime/intervention_engine": "ccf61b2e8d498c353375af2b18a606b19eba58ac53ff0572b0ce30750100d9e0",
+        "src/odylith/runtime/intervention_engine": "8da51f0e3266aae12cf22e2df75f018aa8c79b6758539ee82a63dd6b446c93d1",
         "src/odylith/runtime/intervention_engine/value_engine.py": "0fb0da256721038654a61592a858b0f6c26c9881137d27290ee54d142b720c00",
         "src/odylith/runtime/intervention_engine/value_engine_types.py": "31f9802ec2dadea4ed6c3295222edb31aa56e637cda04454d809c8d646a0819d",
         "src/odylith/runtime/intervention_engine/value_engine_selection.py": "8548774bb2815c55fed5d035c08dd61beb31d2e9610245af3012f770a2f8f9f9",
         "src/odylith/runtime/intervention_engine/value_engine_corpus.py": "c449a95725085f5b99687e07dc9fa0b8453a3777d3a8d171bbb1b5aa006f1ec8",
         "src/odylith/runtime/intervention_engine/alignment_evidence.py": "de189a29d9018da712e805daa1e781321dd2eafedf949658529f94f09b8df311",
         "src/odylith/runtime/intervention_engine/alignment_context.py": "3aea0629a492b11e476fb3587da575821ea77a7ea2c442625b7d2a48374b5788",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py": "06cc067b4f141cad04f30c470ab175e219d2892eccd2de491f3876dd4451e21e",
-        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "18653f1e237ddd22a1aab3663cd7b211d5cfdac45252be35caaa460103c70b52",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py": "a444ebe674aab4732760beaea16e9e0dd3923d44815fdfcc96f7f81709c7e88f",
+        "src/odylith/runtime/intervention_engine/conversation_runtime.py": "0bbf8e103c91b9acadd03d7b5f4d974f718c4017c250bd63680681e74aecb157",
         "src/odylith/runtime/evaluation/odylith_intervention_value_engine_benchmark.py": "5caecc514832dd71a4333dc751cbc59df9094fbfc6a421af765624eb418802c0",
         "src/odylith/install/value_engine_migration.py": "6e58105a9d50947e5556ed1fee45e518438612775f9c81819fcf66dafbbbe847",
-        "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json": "2b8481e0be552a772e8dce0e4b16ebcb94e52c3720508f6f9d157bf8c55a9825",
+        "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json": "3fcda46af2aaadb75e84468dee596c85dacfa215744e880dc03dabd6f7328163",
         "odylith/radar/source/programs/B-096.execution-waves.v1.json": "99fcb9ee4353705ebc975ec1a59b49c0e1212e77a12e6bc21ddca377a488a885",
         "src/odylith/runtime/surfaces/codex_host_prompt_context.py": "a79d8dfd5f483c7c9833ccb468bf81248b80cb9d6285ca218b2929c85255284a",
         "src/odylith/runtime/surfaces/claude_host_prompt_context.py": "4129dacec6fb966881d34c5e36d9f0f4cb367d7cf221014a63533d244366907c",

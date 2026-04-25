@@ -151,8 +151,7 @@ def test_preferred_replay_prioritizes_history_and_risks_ambient_over_interventio
     assert preferred == (
         "---\n\n"
         "**Odylith Risks:** A newer ambient note should not outrank the intervention block.\n"
-        "\n---\n\n"
-        "---\n\n"
+        "\n"
         "**Odylith Observation:** Replay the primary intervention block first.\n"
         "\n---"
     )
@@ -195,11 +194,65 @@ def test_preferred_replay_prioritizes_history_and_risks_over_plain_insight_ambie
     assert preferred == (
         "---\n\n"
         "**Odylith History:** Earlier history still matters more than a later generic insight.\n"
-        "\n---\n\n"
-        "---\n\n"
+        "\n"
         "**Odylith Insight:** A newer generic insight should not outrank history or risks.\n"
         "\n---"
     )
+
+
+def test_replay_folds_multiple_live_blocks_and_keeps_assist_last(tmp_path: Path) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="First observation.",
+        session_id="folded-replay",
+        host_family="codex",
+        intervention_key="folded-observation",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="---\n\n**Odylith Observation:** Replay the live block once.\n\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        metadata={"selected_block_set_id": "folded-set"},
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="ambient_signal",
+        summary="Ambient risk.",
+        session_id="folded-replay",
+        host_family="codex",
+        intervention_key="folded-risk",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="---\n\n**Odylith Risks:** Keep the visibility proof in frame.\n\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        metadata={"selected_block_set_id": "folded-set"},
+    )
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="assist_closeout",
+        summary="Assist closeout.",
+        session_id="folded-replay",
+        host_family="codex",
+        intervention_key="folded-assist",
+        turn_phase="stop_summary",
+        display_markdown="---\n\n**Odylith Assist:** close the replay with one final line.\n\n---",
+        delivery_channel="assistant_visible_fallback",
+        delivery_status="assistant_render_required",
+        metadata={"selected_block_set_id": "folded-set"},
+    )
+
+    replay = visibility_replay.replayable_chat_markdown(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="folded-replay",
+        include_assist=True,
+    )
+
+    assert replay.count("---") == 2
+    assert replay.startswith("---\n\n**Odylith Observation:** Replay the live block once.\n\n---")
+    assert "\n\n**Odylith Risks:** Keep the visibility proof in frame." in replay
+    assert replay.index("**Odylith Risks:**") < replay.index("**Odylith Assist:**")
+    assert replay.rsplit("\n", maxsplit=1)[-1] == "**Odylith Assist:** close the replay with one final line."
 
 
 def test_replay_does_not_resurrect_stale_teaser_after_later_live_block_is_confirmed(tmp_path: Path) -> None:

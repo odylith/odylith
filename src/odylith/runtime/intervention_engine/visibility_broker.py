@@ -196,10 +196,10 @@ def _wrap_live_text(value: str) -> str:
 def _visibility_failure_observation(*, host_family: str) -> str:
     host = _normalize_string(host_family).capitalize() or "This host"
     return _wrap_live_text(
-        "**Odylith Observation:** This is a visibility failure, not a quiet moment. "
-        f"{host} may be computing intervention payloads, but this chat has not proven "
-        "that hooks are actually rendering them, so the assistant has to show the "
-        "Odylith Markdown directly until the host path is visibly proven."
+        "**Odylith Observation:** This is a visibility failure in the chat transcript. "
+        f"{host} may be computing Odylith Observation, Proposal, Ambient, or Assist payloads, "
+        "but this chat has not proven that any of them reached the transcript, so the assistant "
+        "has to show the Odylith Markdown directly until visibility is proven here."
     )
 
 
@@ -302,9 +302,14 @@ def build_visible_intervention_decision(
         visibility_failure
         and "**Odylith Observation:**" not in visible
     ):
+        closeout = (
+            conversation_surface.render_closeout_text(bundle, markdown=True)
+            if include_closeout
+            else ""
+        )
         visible = visibility_contract.compose_visible_markdown(
             _visibility_failure_observation(host_family=normalized_host),
-            visible,
+            closeout,
         )
         forced_visible = True
     developer_context = _render_developer_context(
@@ -387,7 +392,7 @@ def append_decision_events(
     )
     if decision.visible_markdown and (
         not events
-        or "This is a visibility failure, not a quiet moment" in decision.visible_markdown
+        or "This is a visibility failure in the chat transcript" in decision.visible_markdown
     ):
         observation = _mapping(bundle.get("observation"))
         stream_state.append_intervention_event(

@@ -187,11 +187,12 @@ def replayable_chat_markdown(
         include_assist=include_assist,
         include_teaser=include_teaser,
     )
-    return "\n\n".join(
-        _normalize_block_string(row.get("display_markdown"))
-        for row in blocks
-        if _normalize_block_string(row.get("display_markdown"))
-    ).strip()
+    displays: list[str] = []
+    for row in blocks:
+        display = _normalize_block_string(row.get("display_markdown"))
+        if display:
+            displays.append(display)
+    return visibility_contract.compose_visible_markdown(*displays)
 
 
 def preferred_replayable_chat_markdown(

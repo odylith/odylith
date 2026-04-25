@@ -96,6 +96,10 @@ def test_render_prompt_system_message_appends_assist_for_visibility_feedback(tmp
     assert rendered.count("---") == 2
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
     assert "keeping Odylith visibility honest by naming the chat-visible complaint" in rendered
+    assert "Odylith is tracking this signal" not in rendered
+    assert "**Odylith Insight:**" not in rendered
+    assert "**Odylith Risks:**" not in rendered
+    assert "**Odylith History:**" not in rendered
 
 
 def test_render_prompt_system_message_keeps_assist_hidden_for_generic_failure(tmp_path: Path) -> None:

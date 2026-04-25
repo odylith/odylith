@@ -718,15 +718,9 @@
     },
     {
       "artifacts": [
-        "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
-        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
-        "src/odylith/runtime/intervention_engine/fact_producer_runtime.py",
-        "src/odylith/runtime/intervention_engine/signal_kernel.py",
-        "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
-        "src/odylith/runtime/surfaces/claude_host_prompt_teaser.py",
-        "src/odylith/runtime/surfaces/claude_host_stop_summary.py",
-        "src/odylith/runtime/surfaces/codex_host_prompt_context.py",
-        "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
+        "src/odylith/runtime/intervention_engine/conversation_runtime.py",
+        "src/odylith/runtime/intervention_engine/visibility_broker.py",
+        "src/odylith/runtime/intervention_engine/visibility_replay.py"
       ],
       "confidence": "high",
       "event_index": 363,
@@ -736,8 +730,8 @@
         "governance-intervention-engine"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md, odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md +7 more",
-      "ts_iso": "2026-04-25T12:48:38-07:00",
+      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/intervention_engine/conversation_runtime.py, src/odylith/runtime/intervention_engine/visibility_broker.py +1 more",
+      "ts_iso": "2026-04-25T13:27:41-07:00",
       "workstreams": []
     },
     {

@@ -503,14 +503,11 @@ def test_all_visible_lanes_clear_to_proven_session_for_both_hosts(
     assert checkpoint_report["assistant_visible_replay_markdown"] == (
         "---\n\n"
         "**Odylith History:** Earlier bug still matters.\n"
-        "\n---\n\n"
-        "---\n\n"
+        "\n"
         "**Odylith Risks:** New risk must surface.\n"
-        "\n---\n\n"
-        "---\n\n"
+        "\n"
         "**Odylith Observation:** The repo is ready for capture.\n"
-        "\n---\n\n"
-        "---\n\n"
+        "\n"
         "**Odylith Proposal:**\n"
         "Update governed truth now.\n\n"
         "- Refresh the component dossier.\n"
@@ -719,8 +716,7 @@ def test_intervention_status_prefers_ambient_risk_for_next_visible_replay(tmp_pa
     assert report["assistant_visible_replay_markdown"] == (
         "---\n\n"
         "**Odylith Risks:** Surface this ambient replay block before the generic intervention.\n"
-        "\n---\n\n"
-        "---\n\n"
+        "\n"
         "**Odylith Observation:** The generic intervention should not hide the ambient brand signal.\n"
         "\n---"
     )

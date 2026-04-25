@@ -290,11 +290,13 @@ def test_visible_intervention_fallback_markdown_is_transcript_visible_in_compact
     message = page.locator("#assistant-message")
     message.wait_for(timeout=15000)
     message.locator("text=Odylith Observation").wait_for(timeout=15000)
-    message.locator("text=visibility failure, not a quiet moment").wait_for(timeout=15000)
+    message.locator("text=visibility failure in the chat transcript").wait_for(timeout=15000)
     rendered_text = message.inner_text().strip()
     assert rendered_text.startswith("---\n\n**Odylith Observation:**")
     assert not rendered_text.lstrip().startswith("{")
     assert "assistant has to show the Odylith Markdown directly" in rendered_text
+    assert "Odylith is tracking this signal" not in rendered_text
+    assert rendered_text.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
     _assert_node_has_no_horizontal_overflow(message)
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

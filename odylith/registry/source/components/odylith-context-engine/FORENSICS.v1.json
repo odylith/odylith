@@ -42,10 +42,10 @@
     "empty_reasons": [],
     "explicit_event_count": 152,
     "mapped_workstream_evidence_count": 109,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 152
+    "timeline_event_count": 153
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -715,6 +715,22 @@
         "B-109",
         "B-110"
       ]
+    },
+    {
+      "artifacts": [
+        "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 364,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/intervention-value-adjudication-corpus.v1.json",
+      "ts_iso": "2026-04-25T13:07:10-07:00",
+      "workstreams": []
     },
     {
       "artifacts": [],

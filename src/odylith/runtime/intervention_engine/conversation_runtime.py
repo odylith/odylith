@@ -978,11 +978,11 @@ def _compose_insight_signal(
         markdown_refs = _join_items([str(row.get("markdown_ref", "")).strip() for row in refs[:2]])
         plain_refs = _join_items([str(row.get("plain_ref", "")).strip() for row in refs[:2]])
         markdown_text = (
-            f"{_label('insight', markdown=True)} this looks more like {cause_phrase} than code sprawl. "
+            f"{_label('insight', markdown=True)} this is a delivery-proof problem: {cause_phrase}. "
             f"Keep {markdown_refs or 'the real anchors'} in frame before widening again."
         )
         plain_text = (
-            f"{_label('insight', markdown=False)} this looks more like {cause_phrase} than code sprawl. "
+            f"{_label('insight', markdown=False)} this is a delivery-proof problem: {cause_phrase}. "
             f"Keep {plain_refs or 'the real anchors'} in frame before widening again."
         )
         return _signal_payload(kind="insight", metrics=metrics, markdown_text=markdown_text, plain_text=plain_text, facts=latent_causes[:2], refs=refs[:2], render_hint="explicit_label", confidence="high")
@@ -1463,16 +1463,21 @@ def compose_conversation_bundle(
             payload["render_hint"] = "supplemental_line"
     selected_supplemental = ""
     if assist.get("eligible"):
-        for key in _SUPPLEMENTAL_PRIORITY:
-            payload = closeout_signals[key]
-            if not payload["eligible"]:
-                continue
-            if not _signal_adds_new_information(signal=payload, assist=assist):
-                closeout_signals[key] = _suppressed_closeout_signal(payload, reason="overlaps_assist")
-                continue
-            if payload["eligible"]:
-                selected_supplemental = key
-                break
+        if _normalize_token(assist.get("style")) == "visibility_continuity":
+            for key, payload in closeout_signals.items():
+                if payload.get("eligible"):
+                    closeout_signals[key] = _suppressed_closeout_signal(payload, reason="visibility_continuity_assist_only")
+        else:
+            for key in _SUPPLEMENTAL_PRIORITY:
+                payload = closeout_signals[key]
+                if not payload["eligible"]:
+                    continue
+                if not _signal_adds_new_information(signal=payload, assist=assist):
+                    closeout_signals[key] = _suppressed_closeout_signal(payload, reason="overlaps_assist")
+                    continue
+                if payload["eligible"]:
+                    selected_supplemental = key
+                    break
     else:
         for key, payload in closeout_signals.items():
             if payload.get("eligible"):
