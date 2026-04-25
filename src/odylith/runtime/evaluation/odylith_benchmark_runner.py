@@ -46,6 +46,7 @@ from odylith.runtime.common.python_source_parse import (
 from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_snapshot_paths
+from odylith.runtime.evaluation.odylith_benchmark_tree_identity import stable_snapshot_overlay_paths
 from odylith.runtime.evaluation import odylith_benchmark_acceptance
 from odylith.runtime.evaluation import odylith_benchmark_mode
 from odylith.runtime.evaluation import odylith_benchmark_isolation
@@ -1221,13 +1222,7 @@ def _safe_resolve_path(path: Path) -> Path | None:
 
 
 def _snapshot_overlay_fingerprint(*, repo_root: Path, snapshot_paths: Sequence[str]) -> str:
-    normalized_paths = _dedupe_path_strings(
-        [
-            normalized
-            for token in snapshot_paths
-            if (normalized := _stable_snapshot_overlay_path(token))
-        ]
-    )
+    normalized_paths = _dedupe_path_strings(stable_snapshot_overlay_paths(snapshot_paths))
     if not normalized_paths:
         return ""
     existing_paths = [
@@ -5425,21 +5420,7 @@ def _result_snapshot_overlay_paths(result: Mapping[str, Any]) -> list[str]:
     effective_paths = live_execution.get("effective_snapshot_paths", [])
     if not isinstance(effective_paths, list):
         return []
-    paths: list[str] = []
-    for token in effective_paths:
-        normalized = _stable_snapshot_overlay_path(token)
-        if normalized:
-            paths.append(normalized)
-    return paths
-
-
-def _stable_snapshot_overlay_path(token: object) -> str:
-    path = str(token).strip().replace("\\", "/")
-    while path.startswith("./"):
-        path = path[2:]
-    if not path or path == ".odylith" or path.startswith(".odylith/"):
-        return ""
-    return path
+    return stable_snapshot_overlay_paths(effective_paths)
 
 
 def _report_snapshot_overlay_paths(scenario_reports: Sequence[Mapping[str, Any]]) -> list[str]:
