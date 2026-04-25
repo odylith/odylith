@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from odylith.runtime.intervention_engine import conversation_runtime
+from odylith.runtime.intervention_engine import conversation_closeout
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
@@ -49,7 +49,7 @@ def render_visible_intervention(
     proposal = normalized_phase not in {"prompt_submit", "userpromptsubmit", "stop_summary"}
     if include_proposal is not None:
         proposal = bool(include_proposal)
-    visibility_feedback = conversation_runtime.visibility_feedback_requested(
+    visibility_feedback = conversation_closeout.visibility_feedback_requested(
         prompt=prompt,
         assistant_summary=summary,
     )

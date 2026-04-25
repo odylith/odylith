@@ -229,7 +229,6 @@ RUNTIME_HOTFILE_LIMITS = {
     "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py": 1985,
     "src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py": 1940,
     "src/odylith/runtime/memory/odylith_memory_backend.py": 1849,
-    "src/odylith/runtime/intervention_engine/conversation_runtime.py": 1599,
     "src/odylith/runtime/evaluation/odylith_evaluation_ledger.py": 1576,
     "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py": 1576,
     "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": 1556,
@@ -1326,6 +1325,38 @@ def test_intervention_and_host_surfaces_use_shared_normalization_and_join_helper
     ).read_text(encoding="utf-8")
     assert "def _dedupe_strings(" not in delivery_runtime_text
     assert "visibility_contract.normalize_string_list(rows)" in delivery_runtime_text
+
+
+def test_conversation_closeout_ownership_stays_decomposed() -> None:
+    conversation_runtime_text = (
+        ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "conversation_runtime.py"
+    ).read_text(encoding="utf-8")
+    conversation_closeout_text = (
+        ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "conversation_closeout.py"
+    ).read_text(encoding="utf-8")
+    conversation_artifacts_text = (
+        ROOT / "src" / "odylith" / "runtime" / "intervention_engine" / "conversation_artifacts.py"
+    ).read_text(encoding="utf-8")
+    host_support_text = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "host_intervention_support.py"
+    ).read_text(encoding="utf-8")
+    host_visible_text = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "host_visible_intervention.py"
+    ).read_text(encoding="utf-8")
+
+    assert len(conversation_runtime_text.splitlines()) < 800
+    assert "def compose_closeout_assist(" not in conversation_runtime_text
+    assert "def visibility_feedback_requested(" not in conversation_runtime_text
+    assert "def _visibility_feedback_phrase(" not in conversation_runtime_text
+    assert "_artifact_ref = conversation_artifacts." not in conversation_runtime_text
+    assert "_field = conversation_common." not in conversation_runtime_text
+    assert "def compose_closeout_assist(" in conversation_closeout_text
+    assert "def visibility_feedback_requested(" in conversation_closeout_text
+    assert "def resolve_updated_artifacts(" in conversation_artifacts_text
+    assert "conversation_closeout.visibility_feedback_requested(" in host_support_text
+    assert "conversation_closeout.visibility_feedback_requested(" in host_visible_text
+    assert "conversation_runtime.visibility_feedback_requested(" not in host_support_text
+    assert "conversation_runtime.visibility_feedback_requested(" not in host_visible_text
 
 
 def test_selected_runtime_and_install_slices_use_shared_json_release_and_severity_owners() -> None:

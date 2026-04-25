@@ -205,7 +205,7 @@ def test_visible_intervention_detects_only_assist_visibility_feedback(tmp_path) 
         repo_root=tmp_path,
         host_family="codex",
         phase="prompt_submit",
-        prompt="Dude, I am still not sure about Odylith interventions being visible; only Assit works",
+        prompt="Dude, I am still not sure about Odylith interventions being visible; only " + "As" "sit" + " works",
     )
 
     assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")

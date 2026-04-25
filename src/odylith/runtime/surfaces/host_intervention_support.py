@@ -7,7 +7,7 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import alignment_context
-from odylith.runtime.intervention_engine import conversation_runtime
+from odylith.runtime.intervention_engine import conversation_closeout
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import fact_producer_runtime
 from odylith.runtime.intervention_engine import host_surface_runtime
@@ -177,7 +177,7 @@ def render_prompt_system_message(
         bundle_override=conversation_bundle_override,
         intervention_bundle_override=intervention_bundle_override,
     )
-    include_closeout = conversation_runtime.visibility_feedback_requested(prompt=prompt)
+    include_closeout = conversation_closeout.visibility_feedback_requested(prompt=prompt)
     if include_closeout and not conversation_surface.render_closeout_text(bundle, markdown=True):
         bundle = host_surface_runtime.compose_host_conversation_bundle(
             repo_root=root,

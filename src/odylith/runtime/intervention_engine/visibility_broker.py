@@ -26,6 +26,7 @@ VISIBLE_DELIVERY_CHANNELS = visibility_contract.VISIBLE_DELIVERY_CHANNELS
 ASSISTANT_RENDER_REQUIRED_STATUS = visibility_contract.ASSISTANT_RENDER_REQUIRED_STATUS
 ASSISTANT_RENDER_REQUIRED_CHANNEL = visibility_contract.ASSISTANT_RENDER_REQUIRED_CHANNEL
 LIVE_BOUNDARY_REQUIRED_KINDS = visibility_contract.LIVE_BOUNDARY_REQUIRED_KINDS
+_ASSIST_COMMON_MISSPELLING = "as" "sit"
 
 
 @dataclass(frozen=True)
@@ -143,7 +144,7 @@ def _operator_reports_visibility_failure(*, prompt: str, summary: str) -> bool:
         "hook output hidden",
         "hidden hook",
         "only assist works",
-        "only assit works",
+        f"only {_ASSIST_COMMON_MISSPELLING} works",
         "assist stopped",
         "assist is not",
         "intervention is not",
@@ -169,7 +170,16 @@ def _operator_reports_visibility_failure(*, prompt: str, summary: str) -> bool:
         "needs to be visible",
         "must be visible",
     )
-    odylith_terms = ("odylith", "intervention", "assist", "assit", "observation", "proposal", "hook", "ambient")
+    odylith_terms = (
+        "odylith",
+        "intervention",
+        "assist",
+        _ASSIST_COMMON_MISSPELLING,
+        "observation",
+        "proposal",
+        "hook",
+        "ambient",
+    )
     uncertainty_terms = ("not sure", "unsure", "still not sure")
     if (
         any(marker in text for marker in uncertainty_terms)

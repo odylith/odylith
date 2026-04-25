@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.intervention_engine import delivery_runtime
+from odylith.runtime.intervention_engine import conversation_artifacts
+from odylith.runtime.intervention_engine import conversation_metrics
 from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 
@@ -888,8 +890,8 @@ def test_conversation_bundle_reuses_metrics_and_context_scan_for_closeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     counts = {"metrics": 0, "context_rows": 0}
-    original_metrics = conversation_runtime._evidence_metrics
-    original_context_rows = conversation_runtime._context_artifact_rows
+    original_metrics = conversation_metrics.evidence_metrics
+    original_context_rows = conversation_artifacts.context_artifact_rows
 
     def counting_metrics(*, request: object, decision: object, adoption: object) -> dict[str, object]:
         counts["metrics"] += 1
@@ -899,8 +901,8 @@ def test_conversation_bundle_reuses_metrics_and_context_scan_for_closeout(
         counts["context_rows"] += 1
         return original_context_rows(repo_root=repo_root, value=value)
 
-    monkeypatch.setattr(conversation_runtime, "_evidence_metrics", counting_metrics)
-    monkeypatch.setattr(conversation_runtime, "_context_artifact_rows", counting_context_rows)
+    monkeypatch.setattr(conversation_metrics, "evidence_metrics", counting_metrics)
+    monkeypatch.setattr(conversation_artifacts, "context_artifact_rows", counting_context_rows)
     request = orchestrator.OrchestrationRequest(
         prompt="Tighten the chatter contract.",
         workstreams=["B-031"],
