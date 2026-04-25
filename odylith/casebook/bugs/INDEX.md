@@ -1,11 +1,13 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-24
+Last updated (UTC): 2026-04-25
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-126 | 2026-04-25 | Benchmark tree identity fix regrows oversized runner hotfile failure | P2 | benchmark | Open | [2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md](2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md) |
+| CB-125 | 2026-04-25 | Benchmark proof identity includes mutable ignored runtime aliases | P1 | benchmark | Open | [2026-04-25-benchmark-proof-identity-includes-mutable-ignored-runtime-aliases.md](2026-04-25-benchmark-proof-identity-includes-mutable-ignored-runtime-aliases.md) |
 | CB-124 | 2026-04-24 | Benchmark disposable worktrees resolve validators against a non benchmark ready | P1 | benchmark | Open | [2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md](2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md) |
 | CB-122 | 2026-04-17 | Intervention hooks report ready while chat sees zero visible odylith beats | P0 | governance-intervention-engine | Open | [2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md](2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md) |
 | CB-123 | 2026-04-17 | Bootstrap signal corpus can be mistaken for calibrated ml quality | P1 | governance-intervention-engine, benchmark, odylith-context-engine | Open | [2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md](2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md) |
