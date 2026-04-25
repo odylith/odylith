@@ -228,102 +228,69 @@ The example below shows case `CB-009` inside the Casebook shell.
 
 ## Benchmarks
 
+### v0.1.11 Current Benchmark Report
+
 Odylith publishes two benchmark views and keeps their claims separate:
 
-- `Internal Diagnostic Benchmark` (`--profile diagnostic`): measures how well
-  Odylith builds the right grounded context before the live agent run
-- `Live Benchmark` (`--profile proof`): measures how well Odylith completes
-  the real task end to end as a full-product assistance stack against the raw
-  host CLI
+- `Live Benchmark` (`--profile proof`): the product-claim lane, comparing the
+  full Odylith assistance stack against the raw host CLI lane, named
+  `odylith_off` in README framing
+- `Internal Diagnostic Benchmark` (`--profile diagnostic`): a tuning lane that
+  measures packet and prompt construction before any live host session begins
 
-In README framing, `odylith_off` is the raw host CLI lane.
+Current live proof report:
+[44f2a3d83d2c9975](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
+generated `2026-04-25T11:19:38Z`, status `provisional_pass`.
 
-Current public proof posture is local-first memory on LanceDB plus Tantivy.
-These are first public eval runs and should be read as a baseline, not a
-ceiling. Odylith supports both Codex and Claude Code, but the current
-published live proof is still Codex-host-scoped; the benchmark contract itself
-is host-neutral. Odylith wins by grounding and operationalizing shared repo
-truth better, not by hiding truth from the baseline lane or by quietly using
-undeclared benchmark affordances.
+Current diagnostic report:
+[9dcae95d5bb62c75](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
+generated `2026-04-25T11:20:25Z`, status `provisional_pass`.
 
-### Internal Diagnostic Benchmark
+Both reports use local-first memory on LanceDB plus Tantivy sparse recall.
+Remote retrieval is disabled in the selected reports. The current published
+live proof is Codex-host-scoped; the benchmark contract itself is
+host-neutral.
 
-> [!NOTE]
-> The Internal Diagnostic Benchmark (`--profile diagnostic`) is not the
-> product claim. It isolates packet and prompt construction quality before any
-> live host session begins.
+| Signal | Current live proof delta versus `odylith_off` |
+| --- | ---: |
+| Required-path recall | `+0.258` |
+| Required-path precision | `+0.421` |
+| Hallucinated-surface rate | `-0.397` |
+| Validation success | `+0.081` |
+| Critical required-path recall | `+0.206` |
+| Critical validation success | `+0.097` |
+| Expectation success | `+0.688` |
+| Write-surface precision | `+0.011` |
+| Unnecessary widening | `-0.011` |
+| Median live-session input tokens | `-206,626` |
+| Median total model tokens | `-209,404` |
+| Median time to valid outcome | `-1m 28s` |
 
-The Internal Diagnostic Benchmark answers:
+Publication status:
 
-- "Does Odylith build a better grounded packet/prompt than `odylith_off`?"
-- "What is the prep-time and prompt-size cost of Odylith’s retrieval/memory layer?"
-- "Does Odylith improve required-path coverage before the model starts working?"
+- hard-gate blockers: none
+- fairness contract passed: `True`
+- corpus seriousness floor passed: `True`
+- tracked-corpus coverage: `82 / 82` scenarios
+- full matched pairs: `164` across `warm` and `cold`
+- conservative published comparison: `82` same-scenario pairs
+- warm/cold robustness consistency: `True`
 
-Diagnostic benchmark snapshot:
-[Current Internal Diagnostic Benchmark Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md)
+Read the timing and token wins as benchmark wall-clock and full-session spend,
+not solo-user interactive latency. Scenario-declared focused checks and no-op
+proxy evidence are part of the declared benchmark contract and remain visible
+in the machine-readable reports.
 
-Diagnostic benchmark tables:
-[Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md)
+Full current artifacts:
+[Live Snapshot](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
+[Diagnostic Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
+[Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md), and
+[How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md).
+The versioned GitHub artifact bundle, including the compressed raw source
+truth, is stored under
+[docs/benchmarks/v0.1.11](docs/benchmarks/v0.1.11/README.md).
 
-#### Diagnostic Graphs
-
-Read the current diagnostic outcome in the linked snapshot and tables. The
-graphs below should be interpreted together with the generated diagnostic
-snapshot, not as standalone claims detached from the selected report.
-
-<p align="center">
-  <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-family-heatmap.svg"
-    alt="Odylith grounding benchmark family heatmap"
-    width="100%"
-  />
-</p>
-<p align="center">
-  <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-quality-frontier.svg"
-    alt="Odylith grounding benchmark quality frontier"
-    width="100%"
-  />
-</p>
-<p align="center">
-  <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-frontier.svg"
-    alt="Odylith grounding benchmark frontier"
-    width="100%"
-  />
-</p>
-<p align="center">
-  <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-operating-posture.svg"
-    alt="Odylith grounding benchmark operating posture"
-    width="100%"
-  />
-</p>
-
-### Live Benchmark
-
-> [!TIP]
-> The Live Benchmark (`--profile proof`) is the product-claim lane. Read the
-> current generated snapshot for the active proof status instead of relying on
-> stale README prose.
-
-The Live Benchmark answers:
-
-- "Does Odylith beat the raw host CLI on the same live end-to-end task contract?"
-- "What is the full matched-pair time to valid outcome?"
-- "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
-
-Live benchmark snapshot:
-[Current Live Benchmark Snapshot](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md)
-
-Live benchmark tables:
-[Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md)
-
-#### Live Graphs
-
-Read the current live-proof outcome in the linked snapshot and tables. The
-graphs below should be read as report-backed views of the selected proof
-artifact, not as a second hand-maintained benchmark claim in the README.
+#### Current Live Graphs
 
 <p align="center">
   <img
@@ -354,8 +321,83 @@ artifact, not as a second hand-maintained benchmark claim in the README.
   />
 </p>
 
-Need help reading the graphs, reports, and artifacts? See
-[How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md).
+#### Current Diagnostic Graphs
+
+<p align="center">
+  <img
+    src="docs/benchmarks/diagnostic/odylith-benchmark-family-heatmap.svg"
+    alt="Odylith grounding benchmark family heatmap"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/diagnostic/odylith-benchmark-quality-frontier.svg"
+    alt="Odylith grounding benchmark quality frontier"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/diagnostic/odylith-benchmark-frontier.svg"
+    alt="Odylith grounding benchmark frontier"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/diagnostic/odylith-benchmark-operating-posture.svg"
+    alt="Odylith grounding benchmark operating posture"
+    width="100%"
+  />
+</p>
+
+### v0.1.10 Benchmark Archive
+
+The previous README-backed benchmark bundle is retained under
+[docs/benchmarks/v0.1.10](docs/benchmarks/v0.1.10/README.md) instead of being
+mixed into the current v0.1.11 claim.
+
+- archived live proof snapshot: report `2d8444952aef28d2`, generated
+  `2026-04-24T00:57:09Z`, status `hold`
+- archived diagnostic snapshot: report `dd35a4aab061f49f`, generated before
+  the v0.1.11 refresh
+- archived legacy graph set: report `926bfeab4e887ade`, retained from the
+  older unprofiled graph filenames
+
+<details>
+<summary>v0.1.10 archived live graphs</summary>
+
+<p align="center">
+  <img
+    src="docs/benchmarks/v0.1.10/proof/odylith-benchmark-family-heatmap.svg"
+    alt="Archived Odylith live benchmark family heatmap"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/v0.1.10/proof/odylith-benchmark-quality-frontier.svg"
+    alt="Archived Odylith live benchmark quality frontier"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/v0.1.10/proof/odylith-benchmark-frontier.svg"
+    alt="Archived Odylith live benchmark frontier"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/v0.1.10/proof/odylith-benchmark-operating-posture.svg"
+    alt="Archived Odylith live benchmark operating posture"
+    width="100%"
+  />
+</p>
+
+</details>
 
 ## Best Fit Use Cases
 

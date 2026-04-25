@@ -129,12 +129,17 @@ not copied into this overview by hand:
 - `docs/benchmarks/latest-summary.v1.json`
 - `docs/benchmarks/proof/*.svg`
 - `docs/benchmarks/diagnostic/*.svg`
+- `docs/benchmarks/v0.1.11/`
+  versioned GitHub artifact bundle for the current proof, including compressed
+  raw source truth, provenance, rendered docs, and graphs
+- `docs/benchmarks/v0.1.10/`
+  previous README-backed benchmark archive
 
-Tracked source truth is currently ahead of some older published artifacts, so
-do not infer release-safe benchmark posture from stale report ids embedded in
-overview prose. The serious claim only refreshes when the selected proof report,
-generated snapshot docs, README-linked profile graph artifacts, and registry or
-governance truth all move together on the same validated tree.
+Do not infer release-safe benchmark posture from stale report ids outside the
+current snapshot or versioned artifact folders. The serious claim only
+refreshes when the selected proof report, generated snapshot docs,
+README-linked profile graph artifacts, and registry or governance truth all
+move together on the same validated tree.
 
 ## Fair Comparison Protocol
 
