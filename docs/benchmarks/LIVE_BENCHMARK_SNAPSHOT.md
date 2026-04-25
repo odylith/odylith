@@ -10,7 +10,7 @@ Current Live Benchmark report: `44f2a3d83d2c9975` from `2026-04-25T11:19:38Z` wi
 The latest live benchmark ran `82` seeded scenarios across matched cache profile(s) `warm` and `cold` under the declared comparison contract `full_product_assistance_vs_raw_agent`.
 That produced `164` full matched pairs. The published comparison keeps the conservative same-scenario view at `82` pairs.
 
-Current proof posture is local-first on `lance_local_columnar` plus `tantivy_sparse_recall`. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
+Current proof posture is local-first on the Odylith Memory Substrate. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
 
 ## Headline Movement
 
@@ -43,7 +43,7 @@ There are no hard-gate blockers on this report.
 
 ## Reading Notes
 
-- Time to valid outcome and full-session token spend stay published as diagnostics, not status blockers.
-- Current proof posture is local-first on `lance_local_columnar` plus `tantivy_sparse_recall`. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
-- Operating-posture diagnostics: auto-grounded `100.0%`, delegated `0.0%`, widening `1.2%`, and workspace-daemon reuse `0.0%`.
+- Time to valid outcome and full-session token spend stay published as readouts, not status blockers.
+- Current proof posture is local-first on the Odylith Memory Substrate. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
+- Operating-posture readouts: auto-grounded `100.0%`, delegated `0.0%`, widening `1.2%`, and workspace-daemon reuse `0.0%`.
 - Warm/cold robustness consistency cleared: `True`.

@@ -27,10 +27,10 @@ Treat benchmark profiles separately:
 
 - `quick`: local developer signal only
 - `proof`: governing product benchmark
-- `diagnostic`: packet-and-prompt tuning view only
+- Grounding Benchmark: packet-and-prompt tuning view only
 
-Do not review a `quick` or `diagnostic` report as if it were the canonical
-publication proof.
+Do not review a `quick` or Grounding Benchmark report as if it were the
+canonical publication proof.
 
 ## What To Separate
 
@@ -98,12 +98,13 @@ Rules:
 - Hold the public pair to the same live host CLI model and reasoning contract for the proof host under review.
 - Expect the public pair to run in an isolated temporary host home with no auto-consumed personal instructions, plugins, or repo guidance entrypoints in the disposable workspace.
 - Expect truth-bearing repo docs to remain available for explicit reads.
-- Treat `proof` as the governing benchmark and `diagnostic` as mechanism-only evidence.
+- Treat `proof` as the governing benchmark and the Grounding Benchmark as mechanism-only evidence.
 - Use this evaluation order: correctness and non-regression, grounding recall and precision, validation success and execution fit, robustness and consistency, latency to a valid outcome, prompt or payload efficiency, bounded budget behavior.
 - Treat tiers 1-4 as the hard quality gate.
 - Treat memory, Registry, Atlas, Compass, orchestration, and related surfaces as mechanisms unless you tie them to an execution consequence.
 - Keep these sections separate: `What Odylith proves today`, `What Odylith plausibly helps but has not benchmarked yet`, and `What is missing or weak in the current product`.
-- Preserve current lane truth: published measured benchmark proof is Codex-host-scoped today.
+- Preserve current lane truth: the full live proof was executed on Codex, while
+  Codex and Claude quick smokes provide bounded host-agnostic coverage.
 
 Required output shape:
 1. Claim being tested

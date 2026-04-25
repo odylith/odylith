@@ -3,8 +3,8 @@
 `proof` is the governing benchmark.
 
 The live `proof` lane is the product comparison and the primary optimization
-target. The `diagnostic` lane is the packet-and-prompt tuning surface. A
-diagnostic win that harms `proof` is a regression.
+target. The Grounding Benchmark is the packet-and-prompt tuning surface. A
+Grounding Benchmark win that harms `proof` is a regression.
 
 The primary public question is:
 
@@ -55,7 +55,7 @@ Current live-proof secondary guardrail:
 
 - `within_budget_rate >= 0.80` on packet-backed sampled slices
 
-Current diagnostic-lane efficiency guardrails:
+Current Grounding Benchmark lane efficiency guardrails:
 
 - median prompt-bundle delta `<= +64` tokens
 - median total-payload delta `<= +96` tokens
@@ -161,7 +161,7 @@ the published proof both clear these bars:
 - the latest published proof covers the full current tracked corpus, not a
   stale subset
 
-Packet-only diagnostic scenarios may use bounded `benchmark.packet_fixture`
+Packet-only Grounding Benchmark scenarios may use bounded `benchmark.packet_fixture`
 data to restore declared proof-state or external-state fields into the packet
 seam, but that mechanism is scaffolding for packet-truth evaluation only. It
 does not waive the live fairness contract and it does not add hidden credit to

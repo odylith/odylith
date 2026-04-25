@@ -19,7 +19,7 @@ This folder explains the benchmark graphs published in the root
 
 Related docs:
 
-- [Current Internal Diagnostic Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
+- [Current Grounding Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
 - [Benchmark Tables](BENCHMARK_TABLES.md)
 - [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
 - [Benchmark Families And Eval Catalog](FAMILIES_AND_EVALS.md)
@@ -36,10 +36,10 @@ The canonical public proof compares two host-matched lanes on the same task:
   execution-engine posture, truthful next-move guidance, and bounded
   orchestration or recovery policy.
 - `odylith_off`
-  is the public name for the raw host CLI lane. Internally the report may
-  still store this as `raw_agent_baseline`, but the lane itself is the same
-  live host CLI with no Odylith packet and no auto-consumed repo guidance
-  entrypoints in the disposable benchmark workspace.
+  is the public name for the raw host CLI lane. Internally the report may still
+  store this as `raw_agent_baseline`, but the lane itself is the same live CLI
+  with no Odylith packet and no auto-consumed repo guidance entrypoints in the
+  disposable benchmark workspace.
 
 The public headline comparison is:
 
@@ -54,22 +54,22 @@ Secondary lanes still exist for diagnosis:
 
 Those secondary lanes are not the public headline claim.
 
-The profiles answer different questions:
+The published benchmark views answer different questions:
 
-- `proof`
+- `Live Benchmark`
   Does the full Odylith assistance stack beat the raw host CLI on the same
   live end-to-end task contract?
-- `diagnostic`
+- `Grounding Benchmark`
   Does Odylith build a better grounded packet or prompt than `odylith_off`
-  before the live run starts? This is an internal diagnostic lane, not the
-  product claim.
+  before the live run starts? This is mechanism evidence, not the product
+  claim.
 
-`proof` governs the product claim. `diagnostic` only matters when it preserves
-or improves `proof`.
+The Live Benchmark governs the product claim. The Grounding Benchmark only
+matters when it preserves or improves the Live Benchmark.
 
-The current published measured proof is Codex-host-scoped. Claude Code may
-still benefit from the same grounding and governance surfaces, but that is not
-yet Claude-host benchmark proof.
+The current full live proof was executed on Codex. Codex and Claude quick
+smokes provide bounded host-agnostic coverage, and a full Claude-host proof
+would be a separate published benchmark run.
 
 Tracked source truth now carries a more serious benchmark corpus than the last
 published reports: `82` tracked scenarios (`77` implementation plus `5`
@@ -90,22 +90,21 @@ for the detailed closeout wording contract. Keep the benchmark lane metadata-
 only: do not widen required paths, hot-path docs, or validation commands just
 to narrate Odylith.
 
-## Run Profiles
+## Run Views
 
-Odylith exposes three benchmark profiles:
+Odylith publishes three benchmark views:
 
 - `quick`
   local developer signal on the honest public pair
-- `proof`
+- `Live Benchmark`
   full publication proof on the live `odylith_on` versus `odylith_off` pair
-- `diagnostic`
+- `Grounding Benchmark`
   packet-and-prompt tuning without the live end-to-end host pair
 
 Canonical commands:
 
 - `./.odylith/bin/odylith benchmark --repo-root .`
 - `./.odylith/bin/odylith benchmark --repo-root . --profile proof`
-- `./.odylith/bin/odylith benchmark --repo-root . --profile diagnostic`
 
 The main machine-readable artifacts are:
 
@@ -113,8 +112,8 @@ The main machine-readable artifacts are:
   latest full-corpus proof artifact
 - `.odylith/runtime/odylith-benchmarks/latest-proof.v1.json`
   proof alias
-- `.odylith/runtime/odylith-benchmarks/latest-diagnostic.v1.json`
-  diagnostic alias
+- versioned raw-source bundle
+  archived Grounding Benchmark source JSON and logs
 - `docs/benchmarks/release-baselines.v1.json`
   versioned passing proof baselines
 
@@ -123,12 +122,12 @@ The main machine-readable artifacts are:
 Current published artifacts should be read from the generated snapshot files,
 not copied into this overview by hand:
 
-- [Current Internal Diagnostic Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
+- [Current Grounding Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
 - [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
 - [Benchmark Tables](BENCHMARK_TABLES.md)
 - `docs/benchmarks/latest-summary.v1.json`
 - `docs/benchmarks/proof/*.svg`
-- `docs/benchmarks/diagnostic/*.svg`
+- `docs/benchmarks/grounding/*.svg`
 - `docs/benchmarks/v0.1.11/`
   versioned GitHub artifact bundle for the current proof, including compressed
   raw source truth, provenance, rendered docs, and graphs
@@ -182,7 +181,8 @@ Important reading rule:
   not solo-user interactive latency
 - live proof token cost is full multi-turn host session spend, not just the
   first prompt
-- prompt-bundle efficiency belongs to `diagnostic`, not to the live proof lane
+- prompt-bundle efficiency belongs to the Grounding Benchmark, not to the live
+  proof lane
 
 ## How Status Is Gated
 
@@ -285,8 +285,8 @@ The machine-readable sources are:
 
 - `.odylith/runtime/odylith-benchmarks/latest.v1.json`
 - `.odylith/runtime/odylith-benchmarks/latest-proof.v1.json`
-- `.odylith/runtime/odylith-benchmarks/latest-diagnostic.v1.json`
+- versioned raw-source bundle with the Grounding Benchmark source JSON
 - `docs/benchmarks/release-baselines.v1.json`
 
 The generated graphs in this folder are derived from those active proof and
-diagnostic artifacts.
+Grounding Benchmark artifacts.

@@ -18,8 +18,8 @@ The source of truth is
   `guidance_behavior`, and `discipline`
 - Current published proof snapshot:
   read [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
-- Current published diagnostic snapshot:
-  read [Current Internal Diagnostic Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
+- Current published Grounding Benchmark snapshot:
+  read [Current Grounding Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
 - Publication note:
   publication claims are only current when the selected report, generated
   snapshot docs, tables, graphs, and supporting governance truth are refreshed
@@ -53,7 +53,7 @@ proof:
 - `governed_surface_sync`
 - `orchestration_feedback`
 
-Current diagnostic weak families:
+Current Grounding Benchmark weak families:
 
 - `browser_surface_reliability`
 - `install_upgrade_runtime`
@@ -69,7 +69,7 @@ The current hardening wave made the benchmark more serious by adding:
 - external wait/resume cases with semantic receipts and preflight evidence
 - destructive-scope cases where fail-closed execution matters
 
-For packet-only diagnostic families, some scenarios now also declare a bounded
+For packet-only Grounding Benchmark families, some scenarios now also declare a bounded
 `benchmark.packet_fixture`. That fixture is not a free extra truth channel. It
 exists only to seed the exact proof-state, routing, or external-state fields
 that the scenario is explicitly testing in packet carry-through, and it stays

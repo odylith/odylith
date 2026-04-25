@@ -232,24 +232,95 @@ The example below shows case `CB-009` inside the Casebook shell.
 
 Odylith publishes two benchmark views and keeps their claims separate:
 
-- `Live Benchmark` (`--profile proof`): the product-claim lane, comparing the
-  full Odylith assistance stack against the raw host CLI lane, named
-  `odylith_off` in README framing
-- `Internal Diagnostic Benchmark` (`--profile diagnostic`): a tuning lane that
-  measures packet and prompt construction before any live host session begins
+- `Grounding Benchmark`: measures how well Odylith builds the right grounded
+  context before the live agent run
+- `Live Benchmark`: measures how well Odylith completes the real task end to
+  end against the raw host CLI
+
+In README framing, `odylith_off` is the raw host CLI lane.
+
+Current v0.1.11 public proof posture is local-first on the Odylith Memory
+Substrate. These are first public eval runs and should be read as a baseline,
+not a ceiling. The current full live proof was executed on Codex, while bounded
+Codex and Claude smokes provide host-agnostic coverage and the benchmark
+contract remains host-neutral. Odylith wins by grounding and operationalizing
+shared repo truth better, not by hiding truth from the baseline lane or quietly
+using undeclared benchmark affordances.
+
+### Grounding Benchmark
+
+> [!NOTE]
+> The Grounding Benchmark is not the product claim. It isolates packet and
+> prompt construction quality before any live host session begins.
+
+The Grounding Benchmark answers:
+
+- "Does Odylith build a better grounded packet/prompt than `odylith_off`?"
+- "What is the prep-time and prompt-size cost of Odylith's retrieval/memory layer?"
+- "Does Odylith improve required-path coverage before the model starts working?"
+
+Current grounding report:
+[9dcae95d5bb62c75](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
+generated `2026-04-25T11:20:25Z`, status `provisional_pass`.
+
+| Signal | Current grounding delta versus `odylith_off` |
+| --- | ---: |
+| Required-path recall | `+0.326` |
+| Required-path precision | `+0.049` |
+| Validation-success proxy | `+0.689` |
+| Critical required-path recall | `+0.278` |
+| Critical validation-success proxy | `+0.613` |
+| Expectation-success proxy | `+0.951` |
+| Median prompt-bundle input tokens | `+834` |
+| Median packet time | `+23 ms` |
+
+#### Current Grounding Graphs
+
+<p align="center">
+  <img
+    src="docs/benchmarks/grounding/odylith-benchmark-family-heatmap.svg"
+    alt="Odylith grounding benchmark family heatmap"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/grounding/odylith-benchmark-quality-frontier.svg"
+    alt="Odylith grounding benchmark quality frontier"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/grounding/odylith-benchmark-frontier.svg"
+    alt="Odylith grounding benchmark frontier"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/grounding/odylith-benchmark-operating-posture.svg"
+    alt="Odylith grounding benchmark operating posture"
+    width="100%"
+  />
+</p>
+
+### Live Benchmark
+
+> [!TIP]
+> The Live Benchmark is the product-claim lane. It measures full end-to-end task
+> completion after grounding, execution posture, focused checks, and validation
+> policy are allowed to operate under the declared comparison contract.
+
+The Live Benchmark answers:
+
+- "Does Odylith beat the raw host CLI on the same live end-to-end task contract?"
+- "What is the full matched-pair time to valid outcome?"
+- "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
 
 Current live proof report:
 [44f2a3d83d2c9975](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
 generated `2026-04-25T11:19:38Z`, status `provisional_pass`.
-
-Current diagnostic report:
-[9dcae95d5bb62c75](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
-generated `2026-04-25T11:20:25Z`, status `provisional_pass`.
-
-Both reports use local-first memory on LanceDB plus Tantivy sparse recall.
-Remote retrieval is disabled in the selected reports. The current published
-live proof is Codex-host-scoped; the benchmark contract itself is
-host-neutral.
 
 | Signal | Current live proof delta versus `odylith_off` |
 | --- | ---: |
@@ -283,7 +354,7 @@ in the machine-readable reports.
 
 Full current artifacts:
 [Live Snapshot](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
-[Diagnostic Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
+[Grounding Benchmark Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
 [Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md), and
 [How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md).
 The versioned GitHub artifact bundle, including the compressed raw source
@@ -321,37 +392,6 @@ truth, is stored under
   />
 </p>
 
-#### Current Diagnostic Graphs
-
-<p align="center">
-  <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-family-heatmap.svg"
-    alt="Odylith grounding benchmark family heatmap"
-    width="100%"
-  />
-</p>
-<p align="center">
-  <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-quality-frontier.svg"
-    alt="Odylith grounding benchmark quality frontier"
-    width="100%"
-  />
-</p>
-<p align="center">
-  <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-frontier.svg"
-    alt="Odylith grounding benchmark frontier"
-    width="100%"
-  />
-</p>
-<p align="center">
-  <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-operating-posture.svg"
-    alt="Odylith grounding benchmark operating posture"
-    width="100%"
-  />
-</p>
-
 ### v0.1.10 Benchmark Archive
 
 The previous README-backed benchmark bundle is retained under
@@ -360,8 +400,8 @@ mixed into the current v0.1.11 claim.
 
 - archived live proof snapshot: report `2d8444952aef28d2`, generated
   `2026-04-24T00:57:09Z`, status `hold`
-- archived diagnostic snapshot: report `dd35a4aab061f49f`, generated before
-  the v0.1.11 refresh
+- archived Grounding Benchmark snapshot: report `dd35a4aab061f49f`, generated
+  before the v0.1.11 refresh
 - archived legacy graph set: report `926bfeab4e887ade`, retained from the
   older unprofiled graph filenames
 

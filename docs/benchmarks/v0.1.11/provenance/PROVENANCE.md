@@ -8,12 +8,12 @@ This provenance note describes the compressed raw source bundle stored at:
 
 - archive created from repo: `/Users/freedom/code/odylith`
 - archive recorded on branch: `2026/freedom/v0.1.11`
-- archive recorded while local HEAD was: `d07422f7522cae1467ed8338226d15c23c023b5d`
+- archive recorded while local HEAD was: `884ceceefc3d8322805696e5dd2b75e0179660fc`
 - live proof report tree: `1cfca107048e9dbe3b81ddd933ca1138f0c4e6f0`
 - live proof report id: `44f2a3d83d2c9975`
-- diagnostic report id: `9dcae95d5bb62c75`
+- grounding report id: `9dcae95d5bb62c75`
 - archive sha256:
-  `67aafebbb0fe286c5027f86cc187c38fec8e7b49ff98246d0e7242b99cf76ebe`
+  `b6508487866213efd85b2da88235fa19c6c3e73caa23de467154b83a64fbf705`
 
 ## Scope
 
@@ -21,8 +21,8 @@ The archive is intentionally versioned under `docs/benchmarks/v0.1.11/` and
 does not move mutable runtime state into `.odylith/runtime`. It captures the
 raw benchmark source truth needed to audit the v0.1.11 README claim:
 
-- report JSON for the selected proof and diagnostic reports
-- proof and diagnostic logs
+- report JSON for the selected proof and grounding reports
+- proof and Grounding Benchmark logs
 - shard report JSON referenced by the logs
 - benchmark corpus and benchmark component source truth
 - generated benchmark docs, tables, summaries, and graphs

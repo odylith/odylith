@@ -61,7 +61,7 @@
   "notes": [
     "Odylith has not yet cleared the hard quality gate against `odylith_off` on this sampled corpus.",
     "Hard-gate blockers: write-surface precision fell below the raw baseline; selected cache profiles do not all clear the hard quality gate.",
-    "Benchmark proof used active local LanceDB plus Tantivy retrieval memory.",
+    "Benchmark proof used the active Odylith Memory Substrate.",
     "Vespa is optional and currently disabled; the current benchmark proof is local-first, not remote-assisted."
   ],
   "observed_path_count_delta": 1.0,
@@ -133,9 +133,9 @@
   "runtime_memory_evidence_document_count": 3708,
   "runtime_memory_indexed_entity_count": 3706,
   "runtime_memory_projection_scope": "full",
-  "runtime_memory_sparse_recall": "tantivy_sparse_recall",
+  "runtime_memory_sparse_recall": "odylith_sparse_recall",
   "runtime_memory_standardization_state": "standardized",
-  "runtime_memory_storage": "lance_local_columnar",
+  "runtime_memory_storage": "odylith_memory_substrate",
   "runtime_native_spawn_ready_rate": 0.5,
   "runtime_remote_retrieval_enabled": false,
   "runtime_remote_retrieval_mode": "disabled",

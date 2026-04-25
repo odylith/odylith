@@ -10,10 +10,10 @@ docs/benchmarks/FAMILIES_AND_EVALS.md
 docs/benchmarks/REVIEWER_GUIDE.md
 odylith/runtime/source/optimization-evaluation-corpus.v1.json
 odylith/registry/source/components/benchmark/CURRENT_SPEC.md
-docs/benchmarks/diagnostic/odylith-benchmark-family-heatmap.svg
-docs/benchmarks/diagnostic/odylith-benchmark-frontier.svg
-docs/benchmarks/diagnostic/odylith-benchmark-operating-posture.svg
-docs/benchmarks/diagnostic/odylith-benchmark-quality-frontier.svg
+docs/benchmarks/grounding/odylith-benchmark-family-heatmap.svg
+docs/benchmarks/grounding/odylith-benchmark-frontier.svg
+docs/benchmarks/grounding/odylith-benchmark-operating-posture.svg
+docs/benchmarks/grounding/odylith-benchmark-quality-frontier.svg
 docs/benchmarks/proof/odylith-benchmark-family-heatmap.svg
 docs/benchmarks/proof/odylith-benchmark-frontier.svg
 docs/benchmarks/proof/odylith-benchmark-operating-posture.svg

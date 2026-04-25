@@ -54,7 +54,7 @@
   "latency_delta_ms": -87679.488,
   "notes": [
     "Odylith clears the hard quality gate against `odylith_off` on this sampled corpus.",
-    "Benchmark proof used active local LanceDB plus Tantivy retrieval memory.",
+    "Benchmark proof used the active Odylith Memory Substrate.",
     "Vespa is optional and currently disabled; the current benchmark proof is local-first, not remote-assisted.",
     "Live proof keeps benchmark time to valid outcome and full-session token spend published, but not status-blocking, because the public pair measures contention-shared matched-pair wall clock and multi-turn session accumulation rather than interactive product latency or initial prompt size."
   ],
@@ -127,9 +127,9 @@
   "runtime_memory_evidence_document_count": 3740,
   "runtime_memory_indexed_entity_count": 3738,
   "runtime_memory_projection_scope": "full",
-  "runtime_memory_sparse_recall": "tantivy_sparse_recall",
+  "runtime_memory_sparse_recall": "odylith_sparse_recall",
   "runtime_memory_standardization_state": "standardized",
-  "runtime_memory_storage": "lance_local_columnar",
+  "runtime_memory_storage": "odylith_memory_substrate",
   "runtime_native_spawn_ready_rate": 0.5,
   "runtime_remote_retrieval_enabled": false,
   "runtime_remote_retrieval_mode": "disabled",

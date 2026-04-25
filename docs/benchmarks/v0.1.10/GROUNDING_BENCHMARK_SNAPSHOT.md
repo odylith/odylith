@@ -1,16 +1,16 @@
-# Internal Diagnostic Benchmark Snapshot
+# Grounding Benchmark Snapshot
 
-This note carries the fuller interpretation behind the short diagnostic summary
+This note carries the fuller interpretation behind the short Grounding Benchmark summary
 published in the root [README](../../README.md).
 
 ## Current Result
 
-Current Internal Diagnostic Benchmark report: `dd35a4aab061f49f` from `2026-04-24T00:57:12Z` with status `provisional_pass`.
+Current Grounding Benchmark report: `dd35a4aab061f49f` from `2026-04-24T00:57:12Z` with status `provisional_pass`.
 
-The latest internal diagnostic benchmark ran `82` seeded scenarios on cache profile(s) `warm` comparing `odylith_on` versus `odylith_off` on packet and prompt construction only.
-Across the `82` diagnostic pairs, wall clock was `24.255 ms` median, `51.265 ms` at `p95`, and `2.01s` total.
+The latest Grounding Benchmark ran `82` seeded scenarios on cache profile(s) `warm` comparing `odylith_on` versus `odylith_off` on packet and prompt construction only.
+Across the `82` Grounding Benchmark pairs, wall clock was `24.255 ms` median, `51.265 ms` at `p95`, and `2.01s` total.
 
-Current diagnostic posture is local-first on `lance_local_columnar` plus `tantivy_sparse_recall`. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
+Current Grounding Benchmark posture is local-first on the Odylith Memory Substrate. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
 
 ## Headline Movement
 
@@ -43,5 +43,5 @@ There are no hard-gate blockers on this report.
 
 - `odylith_off` is the raw prompt-bundle control, not the product-claim lane.
 - Prompt-visible path credit and preflight evidence must remain explicit in the report contract.
-- Current diagnostic posture is local-first on `lance_local_columnar` plus `tantivy_sparse_recall`. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
-- Diagnostic gains only matter if they preserve or improve the live proof lane.
+- Current Grounding Benchmark posture is local-first on the Odylith Memory Substrate. Remote retrieval is `disabled` in the selected report. Local memory-backed retrieval ready: `True`.
+- Grounding Benchmark gains only matter if they preserve or improve the live proof lane.
