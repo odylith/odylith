@@ -102,6 +102,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     message = str(payload.get("last_assistant_message", ""))
     session_id = codex_host_shared.hook_session_id(payload)
+    if host_intervention_support.suppress_prompt_live_narration(assistant_summary=message):
+        return 0
     host_surface_runtime.confirm_assistant_chat_delivery(
         repo_root=args.repo_root,
         host_family="codex",

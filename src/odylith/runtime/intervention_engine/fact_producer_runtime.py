@@ -39,6 +39,20 @@ _TOPOLOGY_HINTS: tuple[str, ...] = (
 _INVARIANT_HINTS: tuple[str, ...] = ("invariant", "must", "never", "always", "guardrail", "non-negotiable")
 _BUG_HINTS: tuple[str, ...] = ("bug", "failure", "regression", "incident", "broken", "crash")
 _EXECUTION_HINTS: tuple[str, ...] = ("implement", "wire", "build", "fix", "ship", "harden", "design")
+_HELP_PROMPT_TOKENS: frozenset[str] = frozenset(
+    {
+        "odylith help",
+        "odylith please help",
+        "please odylith help",
+    }
+)
+_SHOW_PROMPT_TOKENS: frozenset[str] = frozenset(
+    {
+        "odylith show me what you can do",
+        "odylith what can you do",
+        "odylith show capabilities",
+    }
+)
 
 
 _normalize_string = visibility_contract.normalize_string
@@ -64,10 +78,12 @@ def explicit_ids(text: str, pattern: re.Pattern[str]) -> list[str]:
 def joined_prompt_surface(observation: ObservationEnvelope) -> str:
     """Return the prompt plus assistant carryover used for producer grounding."""
 
+    if is_passthrough_prompt(observation.prompt_excerpt):
+        return _normalize_string(observation.prompt_excerpt)
     return " ".join(
         token
         for token in (observation.prompt_excerpt, observation.assistant_summary)
-        if _normalize_string(token)
+        if _normalize_string(token) and not is_cli_help_output(token)
     ).strip()
 
 
@@ -76,6 +92,34 @@ def contains_any(text: str, hints: Sequence[str]) -> bool:
 
     haystack = _normalize_token(text)
     return any(_normalize_token(hint) in haystack for hint in hints)
+
+
+def normalized_passthrough_prompt(value: Any) -> str:
+    """Return a compact prompt token for exact first-match passthrough routes."""
+    text = _normalize_string(value).casefold()
+    if not text:
+        return ""
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return " ".join(text.split())
+
+
+def is_passthrough_prompt(value: Any) -> bool:
+    """Return whether a prompt should print CLI/demo stdout without narration."""
+    token = normalized_passthrough_prompt(value)
+    return token in _HELP_PROMPT_TOKENS or token in _SHOW_PROMPT_TOKENS
+
+
+def is_cli_help_output(value: Any) -> bool:
+    """Return whether text is raw Odylith CLI help output, not conversation signal."""
+    text = _normalize_string(value).casefold()
+    if not text:
+        return False
+    return (
+        "usage: odylith" in text
+        and "-h, --help" in text
+        and ("options:" in text or "optional arguments:" in text)
+        and "show this help message" in text
+    )
 
 
 def _fact(kind: str, headline: str, detail: str, evidence_classes: Sequence[str], refs: Sequence[Mapping[str, str]], priority: int) -> GovernanceFact:
@@ -275,6 +319,10 @@ def collect_facts(
 
     facts: list[GovernanceFact] = []
     prompt_surface = joined_prompt_surface(observation)
+    if is_passthrough_prompt(observation.prompt_excerpt) or (
+        is_cli_help_output(observation.assistant_summary) and not _normalize_string(observation.prompt_excerpt)
+    ):
+        return facts
     visibility_status_fact = _current_visibility_status_fact(
         observation=observation,
         evidence_classes=evidence_classes,
@@ -364,8 +412,8 @@ def collect_facts(
         facts.append(
             _fact(
                 "topology",
-                "The discussion is already reasoning in topology, ownership, or boundary terms.",
-                "That is when Atlas should carry the boundary instead of leaving it buried in chat.",
+                "This request is making architecture, ownership, or boundary claims.",
+                "If the claim changes product behavior or governed docs, attach it to the existing Atlas or Registry record instead of leaving it only in chat.",
                 evidence_classes,
                 [],
                 80,
@@ -394,6 +442,10 @@ def evidence_classes(*, observation: ObservationEnvelope, lookup: Mapping[str, A
 
     classes: list[str] = []
     prompt_surface = joined_prompt_surface(observation)
+    if is_passthrough_prompt(observation.prompt_excerpt) or (
+        is_cli_help_output(observation.assistant_summary) and not _normalize_string(observation.prompt_excerpt)
+    ):
+        return []
     if _normalize_string(observation.prompt_excerpt) and (
         contains_any(prompt_surface, _GOVERNANCE_HINTS + _TOPOLOGY_HINTS + _BUG_HINTS + _INVARIANT_HINTS + _EXECUTION_HINTS)
         or explicit_ids(prompt_surface, _WORKSTREAM_RE)
@@ -424,5 +476,8 @@ __all__ = [
     "contains_any",
     "evidence_classes",
     "explicit_ids",
+    "is_cli_help_output",
+    "is_passthrough_prompt",
     "joined_prompt_surface",
+    "normalized_passthrough_prompt",
 ]

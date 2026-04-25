@@ -96,6 +96,29 @@ def test_claude_prompt_system_message_replays_pending_chat_block(tmp_path: Path)
     assert rendered == "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---"
 
 
+def test_claude_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: Path) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending prompt replay.",
+        session_id="claude-help-fast-path",
+        host_family="claude",
+        intervention_key="claude-help-fast-path-replay",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Observation:** Claude prompt must not carry this into help.",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    rendered = claude_host_prompt_context.render_prompt_system_message(
+        repo_root=tmp_path,
+        prompt="Odylith, help.",
+        session_id="claude-help-fast-path",
+    )
+
+    assert rendered == ""
+
+
 def test_claude_prompt_system_message_prefers_pending_ambient_history_over_observation(tmp_path: Path) -> None:
     surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
@@ -189,6 +212,34 @@ def test_main_runs_context_command_for_first_anchor(monkeypatch, tmp_path: Path,
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "Odylith anchor B-088: primary target src/foo.py." in payload["hookSpecificOutput"]["additionalContext"]
     assert "systemMessage" not in payload
+
+
+def test_main_prints_nothing_for_help_fast_path_even_with_pending_replay(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending prompt replay.",
+        session_id="claude-help-main",
+        host_family="claude",
+        intervention_key="claude-help-main-replay",
+        turn_phase="post_edit_checkpoint",
+        display_markdown="**Odylith Observation:** stale replay",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "Odylith, help.", "session_id": "claude-help-main"})),
+    )
+
+    exit_code = claude_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert capsys.readouterr().out == ""
 
 
 def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(

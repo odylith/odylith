@@ -91,6 +91,8 @@ def render_prompt_context(
     intervention_bundle_override: Mapping[str, Any] | None = None,
 ) -> str:
     """Pure renderer used by the live hook and by tests."""
+    if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
+        return ""
     refs = list(dict.fromkeys(_ANCHOR_RE.findall(str(prompt or ""))))
     bundle = _prompt_conversation_bundle(
         repo_root=repo_root,
@@ -161,6 +163,8 @@ def main(argv: list[str] | None = None) -> int:
         payload=payload,
         render_surface="claude_user_prompt_submit",
     )
+    if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
+        return 0
     bundle = _prompt_conversation_bundle(
         repo_root=repo_root,
         prompt=prompt,

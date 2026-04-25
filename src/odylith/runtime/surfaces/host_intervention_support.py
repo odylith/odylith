@@ -9,6 +9,7 @@ from typing import Mapping
 from odylith.runtime.intervention_engine import alignment_context
 from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import fact_producer_runtime
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.intervention_engine import visibility_contract
@@ -37,6 +38,13 @@ def _alignment_list(alignment: Mapping[str, Any], key: str) -> list[Any]:
 def join_sections(*values: Any) -> str:
     """Join unique normalized chat sections with one blank line between them."""
     return visibility_contract.join_blocks(*values)
+
+
+def suppress_prompt_live_narration(*, prompt: Any = "", assistant_summary: Any = "") -> bool:
+    """Return whether a first-match stdout route should stay narration-free."""
+    return fact_producer_runtime.is_passthrough_prompt(prompt) or fact_producer_runtime.is_cli_help_output(
+        assistant_summary
+    )
 
 
 def preferred_live_replay_markdown(
@@ -110,6 +118,8 @@ def build_prompt_conversation_bundle(
     intervention_bundle_override: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the prompt-submit bundle shared by Codex and Claude hooks."""
+    if suppress_prompt_live_narration(prompt=prompt):
+        return {}
     if isinstance(bundle_override, Mapping):
         return dict(bundle_override)
     if isinstance(intervention_bundle_override, Mapping):
@@ -155,6 +165,8 @@ def render_prompt_system_message(
     intervention_bundle_override: Mapping[str, Any] | None = None,
 ) -> str:
     """Render the host-visible prompt-submit fallback/system-message text."""
+    if suppress_prompt_live_narration(prompt=prompt):
+        return ""
     root = Path(repo_root).expanduser().resolve()
     normalized_host = visibility_contract.normalize_token(host_family)
     bundle = build_prompt_conversation_bundle(
@@ -212,6 +224,11 @@ def render_prompt_bundle_text(
     markdown: bool = False,
 ) -> str:
     """Render prompt-context text from an anchor summary plus live conversation state."""
+    observation = bundle.get("observation") if isinstance(bundle, Mapping) else {}
+    if isinstance(observation, Mapping) and suppress_prompt_live_narration(
+        prompt=observation.get("prompt_excerpt")
+    ):
+        return visibility_contract.normalize_string(anchor_summary)
     live_text = conversation_surface.render_live_text(
         bundle,
         markdown=markdown,
@@ -236,6 +253,10 @@ def build_stop_conversation_bundle(
     """Build the stop-summary bundle shared by Codex and Claude hooks."""
     if isinstance(bundle_override, Mapping):
         return dict(bundle_override)
+    if suppress_prompt_live_narration(prompt=prompt_excerpt, assistant_summary=assistant_summary) and not any(
+        (changed_paths, workstreams, components)
+    ):
+        return {}
     if not any((assistant_summary, prompt_excerpt, changed_paths, workstreams, components)):
         return {}
     root = Path(repo_root).expanduser().resolve()
@@ -262,6 +283,12 @@ def render_stop_bundle_text(
 ) -> str:
     """Render stop-summary text from a normalized host conversation bundle."""
     if not bundle:
+        return ""
+    observation = bundle.get("observation") if isinstance(bundle, Mapping) else {}
+    if isinstance(observation, Mapping) and suppress_prompt_live_narration(
+        prompt=observation.get("prompt_excerpt"),
+        assistant_summary=observation.get("assistant_summary"),
+    ):
         return ""
     root = Path(repo_root).expanduser().resolve()
     normalized_host = visibility_contract.normalize_token(host_family)

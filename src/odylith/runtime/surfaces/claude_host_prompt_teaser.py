@@ -9,6 +9,7 @@ from pathlib import Path
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.surfaces import claude_host_prompt_context
 from odylith.runtime.surfaces import claude_host_shared
+from odylith.runtime.surfaces import host_intervention_support
 
 
 def render_prompt_teaser(
@@ -45,6 +46,8 @@ def main(argv: list[str] | None = None) -> int:
     payload = claude_host_shared.load_payload(raw)
     prompt = str(payload.get("prompt", "")).strip()
     session_id = claude_host_shared.hook_session_id(payload)
+    if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
+        return 0
     bundle = claude_host_prompt_context._prompt_conversation_bundle(  # noqa: SLF001
         repo_root=repo_root,
         prompt=prompt,

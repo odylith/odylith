@@ -224,6 +224,10 @@ Related Bugs:
       Engine, Memory Contracts, Governance Intervention Engine,
       Tribunal-ready evidence, benchmark reports, host contracts, installed
       skills, and consumer-lane guidance.
+- [ ] Raw command output is not conversation evidence. Help/show passthrough
+      routes should stay narration-free even when the command catalog contains
+      governance, topology, registry, or Atlas words, and stale pending
+      intervention replay must not attach itself to that output.
 
 ## Must-Ship
 - [x] Add `src/odylith/runtime/intervention_engine/` as a first-class shared
@@ -397,6 +401,11 @@ Related Bugs:
       delivery-intelligence reads for unanchored packets, and defer host
       capability probes until a route-ready delegate path can actually use
       them.
+- [x] Fix `CB-127`: first-match help/show passthrough prompts now suppress
+      live narration and replay, raw CLI help stdout is excluded from
+      fact/evidence scoring, and generic topology Observation copy names the
+      current request instead of treating command catalogs as conversation
+      truth.
 
 ## Defer
 - [ ] User-selectable voice packs or per-repo voice overrides.
@@ -618,6 +627,18 @@ Related Bugs:
       claiming artifact updates. Codex and Claude `visible-intervention`
       smokes both render the same `**Odylith Assist:**` line from that proof
       path.
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_intervention_engine.py tests/unit/runtime/test_host_intervention_support.py tests/unit/runtime/test_host_visible_intervention.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_stop_summary.py tests/unit/runtime/test_claude_host_stop_summary.py` (`107 passed`)
+- [x] Direct `odylith codex visible-intervention` smokes proved prompt-submit
+      and stop-summary silence for `Odylith, help.` plus raw CLI help stdout.
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_surface_shell_contracts.py tests/unit/runtime/test_source_bundle_mirror.py tests/integration/runtime/test_intervention_visibility_browser.py` (`66 passed`)
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_atlas_sort_browser.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py tests/integration/runtime/test_intervention_visibility_browser.py` (`57 passed`)
+- [x] `./.odylith/bin/odylith validate guidance-behavior --repo-root .`
+- [x] `./.odylith/bin/odylith validate component-registry --repo-root .`
+- [x] `./.odylith/bin/odylith validate backlog-contract --repo-root .`
+- [x] `./.odylith/bin/odylith governance validate-plan-traceability --repo-root .`
+- [x] `./.odylith/bin/odylith validate discipline --repo-root .`
+- [x] `./.odylith/bin/odylith sync --repo-root . --impact-mode selective --check-only --proceed-with-overlap ...`
+- [x] `git diff --check`
 - [x] Stop-summary Assist now carries bounded `affected_contracts` and renders
       the governed workstream, component, diagram, or bug IDs involved in the
       closeout. It says `updating` only when governed changed paths prove a

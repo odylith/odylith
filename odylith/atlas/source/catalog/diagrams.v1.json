@@ -80,7 +80,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "75df30fb39167504d921c682ab0c14fbb8305f540075231722359a3166f9a30e",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "91e9b8922d87db1df5d0557b8ee0928df37a1929a7362f2651c6543c83a339a8",
-        "odylith/radar/source/INDEX.md": "d7910f289536bfedaeea4a46a0674a60cdf790e18a4584ea53f396a6d2dfff6e",
+        "odylith/radar/source/INDEX.md": "cbe7bec3f3c5ecaf20848952553cd6b72b6fd3a27da21e02ebf4b1cb4f355229",
         "odylith/technical-plans/INDEX.md": "bc545f009aa8be9e843c18f5e7c49fc91b2cef1f1df190d1098ae8846c4463dd"
       }
     },
@@ -3602,12 +3602,12 @@
         "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py"
       ],
       "reviewed_watch_fingerprints": {
-        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md": "a94f49164388764ed08a3c68a7bd379d134a8f7c9451929d9cb675f1cba4a4e9",
+        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md": "7f5a43c9bd8cf65eded9f6b789a78576717c948aa49f47793c4cf303cb503c0e",
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "b3b9bda5074ed09f540a5ea310f99c87ee6dfb22b4030eae06223228ca730445",
         "odylith/registry/source/components/compass/CURRENT_SPEC.md": "fd50f5f2c09bb57c9407ac3cf37fa9f57cfb8d685b5ae7ce291643ed90b45367",
         "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md": "668208763751ee13271549baa9c18d517074a2f2c59e72790b29d1b456e7e9b9",
-        "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md": "ea8643e04990dfc68cbf2d1401e661257177d93a94cd0ee1d7966fcbbec993c6",
-        "src/odylith/runtime/intervention_engine": "7abcb48e5e4f2c3c13b203b881288fff4a37dad0540ebbee71a439390fb043f6",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md": "44c9e86bffa706d03b933cdcd6052d604b32fccb432d19696265f0c319dc4d20",
+        "src/odylith/runtime/intervention_engine": "ccf61b2e8d498c353375af2b18a606b19eba58ac53ff0572b0ce30750100d9e0",
         "src/odylith/runtime/intervention_engine/value_engine.py": "0fb0da256721038654a61592a858b0f6c26c9881137d27290ee54d142b720c00",
         "src/odylith/runtime/intervention_engine/value_engine_types.py": "31f9802ec2dadea4ed6c3295222edb31aa56e637cda04454d809c8d646a0819d",
         "src/odylith/runtime/intervention_engine/value_engine_selection.py": "8548774bb2815c55fed5d035c08dd61beb31d2e9610245af3012f770a2f8f9f9",
@@ -3620,10 +3620,10 @@
         "src/odylith/install/value_engine_migration.py": "6e58105a9d50947e5556ed1fee45e518438612775f9c81819fcf66dafbbbe847",
         "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json": "2b8481e0be552a772e8dce0e4b16ebcb94e52c3720508f6f9d157bf8c55a9825",
         "odylith/radar/source/programs/B-096.execution-waves.v1.json": "99fcb9ee4353705ebc975ec1a59b49c0e1212e77a12e6bc21ddca377a488a885",
-        "src/odylith/runtime/surfaces/codex_host_prompt_context.py": "28ac0e565fc19a5e46380c149123eb1fda105019021c08157832aca7608c14be",
-        "src/odylith/runtime/surfaces/claude_host_prompt_context.py": "ea0d32a8650a741027d322b56df0991b53bbd1855d7d2c170ddbceb8a5175ab4",
-        "src/odylith/runtime/surfaces/codex_host_stop_summary.py": "b14e3aa84c163939b36972670c7965c129c05c7eb80a553c15b4c0a31d888d62",
-        "src/odylith/runtime/surfaces/claude_host_stop_summary.py": "16c1301666b7567227fa84b14ae5b70a671b95876db2d2bf9e29e7296d7adaf6",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py": "a79d8dfd5f483c7c9833ccb468bf81248b80cb9d6285ca218b2929c85255284a",
+        "src/odylith/runtime/surfaces/claude_host_prompt_context.py": "4129dacec6fb966881d34c5e36d9f0f4cb367d7cf221014a63533d244366907c",
+        "src/odylith/runtime/surfaces/codex_host_stop_summary.py": "0a0b58cc790dd8bfc793e0357d1db80f045085c71fe4c4c85e0e9d3a10e385e1",
+        "src/odylith/runtime/surfaces/claude_host_stop_summary.py": "2df7eed9f6ace18519cab2d53e4c3bec9e23368aed22321d7dd1c83bd957b967",
         "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py": "7b66952f4c98b4de58385fc381ede1dfdd875f5849eaf7cfd8737399a718c7ed",
         "src/odylith/runtime/surfaces/claude_host_post_edit_checkpoint.py": "82d4f724b831a47a4d112db90b626f460032d8b2b7c9767b3b605aa9cf23dcb3",
         "src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py": "b61a10ae43f486a00f1d0f63a9d8cff430463378854bbc68ff61e400a5a3ef5a"

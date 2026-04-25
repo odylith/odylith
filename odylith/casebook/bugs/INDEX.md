@@ -200,6 +200,7 @@ Last updated (UTC): 2026-04-25
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-127 | 2026-04-25 | Cli help stdout can trigger out of context odylith observation | P1 | governance-intervention-engine | Closed | [2026-04-25-cli-help-stdout-can-trigger-out-of-context-odylith-observation.md](2026-04-25-cli-help-stdout-can-trigger-out-of-context-odylith-observation.md) |
 | CB-110 | 2026-04-14 | Forwarded cli help hides backend flags and selective sync stays too wide for gov | P1 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/bug_authoring.py`,
   `src/odylith/runtime/governance/sync_casebook_bug_index.py`,

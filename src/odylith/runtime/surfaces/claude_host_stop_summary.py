@@ -109,16 +109,17 @@ def main(argv: list[str] | None = None) -> int:
     if bool(payload.get("stop_hook_active")):
         return 0
     session_id = claude_host_shared.hook_session_id(payload)
+    message = str(payload.get("last_assistant_message", ""))
+    if host_intervention_support.suppress_prompt_live_narration(assistant_summary=message):
+        return 0
     host_surface_runtime.confirm_assistant_chat_delivery(
         repo_root=repo_root,
         host_family="claude",
         session_id=session_id,
-        last_assistant_message=str(payload.get("last_assistant_message", "")),
+        last_assistant_message=message,
         render_surface="claude_stop",
     )
-    summary = claude_host_shared.meaningful_stop_summary(
-        str(payload.get("last_assistant_message", ""))
-    )
+    summary = claude_host_shared.meaningful_stop_summary(message)
     workstreams = claude_host_shared.extract_workstreams(summary)
     if summary:
         claude_host_shared.run_compass_log(

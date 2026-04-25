@@ -268,6 +268,8 @@ def build_signal_profile(
     memory = _mapping(session_memory)
     prompt_excerpt = _normalize_string(observation.prompt_excerpt)
     assistant_summary = _normalize_string(observation.assistant_summary)
+    passthrough_prompt = fact_producer_runtime.is_passthrough_prompt(prompt_excerpt)
+    cli_help_summary = fact_producer_runtime.is_cli_help_output(assistant_summary)
     prompt_surface = fact_producer_runtime.joined_prompt_surface(observation)
     changed_paths = _normalize_string_list(observation.changed_paths)
     packet_summary = alignment_evidence.merged_packet_summary(observation)
@@ -294,6 +296,12 @@ def build_signal_profile(
                 "label": _normalize_string(row.get("label")) or item_id,
             }
         )
+    cli_help_only_summary = bool(
+        cli_help_summary
+        and not prompt_excerpt
+        and not changed_paths
+        and not deduped_target_refs
+    )
     alignment_text = alignment_evidence.alignment_signal_text(observation)
     prompt_with_paths = " ".join([prompt_surface, *changed_paths, alignment_text]).strip()
     workstream_ids = _ref_ids(deduped_target_refs, kind="workstream")
@@ -417,9 +425,9 @@ def build_signal_profile(
         dimensions["continuity"],
     )
     evidence_classes: list[str] = []
-    if observation.prompt_excerpt:
+    if observation.prompt_excerpt and not passthrough_prompt:
         evidence_classes.append("prompt")
-    if observation.assistant_summary:
+    if observation.assistant_summary and not cli_help_summary:
         evidence_classes.append("assistant")
     if changed_paths:
         evidence_classes.append("changed_paths")
@@ -445,6 +453,14 @@ def build_signal_profile(
     if suppress_governance_capture:
         repo_truth_eligible = False
         proposal_signal = False
+    if passthrough_prompt or cli_help_only_summary:
+        dimensions = {key: 0 for key in dimensions}
+        evidence_classes = []
+        repo_truth_eligible = False
+        proposal_signal = False
+        anchor_pressure = 0
+        governed_dimension_max = 0
+        max_dimension = 0
     return {
         "prompt_excerpt": prompt_excerpt,
         "assistant_summary": assistant_summary,
@@ -491,4 +507,7 @@ def build_signal_profile(
         "status_readout_review": status_readout_review,
         "meta_governance_review": meta_governance_review,
         "suppress_governance_capture": suppress_governance_capture,
+        "passthrough_prompt": passthrough_prompt,
+        "cli_help_summary": cli_help_summary,
+        "suppress_live_narration": bool(passthrough_prompt or cli_help_only_summary),
     }

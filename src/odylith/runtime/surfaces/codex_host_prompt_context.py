@@ -42,6 +42,8 @@ def render_codex_prompt_context(
     conversation_bundle_override: Mapping[str, Any] | None = None,
     intervention_bundle_override: Mapping[str, Any] | None = None,
 ) -> str:
+    if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
+        return ""
     bundle = _prompt_conversation_bundle(
         repo_root=repo_root,
         prompt=prompt,
@@ -95,6 +97,8 @@ def main(argv: list[str] | None = None) -> int:
         payload=payload,
         render_surface="codex_user_prompt_submit",
     )
+    if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
+        return 0
     bundle = _prompt_conversation_bundle(
         repo_root=args.repo_root,
         prompt=prompt,

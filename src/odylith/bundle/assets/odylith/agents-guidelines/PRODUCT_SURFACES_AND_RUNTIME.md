@@ -89,6 +89,10 @@
   `Odylith Assist` and stay to one short labeled line. Proposal should look
   like a short ruled block with one calm lead line beginning `Odylith Proposal:`,
   a few bullets, and one quiet confirmation line.
+- Observation copy must be rooted in the current user request, not command
+  catalog text, hook summaries, pending/proposal placeholders, or stale replay
+  state. If the current prompt only asks for command output, the right
+  live-narration choice is silence.
 - Odylith Discipline feeds this voice layer only when visible value is earned.
   Passing checks stay silent, nudges need a concrete recovery action,
   Observations need evidence the user benefits now, and visible claims require
@@ -118,6 +122,10 @@
   Observation or Proposal. Keep routine success quiet when a stronger live beat
   exists; surface refresh status only when it failed, skipped, or when no live
   intervention was earned.
+- First-match command-output routes are not live intervention moments. A plain
+  `Odylith, help` or `Odylith, show me what you can do` prompt must print the
+  requested stdout only, suppress prompt/stop replay, and exclude raw CLI usage
+  text from fact scoring, evidence classes, and live narration.
 - Rich reasoning signature and continuity identity are intentionally distinct.
   Odylith may reason from more evidence as the moment matures, but the visible
   thread should still feel like one evolving thought.

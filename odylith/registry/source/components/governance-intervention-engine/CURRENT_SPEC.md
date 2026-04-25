@@ -531,6 +531,11 @@ claiming ML calibration.
   intervention. If a checkpoint already has a real Observation or Proposal,
   the visible surface should stay on that beat and keep routine refresh
   success quiet.
+- First-match command-output routes are narration-free. Plain help/show
+  passthrough prompts must print the requested CLI/demo stdout only, suppress
+  prompt-submit replay, and remove raw CLI usage/catalog output from fact
+  scoring, evidence classes, and visible-intervention fallback. Stale pending
+  beats must not append themselves to command help.
 - At most one full `Odylith Observation` card may appear per turn.
 - Duplicate full cards for the same causal point in one active session must be
   suppressed from prior Compass event truth.
@@ -623,6 +628,10 @@ claiming ML calibration.
   one clear implication in one breath.
 - That single line must make the interjection explicit. The user should be
   able to tell immediately why Odylith is stepping in now.
+- Observation copy must name the current request or current evidence path in
+  plain terms. It must not infer governance, topology, or ownership relevance
+  from raw command catalogs, CLI help text, Odylith pending/proposal summaries,
+  or stale replay state.
 - The default voice renderer must keep the structural frame deterministic while
   deriving the body from supported proposition content: fact headline, fact
   detail, supporting evidence, and proposal action rationale. Moment kind may
@@ -758,6 +767,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-25: Captured and fixed `CB-127`: plain help/show passthrough prompts now suppress live intervention narration and replay, raw CLI help stdout is excluded from fact/evidence scoring, and generic topology Observation copy names the current request instead of treating command catalogs as conversation truth. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-127`)
 - 2026-04-14: Promoted Governance Intervention Engine into a first-class Registry component so Codex and Claude can share one portable conversation observation and governed proposal runtime instead of host-local intervention heuristics. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Shipped the fixed user-facing labels `Odylith Observation` and `Odylith Proposal`, the single-confirmation proposal apply contract, the future-ready voice-pack seam, and Atlas diagram `D-038` to keep runtime, governance, and maintainer guidance aligned. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Hardened the product contract so rich markdown survives the full host and Compass path, duplicate suppression keys stay causal rather than overly coarse, proposal apply is all-or-nothing for CLI-safe bundles, and warm-cache latency stays covered by focused regression tests. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))

@@ -8,6 +8,19 @@ from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.intervention_engine import surface_runtime
 
 
+_CLI_HELP_OUTPUT = """usage: odylith [-h] {start,context,query,sync,codex} ...
+
+Odylith install, grounding, sync, runtime, and repair tooling.
+
+positional arguments:
+  {start,context,query,sync,codex}
+    start               Choose the safest first Odylith turn-start path.
+
+options:
+  -h, --help            show this help message and exit
+"""
+
+
 def _seed_repo(root: Path) -> None:
     (root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
     (root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
@@ -163,6 +176,55 @@ def test_prompt_submit_does_not_promote_inherited_workstream_context_without_cur
     assert bundle["candidate"]["stage"] == "silent"
     assert bundle["candidate"]["teaser_text"] == ""
     assert bundle["candidate"]["markdown_text"] == ""
+
+
+def test_cli_help_passthrough_stays_silent_even_with_help_stdout_summary(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    _seed_workstream(tmp_path, workstream_id="B-096", title="Visible Intervention Hardening")
+
+    bundle = engine.build_intervention_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="codex",
+            turn_phase="prompt_submit",
+            session_id="session-help-fast-path",
+            prompt_excerpt="Odylith, help.",
+            assistant_summary=_CLI_HELP_OUTPUT,
+            active_target_refs=[
+                {"kind": "workstream", "id": "B-096", "path": "", "label": "B-096"},
+            ],
+        ),
+    )
+
+    assert bundle["facts"] == []
+    assert bundle["candidate"]["stage"] == "silent"
+    assert bundle["candidate"]["teaser_text"] == ""
+    assert bundle["candidate"]["markdown_text"] == ""
+
+
+def test_cli_help_stdout_is_removed_without_erasing_current_relevance_prompt(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    _seed_workstream(tmp_path, workstream_id="B-096", title="Visible Intervention Hardening")
+
+    bundle = engine.build_intervention_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="codex",
+            turn_phase="prompt_submit",
+            session_id="session-help-relevance",
+            prompt_excerpt=(
+                "Fix the governance intervention relevance bug in B-096 without treating CLI help stdout "
+                "as topology evidence."
+            ),
+            assistant_summary=_CLI_HELP_OUTPUT,
+        ),
+    )
+
+    assert "usage: odylith" not in json.dumps(bundle["facts"])
+    assert "usage: odylith" not in bundle["candidate"]["teaser_text"]
+    assert all("assistant" not in row["evidence_classes"] for row in bundle["facts"])
+    assert bundle["facts"]
+    assert bundle["candidate"]["stage"] != "silent"
 
 
 def test_prompt_submit_status_review_prefers_current_visibility_truth_over_quoted_workstream_scope(

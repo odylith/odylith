@@ -35,6 +35,17 @@ def render_visible_intervention(
     """Render the exact Markdown an assistant should show when hooks are hidden."""
 
     normalized_phase = " ".join(str(phase or "").split()).strip().lower() or "stop_summary"
+    if (
+        normalized_phase
+        in {"prompt_submit", "userpromptsubmit", "post_bash_checkpoint", "stop_summary"}
+        and host_intervention_support.suppress_prompt_live_narration(
+            prompt=prompt,
+            assistant_summary=summary,
+        )
+        and not changed_paths
+        and include_closeout is None
+    ):
+        return ""
     proposal = normalized_phase not in {"prompt_submit", "userpromptsubmit", "stop_summary"}
     if include_proposal is not None:
         proposal = bool(include_proposal)

@@ -8,6 +8,19 @@ from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import codex_host_stop_summary
 
 
+_CLI_HELP_OUTPUT = """usage: odylith [-h] {start,context,query,sync,codex} ...
+
+Odylith install, grounding, sync, runtime, and repair tooling.
+
+positional arguments:
+  {start,context,query,sync,codex}
+    start               Choose the safest first Odylith turn-start path.
+
+options:
+  -h, --help            show this help message and exit
+"""
+
+
 def test_log_codex_stop_summary_logs_meaningful_updates(monkeypatch) -> None:
     seen: list[tuple[str, str, list[str] | None]] = []
 
@@ -389,6 +402,33 @@ def test_main_replays_pending_chat_blocks_before_stop_assist(
     )
     assert payload["decision"] == "block"
     assert payload["reason"].startswith("Before ending")
+
+
+def test_main_suppresses_cli_help_stop_replay(monkeypatch, tmp_path: Path) -> None:
+    codex_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending stop replay.",
+        session_id="codex-stop-help",
+        host_family="codex",
+        intervention_key="codex-stop-help-replay",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** stale stop replay",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+    monkeypatch.setattr(
+        codex_host_stop_summary.codex_host_shared,
+        "load_payload",
+        lambda: {"last_assistant_message": _CLI_HELP_OUTPUT, "session_id": "codex-stop-help"},
+    )
+    buffer = io.StringIO()
+    monkeypatch.setattr("sys.stdout", buffer)
+
+    exit_code = codex_host_stop_summary.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert buffer.getvalue() == ""
 
 
 def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(

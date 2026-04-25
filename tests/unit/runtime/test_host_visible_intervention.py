@@ -7,6 +7,19 @@ from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import host_visible_intervention
 
 
+_CLI_HELP_OUTPUT = """usage: odylith [-h] {start,context,query,sync,codex} ...
+
+Odylith install, grounding, sync, runtime, and repair tooling.
+
+positional arguments:
+  {start,context,query,sync,codex}
+    start               Choose the safest first Odylith turn-start path.
+
+options:
+  -h, --help            show this help message and exit
+"""
+
+
 def _bundle() -> dict[str, object]:
     return {
         "intervention_bundle": {
@@ -113,6 +126,44 @@ def test_visible_intervention_visibility_feedback_adds_assist_after_live_block(t
     assert rendered.count("---") == 2
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
     assert "keeping Odylith visibility honest by naming the chat-visible complaint" in rendered
+
+
+def test_visible_intervention_suppresses_cli_help_passthrough(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="Odylith, help.",
+        summary=_CLI_HELP_OUTPUT,
+    )
+
+    assert rendered == ""
+
+
+def test_visible_intervention_suppresses_cli_help_stop_replay(tmp_path) -> None:
+    stream_state.append_intervention_event(
+        repo_root=tmp_path,
+        kind="intervention_card",
+        summary="Pending stop replay.",
+        session_id="visible-stop-help",
+        host_family="codex",
+        intervention_key="visible-stop-help-replay",
+        turn_phase="post_bash_checkpoint",
+        display_markdown="**Odylith Observation:** stale stop replay",
+        delivery_channel="system_message_and_assistant_fallback",
+        delivery_status="assistant_fallback_ready",
+    )
+
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="stop_summary",
+        prompt="Odylith, help.",
+        summary=_CLI_HELP_OUTPUT,
+        session_id="visible-stop-help",
+    )
+
+    assert rendered == ""
 
 
 def test_visible_intervention_replays_pending_chat_block_before_generic_failure(tmp_path) -> None:
