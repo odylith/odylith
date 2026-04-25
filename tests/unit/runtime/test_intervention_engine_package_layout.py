@@ -15,6 +15,7 @@ from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.intervention_engine import conversation_surface_signal_selection
 from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import delivery_runtime
+from odylith.runtime.intervention_engine import proposal_action_selection
 
 
 def test_conversation_signaling_modules_live_under_intervention_engine() -> None:
@@ -33,6 +34,7 @@ def test_conversation_signaling_modules_live_under_intervention_engine() -> None
         / "intervention_engine"
         / "conversation_surface_signal_selection.py"
     ).is_file()
+    assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "proposal_action_selection.py").is_file()
     assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "delivery_runtime.py").is_file()
     assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "delivery_ledger.py").is_file()
     assert (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "claim_runtime.py").is_file()
@@ -49,6 +51,9 @@ def test_conversation_signaling_modules_live_under_intervention_engine() -> None
     assert "runtime/intervention_engine/conversation_metrics.py" in Path(conversation_metrics.__file__).as_posix()
     assert "runtime/intervention_engine/conversation_surface_signal_selection.py" in Path(
         conversation_surface_signal_selection.__file__
+    ).as_posix()
+    assert "runtime/intervention_engine/proposal_action_selection.py" in Path(
+        proposal_action_selection.__file__
     ).as_posix()
     assert "runtime/intervention_engine/delivery_runtime.py" in Path(delivery_runtime.__file__).as_posix()
     assert "runtime/intervention_engine/delivery_ledger.py" in Path(delivery_ledger.__file__).as_posix()
