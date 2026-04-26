@@ -1,4 +1,4 @@
-status: implementation
+status: finished
 
 idea_id: B-117
 
@@ -28,7 +28,7 @@ confidence: high
 
 founder_override: yes
 
-promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
 
 execution_model: standard
 
@@ -95,8 +95,9 @@ prove the rendered browser states before claiming the surface contract is clean.
 - B-110 execution waves are explicit and CLI-authorable\n- each child slice maps to one governance/runtime/proof concern\n- release targeting and wave status are visible in Radar and Compass\n- implementation can add focused tests without growing red-zone files
 
 ## Validation
-- Run owned Atlas refresh plus selective sync and follow with check-only proof.
-- Run headless browser coverage for the affected governed surfaces.
+- Completed with focused visible-intervention regression coverage, browser
+  proof for rendered intervention surfaces, governed surface refresh proof, and
+  prior full `make dev-validate` plus headless browser matrix proof.
 
 ## Rollout
 - Queue now, then bind a technical plan when the implementation wave starts.

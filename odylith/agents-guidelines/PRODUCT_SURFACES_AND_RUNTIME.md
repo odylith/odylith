@@ -111,7 +111,7 @@
     that same moment
 - The primary visible intervention moment is the edit/bash checkpoint, not the
   stop fallback. Stop may still recover a late Observation or a closeout
-  Assist line, and explicit visibility-feedback fallbacks may append Assist
+  Assist line, and prompt-submit or visibility-feedback fallbacks append Assist
   after the ruled live block, but the product should not make users wait until
   stop to feel a live intervention.
 - When a host keeps checkpoint output hidden, Stop is the hard visibility

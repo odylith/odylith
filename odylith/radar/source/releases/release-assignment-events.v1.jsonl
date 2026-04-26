@@ -80,3 +80,5 @@
 {"action": "remove", "note": "Completed B-110 child wave closure.", "recorded_at": "2026-04-25T15:24:13Z", "release_id": "release-0-1-11", "workstream_id": "B-114"}
 {"action": "remove", "note": "Completed B-110 child wave closure.", "recorded_at": "2026-04-25T15:24:14Z", "release_id": "release-0-1-11", "workstream_id": "B-115"}
 {"action": "remove", "note": "Completed B-110 child wave closure.", "recorded_at": "2026-04-25T15:24:14Z", "release_id": "release-0-1-11", "workstream_id": "B-116"}
+{"action": "remove", "note": "Completed B-110 discipline release-proof closure; finished work remains visible as release history, not active targeting.", "recorded_at": "2026-04-26T02:07:28Z", "release_id": "release-0-1-11", "workstream_id": "B-110"}
+{"action": "remove", "note": "Completed B-117 surfaces and release-proof gate; finished work remains visible as release history, not active targeting.", "recorded_at": "2026-04-26T02:07:28Z", "release_id": "release-0-1-11", "workstream_id": "B-117"}

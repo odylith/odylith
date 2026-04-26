@@ -561,7 +561,7 @@ def test_codex_intervention_status_is_low_latency_and_human_readable(tmp_path: P
     assert any(row["lane"] == "Ambient Highlight" for row in report["active_lanes"])
     assert any(
         row["lane"] == "Odylith Assist"
-        and "explicit visibility-feedback fallback" in row["phase"]
+        and "prompt-submit visible fallback" in row["phase"]
         for row in report["active_lanes"]
     )
     assert all(row["lane"] != "Teaser / Ambient" for row in report["active_lanes"])

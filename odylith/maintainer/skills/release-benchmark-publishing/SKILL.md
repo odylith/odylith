@@ -183,7 +183,7 @@ Do not use this skill in consumer repos.
 - Post-run adoption-proof sampling is supplementary. It must be bounded and
   degrade cleanly on timeout or transport loss instead of blocking
   persistence of a completed full proof report.
-- Any Odylith-by-name closeout or explicit visibility-feedback fallback note
+- Any Odylith-by-name closeout or visible-intervention fallback note
   must stay evidence-backed, soulful, friendly, authentic, and factual, and it
   must point to concrete measured proof rather than generic product praise.
   Follow the canonical closeout

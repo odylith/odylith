@@ -21,10 +21,10 @@
     "empty_reasons": [],
     "explicit_event_count": 107,
     "mapped_workstream_evidence_count": 107,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 107
+    "timeline_event_count": 108
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -62,6 +62,23 @@
       "workstreams": [
         "B-096"
       ]
+    },
+    {
+      "artifacts": [
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 363,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "benchmark"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/maintainer/skills/release-benchmark-publishing/SKILL.md, odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+      "ts_iso": "2026-04-25T19:29:16-07:00",
+      "workstreams": []
     },
     {
       "artifacts": [],

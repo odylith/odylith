@@ -1,4 +1,4 @@
-Status: In progress
+Status: Done
 Created: 2026-04-17
 Updated: 2026-04-25
 Backlog: B-110, B-117
@@ -56,6 +56,10 @@ The runtime loop is:
 - Release proof execution is admissible proof-gathering work. Publishing or
   writing public shipped/proven claims remains blocked until benchmark proof is
   present.
+- B-117 and the B-110 W7 release-proof gate are complete after source-local
+  validation, browser proof, governed surface refresh, and prompt-visible
+  intervention Assist fallback hardening. The remaining public-release claim
+  policy stays governed by release publication gates, not this active plan.
 
 ## Related Records
 - Umbrella: B-110.
@@ -413,9 +417,23 @@ The runtime loop is:
   after stringification, avoiding salted or order-sensitive IDs under edge input.
 - Connected compact `discipline_summary` through Context Engine packets, execution handshake summaries, memory contracts, benchmark packet observation, and recommended validation commands.
 - Updated shared guidance, Codex and Claude host contracts, skills, Registry component specs, Atlas D-039 topology, Compass log, Radar B-110 program surfaces, and shipped bundle mirrors.
+- Hardened `visible-intervention` prompt-submit fallback so any rendered
+  prompt Odylith beat ends with one `Odylith Assist:` line and records that
+  closeout through the same visible proof path.
+- Reclassified the Intervention Status Assist lane from stop-only/explicit
+  feedback to prompt-visible fallback plus stop closeout, matching the actual
+  runtime contract.
+
+## Completion Evidence
+- `./.odylith/bin/odylith wave update --repo-root . B-110 W7 --status complete ... --json`: admitted by Execution Engine and wrote W7 `complete`.
+- `PYTHONPATH=src pytest -q tests/unit/runtime/test_host_visible_intervention.py tests/unit/runtime/test_intervention_delivery_status.py`: 35 passed.
+- `PYTHONPATH=src pytest -q tests/integration/runtime/test_intervention_visibility_browser.py`: 5 passed.
+- Final full green proof for this plan: `make dev-validate` passed with 3100 passed / 1 skipped; full headless browser matrix passed with 168 passed / 1 skipped.
+- Quick benchmark proof refreshed after closeout: discipline report `3a1c43173f2e6f96` and guidance-behavior report `017511003e8bcf8e` both returned `provisional_pass` with hard quality gates cleared.
 
 ## Release Gates
-- Pinned dogfood runtime integrity must be restored before shipped-runtime proof is claimed.
+- This plan does not publish new shipped-runtime claims; release publication
+  still requires the governed release proof lane.
 - No governed truth is hand-authored where a working CLI writer exists.
 - No red-zone source file receives substantive discipline logic; oversized front doors get dispatch-only edits.
 - Full v0.1.11 public claims require full proof benchmark with matched `odylith_on` versus `raw_agent_baseline`, warm and cold profiles, fairness intact, and no stale proof aliases.

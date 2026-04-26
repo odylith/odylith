@@ -307,6 +307,24 @@
       ]
     },
     {
+      "artifacts": [
+        "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+        "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
+        "src/odylith/runtime/intervention_engine/delivery_ledger.py"
+      ],
+      "confidence": "high",
+      "event_index": 364,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "governance-intervention-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md, odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md +1 more",
+      "ts_iso": "2026-04-25T18:57:02-07:00",
+      "workstreams": []
+    },
+    {
       "artifacts": [],
       "confidence": "low",
       "event_index": 355,
@@ -714,24 +732,6 @@
       "meaningful": false,
       "summary": "Odylith is tracking this signal: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-25T15:42:10Z",
-      "workstreams": []
-    },
-    {
-      "artifacts": [
-        "src/odylith/runtime/intervention_engine/conversation_runtime.py",
-        "src/odylith/runtime/intervention_engine/visibility_broker.py",
-        "src/odylith/runtime/intervention_engine/visibility_replay.py"
-      ],
-      "confidence": "high",
-      "event_index": 363,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "governance-intervention-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/intervention_engine/conversation_runtime.py, src/odylith/runtime/intervention_engine/visibility_broker.py +1 more",
-      "ts_iso": "2026-04-25T13:27:41-07:00",
       "workstreams": []
     },
     {

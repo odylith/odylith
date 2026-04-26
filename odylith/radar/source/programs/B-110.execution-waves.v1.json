@@ -129,8 +129,8 @@
     {
       "wave_id": "W7",
       "label": "Adaptive Discipline Surfaces And Release Proof",
-      "status": "active",
-      "summary": "Refresh governed surfaces, run browser checks, restore pinned dogfood before shipped-runtime claims, and block public claims until full proof passes.",
+      "status": "complete",
+      "summary": "Closed release-proof governance after full discipline validation, browser surface proof, and prompt-visible intervention Assist fallback hardening.",
       "depends_on": [
         "W6"
       ],
@@ -142,7 +142,7 @@
       "gate_refs": [
         {
           "workstream_id": "B-117",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
           "label": "Surfaces and release proof gate"
         }
       ]

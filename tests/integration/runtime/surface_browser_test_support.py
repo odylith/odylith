@@ -30,6 +30,9 @@ _LOCAL_COMPASS_RUNTIME_JSON_RE = re.compile(
 _LOCAL_COMPASS_SOURCE_TRUTH_JSON_RE = re.compile(
     r"^http://127\.0\.0\.1:\d+/odylith/compass/compass-source-truth\.v1\.json(?:[?#].*)?$"
 )
+_LOCAL_DETAIL_SHARD_JS_RE = re.compile(
+    r"^http://127\.0\.0\.1:\d+/odylith/(?:radar/(?:backlog-detail|backlog-document)|registry/registry-detail|casebook/casebook-detail)-shard-\d+\.v1\.js(?:[?#].*)?$"
+)
 _EXTERNAL_MERMAID_CDN_REQUEST_RE = re.compile(
     r"^GET https://cdn\.jsdelivr\.net/npm/mermaid@11/dist/mermaid\.min\.js(?:\s+.*)?$"
 )
@@ -134,6 +137,10 @@ def _new_page(context) -> tuple[object, list[str], list[str], list[str], list[st
         ):
             return
         if _LOCAL_COMPASS_SOURCE_TRUTH_JSON_RE.match(url) and (
+            not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
+        ):
+            return
+        if _LOCAL_DETAIL_SHARD_JS_RE.match(url) and (
             not lowered_error or "err_aborted" in lowered_error or "abort" in lowered_error
         ):
             return

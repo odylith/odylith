@@ -110,9 +110,33 @@ def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_pa
     )
 
     assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
-    assert rendered.endswith("\n---")
+    assert rendered.count("---") == 2
+    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
     assert "show the Odylith Markdown directly" in rendered
     assert "Odylith is tracking this signal" not in rendered
+
+
+def test_visible_intervention_prompt_submit_appends_assist_when_visible_markdown_renders(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setattr(
+        host_visible_intervention.host_surface_runtime,
+        "compose_host_conversation_bundle",
+        lambda **kwargs: _bundle(),
+    )
+
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        session_id="unit-visible-prompt-assist",
+        prompt="Are all Odylith engines active and firing?",
+    )
+
+    assert rendered.startswith("---\n\n**Odylith Observation:**")
+    assert "Odylith Proposal:" not in rendered
+    assert rendered.rsplit("\n", maxsplit=1)[-1] == "**Odylith Assist:** kept the visible path alive."
 
 
 def test_visible_intervention_visibility_feedback_adds_assist_after_live_block(tmp_path) -> None:
@@ -229,7 +253,7 @@ def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> No
         session_id="visible-session",
     )
     assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
-    assert rendered.endswith("\n---")
+    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
     assert events[-1]["delivery_status"] == "manual_visible"
     assert events[-1]["delivery_channel"] == "manual_visible_command"
     assert events[-1]["host_family"] == "codex"

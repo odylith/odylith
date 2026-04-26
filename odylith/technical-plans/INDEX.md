@@ -41,8 +41,6 @@ Last updated (UTC): 2026-04-25
 | `odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md` | In progress | 2026-04-16 | 2026-04-16 | `B-102` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md` | In progress | 2026-04-16 | 2026-04-16 | `B-103` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md` | In progress | 2026-04-16 | 2026-04-16 | `B-104` |
-| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-110` |
-| `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md` | In progress | 2026-04-17 | 2026-04-17 | `B-117` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md` | In progress | 2026-04-18 | 2026-04-18 | `B-126` |
 
 ## Parked Plans
@@ -61,6 +59,8 @@ Last updated (UTC): 2026-04-25
 | `odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md` | Done | 2026-04-25 | 2026-04-25 | `B-114` |
 | `odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md` | Done | 2026-04-25 | 2026-04-25 | `B-115` |
 | `odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md` | Done | 2026-04-25 | 2026-04-25 | `B-116` |
+| `odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md` | Done | 2026-04-17 | 2026-04-25 | `B-110` |
+| `odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md` | Done | 2026-04-17 | 2026-04-25 | `B-117` |
 ## Recently Completed (2026-04-15)
 
 | Plan | Status | Created | Updated | Backlog |

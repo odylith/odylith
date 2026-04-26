@@ -25,7 +25,7 @@ end-of-work outcomes instead of canned self-promotion.
 - The broader narration policy around when Odylith should stay ambient,
   task-first, and human instead of sounding like a control-plane receipt.
 - The closeout-side consumption contract for carried intervention payloads.
-- The `Odylith Assist:` closeout and explicit visibility-feedback fallback
+- The `Odylith Assist:` closeout, prompt-submit visible fallback, and visibility-feedback fallback
   contract, including the rule to link updated governance IDs inline when they
   were actually changed, name affected governance-contract IDs when the slice
   stayed inside known truth, and keep tone guardrails intact.
@@ -75,7 +75,7 @@ end-of-work outcomes instead of canned self-promotion.
 - Chatter is no longer the hot path for those live mid-turn beats. That split
   is deliberate: intervention owns the fast path, chatter owns the broader
   narration posture and the evidence-backed Assist text that appears at
-  closeout or as an explicit visibility-feedback fallback.
+  closeout or as a visible-intervention fallback.
 - Continuity for teaser, Observation, and Proposal also belongs to the
   intervention engine. Chatter should consume the carried payload, not invent
   a second notion of whether the same moment is fresh, repeated, or ready to
@@ -89,9 +89,9 @@ end-of-work outcomes instead of canned self-promotion.
   scenario, case queue, proof routes, or systemic causes.
 - Explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels
   should feel rare and earned. Pick the strongest one or stay quiet.
-- If Odylith is named directly at closeout, or when explicit visibility
-  feedback needs a visible fallback, use at most one short `Odylith Assist:`
-  line plus at most one supplemental closeout line before it.
+- If Odylith is named directly at closeout, or when visible-intervention needs
+  a prompt-submit or visibility-proof fallback, use at most one short
+  `Odylith Assist:` line plus at most one supplemental closeout line before it.
 - Prefer `**Odylith Assist:**` when Markdown formatting is available;
   otherwise use `Odylith Assist:`.
 - Lead that assist line with the user win, not Odylith mechanics. Link updated
@@ -157,7 +157,8 @@ end-of-work outcomes instead of canned self-promotion.
   explicitly asks for a command, a real blocker requires it, or a runtime
   boundary must be surfaced.
 - Allow at most one short `Odylith Assist:` line at the end of work, or when
-  explicit visibility feedback needs a visible fallback before the final turn.
+  visible-intervention needs a prompt-submit or visibility-proof fallback
+  before the final turn.
 - If a supplemental line is present, render it before `Odylith Assist:` so the
   Assist line remains the final visible closeout beat.
 - Prefer `**Odylith Assist:**` when Markdown formatting is available;

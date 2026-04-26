@@ -1,5 +1,5 @@
 ---
-status: implementation
+status: finished
 idea_id: B-110
 title: Discipline, Credit-Safe And Benchmark-Proved
 date: 2026-04-17
@@ -14,7 +14,7 @@ ordering_score: 83
 ordering_rationale: v0.1.11 final alignment: Odylith needs Odylith Discipline, continuous learning, benchmark sovereignty, and zero hidden host-model credit burn as one release-bound platform layer.
 confidence: high
 founder_override: yes
-promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
 execution_model: umbrella_waves
 workstream_type: umbrella
 workstream_parent: 
@@ -77,7 +77,10 @@ Create a release-bound platform layer that runs local discipline checks, applies
 - Codex and Claude share the same Odylith Discipline contract across dev, dogfood, and consumer lanes.
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Completed with deterministic discipline and guidance-behavior validation,
+  quick discipline benchmark proof, full source-local `make dev-validate`, full
+  headless browser proof, and prompt-visible intervention Assist fallback
+  regression coverage.
 
 ## Rollout
 - Queue now, then bind a technical plan when the implementation wave starts.

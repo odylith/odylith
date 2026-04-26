@@ -15,10 +15,10 @@
     "empty_reasons": [],
     "explicit_event_count": 103,
     "mapped_workstream_evidence_count": 92,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 103
+    "timeline_event_count": 104
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -76,6 +76,36 @@
       "workstreams": [
         "B-096"
       ]
+    },
+    {
+      "artifacts": [
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+        "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
+        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+        "odylith/maintainer/AGENTS.md",
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/skills/odylith-context-engine-operations/SKILL.md",
+        "odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md",
+        "odylith/skills/odylith-session-context/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "src/odylith/install/agents.py"
+      ],
+      "confidence": "high",
+      "event_index": 366,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/AGENTS.md +13 more",
+      "ts_iso": "2026-04-25T19:29:16-07:00",
+      "workstreams": []
     },
     {
       "artifacts": [],

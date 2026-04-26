@@ -140,9 +140,9 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   post-edit checkpoints, post-bash checkpoints, apply, and decline events must
   carry or recover the original prompt excerpt so later Odylith reasoning does
   not collapse into self-referential proposal summaries.
-- At closeout, or when explicit visibility feedback needs a visible fallback,
-  you may add at most one short `Odylith Assist:` line if it helps summarize
-  what Odylith materially contributed. Prefer
+- At closeout, or when a visible-intervention fallback renders a prompt-submit
+  or visibility-proof beat, you may add at most one short `Odylith Assist:`
+  line if it helps summarize what Odylith materially contributed. Prefer
   `**Odylith Assist:**` when Markdown formatting is available; otherwise use
   `Odylith Assist:`. Lead with the user win, link updated governance IDs inline
   when they were actually changed, and when no governed file moved, name the
@@ -150,10 +150,9 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   calling them updated. Frame the edge against `odylith_off` or the broader
   unguided path when the evidence supports it. Keep it crisp, authentic, clear,
   simple, insightful, soulful, friendly, free-flowing, human, and factual. Use
-  only concrete observed counts, measured deltas, or validation outcomes;
-  explicit visibility feedback may also use a concrete chat-visibility
-  complaint. If the evidence is thin or the user-facing delta is not clear,
-  omit it.
+  only concrete observed counts, measured deltas, or validation outcomes, or a
+  concrete chat-visibility complaint. If the evidence is thin or the
+  user-facing delta is not clear, omit it.
 - Treat Odylith-routed native delegation as the default execution path for
   substantive grounded maintainer work in both maintainer postures when the
   current host supports it. Codex is the currently validated native-spawn

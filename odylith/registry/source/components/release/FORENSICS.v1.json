@@ -15,10 +15,10 @@
     "empty_reasons": [],
     "explicit_event_count": 57,
     "mapped_workstream_evidence_count": 38,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 8,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 57
+    "timeline_event_count": 58
   },
   "name": "Release",
   "path_prefixes": [
@@ -267,6 +267,22 @@
         "B-109",
         "B-110"
       ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+      ],
+      "confidence": "high",
+      "event_index": 369,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+      "ts_iso": "2026-04-25T19:07:28-07:00",
+      "workstreams": []
     },
     {
       "artifacts": [],

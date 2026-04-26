@@ -81,6 +81,23 @@
       ]
     },
     {
+      "artifacts": [
+        "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 367,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/discipline-evaluation-corpus.v1.json, odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+      "ts_iso": "2026-04-25T19:29:16-07:00",
+      "workstreams": []
+    },
+    {
       "artifacts": [],
       "confidence": "high",
       "event_index": 361,
@@ -715,22 +732,6 @@
         "B-109",
         "B-110"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json"
-      ],
-      "confidence": "high",
-      "event_index": 364,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith-context-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/intervention-value-adjudication-corpus.v1.json",
-      "ts_iso": "2026-04-25T13:07:10-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

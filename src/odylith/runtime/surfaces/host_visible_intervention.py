@@ -11,12 +11,55 @@ from odylith.runtime.intervention_engine import conversation_closeout
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
+from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import host_intervention_support
+
+_PROMPT_SUBMIT_PHASES = {"prompt_submit", "userpromptsubmit"}
+_PROMPT_VISIBLE_ASSIST_MARKDOWN = (
+    "**Odylith Assist:** keeping Odylith visible in the transcript; generated hook payloads do not count as green "
+    "until chat delivery is confirmed."
+)
+_PROMPT_VISIBLE_ASSIST_PLAIN = (
+    "Odylith Assist: keeping Odylith visible in the transcript; generated hook payloads do not count as green "
+    "until chat delivery is confirmed."
+)
 
 
 def _normalize_text(value: object) -> str:
     return " ".join(str(value or "").split()).strip()
+
+
+def _contains_assist(value: object) -> bool:
+    return "odylith assist:" in str(value or "").casefold()
+
+
+def _prompt_visible_assist_text(bundle: object) -> tuple[str, str]:
+    existing_markdown = conversation_surface.render_closeout_text(bundle, markdown=True)
+    existing_plain = conversation_surface.render_closeout_text(bundle, markdown=False)
+    return (
+        existing_markdown or _PROMPT_VISIBLE_ASSIST_MARKDOWN,
+        existing_plain or _PROMPT_VISIBLE_ASSIST_PLAIN,
+    )
+
+
+def _bundle_with_prompt_visible_assist(bundle: object, *, markdown_text: str, plain_text: str) -> dict[str, object]:
+    if isinstance(bundle, dict):
+        updated: dict[str, object] = dict(bundle)
+    else:
+        updated = {}
+    if not conversation_surface.render_closeout_text(updated, markdown=True):
+        updated["closeout_bundle"] = {
+            "eligible": True,
+            "style": "prompt_visible_fallback",
+            "label": "Odylith Assist:",
+            "preferred_markdown_label": "**Odylith Assist:**",
+            "text": markdown_text,
+            "plain_text": plain_text,
+            "markdown_text": markdown_text,
+            "proof": markdown_text.removeprefix("**Odylith Assist:** ").rstrip("."),
+        }
+    return updated
 
 
 def render_visible_intervention(
@@ -99,6 +142,28 @@ def render_visible_intervention(
         visible_markdown_override=visible_override,
     )
     rendered = decision.visible_markdown
+    if rendered and normalized_phase in _PROMPT_SUBMIT_PHASES and not _contains_assist(rendered):
+        assist_markdown, assist_plain = _prompt_visible_assist_text(bundle)
+        bundle = _bundle_with_prompt_visible_assist(
+            bundle,
+            markdown_text=assist_markdown,
+            plain_text=assist_plain,
+        )
+        rendered = visibility_contract.compose_visible_markdown(rendered, assist_markdown)
+        decision = host_surface_runtime.visible_intervention_decision(
+            repo_root=repo_root,
+            bundle=bundle,
+            host_family=host_family,
+            turn_phase=normalized_phase,
+            session_id=session_id,
+            include_proposal=proposal,
+            include_closeout=True,
+            developer_include_closeout=True,
+            delivery_channel=decision.delivery_channel,
+            delivery_status=decision.delivery_status,
+            visible_markdown_override=rendered,
+        )
+        rendered = decision.visible_markdown
     if rendered and record_delivery:
         host_surface_runtime.append_visible_intervention_events(
             repo_root=Path(repo_root).expanduser().resolve(),
