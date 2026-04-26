@@ -2697,7 +2697,7 @@
         "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md": "4166d4a6d35da31e714a1d200867e09970adfdb7e19bef129a1d3b262e917318",
         "odylith/radar/source/releases/releases.v1.json": "f5ba79d451241f24bbf4fb21ce35a7123f6e57ccc525c6e9db084f1cf4d6f243",
         "odylith/radar/source/releases/release-assignment-events.v1.jsonl": "de6877076ec39af18637d5dc99fdab5994cd738d820ddc91ebd2b9afeec61658",
-        "odylith/runtime/source/release-notes/v0.1.11.md": "1eeb7380cabaf6f134ba55057c95b5230f0c0001179e1002c44540e21296f9e0",
+        "odylith/runtime/source/release-notes/v0.1.11.md": "3e5a543ec87a6378b08647099933992b8bc51f5bc0f15e6347a4bb8223852e79",
         "src/odylith/runtime/governance/release_planning_contract.py": "5923090852ea6ebc07445c6c1fafb6a7784909efe347d408b8a9b0e0f2a1420d",
         "src/odylith/runtime/governance/release_planning_authoring.py": "903686b29ec322aaf2d3138e6c3d970c13ef0d11f2140cd7c68a2dff984e4b38",
         "src/odylith/runtime/governance/build_traceability_graph.py": "2da0e3ade41c13a78745e628c32cfa52ffb5788d9a2a0ea08ecc8b186b3bc33a",
