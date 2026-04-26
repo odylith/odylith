@@ -241,9 +241,12 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "welcome-launchpad-hero" in html
     assert "Open the cheatsheet drawer on the left and try out commands in this repo." in html
     assert "Three quick steps" in html
-    assert "Paste it into Codex or Claude Code." in html
+    assert "Odylith, show me what you can do." in html
+    assert "Copy the Odylith prompt." in html
+    assert "Run it in Codex or Claude Code." in html
     assert "Try commands in the cheatsheet." in html
     assert "Open the cheatsheet drawer on the left side of the screen and try out commands." not in html
+    assert "Use Odylith to start this repo from one real code path." not in html
     assert "Paste it into Codex or Claude Code in this repo." not in html
     assert "Let Odylith create the first Radar item, Registry boundary, Atlas map around" not in html
     assert "Copy this starter prompt into your agent. Odylith will create the first Radar item, Registry boundary, and Atlas map around one real code path in this repo." not in html

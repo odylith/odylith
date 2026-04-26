@@ -327,12 +327,12 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         assert abs(explainer_box["width"] - launchpad_grid_box["width"]) < 2
 
         _click_visible(page.locator("#welcomeCopyPrompt"))
-        page.locator("#welcomeCopyStatus", has_text="Starter prompt copied. Paste it into your agent.").wait_for(
+        page.locator("#welcomeCopyStatus", has_text="Prompt copied. Paste it into your agent.").wait_for(
             timeout=15000
         )
         writes = _clipboard_writes(page)
         assert writes
-        assert writes[-1].startswith("Use Odylith to start this repo from one real code path.")
+        assert writes[-1] == "Odylith, show me what you can do."
 
         _click_visible(page.locator("#welcomeDismiss"))
         page.wait_for_function(
@@ -358,6 +358,64 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         _click_visible(page.locator("#welcomeReopen"))
         welcome.wait_for(timeout=15000)
         assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
+
+        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_first_install_launchpad_fits_narrow_viewport(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "consumer-narrow-welcome"
+    repo_root.mkdir()
+    _seed_consumer_repo(
+        repo_root,
+        focus_path="src/billing",
+        existing_truth=False,
+        active_version="1.2.3",
+        activation_history=["1.2.3"],
+    )
+    _render_shell(repo_root, monkeypatch)
+
+    with _repo_browser_context(repo_root) as (base_url, context):
+        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+        page.set_viewport_size({"width": 390, "height": 844})
+        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+
+        welcome = page.locator("#shellWelcomeState")
+        welcome.wait_for(timeout=15000)
+        assert page.locator(".welcome-title").inner_text().strip() == "Start Odylith from one real code path"
+        assert page.locator(".welcome-prompt-text").inner_text().strip() == '"Odylith, show me what you can do."'
+        assert page.locator("#welcomeCopyPrompt").is_visible()
+
+        dimensions = page.evaluate(
+            "() => ({"
+            "scrollWidth: document.documentElement.scrollWidth,"
+            "clientWidth: document.documentElement.clientWidth,"
+            "welcome: (() => {"
+            "  const rect = document.getElementById('shellWelcomeState').getBoundingClientRect();"
+            "  return {left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom};"
+            "})(),"
+            "title: (() => {"
+            "  const rect = document.querySelector('.welcome-title').getBoundingClientRect();"
+            "  return {left: rect.left, right: rect.right};"
+            "})(),"
+            "prompt: (() => {"
+            "  const rect = document.querySelector('.welcome-prompt-block').getBoundingClientRect();"
+            "  return {left: rect.left, right: rect.right};"
+            "})(),"
+            "handles: Array.from(document.querySelectorAll('.brief-handle')).map((node) => {"
+            "  const rect = node.getBoundingClientRect();"
+            "  return {left: rect.left, right: rect.right};"
+            "})"
+            "})"
+        )
+        assert dimensions["scrollWidth"] <= dimensions["clientWidth"] + 1
+        assert dimensions["welcome"]["left"] >= 0
+        assert dimensions["welcome"]["right"] <= 390
+        assert max(handle["right"] for handle in dimensions["handles"]) <= dimensions["welcome"]["left"]
+        assert dimensions["title"]["left"] >= dimensions["welcome"]["left"]
+        assert dimensions["title"]["right"] <= dimensions["welcome"]["right"]
+        assert dimensions["prompt"]["left"] >= dimensions["welcome"]["left"]
+        assert dimensions["prompt"]["right"] <= dimensions["welcome"]["right"]
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

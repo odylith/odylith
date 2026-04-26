@@ -1447,6 +1447,100 @@
   }
 }
 
+@media (max-width: 640px) {
+  .welcome-state {
+    inset: 8px 8px auto calc(8px + var(--brief-handle-width) + 8px);
+    max-width: calc(100% - (var(--brief-handle-width) + 24px));
+    max-height: calc(100% - 16px);
+    padding: 12px;
+    border-radius: 24px;
+  }
+
+  .welcome-shell-dismiss {
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .welcome-launchpad-shell {
+    gap: 12px;
+  }
+
+  .welcome-launchpad-hero,
+  .welcome-launchpad-grid {
+    gap: 12px;
+  }
+
+  .welcome-launchpad-main,
+  .welcome-prompt-card,
+  .welcome-explainer-strip,
+  .welcome-card {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .welcome-launchpad-main {
+    gap: 16px;
+  }
+
+  .welcome-title {
+    max-width: 13ch;
+    font-size: clamp(30px, 10vw, 40px);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+  }
+
+  .welcome-subhead {
+    max-width: none;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .welcome-hero-badges {
+    gap: 8px;
+  }
+
+  .welcome-hero-badges span {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .welcome-prompt-card {
+    gap: 14px;
+  }
+
+  .welcome-prompt-copy {
+    gap: 12px;
+  }
+
+  .welcome-prompt-block {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .welcome-prompt-text {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .welcome-action-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .welcome-button {
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .welcome-step {
+    gap: 10px;
+  }
+}
+
     .brief-drawer-title {
   margin: 0;
   color: #334155;

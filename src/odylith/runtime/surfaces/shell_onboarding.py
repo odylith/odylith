@@ -16,12 +16,7 @@ from odylith.install.state import load_version_pin
 from odylith.install.state import version_pin_path
 from odylith.runtime import release_notes
 
-STARTER_PROMPT = (
-    "Use Odylith to start this repo from one real code path. Pick one path that matters, then create the "
-    "first Radar item, first Registry boundary, and first Atlas map around that same path. First show me "
-    "5 bullets with the path you picked and why. Then create the Odylith files. Plain English. Real file "
-    "paths only. No IDs. Only write under odylith/."
-)
+STARTER_PROMPT = "Odylith, show me what you can do."
 AUTO_REFRESH_NOTE = "The shell refreshes itself as Odylith updates local surfaces."
 LATEST_INSTALL_COMMAND = "curl -fsSL https://odylith.ai/install.sh | bash"
 _LEGACY_CONSUMER_UPGRADE_VERSIONS = frozenset({"0.1.0", "0.1.1"})
@@ -1013,8 +1008,8 @@ def _quick_steps(
         surfaces.append("Atlas")
     if not focus_path and not component_label:
         return [
-            "Copy the starter prompt.",
-            "Paste it into Codex or Claude Code.",
+            "Copy the Odylith prompt.",
+            "Run it in Codex or Claude Code.",
             "Try commands in the cheatsheet.",
         ]
     if not surfaces:
@@ -1026,8 +1021,8 @@ def _quick_steps(
     else:
         surface_list = f"{surfaces[0]}, {surfaces[1]}, and {surfaces[2]}"
     return [
-        "Copy the starter prompt.",
-        "Paste it into Codex or Claude Code.",
+        "Copy the Odylith prompt.",
+        "Run it in Codex or Claude Code.",
         f"Let Odylith set up {surface_list}.",
     ]
 
