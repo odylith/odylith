@@ -905,12 +905,12 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     assert '>v1.2.2<' not in html
     assert "Open full release note" not in html
     assert "Sharper install messaging." in html
-    assert "Open release note on GitHub" in html
+    assert "Open release notes on GitHub" in html
     assert (
         'href="https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"'
         in html
     )
-    assert 'target="_blank" rel="noreferrer"' in html
+    assert 'target="_blank" rel="noopener noreferrer"' in html
     assert "upgrade-spotlight-secondary-link" not in html
     assert "The bottom recovery pill keeps it close for thirty minutes after the upgrade is recorded." not in html
     assert 'id="upgradeReopen"' in html

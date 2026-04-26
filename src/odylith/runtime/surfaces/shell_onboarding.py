@@ -187,7 +187,7 @@ def _release_story_note_link_label(
 ) -> str:
     if authored_notes is not None and authored_notes.note_link_label:
         return authored_notes.note_link_label
-    return "Open release note on GitHub"
+    return "Open release notes on GitHub"
 
 
 def _release_story_external_link_label(

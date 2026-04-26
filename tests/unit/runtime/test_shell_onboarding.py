@@ -213,7 +213,7 @@ def test_build_release_spotlight_for_recent_consumer_upgrade(tmp_path: Path) -> 
     assert spotlight["highlights"] == ["Sharper launchpad layout.", "Cleaner install hygiene."]
     assert spotlight["summary"].startswith("Odylith now renders a sharper first-run launchpad")
     assert spotlight["detail"].startswith("The dashboard refreshes immediately after upgrade")
-    assert spotlight["notes_label"] == "Open release note on GitHub"
+    assert spotlight["notes_label"] == "Open release notes on GitHub"
     assert spotlight["notes_url"] == (
         "https://github.com/odylith/odylith/blob/v0.1.4/odylith/runtime/source/release-notes/v0.1.4.md"
     )
@@ -292,7 +292,7 @@ def test_build_release_spotlight_prefers_authored_release_note_source(tmp_path: 
     assert spotlight["highlights"] == ["Source highlight one.", "Source highlight two."]
     assert spotlight["summary"] == "Release summary from source."
     assert spotlight["detail"] == "The authored detail should become the spotlight detail."
-    assert spotlight["notes_label"] == "Open release note on GitHub"
+    assert spotlight["notes_label"] == "Open release notes on GitHub"
     assert spotlight["notes_url"] == (
         "https://github.com/odylith/odylith/blob/v0.1.5/odylith/runtime/source/release-notes/v0.1.5.md"
     )
@@ -421,7 +421,7 @@ def test_build_version_story_persists_recent_version_delta_for_consumer_repo(tmp
     assert story["from_version"] == "0.1.4"
     assert story["to_version"] == "0.1.5"
     assert story["headline"] == "v0.1.5"
-    assert story["cta_label"] == "Open release note on GitHub"
+    assert story["cta_label"] == "Open release notes on GitHub"
     assert story["reopen_label"] == "v0.1.5"
     assert story["summary"] == "Odylith 0.1.5 clarified first contact."
     assert story["highlights"] == ["Release note highlight one.", "Release note highlight two."]

@@ -82,7 +82,7 @@ def _release_story_label(story: Mapping[str, Any], key: str, *, fallback: str = 
 
 def _release_story_notes_label(story: Mapping[str, Any]) -> str:
     """Return the call-to-action label for release-note links."""
-    return _release_story_label(story, "notes_label", fallback="Open release note on GitHub")
+    return _release_story_label(story, "notes_label", fallback="Open release notes on GitHub")
 
 
 def _append_unique_release_copy(items: list[str], value: Any, *, limit: int = 180) -> None:
@@ -230,7 +230,7 @@ def render_release_spotlight_html(payload: Mapping[str, Any]) -> str:
         else ""
     )
     notes_link_html = (
-        f'<a class="upgrade-spotlight-link" href="{html.escape(notes_url, quote=True)}" target="_blank" rel="noreferrer">{html.escape(_release_story_notes_label(spotlight))}</a>'
+        f'<a class="upgrade-spotlight-link" href="{html.escape(notes_url, quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(_release_story_notes_label(spotlight))}</a>'
         if notes_url and _release_story_notes_label(spotlight)
         else ""
     )
