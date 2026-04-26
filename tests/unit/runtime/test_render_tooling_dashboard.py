@@ -926,6 +926,12 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     assert 'upgradeReopen.textContent = upgradeSpotlightReopenLabel;' in control_js
     assert 'welcomeReopen.textContent = "Starter Guide";' in control_js
     assert 'const upgradeSpotlightReopenLabel = hasUpgradeSpotlight()' in control_js
+    assert (
+        'const upgradeSpotlightLinks = Array.from(document.querySelectorAll("#shellUpgradeSpotlight .upgrade-spotlight-link"));'
+        in control_js
+    )
+    assert 'window.open(href, "_blank");' in control_js
+    assert 'link.addEventListener("click", openUpgradeSpotlightLink);' in control_js
     assert not (tmp_path / "odylith" / "release-notes" / "1.2.3.html").exists()
 
 

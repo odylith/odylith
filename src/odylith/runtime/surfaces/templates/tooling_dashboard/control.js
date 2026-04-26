@@ -55,6 +55,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const upgradeReopen = document.getElementById("upgradeReopen");
     const upgradeSpotlightBackdrop = document.getElementById("upgradeSpotlightBackdrop");
     const upgradeSpotlightDismiss = document.getElementById("upgradeSpotlightDismiss");
+    const upgradeSpotlightLinks = Array.from(document.querySelectorAll("#shellUpgradeSpotlight .upgrade-spotlight-link"));
     const welcomeCopyPrompt = document.getElementById("welcomeCopyPrompt");
     const welcomeDismiss = document.getElementById("welcomeDismiss");
     const welcomeCopyStatus = document.getElementById("welcomeCopyStatus");
@@ -339,6 +340,21 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         window.requestAnimationFrame(() => {
           upgradeSpotlightDismiss.focus();
         });
+      }
+    }
+
+    function openUpgradeSpotlightLink(event) {
+      const link = event.currentTarget;
+      const href = link && link.href ? String(link.href).trim() : "";
+      if (!href) return;
+      const opened = window.open(href, "_blank");
+      if (opened) {
+        event.preventDefault();
+        try {
+          opened.opener = null;
+        } catch (_error) {
+          // Some browser contexts make opener read-only after noopener.
+        }
       }
     }
 
@@ -1277,6 +1293,9 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     if (upgradeReopen) {
       upgradeReopen.addEventListener("click", reopenUpgradeSpotlight);
     }
+    upgradeSpotlightLinks.forEach((link) => {
+      link.addEventListener("click", openUpgradeSpotlightLink);
+    });
     if (upgradeSpotlightDismissed()) {
       setUpgradeSpotlightHidden(true);
     } else if (upgradeSpotlight) {
