@@ -208,7 +208,7 @@ def test_closeout_assist_prefers_visibility_continuity_over_inherited_governance
 
     assert assist["eligible"] is True
     assert assist["style"] == "visibility_continuity"
-    assert "keeping Odylith visibility honest by naming the chat-visible complaint" in assist["markdown_text"]
+    assert "kept Odylith visible in this chat so the brand promise is something the user can see" in assist["markdown_text"]
 
 
 def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_or_ids() -> None:
@@ -236,7 +236,7 @@ def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_
     assert assist["style"] == "visibility_continuity"
     assert assist["updated_artifacts"] == []
     assert assist["affected_contracts"] == []
-    assert "keeping Odylith visibility honest by naming the chat-visible complaint" in assist["markdown_text"]
+    assert "kept Odylith visible in this chat so the brand promise is something the user can see" in assist["markdown_text"]
     assert "candidate path" not in assist["markdown_text"]
     assert "focused check" not in assist["markdown_text"]
 
