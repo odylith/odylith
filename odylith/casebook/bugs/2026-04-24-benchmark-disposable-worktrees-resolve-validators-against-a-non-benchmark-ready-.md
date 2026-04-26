@@ -1,6 +1,10 @@
 - Bug ID: CB-124
 
-- Status: Open
+- Status: Closed
+
+- Closed: 2026-04-26
+
+- Closure Evidence: Fixed before v0.1.11 release closeout by resolving benchmark validator execution through a readiness-checked tool bin instead of path-shape trust in disposable worktrees. The benchmark isolation and live-execution tests now cover benchmark tool-bin readiness fallback and validation-command rewriting to the resolved toolchain, and the existing full proof report selected for v0.1.11 completed after this harness fix.
 
 - Created: 2026-04-24
 
@@ -58,7 +62,7 @@
 
 - Config/Flags: odylith benchmark --repo-root . --profile proof; disposable benchmark worktrees; sandbox validator command rewriting.
 
-- Customer Comms: Public benchmark claims should stay conservative until the remaining live proof hold is resolved on a completed clean rerun.
+- Customer Comms: Public benchmark claims stay conservative and cite the selected v0.1.11 proof report rather than the earlier harness-failure holds.
 
 - Related Incidents/Bugs: CB-027, CB-043, CB-044, CB-048
 

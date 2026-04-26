@@ -80,7 +80,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "75df30fb39167504d921c682ab0c14fbb8305f540075231722359a3166f9a30e",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "91e9b8922d87db1df5d0557b8ee0928df37a1929a7362f2651c6543c83a339a8",
-        "odylith/radar/source/INDEX.md": "cd4f5378fa5189de6e3c68daabc849e05f844c38644f7c2a76cf5edbe33a2051",
+        "odylith/radar/source/INDEX.md": "fe551018493630621e4e8f0570eeabe0484f19cf2cdc41646bab7c9979bb0841",
         "odylith/technical-plans/INDEX.md": "aa6963bff5ce8b9b2cadb4fa98c81054c96ebe74ca176c0b8b677955931f7f83"
       }
     },
@@ -2697,7 +2697,7 @@
         "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md": "4166d4a6d35da31e714a1d200867e09970adfdb7e19bef129a1d3b262e917318",
         "odylith/radar/source/releases/releases.v1.json": "f5ba79d451241f24bbf4fb21ce35a7123f6e57ccc525c6e9db084f1cf4d6f243",
         "odylith/radar/source/releases/release-assignment-events.v1.jsonl": "de6877076ec39af18637d5dc99fdab5994cd738d820ddc91ebd2b9afeec61658",
-        "odylith/runtime/source/release-notes/v0.1.11.md": "3e5a543ec87a6378b08647099933992b8bc51f5bc0f15e6347a4bb8223852e79",
+        "odylith/runtime/source/release-notes/v0.1.11.md": "4f97a69ef493c9aa88a16c3537044aca12f2870da79f419ed377c2adc197bbab",
         "src/odylith/runtime/governance/release_planning_contract.py": "5923090852ea6ebc07445c6c1fafb6a7784909efe347d408b8a9b0e0f2a1420d",
         "src/odylith/runtime/governance/release_planning_authoring.py": "903686b29ec322aaf2d3138e6c3d970c13ef0d11f2140cd7c68a2dff984e4b38",
         "src/odylith/runtime/governance/build_traceability_graph.py": "2da0e3ade41c13a78745e628c32cfa52ffb5788d9a2a0ea08ecc8b186b3bc33a",

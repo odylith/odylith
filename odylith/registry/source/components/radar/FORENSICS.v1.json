@@ -35,10 +35,10 @@
     "empty_reasons": [],
     "explicit_event_count": 126,
     "mapped_workstream_evidence_count": 85,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 127
+    "timeline_event_count": 126
   },
   "name": "Radar",
   "path_prefixes": [
@@ -219,36 +219,6 @@
         "B-109",
         "B-110"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-context-engine-and-execution-engine-seamless-alignment-program.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-host-visibility-integration-and-ruler-canonicalization.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-intervention-adjudication-corpus-and-advisory-benchmark.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-v0-1-11-visible-intervention-release-proof.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-proposition-engine.md",
-        "odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-value-engine-governance-binding.md",
-        "odylith/radar/source/programs/B-096.execution-waves.v1.json",
-        "odylith/radar/source/programs/B-099.execution-waves.v1.json",
-        "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
-      ],
-      "confidence": "high",
-      "event_index": 380,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "radar"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md, odylith/radar/source/ideas/2026-04/2026-04-16-codex-claude-execution-contract-parity.md +13 more",
-      "ts_iso": "2026-04-26T12:41:33-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

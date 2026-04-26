@@ -1,6 +1,10 @@
 - Bug ID: CB-125
 
-- Status: Open
+- Status: Closed
+
+- Closed: 2026-04-26
+
+- Closure Evidence: Fixed on branch `2026/freedom/v0.1.11` by filtering mutable ignored benchmark runtime aliases out of proof identity and publishing the same-head report set successfully. The selected existing v0.1.11 proof remains report `44f2a3d83d2c9975`; the release-maintainer decision on 2026-04-26 is to reuse that report rather than rerun the benchmark after later release-UX-only commits.
 
 - Created: 2026-04-25
 

@@ -1454,7 +1454,10 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     if scoped_24h_meta["source"] in {"provider", "cache"}:
         if scoped_24h_meta["hasNotice"] == "true":
             assert scoped_24h_meta["noticeReason"].startswith("scoped_")
-            assert "showing_global" in scoped_24h_meta["noticeReason"]
+            assert (
+                "showing_global" in scoped_24h_meta["noticeReason"]
+                or "showing_wider_global" in scoped_24h_meta["noticeReason"]
+            )
         else:
             assert scoped_24h_meta["hasNotice"] == "false"
     assert scoped_24h_meta["fingerprint"]

@@ -1,6 +1,10 @@
 - Bug ID: CB-122
 
-- Status: Open
+- Status: Closed
+
+- Closed: 2026-04-26
+
+- Closure Evidence: v0.1.11 now separates static hook readiness from end-to-end chat-visible proof. `odylith codex intervention-status` reports `Activation: ready` with `Chat-visible proof: proven_this_session` for the active Codex session, while unproven host sessions explicitly remain unproven and instruct the assistant to render the visible fallback before claiming active UX. The shipped contract now gates full completion on `Activation: ready` plus `chat_visible_proof=proven_this_session`, not hook payload generation.
 
 - Created: 2026-04-17
 
@@ -60,7 +64,7 @@
 
 - Config/Flags: features.codex_hooks=true; Codex PostToolUse Bash-only; Claude direct edit and Bash hook coverage
 
-- Customer Comms: No external customer comms; maintainer-visible release blocker.
+- Customer Comms: No external customer comms; release blocker closed for v0.1.11 with the visibility-proof gate and assistant-render fallback contract.
 
 - Related Incidents/Bugs: CB-121; B-096
 

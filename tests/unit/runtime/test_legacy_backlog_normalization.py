@@ -158,6 +158,31 @@ def test_normalize_legacy_backlog_index_backfills_override_review_checkpoint(tmp
     assert "no manual priority override" not in text
 
 
+def test_normalize_legacy_backlog_index_trims_rationale_boundary_blank_lines(tmp_path: Path) -> None:
+    repo_root = _seed_repo(
+        tmp_path,
+        founder_override="no",
+        rationale_lines=[
+            "",
+            "",
+            "- why now: keep the body, not the padded boundary.",
+            "",
+            "",
+        ],
+    )
+
+    result = legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=repo_root,
+        today=dt.date(2026, 4, 6),
+    )
+    text = (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+
+    assert result.changed is True
+    assert "### B-101 (rank 1)\n- why now: keep the body, not the padded boundary." in text
+    assert "- ranking basis: score-based rank; no manual priority override.\n" in text
+    assert "- ranking basis: score-based rank; no manual priority override.\n\n\n" not in text
+
+
 def test_backlog_next_action_prefers_metadata_repairs_over_hidden_rationale_noise() -> None:
     action = legacy_backlog_normalization.backlog_next_action(
         errors=(

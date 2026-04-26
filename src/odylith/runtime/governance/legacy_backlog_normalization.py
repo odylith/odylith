@@ -371,7 +371,7 @@ def _normalized_rationale_lines(
         founder_override=founder_override,
         today=today,
     )
-    lines = list(existing_lines)
+    lines = _trim_empty_boundary_lines(existing_lines)
     bullet_indexes = {
         bullet: index
         for index, line in enumerate(lines)
@@ -392,6 +392,15 @@ def _normalized_rationale_lines(
     if not lines and require_all_bullets:
         return list(defaults.values())
     return lines
+
+
+def _trim_empty_boundary_lines(lines: Iterable[str]) -> list[str]:
+    normalized = [str(line) for line in lines]
+    while normalized and not normalized[0].strip():
+        normalized.pop(0)
+    while normalized and not normalized[-1].strip():
+        normalized.pop()
+    return normalized
 
 
 def _default_rationale_lines(

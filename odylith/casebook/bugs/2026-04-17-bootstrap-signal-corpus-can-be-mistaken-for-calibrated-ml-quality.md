@@ -1,6 +1,10 @@
 - Bug ID: CB-123
 
-- Status: Open
+- Status: Closed
+
+- Closed: 2026-04-26
+
+- Closure Evidence: v0.1.11 ships the intervention value path as deterministic utility with explicit bootstrap corpus provenance, calibration disabled, corpus quality gates, advisory reporting, and guidance-behavior validation. The record's regression coverage is present in `tests/unit/runtime/test_intervention_value_engine.py`, `tests/unit/runtime/test_intervention_value_engine_benchmark.py`, `tests/unit/runtime/test_intervention_conversation_surface.py`, `tests/integration/runtime/test_intervention_visibility_browser.py`, `tests/unit/install/test_value_engine_migration.py`, `tests/unit/runtime/test_validate_guidance_behavior.py`, and `tests/unit/runtime/test_intervention_alignment_evidence.py`.
 
 - Created: 2026-04-17
 

@@ -55,6 +55,22 @@
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifacts": [
+        "odylith/runtime/source/release-maintainer-overrides.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 377,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/release-maintainer-overrides.v1.json",
+      "ts_iso": "2026-04-26T15:59:42-07:00",
+      "workstreams": []
+    },
+    {
       "artifacts": [],
       "confidence": "low",
       "event_index": 370,
@@ -184,22 +200,6 @@
         "B-109",
         "B-110"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
-      ],
-      "confidence": "high",
-      "event_index": 379,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith-context-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/optimization-evaluation-corpus.v1.json",
-      "ts_iso": "2026-04-26T12:51:17-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

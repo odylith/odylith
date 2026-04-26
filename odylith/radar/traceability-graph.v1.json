@@ -7507,7 +7507,7 @@
       "version": "0.1.11",
       "tag": "v0.1.11",
       "name": "",
-      "inherited_name": "Proof Without Drift",
+      "inherited_name": "Governed Execution Goes Multi-Host",
       "effective_name": "0.1.11",
       "display_label": "0.1.11",
       "notes": "",
@@ -7611,7 +7611,7 @@
       "version": "0.1.11",
       "tag": "v0.1.11",
       "name": "",
-      "inherited_name": "Proof Without Drift",
+      "inherited_name": "Governed Execution Goes Multi-Host",
       "effective_name": "0.1.11",
       "display_label": "0.1.11",
       "notes": "",
@@ -7714,7 +7714,7 @@
     "version": "0.1.11",
     "tag": "v0.1.11",
     "name": "",
-    "inherited_name": "Proof Without Drift",
+    "inherited_name": "Governed Execution Goes Multi-Host",
     "effective_name": "0.1.11",
     "display_label": "0.1.11",
     "notes": "",
@@ -14210,5 +14210,5 @@
     "warning_count": 5,
     "warning_item_count": 5
   },
-  "generated_utc": "2026-04-26 19:53:05Z"
+  "generated_utc": "2026-04-26 22:58:07Z"
 }
