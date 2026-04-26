@@ -17,12 +17,10 @@ from odylith.runtime.surfaces import host_intervention_support
 
 _PROMPT_SUBMIT_PHASES = {"prompt_submit", "userpromptsubmit"}
 _PROMPT_VISIBLE_ASSIST_MARKDOWN = (
-    "**Odylith Assist:** keeping Odylith visible in the transcript; generated hook payloads do not count as green "
-    "until chat delivery is confirmed."
+    "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
 )
 _PROMPT_VISIBLE_ASSIST_PLAIN = (
-    "Odylith Assist: keeping Odylith visible in the transcript; generated hook payloads do not count as green "
-    "until chat delivery is confirmed."
+    "Odylith Assist: kept Odylith visible in this chat so the brand promise is something the user can see."
 )
 
 

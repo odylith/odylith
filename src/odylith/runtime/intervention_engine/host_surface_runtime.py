@@ -47,6 +47,23 @@ def _summary_validation_signals(summary: str, *, turn_phase: str) -> list[str]:
     return [text[:160]]
 
 
+def _summary_visibility_status(summary: str) -> dict[str, Any]:
+    text = _normalize_string(summary).casefold()
+    if not text or ("chat-visible proof" not in text and "chat_visible_proof" not in text):
+        return {}
+    if "unproven_this_session" in text or "not met" in text:
+        return {
+            "chat_visible_proof": "unproven_this_session",
+            "event_count": 0,
+            "visible_event_count": 0,
+            "chat_confirmed_event_count": 0,
+            "unconfirmed_event_count": 0,
+        }
+    if "proven_this_session" in text:
+        return {"chat_visible_proof": "proven_this_session"}
+    return {}
+
+
 _mapping = visibility_contract.mapping_copy
 
 
@@ -110,6 +127,10 @@ def compose_host_conversation_bundle(
         workstreams=resolved_workstreams,
         components=resolved_components,
     )
+    summary_visibility = _summary_visibility_status(summary)
+    if summary_visibility and not _mapping(context_signals.get("visibility_summary")):
+        context_signals = dict(context_signals)
+        context_signals["visibility_summary"] = summary_visibility
     resolved_workstreams = _normalize_string_list(context_signals.get("workstreams")) or resolved_workstreams
     resolved_components = _normalize_string_list(context_signals.get("components")) or resolved_components
     grounded = bool(summary or resolved_prompt or resolved_changed_paths or resolved_workstreams or resolved_components)

@@ -204,12 +204,10 @@ def _wrap_live_text(value: str) -> str:
 
 
 def _visibility_failure_observation(*, host_family: str) -> str:
-    host = _normalize_string(host_family).capitalize() or "This host"
+    del host_family
     return _wrap_live_text(
-        "**Odylith Observation:** This is a visibility failure in the chat transcript. "
-        f"{host} may be computing Odylith Observation, Proposal, Ambient, or Assist payloads, "
-        "but this chat has not proven that any of them reached the transcript, so the assistant "
-        "has to show the Odylith Markdown directly until visibility is proven here."
+        "**Odylith Observation:** This chat still has no visible Odylith moment. "
+        "Show the next Odylith Observation here so the user can see what changed and what happens next."
     )
 
 
@@ -402,7 +400,7 @@ def append_decision_events(
     )
     if decision.visible_markdown and (
         not events
-        or "This is a visibility failure in the chat transcript" in decision.visible_markdown
+        or "This chat still has no visible Odylith moment" in decision.visible_markdown
     ):
         observation = _mapping(bundle.get("observation"))
         stream_state.append_intervention_event(

@@ -215,8 +215,9 @@ def _observation_line(
     rows = _deduped_sentences(
         [
             proposition.claim,
-            proposition.action if proposal_actions else proposition.consequence,
-            proposition.consequence if proposal_actions else "",
+            f"Next: {proposition.action}" if proposal_actions and proposition.action else "",
+            f"Why it matters: {proposition.consequence}" if not proposal_actions and proposition.consequence else "",
+            f"Why it matters: {proposition.consequence}" if proposal_actions and proposition.consequence else "",
         ],
         limit=2,
     )
@@ -231,12 +232,13 @@ def _teaser_text(*, primary: GovernanceFact, supporting: GovernanceFact | None) 
     )
     rows = _deduped_sentences(
         [
-            f"Odylith is tracking this signal: {proposition.claim}",
-            proposition.consequence,
+            proposition.claim,
+            f"Why it matters: {proposition.consequence}" if proposition.consequence else "",
         ],
         limit=2,
     )
-    return " ".join(rows).strip()
+    line = " ".join(rows).strip()
+    return f"Odylith Observation: {line}" if line else ""
 
 
 def _proposal_reason(action: CaptureAction) -> str:

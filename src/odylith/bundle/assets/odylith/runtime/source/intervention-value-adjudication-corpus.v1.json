@@ -100,17 +100,17 @@
           "option_id": "risk-visible-proof-duplicate",
           "proposed_label": "risks",
           "block_kind": "ambient",
-          "markdown_text": "**Odylith Risks:** Hook payload generation is not visible proof.",
-          "plain_text": "Odylith Risks: Hook payload generation is not visible proof.",
+          "markdown_text": "**Odylith Risks:** Odylith must be visible in chat before the user can trust the signal.",
+          "plain_text": "Odylith Risks: Odylith must be visible in chat before the user can trust the signal.",
           "proposition": {
             "proposition_id": "prop-risk-visible-proof-duplicate",
-            "claim_text": "Hook payload generation is not visible proof.",
+            "claim_text": "Odylith must be visible in chat before the user can trust the signal.",
             "proposition_kind": "risks",
             "support_state": "supported",
             "duplicate_key": "invariant:chat-visible-proof",
             "freshness_state": "current",
-            "semantic_signature": ["hook", "payload", "visible", "proof"],
-            "evidence": [{"source_kind": "casebook", "source_id": "CB-121", "freshness": "current", "confidence": 0.94, "excerpt": "Generated hook payload is not proof of chat-visible UX.", "evidence_class": "invariant"}]
+            "semantic_signature": ["odylith", "visible", "chat", "trust"],
+            "evidence": [{"source_kind": "casebook", "source_id": "CB-121", "freshness": "current", "confidence": 0.94, "excerpt": "Users need to see the Odylith moment in chat before the product can count it as working.", "evidence_class": "invariant"}]
           },
           "value_features": {
             "correctness_confidence": 0.94,
@@ -130,17 +130,17 @@
           "option_id": "observation-visible-proof",
           "proposed_label": "observation",
           "block_kind": "observation",
-          "markdown_text": "**Odylith Observation:** Hook payload generation is not visible proof, so this chat needs assistant-rendered Markdown until delivery is confirmed.",
-          "plain_text": "Odylith Observation: Hook payload generation is not visible proof, so this chat needs assistant-rendered Markdown until delivery is confirmed.",
+          "markdown_text": "**Odylith Observation:** This chat still has no visible Odylith moment. Show the next Odylith Observation here so the user can see what changed and what happens next.",
+          "plain_text": "Odylith Observation: This chat still has no visible Odylith moment. Show the next Odylith Observation here so the user can see what changed and what happens next.",
           "proposition": {
             "proposition_id": "prop-observation-visible-proof",
-            "claim_text": "Hook payload generation is not visible proof, so this chat needs assistant-rendered Markdown until delivery is confirmed.",
+            "claim_text": "This chat still has no visible Odylith moment. Show the next Odylith Observation here so the user can see what changed and what happens next.",
             "proposition_kind": "observation",
             "support_state": "supported",
             "duplicate_key": "invariant:chat-visible-proof",
             "freshness_state": "current",
-            "semantic_signature": ["hook", "payload", "visible", "proof"],
-            "evidence": [{"source_kind": "casebook", "source_id": "CB-121", "freshness": "current", "confidence": 0.96, "excerpt": "Generated hook payload is not proof of chat-visible UX.", "evidence_class": "live_observation"}]
+            "semantic_signature": ["odylith", "visible", "chat", "moment"],
+            "evidence": [{"source_kind": "casebook", "source_id": "CB-121", "freshness": "current", "confidence": 0.96, "excerpt": "Users need to see the Odylith moment in chat before the product can count it as working.", "evidence_class": "live_observation"}]
           },
           "value_features": {
             "correctness_confidence": 0.96,
@@ -426,17 +426,17 @@
           "option_id": "visibility-failure-observation",
           "proposed_label": "observation",
           "block_kind": "observation",
-          "markdown_text": "**Odylith Observation:** This is a visibility failure in the chat transcript.",
-          "plain_text": "Odylith Observation: This is a visibility failure in the chat transcript.",
+          "markdown_text": "**Odylith Observation:** This chat still has no visible Odylith moment. Show the next Odylith Observation here so the user can see what changed and what happens next.",
+          "plain_text": "Odylith Observation: This chat still has no visible Odylith moment. Show the next Odylith Observation here so the user can see what changed and what happens next.",
           "proof_required": true,
           "proposition": {
             "proposition_id": "prop-visibility-failure",
-            "claim_text": "This is a visibility failure in the chat transcript.",
+            "claim_text": "This chat still has no visible Odylith moment. Show the next Odylith Observation here so the user can see what changed and what happens next.",
             "proposition_kind": "observation",
             "support_state": "supported",
             "duplicate_key": "visibility-failure:chat",
             "freshness_state": "current",
-            "semantic_signature": ["visibility", "failure", "chat"],
+            "semantic_signature": ["odylith", "visible", "chat", "moment"],
             "evidence": [{"source_kind": "user_transcript", "source_id": "visibility_complaint", "freshness": "current", "confidence": 1.0, "excerpt": "I cannot see if this is working", "evidence_class": "visibility_failure"}]
           },
           "value_features": {

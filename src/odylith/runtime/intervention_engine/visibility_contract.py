@@ -298,6 +298,9 @@ def event_host_family(row: Mapping[str, Any]) -> str:
 
 def event_visibility_family(row: Mapping[str, Any]) -> str:
     """Classify the event into the high-level visible intervention families."""
+    kind = normalize_token(row.get("kind"))
+    if kind == "intervention_teaser":
+        return "teaser"
     label_text = " ".join(
         normalize_string(row.get(field)).lower()
         for field in ("display_markdown", "display_plain", "summary")
@@ -308,15 +311,12 @@ def event_visibility_family(row: Mapping[str, Any]) -> str:
         return "ambient"
     if "odylith observation" in label_text or "odylith proposal" in label_text:
         return "intervention"
-    kind = normalize_token(row.get("kind"))
     if kind == "ambient_signal":
         return "ambient"
     if kind in {"intervention_card", "capture_proposed"}:
         return "intervention"
     if kind == "assist_closeout":
         return "assist"
-    if kind == "intervention_teaser":
-        return "teaser"
     return "other"
 
 

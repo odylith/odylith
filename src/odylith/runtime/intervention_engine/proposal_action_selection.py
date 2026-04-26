@@ -272,8 +272,8 @@ def proposal_actions(
                 target_id=matched_workstream_id,
                 title=title,
                 rationale=(
-                    f"Radar already tracks {matched_workstream_id}, so extend that workstream "
-                    "instead of creating a duplicate slice."
+                    f"This turn resolves to {matched_workstream_id}; keep the next proof or edit "
+                    "on that governed Radar lane."
                 ),
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",
@@ -304,8 +304,8 @@ def proposal_actions(
                 target_id=matched_component_id,
                 title=title,
                 rationale=(
-                    f"Registry already maps this slice to `{matched_component_id}`, so update "
-                    "that dossier instead of creating a duplicate component."
+                    f"This turn resolves to `{matched_component_id}`; keep the boundary change "
+                    "inside that Registry dossier."
                 ),
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",
@@ -374,8 +374,8 @@ def proposal_actions(
                 target_id=matched_bug_id,
                 title=lookup.get("bug_rows", {}).get(matched_bug_id, {}).get("title", title),
                 rationale=(
-                    f"Casebook already has {matched_bug_id}, so reopen or extend that bug "
-                    "instead of creating a duplicate incident record."
+                    f"This turn repeats {matched_bug_id}; reopen or extend that Casebook record "
+                    "with the new evidence."
                 ),
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",

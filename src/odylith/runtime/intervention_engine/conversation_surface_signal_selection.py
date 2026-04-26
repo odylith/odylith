@@ -618,6 +618,27 @@ def _primary_fact_payload(intervention: Mapping[str, Any]) -> dict[str, Any]:
     return primary or _primary_fact(intervention)
 
 
+def _is_current_visibility_status_fact(fact: Mapping[str, Any]) -> bool:
+    if _normalize_token(fact.get("kind")) != "governance_truth":
+        return False
+    has_intervention_component = any(
+        _normalize_token(ref.get("kind")) == "component"
+        and _normalize_token(ref.get("id")) == "governance_intervention_engine"
+        for ref in _fact_refs(fact)
+    )
+    if not has_intervention_component:
+        return False
+    text = _normalize_block_string(f"{fact.get('headline', '')} {fact.get('detail', '')}").casefold()
+    return bool(
+        "chat visibility" in text
+        or "chat-visible" in text
+        or "visible odylith beat" in text
+        or "visible odylith block" in text
+        or "visible odylith moment" in text
+        or "visibility proof" in text
+    )
+
+
 def _value_option_from_observation(intervention: Mapping[str, Any]) -> value_engine.VisibleInterventionOption | None:
     candidate = _mapping(intervention.get("candidate"))
     if _normalize_token(candidate.get("stage")) != "card":
@@ -630,6 +651,9 @@ def _value_option_from_observation(intervention: Mapping[str, Any]) -> value_eng
     primary = _primary_fact_payload(intervention)
     refs = _fact_refs(primary)
     option_id = f"observation:{_normalize_string(candidate.get('key')) or 'live'}"
+    current_visibility_status = _is_current_visibility_status_fact(primary)
+    materiality = max(int(moment.get("score") or 0) / 100.0, int(primary.get("priority") or 0) / 100.0)
+    timing_relevance = max(int(moment.get("governance_readiness") or 0) / 100.0, min(1.0, len(refs) * 0.35))
     return value_engine.VisibleInterventionOption(
         option_id=option_id,
         proposition=value_engine.SignalProposition(
@@ -664,17 +688,20 @@ def _value_option_from_observation(intervention: Mapping[str, Any]) -> value_eng
         action_payload={},
         features=value_engine.InterventionValueFeatures(
             correctness_confidence=0.94 if markdown_text else 0.0,
-            materiality=max(int(moment.get("score") or 0) / 100.0, int(primary.get("priority") or 0) / 100.0),
-            actionability=0.82,
-            novelty=int(moment.get("novelty") or 0) / 100.0,
-            timing_relevance=max(int(moment.get("governance_readiness") or 0) / 100.0, min(1.0, len(refs) * 0.35)),
-            user_need=0.78,
-            visibility_need=0.72,
+            materiality=max(materiality, 0.96) if current_visibility_status else materiality,
+            actionability=0.68 if current_visibility_status else 0.82,
+            novelty=max(int(moment.get("novelty") or 0) / 100.0, 0.72) if current_visibility_status else int(moment.get("novelty") or 0) / 100.0,
+            timing_relevance=max(timing_relevance, 0.98) if current_visibility_status else timing_relevance,
+            user_need=0.96 if current_visibility_status else 0.78,
+            visibility_need=1.0 if current_visibility_status else 0.72,
             interruption_cost=0.05,
             uncertainty_penalty=0.02,
             brand_risk=0.02,
         ),
-        metadata={"source_kind": _normalize_string(moment.get("kind"))},
+        metadata={
+            "source_kind": _normalize_string(moment.get("kind")),
+            "current_visibility_status": current_visibility_status,
+        },
     )
 
 

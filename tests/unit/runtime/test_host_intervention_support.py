@@ -35,7 +35,7 @@ def test_merge_replay_with_closeout_keeps_existing_assist() -> None:
 def test_merge_replay_with_closeout_folds_live_blocks_and_keeps_assist_last() -> None:
     replay = (
         "---\n\n**Odylith Observation:** first visible beat.\n\n---\n\n"
-        "---\n\nOdylith is tracking this signal.\n\n---"
+        "---\n\nOdylith Observation: second visible beat.\n\n---"
     )
     closeout = (
         "**Odylith Assist:** keep the closeout grounded.\n"
@@ -49,14 +49,14 @@ def test_merge_replay_with_closeout_folds_live_blocks_and_keeps_assist_last() ->
 
     assert rendered.count("---") == 2
     assert rendered.startswith(
-        "---\n\n**Odylith Observation:** first visible beat.\n\nOdylith is tracking this signal.\n\n---"
+        "---\n\n**Odylith Observation:** first visible beat.\n\nOdylith Observation: second visible beat.\n\n---"
     )
     assert rendered.rsplit("\n", maxsplit=1)[-1] == "**Odylith Assist:** keep the closeout grounded."
     assert rendered.index("**Odylith Insight:**") < rendered.index("**Odylith Assist:**")
 
 
 def test_looks_like_teaser_live_text_distinguishes_full_live_beats() -> None:
-    assert host_intervention_support.looks_like_teaser_live_text("Odylith is tracking a real signal.") is True
+    assert host_intervention_support.looks_like_teaser_live_text("Odylith Observation: a real signal is forming.") is True
     assert (
         host_intervention_support.looks_like_teaser_live_text(
             "---\n\n**Odylith Observation:** This is a real visible beat.\n\n---"
@@ -69,7 +69,7 @@ def test_render_prompt_bundle_text_joins_anchor_and_live_text(monkeypatch) -> No
     monkeypatch.setattr(
         host_intervention_support.conversation_surface,
         "render_live_text",
-        lambda *_args, **_kwargs: "Odylith is tracking a real signal.",
+        lambda *_args, **_kwargs: "Odylith Observation: a real signal is forming.",
     )
 
     rendered = host_intervention_support.render_prompt_bundle_text(
@@ -80,7 +80,7 @@ def test_render_prompt_bundle_text_joins_anchor_and_live_text(monkeypatch) -> No
 
     assert rendered == (
         "Odylith anchor B-123: primary target src/odylith/runtime/surfaces/host_intervention_support.py.\n\n"
-        "Odylith is tracking a real signal."
+        "Odylith Observation: a real signal is forming."
     )
 
 
@@ -92,10 +92,10 @@ def test_render_prompt_system_message_appends_assist_for_visibility_feedback(tmp
         session_id="visibility-feedback",
     )
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
     assert rendered.count("---") == 2
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    assert "keeping Odylith visibility honest by naming the chat-visible complaint" in rendered
+    assert "kept Odylith visible in this chat so the brand promise is something the user can see" in rendered
     assert "Odylith is tracking this signal" not in rendered
     assert "**Odylith Insight:**" not in rendered
     assert "**Odylith Risks:**" not in rendered
@@ -110,7 +110,7 @@ def test_render_prompt_system_message_keeps_assist_hidden_for_generic_failure(tm
         session_id="generic-failure",
     )
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
     assert "**Odylith Assist:**" not in rendered
 
 

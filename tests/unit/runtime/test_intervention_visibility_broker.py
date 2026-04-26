@@ -130,7 +130,7 @@ def test_broker_hard_fail_visible_for_zero_visibility_feedback(tmp_path: Path) -
         include_closeout=False,
     )
 
-    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
     assert decision.delivery_status == "assistant_render_required"
     assert decision.delivery_channel == "assistant_visible_fallback"
     assert decision.proof_required is True
@@ -152,7 +152,7 @@ def test_broker_hard_fail_visible_for_zero_signals_branding_feedback(tmp_path: P
         include_closeout=False,
     )
 
-    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True
 

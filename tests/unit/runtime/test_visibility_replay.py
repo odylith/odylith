@@ -264,7 +264,7 @@ def test_replay_does_not_resurrect_stale_teaser_after_later_live_block_is_confir
         host_family="codex",
         intervention_key="teaser",
         turn_phase="prompt_submit",
-        display_markdown="---\n\nOdylith is tracking this signal: stale teaser.\n\n---",
+        display_markdown="---\n\nOdylith Observation: stale teaser.\n\n---",
         delivery_channel="assistant_visible_fallback",
         delivery_status="assistant_render_required",
         render_surface="codex_user_prompt_submit",

@@ -96,7 +96,7 @@ def visibility_feedback_phrase(*, request: Any, assistant_summary: str = "") -> 
     lowered = text.casefold()
     if not any(phrase in lowered for phrase in _VISIBILITY_COMPLAINT_PHRASES):
         return "", ""
-    phrase = "keeping Odylith visibility honest by naming the chat-visible complaint"
+    phrase = "kept Odylith visible in this chat so the brand promise is something the user can see"
     return phrase, phrase
 
 
@@ -309,9 +309,6 @@ def compose_closeout_assist(
         style = "visibility_continuity"
         proof_parts_markdown.append(visibility_markdown_phrase)
         proof_parts_plain.append(visibility_plain_phrase)
-        if contract_scope_markdown_phrase:
-            proof_parts_markdown.append(contract_scope_markdown_phrase)
-            proof_parts_plain.append(contract_scope_plain_phrase)
     elif governance_phrase and has_material_turn_evidence:
         style = "governed_lane"
         if contract_update_markdown_phrase or artifact_markdown_phrase:

@@ -138,9 +138,10 @@ def test_prompt_only_bundle_stays_teaser_and_holds_voice_contract(tmp_path: Path
     )
 
     assert bundle["candidate"]["stage"] == "teaser"
-    assert bundle["candidate"]["teaser_text"].startswith("Odylith is tracking this signal:")
+    assert bundle["candidate"]["teaser_text"].startswith("Odylith Observation:")
     assert "This turn is already framing a governed proposal." in bundle["candidate"]["teaser_text"]
     assert "Capture the exact governed change while the request is still current." in bundle["candidate"]["teaser_text"]
+    assert "Odylith is tracking this signal" not in bundle["candidate"]["teaser_text"]
     assert "One more corroborating signal" not in bundle["candidate"]["teaser_text"]
     assert bundle["candidate"]["markdown_text"] == ""
     assert bundle["proposal"]["eligible"] is False
@@ -176,6 +177,41 @@ def test_prompt_submit_does_not_promote_inherited_workstream_context_without_cur
     assert bundle["candidate"]["stage"] == "silent"
     assert bundle["candidate"]["teaser_text"] == ""
     assert bundle["candidate"]["markdown_text"] == ""
+
+
+def test_prompt_submit_does_not_promote_sticky_anchor_for_unrelated_skill_question(
+    tmp_path: Path,
+) -> None:
+    _seed_repo(tmp_path)
+    _seed_workstream(tmp_path, workstream_id="B-096", title="Visible Intervention Hardening")
+
+    bundle = engine.build_intervention_bundle(
+        repo_root=tmp_path,
+        observation=surface_runtime.observation_envelope(
+            host_family="claude",
+            turn_phase="prompt_submit",
+            session_id="session-skill-question",
+            prompt_excerpt=(
+                "How are we doing on the anti AI slop skills? "
+                "Why does it not activate during coding automatically?"
+            ),
+            active_target_refs=[
+                {"kind": "workstream", "id": "B-096", "path": "", "label": "B-096"},
+                {
+                    "kind": "component",
+                    "id": "governance-intervention-engine",
+                    "path": "",
+                    "label": "governance-intervention-engine",
+                },
+            ],
+        ),
+    )
+
+    rendered = json.dumps(bundle)
+
+    assert bundle["candidate"]["stage"] == "silent"
+    assert "Radar already has B-096" not in rendered
+    assert "duplicate backlog record" not in rendered
 
 
 def test_cli_help_passthrough_stays_silent_even_with_help_stdout_summary(tmp_path: Path) -> None:
@@ -271,7 +307,8 @@ def test_prompt_submit_status_review_prefers_current_visibility_truth_over_quote
     headlines = [row["headline"] for row in bundle["facts"]]
 
     assert bundle["candidate"]["stage"] == "teaser"
-    assert "chat visibility is still unproven" in bundle["candidate"]["teaser_text"]
+    assert "this chat still has no visible Odylith moment" in bundle["candidate"]["teaser_text"]
+    assert "what Odylith is doing" in bundle["candidate"]["teaser_text"]
     assert "Radar already has B-096" not in bundle["candidate"]["teaser_text"]
     assert "Radar already has B-096" not in " ".join(headlines)
     assert bundle["proposal"]["eligible"] is False
@@ -321,7 +358,8 @@ def test_stop_summary_status_review_uses_current_visibility_observation_not_inhe
     headlines = [row["headline"] for row in bundle["facts"]]
 
     assert bundle["candidate"]["stage"] == "card"
-    assert "This session is armed, but chat visibility is still unproven." in bundle["candidate"]["markdown_text"]
+    assert "Odylith is on, but this chat still has no visible Odylith moment." in bundle["candidate"]["markdown_text"]
+    assert "what Odylith is doing" in bundle["candidate"]["markdown_text"]
     assert "Radar already has B-096" not in bundle["candidate"]["markdown_text"]
     assert "Radar already has B-096" not in " ".join(headlines)
     assert bundle["proposal"]["eligible"] is False

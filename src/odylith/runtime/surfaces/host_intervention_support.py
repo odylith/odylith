@@ -92,9 +92,12 @@ def looks_like_teaser_live_text(value: str) -> bool:
     text = str(value or "").strip()
     if not text:
         return False
-    if any(label in text for label in _LIVE_BLOCK_LABELS):
+    body = visibility_contract.strip_live_boundary(text)
+    if body.startswith("Odylith Observation:") and "**Odylith Observation:**" not in body:
+        return True
+    if any(label in body for label in _LIVE_BLOCK_LABELS):
         return False
-    return "Odylith" in text
+    return "Odylith" in body
 
 
 def merge_replay_with_closeout(*, replay: str, closeout_text: str) -> str:

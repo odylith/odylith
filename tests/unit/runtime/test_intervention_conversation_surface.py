@@ -50,7 +50,8 @@ def test_prompt_submit_live_surface_keeps_top_level_observation_and_teaser(tmp_p
         markdown=False,
         include_proposal=False,
     )
-    assert rendered.startswith("---\n\nOdylith is tracking this signal:")
+    assert rendered.startswith("---\n\nOdylith Observation:")
+    assert "Odylith is tracking this signal" not in rendered
     assert "This turn is already framing a governed proposal." in rendered
     assert "Capture the exact governed change while the request is still current." in rendered
     assert "One more corroborating signal" not in rendered
@@ -73,7 +74,7 @@ def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> No
                 "stage": "teaser",
                 "suppressed_reason": "",
                 "teaser_text": (
-                    "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+                    "Odylith Observation: This turn is already framing a governed proposal. "
                     "Capture the exact governed change while the request is still current."
                 ),
             },
@@ -97,7 +98,7 @@ def test_render_live_text_prefers_ambient_over_teaser_after_prompt_phase() -> No
         "**Odylith Insight:** this is now grounded enough to keep visible."
     )
     assert old_order == surface_runtime.wrap_live_text(
-        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "Odylith Observation: This turn is already framing a governed proposal. "
         "Capture the exact governed change while the request is still current."
     )
 
@@ -134,7 +135,7 @@ def test_render_live_text_can_stack_distinct_high_value_ambient_signals() -> Non
                 "stage": "teaser",
                 "suppressed_reason": "",
                 "teaser_text": (
-                    "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+                    "Odylith Observation: This turn is already framing a governed proposal. "
                     "Capture the exact governed change while the request is still current."
                 ),
             },
@@ -164,9 +165,9 @@ def test_render_live_text_can_stack_same_label_when_candidate_ids_are_distinct()
         "candidate_id": "ambient:risks:first",
         "eligible": True,
         "render_hint": "explicit_label",
-        "plain_text": "Odylith Risks: hidden hook payloads are not visibility proof.",
-        "markdown_text": "**Odylith Risks:** hidden hook payloads are not visibility proof.",
-        "semantic_signature": ["hidden", "hooks", "visibility"],
+        "plain_text": "Odylith Risks: an unseen Odylith moment should not count as delivered.",
+        "markdown_text": "**Odylith Risks:** an unseen Odylith moment should not count as delivered.",
+        "semantic_signature": ["unseen", "odylith", "visibility"],
     }
     second = {
         "candidate_id": "ambient:risks:second",
@@ -207,8 +208,8 @@ def test_render_live_text_can_stack_same_label_when_candidate_ids_are_distinct()
 def test_ambient_candidate_id_is_not_just_the_signal_label() -> None:
     first = {
         "signal_name": "risks",
-        "plain_text": "Odylith Risks: hidden hook payloads are not visibility proof.",
-        "duplicate_group": "risk:hidden-hooks",
+        "plain_text": "Odylith Risks: an unseen Odylith moment should not count as delivered.",
+        "duplicate_group": "risk:unseen-odylith-moment",
     }
     second = {
         "signal_name": "risks",
@@ -277,16 +278,16 @@ def test_render_live_text_dedupes_semantically_duplicate_ambient_signals() -> No
             "risks": {
                 "eligible": True,
                 "render_hint": "explicit_label",
-                "plain_text": "Odylith Risks: preserve visible chat proof for CB-121 now.",
-                "markdown_text": "**Odylith Risks:** preserve visible chat proof for CB-121 now.",
-                "semantic_signature": ["preserve", "visible", "proof", "cb-121"],
+                "plain_text": "Odylith Risks: keep the visible Odylith moment in frame for CB-121 now.",
+                "markdown_text": "**Odylith Risks:** keep the visible Odylith moment in frame for CB-121 now.",
+                "semantic_signature": ["visible", "odylith", "moment", "cb-121"],
             },
             "history": {
                 "eligible": True,
                 "render_hint": "explicit_label",
-                "plain_text": "Odylith History: preserve visible chat proof for CB-121 now.",
-                "markdown_text": "**Odylith History:** preserve visible chat proof for CB-121 now.",
-                "semantic_signature": ["preserve", "visible", "proof", "cb-121"],
+                "plain_text": "Odylith History: keep the visible Odylith moment in frame for CB-121 now.",
+                "markdown_text": "**Odylith History:** keep the visible Odylith moment in frame for CB-121 now.",
+                "semantic_signature": ["visible", "odylith", "moment", "cb-121"],
             },
         },
         "intervention_bundle": {
@@ -311,9 +312,9 @@ def test_append_intervention_events_records_same_label_distinct_ambient_signals(
         "candidate_id": "ambient:risks:first",
         "eligible": True,
         "render_hint": "explicit_label",
-        "plain_text": "Odylith Risks: hidden hook payloads are not visibility proof.",
-        "markdown_text": "**Odylith Risks:** hidden hook payloads are not visibility proof.",
-        "semantic_signature": ["hidden", "hooks", "visibility"],
+        "plain_text": "Odylith Risks: an unseen Odylith moment should not count as delivered.",
+        "markdown_text": "**Odylith Risks:** an unseen Odylith moment should not count as delivered.",
+        "semantic_signature": ["unseen", "odylith", "visibility"],
     }
     second = {
         "candidate_id": "ambient:risks:second",
@@ -515,7 +516,7 @@ def test_append_intervention_events_records_each_distinct_ambient_signal(tmp_pat
                 "moment": {"semantic_signature": ["ambient", "events"]},
                 "suppressed_reason": "",
                 "teaser_text": (
-                    "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+                    "Odylith Observation: This turn is already framing a governed proposal. "
                     "Capture the exact governed change while the request is still current."
                 ),
             },

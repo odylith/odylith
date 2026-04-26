@@ -66,7 +66,7 @@ def test_claude_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pa
     )
     observation = dict(bundle["observation"])
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
     assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
     assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"
     assert observation["memory_summary"]["visibility_complaint"] is True
@@ -262,8 +262,8 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
-                        "Capture the exact governed change while the request is still current."
+                        "Odylith Observation: This turn is already framing a governed proposal. "
+                        "Why it matters: Capture the exact governed change while the request is still current."
                     ),
                 }
             }
@@ -276,7 +276,7 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
-    assert "Odylith is tracking this signal:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith Observation:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "systemMessage" not in payload
 
 
@@ -300,8 +300,8 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
-                        "Capture the exact governed change while the request is still current."
+                        "Odylith Observation: This turn is already framing a governed proposal. "
+                        "Why it matters: Capture the exact governed change while the request is still current."
                     ),
                 }
             }
@@ -312,7 +312,7 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
 
     assert exit_code == 0
     output = capsys.readouterr().out
-    assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith is tracking this signal:")
+    assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
     assert output.rstrip().endswith(surface_runtime.LIVE_BOUNDARY)
     assert not output.lstrip().startswith("{")
 

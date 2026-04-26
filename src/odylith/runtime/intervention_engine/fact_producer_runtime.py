@@ -213,12 +213,9 @@ def _allow_repo_fact(
     if phase in {"post_bash_checkpoint", "post_edit_checkpoint"}:
         return True
     has_changed_paths = bool(observation.changed_paths)
-    has_execution_pressure = bool(signal_profile.get("prompt_has_execution_hints"))
     if kind == "workstream":
         return bool(
             has_changed_paths
-            or has_execution_pressure
-            or signal_profile.get("prompt_has_governance_hints")
             or _normalize_string_list(signal_profile.get("prompt_explicit_workstream_ids"))
         )
     if kind == "bug":
@@ -236,9 +233,10 @@ def _allow_repo_fact(
     if kind == "component":
         return bool(
             has_changed_paths
-            or has_execution_pressure
-            or signal_profile.get("prompt_has_governance_hints")
-            or signal_profile.get("prompt_has_topology_hints")
+            or any(
+                _normalize_string(component_id).casefold() in _normalize_string(observation.prompt_excerpt).casefold()
+                for component_id in _normalize_string_list(signal_profile.get("component_ids"))
+            )
         )
     return has_changed_paths
 
@@ -257,6 +255,13 @@ def _current_visibility_status_fact(
     visibility = _mapping(observation.visibility_summary)
     delivery = _mapping(observation.delivery_snapshot)
     proof = _normalize_token(visibility.get("chat_visible_proof"))
+    if not proof:
+        status_surface = joined_prompt_surface(observation).casefold()
+        if "chat-visible proof" in status_surface or "chat_visible_proof" in status_surface:
+            if "unproven_this_session" in status_surface or "not met" in status_surface:
+                proof = "unproven_this_session"
+            elif "proven_this_session" in status_surface:
+                proof = "proven_this_session"
     event_count = int(visibility.get("event_count") or delivery.get("event_count") or 0)
     visible_event_count = int(visibility.get("visible_event_count") or delivery.get("visible_event_count") or 0)
     chat_confirmed_event_count = int(
@@ -270,10 +275,9 @@ def _current_visibility_status_fact(
         and visible_event_count <= 0
         and chat_confirmed_event_count <= 0
     ):
-        headline = "This session is armed, but chat visibility is still unproven."
+        headline = "Odylith is on, but this chat still has no visible Odylith moment."
         detail = (
-            "Activation alone does not count: this session still has zero visible Odylith beats "
-            "confirmed in chat."
+            "Show the next Odylith Observation or Assist here so the user can see what Odylith is doing."
         )
         priority = 98
     elif proof in {
@@ -282,19 +286,18 @@ def _current_visibility_status_fact(
         "ledger_visible_with_pending_confirmation",
         "chat_confirmed_with_pending_confirmation",
     } or unconfirmed_event_count > 0:
-        headline = "This session has visible Odylith beats waiting for transcript confirmation."
+        headline = "Odylith has appeared in this chat, but the moment still needs a clear follow-through."
         detail = (
-            f"{visible_event_count} visible event(s), {chat_confirmed_event_count} chat-confirmed, "
-            f"{unconfirmed_event_count} still pending exact confirmation."
+            f"{visible_event_count} Odylith moment(s) appeared; keep the next line simple and user-facing."
         )
         priority = 97
     elif proof == "proven_this_session" or chat_confirmed_event_count > 0:
-        headline = "This session already has current chat-visible Odylith proof."
-        detail = f"{chat_confirmed_event_count} chat-confirmed visible beat(s) already landed in this session."
+        headline = "Odylith is already visible in this chat."
+        detail = f"{chat_confirmed_event_count} visible Odylith moment(s) already landed for the user."
         priority = 95
     elif event_count > 0:
-        headline = "This session has delivery activity, but not current chat-visible proof yet."
-        detail = f"{event_count} delivery event(s) are recorded, but chat visibility is not yet proven."
+        headline = "Odylith has activity, but the user still needs a visible line."
+        detail = f"{event_count} Odylith event(s) are recorded; keep the next surfaced line direct and branded."
         priority = 94
     else:
         return None
@@ -341,8 +344,8 @@ def collect_facts(
         facts.append(
             _fact(
                 "governance_truth",
-                f"Radar already has {ws_id} for this slice.",
-                "Extend that workstream instead of creating a duplicate backlog record.",
+                f"{ws_id} is the live Radar lane for this turn.",
+                "Keep the next visible claim tied to that lane only when this prompt actually touches it.",
                 evidence_classes,
                 [{"kind": "workstream", "id": ws_id, "label": ws_id}],
                 95,
@@ -374,7 +377,7 @@ def collect_facts(
         facts.append(
             _fact(
                 "topology",
-                f"Atlas already carries topology proof for {diagram.get('id') or 'this slice'}.",
+                f"Atlas already carries the topology view for {diagram.get('id') or 'this work'}.",
                 _normalize_string(diagram.get("label")) or "The conversation is making architecture claims against an existing diagrammed boundary.",
                 evidence_classes,
                 [diagram],
@@ -390,8 +393,8 @@ def collect_facts(
         facts.append(
             _fact(
                 "governance_truth",
-                f"Registry already maps this work onto `{component_id}`.",
-                "Update the existing component dossier instead of creating a duplicate component boundary.",
+                f"`{component_id}` is the live Registry boundary for this turn.",
+                "Update that dossier only when the prompt or touched paths actually hit this component.",
                 evidence_classes,
                 [{"kind": "component", "id": component_id, "label": component_id}],
                 84,

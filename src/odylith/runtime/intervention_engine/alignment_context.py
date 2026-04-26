@@ -339,8 +339,8 @@ def _tribunal_signals(
                 "operator_readout": {
                     "primary_scenario": "chat_visibility_regression",
                     "severity": "p0",
-                    "issue": "Odylith generated a block, but this chat has not shown it yet.",
-                    "action": "Render the exact Odylith Markdown in the next assistant reply until the transcript confirms it.",
+                    "issue": "Odylith is ready to speak, but this chat has not shown the Odylith moment yet.",
+                    "action": "Show the next Odylith Observation or Assist in the assistant reply so the user can follow it.",
                 },
             },
             {
@@ -352,8 +352,8 @@ def _tribunal_signals(
                 "operator_readout": {
                     "primary_scenario": "visibility_broker_required",
                     "severity": "p0",
-                    "issue": "Host-local visibility policy cannot be trusted without a delivery ledger proof.",
-                    "action": "consume one broker decision across Context, Execution, Memory, and Tribunal signals.",
+                    "issue": "Odylith needs one consistent visible lane before the UX can be called active.",
+                    "action": "Use the shared visibility decision across context, execution, memory, and review signals.",
                 },
             },
         ],
@@ -361,23 +361,23 @@ def _tribunal_signals(
             {
                 "id": _VISIBILITY_BUG,
                 "scope_key": f"component:{_INTERVENTION_COMPONENT}",
-                "headline": "Intervention hooks report ready while chat sees zero visible Odylith beats",
-                "brief": "Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
-                "systemic_theme_tags": ["chat_visibility", "host_hooks", "delivery_proof"],
+                "headline": "Odylith visibility reports ready while chat shows zero visible Odylith moments",
+                "brief": "Treat unseen Odylith moments as not delivered until the Markdown appears in chat.",
+                "systemic_theme_tags": ["chat_visibility", "brand_signal", "visible_moment"],
             }
         ],
         "systemic_brief": {
-            "headline": "Chat-visible intervention proof is the gate.",
+            "headline": "Odylith must be seen before it counts.",
             "summary": (
-                "Context packets, execution posture, session memory, and Tribunal signals must feed the same "
-                "broker decision before a host adapter can claim an Odylith Observation, Proposal, or Assist is active."
+                "Context, execution, memory, and review signals need to produce one clear Odylith moment "
+                "that appears in the chat where the user can read it."
             ),
             "latent_causes": [
-                "hidden hook payload counted as product success",
-                "surface-local visibility policy forks",
-                "delivery ledger missing chat transcript confirmation",
+                "unseen Odylith moment counted as product success",
+                "host surfaces using different visibility rules",
+                "chat never showed the branded closeout",
             ],
-            "systemic_theme_tags": ["chat_visibility", "brand_signal", "brokered_delivery"],
+            "systemic_theme_tags": ["chat_visibility", "brand_signal", "visible_moment"],
         },
         "source": "intervention_alignment_context",
         "workstreams": _normalize_string_list(workstreams, limit=4),

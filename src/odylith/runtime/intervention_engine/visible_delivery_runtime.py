@@ -83,10 +83,10 @@ def assistant_visible_fallback_context(visible_text: str) -> str:
         [
             "Odylith visible delivery fallback:",
             (
-                "Visible proof is missing or host display is unproven. In the next visible "
+                "The Odylith moment has not been seen in this chat. In the next visible "
                 "assistant message, before any other text, emit the exact Markdown between "
                 "the tags verbatim once if it is not already visible. Do not paraphrase it, "
-                "do not summarize it, do not mention hooks, and do not use a code fence."
+                "do not summarize it, and do not use a code fence."
             ),
             "",
             _VISIBLE_DELIVERY_BEGIN,

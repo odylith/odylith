@@ -228,6 +228,54 @@ def _ref_ids(target_refs: Sequence[Mapping[str, str]], *, kind: str) -> list[str
     return rows
 
 
+def _ref_matches_current_prompt(
+    *,
+    row: Mapping[str, str],
+    prompt_excerpt: str,
+    prompt_workstreams: Sequence[str],
+    prompt_bugs: Sequence[str],
+    prompt_diagrams: Sequence[str],
+) -> bool:
+    kind = _normalize_token(row.get("kind"))
+    item_id = _normalize_string(row.get("id"))
+    if not item_id:
+        return False
+    if kind == "workstream":
+        return item_id in prompt_workstreams
+    if kind == "bug":
+        return item_id in prompt_bugs
+    if kind == "diagram":
+        return item_id in prompt_diagrams
+    prompt = prompt_excerpt.casefold()
+    return bool(prompt and item_id.casefold() in prompt)
+
+
+def _current_turn_target_refs(
+    *,
+    target_refs: Sequence[Mapping[str, str]],
+    prompt_excerpt: str,
+    changed_paths: Sequence[str],
+    turn_phase: str,
+    prompt_workstreams: Sequence[str],
+    prompt_bugs: Sequence[str],
+    prompt_diagrams: Sequence[str],
+) -> list[dict[str, str]]:
+    phase = _normalize_token(turn_phase)
+    if changed_paths or phase not in {"prompt_submit", "userpromptsubmit", "stop_summary"}:
+        return [dict(row) for row in target_refs]
+    return [
+        dict(row)
+        for row in target_refs
+        if _ref_matches_current_prompt(
+            row=row,
+            prompt_excerpt=prompt_excerpt,
+            prompt_workstreams=prompt_workstreams,
+            prompt_bugs=prompt_bugs,
+            prompt_diagrams=prompt_diagrams,
+        )
+    ]
+
+
 def _governed_path_pressure(changed_paths: Sequence[str]) -> int:
     score = 0
     for raw_path in changed_paths:
@@ -302,6 +350,21 @@ def build_signal_profile(
         and not changed_paths
         and not deduped_target_refs
     )
+    explicit_workstream_ids = fact_producer_runtime.explicit_ids(prompt_surface, _WORKSTREAM_RE)
+    explicit_bug_ids = fact_producer_runtime.explicit_ids(prompt_surface, _BUG_RE)
+    explicit_diagram_ids = fact_producer_runtime.explicit_ids(prompt_surface, _DIAGRAM_RE)
+    prompt_explicit_workstream_ids = fact_producer_runtime.explicit_ids(prompt_excerpt, _WORKSTREAM_RE)
+    prompt_explicit_bug_ids = fact_producer_runtime.explicit_ids(prompt_excerpt, _BUG_RE)
+    prompt_explicit_diagram_ids = fact_producer_runtime.explicit_ids(prompt_excerpt, _DIAGRAM_RE)
+    deduped_target_refs = _current_turn_target_refs(
+        target_refs=deduped_target_refs,
+        prompt_excerpt=prompt_excerpt,
+        changed_paths=changed_paths,
+        turn_phase=observation.turn_phase,
+        prompt_workstreams=prompt_explicit_workstream_ids,
+        prompt_bugs=prompt_explicit_bug_ids,
+        prompt_diagrams=prompt_explicit_diagram_ids,
+    )
     alignment_text = alignment_evidence.alignment_signal_text(observation)
     prompt_with_paths = " ".join([prompt_surface, *changed_paths, alignment_text]).strip()
     workstream_ids = _ref_ids(deduped_target_refs, kind="workstream")
@@ -313,13 +376,7 @@ def build_signal_profile(
         if _normalize_token(row.get("kind")) == "diagram"
     ]
     if not workstream_ids:
-        workstream_ids = fact_producer_runtime.explicit_ids(prompt_surface, _WORKSTREAM_RE)
-    explicit_workstream_ids = fact_producer_runtime.explicit_ids(prompt_surface, _WORKSTREAM_RE)
-    explicit_bug_ids = fact_producer_runtime.explicit_ids(prompt_surface, _BUG_RE)
-    explicit_diagram_ids = fact_producer_runtime.explicit_ids(prompt_surface, _DIAGRAM_RE)
-    prompt_explicit_workstream_ids = fact_producer_runtime.explicit_ids(prompt_excerpt, _WORKSTREAM_RE)
-    prompt_explicit_bug_ids = fact_producer_runtime.explicit_ids(prompt_excerpt, _BUG_RE)
-    prompt_explicit_diagram_ids = fact_producer_runtime.explicit_ids(prompt_excerpt, _DIAGRAM_RE)
+        workstream_ids = list(prompt_explicit_workstream_ids)
     if not bug_ids:
         bug_ids = explicit_bug_ids
     if not diagram_refs:

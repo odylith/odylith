@@ -189,7 +189,7 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
         include_closeout=False,
     )
 
-    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True
 
@@ -246,11 +246,11 @@ def test_codex_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
     payload = host_surface_runtime.codex_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
         system_message=(
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
     )
@@ -259,8 +259,10 @@ def test_codex_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
     assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"] == (
-        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "---\n\n"
+        "Odylith Observation: This turn is already framing a governed proposal. "
         "Capture the exact governed change while the request is still current."
+        "\n\n---"
     )
     assert "Odylith Assist:" not in payload["hookSpecificOutput"]["additionalContext"]
 
@@ -281,11 +283,11 @@ def test_claude_prompt_payload_keeps_prompt_context_discreet() -> None:
     payload = host_surface_runtime.claude_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
         system_message=(
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
     )
@@ -353,11 +355,11 @@ def test_codex_prompt_visible_text_comes_from_system_message_not_hidden_context(
     payload = host_surface_runtime.codex_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
         system_message=(
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
     )
@@ -369,8 +371,10 @@ def test_codex_prompt_visible_text_comes_from_system_message_not_hidden_context(
     )
 
     assert visible == (
-        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "---\n\n"
+        "Odylith Observation: This turn is already framing a governed proposal. "
         "Capture the exact governed change while the request is still current."
+        "\n\n---"
     )
     assert "Odylith anchor B-096" not in visible
 
@@ -379,11 +383,11 @@ def test_claude_prompt_visible_text_comes_from_teaser_stdout_not_hidden_context(
     payload = host_surface_runtime.claude_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
         system_message=(
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
     )
@@ -393,13 +397,13 @@ def test_claude_prompt_visible_text_comes_from_teaser_stdout_not_hidden_context(
         host_family="claude",
         turn_phase="prompt_submit",
         plain_stdout=(
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
     )
 
     assert visible == (
-        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "Odylith Observation: This turn is already framing a governed proposal. "
         "Capture the exact governed change while the request is still current."
     )
     assert "systemMessage" not in payload
@@ -458,11 +462,11 @@ def test_visible_fallback_keeps_non_odylith_context_while_stripping_live_tail() 
     payload = host_surface_runtime.codex_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
         system_message=(
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+            "Odylith Observation: This turn is already framing a governed proposal. "
             "Capture the exact governed change while the request is still current."
         ),
     )
@@ -473,7 +477,7 @@ def test_visible_fallback_keeps_non_odylith_context_while_stripping_live_tail() 
     assert "Odylith anchor B-096: primary target src/main.py." in additional_context
     assert "Odylith developer continuity:" in additional_context
     assert additional_context.count(
-        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+        "Odylith Observation: This turn is already framing a governed proposal. "
         "Capture the exact governed change while the request is still current."
     ) == 1
 

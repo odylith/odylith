@@ -155,8 +155,8 @@ def test_stop_intervention_bundle_can_recover_prompt_when_last_message_is_short(
             "visible in chat."
         ),
         display_plain=(
-            "Odylith is tracking this signal: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: This turn is already framing a governed proposal. "
+            "Why it matters: Capture the exact governed change while the request is still current."
         ),
     )
     seen: dict[str, object] = {}
@@ -283,7 +283,7 @@ def test_render_codex_stop_summary_replaces_teaser_with_unseen_live_beat(tmp_pat
                 "candidate": {
                     "stage": "teaser",
                     "suppressed_reason": "",
-                    "teaser_text": "Odylith is tracking this signal: governed visibility is still unproven.",
+                    "teaser_text": "Odylith Observation: the visible Odylith moment still needs to reach chat.",
                 },
                 "proposal": {"eligible": False, "suppressed_reason": ""},
             },

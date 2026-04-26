@@ -60,7 +60,7 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
         "candidate": {
             "stage": "teaser",
             "teaser_text": (
-                "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+                "Odylith Observation: This turn is already framing a governed proposal. "
                 "Capture the exact governed change while the request is still current."
             ),
         }
@@ -87,7 +87,7 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
         "candidate": {
             "stage": "teaser",
             "teaser_text": (
-                "Odylith is tracking this signal: This turn is already framing a governed proposal. "
+                "Odylith Observation: This turn is already framing a governed proposal. "
                 "Capture the exact governed change while the request is still current."
             ),
         }

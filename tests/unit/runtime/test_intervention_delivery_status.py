@@ -343,7 +343,7 @@ def test_later_live_beats_supersede_stale_teaser_confirmation_debt(
         host_family=host_family,
         intervention_key="teaser",
         turn_phase="prompt_submit",
-        display_markdown="---\n\nOdylith is tracking this signal: teaser waiting for proof.\n\n---",
+        display_markdown="---\n\nOdylith Observation: teaser waiting for the visible Odylith moment.\n\n---",
         delivery_channel="assistant_visible_fallback",
         delivery_status="assistant_render_required",
         render_surface=f"{host_family}_user_prompt_submit",
@@ -418,7 +418,7 @@ def test_all_visible_lanes_clear_to_proven_session_for_both_hosts(
     _append(
         key="teaser",
         kind="intervention_teaser",
-        text="---\n\nOdylith is tracking this signal: teaser pending.\n\n---",
+        text="---\n\nOdylith Observation: teaser pending for the visible Odylith moment.\n\n---",
         phase="prompt_submit",
         bundle="prompt-1",
     )

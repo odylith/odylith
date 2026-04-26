@@ -62,7 +62,7 @@ def test_codex_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pat
     )
     observation = dict(bundle["observation"])
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This is a visibility failure")
+    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
     assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
     assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"
     assert observation["memory_summary"]["visibility_complaint"] is True
@@ -222,8 +222,8 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith is tracking this signal: This turn is already framing a governed proposal. "
-                        "Capture the exact governed change while the request is still current."
+                        "Odylith Observation: This turn is already framing a governed proposal. "
+                        "Why it matters: Capture the exact governed change while the request is still current."
                     ),
                 }
             }
@@ -236,8 +236,8 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
-    assert "Odylith is tracking this signal:" in payload["hookSpecificOutput"]["additionalContext"]
-    assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith is tracking this signal:")
+    assert "Odylith Observation:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
     assert payload["systemMessage"].endswith(f"\n{surface_runtime.LIVE_BOUNDARY}")
 
 
@@ -265,7 +265,7 @@ def test_main_records_prompt_events_on_stable_thread_id_not_turn_id(
             "intervention_bundle": {
                 "candidate": {
                     "stage": "teaser",
-                    "teaser_text": "Odylith is tracking this signal: Keep the visibility proof on the stable chat id.",
+                    "teaser_text": "Odylith Observation: Keep the visible Odylith moment on the stable chat id.",
                 }
             }
         },
