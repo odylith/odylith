@@ -26,9 +26,9 @@ def test_build_welcome_state_suggests_components_diagrams_and_surface_flow(tmp_p
     assert welcome["dismiss_key"].startswith("welcome-v2|")
     assert welcome["notices"] == []
     assert welcome["quick_steps"] == [
-        "Copy the Odylith prompt.",
-        "Run it in Codex or Claude Code.",
-        "Let Odylith set up Radar, Registry, and Atlas.",
+        "Copy prompt.",
+        "Run in Codex or Claude.",
+        "Map the repo.",
     ]
     assert welcome["chosen_slice"]["path"] in {"src/payments", "src/billing"}
     assert welcome["chosen_slice"]["title"] == "Example starting path"
@@ -113,9 +113,9 @@ def test_build_welcome_state_skips_fake_slice_when_only_repo_name_is_available(t
     }
     assert "|none|" in welcome["dismiss_key"]
     assert welcome["quick_steps"] == [
-        "Copy the Odylith prompt.",
-        "Run it in Codex or Claude Code.",
-        "Try commands in the cheatsheet.",
+        "Copy prompt.",
+        "Run in Codex or Claude.",
+        "Open the cheatsheet.",
     ]
     assert not any(item.startswith("Likely first delivery surface:") for item in welcome["repo_readout"])
     assert any("has not inferred one grounded slice yet" in item for item in welcome["repo_readout"])

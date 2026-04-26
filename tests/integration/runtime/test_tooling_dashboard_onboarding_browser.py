@@ -325,6 +325,28 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         assert welcome_box["x"] >= (handle_box["x"] + handle_box["width"] - 1)
         assert abs(explainer_box["x"] - launchpad_grid_box["x"]) < 2
         assert abs(explainer_box["width"] - launchpad_grid_box["width"]) < 2
+        step_labels = [
+            label.strip()
+            for label in page.locator(".welcome-step-process .welcome-step-copy").all_inner_texts()
+        ]
+        assert step_labels == ["Copy prompt.", "Run in Codex or Claude.", "Map the repo."]
+        step_metrics = page.evaluate(
+            "() => Array.from(document.querySelectorAll('.welcome-step-process')).map((node) => {"
+            "  const card = node.getBoundingClientRect();"
+            "  const index = node.querySelector('.welcome-step-index').getBoundingClientRect();"
+            "  const copy = node.querySelector('.welcome-step-copy').getBoundingClientRect();"
+            "  return {"
+            "    height: card.height,"
+            "    cardCenter: card.left + card.width / 2,"
+            "    indexCenter: index.left + index.width / 2,"
+            "    copyCenter: copy.left + copy.width / 2"
+            "  };"
+            "})"
+        )
+        assert max(item["height"] for item in step_metrics) - min(item["height"] for item in step_metrics) <= 1
+        for item in step_metrics:
+            assert abs(item["indexCenter"] - item["cardCenter"]) <= 1
+            assert abs(item["copyCenter"] - item["cardCenter"]) <= 1
 
         _click_visible(page.locator("#welcomeCopyPrompt"))
         page.locator("#welcomeCopyStatus", has_text="Prompt copied. Paste it into your agent.").wait_for(

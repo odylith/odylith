@@ -999,31 +999,16 @@ def _quick_steps(
     missing_component: bool,
     missing_atlas: bool,
 ) -> list[str]:
-    surfaces: list[str] = []
-    if missing_backlog:
-        surfaces.append("Radar")
-    if missing_component:
-        surfaces.append("Registry")
-    if missing_atlas:
-        surfaces.append("Atlas")
     if not focus_path and not component_label:
         return [
-            "Copy the Odylith prompt.",
-            "Run it in Codex or Claude Code.",
-            "Try commands in the cheatsheet.",
+            "Copy prompt.",
+            "Run in Codex or Claude.",
+            "Open the cheatsheet.",
         ]
-    if not surfaces:
-        surface_list = "Odylith"
-    elif len(surfaces) == 1:
-        surface_list = surfaces[0]
-    elif len(surfaces) == 2:
-        surface_list = f"{surfaces[0]} and {surfaces[1]}"
-    else:
-        surface_list = f"{surfaces[0]}, {surfaces[1]}, and {surfaces[2]}"
     return [
-        "Copy the Odylith prompt.",
-        "Run it in Codex or Claude Code.",
-        f"Let Odylith set up {surface_list}.",
+        "Copy prompt.",
+        "Run in Codex or Claude.",
+        "Map the repo.",
     ]
 
 
