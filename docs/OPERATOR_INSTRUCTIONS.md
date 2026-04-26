@@ -105,7 +105,7 @@ Do the actual work — Odylith governs every move automatically.
 
 | Say this | What happens |
 |---|---|
-| **"Delegate this to a subagent"** | Checks host delegation support, lane policy, and admits or denies. Claude uses task-tool subagents; Codex uses routed spawn. |
+| **"Delegate this to a subagent"** | Checks route bounds, host transport, and active host policy before admitting or denying. Claude uses task-tool subagents; Codex emits routed spawn payloads subject to host policy. |
 | **"Run this in parallel"** | Lane policy checks artifact-path support, closure safety, and host capability before admitting parallel fan-out. |
 | **"Review this change"** | Spawns the **reviewer** subagent — checks regressions, governance drift, and missing proof without editing files. |
 | **"Validate this slice"** | Spawns the **validator** subagent — runs tests, interprets failures, flags skipped coverage. |
@@ -207,7 +207,7 @@ never sees this directly, but it shapes every move.
 | **Frontier tracking** | The engine tracks current phase, last successful phase, active blocker, and truthful next move across the session. |
 | **External dependency wait** | If a CI run, deploy, or callback is in flight, the engine defers new work until the dependency resolves. |
 | **History rule pressure** | Known failure patterns (context exhaustion, subagent timeout, lane drift, repeated rediscovery) are recognized and block re-execution of the same mistake. |
-| **Host-aware delegation** | Claude gets `bounded_task_subagent` alternatives; Codex gets `routed_spawn`. Artifact-path guards block unsafe parallel fan-out on hosts that can't share file state. |
+| **Host-aware delegation** | Claude gets `bounded_task_subagent` alternatives; Codex gets `routed_spawn` payloads only after route bounds and active host policy are accounted for. Artifact-path guards block unsafe parallel fan-out on hosts that can't share file state. |
 | **Context pressure** | When context window pressure is high or critical, it's surfaced as a pressure signal so downstream consumers can adjust scope. |
 
 ---

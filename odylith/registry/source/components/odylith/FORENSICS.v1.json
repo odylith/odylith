@@ -40,12 +40,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 195,
-    "mapped_workstream_evidence_count": 89,
+    "explicit_event_count": 203,
+    "mapped_workstream_evidence_count": 91,
     "recent_path_match_count": 1,
     "spec_history_event_count": 24,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 196
+    "timeline_event_count": 204
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -59,6 +59,275 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 370,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** keeping Odylith visibility honest by naming the chat-visible complaint, then staying inside affected governance contracts [B-096](?tab=radar&workstream=B-096), [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), [odylith-context-engine](?tab=registry&component=odylith-context-engine), and [execution-engine](?tab=registry&component=execution-engine).",
+      "ts_iso": "2026-04-26T13:02:40Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 369,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-backend",
+        "tribunal"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "release",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
+      "ts_iso": "2026-04-26T13:02:40Z",
+      "workstreams": [
+        "B-001",
+        "B-002",
+        "B-005",
+        "B-008",
+        "B-009",
+        "B-010",
+        "B-011",
+        "B-012",
+        "B-013",
+        "B-014",
+        "B-015",
+        "B-016",
+        "B-019",
+        "B-020",
+        "B-021",
+        "B-022",
+        "B-024",
+        "B-025",
+        "B-031",
+        "B-032",
+        "B-038",
+        "B-039",
+        "B-041",
+        "B-042",
+        "B-043",
+        "B-044",
+        "B-045",
+        "B-046",
+        "B-047",
+        "B-058",
+        "B-059",
+        "B-061",
+        "B-062",
+        "B-063",
+        "B-067",
+        "B-068",
+        "B-069",
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-080",
+        "B-081",
+        "B-082",
+        "B-083",
+        "B-084",
+        "B-092",
+        "B-093",
+        "B-094",
+        "B-095",
+        "B-096",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 367,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_card",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "proof-state",
+        "radar",
+        "registry",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Tribunal already has case-component-governance-intervention-engine on this path.",
+      "ts_iso": "2026-04-26T12:46:32Z",
+      "workstreams": [
+        "B-096",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 365,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** keeping Odylith visible in the transcript; generated hook payloads do not count as green until chat delivery is confirmed.",
+      "ts_iso": "2026-04-26T12:44:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 364,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is tracking this signal: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-04-26T12:44:54Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 363,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is tracking this signal: This turn is already asking Odylith to record this slice. Capture the exact governed change while the request is still current.",
+      "ts_iso": "2026-04-26T12:41:43Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 368,
+      "explicit_components": [
+        "atlas",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Grounded in the Atlas diagrams (odylith-context-and-agent-execution-stack, odylith-adaptive-discipline-loop, odylith-memory-substrate-..., odylith-conversation-observation-and-g...",
+      "ts_iso": "2026-04-26T05:54:56-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "AGENTS.md"
+      ],
+      "confidence": "high",
+      "event_index": 373,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md",
+      "ts_iso": "2026-04-26T05:49:21-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 366,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "--- Odylith is tracking this signal: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine.",
+      "ts_iso": "2026-04-26T05:46:18-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -84,22 +353,6 @@
       "workstreams": [
         "B-096"
       ]
-    },
-    {
-      "artifacts": [
-        "AGENTS.md"
-      ],
-      "confidence": "high",
-      "event_index": 365,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md",
-      "ts_iso": "2026-04-25T19:28:16-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

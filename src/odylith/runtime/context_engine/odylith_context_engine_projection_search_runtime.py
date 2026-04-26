@@ -2162,20 +2162,19 @@ def search_entities_payload(
     if odylith_ablation_active:
         results = context_engine_store._filter_odylith_search_results(repo_root=root, results=results)
     has_runtime_results = bool(results)
+    runtime_result_complete = bool(has_runtime_results and retrieval_mode != "full_repo_scan")
     repo_scan_reason = "odylith_backend_unavailable" if not backend_ready and not remote_results else "no_runtime_results"
-    full_scan_reason = (
-        "runtime_sparse_only"
-        if has_runtime_results and retrieval_mode in {"tantivy_sparse", "hybrid_local", "tantivy_plus_vespa", "vespa_remote"}
-        else "repo_scan_candidate_only"
-        if has_runtime_results and retrieval_mode == "full_repo_scan"
-        else repo_scan_reason
-    )
-    fallback_scan = _full_scan_guidance(
-        repo_root=root,
-        reason=full_scan_reason,
-        query=normalized_query,
-        perform_scan=True,
-        result_limit=max(8, int(limit) * 4),
+    full_scan_reason = "" if runtime_result_complete else "repo_scan_candidate_only" if has_runtime_results else repo_scan_reason
+    fallback_scan = (
+        {}
+        if runtime_result_complete
+        else _full_scan_guidance(
+            repo_root=root,
+            reason=full_scan_reason,
+            query=normalized_query,
+            perform_scan=True,
+            result_limit=max(8, int(limit) * 4),
+        )
     )
     if not has_runtime_results:
         connection = _connect(root)
@@ -2196,7 +2195,7 @@ def search_entities_payload(
             full_scan_reason = "odylith_backend_unavailable" if not backend_ready else "repo_scan_candidate_only"
         else:
             retrieval_mode = "full_repo_scan" if fallback_scan.get("results") else "none"
-    if isinstance(fallback_scan, dict):
+    if fallback_scan and isinstance(fallback_scan, dict):
         fallback_scan["reason"] = full_scan_reason
         fallback_scan["reason_message"] = context_engine_store._full_scan_reason_message(full_scan_reason)
     record_runtime_timing(
@@ -2217,7 +2216,7 @@ def search_entities_payload(
         "runtime_ready": True,
         "retrieval_mode": retrieval_mode,
         "results": results,
-        "full_scan_recommended": True,
+        "full_scan_recommended": bool(full_scan_reason),
         "full_scan_reason": full_scan_reason,
         "fallback_scan": fallback_scan,
     }

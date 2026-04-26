@@ -1061,7 +1061,7 @@ def test_search_entities_payload_keeps_local_results_when_remote_only_is_misconf
     monkeypatch.setattr(
         projection_search_runtime,
         "_full_scan_guidance",
-        lambda **kwargs: {"performed": False, "reason": kwargs.get("reason", ""), "results": []},
+        lambda **_: (_ for _ in ()).throw(AssertionError("local runtime hits must not trigger raw scan fallback")),
     )
     monkeypatch.setattr(
         projection_search_runtime.odylith_memory_backend,
@@ -1111,6 +1111,9 @@ def test_search_entities_payload_keeps_local_results_when_remote_only_is_misconf
 
     assert payload["retrieval_mode"] == "tantivy_sparse"
     assert payload["results"][0]["source"] == "local"
+    assert payload["full_scan_recommended"] is False
+    assert payload["full_scan_reason"] == ""
+    assert payload["fallback_scan"] == {}
 
 
 def test_search_entities_payload_accepts_full_scope_backend_for_reasoning_queries(

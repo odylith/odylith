@@ -145,6 +145,17 @@ def test_native_spawn_execution_ready_succeeds_for_claude_host_when_all_gates_pa
     ) is True
 
 
+def test_host_capabilities_separate_spawn_transport_from_policy() -> None:
+    from odylith.runtime.common import host_runtime as host_runtime_contract
+
+    codex = host_runtime_contract.resolve_host_capabilities("codex_cli")
+
+    assert codex["supports_native_spawn"] is True
+    assert codex["native_spawn_transport_supported"] is True
+    assert codex["native_spawn_policy_status"] == "not_inspectable"
+    assert codex["native_spawn_effective"] is False
+
+
 def test_native_spawn_execution_ready_avoids_host_probe_when_delegate_gates_fail(monkeypatch) -> None:
     from odylith.runtime.common import host_runtime as host_runtime_contract
 

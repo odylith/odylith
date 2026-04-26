@@ -857,6 +857,13 @@ def compact_execution_engine_snapshot(snapshot: Mapping[str, Any]) -> dict[str, 
             "model_family": _string(host_profile.get("model_family")),
             "host_delegation_style": _string(host_profile.get("delegation_style")),
             "host_supports_native_spawn": bool(host_profile.get("supports_native_spawn")),
+            "host_native_spawn_transport_supported": bool(
+                host_profile.get("native_spawn_transport_supported")
+                or host_profile.get("supports_native_spawn")
+            ),
+            "host_native_spawn_policy": _string(host_profile.get("native_spawn_policy")),
+            "host_native_spawn_policy_status": _string(host_profile.get("native_spawn_policy_status")),
+            "host_native_spawn_effective": bool(host_profile.get("native_spawn_effective")),
             "host_supports_interrupt": bool(host_profile.get("supports_interrupt")),
             "host_supports_artifact_paths": bool(host_profile.get("supports_artifact_paths")),
             "host_execution_hints": list(host_profile.get("execution_hints") or [])[:4],

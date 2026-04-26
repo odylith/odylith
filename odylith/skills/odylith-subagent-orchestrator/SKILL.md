@@ -23,4 +23,4 @@ Use this skill when the task is about delegation planning, execution ownership, 
   `./.odylith/bin/odylith validate guidance-behavior --repo-root .` or the
   case-scoped validator command in the validation expectation instead of
   relying on a generic "looks done" closeout.
-- Both Codex and Claude Code are validated Odylith delegation hosts; Codex executes routed leaves through `spawn_agent`, while Claude Code executes the same bounded orchestration plan through Task-tool subagents and the checked-in `.claude/` project assets
+- Both Codex and Claude Code are validated Odylith delegation hosts; Codex emits routed `spawn_agent` payloads subject to active host policy, while Claude Code executes the same bounded orchestration plan through Task-tool subagents and the checked-in `.claude/` project assets

@@ -42,10 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -384,10 +384,7 @@
         "Nothing moved in this window: B-082 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-094": [
-        "Completed in this window: Intervention visibility got hardened and B-110 child waves were closed. It cleared a real edge in this lane so work can move on with less ambiguity.",
-        "Current execution: Execution is on B-094 with a clear target: cut per-query work from ~200ms to under 10ms after the first query in a process lifetime, by avoiding repeat process-spawn and connection churn.",
-        "Next planned: The immediate follow-through is to capture the next verified checkpoint for B-094. That checkpoint is the gate for stating meaningful progress, not just intent.",
-        "Risks to watch: Timeline confidence is still estimated at roughly six days. If evidence does not land steadily, this estimate can drift, which would make subsequent planning optimistic."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-095": [
         "Nothing moved in this window: B-095 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -794,10 +791,7 @@
         "Nothing moved in this window: B-082 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-094": [
-        "Completed in this window: Benchmark proof work was hardened. That strengthens the lane\u2019s proof posture and makes the optimization goal easier to validate when we run the next checks.",
-        "Current execution: Work remains focused on the queued B-094 lane: move latency from ~200ms to <10ms on cached-connection hits after the first query in a process, once warm paths are reused.",
-        "Next planned: Next checkpoint capture is still the near-term hinge for B-094. The next verified checkpoint keeps the optimization lane from drifting into \u201cplanned but not proven.\u201d",
-        "Risks to watch: Timeline confidence is still heuristically around six days. The seam to watch is whether checkpoint cadence can match that expectation while maintaining verification quality."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-095": [
         "Nothing moved in this window: B-095 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -872,16 +866,14 @@
       "fingerprint": "8e83cb2fe5a5fee388f1fea306245265a1c4ef552fe3acf9a21dc514fea0de81",
       "substrate_fingerprint": "8e83cb2fe5a5fee388f1fea306245265a1c4ef552fe3acf9a21dc514fea0de81",
       "bundle_fingerprint": "",
-      "provider_decision": "skipped_not_worth_calling",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-04-26T13:36:24Z",
       "sections": [],
       "diagnostics": {
-        "reason": "skipped_not_worth_calling",
-        "title": "Brief stayed on wallet-safe local truth",
-        "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-        "provider_decision": "skipped_not_worth_calling",
-        "skip_reason": "no_winner_change"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       },
       "evidence_lookup": {}
     },
@@ -892,16 +884,14 @@
       "fingerprint": "b015c936a2facc21103b25cf6fbc7bee82fb523097c88268b2cc33ae9a89536a",
       "substrate_fingerprint": "b015c936a2facc21103b25cf6fbc7bee82fb523097c88268b2cc33ae9a89536a",
       "bundle_fingerprint": "",
-      "provider_decision": "skipped_not_worth_calling",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-04-26T13:36:24Z",
       "sections": [],
       "diagnostics": {
-        "reason": "skipped_not_worth_calling",
-        "title": "Brief stayed on wallet-safe local truth",
-        "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-        "provider_decision": "skipped_not_worth_calling",
-        "skip_reason": "no_winner_change"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       },
       "evidence_lookup": {}
     }
@@ -2787,130 +2777,21 @@
       },
       "B-094": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "47c678b6cb476b208b05acbc16e34471ca427e5882d30e443bcc41d0fce71a1d",
-        "generated_utc": "2026-04-26T13:36:24Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Intervention visibility got hardened and B-110 child waves were closed. It cleared a real edge in this lane so work can move on with less ambiguity.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Execution is on B-094 with a clear target: cut per-query work from ~200ms to under 10ms after the first query in a process lifetime, by avoiding repeat process-spawn and connection churn.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "The immediate follow-through is to capture the next verified checkpoint for B-094. That checkpoint is the gate for stating meaningful progress, not just intent.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "Timeline confidence is still estimated at roughly six days. If evidence does not land steadily, this estimate can drift, which would make subsequent planning optimistic.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Harden intervention visibility and close B-110 child waves.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-002": {
-            "text": "--- Odylith is tracking this signal: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Context Engine Connection Lifecycle and Process-Spawn Optimization (B-094) in the last 24 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-004": {
-            "text": "Land Reduce per-query latency from ~200ms (process spawn + connection churn) to sub-10ms (cached connection hit) for all queries after the first in a given process lifetime, without; Context Engine Connection Lifecycle and Process-Spawn Optimization (B-094) is queued for execution.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-005": {
-            "text": "Execution checklist baseline is being finalized.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 6 days and expected to tighten as execution closes checklist items.",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Context Engine Connection Lifecycle and Process-Spawn Optimization (B-094).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-008": {
-            "text": "Primary watch item is timeline confidence: Context Engine Connection Lifecycle and Process-Spawn Optimization (B-094) is still projected heuristically at roughly 6 days.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-094"
-            ]
-          }
-        },
         "substrate_fingerprint": "47c678b6cb476b208b05acbc16e34471ca427e5882d30e443bcc41d0fce71a1d",
-        "bundle_fingerprint": "2f6f10350a96fa74406e24c38714167577bf82bd85ec122ee476534dfb412093",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "47c678b6cb476b208b05acbc16e34471ca427e5882d30e443bcc41d0fce71a1d"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-26T13:36:24Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-095": {
         "status": "unavailable",
@@ -5662,130 +5543,21 @@
       },
       "B-094": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "0821bc9e6f829214410a95d6b2698f3bbe653b067d6d85651c0f3cd928f29774",
-        "generated_utc": "2026-04-26T13:36:24Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Benchmark proof work was hardened. That strengthens the lane\u2019s proof posture and makes the optimization goal easier to validate when we run the next checks.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Work remains focused on the queued B-094 lane: move latency from ~200ms to <10ms on cached-connection hits after the first query in a process, once warm paths are reused.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Next checkpoint capture is still the near-term hinge for B-094. The next verified checkpoint keeps the optimization lane from drifting into \u201cplanned but not proven.\u201d",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "Timeline confidence is still heuristically around six days. The seam to watch is whether checkpoint cadence can match that expectation while maintaining verification quality.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Harden benchmark proof pipeline.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-002": {
-            "text": "Harden intervention visibility and close B-110 child waves.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-003": {
-            "text": "Nothing fully closed for Context Engine Connection Lifecycle and Process-Spawn Optimization (B-094) in the last 48 hours.",
-            "section_key": "completed",
-            "kind": "window_summary",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-004": {
-            "text": "Land Reduce per-query latency from ~200ms (process spawn + connection churn) to sub-10ms (cached connection hit) for all queries after the first in a given process lifetime, without; Context Engine Connection Lifecycle and Process-Spawn Optimization (B-094) is queued for execution.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-005": {
-            "text": "Execution checklist baseline is being finalized.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 6 days and expected to tighten as execution closes checklist items.",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Context Engine Connection Lifecycle and Process-Spawn Optimization (B-094).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-094"
-            ]
-          },
-          "F-008": {
-            "text": "Primary watch item is timeline confidence: Context Engine Connection Lifecycle and Process-Spawn Optimization (B-094) is still projected heuristically at roughly 6 days.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-094"
-            ]
-          }
-        },
         "substrate_fingerprint": "0821bc9e6f829214410a95d6b2698f3bbe653b067d6d85651c0f3cd928f29774",
-        "bundle_fingerprint": "2f6f10350a96fa74406e24c38714167577bf82bd85ec122ee476534dfb412093",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "0821bc9e6f829214410a95d6b2698f3bbe653b067d6d85651c0f3cd928f29774"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-26T13:36:24Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-095": {
         "status": "unavailable",

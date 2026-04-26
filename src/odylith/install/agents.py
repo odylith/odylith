@@ -71,14 +71,14 @@ def managed_block(*, repo_role: str = "consumer_repo") -> str:
         "- Before diagnosing install, upgrade, rollback, or launcher state, run `./.odylith/bin/odylith version --repo-root .` when the launcher exists and treat that live posture as authoritative over older Compass, shell, or release-history context.",
         "- If the launcher is missing, confirm that from the filesystem first and use Odylith's current repair contract instead of assuming the repo is on a legacy consumer path.",
         (
-            "- In Codex, treat Odylith-routed native subagent spawn as the default execution path for substantive grounded work across the consumer lane and the Odylith product repo's maintainer mode, including pinned dogfood and detached `source-local` maintainer-dev posture, unless Odylith explicitly keeps the slice local."
+            "- In Codex, treat Odylith-routed native subagent spawn as the default candidate for substantive grounded work across the consumer lane and the Odylith product repo's maintainer mode, including pinned dogfood and detached `source-local` maintainer-dev posture, when the route is bounded and the active host policy allows spawn; keep transport support separate from current-session spawn permission/effectiveness."
             if str(repo_role).strip() == "product_repo"
-            else "- Treat Odylith-routed native delegation as the default execution path for substantive grounded consumer-lane work when the current host supports it unless Odylith explicitly keeps the slice local."
+            else "- Treat Odylith-routed native delegation as the default candidate for substantive grounded consumer-lane work when the route is bounded, the host transport supports it, and the active host policy allows it; keep transport support separate from current-session spawn permission/effectiveness."
         ),
         (
-            "- Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract. Codex executes routed leaves through `spawn_agent`; Claude Code executes the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets."
+            "- Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract. Codex emits routed `spawn_agent` payloads subject to active host policy; Claude Code executes the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets."
             if str(repo_role).strip() == "product_repo"
-            else "- Codex and Claude Code are both validated Odylith delegation hosts under the same grounding and validation contract. Codex uses routed `spawn_agent` payloads; Claude Code uses Task-tool subagents plus the installed `.claude/` project assets."
+            else "- Codex and Claude Code are both validated Odylith delegation hosts under the same grounding and validation contract. Codex emits routed `spawn_agent` payloads subject to active host policy; Claude Code uses Task-tool subagents plus the installed `.claude/` project assets."
         ),
         "- Repo-root guidance in this file remains authoritative for paths outside `odylith/`.",
     ]

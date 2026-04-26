@@ -266,6 +266,21 @@ def normalize_execution_engine_handshake(
             "native_spawn_ready": bool(
                 handoff.get("native_spawn_ready") or route.get("native_spawn_ready")
             ),
+            "native_spawn_transport_supported": bool(
+                handoff.get("native_spawn_transport_supported")
+                or route.get("native_spawn_transport_supported")
+            ),
+            "native_spawn_policy": str(
+                handoff.get("native_spawn_policy") or route.get("native_spawn_policy") or ""
+            ).strip(),
+            "native_spawn_policy_status": str(
+                handoff.get("native_spawn_policy_status")
+                or route.get("native_spawn_policy_status")
+                or ""
+            ).strip(),
+            "native_spawn_effective": bool(
+                handoff.get("native_spawn_effective") or route.get("native_spawn_effective")
+            ),
             "narrowing_required": bool(handoff.get("narrowing_required") or route.get("narrowing_required")),
             "full_scan_recommended": bool(
                 payload.get("full_scan_recommended") or context.get("full_scan_recommended")

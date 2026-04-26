@@ -15,6 +15,10 @@ def test_resolve_host_capabilities_for_codex() -> None:
     assert capabilities["model_family"] == ""
     assert capabilities["delegation_style"] == "routed_spawn"
     assert capabilities["supports_native_spawn"] is True
+    assert capabilities["native_spawn_transport_supported"] is True
+    assert capabilities["native_spawn_policy"] == "host_policy_gated"
+    assert capabilities["native_spawn_policy_status"] == "not_inspectable"
+    assert capabilities["native_spawn_effective"] is False
     assert capabilities["supports_interrupt"] is True
     assert capabilities["supports_artifact_paths"] is True
     assert capabilities["supports_local_structured_reasoning"] is True
@@ -33,6 +37,9 @@ def test_resolve_host_capabilities_for_claude() -> None:
     assert capabilities["model_family"] == ""
     assert capabilities["delegation_style"] == "task_tool_subagents"
     assert capabilities["supports_native_spawn"] is True
+    assert capabilities["native_spawn_transport_supported"] is True
+    assert capabilities["native_spawn_policy_status"] == "assumed_available"
+    assert capabilities["native_spawn_effective"] is True
     assert capabilities["supports_local_structured_reasoning"] is True
     # B-084/CB-103: Claude Code is a first-class delegation host; the
     # execution profile ladder must resolve to a real model, so the host

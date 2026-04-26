@@ -13,16 +13,16 @@ import contextlib
 import hashlib
 import json
 import math
-import os
 from pathlib import Path
 import re
 import shutil
 import tempfile
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.memory import odylith_memory_backend_filesystem
 from odylith.runtime.memory import odylith_projection_bundle
 
 try:
@@ -55,26 +55,6 @@ _FIELD_TEXT_WEIGHTS: tuple[tuple[str, float], ...] = (
     ("path", 0.9),
     ("content", 0.35),
 )
-
-
-@contextlib.contextmanager
-def _suppress_expected_lance_bootstrap_warnings() -> Iterable[None]:
-    saved_stderr_fd: int | None = None
-    devnull_handle = None
-    try:
-        saved_stderr_fd = os.dup(2)
-        devnull_handle = open(os.devnull, "w", encoding="utf-8")
-        os.dup2(devnull_handle.fileno(), 2)
-        yield
-    finally:
-        if saved_stderr_fd is not None:
-            with contextlib.suppress(OSError):
-                os.dup2(saved_stderr_fd, 2)
-            with contextlib.suppress(OSError):
-                os.close(saved_stderr_fd)
-        if devnull_handle is not None:
-            with contextlib.suppress(OSError):
-                devnull_handle.close()
 
 
 def local_backend_root(*, repo_root: Path) -> Path:
@@ -1345,7 +1325,7 @@ def _create_lance_tables(
     temp_root = Path(tempfile.mkdtemp(prefix="odylith-lance-", dir=str(local_backend_root(repo_root=repo_root))))
     target_root = local_lance_root(repo_root=repo_root)
     try:
-        with _suppress_expected_lance_bootstrap_warnings():
+        with odylith_memory_backend_filesystem.suppress_expected_lance_bootstrap_warnings():
             with _lance_connection(lance_root=temp_root) as db:
                 if documents:
                     db.create_table(DOCUMENTS_TABLE, data=[dict(row) for row in documents], mode="overwrite")
@@ -1355,9 +1335,7 @@ def _create_lance_tables(
                     db.create_table(EDGES_TABLE, data=[dict(row) for row in edges], mode="overwrite")
                 else:
                     db.create_table(EDGES_TABLE, schema=_edges_schema(), mode="overwrite")
-        if target_root.exists():
-            shutil.rmtree(target_root)
-        temp_root.rename(target_root)
+        odylith_memory_backend_filesystem.replace_directory_tree(temp_root=temp_root, target_root=target_root)
     except Exception:
         shutil.rmtree(temp_root, ignore_errors=True)
         raise
@@ -1391,10 +1369,13 @@ def _create_tantivy_index(
                 )
             )
         writer.commit()
+        wait_for_merges = getattr(writer, "wait_merging_threads", None)
+        if callable(wait_for_merges):
+            wait_for_merges()
         index.reload()
-        if target_root.exists():
-            shutil.rmtree(target_root)
-        temp_root.rename(target_root)
+        del writer
+        del index
+        odylith_memory_backend_filesystem.replace_directory_tree(temp_root=temp_root, target_root=target_root)
     except Exception:
         shutil.rmtree(temp_root, ignore_errors=True)
         raise
@@ -1493,8 +1474,9 @@ def materialize_local_backend(
             Path(__file__),
         ]
     )
-    lock_key = f"odylith-memory-backend:{requested_scope}:{requested_fingerprint}:{expected_provenance.get('sync_generation', 0)}:{substrate_key}"
+    lock_key = f"odylith-memory-backend:materialize:{expected_provenance.get('sync_generation', 0)}:{substrate_key}"
     with odylith_context_cache.advisory_lock(repo_root=root, key=lock_key):
+        odylith_memory_backend_filesystem.cleanup_stale_backend_workdirs(backend_root=backend_root)
         manifest = load_manifest(repo_root=root)
         if backend_dependencies_available() and manifest and local_backend_ready(repo_root=root):
             ready_reuse, _ = _backend_operational_check(repo_root=root)

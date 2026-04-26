@@ -39,6 +39,7 @@ from odylith.runtime.common.value_coercion import normalize_string as _normalize
 from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.evaluation import odylith_evaluation_ledger
 from odylith.runtime.orchestration import subagent_router_context_support
+from odylith.runtime.orchestration import subagent_router_host_policy
 from odylith.runtime.orchestration import subagent_router_profile_support
 from odylith.runtime.orchestration import subagent_router_runtime_policy
 
@@ -992,6 +993,14 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
     host_runtime = _assessment_host_runtime(assessment) or "unknown"
     native_spawn_supported = _native_spawn_supported_for_assessment(assessment)
+    host_capabilities = _assessment_host_capabilities(assessment)
+    native_spawn_transport_supported = bool(
+        host_capabilities.get("native_spawn_transport_supported")
+        or host_capabilities.get("supports_native_spawn")
+    )
+    native_spawn_policy = _normalize_string(host_capabilities.get("native_spawn_policy"))
+    native_spawn_policy_status = _normalize_string(host_capabilities.get("native_spawn_policy_status"))
+    native_spawn_effective = bool(host_capabilities.get("native_spawn_effective"))
     delegation_style = _delegation_style_for_assessment(assessment)
     requested_model = profile.model if delegation_style == "routed_spawn" else ""
     requested_reasoning_effort = profile.reasoning_effort if delegation_style == "routed_spawn" else ""
@@ -1021,6 +1030,10 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
             "agent_role": agent_role,
             "host_runtime": host_runtime,
             "native_spawn_supported": native_spawn_supported,
+            "native_spawn_transport_supported": native_spawn_transport_supported,
+            "native_spawn_policy": native_spawn_policy,
+            "native_spawn_policy_status": native_spawn_policy_status,
+            "native_spawn_effective": native_spawn_effective,
             "preferred_subagent_type": _task_tool_subagent_type(assessment=assessment, agent_role=agent_role),
         }
         if preferred_project_subagent:
@@ -1053,32 +1066,22 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
         "requested_reasoning_effort": requested_reasoning_effort,
         "host_runtime": host_runtime,
         "native_spawn_supported": native_spawn_supported,
+        "native_spawn_transport_supported": native_spawn_transport_supported,
+        "native_spawn_policy": native_spawn_policy,
+        "native_spawn_policy_status": native_spawn_policy_status,
+        "native_spawn_effective": native_spawn_effective,
     }
-    if str(host_runtime).strip() == "codex_cli":
-        if bool(_assessment_host_capabilities(assessment).get("supports_project_hooks")):
-            contract["project_assets_activation_note"] = (
-                "Local Codex capability probing reports project hooks support, so the managed `.codex/` lane remains an active best-effort enhancement alongside the baseline-safe AGENTS.md + launcher contract."
-            )
-        else:
-            contract["project_assets_activation_note"] = (
-                "Local Codex capability probing did not prove project hooks support, so keep the baseline-safe AGENTS.md + launcher lane authoritative and treat `.codex/` assets as optional enhancements until `odylith codex compatibility` reports otherwise."
-            )
-    if str(host_runtime).strip() == "claude_cli":
-        claude_caps = _assessment_host_capabilities(assessment)
-        wired = (
-            bool(claude_caps.get("supports_project_hooks"))
-            and bool(claude_caps.get("supports_subagent_hooks"))
-            and bool(claude_caps.get("supports_pre_compact_hook"))
-            and bool(claude_caps.get("supports_statusline_command"))
+    if native_spawn_policy_status and native_spawn_policy_status != "assumed_available":
+        contract["host_policy_note"] = (
+            "Native delegation transport is present, but actual spawn execution remains subject to "
+            f"the active host policy (`{native_spawn_policy_status}`)."
         )
-        if wired:
-            contract["project_assets_activation_note"] = (
-                "Local Claude capability probing reports the first-class `.claude/` project surface is wired (PreToolUse/PostToolUse, SubagentStart/Stop, PreCompact, statusline). The baked Odylith CLI dispatchers under `odylith claude ...` are the authoritative hook backends; treat `.claude/settings.json`, project subagents, slash commands, and skills as live grounding alongside the baseline-safe CLAUDE.md + launcher contract."
-            )
-        else:
-            contract["project_assets_activation_note"] = (
-                "Local Claude capability probing did not prove every first-class `.claude/` hook is wired. Keep the baseline-safe CLAUDE.md + launcher lane authoritative and run `odylith claude compatibility --repo-root .` to inspect which Claude hook events are still missing."
-            )
+    project_assets_note = subagent_router_host_policy.project_assets_activation_note(
+        host_runtime=host_runtime,
+        host_capabilities=host_capabilities,
+    )
+    if project_assets_note:
+        contract["project_assets_activation_note"] = project_assets_note
     if not native_spawn_supported:
         contract["local_guidance_only"] = True
         contract["unsupported_reason"] = (
@@ -1094,6 +1097,8 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
     host_runtime = _assessment_host_runtime(assessment) or "unknown"
     delegation_style = _delegation_style_for_assessment(assessment)
+    host_capabilities = _assessment_host_capabilities(assessment)
+    native_spawn_policy_status = _normalize_string(host_capabilities.get("native_spawn_policy_status"))
     if not _native_spawn_supported_for_assessment(assessment):
         return [
             f"REQUESTED RUNTIME: {profile.model} / {profile.reasoning_effort}",
@@ -1130,23 +1135,17 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
             "requested runtime for this leaf."
         ),
     ]
-    if str(host_runtime).strip() == "codex_cli":
-        if bool(_assessment_host_capabilities(assessment).get("supports_project_hooks")):
-            lines.append("HOST CAPABILITY: Codex project hooks are supported locally; the managed `.codex/` lane can stay active as a best-effort enhancement.")
-        else:
-            lines.append("HOST CAPABILITY: Codex project hooks are not proven locally; the baseline-safe AGENTS.md + launcher lane stays authoritative.")
-    if str(host_runtime).strip() == "claude_cli":
-        claude_caps = _assessment_host_capabilities(assessment)
-        wired = (
-            bool(claude_caps.get("supports_project_hooks"))
-            and bool(claude_caps.get("supports_subagent_hooks"))
-            and bool(claude_caps.get("supports_pre_compact_hook"))
-            and bool(claude_caps.get("supports_statusline_command"))
+    if native_spawn_policy_status and native_spawn_policy_status != "assumed_available":
+        lines.append(
+            "HOST POLICY: Native delegation transport is present, but actual spawn execution remains subject "
+            f"to the active host policy (`{native_spawn_policy_status}`)."
         )
-        if wired:
-            lines.append("HOST CAPABILITY: Claude first-class `.claude/` hooks are wired locally (PreToolUse/PostToolUse, SubagentStart/Stop, PreCompact, statusline). The baked `odylith claude ...` CLI dispatchers are the active hook backends; keep the routed Task payload tied to that contract.")
-        else:
-            lines.append("HOST CAPABILITY: Not all first-class `.claude/` hooks are wired locally. Keep the baseline-safe CLAUDE.md + launcher lane authoritative and run `odylith claude compatibility --repo-root .` to surface which hook events are still missing.")
+    host_capability_line = subagent_router_host_policy.host_capability_banner_line(
+        host_runtime=host_runtime,
+        host_capabilities=host_capabilities,
+    )
+    if host_capability_line:
+        lines.append(host_capability_line)
     return lines
 
 

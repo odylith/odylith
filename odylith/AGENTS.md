@@ -197,8 +197,8 @@ Scope: applies to Odylith paths under `odylith/`.
 - `./.odylith/bin/odylith` running on Odylith's managed runtime never means "only Odylith files can be edited". File-edit authority follows repo scope, not interpreter choice.
 - In consumer repos, validate repo code with the repo's own `python`, `uv`, Poetry, Conda, or equivalent project toolchain after Odylith work narrows the slice.
 - In the Odylith product repo, use pinned dogfood for shipped-runtime proof and detached `source-local` only when maintainer work intentionally needs live unreleased `src/odylith/*` execution.
-- Treat routed or orchestrated native delegation as the default execution path for substantive grounded work when the current host supports it across the consumer lane and both Odylith product-repo maintainer postures: pinned dogfood and detached `source-local` maintainer dev, unless Odylith explicitly keeps the slice local.
-- Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract. Codex uses routed `spawn_agent` payloads; Claude Code uses the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.
+- Treat routed or orchestrated native delegation as the default candidate for substantive grounded work when the route is bounded, the host transport supports it, and active host policy allows it across the consumer lane and both Odylith product-repo maintainer postures: pinned dogfood and detached `source-local` maintainer dev, unless Odylith explicitly keeps the slice local.
+- Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract. Codex emits routed `spawn_agent` payloads subject to active host policy; Claude Code uses the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.
 
 ## Coding Standards
 - Treat AI slop as a regression in Odylith-owned code and guidance.

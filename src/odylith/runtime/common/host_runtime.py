@@ -99,12 +99,18 @@ def _base_capabilities(
     supports_explicit_model_selection: bool,
 ) -> dict[str, Any]:
     """Build the shared capability shape returned by every host probe."""
+    native_spawn_policy = "host_managed" if supports_native_spawn else "unavailable"
+    native_spawn_policy_status = "assumed_available" if supports_native_spawn else "unavailable"
     return {
         "host_runtime": host_runtime,
         "host_family": host_family,
         "model_family": _UNSPECIFIED_MODEL_FAMILY,
         "delegation_style": delegation_style,
         "supports_native_spawn": supports_native_spawn,
+        "native_spawn_transport_supported": supports_native_spawn,
+        "native_spawn_policy": native_spawn_policy,
+        "native_spawn_policy_status": native_spawn_policy_status,
+        "native_spawn_effective": supports_native_spawn,
         "supports_interrupt": supports_interrupt,
         "supports_artifact_paths": supports_artifact_paths,
         "supports_local_structured_reasoning": supports_local_structured_reasoning,
@@ -150,6 +156,13 @@ def host_capabilities(
                 "supports_stop_summary_hook": snapshot.supports_stop_summary_hook,
                 "supports_assistant_visible_intervention_fallback": True,
                 "supports_chat_visible_hook_delivery": False,
+                "native_spawn_policy": "host_policy_gated",
+                "native_spawn_policy_status": "not_inspectable",
+                "native_spawn_effective": False,
+                "native_spawn_status_note": (
+                    "Codex routed spawn transport is supported, but current-session spawn permission is enforced "
+                    "by the host/tool policy and is not inspectable from the repo runtime."
+                ),
                 "trusted_project_required": snapshot.trusted_project_required,
                 "project_assets_mode": snapshot.project_assets_mode,
                 "compatibility_posture": snapshot.overall_posture,
@@ -240,5 +253,21 @@ def resolve_host_capabilities(
 
 
 def native_spawn_supported(host_runtime: Any, *, default_when_unknown: bool = False) -> bool:
-    """Return whether the host contract allows native delegated execution."""
+    """Return whether the host advertises native delegated transport support."""
     return bool(host_capabilities(host_runtime, default_when_unknown=default_when_unknown).get("supports_native_spawn"))
+
+
+def native_spawn_policy_status(host_runtime: Any, *, default_when_unknown: bool = False) -> str:
+    """Return the current host-policy status for native delegated execution."""
+    return str(
+        host_capabilities(host_runtime, default_when_unknown=default_when_unknown).get(
+            "native_spawn_policy_status",
+            "",
+        )
+        or ""
+    ).strip()
+
+
+def native_spawn_effective(host_runtime: Any, *, default_when_unknown: bool = False) -> bool:
+    """Return whether native spawn is both transport-supported and policy-effective."""
+    return bool(host_capabilities(host_runtime, default_when_unknown=default_when_unknown).get("native_spawn_effective"))

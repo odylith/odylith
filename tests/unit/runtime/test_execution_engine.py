@@ -65,10 +65,14 @@ def test_detect_execution_host_profile_reflects_host_capabilities() -> None:
 
     assert codex.host_family == "codex"
     assert codex.supports_native_spawn is True
-    assert "native_spawn_available" in codex.execution_hints
+    assert codex.native_spawn_transport_supported is True
+    assert codex.native_spawn_policy_status == "not_inspectable"
+    assert codex.native_spawn_effective is False
+    assert "native_spawn_transport_available" in codex.execution_hints
     assert claude.host_family == "claude"
     assert claude.delegation_style == "task_tool_subagents"
     assert claude.supports_native_spawn is True
+    assert claude.native_spawn_effective is True
     assert "prefer_task_tool_subagents_for_bounded_delegation" in claude.execution_hints
 
 

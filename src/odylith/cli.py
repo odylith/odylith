@@ -893,7 +893,7 @@ def _cmd_install_common(
         print("This folder is not backed by Git yet. Odylith still installs here, but Git-aware features stay limited until `.git` exists.")
         print("That means working-tree intelligence, background autospawn, and git-fsmonitor watcher help stay reduced for now.")
     print(
-        "Repo-root AGENTS now activates Odylith guidance, skills, and native delegation when the current host supports it for most grounded work."
+        "Repo-root AGENTS now activates Odylith guidance, skills, and route-ready native delegation candidates, with host transport support kept separate from current-session spawn policy."
     )
     print(
         "Full Odylith is installed by default. Delivery is layered under the hood so Odylith can reuse unchanged runtime payloads during later repairs and upgrades."

@@ -463,7 +463,8 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
     assert "Rendering first-run Odylith surfaces" in output.out
     assert "Dashboard:" in output.out
     assert "Added Odylith local-state ignore rules to the root `.gitignore`" in output.out
-    assert "Repo-root AGENTS now activates Odylith guidance, skills, and native delegation when the current host supports it for most grounded work." in output.out
+    assert "Repo-root AGENTS now activates Odylith guidance, skills, and route-ready native delegation candidates" in output.out
+    assert "host transport support kept separate from current-session spawn policy" in output.out
     assert "Full Odylith is installed by default." in output.out
     assert "later repairs and upgrades" in output.out
     assert "Odylith is used through an AI coding agent" in output.out

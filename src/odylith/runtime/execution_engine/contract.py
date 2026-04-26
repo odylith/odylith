@@ -53,6 +53,10 @@ class ExecutionHostProfile:
     supports_explicit_model_selection: bool
     supports_interrupt: bool = False
     supports_artifact_paths: bool = False
+    native_spawn_transport_supported: bool = False
+    native_spawn_policy: str = ""
+    native_spawn_policy_status: str = ""
+    native_spawn_effective: bool = False
     execution_hints: tuple[str, ...] = field(default_factory=tuple)
 
     @classmethod
@@ -79,8 +83,13 @@ class ExecutionHostProfile:
                 supports_explicit_model_selection=True,
                 supports_interrupt=True,
                 supports_artifact_paths=True,
+                native_spawn_transport_supported=True,
+                native_spawn_policy="host_policy_gated",
+                native_spawn_policy_status="not_inspectable",
+                native_spawn_effective=False,
                 execution_hints=(
-                    "native_spawn_available",
+                    "native_spawn_transport_available",
+                    "native_spawn_policy:host_policy_gated",
                     "delegation_style:routed_spawn",
                     "prefer_parallel_workers_for_disjoint_write_sets",
                 ),
@@ -97,8 +106,12 @@ class ExecutionHostProfile:
                 supports_explicit_model_selection=True,
                 supports_interrupt=False,
                 supports_artifact_paths=False,
+                native_spawn_transport_supported=True,
+                native_spawn_policy="host_managed",
+                native_spawn_policy_status="assumed_available",
+                native_spawn_effective=True,
                 execution_hints=(
-                    "native_spawn_available",
+                    "native_spawn_transport_available",
                     "delegation_style:task_tool_subagents",
                     "explicit_model_selection_available",
                     "prefer_task_tool_subagents_for_bounded_delegation",
@@ -113,6 +126,10 @@ class ExecutionHostProfile:
             supports_native_spawn=False,
             supports_local_structured_reasoning=False,
             supports_explicit_model_selection=False,
+            native_spawn_transport_supported=False,
+            native_spawn_policy="unavailable",
+            native_spawn_policy_status="unavailable",
+            native_spawn_effective=False,
             execution_hints=("unknown_host_fail_closed",),
         )
 
@@ -140,11 +157,30 @@ class ExecutionHostProfile:
             ),
             supports_interrupt=bool(capabilities.get("supports_interrupt")),
             supports_artifact_paths=bool(capabilities.get("supports_artifact_paths")),
+            native_spawn_transport_supported=bool(
+                capabilities.get("native_spawn_transport_supported")
+                or capabilities.get("supports_native_spawn")
+            ),
+            native_spawn_policy=str(capabilities.get("native_spawn_policy", "")).strip(),
+            native_spawn_policy_status=str(capabilities.get("native_spawn_policy_status", "")).strip(),
+            native_spawn_effective=bool(capabilities.get("native_spawn_effective")),
             host_display_name=_host_display_name(str(capabilities.get("host_family", "")).strip()),
             execution_hints=tuple(
                 hint
                 for hint in (
-                    "native_spawn_available" if bool(capabilities.get("supports_native_spawn")) else "",
+                    (
+                        "native_spawn_transport_available"
+                        if bool(
+                            capabilities.get("native_spawn_transport_supported")
+                            or capabilities.get("supports_native_spawn")
+                        )
+                        else ""
+                    ),
+                    (
+                        f"native_spawn_policy:{str(capabilities.get('native_spawn_policy', '')).strip()}"
+                        if str(capabilities.get("native_spawn_policy", "")).strip()
+                        else ""
+                    ),
                     (
                         f"delegation_style:{str(capabilities.get('delegation_style', '')).strip() or 'none'}"
                     ),

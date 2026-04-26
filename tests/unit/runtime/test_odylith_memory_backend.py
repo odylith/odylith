@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import shutil
 
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.memory import odylith_memory_backend
+from odylith.runtime.memory import odylith_memory_backend_filesystem
 
 
 class _FakeAsyncConnection:
@@ -89,6 +91,40 @@ class _FakeLanceConnection:
                 "mode": mode,
             }
         )
+
+
+def test_replace_directory_tree_renames_live_target_before_cleanup(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_root = tmp_path / "tantivy"
+    target_root.mkdir()
+    (target_root / "old.segment").write_text("old", encoding="utf-8")
+    temp_root = tmp_path / "odylith-tantivy-build"
+    temp_root.mkdir()
+    (temp_root / "new.segment").write_text("new", encoding="utf-8")
+    real_rmtree = shutil.rmtree
+    rmtree_calls: list[Path] = []
+
+    def _fake_rmtree(path: object, *args: object, **kwargs: object) -> object:
+        candidate = Path(path)
+        rmtree_calls.append(candidate)
+        if candidate == target_root:
+            raise OSError(66, "Directory not empty", str(candidate))
+        return real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(odylith_memory_backend_filesystem.shutil, "rmtree", _fake_rmtree)
+
+    odylith_memory_backend_filesystem.replace_directory_tree(
+        temp_root=temp_root,
+        target_root=target_root,
+    )
+
+    assert not temp_root.exists()
+    assert (target_root / "new.segment").read_text(encoding="utf-8") == "new"
+    assert not (target_root / "old.segment").exists()
+    assert target_root not in rmtree_calls
+    assert not list(tmp_path.glob(".tantivy.old-*"))
 
 
 def test_create_lance_tables_closes_underlying_async_connection(monkeypatch, tmp_path: Path) -> None:

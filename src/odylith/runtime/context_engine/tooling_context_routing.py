@@ -9,6 +9,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.context_engine import governance_signal_codec
+from odylith.runtime.context_engine import tooling_context_routing_spawn_policy
 
 
 def _dedupe_strings(values: Sequence[str]) -> list[str]:
@@ -1534,18 +1535,9 @@ def build_routing_handoff(
         and delegate_preference == "delegate"
         and all((model, reasoning_effort, agent_role, selection_mode))
     )
-    resolved_host_runtime = (
-        host_runtime_contract.resolve_host_runtime(final_payload.get("host_runtime"))
-        if native_spawn_probe_needed
-        else str(final_payload.get("host_runtime", "")).strip()
-    )
-    native_spawn_supported = (
-        host_runtime_contract.native_spawn_supported(
-            resolved_host_runtime,
-            default_when_unknown=False,
-        )
-        if native_spawn_probe_needed
-        else False
+    resolved_host_runtime, spawn_policy = tooling_context_routing_spawn_policy.probe(
+        final_payload.get("host_runtime"),
+        enabled=native_spawn_probe_needed,
     )
     packet_quality_handoff = {
         "context_richness": str(packet_quality_payload.get("context_richness", "")).strip(),
@@ -1624,7 +1616,7 @@ def build_routing_handoff(
             governed_surface_sync_required=bool(validation_bundle.get("governed_surface_sync_required")),
             host_runtime=resolved_host_runtime,
         ),
-        "native_spawn_supported": native_spawn_supported,
+        **spawn_policy.handoff_fields(),
         "within_budget": bool(packet_quality_payload.get("within_budget")),
     }
     if compact_bootstrap_handoff:
@@ -1783,7 +1775,7 @@ def build_routing_handoff(
         else {}
     )
     resolved_host_runtime = str(resolved_host_capabilities.get("host_runtime", "")).strip()
-    native_spawn_supported = bool(resolved_host_capabilities.get("supports_native_spawn"))
+    spawn_policy = tooling_context_routing_spawn_policy.from_capabilities(resolved_host_capabilities)
     execution_profile = {
         "profile": "main_thread",
         "model": "",
@@ -1801,7 +1793,7 @@ def build_routing_handoff(
             "narrowing_required": bool(narrowing_guidance.get("required")),
             "within_budget": bool(packet_quality_payload.get("within_budget")),
             "deep_reasoning_ready": deep_reasoning_ready,
-            "native_spawn_supported": native_spawn_supported,
+            **spawn_policy.handoff_fields(),
             "supports_local_structured_reasoning": bool(
                 resolved_host_capabilities.get("supports_local_structured_reasoning")
             ),
@@ -1817,6 +1809,7 @@ def build_routing_handoff(
         "host_runtime": resolved_host_runtime,
         "host_family": str(resolved_host_capabilities.get("host_family", "")).strip(),
         "model_family": str(resolved_host_capabilities.get("model_family", "")).strip(),
+        **spawn_policy.policy_fields(),
         "signals": {
             "grounding": {
                 "score": grounding_score,
@@ -2016,6 +2009,7 @@ def build_routing_handoff(
         host_runtime=resolved_host_runtime,
     )
     packet_quality_handoff["native_spawn_ready"] = native_spawn_ready_result
+    packet_quality_handoff.update(spawn_policy.handoff_fields())
     execution_signals_payload = (
         dict(execution_profile.get("signals", {}))
         if isinstance(execution_profile.get("signals"), Mapping)
@@ -2107,6 +2101,7 @@ def build_routing_handoff(
             "direct_guidance_count": _int_value(packet_quality.get("direct_guidance_chunk_count")),
         },
         "native_spawn_ready": native_spawn_ready_result,
+        **spawn_policy.policy_fields(),
         "reasoning_bias": reasoning_bias,
         "parallelism_hint": parallelism_hint,
         "top_guidance": top_guidance,

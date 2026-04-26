@@ -116,6 +116,8 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "run `./.odylith/bin/odylith version --repo-root .` when the launcher exists" in block
     assert "If the launcher is missing, confirm that from the filesystem first" in block
     assert "substantive grounded consumer-lane work" in block
+    assert "default candidate" in block
+    assert "keep transport support separate from current-session spawn permission/effectiveness" in block
     assert "validated Odylith delegation hosts under the same grounding and validation contract" in block
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in block
     assert "Odylith grounding:" not in block

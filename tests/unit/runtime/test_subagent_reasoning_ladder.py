@@ -612,6 +612,11 @@ def test_route_request_spawn_payloads_never_inherit_parent_defaults(tmp_path: Pa
     assert decision.native_spawn_payload["message"] == decision.spawn_task_message
     assert decision.host_tool_contract["built_in_agent_types_only"] is True
     assert decision.host_tool_contract["named_custom_agent_type_supported"] is False
+    assert decision.host_tool_contract["native_spawn_transport_supported"] is True
+    assert decision.host_tool_contract["native_spawn_policy_status"] == "not_inspectable"
+    assert decision.host_tool_contract["native_spawn_effective"] is False
+    assert "active host policy" in decision.host_tool_contract["host_policy_note"]
+    assert any("HOST POLICY:" in line and "not_inspectable" in line for line in decision.runtime_banner_lines)
     assert ".codex/agents/*.toml" in decision.host_tool_contract["custom_agent_type_note"]
     assert "built-in `agent_type` values" in decision.host_tool_contract["custom_agent_type_note"]
     assert any("do not inherit the parent thread model or reasoning weight" in line for line in decision.spawn_contract_lines)
