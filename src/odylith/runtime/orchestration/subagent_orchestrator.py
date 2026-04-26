@@ -51,8 +51,7 @@ from odylith.runtime.orchestration.subagent_orchestrator_support import _compact
 from odylith.runtime.orchestration.subagent_orchestrator_support import _dedupe_strings
 from odylith.runtime.orchestration.subagent_orchestrator_support import _execution_profile_mapping
 from odylith.runtime.orchestration.subagent_orchestrator_support import _extract_context_signals_payload
-from odylith.runtime.orchestration.subagent_orchestrator_support import _float_value
-from odylith.runtime.orchestration.subagent_orchestrator_support import _mapping_lookup
+from odylith.runtime.orchestration.subagent_orchestrator_support import _float_value, _mapping_lookup
 from odylith.runtime.orchestration.subagent_orchestrator_support import _merge_context_signals
 from odylith.runtime.orchestration.subagent_orchestrator_support import _nested_mapping
 from odylith.runtime.orchestration.subagent_orchestrator_support import _normalize_context_signals
@@ -3421,7 +3420,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             _emit_payload(payload, as_json=bool(args.json))
             return 0
         if args.command == "show-tuning":
-            _emit_payload(load_tuning_state(repo_root=repo_root).as_dict(), as_json=bool(args.json))
+            state = load_tuning_state(repo_root=repo_root).as_dict()
+            _emit_payload(leaf_router.subagent_tuning_surface.orchestrator_surface(repo_root=repo_root, state=state), as_json=bool(args.json))
             return 0
         if args.command == "show-ledger":
             selected_decision_id = _load_decision_reference(

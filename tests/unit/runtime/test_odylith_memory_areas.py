@@ -123,6 +123,9 @@ def test_print_runtime_status_includes_judgment_memory_summary(capsys) -> None: 
 
     output = capsys.readouterr().out
     assert "- memory_areas: strong=6, partial=1" in output
+    assert "- memory_backend_fallback: no, source=live_backend, scope=live_backend_transition" in output
+    assert "- context_selection_degraded_fallback:" in output
+    assert "scope=recent_context_selection_events, memory_backend_fallback=no" in output
     assert "- memory_headline: Repo truth, retrieval memory, and decision memory are strong." in output
     assert "- judgment_memory: strong=5, partial=2, cold=1" in output
     assert "- judgment_headline: Decision memory and onboarding memory are durable." in output

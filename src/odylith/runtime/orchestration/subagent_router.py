@@ -42,6 +42,7 @@ from odylith.runtime.orchestration import subagent_router_context_support
 from odylith.runtime.orchestration import subagent_router_host_policy
 from odylith.runtime.orchestration import subagent_router_profile_support
 from odylith.runtime.orchestration import subagent_router_runtime_policy
+from odylith.runtime.orchestration import subagent_tuning_surface
 
 
 _SCORE_MIN = 0
@@ -3106,13 +3107,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                     decision=decision,
                     outcome=outcome,
                     stream_path=_resolve(repo_root, str(args.stream)),
-                )
+            )
             _emit_payload(payload, as_json=bool(args.json))
             return 0
-
         if args.command == "show-tuning":
             state = load_tuning_state(repo_root=repo_root)
-            _emit_payload(state.as_dict(), as_json=bool(args.json))
+            payload = subagent_tuning_surface.router_surface(repo_root=repo_root, state=state.as_dict())
+            _emit_payload(payload, as_json=bool(args.json))
             return 0
     except RouterInputError as error:
         _emit_error(error, as_json=bool(getattr(args, "json", False)))

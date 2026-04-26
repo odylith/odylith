@@ -279,7 +279,7 @@ def inspect_intervention_status(
         "fresh_session_required_after_runtime_change": True,
         "smoke_command": (
             f"odylith {host} visible-intervention --repo-root . --phase prompt_submit "
-            '--prompt "I do not think it is working"'
+            '--prompt "I do not think it is working" --confirm-chat'
         ),
     }
 
@@ -391,7 +391,11 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
         additional_count = int(report.get("assistant_visible_replay_additional_count") or 0)
         if additional_count:
             lines.append(f"Additional pending replay blocks: {additional_count}.")
-    lines.append(f"Fast smoke: `{_normalize_string(report.get('smoke_command'))}`")
+    lines.append(
+        "Fast smoke: "
+        f"`{_normalize_string(report.get('smoke_command'))}` "
+        "(use `--confirm-chat` only when the rendered stdout is relayed into the chat transcript)."
+    )
     return "\n".join(lines).strip()
 
 

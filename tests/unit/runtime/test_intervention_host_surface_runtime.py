@@ -7,6 +7,7 @@ from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import host_intervention_status
+from odylith.runtime.surfaces import host_visible_intervention
 
 
 def test_recent_session_helpers_do_not_bleed_without_session_id(tmp_path: Path) -> None:
@@ -63,6 +64,28 @@ def test_recent_session_live_markdown_recovers_unseen_live_beats_only(tmp_path: 
         "-----\nOdylith Proposal: keep this visible.\n-----\n"
         "\n---"
     )
+
+
+def test_visible_intervention_confirm_chat_records_transcript_proof(tmp_path: Path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        session_id="confirm-visible-session",
+        prompt="I am still not seeing Odylith Assist in the transcript.",
+        record_delivery=True,
+        confirm_chat_delivery=True,
+    )
+
+    assert "Odylith" in rendered
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="codex",
+        session_id="confirm-visible-session",
+    )
+
+    assert report["chat_visible_proof"]["status"] == "proven_this_session"
+    assert report["delivery_ledger"]["chat_confirmed_event_count"] >= 1
 
 
 def test_compose_host_conversation_bundle_recovers_recent_checkpoint_context(tmp_path: Path) -> None:

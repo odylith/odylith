@@ -34,6 +34,22 @@ def _contains_assist(value: object) -> bool:
     return "odylith assist:" in str(value or "").casefold()
 
 
+def _confirm_rendered_chat(
+    *,
+    repo_root: Path | str,
+    host_family: str,
+    session_id: str,
+    rendered: str,
+) -> None:
+    host_surface_runtime.confirm_assistant_chat_delivery(
+        repo_root=repo_root,
+        host_family=host_family,
+        session_id=session_id,
+        last_assistant_message=rendered,
+        render_surface=f"{_normalize_text(host_family).lower() or 'host'}_visible_intervention",
+    )
+
+
 def _prompt_visible_assist_text(bundle: object) -> tuple[str, str]:
     existing_markdown = conversation_surface.render_closeout_text(bundle, markdown=True)
     existing_plain = conversation_surface.render_closeout_text(bundle, markdown=False)
@@ -74,6 +90,7 @@ def render_visible_intervention(
     include_proposal: bool | None = None,
     include_closeout: bool | None = None,
     record_delivery: bool = False,
+    confirm_chat_delivery: bool = False,
 ) -> str:
     """Render the exact Markdown an assistant should show when hooks are hidden."""
 
@@ -110,6 +127,13 @@ def render_visible_intervention(
         include_teaser=False,
     )
     if replay and not (closeout and normalized_phase != "stop_summary"):
+        if confirm_chat_delivery:
+            _confirm_rendered_chat(
+                repo_root=repo_root,
+                host_family=host_family,
+                session_id=resolved_session,
+                rendered=replay,
+            )
         return replay
     bundle = host_surface_runtime.compose_host_conversation_bundle(
         repo_root=repo_root,
@@ -127,6 +151,13 @@ def render_visible_intervention(
             closeout_text=conversation_surface.render_closeout_text(bundle, markdown=True),
         )
         if visible_override == replay:
+            if confirm_chat_delivery:
+                _confirm_rendered_chat(
+                    repo_root=repo_root,
+                    host_family=host_family,
+                    session_id=resolved_session,
+                    rendered=replay,
+                )
             return replay
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=repo_root,
@@ -171,6 +202,13 @@ def render_visible_intervention(
             decision=decision,
             render_surface=f"{_normalize_text(host_family).lower() or 'host'}_visible_intervention",
         )
+    if rendered and confirm_chat_delivery:
+        _confirm_rendered_chat(
+            repo_root=repo_root,
+            host_family=host_family,
+            session_id=resolved_session,
+            rendered=rendered,
+        )
     return rendered
 
 
@@ -197,6 +235,11 @@ def main_with_host(host_family: str, argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--include-proposal", action="store_true", help="Force proposal rendering when eligible.")
     parser.add_argument("--include-closeout", action="store_true", help="Force closeout Assist rendering.")
+    parser.add_argument(
+        "--confirm-chat",
+        action="store_true",
+        help="Record the rendered fallback as chat-confirmed when stdout will be relayed verbatim into the chat.",
+    )
     args = parser.parse_args(list(argv or sys.argv[1:]))
     rendered = render_visible_intervention(
         repo_root=args.repo_root,
@@ -209,6 +252,7 @@ def main_with_host(host_family: str, argv: list[str] | None = None) -> int:
         include_proposal=True if args.include_proposal else None,
         include_closeout=True if args.include_closeout else None,
         record_delivery=True,
+        confirm_chat_delivery=bool(args.confirm_chat),
     )
     if rendered:
         sys.stdout.write(rendered + "\n")

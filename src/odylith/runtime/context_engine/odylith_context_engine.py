@@ -857,17 +857,22 @@ def _print_runtime_status(payload: Mapping[str, Any]) -> None:
         backend = engine.get("backend", {}) if isinstance(engine, Mapping) else {}
         target_backend = engine.get("target_backend", {}) if isinstance(engine, Mapping) else {}
         backend_transition = engine.get("backend_transition", {}) if isinstance(engine, Mapping) else {}
+        backend_evidence = memory_snapshot.get("backend_transition", {})
+        backend_source = str(backend_evidence.get("evidence_source", "")).strip() if isinstance(backend_evidence, Mapping) else ""
+        backend_source = backend_source or "live_backend"
+        backend_fallback = backend_source in {"compiler_projection_snapshot", "repo_scan_fallback", "repo_scan_degraded_fallback"}
         if isinstance(runtime_state, Mapping) and isinstance(guidance_catalog, Mapping) and isinstance(entity_counts, Mapping):
             print(
                 "- memory: "
                 f"actual={str(backend.get('storage', '')).strip() or '-'} / {str(backend.get('sparse_recall', '')).strip() or '-'}, "
                 f"target={str(target_backend.get('storage', '')).strip() or '-'} / {str(target_backend.get('sparse_recall', '')).strip() or '-'}, "
                 f"transition={str(backend_transition.get('status', '')).strip() or '-'}, "
-                f"source={str(memory_snapshot.get('backend_transition', {}).get('evidence_source', '')).strip() or 'live_backend'}, "
+                f"source={backend_source}, "
                 f"indexed_entities={int(entity_counts.get('indexed_entity_count', 0) or 0)}, "
                 f"guidance_chunks={int(guidance_catalog.get('chunk_count', 0) or 0)}, "
                 f"bootstrap_packets={int(runtime_state.get('bootstrap_packets', 0) or 0)}"
             )
+            print(f"- memory_backend_fallback: {'yes' if backend_fallback else 'no'}, source={backend_source}, scope=live_backend_transition")
         if isinstance(memory_areas, Mapping):
             count_summary = _memory_area_count_summary(memory_areas)
             if count_summary:
@@ -892,9 +897,11 @@ def _print_runtime_status(payload: Mapping[str, Any]) -> None:
             )
         if isinstance(degraded_fallback, Mapping):
             print(
-                "- repo_scan_degraded_fallback: "
+                "- context_selection_degraded_fallback: "
                 f"rate={float(degraded_fallback.get('repo_scan_degraded_fallback_rate', 0.0) or 0.0):.3f}, "
-                f"reasons={','.join(str(key) for key in dict(degraded_fallback.get('repo_scan_degraded_reason_distribution', {})).keys()) or '-'}"
+                f"reasons={','.join(str(key) for key in dict(degraded_fallback.get('repo_scan_degraded_reason_distribution', {})).keys()) or '-'}, "
+                "scope=recent_context_selection_events, "
+                f"memory_backend_fallback={'yes' if backend_fallback else 'no'}"
             )
             print(
                 "- grounding_failure_split: "
