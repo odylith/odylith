@@ -39,7 +39,7 @@ from odylith.runtime.common.value_coercion import normalize_token as _normalize_
 from odylith.runtime.execution_engine import runtime_lane_policy
 from odylith.runtime.context_engine import odylith_context_engine_store as odylith_store
 from odylith.runtime.evaluation import odylith_evaluation_ledger
-from odylith.runtime.orchestration import subagent_router as leaf_router
+from odylith.runtime.orchestration import subagent_router as leaf_router, subagent_tuning_surface
 from odylith.runtime.orchestration import subagent_orchestrator_runtime_signals
 from odylith.runtime.orchestration import subagent_orchestrator_subtasks_runtime
 from odylith.runtime.orchestration import subagent_orchestrator_odylith_runtime
@@ -66,8 +66,7 @@ from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith
 from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_selection_state
 from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_workstreams
 from odylith.runtime.orchestration.subagent_orchestrator_support import _payload_packet_kind
-from odylith.runtime.orchestration.subagent_orchestrator_support import _request_has_odylith_seeds
-from odylith.runtime.orchestration.subagent_orchestrator_support import _request_seed_paths
+from odylith.runtime.orchestration.subagent_orchestrator_support import _request_has_odylith_seeds, _request_seed_paths
 from odylith.runtime.orchestration.subagent_orchestrator_support import _sanitize_user_facing_lines
 from odylith.runtime.orchestration.subagent_orchestrator_support import _sanitize_user_facing_text
 
@@ -3421,7 +3420,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         if args.command == "show-tuning":
             state = load_tuning_state(repo_root=repo_root).as_dict()
-            _emit_payload(leaf_router.subagent_tuning_surface.orchestrator_surface(repo_root=repo_root, state=state), as_json=bool(args.json))
+            payload = subagent_tuning_surface.orchestrator_surface(repo_root=repo_root, state=state)
+            _emit_payload(payload, as_json=bool(args.json))
             return 0
         if args.command == "show-ledger":
             selected_decision_id = _load_decision_reference(

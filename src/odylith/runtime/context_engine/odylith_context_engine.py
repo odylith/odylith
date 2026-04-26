@@ -861,6 +861,7 @@ def _print_runtime_status(payload: Mapping[str, Any]) -> None:
         backend_source = str(backend_evidence.get("evidence_source", "")).strip() if isinstance(backend_evidence, Mapping) else ""
         backend_source = backend_source or "live_backend"
         backend_fallback = backend_source in {"compiler_projection_snapshot", "repo_scan_fallback", "repo_scan_degraded_fallback"}
+        backend_fallback_label = "yes" if backend_fallback else "no"
         if isinstance(runtime_state, Mapping) and isinstance(guidance_catalog, Mapping) and isinstance(entity_counts, Mapping):
             print(
                 "- memory: "
@@ -872,7 +873,7 @@ def _print_runtime_status(payload: Mapping[str, Any]) -> None:
                 f"guidance_chunks={int(guidance_catalog.get('chunk_count', 0) or 0)}, "
                 f"bootstrap_packets={int(runtime_state.get('bootstrap_packets', 0) or 0)}"
             )
-            print(f"- memory_backend_fallback: {'yes' if backend_fallback else 'no'}, source={backend_source}, scope=live_backend_transition")
+            print(f"- memory_backend_fallback: {backend_fallback_label}, source={backend_source}, scope=live_backend_transition")
         if isinstance(memory_areas, Mapping):
             count_summary = _memory_area_count_summary(memory_areas)
             if count_summary:
@@ -896,12 +897,14 @@ def _print_runtime_status(payload: Mapping[str, Any]) -> None:
                 f"provider={str(remote_retrieval.get('provider', '')).strip() or '-'}"
             )
         if isinstance(degraded_fallback, Mapping):
+            reason_keys = dict(degraded_fallback.get("repo_scan_degraded_reason_distribution", {})).keys()
+            degraded_reasons = ",".join(str(key) for key in reason_keys) or "-"
             print(
                 "- context_selection_degraded_fallback: "
                 f"rate={float(degraded_fallback.get('repo_scan_degraded_fallback_rate', 0.0) or 0.0):.3f}, "
-                f"reasons={','.join(str(key) for key in dict(degraded_fallback.get('repo_scan_degraded_reason_distribution', {})).keys()) or '-'}, "
+                f"reasons={degraded_reasons}, "
                 "scope=recent_context_selection_events, "
-                f"memory_backend_fallback={'yes' if backend_fallback else 'no'}"
+                f"memory_backend_fallback={backend_fallback_label}"
             )
             print(
                 "- grounding_failure_split: "
