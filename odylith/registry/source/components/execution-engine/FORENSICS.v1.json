@@ -9,9 +9,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 103,
+    "explicit_event_count": 104,
     "mapped_workstream_evidence_count": 96,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
     "timeline_event_count": 104
@@ -22,6 +22,25 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 375,
+      "explicit_components": [
+        "governance-intervention-engine",
+        "execution-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is tracking this signal: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-04-26T14:06:49Z",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "low",
@@ -193,23 +212,6 @@
         "B-109",
         "B-110"
       ]
-    },
-    {
-      "artifacts": [
-        "src/odylith/runtime/execution_engine/contract.py",
-        "src/odylith/runtime/execution_engine/runtime_surface_governance.py"
-      ],
-      "confidence": "high",
-      "event_index": 372,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "execution-engine"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/runtime/execution_engine/contract.py, src/odylith/runtime/execution_engine/runtime_surface_governance.py",
-      "ts_iso": "2026-04-26T05:47:48-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

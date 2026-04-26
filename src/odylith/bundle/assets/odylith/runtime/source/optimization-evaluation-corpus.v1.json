@@ -641,7 +641,7 @@
           "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
           "tests/unit/runtime/test_execution_engine.py",
           "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+          "odylith/technical-plans/done/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
@@ -1156,7 +1156,7 @@
           "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
           "tests/unit/runtime/test_execution_engine.py",
           "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md"
+          "odylith/technical-plans/done/2026-04/2026-04-16-codex-claude-execution-contract-parity.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
@@ -1257,7 +1257,7 @@
           "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
           "tests/unit/runtime/test_execution_engine.py",
           "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md"
+          "odylith/technical-plans/done/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
@@ -1377,7 +1377,7 @@
           "src/odylith/runtime/execution_engine/validation.py",
           "tests/unit/runtime/test_execution_engine.py",
           "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md"
+          "odylith/technical-plans/done/2026-04/2026-04-16-codex-claude-execution-contract-parity.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_execution_engine.py"
@@ -1491,7 +1491,7 @@
           "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
           "tests/unit/runtime/test_odylith_benchmark_execution_engine.py",
           "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
-          "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+          "odylith/technical-plans/done/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
         ],
         "validation_commands": [
           "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_execution_engine.py tests/unit/runtime/test_execution_engine.py"

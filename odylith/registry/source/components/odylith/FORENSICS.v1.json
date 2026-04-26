@@ -40,12 +40,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 203,
+    "explicit_event_count": 205,
     "mapped_workstream_evidence_count": 91,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 24,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 204
+    "timeline_event_count": 205
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -59,6 +59,37 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 376,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is tracking this signal: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-04-26T14:06:49Z",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 374,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "**Odylith Assist:** keeping Odylith visible in the transcript; generated hook payloads do not count as green until chat delivery is confirmed.",
+      "ts_iso": "2026-04-26T14:06:49Z",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "low",
@@ -292,22 +323,6 @@
       "meaningful": false,
       "summary": "Grounded in the Atlas diagrams (odylith-context-and-agent-execution-stack, odylith-adaptive-discipline-loop, odylith-memory-substrate-..., odylith-conversation-observation-and-g...",
       "ts_iso": "2026-04-26T05:54:56-07:00",
-      "workstreams": []
-    },
-    {
-      "artifacts": [
-        "AGENTS.md"
-      ],
-      "confidence": "high",
-      "event_index": 373,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: AGENTS.md",
-      "ts_iso": "2026-04-26T05:49:21-07:00",
       "workstreams": []
     },
     {

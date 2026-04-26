@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 110,
+    "explicit_event_count": 111,
     "mapped_workstream_evidence_count": 90,
     "recent_path_match_count": 0,
     "spec_history_event_count": 29,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 110
+    "timeline_event_count": 111
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -37,6 +37,23 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 376,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Odylith is tracking this signal: Closeout confidence is ahead of the last trustworthy proof for Governance Intervention Engine. Capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
+      "ts_iso": "2026-04-26T14:06:49Z",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "low",

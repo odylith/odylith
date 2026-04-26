@@ -30,10 +30,10 @@
     "empty_reasons": [],
     "explicit_event_count": 61,
     "mapped_workstream_evidence_count": 52,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 62
+    "timeline_event_count": 61
   },
   "name": "Subagent Router",
   "path_prefixes": [
@@ -194,23 +194,6 @@
         "B-109",
         "B-110"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/skills/odylith-subagent-router/SKILL.md",
-        "src/odylith/runtime/orchestration/subagent_router.py"
-      ],
-      "confidence": "high",
-      "event_index": 378,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "subagent-router"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/skills/odylith-subagent-router/SKILL.md, src/odylith/runtime/orchestration/subagent_router.py",
-      "ts_iso": "2026-04-26T06:12:23-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

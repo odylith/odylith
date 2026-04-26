@@ -16,7 +16,7 @@
       "gate_refs": [
         {
           "workstream_id": "B-100",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md",
           "label": "Execution Engine Benchmark Proof and Canonical Cutover gate"
         }
       ]
@@ -37,7 +37,7 @@
       "gate_refs": [
         {
           "workstream_id": "B-101",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md",
           "label": "Context Execution Handshake Snapshot Normalization gate"
         }
       ]
@@ -58,7 +58,7 @@
       "gate_refs": [
         {
           "workstream_id": "B-102",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-16-codex-claude-execution-contract-parity.md",
           "label": "Codex Claude Execution Contract Parity gate"
         }
       ]
@@ -79,7 +79,7 @@
       "gate_refs": [
         {
           "workstream_id": "B-103",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md",
           "label": "Execution Snapshot Reuse and Hot Path Cost Reduction gate"
         }
       ]
@@ -100,7 +100,7 @@
       "gate_refs": [
         {
           "workstream_id": "B-104",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md",
           "label": "Execution Alignment Release Proof and Governance Closure gate"
         }
       ]

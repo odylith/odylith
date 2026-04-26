@@ -1,5 +1,5 @@
 ---
-status: implementation
+status: finished
 idea_id: B-096
 title: Conversation observation engine, governed proposal flow, and human intervention voice contract
 date: 2026-04-14
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Odylith either earns trust inside the conversation or it does not. A humane, timely observation and governed proposal experience is core product behavior, not garnish, and it must land as one shared cross-host contract instead of per-host improvisation.
 confidence: high
 founder_override: no
-promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md
 execution_model: umbrella_waves
 workstream_type: umbrella
 workstream_parent:

@@ -16,8 +16,8 @@
       "gate_refs": [
         {
           "workstream_id": "B-105",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
-          "label": "Governance binding gate"
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "Visible Intervention Value Engine Governance Binding gate"
         }
       ]
     },
@@ -37,8 +37,8 @@
       "gate_refs": [
         {
           "workstream_id": "B-106",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
-          "label": "Proposition engine gate"
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "Visible Intervention Proposition Engine gate"
         }
       ]
     },
@@ -58,8 +58,8 @@
       "gate_refs": [
         {
           "workstream_id": "B-107",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
-          "label": "Host visibility gate"
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "Host Visibility Integration And Ruler Canonicalization gate"
         }
       ]
     },
@@ -79,15 +79,15 @@
       "gate_refs": [
         {
           "workstream_id": "B-108",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
-          "label": "Adjudication benchmark gate"
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "Intervention Adjudication Corpus And Advisory Benchmark gate"
         }
       ]
     },
     {
       "wave_id": "W5",
       "label": "v0.1.11 Visible Intervention Release Proof",
-      "status": "active",
+      "status": "complete",
       "summary": "Collects final runtime, guidance-behavior runtime, platform end-to-end, live/source-bundle parity, hot-path efficiency, host/lane surface, migration, host-visible, generated-surface, governance, browser, sync, and diff-hygiene proof for v0.1.11.",
       "depends_on": [
         "W4"
@@ -100,8 +100,8 @@
       "gate_refs": [
         {
           "workstream_id": "B-109",
-          "plan_path": "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
-          "label": "Release proof gate"
+          "plan_path": "odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+          "label": "v0.1.11 Visible Intervention Release Proof gate"
         }
       ]
     }

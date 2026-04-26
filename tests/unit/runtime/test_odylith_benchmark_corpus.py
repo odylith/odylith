@@ -30,6 +30,19 @@ def test_public_and_bundle_benchmark_corpus_stay_aligned() -> None:
     assert _load(PUBLIC_CORPUS) == _load(BUNDLE_CORPUS)
 
 
+def test_execution_engine_support_doc_rank_uses_completed_plan_path() -> None:
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path=(
+                "odylith/technical-plans/done/2026-04/"
+                "2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+            ),
+            family="execution_engine",
+        )
+        == 2
+    )
+
+
 def test_execution_engine_corpus_hard_gates_identity_for_every_execution_case() -> None:
     corpus = _load(PUBLIC_CORPUS)
     execution_cases = [

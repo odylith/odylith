@@ -21,10 +21,10 @@
     "empty_reasons": [],
     "explicit_event_count": 109,
     "mapped_workstream_evidence_count": 109,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 109
+    "timeline_event_count": 110
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -148,6 +148,22 @@
         "B-109",
         "B-110"
       ]
+    },
+    {
+      "artifacts": [
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 377,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "benchmark"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+      "ts_iso": "2026-04-26T12:51:17-07:00",
+      "workstreams": []
     },
     {
       "artifacts": [],

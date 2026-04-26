@@ -112,7 +112,7 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
             return 0
         if lowered.endswith("/atlas/source/odylith-execution-engine-stack.mmd"):
             return 1
-        if lowered.endswith("/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"):
+        if lowered.endswith("/technical-plans/done/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"):
             return 2
         return 4
     if normalized_family == "compass_brief_freshness":

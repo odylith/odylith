@@ -1,5 +1,5 @@
 ---
-status: implementation
+status: finished
 
 idea_id: B-104
 
@@ -29,7 +29,7 @@ confidence: high
 
 founder_override: no
 
-promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md
 
 execution_model: standard
 
