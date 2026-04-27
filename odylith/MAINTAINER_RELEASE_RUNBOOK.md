@@ -148,6 +148,16 @@ Run the targets in this order.
 9. `make consumer-rehearsal [PREVIOUS_VERSION=X.Y.Z]`
    Prove first install, upgrade, rollback, doctor, and Compass retention
    behavior against real hosted release assets in a disposable consumer repo.
+   The rehearsal must also prove the active post-upgrade launcher can refresh
+   the default shell-facing dashboard surfaces after each target-version
+   activation, so an older launcher cannot hide a stale post-upgrade Compass
+   refresh behind a later successful `version` check.
+   It must seed and clear the legacy compressed Compass history archive layout
+   before the cross-version upgrade, proving that retained history stays
+   bounded instead of carrying an ever-growing archive bundle forward.
+   Cover both existing-install paths: direct CLI upgrade from the previous
+   runtime and hosted-installer refresh over an existing previous-version
+   install.
    This rehearsal must prove the supported-platform runtime contract:
    macOS (Apple Silicon) plus Linux only, Intel macOS and Windows unsupported,
    no dependence on the consumer machine's Python installation or active

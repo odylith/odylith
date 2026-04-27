@@ -144,6 +144,11 @@ Other useful lifecycle commands:
   successful activation ends with matching active and pinned versions, and any
   stale retention-cleanup problem is surfaced as a warning with remediation
   instead of a false hard failure.
+- Older launchers may finish a successful activation before their in-process
+  post-upgrade dashboard refresh catches up. If an upgrade says the dashboard
+  refresh failed after the version changed, rerun
+  `./.odylith/bin/odylith dashboard refresh --repo-root .`; the active launcher
+  is the authoritative post-upgrade refresh path.
 - When the requested release already matches the active verified full-stack
   runtime, `odylith upgrade` treats that as already current and does not
   restage the live same-version runtime in place.

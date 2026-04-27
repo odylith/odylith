@@ -6,6 +6,8 @@ requested_version="${1:-}"
 resolved_version="${requested_version:-${VERSION:-$(current_source_version)}}"
 require_version "$resolved_version"
 
+git restore -- odylith/compass/runtime >/dev/null 2>&1 || true
+git clean -fd -- odylith/compass/runtime >/dev/null 2>&1 || true
 require_clean_worktree
 
 candidate_root="$(mktemp -d "${TMPDIR:-/tmp}/odylith-release-candidate.XXXXXX")"

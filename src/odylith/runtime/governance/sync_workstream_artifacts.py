@@ -1240,6 +1240,19 @@ def _owned_surface_refresh_command(*, surface: str, atlas_sync: bool = False) ->
     return display_command("dashboard", "refresh", "--repo-root", ".", "--surfaces", normalized)
 
 
+def _normalize_radar_source_before_surface_refresh(*, repo_root: Path) -> None:
+    normalization = normalize_legacy_backlog_index(repo_root=repo_root)
+    if not normalization.changed:
+        return
+    normalized_idea_specs = tuple(getattr(normalization, "normalized_idea_specs", ()) or ())
+    normalized_table_sections = tuple(getattr(normalization, "normalized_table_sections", ()) or ())
+    print("- radar preflight: normalized legacy Radar source before render")
+    print(f"  rationale_sections: {len(normalization.normalized_sections)}")
+    print(f"  idea_schema_updates: {len(normalized_idea_specs)}")
+    print(f"  table_schema_updates: {len(normalized_table_sections)}")
+    print(f"  source: {normalization.backlog_index.relative_to(repo_root)}")
+
+
 def _dashboard_surface_steps(
     *,
     repo_root: Path,
@@ -1743,6 +1756,8 @@ def _run_surface_worker(
     capture = io.StringIO()
     _dashboard_thread_capture.buf = capture
     try:
+        if surface == "radar":
+            _normalize_radar_source_before_surface_refresh(repo_root=repo_root)
         outputs = _surface_render_outputs(surface)
         cache_hit, cache_details = surface_refresh_fingerprint_dag.can_reuse_surface_refresh(
             repo_root=repo_root,

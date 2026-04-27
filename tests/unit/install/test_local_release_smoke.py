@@ -154,3 +154,115 @@ def test_main_runs_upgrade_cycle_when_previous_release_exists(monkeypatch, tmp_p
 
     assert rc == 0
     assert events == ["install", "upgrade", "shutdown", "server_close"]
+
+
+def test_upgrade_cycle_proves_dashboard_refresh_after_each_target_activation(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    install_script = tmp_path / "install.sh"
+    install_script.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+
+    commands: list[tuple[str, ...]] = []
+    history_checks: list[str] = []
+
+    def fake_run(**kwargs):  # noqa: ANN001
+        command = tuple(str(part) for part in kwargs["command"])
+        commands.append(command)
+
+        class Result:
+            stdout = ""
+
+        return Result()
+
+    monkeypatch.setattr(module, "_run", fake_run)
+    monkeypatch.setattr(module, "_install_cwd", lambda root: root)
+    monkeypatch.setattr(module, "_seed_legacy_compass_archive_fixture", lambda **kwargs: history_checks.append("seed"))
+    monkeypatch.setattr(module, "_require_compass_history_layout", lambda **kwargs: history_checks.append("check"))
+
+    module._upgrade_cycle(
+        repo_root=repo_root,
+        install_script=install_script,
+        previous_version="0.1.10",
+        target_version="0.1.11",
+        local_env={"ODYLITH_VERSION": "0.1.11"},
+    )
+
+    dashboard_commands = [
+        command
+        for command in commands
+        if "dashboard" in command and "refresh" in command
+    ]
+    assert len(dashboard_commands) == 3
+    assert all(command[-3:] == ("refresh", "--repo-root", ".") for command in dashboard_commands)
+    assert history_checks == ["seed", "check", "seed", "check", "seed", "check"]
+    assert sum(1 for command in commands if command == ("bash", str(install_script))) == 4
+
+
+def test_install_clean_previous_release_resets_generated_install_state(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    install_script = tmp_path / "install.sh"
+    install_script.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    for relative_path in (".odylith", "odylith", ".agents", ".claude"):
+        path = repo_root / relative_path
+        path.mkdir()
+        (path / "stale").write_text("stale\n", encoding="utf-8")
+    (repo_root / "AGENTS.md").write_text("stale agent guidance\n", encoding="utf-8")
+
+    seen: list[dict[str, object]] = []
+
+    def fake_run(**kwargs):  # noqa: ANN001
+        seen.append(kwargs)
+        for relative_path in (".odylith", "odylith", ".agents", ".claude"):
+            assert not (repo_root / relative_path).exists()
+
+        class Result:
+            stdout = ""
+
+        return Result()
+
+    monkeypatch.setattr(module, "_run", fake_run)
+    monkeypatch.setattr(module, "_install_cwd", lambda root: root)
+
+    module._install_clean_previous_release(
+        repo_root=repo_root,
+        install_script=install_script,
+        previous_version="0.1.10",
+    )
+
+    assert seen
+    assert seen[0]["command"] == ["bash", str(install_script)]
+    assert seen[0]["env"]["ODYLITH_VERSION"] == "0.1.10"
+    assert (repo_root / "AGENTS.md").read_text(encoding="utf-8") == "# Repo Root\n\nLocal release smoke repo.\n"
+
+
+def test_compass_history_layout_check_rejects_legacy_archive(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    module._seed_legacy_compass_archive_fixture(repo_root=repo_root)
+
+    try:
+        module._require_compass_history_layout(repo_root=repo_root)
+    except RuntimeError as exc:
+        assert "archive metadata was not cleared" in str(exc)
+    else:  # pragma: no cover - assertion branch
+        raise AssertionError("legacy Compass archive fixture should fail the release-smoke layout check")
+
+
+def test_compass_history_layout_check_accepts_cleared_archive(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "repo"
+    history_dir = repo_root / "odylith" / "compass" / "runtime" / "history"
+    history_dir.mkdir(parents=True)
+    (history_dir / "index.v1.json").write_text(
+        '{"version":"v1","retention_days":15,"dates":[],"restored_dates":[],"archive":{"compressed":false,"path":"","count":0,"dates":[],"newest_date":"","oldest_date":""}}\n',
+        encoding="utf-8",
+    )
+
+    module._require_compass_history_layout(repo_root=repo_root)
