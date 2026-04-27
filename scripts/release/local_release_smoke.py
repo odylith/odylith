@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import http.server
+import json
 import os
 from pathlib import Path
+import shutil
 import socketserver
 import subprocess
 import tempfile
@@ -44,8 +47,12 @@ def _run(*, cwd: Path, env: dict[str, str], command: list[str]) -> subprocess.Co
 def _repo_root(base_dir: Path, name: str) -> Path:
     repo_root = base_dir / name
     repo_root.mkdir(parents=True, exist_ok=True)
-    (repo_root / "AGENTS.md").write_text("# Repo Root\n\nLocal release smoke repo.\n", encoding="utf-8")
+    _write_release_smoke_agents(repo_root=repo_root)
     return repo_root
+
+
+def _write_release_smoke_agents(*, repo_root: Path) -> None:
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n\nLocal release smoke repo.\n", encoding="utf-8")
 
 
 def _semver_previous(version: str) -> str:
@@ -109,6 +116,95 @@ def _require_output_contains(*, output: str, expected: str, label: str) -> None:
         raise RuntimeError(f"{label} missing expected text: {expected!r}")
 
 
+def _seed_legacy_compass_archive_fixture(*, repo_root: Path) -> None:
+    runtime_dir = repo_root / "odylith" / "compass" / "runtime"
+    history_dir = runtime_dir / "history"
+    archive_dir = history_dir / "archive"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    stale_active_day = "2020-01-01"
+    archived_day = "2020-01-02"
+    payload = {
+        "version": "v1",
+        "generated_utc": "2026-04-14T20:20:00Z",
+        "history": {
+            "retention_days": 15,
+            "dates": [stale_active_day],
+            "restored_dates": [],
+            "archive": {
+                "compressed": True,
+                "path": "archive",
+                "count": 1,
+                "dates": [archived_day],
+                "newest_date": archived_day,
+                "oldest_date": archived_day,
+            },
+        },
+    }
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    (runtime_dir / "current.v1.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    (runtime_dir / "current.v1.js").write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    (history_dir / f"{stale_active_day}.v1.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    (archive_dir / f"{archived_day}.v1.json.gz").write_bytes(
+        gzip.compress((json.dumps(payload, indent=2) + "\n").encode("utf-8"), compresslevel=9)
+    )
+    (history_dir / "restore-pins.v1.json").write_text(
+        json.dumps({"version": "v1", "generated_utc": "2026-04-14T20:20:00Z", "dates": [archived_day]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (history_dir / "index.v1.json").write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-14T20:20:00Z",
+                "retention_days": 15,
+                "dates": [stale_active_day],
+                "restored_dates": [],
+                "archive": payload["history"]["archive"],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (history_dir / "embedded.v1.js").write_text(
+        "window.__ODYLITH_COMPASS_HISTORY__ = "
+        + json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-14T20:20:00Z",
+                "retention_days": 15,
+                "dates": [stale_active_day],
+                "restored_dates": [],
+                "archive": payload["history"]["archive"],
+                "snapshots": {archived_day: payload},
+            },
+            separators=(",", ":"),
+        )
+        + ";\n",
+        encoding="utf-8",
+    )
+
+
+def _require_compass_history_layout(*, repo_root: Path) -> None:
+    history_dir = repo_root / "odylith" / "compass" / "runtime" / "history"
+    index_path = history_dir / "index.v1.json"
+    payload = json.loads(index_path.read_text(encoding="utf-8"))
+    if int(payload.get("retention_days") or 0) != 15:
+        raise RuntimeError("Compass history retention_days must stay at 15")
+    archive = payload.get("archive")
+    if not isinstance(archive, dict) or int(archive.get("count") or 0) != 0:
+        raise RuntimeError("Compass history archive metadata was not cleared")
+    if archive.get("dates") not in ([], None):
+        raise RuntimeError("Compass history archive dates were not cleared")
+    if (history_dir / "archive").exists():
+        raise RuntimeError("legacy Compass history archive directory still exists")
+    if (history_dir / "restore-pins.v1.json").exists():
+        raise RuntimeError("legacy Compass restore pins still exist")
+
+
 def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, str]) -> None:
     _run(cwd=_install_cwd(repo_root), env=env, command=["bash", str(install_script)])
     odylith = repo_root / ".odylith" / "bin" / "odylith"
@@ -118,7 +214,25 @@ def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, 
     doctor = _run(cwd=repo_root, env=env, command=[str(odylith), "doctor", "--repo-root", "."]).stdout
     _require_output_contains(output=doctor, expected="Context engine mode: full_local_memory", label="odylith doctor")
     _require_output_contains(output=doctor, expected="Context engine pack: installed", label="odylith doctor")
+    _run(cwd=repo_root, env=env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
     _run(cwd=repo_root, env=env, command=[str(odylith), "sync", "--repo-root", ".", "--force"])
+
+
+def _install_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:
+    hosted_previous_env = _force_deterministic_reasoning_env(dict(os.environ))
+    hosted_previous_env["ODYLITH_VERSION"] = previous_version
+    _run(cwd=_install_cwd(repo_root), env=hosted_previous_env, command=["bash", str(install_script)])
+
+
+def _install_clean_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:
+    for relative_path in (".odylith", "odylith", ".agents", ".claude"):
+        shutil.rmtree(repo_root / relative_path, ignore_errors=True)
+    _write_release_smoke_agents(repo_root=repo_root)
+    _install_previous_release(
+        repo_root=repo_root,
+        install_script=install_script,
+        previous_version=previous_version,
+    )
 
 
 def _upgrade_cycle(
@@ -129,21 +243,42 @@ def _upgrade_cycle(
     target_version: str,
     local_env: dict[str, str],
 ) -> None:
-    hosted_previous_env = _force_deterministic_reasoning_env(dict(os.environ))
-    hosted_previous_env["ODYLITH_VERSION"] = previous_version
-    _run(cwd=_install_cwd(repo_root), env=hosted_previous_env, command=["bash", str(install_script)])
+    _install_clean_previous_release(
+        repo_root=repo_root,
+        install_script=install_script,
+        previous_version=previous_version,
+    )
     odylith = repo_root / ".odylith" / "bin" / "odylith"
+    _seed_legacy_compass_archive_fixture(repo_root=repo_root)
     _run(
         cwd=repo_root,
         env=local_env,
         command=[str(odylith), "upgrade", "--repo-root", ".", "--to", target_version, "--write-pin"],
     )
-    _run(cwd=repo_root, env=local_env, command=[str(odylith), "rollback", "--repo-root", ".", "--previous"])
+    _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _require_compass_history_layout(repo_root=repo_root)
+    _install_clean_previous_release(
+        repo_root=repo_root,
+        install_script=install_script,
+        previous_version=previous_version,
+    )
+    _seed_legacy_compass_archive_fixture(repo_root=repo_root)
+    _run(cwd=_install_cwd(repo_root), env=local_env, command=["bash", str(install_script)])
+    _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _require_compass_history_layout(repo_root=repo_root)
+    _install_clean_previous_release(
+        repo_root=repo_root,
+        install_script=install_script,
+        previous_version=previous_version,
+    )
+    _seed_legacy_compass_archive_fixture(repo_root=repo_root)
     _run(
         cwd=repo_root,
         env=local_env,
         command=[str(odylith), "upgrade", "--repo-root", ".", "--to", target_version, "--write-pin"],
     )
+    _run(cwd=repo_root, env=local_env, command=[str(odylith), "dashboard", "refresh", "--repo-root", "."])
+    _require_compass_history_layout(repo_root=repo_root)
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -2212,10 +2212,17 @@ def upgrade_install(
                     "run `odylith doctor --repo-root . --repair` to restage it safely"
                 )
             if (current_runtime / "runtime-metadata.json").is_file() and not runtime_context_engine_feature_pack_installed(current_runtime):
-                raise ValueError(
-                    f"active Odylith runtime already targets {current_version}, but the full-stack context-engine pack is missing; "
-                    "run `odylith doctor --repo-root . --repair` to restage it safely"
+                _ensure_managed_context_engine_pack(
+                    repo_root=root,
+                    version=current_version,
+                    runtime_root=current_runtime,
+                    release_repo=release_repo,
                 )
+                if not runtime_context_engine_feature_pack_installed(current_runtime):
+                    raise ValueError(
+                        f"active Odylith runtime already targets {current_version}, but the full-stack context-engine pack is missing; "
+                        "run `odylith doctor --repo-root . --repair` to restage it safely"
+                    )
             smoke = _run_odylith_smoke(python=current_python, repo_root=root)
             if smoke.returncode != 0:
                 raise RuntimeError(

@@ -54,6 +54,19 @@ run_install_script() {
     bash "$script_path"
 }
 
+reset_repo_for_previous_install() {
+  rm -rf "$repo_dir/.odylith" "$repo_dir/odylith" "$repo_dir/.agents" "$repo_dir/.claude"
+  cat >"$repo_dir/AGENTS.md" <<'EOF'
+# Rehearsal Repo
+EOF
+}
+
+install_clean_previous_release() {
+  local script_path="$1"
+  reset_repo_for_previous_install
+  run_install_script "$previous_version" "$script_path"
+}
+
 verify_compass_history_contract() {
   "$odylith_python" - <<'PY' "$repo_dir"
 from __future__ import annotations
@@ -68,20 +81,132 @@ payload = json.loads(index_path.read_text(encoding="utf-8"))
 retention = int(payload.get("retention_days") or 0)
 if retention != 15:
     raise SystemExit(f"unexpected compass retention_days: {retention}")
+archive = payload.get("archive")
+if not isinstance(archive, dict):
+    raise SystemExit("missing compass archive metadata")
+if int(archive.get("count") or 0) != 0:
+    raise SystemExit(f"unexpected compass archive count: {archive.get('count')}")
+if archive.get("dates") not in ([], None):
+    raise SystemExit(f"unexpected compass archive dates: {archive.get('dates')}")
+archive_dir = repo_root / "odylith" / "compass" / "runtime" / "history" / "archive"
+if archive_dir.exists():
+    raise SystemExit(f"legacy compass archive still exists: {archive_dir}")
 print(f"consumer rehearsal compass retention ok: {retention}")
 PY
 }
 
+seed_legacy_compass_archive_fixture() {
+  "$odylith_python" - <<'PY' "$repo_dir"
+from __future__ import annotations
+
+import gzip
+import json
+import sys
+from pathlib import Path
+
+repo_root = Path(sys.argv[1])
+runtime_dir = repo_root / "odylith" / "compass" / "runtime"
+history_dir = runtime_dir / "history"
+archive_dir = history_dir / "archive"
+history_dir.mkdir(parents=True, exist_ok=True)
+archive_dir.mkdir(parents=True, exist_ok=True)
+
+stale_active_day = "2020-01-01"
+archived_day = "2020-01-02"
+payload = {
+    "version": "v1",
+    "generated_utc": "2026-04-14T20:20:00Z",
+    "history": {
+        "retention_days": 15,
+        "dates": [stale_active_day],
+        "restored_dates": [],
+        "archive": {
+            "compressed": True,
+            "path": "archive",
+            "count": 1,
+            "dates": [archived_day],
+            "newest_date": archived_day,
+            "oldest_date": archived_day,
+        },
+    },
+}
+runtime_dir.mkdir(parents=True, exist_ok=True)
+(runtime_dir / "current.v1.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+(runtime_dir / "current.v1.js").write_text(
+    "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+    encoding="utf-8",
+)
+(history_dir / f"{stale_active_day}.v1.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+(archive_dir / f"{archived_day}.v1.json.gz").write_bytes(
+    gzip.compress((json.dumps(payload, indent=2) + "\n").encode("utf-8"), compresslevel=9)
+)
+(history_dir / "restore-pins.v1.json").write_text(
+    json.dumps({"version": "v1", "generated_utc": "2026-04-14T20:20:00Z", "dates": [archived_day]}, indent=2) + "\n",
+    encoding="utf-8",
+)
+(history_dir / "index.v1.json").write_text(
+    json.dumps(
+        {
+            "version": "v1",
+            "generated_utc": "2026-04-14T20:20:00Z",
+            "retention_days": 15,
+            "dates": [stale_active_day],
+            "restored_dates": [],
+            "archive": payload["history"]["archive"],
+        },
+        indent=2,
+    )
+    + "\n",
+    encoding="utf-8",
+)
+(history_dir / "embedded.v1.js").write_text(
+    "window.__ODYLITH_COMPASS_HISTORY__ = "
+    + json.dumps(
+        {
+            "version": "v1",
+            "generated_utc": "2026-04-14T20:20:00Z",
+            "retention_days": 15,
+            "dates": [stale_active_day],
+            "restored_dates": [],
+            "archive": payload["history"]["archive"],
+            "snapshots": {archived_day: payload},
+        },
+        separators=(",", ":"),
+    )
+    + ";\n",
+    encoding="utf-8",
+)
+print("consumer rehearsal seeded legacy compass archive fixture")
+PY
+}
+
+verify_dashboard_refresh_contract() {
+  run_repo_cmd ./.odylith/bin/odylith dashboard refresh --repo-root .
+}
+
 if [[ -n "$previous_version" ]]; then
   previous_install="$(download_install_script "$previous_version")"
-  run_install_script "$previous_version" "$previous_install"
+  target_install="$(download_install_script "$target_version")"
+  install_clean_previous_release "$previous_install"
   run_repo_cmd ./.odylith/bin/odylith version --repo-root .
+  seed_legacy_compass_archive_fixture
   run_repo_cmd ./.odylith/bin/odylith upgrade --repo-root . --to "$target_version" --write-pin
-  run_repo_cmd ./.odylith/bin/odylith rollback --previous --repo-root .
-  run_repo_cmd ./.odylith/bin/odylith upgrade --repo-root .
+  verify_dashboard_refresh_contract
+  verify_compass_history_contract
+  install_clean_previous_release "$previous_install"
+  seed_legacy_compass_archive_fixture
+  run_install_script "$target_version" "$target_install"
+  verify_dashboard_refresh_contract
+  verify_compass_history_contract
+  install_clean_previous_release "$previous_install"
+  seed_legacy_compass_archive_fixture
+  run_repo_cmd ./.odylith/bin/odylith upgrade --repo-root . --to "$target_version" --write-pin
+  verify_dashboard_refresh_contract
+  verify_compass_history_contract
 else
   install_script="$(download_install_script "$target_version")"
   run_install_script "$target_version" "$install_script"
+  verify_dashboard_refresh_contract
 fi
 
 run_repo_cmd ./.odylith/bin/odylith version --repo-root .
