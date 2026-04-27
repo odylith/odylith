@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import gzip
 import http.server
 import json
@@ -13,12 +14,16 @@ import socketserver
 import subprocess
 import tempfile
 import threading
+import time
 from urllib import error as urllib_error
 
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+_TEMP_ROOT_CLEANUP_RETRY_COUNT = 5
+_TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS = 0.2
+_TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS = {errno.EACCES, errno.EBUSY, errno.ENOTEMPTY, errno.EPERM}
 
 
 def _run(*, cwd: Path, env: dict[str, str], command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -84,6 +89,26 @@ def _serve_directory(directory: Path) -> tuple[socketserver.TCPServer, str]:
     thread.start()
     host, port = server.server_address
     return server, f"http://{host}:{port}"
+
+
+def _cleanup_smoke_temp_root(path: Path) -> None:
+    target = Path(path)
+    last_error: OSError | None = None
+    for attempt in range(_TEMP_ROOT_CLEANUP_RETRY_COUNT + 1):
+        try:
+            shutil.rmtree(target)
+            return
+        except FileNotFoundError:
+            return
+        except OSError as exc:
+            last_error = exc
+            if exc.errno not in _TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS:
+                break
+            if attempt >= _TEMP_ROOT_CLEANUP_RETRY_COUNT:
+                break
+            time.sleep(_TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS)
+    if last_error is not None:
+        shutil.rmtree(target, ignore_errors=True)
 
 
 def _local_release_env(*, base_url: str, version: str) -> dict[str, str]:
@@ -296,26 +321,26 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError(f"install script missing: {install_script}")
 
     server, base_url = _serve_directory(dist_dir)
+    temp_root = Path(tempfile.mkdtemp(prefix="odylith-release-smoke-")).resolve()
     try:
         local_env = _local_release_env(base_url=base_url, version=args.version)
-        with tempfile.TemporaryDirectory(prefix="odylith-release-smoke-") as tmpdir:
-            temp_root = Path(tmpdir)
-            fresh_repo = _repo_root(temp_root, "fresh-install")
-            _install_and_smoke(repo_root=fresh_repo, install_script=install_script, env=local_env)
+        fresh_repo = _repo_root(temp_root, "fresh-install")
+        _install_and_smoke(repo_root=fresh_repo, install_script=install_script, env=local_env)
 
-            previous_version = _semver_previous(args.version)
-            if previous_version and _previous_release_is_published(version=previous_version):
-                lifecycle_repo = _repo_root(temp_root, "upgrade-cycle")
-                _upgrade_cycle(
-                    repo_root=lifecycle_repo,
-                    install_script=install_script,
-                    previous_version=previous_version,
-                    target_version=args.version,
-                    local_env=local_env,
-                )
+        previous_version = _semver_previous(args.version)
+        if previous_version and _previous_release_is_published(version=previous_version):
+            lifecycle_repo = _repo_root(temp_root, "upgrade-cycle")
+            _upgrade_cycle(
+                repo_root=lifecycle_repo,
+                install_script=install_script,
+                previous_version=previous_version,
+                target_version=args.version,
+                local_env=local_env,
+            )
     finally:
         server.shutdown()
         server.server_close()
+        _cleanup_smoke_temp_root(temp_root)
     return 0
 
 
