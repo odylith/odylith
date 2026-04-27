@@ -1863,7 +1863,7 @@ def _leaf_to_subtask(subtask: SubtaskSlice, decision: leaf_router.RoutingDecisio
     subtask.route_manual_review_recommended = decision.manual_review_recommended
     subtask.route_why = decision.why
     subtask.route_explanation_lines = list(decision.explanation_lines)
-    subtask.route_odylith_execution_profile = dict(decision.odylith_execution_profile)
+    subtask.route_odylith_execution_profile = subagent_orchestrator_odylith_runtime._selected_execution_profile_payload(decision.odylith_execution_profile, decision.reasoning_effort)  # noqa: SLF001
     subtask.termination_condition = _termination_condition_for_leaf(subtask=subtask, decision=decision)
     subtask.prompt_contract_lines = _prompt_contract_lines(subtask)
     task_prompt = subtask.prompt

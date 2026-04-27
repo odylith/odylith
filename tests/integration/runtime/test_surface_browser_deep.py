@@ -2585,9 +2585,10 @@ def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> N
         shutil.copyfile(source_state_js, fixture_state_js)
     else:
         source_state_json = source_runtime_dir / odylith_control_state.STATE_FILENAME
+        payload = json.loads(source_state_json.read_text(encoding="utf-8")) if source_state_json.is_file() else {}
         fixture_state_js.write_text(
             odylith_control_state._render_state_js(  # noqa: SLF001
-                payload=json.loads(source_state_json.read_text(encoding="utf-8"))
+                payload=payload
             ),
             encoding="utf-8",
         )

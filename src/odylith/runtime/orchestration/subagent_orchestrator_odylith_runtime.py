@@ -952,6 +952,14 @@ def _profile_runtime_fields(profile_token: str) -> tuple[str, str, str]:
     return "", "", "main_thread"
 
 
+def _selected_execution_profile_payload(payload: Mapping[str, Any], reasoning_effort: str) -> dict[str, Any]:
+    """Return route metadata with selected reasoning normalized for host surfaces."""
+    profile = dict(payload)
+    if profile.get("selected_profile") and "selected_reasoning_effort" not in profile and reasoning_effort:
+        profile["selected_reasoning_effort"] = reasoning_effort
+    return profile
+
+
 def _subtask_odylith_execution_profile(
     *,
     request: OrchestrationRequest,

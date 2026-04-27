@@ -269,6 +269,8 @@ def _run_in_browser_thread(callback) -> None:  # noqa: ANN001
     if thread.is_alive():  # pragma: no cover - defensive timeout guard
         raise TimeoutError("browser proof thread did not finish within 60 seconds")
     if "exc" in error:
+        if isinstance(error["exc"], pytest.skip.Exception):
+            pytest.skip(str(error["exc"]))
         raise AssertionError(str(error.get("traceback") or error["exc"])) from error["exc"]
 
 

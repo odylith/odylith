@@ -45,6 +45,11 @@ _RADAR_REDIRECT_ABORT_RE = re.compile(
 )
 
 
+def test_browser_thread_preserves_skip_outcomes() -> None:
+    with pytest.raises(pytest.skip.Exception):
+        _run_in_browser_thread(lambda: pytest.skip("Playwright Chromium is not installed"))
+
+
 def _ready_compass_fixture_root(tmp_path: Path) -> Path:
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
