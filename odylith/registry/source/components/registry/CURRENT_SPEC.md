@@ -1,8 +1,14 @@
 # Registry
-Last updated: 2026-04-07
+
+## Odylith Discipline Contract
+- Registry owns component accountability for Odylith Discipline. Each
+  affected component spec names its faculty, hot-path boundary, proof duty,
+  and surface duty so the Odylith Discipline layer remains cross-cutting rather than a
+  runtime-only feature.
+Last updated: 2026-04-15
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-15
 
 ## Purpose
 Registry is Odylith's authoritative component-inventory and component-centric
@@ -121,6 +127,10 @@ The result is a component-centric dashboard where each detail panel can show:
 - relevant docs, runbooks, and code
 - event timeline and forensic coverage posture
 
+When Delivery Intelligence publishes `scope_signal`, Registry may use it to
+order default operational views so high-signal components surface first without
+silencing raw component truth.
+
 ## Validation Model
 `validate_component_registry_contract.py` is fail-closed for:
 - manifest integrity
@@ -130,6 +140,19 @@ It supports advisory or `enforce-critical` policy reporting and can evaluate
 deep-skill policy expectations for configured high-risk components. Some
 diagnostics remain warn-only by design, such as candidate components pending
 review.
+
+### Local cache invalidation
+Registry component-index and component-report caches are performance artifacts,
+not governance truth. Their fingerprints must include:
+- manifest, catalog, stream, workspace-activity, and component spec signatures;
+- the Radar ideas tree fingerprint;
+- the active Radar idea parser/cache contract version from
+  `validate_backlog_contract.IDEA_SPEC_CACHE_VERSION`.
+
+When Radar idea parsing starts depending on new parsed fields, Registry must
+invalidate dependent caches in the same change. Stale cached `idea-parse`
+diagnostics must never survive a valid source reparse and block
+`odylith validate component-registry --repo-root .`.
 
 ## Intent Behind Registry
 Registry exists so a developer can answer:
@@ -148,6 +171,9 @@ governance, and diagnosis to stay coherent.
 - New event-mapping heuristic:
   update mapping confidence logic, forensic coverage, and any requirements-trace
   sync assumptions.
+- New default-promotion rule:
+  update Registry renderer, Delivery Intelligence `scope_signal` contract, and
+  any operator-readout or browser proof that assumes component ordering.
 - New spec snapshot field:
   update snapshot parsing and Registry detail rendering together.
 - New deep-skill policy:
@@ -158,6 +184,14 @@ governance, and diagnosis to stay coherent.
 - Candidate extraction must never silently promote first-class components.
 - Synthetic workspace evidence should remain explicitly weaker than explicit
   Compass narrative evidence.
+- Registry component detail must not render a default proof-state or
+  live-status card. Proof-state internals such as `Proof Control`,
+  `Live Blocker`, `Fingerprint`, `Frontier`, `Evidence tier`,
+  `Truthful claim`, or commit-hash-heavy deployment rows are diagnostic
+  engine data, not default Registry detail UI.
+- Low-signal governance churn or generated noise must not outrank stronger
+  component evidence in Registry's default ordering once `scope_signal` is
+  available.
 - Requirements-trace sync must preserve surrounding manual spec content even
   when the generated block changes.
 
@@ -166,6 +200,19 @@ governance, and diagnosis to stay coherent.
 - `odylith validate component-registry --repo-root .`
 - `odylith governance sync-component-spec-requirements --repo-root . --check-only`
 - `odylith sync --repo-root . --check-only`
+
+## Scope Signal Ladder Contract
+Registry keeps the full curated component inventory visible. The shared Scope
+Signal Ladder only affects default promotion and ordering:
+- `R0-R1` scope signals do not earn top-of-surface promotion by themselves
+- `R2` signals can keep a component locally relevant without outranking stronger
+  execution or blocker evidence
+- `R3+` signals may float components earlier in default operational ordering
+- `R4-R5` signals should dominate ordinary component activity when warning or
+  blocker posture is present
+
+Registry detail truth, requirements trace, and component inclusion stay
+exhaustive regardless of rung.
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
@@ -182,3 +229,5 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Moved the authoritative Odylith product component inventory into the public repo so product components stop depending on consumer-local registry truth. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Promoted the hidden memory-substrate seams into first-class Registry components so projection bundle, projection snapshot, remote retrieval, and memory contracts have explicit governed ownership and rendered detail instead of one coarse backend silhouette. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
+- 2026-04-09: Bound Registry default operational ordering to Delivery Intelligence's shared Scope Signal Ladder so low-signal churn can stay visible in forensics without outranking real execution or blocker evidence. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
+- 2026-04-15: Hardened Registry cache fingerprints so Radar idea parser contract changes invalidate component-index and component-report diagnostics instead of letting stale `idea-parse` failures block valid governance validation. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))

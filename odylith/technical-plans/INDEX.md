@@ -1,7 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-07
-
+Last updated (UTC): 2026-04-26
 ## Active Plans
 
 | Plan | Status | Created | Updated | Backlog |
@@ -9,19 +8,103 @@ Last updated (UTC): 2026-04-07
 | `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md` | In progress | 2026-03-29 | 2026-04-05 | `B-021` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md` | In progress | 2026-03-31 | 2026-04-05 | `B-022` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md` | In progress | 2026-03-31 | 2026-04-05 | `B-038` |
-| `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md` | In progress | 2026-03-29 | 2026-03-29 | `B-025` |
+| `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md` | In progress | 2026-03-29 | 2026-04-17 | `B-025` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md` | In progress | 2026-03-30 | 2026-03-30 | `B-030` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md` | In progress | 2026-03-30 | 2026-03-30 | `B-033` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md` | In progress | 2026-04-01 | 2026-04-01 | `B-040` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md` | In progress | 2026-04-04 | 2026-04-04 | `B-045` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md` | In progress | 2026-04-06 | 2026-04-07 | `B-048` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md` | In progress | 2026-04-07 | 2026-04-07 | `B-060` |
-| `odylith/technical-plans/in-progress/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md` | In progress | 2026-04-07 | 2026-04-07 | `B-061` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md` | In progress | 2026-04-08 | 2026-04-08 | `B-064` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-09-odylith-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md` | In progress | 2026-04-09 | 2026-04-09 | `B-071` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-10-claude-guidance-surface-parity-and-install-contract-support.md` | In progress | 2026-04-10 | 2026-04-10 | `B-083` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-delegation-runtime-parity-host-capability-model-ladder-and-claude-native-surface-expansion.md` | In progress | 2026-04-11 | 2026-04-11 | `B-084` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-python-surface-bake-statusline-and-precompact-snapshot.md` | In progress | 2026-04-11 | 2026-04-11 | `B-085` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-11-governance-path-normalization-hardening-and-nested-worktree-guard.md` | In progress | 2026-04-11 | 2026-04-11 | `B-086` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md` | In progress | 2026-04-11 | 2026-04-11 | `B-087` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md` | In progress | 2026-04-11 | 2026-04-11 | `B-088` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md` | In progress | 2026-04-11 | 2026-04-11 | `B-089` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md` | In progress | 2026-04-12 | 2026-04-12 | `B-090` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-12-governed-sync-shared-read-models-incremental-derivation-and-content-addressed-writes.md` | In progress | 2026-04-12 | 2026-04-12 | `B-091` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-12-odylith-execution-governance-benchmark-family-and-honest-ablation-proof.md` | In progress | 2026-04-12 | 2026-04-12 | `B-092` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md` | In progress | 2026-04-12 | 2026-04-12 | `B-093` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md` | In progress | 2026-04-15 | 2026-04-15 | `B-097` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md` | In progress | 2026-04-18 | 2026-04-18 | `B-126` |
 
 ## Parked Plans
 
 | Plan | Status | Created | Updated | Backlog |
 | --- | --- | --- | --- | --- |
+
+
+## Recently Completed (2026-04-26)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | Done | 2026-04-14 | 2026-04-26 | `B-096` |
+| `odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | Done | 2026-04-14 | 2026-04-26 | `B-105` |
+| `odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | Done | 2026-04-14 | 2026-04-26 | `B-106` |
+| `odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | Done | 2026-04-14 | 2026-04-26 | `B-107` |
+| `odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | Done | 2026-04-14 | 2026-04-26 | `B-108` |
+| `odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md` | Done | 2026-04-14 | 2026-04-26 | `B-109` |
+| `odylith/technical-plans/done/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md` | Done | 2026-04-16 | 2026-04-26 | `B-099` |
+| `odylith/technical-plans/done/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md` | Done | 2026-04-16 | 2026-04-26 | `B-100` |
+| `odylith/technical-plans/done/2026-04/2026-04-16-context-execution-handshake-snapshot-normalization.md` | Done | 2026-04-16 | 2026-04-26 | `B-101` |
+| `odylith/technical-plans/done/2026-04/2026-04-16-codex-claude-execution-contract-parity.md` | Done | 2026-04-16 | 2026-04-26 | `B-102` |
+| `odylith/technical-plans/done/2026-04/2026-04-16-execution-snapshot-reuse-and-hot-path-cost-reduction.md` | Done | 2026-04-16 | 2026-04-26 | `B-103` |
+| `odylith/technical-plans/done/2026-04/2026-04-16-execution-alignment-release-proof-and-governance-closure.md` | Done | 2026-04-16 | 2026-04-26 | `B-104` |
+
+## Recently Completed (2026-04-25)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md` | Done | 2026-04-25 | 2026-04-25 | `B-111` |
+| `odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md` | Done | 2026-04-25 | 2026-04-25 | `B-112` |
+| `odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md` | Done | 2026-04-25 | 2026-04-25 | `B-113` |
+| `odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md` | Done | 2026-04-25 | 2026-04-25 | `B-114` |
+| `odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md` | Done | 2026-04-25 | 2026-04-25 | `B-115` |
+| `odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md` | Done | 2026-04-25 | 2026-04-25 | `B-116` |
+| `odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md` | Done | 2026-04-17 | 2026-04-25 | `B-110` |
+| `odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md` | Done | 2026-04-17 | 2026-04-25 | `B-117` |
+## Recently Completed (2026-04-15)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-15-radar-backlog-detail-fail-closed-completeness-and-authoring-hardening.md` | Done | 2026-04-15 | 2026-04-15 | `B-098` |
+
+## Recently Completed (2026-04-12)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-09-execution-governance-engines-admissibility-control-and-constraint-aware-action-runtime.md` | Done | 2026-04-09 | 2026-04-12 | `B-072` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-task-contract-event-ledger-and-hard-constraint-promotion.md` | Done | 2026-04-12 | 2026-04-12 | `B-073` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-admissibility-policy-middleware-and-re-anchor-triggers.md` | Done | 2026-04-12 | 2026-04-12 | `B-074` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-frontier-extraction-user-correction-invariants-and-critical-path-modes.md` | Done | 2026-04-12 | 2026-04-12 | `B-075` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-resource-closure-analysis-and-destructive-subset-blocking.md` | Done | 2026-04-12 | 2026-04-12 | `B-076` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-external-dependency-semantics-receipts-and-resumability.md` | Done | 2026-04-12 | 2026-04-12 | `B-077` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-validation-matrix-synthesis-contradiction-detection-and-history-based-failure-blocking.md` | Done | 2026-04-12 | 2026-04-12 | `B-078` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-program-wave-authoring-cli-and-agent-ergonomics.md` | Done | 2026-04-12 | 2026-04-12 | `B-079` |
+| `odylith/technical-plans/done/2026-04/2026-04-12-structured-turn-intake-hard-consumer-fencing-and-maintainer-targetability.md` | Done | 2026-04-12 | 2026-04-12 | `B-082` |
+
+## Recently Completed (2026-04-09)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-09-completed-release-members-source-truth-reconciliation-and-stale-runtime-guardrails.md` | Done | 2026-04-09 | 2026-04-09 | `B-066` |
+| `odylith/technical-plans/done/2026-04/2026-04-09-cross-host-contract-hardening-and-codex-claude-separation.md` | Done | 2026-04-09 | 2026-04-09 | `B-069` |
+| `odylith/technical-plans/done/2026-04/2026-04-09-atlas-sub-second-sync-and-refresh-hot-paths.md` | Done | 2026-04-09 | 2026-04-09 | `B-080` |
+| `odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md` | Done | 2026-04-08 | 2026-04-09 | `B-068` |
+| `odylith/technical-plans/done/2026-04/2026-04-08-odylith-context-engine-module-decomposition-and-boundary-hardening.md` | Done | 2026-04-08 | 2026-04-09 | `B-067` |
+
+## Recently Completed (2026-04-08)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-07-odylith-reasoning-package-boundary-and-benchmark-separation.md` | Done | 2026-04-07 | 2026-04-08 | `B-061` |
+| `odylith/technical-plans/done/2026-04/2026-04-08-odylith-live-proof-state-control-plane-and-blocker-frontier-discipline.md` | Done | 2026-04-08 | 2026-04-08 | `B-062` |
+| `odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md` | Done | 2026-04-08 | 2026-04-08 | `B-063` |
+| `odylith/technical-plans/done/2026-04/2026-04-08-current-active-release-visibility-until-explicit-ga.md` | Done | 2026-04-08 | 2026-04-08 | `B-065` |
+| `odylith/technical-plans/done/2026-04/2026-04-08-completed-release-members-stay-visible-until-explicit-ga.md` | Done | 2026-04-08 | 2026-04-08 | `B-066` |
 
 ## Recently Completed (2026-04-07)
 

@@ -1,53 +1,79 @@
+"""Normalize Odylith grounding packets into orchestration-ready runtime signals."""
+
 from __future__ import annotations
 
-from typing import Any
-from typing import Mapping
-from typing import Sequence
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.consumer_profile import load_consumer_profile
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
+from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime as packet_adaptive_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
+from odylith.runtime.context_engine import odylith_context_engine_store as odylith_store
 from odylith.runtime.context_engine import packet_quality_codec
-from odylith.runtime.orchestration import odylith_chatter_runtime
+from odylith.runtime.intervention_engine import conversation_runtime
+from odylith.runtime.orchestration import subagent_router as leaf_router
+from odylith.runtime.orchestration.subagent_orchestrator_support import _ARCHITECTURE_GROUNDING_KEYWORDS
+from odylith.runtime.orchestration.subagent_orchestrator_support import _CODEX_HOT_PATH_PROFILE
+from odylith.runtime.orchestration.subagent_orchestrator_support import _GOVERNANCE_GROUNDING_KEYWORDS
+from odylith.runtime.orchestration.subagent_orchestrator_support import _clamp_confidence
+from odylith.runtime.orchestration.subagent_orchestrator_support import _compact_selection_state_parts
+from odylith.runtime.orchestration.subagent_orchestrator_support import _dedupe_strings
+from odylith.runtime.orchestration.subagent_orchestrator_support import _execution_profile_mapping
+from odylith.runtime.orchestration.subagent_orchestrator_support import _extract_context_signals_payload
+from odylith.runtime.orchestration.subagent_orchestrator_support import _mapping_lookup
+from odylith.runtime.orchestration.subagent_orchestrator_support import _merge_context_signals
+from odylith.runtime.orchestration.subagent_orchestrator_support import _nested_mapping
+from odylith.runtime.orchestration.subagent_orchestrator_support import _normalize_context_signals
+from odylith.runtime.orchestration.subagent_orchestrator_support import _normalize_list
+from odylith.runtime.orchestration.subagent_orchestrator_support import _normalized_rate
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_component_ids
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_diagram_watch_gap_count
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_full_scan_recommended
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_paths
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_route_ready
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_routing_confidence
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_selection_state
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_workstreams
+from odylith.runtime.orchestration.subagent_orchestrator_support import _payload_packet_kind
+from odylith.runtime.orchestration.subagent_orchestrator_support import _request_has_odylith_seeds
+from odylith.runtime.orchestration.subagent_orchestrator_support import _request_seed_paths
 
-def bind(host_module: Any) -> None:
-    globals().update({
-        "OrchestrationRequest": getattr(host_module, "OrchestrationRequest"),
-        "OrchestrationDecision": getattr(host_module, "OrchestrationDecision"),
-        "SubtaskSlice": getattr(host_module, "SubtaskSlice"),
-        "leaf_router": getattr(host_module, "leaf_router"),
-        "odylith_store": getattr(host_module, "odylith_store"),
-        "_normalize_string": getattr(host_module, "_normalize_string"),
-        "_normalize_token": getattr(host_module, "_normalize_token"),
-        "_normalize_list": getattr(host_module, "_normalize_list"),
-        "_normalize_context_signals": getattr(host_module, "_normalize_context_signals"),
-        "_extract_context_signals_payload": getattr(host_module, "_extract_context_signals_payload"),
-        "_dedupe_strings": getattr(host_module, "_dedupe_strings"),
-        "_mapping_lookup": getattr(host_module, "_mapping_lookup"),
-        "_nested_mapping": getattr(host_module, "_nested_mapping"),
-        "_execution_profile_mapping": getattr(host_module, "_execution_profile_mapping"),
-        "_int_value": getattr(host_module, "_int_value"),
-        "_normalized_rate": getattr(host_module, "_normalized_rate"),
-        "_request_seed_paths": getattr(host_module, "_request_seed_paths"),
-        "_request_has_odylith_seeds": getattr(host_module, "_request_has_odylith_seeds"),
-        "_payload_packet_kind": getattr(host_module, "_payload_packet_kind"),
-        "_merge_context_signals": getattr(host_module, "_merge_context_signals"),
-        "_clamp_confidence": getattr(host_module, "_clamp_confidence"),
-        "_compact_selection_state_parts": getattr(host_module, "_compact_selection_state_parts"),
-        "_odylith_payload_full_scan_recommended": getattr(host_module, "_odylith_payload_full_scan_recommended"),
-        "_odylith_payload_diagram_watch_gap_count": getattr(host_module, "_odylith_payload_diagram_watch_gap_count"),
-        "_odylith_payload_selection_state": getattr(host_module, "_odylith_payload_selection_state"),
-        "_odylith_payload_routing_confidence": getattr(host_module, "_odylith_payload_routing_confidence"),
-        "_odylith_payload_route_ready": getattr(host_module, "_odylith_payload_route_ready"),
-        "_odylith_payload_paths": getattr(host_module, "_odylith_payload_paths"),
-        "_odylith_payload_workstreams": getattr(host_module, "_odylith_payload_workstreams"),
-        "_odylith_payload_component_ids": getattr(host_module, "_odylith_payload_component_ids"),
-        "_CODEX_HOT_PATH_PROFILE": getattr(host_module, "_CODEX_HOT_PATH_PROFILE"),
-        "_ARCHITECTURE_GROUNDING_KEYWORDS": getattr(host_module, "_ARCHITECTURE_GROUNDING_KEYWORDS"),
-        "_GOVERNANCE_GROUNDING_KEYWORDS": getattr(host_module, "_GOVERNANCE_GROUNDING_KEYWORDS"),
-    })
+if TYPE_CHECKING:
+    from odylith.runtime.orchestration.subagent_orchestrator import OrchestrationDecision
+    from odylith.runtime.orchestration.subagent_orchestrator import OrchestrationRequest
+    from odylith.runtime.orchestration.subagent_orchestrator import SubtaskSlice
+
+
+def _first_present(*values: Any) -> Any:
+    """Return the first non-empty value, treating blank strings as missing."""
+    for value in values:
+        if isinstance(value, str):
+            if _normalize_string(value):
+                return value
+            continue
+        if value is not None:
+            return value
+    return None
+
+
+def _bool_value(value: Any) -> bool:
+    """Normalize loose truthy values used by packets and consumer profiles."""
+    if isinstance(value, bool):
+        return value
+    token = _normalize_token(value)
+    if token in {"1", "true", "yes", "on"}:
+        return True
+    if token in {"", "0", "false", "no", "off"}:
+        return False
+    return bool(value)
 
 
 def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Convert an architecture audit payload into the standard routing contracts."""
     audit = dict(payload) if isinstance(payload, Mapping) else {}
     if not audit:
         return {}
@@ -72,6 +98,8 @@ def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
     )
     authority_graph_edge_count = _int_value(_mapping_lookup(authority_graph_counts, "edges"))
     resolved = bool(_mapping_lookup(audit, "resolved"))
+    # Architecture packets are only treated as route-ready when the audit both
+    # resolved cleanly and stayed bounded enough to avoid a follow-up broad scan.
     route_ready = bool(
         resolved
         and not full_scan_recommended
@@ -88,8 +116,17 @@ def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
     utility_score = 4 if authority_graph_edge_count >= 6 else 3 if authority_graph_edge_count >= 3 or required_reads else 2 if route_ready else 1
     confidence_score = 4 if confidence_tier == "high" else 3 if confidence_tier == "medium" else 1
     selection_mode = "architecture_grounding" if risk_tier == "high" or mode == "local_or_single_leaf" else "architecture_synthesis"
-    model = _normalize_string(_mapping_lookup(execution_hint, "model")) or ("gpt-5.4" if risk_tier == "high" else "gpt-5.4-mini")
-    reasoning_effort = _normalize_string(_mapping_lookup(execution_hint, "reasoning_effort")) or ("high" if risk_tier == "high" else "medium")
+    profile_token = (
+        agent_runtime_contract.FRONTIER_HIGH_PROFILE
+        if risk_tier == "high"
+        else agent_runtime_contract.ANALYSIS_HIGH_PROFILE
+    )
+    default_model, default_reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(
+        profile_token,
+    )
+    requested_model = _normalize_string(_mapping_lookup(execution_hint, "model"))
+    model = requested_model if default_model and requested_model else default_model
+    reasoning_effort = _normalize_string(_mapping_lookup(execution_hint, "reasoning_effort")) or default_reasoning_effort
     agent_role = "worker" if risk_tier == "high" or mode == "local_or_single_leaf" else "explorer"
     delegate_preference = "delegate" if route_ready else "hold_local"
     native_spawn_ready = bool(
@@ -99,7 +136,9 @@ def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
         and (required_reads or validation_obligation_count > 0 or authority_graph_edge_count >= 3)
     )
     execution_profile = {
-        "profile": "gpt54_high" if risk_tier == "high" else "mini_high",
+        "profile": (
+            profile_token
+        ),
         "model": model,
         "reasoning_effort": reasoning_effort,
         "agent_role": agent_role,
@@ -233,6 +272,7 @@ def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _odylith_payload_grounded(payload: Mapping[str, Any]) -> bool:
+    """Decide whether an Odylith payload is grounded enough to narrow execution."""
     if _odylith_payload_full_scan_recommended(payload):
         return False
     if _odylith_payload_diagram_watch_gap_count(payload) > 0:
@@ -252,6 +292,7 @@ def _request_with_consumer_write_policy(
     *,
     repo_root: Path,
 ) -> OrchestrationRequest:
+    """Attach consumer write-policy signals to write requests before grounding."""
     if not request.needs_write:
         return request
     profile = load_consumer_profile(repo_root=Path(repo_root).resolve())
@@ -264,7 +305,8 @@ def _request_with_consumer_write_policy(
     )
     if merged_signals == request.context_signals:
         return request
-    return OrchestrationRequest(
+    request_cls = request.__class__
+    return request_cls(
         prompt=request.prompt,
         acceptance_criteria=list(request.acceptance_criteria),
         candidate_paths=list(request.candidate_paths),
@@ -293,6 +335,7 @@ def _request_with_consumer_write_policy(
 
 
 def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
+    """Summarize how fully the request already adopts Odylith routing contracts."""
     base = _normalize_context_signals(request.context_signals)
     routing_handoff = _nested_mapping(base, "routing_handoff")
     context_packet = _nested_mapping(base, "context_packet")
@@ -301,7 +344,13 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
     auto_grounding = _nested_mapping(base, "orchestration_auto_grounding")
     runtime_execution = _nested_mapping(auto_grounding, "runtime_execution")
     odylith_write_policy = _nested_mapping(base, "odylith_write_policy")
+    execution_engine_summary = _nested_mapping(base, "execution_engine_summary")
+    packet_summary = _nested_mapping(base, "packet_summary")
+    target_resolution = _nested_mapping(base, "target_resolution")
+    presentation_policy = _nested_mapping(base, "presentation_policy")
     route = _nested_mapping(context_packet, "route")
+    context_packet_target_resolution = _nested_mapping(context_packet, "target_resolution")
+    context_packet_presentation_policy = _nested_mapping(context_packet, "presentation_policy")
     packet_quality = packet_quality_codec.expand_packet_quality(_nested_mapping(context_packet, "packet_quality"))
     diagram_watch_gaps = architecture_audit.get("diagram_watch_gaps", [])
     diagram_watch_gap_count = max(
@@ -323,6 +372,8 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
     narrowing_required = bool(routing_handoff.get("narrowing_required") or route.get("narrowing_required"))
     packet_present = bool(routing_handoff or context_packet or architecture_audit or evidence_pack)
     auto_grounding_applied = bool(auto_grounding.get("applied"))
+    # Grounded here means "safe to narrow around the packet" rather than
+    # "complete proof for execution"; full-scan pressure or diagram gaps still veto it.
     grounded = bool(
         not full_scan_recommended
         and diagram_watch_gap_count <= 0
@@ -347,6 +398,113 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
         for token in odylith_write_policy.get("protected_roots", [])
         if str(token).strip().strip("/")
     ]
+    # The execution-engine summary is mirrored through multiple packet surfaces.
+    # Collapse them here so callers do not have to understand every fallback path.
+    execution_engine_component_id = _normalize_string(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_component_id"),
+            _mapping_lookup(base, "execution_engine_component_id"),
+            _mapping_lookup(base, "latest_execution_engine_component_id"),
+        )
+    )
+    execution_engine_canonical_component_id = _normalize_string(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_canonical_component_id"),
+            _mapping_lookup(base, "execution_engine_canonical_component_id"),
+            _mapping_lookup(base, "latest_execution_engine_canonical_component_id"),
+        )
+    )
+    execution_engine_identity_status = _normalize_token(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_identity_status"),
+            _mapping_lookup(base, "execution_engine_identity_status"),
+            _mapping_lookup(base, "latest_execution_engine_identity_status"),
+        )
+    )
+    execution_engine_target_component_status = _normalize_token(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_target_component_status"),
+            _mapping_lookup(base, "execution_engine_target_component_status"),
+            _mapping_lookup(base, "latest_execution_engine_target_component_status"),
+        )
+    )
+    execution_engine_snapshot_reuse_status = _normalize_token(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_snapshot_reuse_status"),
+            _mapping_lookup(base, "execution_engine_snapshot_reuse_status"),
+            _mapping_lookup(base, "latest_execution_engine_snapshot_reuse_status"),
+        )
+    )
+    execution_engine_target_lane = _normalize_token(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_target_lane"),
+            _mapping_lookup(base, "execution_engine_target_lane"),
+            _mapping_lookup(base, "latest_execution_engine_target_lane"),
+            _mapping_lookup(target_resolution, "lane"),
+            _mapping_lookup(packet_summary, "target_resolution_lane"),
+            _mapping_lookup(context_packet_target_resolution, "lane"),
+        )
+    )
+    execution_engine_has_writable_targets = _bool_value(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_has_writable_targets"),
+            _mapping_lookup(base, "execution_engine_has_writable_targets"),
+            _mapping_lookup(base, "latest_execution_engine_has_writable_targets"),
+            _mapping_lookup(target_resolution, "has_writable_targets"),
+            _mapping_lookup(packet_summary, "target_resolution_has_writable_targets"),
+            _mapping_lookup(context_packet_target_resolution, "has_writable_targets"),
+        )
+    )
+    execution_engine_requires_more_consumer_context = _bool_value(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_requires_more_consumer_context"),
+            _mapping_lookup(base, "execution_engine_requires_more_consumer_context"),
+            _mapping_lookup(base, "latest_execution_engine_requires_more_consumer_context"),
+            _mapping_lookup(target_resolution, "requires_more_consumer_context"),
+            _mapping_lookup(packet_summary, "target_resolution_requires_more_consumer_context"),
+            _mapping_lookup(context_packet_target_resolution, "requires_more_consumer_context"),
+        )
+    )
+    execution_engine_consumer_failover = _normalize_string(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_consumer_failover"),
+            _mapping_lookup(base, "execution_engine_consumer_failover"),
+            _mapping_lookup(base, "latest_execution_engine_consumer_failover"),
+            _mapping_lookup(target_resolution, "consumer_failover"),
+            _mapping_lookup(packet_summary, "target_resolution_consumer_failover"),
+            _mapping_lookup(context_packet_target_resolution, "consumer_failover"),
+        )
+    )
+    execution_engine_commentary_mode = _normalize_token(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_commentary_mode"),
+            _mapping_lookup(base, "execution_engine_commentary_mode"),
+            _mapping_lookup(base, "latest_execution_engine_commentary_mode"),
+            _mapping_lookup(presentation_policy, "commentary_mode"),
+            _mapping_lookup(packet_summary, "presentation_policy_commentary_mode"),
+            _mapping_lookup(context_packet_presentation_policy, "commentary_mode"),
+        )
+    )
+    execution_engine_suppress_routing_receipts = _bool_value(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_suppress_routing_receipts"),
+            _mapping_lookup(base, "execution_engine_suppress_routing_receipts"),
+            _mapping_lookup(base, "latest_execution_engine_suppress_routing_receipts"),
+            _mapping_lookup(presentation_policy, "suppress_routing_receipts"),
+            _mapping_lookup(packet_summary, "presentation_policy_suppress_routing_receipts"),
+            _mapping_lookup(context_packet_presentation_policy, "suppress_routing_receipts"),
+        )
+    )
+    execution_engine_surface_fast_lane = _bool_value(
+        _first_present(
+            _mapping_lookup(execution_engine_summary, "execution_engine_surface_fast_lane"),
+            _mapping_lookup(base, "execution_engine_surface_fast_lane"),
+            _mapping_lookup(base, "latest_execution_engine_surface_fast_lane"),
+            _mapping_lookup(presentation_policy, "surface_fast_lane"),
+            _mapping_lookup(packet_summary, "presentation_policy_surface_fast_lane"),
+            _mapping_lookup(context_packet_presentation_policy, "surface_fast_lane"),
+        )
+    )
     return {
         "packet_present": packet_present,
         "grounding_source": grounding_source,
@@ -372,6 +530,18 @@ def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
         "odylith_fix_mode": _normalize_token(odylith_write_policy.get("odylith_fix_mode")) or "unknown",
         "allow_odylith_mutations": bool(odylith_write_policy.get("allow_odylith_mutations")),
         "protected_roots": protected_roots,
+        "execution_engine_component_id": execution_engine_component_id,
+        "execution_engine_canonical_component_id": execution_engine_canonical_component_id,
+        "execution_engine_identity_status": execution_engine_identity_status,
+        "execution_engine_target_component_status": execution_engine_target_component_status,
+        "execution_engine_snapshot_reuse_status": execution_engine_snapshot_reuse_status,
+        "execution_engine_target_lane": execution_engine_target_lane,
+        "execution_engine_has_writable_targets": execution_engine_has_writable_targets,
+        "execution_engine_requires_more_consumer_context": execution_engine_requires_more_consumer_context,
+        "execution_engine_consumer_failover": execution_engine_consumer_failover,
+        "execution_engine_commentary_mode": execution_engine_commentary_mode,
+        "execution_engine_suppress_routing_receipts": execution_engine_suppress_routing_receipts,
+        "execution_engine_surface_fast_lane": execution_engine_surface_fast_lane,
     }
 
 
@@ -383,12 +553,13 @@ def _decision_odylith_adoption(
     final_changed_paths: Sequence[str] | None = None,
     changed_path_source: str = "",
 ) -> dict[str, Any]:
+    """Combine request adoption state with the final orchestration decision."""
     summary = _request_odylith_adoption(request)
     summary["delegate"] = bool(decision.delegate)
     summary["mode"] = _normalize_token(decision.mode)
     summary["manual_review_recommended"] = bool(decision.manual_review_recommended)
     summary["grounded_delegate"] = bool(summary.get("grounded") and decision.delegate)
-    conversation_bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    conversation_bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=decision,
         adoption=summary,
@@ -412,6 +583,7 @@ def _request_prefers_architecture_grounding(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> bool:
+    """Detect requests that should be grounded through the architecture packet lane."""
     if request.odylith_operation == "architecture":
         return True
     task_kind = _normalize_token(request.task_kind)
@@ -432,6 +604,7 @@ def _request_prefers_governance_grounding(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> bool:
+    """Detect requests that are better narrowed through governance-owned records."""
     if request.odylith_operation == "governance_slice":
         return True
     normalized_paths = [str(path).strip() for path in request.candidate_paths if str(path).strip()]
@@ -472,6 +645,7 @@ def _auto_odylith_operation(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> str:
+    """Pick the automatic Odylith packet family that best matches the request."""
     if request.odylith_operation != "auto":
         return request.odylith_operation
     if (request.session_id or request.use_working_tree or request.claimed_paths) and not request.candidate_paths:
@@ -489,6 +663,7 @@ def _auto_ground_request_with_odylith(
     repo_root: Path,
     assessment: leaf_router.TaskAssessment,
 ) -> OrchestrationRequest:
+    """Fetch or build an Odylith packet and merge its grounding signals into the request."""
     request = _request_with_consumer_write_policy(request, repo_root=repo_root)
     explicit_context_signals = {
         str(key): value
@@ -516,6 +691,8 @@ def _auto_ground_request_with_odylith(
         "intent": request.intent or request.phase or request.task_kind,
         "validation_command_hints": list(request.validation_commands),
     }
+    # Prefer the runtime daemon when available so repeated turns can reuse the
+    # same packet work; each branch falls back to the local builder for parity.
     if operation == "bootstrap_session":
         daemon_result = odylith_store.request_runtime_daemon(
             repo_root=Path(repo_root).resolve(),
@@ -537,7 +714,7 @@ def _auto_ground_request_with_odylith(
         if daemon_result is not None:
             payload, runtime_execution = daemon_result
         else:
-            payload = odylith_store.build_session_bootstrap(
+            payload = packet_session_runtime.build_session_bootstrap(
                 **base_kwargs,
                 workstream=workstream_hint,
                 delivery_profile=_CODEX_HOT_PATH_PROFILE,
@@ -572,7 +749,7 @@ def _auto_ground_request_with_odylith(
         if daemon_result is not None:
             payload, runtime_execution = daemon_result
         else:
-            payload = odylith_store.build_session_brief(
+            payload = packet_session_runtime.build_session_brief(
                 **base_kwargs,
                 workstream=workstream_hint,
                 delivery_profile=_CODEX_HOT_PATH_PROFILE,
@@ -658,7 +835,7 @@ def _auto_ground_request_with_odylith(
                 working_tree_scope=request.working_tree_scope or ("session" if request.session_id else "repo"),
             )
     else:
-        adaptive = odylith_store.build_adaptive_coding_packet_reusing_daemon(
+        adaptive = packet_adaptive_runtime.build_adaptive_coding_packet_reusing_daemon(
             **base_kwargs,
             family_hint=assessment.task_family,
             workstream_hint=workstream_hint,
@@ -679,6 +856,8 @@ def _auto_ground_request_with_odylith(
             payload_signals,
             _architecture_context_signals(payload),
         )
+    # Keep caller-supplied signals, then layer in the auto-grounded packet and
+    # the runtime execution summary that explains how the packet was produced.
     merged_signals = _merge_context_signals(
         _normalize_context_signals(request.context_signals),
         payload_signals,
@@ -696,7 +875,8 @@ def _auto_ground_request_with_odylith(
             }
         },
     )
-    return OrchestrationRequest(
+    request_cls = request.__class__
+    return request_cls(
         prompt=request.prompt,
         acceptance_criteria=list(request.acceptance_criteria),
         candidate_paths=_dedupe_strings([*request.candidate_paths, *_odylith_payload_paths(payload)]),
@@ -725,6 +905,7 @@ def _auto_ground_request_with_odylith(
 
 
 def _score_level(score: int) -> str:
+    """Map the shared 0-4 scoring scale onto stable textual levels."""
     clamped = max(0, min(4, int(score)))
     if clamped >= 4:
         return "high"
@@ -736,6 +917,7 @@ def _score_level(score: int) -> str:
 
 
 def _intent_confidence_score(value: Any) -> int:
+    """Convert packet confidence labels into the shared score scale."""
     token = _normalize_token(value)
     if token == "high":
         return 4
@@ -747,24 +929,29 @@ def _intent_confidence_score(value: Any) -> int:
 
 
 def _profile_runtime_fields(profile_token: str) -> tuple[str, str, str]:
+    """Expand a router profile token into model, reasoning effort, and agent role."""
     profile = _normalize_token(profile_token)
+    model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields_with_fallback(
+        profile,
+        fallback_host_runtime="codex_cli",
+    )
     if profile in {
         leaf_router.RouterProfile.MINI_MEDIUM.value,
         leaf_router.RouterProfile.MINI_HIGH.value,
     }:
-        return "gpt-5.4-mini", "medium" if profile == leaf_router.RouterProfile.MINI_MEDIUM.value else "high", "explorer"
+        return model, reasoning_effort, "explorer"
     if profile == leaf_router.RouterProfile.SPARK_MEDIUM.value:
-        return "gpt-5.3-codex-spark", "medium", "worker"
+        return model, reasoning_effort, "worker"
     if profile in {
         leaf_router.RouterProfile.CODEX_MEDIUM.value,
         leaf_router.RouterProfile.CODEX_HIGH.value,
     }:
-        return "gpt-5.3-codex", "medium" if profile == leaf_router.RouterProfile.CODEX_MEDIUM.value else "high", "worker"
+        return model, reasoning_effort, "worker"
     if profile in {
         leaf_router.RouterProfile.GPT54_HIGH.value,
         leaf_router.RouterProfile.GPT54_XHIGH.value,
     }:
-        return "gpt-5.4", "xhigh" if profile == leaf_router.RouterProfile.GPT54_XHIGH.value else "high", "worker"
+        return model, reasoning_effort, "worker"
     return "", "", "main_thread"
 
 
@@ -787,6 +974,7 @@ def _subtask_odylith_execution_profile(
     spawn_worthiness: int,
     merge_burden: int,
 ) -> dict[str, Any]:
+    """Choose the execution profile metadata attached to one delegated subtask."""
     base_execution = (
         _execution_profile_mapping(_mapping_lookup(base_root, "odylith_execution_profile"))
         or _execution_profile_mapping(_mapping_lookup(base_root, "execution_profile"))
@@ -852,6 +1040,8 @@ def _subtask_odylith_execution_profile(
     )
     profile = _normalize_token(base_execution.get("profile"))
     selection_mode = _normalize_token(base_execution.get("selection_mode"))
+    # Start from any explicit parent profile, then specialize it using the
+    # current subtask role, architecture packet posture, and recent history.
     if narrowing_required and spawn_worthiness <= 2:
         profile = leaf_router.RouterProfile.MAIN_THREAD.value
         selection_mode = "narrow_first"

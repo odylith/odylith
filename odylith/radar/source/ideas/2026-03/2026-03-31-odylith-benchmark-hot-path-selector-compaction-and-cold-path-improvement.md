@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-038
-title: Odylith Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement
+title: Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement
 date: 2026-03-31
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: hot-path selection, guidance-memory recovery, governance packet compaction, warm/cold proof determinism, release publication latency, architecture packet cost, and benchmark weak-family quality
 sizing: M
 complexity: High

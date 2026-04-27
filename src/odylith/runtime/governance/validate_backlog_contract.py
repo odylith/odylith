@@ -7,6 +7,7 @@ workflow artifacts.
 from __future__ import annotations
 
 import argparse
+import copy
 import datetime as dt
 import re
 from dataclasses import dataclass
@@ -14,7 +15,9 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.consumer_profile import consumer_profile_path, truth_root_path
+from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
+from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.context_engine import odylith_context_cache
 
 _REQUIRED_METADATA: tuple[str, ...] = (
@@ -23,7 +26,6 @@ _REQUIRED_METADATA: tuple[str, ...] = (
     "commercial_value",
     "product_impact",
     "market_value",
-    "impacted_lanes",
     "impacted_parts",
     "sizing",
     "complexity",
@@ -51,9 +53,31 @@ _REQUIRED_SECTIONS: tuple[str, ...] = (
     "Test Strategy",
     "Open Questions",
 )
+_CORE_DETAIL_SECTION_TITLES: tuple[str, ...] = (
+    "Problem",
+    "Customer",
+    "Opportunity",
+    "Product View",
+    "Success Metrics",
+)
+IDEA_SPEC_CACHE_VERSION = "v2-section-bodies"
+_PLACEHOLDER_LIKE_TOKENS: frozenset[str] = frozenset(
+    {
+        "details",
+        "details.",
+        "tbd",
+        "tbd.",
+        "todo",
+        "todo.",
+        "n/a",
+        "na",
+        "none",
+        "-",
+    }
+)
+_MIN_CORE_DETAIL_WORDS = 6
 
 _VALID_PRIORITIES: set[str] = {"P0", "P1", "P2", "P3"}
-_VALID_LANES: set[str] = {"platform", "service", "both"}
 _VALID_SIZING: dict[str, int] = {"XS": 1, "S": 2, "M": 3, "L": 5, "XL": 8}
 _VALID_COMPLEXITY: dict[str, int] = {"Low": 1, "Medium": 2, "High": 3, "VeryHigh": 5}
 _VALID_STATUS: set[str] = {
@@ -81,10 +105,25 @@ _INDEX_COLS: tuple[str, ...] = (
     "market_value",
     "sizing",
     "complexity",
+    "status",
+    "link",
+)
+_LEGACY_INDEX_COLS_WITH_LANES: tuple[str, ...] = (
+    "rank",
+    "idea_id",
+    "title",
+    "priority",
+    "ordering_score",
+    "commercial_value",
+    "product_impact",
+    "market_value",
+    "sizing",
+    "complexity",
     "impacted_lanes",
     "status",
     "link",
 )
+_LEGACY_METADATA_FIELDS: tuple[str, ...] = ("impacted_lanes",)
 
 _PLAN_COLS: tuple[str, ...] = ("Plan", "Status", "Created", "Updated", "Backlog")
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -124,6 +163,7 @@ class IdeaSpec:
     path: Path
     metadata: dict[str, str]
     sections: set[str]
+    section_bodies: dict[str, str]
 
     @property
     def idea_id(self) -> str:
@@ -166,6 +206,13 @@ def _resolve_repo_path(*, repo_root: Path, token: str) -> Path:
 
 def _infer_repo_root_from_path(path: Path) -> Path | None:
     target = Path(path).resolve()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None:
+        session_root = session.repo_root_for_path(target)
+        if session_root is not None:
+            return session_root
     search_roots = [target, *target.parents]
     for candidate in search_roots:
         try:
@@ -240,6 +287,7 @@ def _idea_spec_payload(spec: IdeaSpec) -> dict[str, Any]:
     return {
         "metadata": dict(spec.metadata),
         "sections": sorted(spec.sections),
+        "section_bodies": dict(spec.section_bodies),
     }
 
 
@@ -252,30 +300,122 @@ def _idea_spec_from_payload(*, path: Path, payload: Mapping[str, Any]) -> IdeaSp
         for token in sections_raw
         if str(token).strip()
     }
-    return IdeaSpec(path=path, metadata=metadata, sections=sections)
+    section_bodies_raw = payload.get("section_bodies", {})
+    section_bodies = (
+        {
+            str(key).strip(): str(value).strip()
+            for key, value in section_bodies_raw.items()
+            if str(key).strip()
+        }
+        if isinstance(section_bodies_raw, Mapping)
+        else {}
+    )
+    return IdeaSpec(path=path, metadata=metadata, sections=sections, section_bodies=section_bodies)
 
 
-def _parse_idea_spec(path: Path) -> IdeaSpec:
-    repo_root = _infer_repo_root_from_path(path)
-    target = path.resolve()
-    signature = odylith_context_cache.path_signature(target)
-    if repo_root is not None:
+def _idea_spec_signature_token(signature: Mapping[str, Any]) -> str:
+    return ":".join(
+        (
+            "1" if bool(signature.get("exists")) else "0",
+            str(signature.get("kind", "")).strip(),
+            str(int(signature.get("size", 0) or 0)),
+            str(int(signature.get("mtime_ns", 0) or 0)),
+        )
+    )
+
+
+def default_section_boilerplate(title: str) -> dict[str, str]:
+    plain_title = str(title).strip()
+    return {
+        "Problem": f"Odylith needs an explicit workstream for {plain_title} instead of leaving the slice implicit.",
+        "Customer": "Odylith maintainers and operators who need this capability to exist as governed product truth.",
+        "Opportunity": f"Bound {plain_title} as a queued workstream so implementation can attach to one clear source record.",
+        "Proposed Solution": f"Create the workstream for {plain_title} and refine the exact implementation plan during execution.",
+        "Scope": f"- Define and land the bounded work for {plain_title}.\n- Keep the first implementation wave narrow and test-backed.",
+        "Non-Goals": "- Do not widen this queued workstream into unrelated product cleanup.",
+        "Risks": "- The title may need refinement once the implementation owner confirms the exact boundary.",
+        "Dependencies": "- No explicit dependency recorded yet; confirm related workstreams before implementation starts.",
+        "Success Metrics": "- The workstream is specific enough to guide implementation and validation without further backlog surgery.",
+        "Validation": "- Run focused validation for the touched paths once implementation begins.",
+        "Rollout": "- Queue now, then bind a technical plan when the implementation wave starts.",
+        "Why Now": "This slice is active enough that it should exist as explicit backlog truth now.",
+        "Product View": "If the team is already acting as if this work exists, the backlog should say so explicitly.",
+        "Impacted Components": "- `odylith`",
+        "Interface Changes": "- None decided yet; record interface changes once implementation is scoped.",
+        "Migration/Compatibility": "- No migration impact recorded yet.",
+        "Test Strategy": "- Add targeted regression coverage when implementation begins.",
+        "Open Questions": "- Which existing workstreams or component specs should this attach to first?",
+    }
+
+
+def _normalize_section_body_text(value: str) -> str:
+    return "\n".join(line.rstrip() for line in str(value or "").strip().splitlines()).strip()
+
+
+def _is_placeholder_like_section_body(value: str) -> bool:
+    token = _normalize_section_body_text(value).casefold()
+    return token in _PLACEHOLDER_LIKE_TOKENS
+
+
+def _meaningful_word_count(value: str) -> int:
+    return len(re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _normalize_section_body_text(value)))
+
+
+def core_detail_section_errors(
+    *,
+    title: str,
+    sections: Mapping[str, str],
+    path: Path,
+) -> list[str]:
+    errors: list[str] = []
+    defaults = default_section_boilerplate(title)
+    for section in _CORE_DETAIL_SECTION_TITLES:
+        body = _normalize_section_body_text(str(sections.get(section, "")).strip())
+        if not body:
+            errors.append(f"{path}: core detail section `## {section}` must be non-empty")
+            continue
+        if _is_placeholder_like_section_body(body):
+            errors.append(f"{path}: core detail section `## {section}` uses placeholder-like text")
+            continue
+        if _meaningful_word_count(body) < _MIN_CORE_DETAIL_WORDS:
+            errors.append(
+                f"{path}: core detail section `## {section}` must contain at least "
+                f"{_MIN_CORE_DETAIL_WORDS} meaningful words"
+            )
+            continue
+        if body == _normalize_section_body_text(defaults.get(section, "")):
+            errors.append(f"{path}: core detail section `## {section}` still uses backlog-create boilerplate")
+    return errors
+
+
+def _parse_idea_spec_uncached(
+    *,
+    target: Path,
+    repo_root: Path | None,
+    signature: Mapping[str, Any],
+) -> IdeaSpec:
+    resolved_repo_root = Path(repo_root).resolve() if repo_root is not None else None
+    if resolved_repo_root is not None:
         cache_file = odylith_context_cache.cache_path(
-            repo_root=repo_root,
+            repo_root=resolved_repo_root,
             namespace="backlog/idea-specs",
-            key=_repo_relative_cache_key(repo_root=repo_root, target=target),
+            key=_repo_relative_cache_key(repo_root=resolved_repo_root, target=target),
         )
         cached = odylith_context_cache.read_json_object(cache_file)
+        cached_spec = cached.get("spec")
         if (
-            cached.get("version") == "v1"
+            cached.get("version") == IDEA_SPEC_CACHE_VERSION
             and cached.get("signature") == signature
-            and isinstance(cached.get("spec"), Mapping)
+            and isinstance(cached_spec, Mapping)
+            and isinstance(cached_spec.get("section_bodies"), Mapping)
         ):
-            return _idea_spec_from_payload(path=target, payload=cached.get("spec", {}))
+            return _idea_spec_from_payload(path=target, payload=cached_spec)
 
     metadata: dict[str, str] = {}
     sections: set[str] = set()
+    section_bodies: dict[str, list[str]] = {}
     in_metadata = True
+    current_section: str | None = None
 
     for raw_line in target.read_text(encoding="utf-8").splitlines():
         match = _SECTION_RE.match(raw_line)
@@ -285,9 +425,13 @@ def _parse_idea_spec(path: Path) -> IdeaSpec:
             if section_title == "Founder POV":
                 section_title = "Product View"
             sections.add(section_title)
+            current_section = section_title
+            section_bodies.setdefault(section_title, [])
             continue
 
         if not in_metadata:
+            if current_section is not None:
+                section_bodies.setdefault(current_section, []).append(raw_line)
             continue
 
         line = raw_line.strip()
@@ -298,19 +442,49 @@ def _parse_idea_spec(path: Path) -> IdeaSpec:
         key, value = line.split(":", 1)
         metadata[key.strip()] = value.strip()
 
-    spec = IdeaSpec(path=target, metadata=metadata, sections=sections)
-    if repo_root is not None:
+    spec = IdeaSpec(
+        path=target,
+        metadata=metadata,
+        sections=sections,
+        section_bodies={
+            key: _normalize_section_body_text("\n".join(lines))
+            for key, lines in section_bodies.items()
+        },
+    )
+    if resolved_repo_root is not None:
         odylith_context_cache.write_json_if_changed(
-            repo_root=repo_root,
+            repo_root=resolved_repo_root,
             path=cache_file,
             payload={
-                "version": "v1",
+                "version": IDEA_SPEC_CACHE_VERSION,
                 "signature": signature,
                 "spec": _idea_spec_payload(spec),
             },
             lock_key=str(cache_file),
         )
     return spec
+
+
+def _parse_idea_spec(path: Path) -> IdeaSpec:
+    target = path.resolve()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    repo_root = session.repo_root_for_path(target) if session is not None else None
+    if repo_root is None:
+        repo_root = _infer_repo_root_from_path(target)
+    signature = odylith_context_cache.path_signature(target)
+    if session is not None and repo_root is not None and session.repo_root == repo_root:
+        return session.get_or_compute(
+            namespace="idea_spec",
+            key=f"{target.as_posix()}\n{_idea_spec_signature_token(signature)}",
+            builder=lambda: _parse_idea_spec_uncached(
+                target=target,
+                repo_root=repo_root,
+                signature=signature,
+            ),
+        )
+    return _parse_idea_spec_uncached(target=target, repo_root=repo_root, signature=signature)
 
 
 def _parse_int_in_range(
@@ -655,6 +829,24 @@ def load_backlog_index_snapshot(backlog_index: Path) -> dict[str, Any]:
     """Return a cached parsed snapshot for `odylith/radar/source/INDEX.md`."""
 
     target = backlog_index.resolve()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None:
+        repo_root = session.repo_root_for_path(target)
+        if repo_root is not None:
+            signature = odylith_context_cache.path_signature(target)
+            snapshot = session.get_or_compute(
+                namespace="backlog_index_snapshot",
+                key=f"{target.as_posix()}\n{signature.get('mtime_ns', 0)}\n{signature.get('size', 0)}",
+                builder=lambda: load_backlog_index_snapshot_uncached(target),
+            )
+            return copy.deepcopy(snapshot)
+    return load_backlog_index_snapshot_uncached(target)
+
+
+def load_backlog_index_snapshot_uncached(backlog_index: Path) -> dict[str, Any]:
+    target = backlog_index.resolve()
     _cache_file, cached = _read_cached_snapshot(path=target, namespace="backlog/index")
     if cached is not None:
         return {
@@ -711,6 +903,24 @@ def _build_plan_index_snapshot(plan_index: Path) -> dict[str, Any]:
 def load_plan_index_snapshot(plan_index: Path) -> dict[str, Any]:
     """Return a cached parsed snapshot for `odylith/technical-plans/INDEX.md`."""
 
+    target = plan_index.resolve()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None:
+        repo_root = session.repo_root_for_path(target)
+        if repo_root is not None:
+            signature = odylith_context_cache.path_signature(target)
+            snapshot = session.get_or_compute(
+                namespace="plan_index_snapshot",
+                key=f"{target.as_posix()}\n{signature.get('mtime_ns', 0)}\n{signature.get('size', 0)}",
+                builder=lambda: load_plan_index_snapshot_uncached(target),
+            )
+            return copy.deepcopy(snapshot)
+    return load_plan_index_snapshot_uncached(target)
+
+
+def load_plan_index_snapshot_uncached(plan_index: Path) -> dict[str, Any]:
     target = plan_index.resolve()
     _cache_file, cached = _read_cached_snapshot(path=target, namespace="odylith/technical-plans/index")
     if cached is not None:
@@ -1007,11 +1217,19 @@ def _validate_lineage_contract(*, ideas: dict[str, IdeaSpec]) -> list[str]:
     return errors
 
 
-def _validate_idea_specs(idea_root: Path) -> tuple[dict[str, IdeaSpec], list[str]]:
+def _validate_idea_specs_uncached(
+    idea_root: Path,
+    repo_root: Path | None = None,
+) -> tuple[dict[str, IdeaSpec], list[str]]:
     errors: list[str] = []
     if not idea_root.is_dir():
         return {}, [f"missing ideas root: {idea_root}"]
 
+    resolved_repo_root = (
+        Path(repo_root).resolve()
+        if repo_root is not None
+        else backlog_title_contract.infer_repo_root_from_ideas_root(idea_root)
+    )
     ideas: dict[str, IdeaSpec] = {}
     for path in sorted(idea_root.rglob("*.md")):
         spec = _parse_idea_spec(path)
@@ -1019,10 +1237,30 @@ def _validate_idea_specs(idea_root: Path) -> tuple[dict[str, IdeaSpec], list[str
         for key in _REQUIRED_METADATA:
             if key not in spec.metadata or not str(spec.metadata.get(key, "")).strip():
                 errors.append(f"{path}: missing required metadata `{key}`")
+        for key in _LEGACY_METADATA_FIELDS:
+            if key in spec.metadata:
+                errors.append(
+                    f"{path}: legacy metadata `{key}` is no longer supported in Radar; rerun `odylith sync --repo-root .` to migrate"
+                )
 
         for section in _REQUIRED_SECTIONS:
             if section not in spec.sections:
                 errors.append(f"{path}: missing required section `## {section}`")
+        errors.extend(
+            core_detail_section_errors(
+                title=str(spec.metadata.get("title", "")).strip(),
+                sections=spec.section_bodies,
+                path=path,
+            )
+        )
+
+        errors.extend(
+            backlog_title_contract.validate_workstream_title(
+                title=str(spec.metadata.get("title", "")).strip(),
+                path=path,
+                repo_root=resolved_repo_root,
+            )
+        )
 
         idea_id = spec.idea_id
         if not idea_id:
@@ -1070,12 +1308,6 @@ def _validate_idea_specs(idea_root: Path) -> tuple[dict[str, IdeaSpec], list[str
         if priority and priority not in _VALID_PRIORITIES:
             errors.append(f"{path}: invalid `priority` `{priority}`")
 
-        lanes = str(spec.metadata.get("impacted_lanes", "")).strip()
-        if lanes and lanes not in _VALID_LANES:
-            errors.append(
-                f"{path}: invalid `impacted_lanes` `{lanes}`; expected one of {sorted(_VALID_LANES)}"
-            )
-
         status = spec.status
         if status and status not in _VALID_STATUS:
             errors.append(f"{path}: invalid `status` `{status}`")
@@ -1111,6 +1343,33 @@ def _validate_idea_specs(idea_root: Path) -> tuple[dict[str, IdeaSpec], list[str
             )
 
     return ideas, errors
+
+
+def _validate_idea_specs(
+    idea_root: Path,
+    repo_root: Path | None = None,
+) -> tuple[dict[str, IdeaSpec], list[str]]:
+    resolved_idea_root = Path(idea_root).resolve()
+    resolved_repo_root = (
+        Path(repo_root).resolve()
+        if repo_root is not None
+        else backlog_title_contract.infer_repo_root_from_ideas_root(resolved_idea_root)
+    )
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None and resolved_repo_root is not None and session.repo_root == resolved_repo_root:
+        fingerprint = odylith_context_cache.fingerprint_tree(resolved_idea_root, glob="*.md")
+        cached_ideas, cached_errors = session.get_or_compute(
+            namespace="validate_idea_specs",
+            key=f"{resolved_idea_root.as_posix()}\n{fingerprint}",
+            builder=lambda: _validate_idea_specs_uncached(
+                resolved_idea_root,
+                repo_root=resolved_repo_root,
+            ),
+        )
+        return dict(cached_ideas), list(cached_errors)
+    return _validate_idea_specs_uncached(resolved_idea_root, repo_root=resolved_repo_root)
 
 
 def _validate_promotion_links(*, ideas: dict[str, IdeaSpec], repo_root: Path) -> list[str]:
@@ -1221,13 +1480,33 @@ def _validate_backlog_index(
             errors.append(f"{backlog_index}: {err_parked}")
         rows_parked = []
     if headers_active and tuple(headers_active) != _INDEX_COLS:
-        errors.append(f"{backlog_index}: active table headers do not match contract")
+        if tuple(headers_active) == _LEGACY_INDEX_COLS_WITH_LANES:
+            errors.append(
+                f"{backlog_index}: active table still uses legacy `impacted_lanes` column; rerun `odylith sync --repo-root .` to migrate"
+            )
+        else:
+            errors.append(f"{backlog_index}: active table headers do not match contract")
     if headers_execution and tuple(headers_execution) != _INDEX_COLS:
-        errors.append(f"{backlog_index}: execution table headers do not match contract")
+        if tuple(headers_execution) == _LEGACY_INDEX_COLS_WITH_LANES:
+            errors.append(
+                f"{backlog_index}: execution table still uses legacy `impacted_lanes` column; rerun `odylith sync --repo-root .` to migrate"
+            )
+        else:
+            errors.append(f"{backlog_index}: execution table headers do not match contract")
     if headers_finished and tuple(headers_finished) != _INDEX_COLS:
-        errors.append(f"{backlog_index}: finished table headers do not match contract")
+        if tuple(headers_finished) == _LEGACY_INDEX_COLS_WITH_LANES:
+            errors.append(
+                f"{backlog_index}: finished table still uses legacy `impacted_lanes` column; rerun `odylith sync --repo-root .` to migrate"
+            )
+        else:
+            errors.append(f"{backlog_index}: finished table headers do not match contract")
     if headers_parked and tuple(headers_parked) != _INDEX_COLS:
-        errors.append(f"{backlog_index}: parked table headers do not match contract")
+        if tuple(headers_parked) == _LEGACY_INDEX_COLS_WITH_LANES:
+            errors.append(
+                f"{backlog_index}: parked table still uses legacy `impacted_lanes` column; rerun `odylith sync --repo-root .` to migrate"
+            )
+        else:
+            errors.append(f"{backlog_index}: parked table headers do not match contract")
 
     seen_ids: set[str] = set()
     active_ids: set[str] = set()
@@ -1483,7 +1762,6 @@ def _validate_row_against_idea(
         ("market_value", payload["market_value"]),
         ("sizing", payload["sizing"]),
         ("complexity", payload["complexity"]),
-        ("impacted_lanes", payload["impacted_lanes"]),
         ("status", payload["status"]),
     )
     for key, actual in comparisons:
@@ -1825,7 +2103,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not backlog_source_root.is_dir():
         errors.append(f"{repo_root}: missing `odylith/radar/source/` directory")
 
-    ideas, idea_errors = _validate_idea_specs(idea_root)
+    ideas, idea_errors = _validate_idea_specs(idea_root, repo_root=repo_root)
     errors.extend(idea_errors)
     errors.extend(_validate_topology_contract(ideas=ideas))
     errors.extend(_validate_lineage_contract(ideas=ideas))
@@ -1855,6 +2133,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     )
     del finished_ids
+    release_state, release_errors = release_planning_contract.validate_release_planning(
+        repo_root=repo_root,
+        idea_specs=ideas,
+    )
+    errors.extend(release_errors)
 
     if errors:
         print("backlog contract validation FAILED")
@@ -1866,6 +2149,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"- ideas validated: {len(ideas)}")
     print(f"- execution-linked ideas: {len(execution_ids)}")
     print(f"- parked ideas: {len(parked_ids)}")
+    print(f"- releases: {len(release_state.releases_by_id)}")
+    print(f"- active release targets: {len(release_state.active_release_by_workstream)}")
     return 0
 
 

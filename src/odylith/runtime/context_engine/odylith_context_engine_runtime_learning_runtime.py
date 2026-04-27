@@ -2,16 +2,75 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
+from odylith.runtime.context_engine import odylith_context_engine_packet_runtime_support
+from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
 
-def bind(host: Any) -> None:
-    getter = host.__getitem__ if isinstance(host, dict) else lambda name: getattr(host, name)
-    for name in ('Any', 'Mapping', 'OPTIMIZATION_EVALUATION_CORPUS', 'Path', 'Sequence', '_ODYLITH_SUPPRESSED_PATHS', '_PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE', '_PROCESS_OPTIMIZATION_SNAPSHOT_CACHE', '_PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS', '_PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE', '_bool_score', '_normalize_changed_path_list', '_normalize_repo_token', '_ordered_events', '_parse_iso_utc', '_persist_runtime_proof_section', '_rate', '_rate_for', '_record_sort_timestamp', '_runtime_optimization_cache_signature', '_safe_float', '_safe_int', '_sticky_snapshot_from_section', '_utc_now', 'active_sessions', 'actual_key', 'adoption', 'advised_budget_mode', 'advised_packet_strategy', 'advised_retrieval_focus', 'advised_speed_mode', 'advisory_key', 'age_hours', 'alias', 'alias_map', 'areas', 'attempted_rows', 'authoritative_truth', 'avg_bytes', 'avg_context_density_per_1k', 'avg_context_density_score', 'avg_density', 'avg_evidence_diversity_score', 'avg_reasoning_readiness_score', 'avg_tokens', 'avg_utility_score', 'backend_transition', 'backlog_projection', 'benchmark', 'benchmark_report', 'best', 'bootstrap_limit', 'bootstraps_root', 'bucket', 'buckets', 'budget_mode_distribution', 'bug_projection', 'cache_key', 'cache_signature', 'cached', 'cached_payload', 'cached_signature', 'cached_until', 'case', 'case_id', 'cases', 'changed_paths', 'cleaned', 'cold', 'compact_workstream', 'compiler_ready', 'compiler_state', 'component_id', 'component_index', 'component_registry', 'components', 'connection', 'context_density_distribution', 'context_packet', 'corpus', 'count', 'counts', 'coverage', 'decision_quality_reliable', 'decision_summary', 'deep_reasoning_ready_rate', 'default', 'delegated_lane_rate', 'details', 'diagram_projection', 'disabled', 'display_command', 'domain_ids', 'domains_any', 'drift_case_ids', 'dt', 'enabled', 'entity', 'entity_counts', 'entity_id', 'entry', 'evaluation', 'evaluation_snapshot', 'event_type', 'evidence_diversity_distribution', 'evidence_documents', 'execution_agent_role_distribution', 'execution_delegate_preference_distribution', 'execution_profile_distribution', 'execution_reasoning_distribution', 'execution_selection_mode_distribution', 'execution_source_distribution', 'expect_spec', 'expectation_ok', 'expected', 'expected_bool', 'expected_confidence', 'expected_execution_modes', 'expected_min', 'expected_miss_mode', 'expected_risk_tiers', 'fallback_reason_distribution', 'field_name', 'filtered', 'filtered_report', 'focus_limit', 'freshest', 'full_scan_reason', 'governance_runtime_first', 'grouped', 'guidance_catalog', 'high_execution_confidence_rate', 'high_intent_confidence_rate', 'high_routing_confidence_rate', 'high_utility_rate', 'hold_local_rate', 'include_selection', 'index', 'indexed_entities', 'intent_critical_path_distribution', 'intent_explicit_rate', 'intent_families', 'intent_family_distribution', 'intent_mode_distribution', 'item', 'items', 'judgment_memory', 'judgment_memory_path', 'key', 'kind', 'label', 'labels', 'latency_posture', 'latest_budget_mode', 'latest_mtime', 'latest_packet', 'latest_packet_strategy', 'latest_recorded_at', 'latest_retrieval_focus', 'latest_speed_mode', 'learning_advisories', 'learning_control', 'learning_decision_quality', 'learning_decision_quality_confidence', 'learning_evidence_strength', 'learning_freshness', 'learning_orchestration', 'learning_packet', 'learning_router', 'learning_summary', 'learning_trend', 'ledger', 'ledger_paths', 'ledger_root', 'left', 'left_prefix', 'left_token', 'limit', 'live_snapshot', 'mapped_events', 'match', 'match_spec', 'matched', 'matched_case_ids', 'matched_paths', 'math', 'max_chars', 'maximum', 'metadata', 'minimum', 'miss_recovery_applied_rate', 'miss_recovery_mode', 'miss_recovery_rate', 'narrowing_rate', 'native_spawn_ready_rate', 'next_move', 'normalized', 'normalized_items', 'normalized_paths', 'normalized_provenance', 'normalized_state', 'now', 'numeric', 'numeric_float', 'observed', 'observed_bool', 'observed_count', 'observed_miss_mode', 'odylith_ablation', 'odylith_benchmark_contract', 'odylith_context_cache', 'odylith_context_engine_memory_snapshot_runtime', 'odylith_context_engine_session_packet_runtime', 'odylith_control_state', 'odylith_evaluation_ledger', 'odylith_switch', 'operation', 'operations', 'optimization', 'optimization_snapshot', 'orchestration_adoption', 'orchestration_events', 'orchestration_limit', 'orchestration_rows', 'overall_freshness', 'overall_level', 'overall_rate', 'overall_terms', 'packet', 'packet_events', 'packet_kind', 'packet_limit', 'packet_reliability_distribution', 'packet_rows', 'packet_state_distribution', 'packet_states', 'packet_strategy_distribution', 'packets', 'parallelism_distribution', 'parsed', 'part', 'partial', 'parts', 'path', 'path_token', 'path_tokens', 'paths_all', 'paths_any', 'payload', 'plan_projection', 'planned', 'previous_snapshot', 'product_layer', 'projection_updated_utc', 'proof_path', 'proof_signature', 'proof_surfaces_path', 'provenance', 'query', 'rate', 'raw', 'raw_count', 're', 'reasoning_distribution', 'reasoning_mode_distribution', 'reasoning_readiness_distribution', 'recent_bootstrap_packets', 'recommendation_rows', 'recorded_at', 'recorded_utc', 'repo_dirty_paths', 'repo_root', 'repo_scan_degraded_rate', 'repo_scan_degraded_reason_distribution', 'repo_scan_degraded_rows', 'report', 'resolve_product_path', 'results', 'retrieval_state', 'richest_distribution', 'right', 'right_prefix', 'right_token', 'root', 'route', 'route_ready_rate', 'router_events', 'router_limit', 'router_rows', 'routing_handoff', 'row', 'rows', 'runtime_backed_execution_rate', 'runtime_root', 'runtime_state', 'sample_size', 'samples', 'satisfied_case_count', 'scan_limit', 'seen', 'selection', 'selection_bias_distribution', 'selection_payload', 'severity', 'signature', 'snapshot', 'source', 'source_kind', 'source_path', 'spec_snapshots', 'speed_mode_distribution', 'starter_path', 'starter_slice', 'starter_status', 'stat', 'state', 'strong', 'structured_execution_profile', 'subcomponents', 'summary', 'surfaces', 'switch_snapshot', 'table_name', 'text', 'time', 'timing_events', 'timing_limit', 'timing_row', 'timing_rows', 'timing_summary', 'token', 'tokens', 'top_intent_family', 'traceability', 'transition_status', 'trust', 'unmapped_meaningful_events', 'updated_utc', 'valid_bootstraps', 'value', 'values', 'welcome_state', 'within_budget_rate', 'workstream', 'workstream_id', 'workstream_token'):
-        try:
-            globals()[name] = getter(name)
-        except (AttributeError, KeyError):
-            continue
+
+def _safe_float(
+    value: Any,
+    default: float = 0.0,
+    *,
+    minimum: float | None = None,
+    maximum: float | None = None,
+) -> float:
+    try:
+        numeric = float(value or 0.0)
+    except (TypeError, ValueError):
+        numeric = float(default)
+    if math.isnan(numeric):
+        numeric = float(default)
+    elif math.isinf(numeric):
+        if numeric > 0 and maximum is not None:
+            numeric = float(maximum)
+        elif numeric < 0 and minimum is not None:
+            numeric = float(minimum)
+        else:
+            numeric = float(default)
+    if minimum is not None:
+        numeric = max(float(minimum), numeric)
+    if maximum is not None:
+        numeric = min(float(maximum), numeric)
+    return numeric
+
+
+def _safe_int(
+    value: Any,
+    default: int = 0,
+    *,
+    minimum: int | None = None,
+    maximum: int | None = None,
+) -> int:
+    try:
+        numeric_float = float(value or 0)
+        if math.isnan(numeric_float):
+            raise ValueError("non-finite numeric value")
+        if math.isinf(numeric_float):
+            if numeric_float > 0 and maximum is not None:
+                return int(maximum)
+            if numeric_float < 0 and minimum is not None:
+                return int(minimum)
+            raise ValueError("non-finite numeric value")
+        numeric = int(round(numeric_float))
+    except (TypeError, ValueError, OverflowError):
+        numeric = int(default)
+    if minimum is not None:
+        numeric = max(int(minimum), numeric)
+    if maximum is not None:
+        numeric = min(int(maximum), numeric)
+    return numeric
+
+
+_normalized_string_list = odylith_context_engine_packet_runtime_support.normalized_string_list
+_workstream_token = odylith_context_engine_packet_runtime_support.workstream_token
+_compact_selection_state_parts = odylith_context_engine_packet_runtime_support.compact_selection_state_parts
+_encode_compact_selection_state = odylith_context_engine_packet_runtime_support.encode_compact_selection_state
+_decode_compact_selected_counts = odylith_context_engine_packet_runtime_support.decode_compact_selected_counts
+_encode_compact_selected_counts = odylith_context_engine_packet_runtime_support.encode_compact_selected_counts
+_payload_workstream_hint = odylith_context_engine_packet_runtime_support.payload_workstream_hint
+_payload_packet_kind = odylith_context_engine_packet_runtime_support.payload_packet_kind
 
 
 def load_runtime_timing_summary(
@@ -19,8 +78,8 @@ def load_runtime_timing_summary(
     repo_root: Path,
     limit: int = 24,
 ) -> dict[str, Any]:
-    return odylith_control_state.summarize_timings(
-        repo_root=Path(repo_root).resolve(),
+    return context_engine_store.odylith_control_state.summarize_timings(
+        repo_root=context_engine_store.Path(repo_root).resolve(),
         limit=max(1, int(limit)),
     )
 
@@ -34,76 +93,30 @@ def load_odylith_drawer_history(
 ) -> dict[str, Any]:
     """Build a compact recent-history payload for the shell-owned Odylith drawer."""
 
-    root = Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
 
     def _ordered_events(event_type: str, *, limit: int) -> list[dict[str, Any]]:
-        rows = odylith_evaluation_ledger.load_events(
+        rows = context_engine_store.odylith_evaluation_ledger.load_events(
             repo_root=root,
             limit=max(1, int(limit)),
             event_types=[event_type],
         )
         rows.reverse()
-        return [dict(row) for row in rows if isinstance(row, Mapping)]
+        return [dict(row) for row in rows if isinstance(row, context_engine_store.Mapping)]
 
     def _bool_score(value: Any) -> int:
         return 100 if bool(value) else 0
 
-    def _safe_float(value: Any, default: float = 0.0, *, minimum: float | None = None, maximum: float | None = None) -> float:
-        try:
-            numeric = float(value or 0.0)
-        except (TypeError, ValueError):
-            numeric = float(default)
-        if math.isnan(numeric):
-            numeric = float(default)
-        elif math.isinf(numeric):
-            if numeric > 0 and maximum is not None:
-                numeric = float(maximum)
-            elif numeric < 0 and minimum is not None:
-                numeric = float(minimum)
-            else:
-                numeric = float(default)
-        if minimum is not None:
-            numeric = max(float(minimum), numeric)
-        if maximum is not None:
-            numeric = min(float(maximum), numeric)
-        return numeric
-
-    def _safe_int(
-        value: Any,
-        default: int = 0,
-        *,
-        minimum: int | None = None,
-        maximum: int | None = None,
-    ) -> int:
-        try:
-            numeric_float = float(value or 0)
-            if math.isnan(numeric_float):
-                raise ValueError("non-finite numeric value")
-            if math.isinf(numeric_float):
-                if numeric_float > 0 and maximum is not None:
-                    return int(maximum)
-                if numeric_float < 0 and minimum is not None:
-                    return int(minimum)
-                raise ValueError("non-finite numeric value")
-            numeric = int(round(numeric_float))
-        except (TypeError, ValueError, OverflowError):
-            numeric = int(default)
-        if minimum is not None:
-            numeric = max(int(minimum), numeric)
-        if maximum is not None:
-            numeric = min(int(maximum), numeric)
-        return numeric
-
     packet_rows = _ordered_events("packet", limit=packet_limit)
     router_rows = _ordered_events("router_outcome", limit=router_limit)
     orchestration_rows = _ordered_events("orchestration_feedback", limit=orchestration_limit)
-    timing_rows = odylith_control_state.load_timing_rows(repo_root=root, limit=max(1, int(timing_limit)))
+    timing_rows = context_engine_store.odylith_control_state.load_timing_rows(repo_root=root, limit=max(1, int(timing_limit)))
     timing_rows.reverse()
 
     packet_events: list[dict[str, Any]] = []
     for index, row in enumerate(packet_rows, start=1):
-        payload = dict(row.get("payload", {})) if isinstance(row.get("payload"), Mapping) else {}
-        benchmark = dict(payload.get("benchmark", {})) if isinstance(payload.get("benchmark"), Mapping) else {}
+        payload = dict(row.get("payload", {})) if isinstance(row.get("payload"), context_engine_store.Mapping) else {}
+        benchmark = dict(payload.get("benchmark", {})) if isinstance(payload.get("benchmark"), context_engine_store.Mapping) else {}
         packet_events.append(
             {
                 "index": index,
@@ -179,7 +192,7 @@ def load_odylith_drawer_history(
 
     router_events: list[dict[str, Any]] = []
     for index, row in enumerate(router_rows, start=1):
-        payload = dict(row.get("payload", {})) if isinstance(row.get("payload"), Mapping) else {}
+        payload = dict(row.get("payload", {})) if isinstance(row.get("payload"), context_engine_store.Mapping) else {}
         router_events.append(
             {
                 "index": index,
@@ -203,7 +216,7 @@ def load_odylith_drawer_history(
 
     orchestration_events: list[dict[str, Any]] = []
     for index, row in enumerate(orchestration_rows, start=1):
-        payload = dict(row.get("payload", {})) if isinstance(row.get("payload"), Mapping) else {}
+        payload = dict(row.get("payload", {})) if isinstance(row.get("payload"), context_engine_store.Mapping) else {}
         orchestration_events.append(
             {
                 "index": index,
@@ -222,7 +235,7 @@ def load_odylith_drawer_history(
 
     timing_events: list[dict[str, Any]] = []
     for index, row in enumerate(timing_rows, start=1):
-        if not isinstance(row, Mapping):
+        if not isinstance(row, context_engine_store.Mapping):
             continue
         operation = str(row.get("operation", "")).strip()
         if operation not in {"impact", "session_brief", "bootstrap_session"}:
@@ -240,7 +253,7 @@ def load_odylith_drawer_history(
     return {
         "contract": "odylith_drawer_history.v1",
         "version": "v1",
-        "generated_utc": _utc_now(),
+        "generated_utc": context_engine_store._utc_now(),
         "packet_events": packet_events,
         "router_events": router_events,
         "orchestration_events": orchestration_events,
@@ -267,20 +280,7 @@ def _sorted_count_map(values: Sequence[str]) -> dict[str, int]:
     return {key: counts[key] for key in sorted(counts, key=lambda item: (-counts[item], item))}
 
 def optimization_evaluation_corpus_path(*, repo_root: Path) -> Path:
-    return resolve_product_path(repo_root=Path(repo_root).resolve(), relative_path=OPTIMIZATION_EVALUATION_CORPUS)
-
-def _normalized_string_list(values: Any) -> list[str]:
-    if not isinstance(values, list):
-        return []
-    tokens: list[str] = []
-    seen: set[str] = set()
-    for raw in values:
-        token = str(raw or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        tokens.append(token)
-    return tokens
+    return context_engine_store.resolve_product_path(repo_root=context_engine_store.Path(repo_root).resolve(), relative_path=context_engine_store.OPTIMIZATION_EVALUATION_CORPUS)
 
 def _truncate_text(text: str, *, max_chars: int = 140) -> str:
     normalized = " ".join(str(text or "").strip().split())
@@ -301,7 +301,7 @@ def _table_row_count(connection: Any, table_name: str) -> int:
     return int(row["row_count"] or 0)
 
 def _odylith_switch_snapshot(*, repo_root: Path) -> dict[str, Any]:
-    return dict(odylith_ablation.build_odylith_switch_snapshot(repo_root=Path(repo_root).resolve()))
+    return dict(context_engine_store.odylith_ablation.build_odylith_switch_snapshot(repo_root=context_engine_store.Path(repo_root).resolve()))
 
 def _odylith_ablation_active(*, repo_root: Path) -> bool:
     return not bool(_odylith_switch_snapshot(repo_root=repo_root).get("enabled", True))
@@ -333,7 +333,7 @@ def _memory_area_label_list(labels: Sequence[str]) -> str:
 def _memory_areas_headline(areas: Sequence[Mapping[str, Any]]) -> str:
     grouped: dict[str, list[str]] = {}
     for row in areas:
-        if not isinstance(row, Mapping):
+        if not isinstance(row, context_engine_store.Mapping):
             continue
         state = str(row.get("state", "")).strip().lower() or "unknown"
         grouped.setdefault(state, []).append(str(row.get("label", "")).strip())
@@ -397,14 +397,14 @@ def _freshness_bucket_for_age_hours(age_hours: float | None) -> str:
     return "cold"
 
 def _freshness_payload(*, updated_utc: str) -> dict[str, Any]:
-    parsed = _parse_iso_utc(updated_utc)
+    parsed = context_engine_store._parse_iso_utc(updated_utc)
     if parsed is None:
         return {
             "bucket": "unknown",
             "updated_utc": str(updated_utc or "").strip(),
             "newest_age_hours": None,
         }
-    age_hours = max(0.0, (dt.datetime.now(dt.timezone.utc) - parsed).total_seconds() / 3600.0)
+    age_hours = max(0.0, (context_engine_store.dt.datetime.now(context_engine_store.dt.timezone.utc) - parsed).total_seconds() / 3600.0)
     return {
         "bucket": _freshness_bucket_for_age_hours(age_hours),
         "updated_utc": parsed.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
@@ -414,7 +414,7 @@ def _freshness_payload(*, updated_utc: str) -> dict[str, Any]:
 def _latest_updated_utc(*values: str) -> str:
     best: tuple[dt.datetime, str] | None = None
     for value in values:
-        parsed = _parse_iso_utc(value)
+        parsed = context_engine_store._parse_iso_utc(value)
         if parsed is None:
             continue
         normalized = parsed.replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -424,139 +424,13 @@ def _latest_updated_utc(*values: str) -> str:
 
 def _relative_repo_path(*, repo_root: Path, path: Path) -> str:
     try:
-        return path.resolve().relative_to(Path(repo_root).resolve()).as_posix()
+        return path.resolve().relative_to(context_engine_store.Path(repo_root).resolve()).as_posix()
     except ValueError:
         return str(path)
 
 def _humanize_slug(value: str) -> str:
     token = str(value or "").strip().replace("-", " ").replace("_", " ")
     return " ".join(part.capitalize() for part in token.split())
-
-def _workstream_token(value: str) -> str:
-    match = re.search(r"B-\d{3,}", str(value or "").upper())
-    return match.group(0) if match is not None else ""
-
-def _compact_selection_state_parts(value: str) -> tuple[str, str]:
-    token = str(value or "").strip()
-    if not token:
-        return "", ""
-    if token.startswith("x:"):
-        return "explicit", _workstream_token(token[2:])
-    if token.startswith("i:"):
-        return "inferred_confident", _workstream_token(token[2:])
-    workstream = _workstream_token(token)
-    if workstream and token == workstream:
-        return "explicit", workstream
-    return token, ""
-
-def _encode_compact_selection_state(*, state: str, workstream: str) -> str:
-    normalized_state = str(state or "").strip()
-    workstream_token = _workstream_token(workstream)
-    if normalized_state == "explicit" and workstream_token:
-        return f"x:{workstream_token}"
-    if normalized_state == "inferred_confident" and workstream_token:
-        return f"i:{workstream_token}"
-    return normalized_state
-
-def _decode_compact_selected_counts(value: Any) -> dict[str, int]:
-    if isinstance(value, Mapping):
-        return {
-            str(key).strip(): int(raw or 0)
-            for key, raw in value.items()
-            if str(key).strip() and int(raw or 0) > 0
-        }
-    token = str(value or "").strip()
-    if not token:
-        return {}
-    alias_map = {
-        "c": "commands",
-        "d": "docs",
-        "t": "tests",
-        "g": "guidance",
-    }
-    counts: dict[str, int] = {}
-    for alias, raw_count in re.findall(r"([cdtg])(\d+)", token):
-        key = alias_map.get(alias, "")
-        count = int(raw_count or 0)
-        if key and count > 0:
-            counts[key] = count
-    return counts
-
-def _encode_compact_selected_counts(counts: Mapping[str, Any]) -> str:
-    normalized = _decode_compact_selected_counts(counts)
-    if not normalized:
-        return ""
-    parts: list[str] = []
-    for key, alias in (("commands", "c"), ("docs", "d"), ("tests", "t"), ("guidance", "g")):
-        count = int(normalized.get(key, 0) or 0)
-        if count > 0:
-            parts.append(f"{alias}{count}")
-    return "".join(parts)
-
-def _payload_workstream_hint(
-    payload: Mapping[str, Any] | None,
-    *,
-    include_selection: bool = True,
-) -> str:
-    if not isinstance(payload, Mapping):
-        return ""
-    for key in ("inferred_workstream", "workstream", "ws"):
-        token = _workstream_token(str(payload.get(key, "")).strip())
-        if token:
-            return token
-    context_packet = (
-        dict(payload.get("context_packet", {}))
-        if isinstance(payload.get("context_packet"), Mapping)
-        else {}
-    )
-    _, compact_workstream = _compact_selection_state_parts(str(context_packet.get("selection_state", "")).strip())
-    if compact_workstream:
-        return compact_workstream
-    if not include_selection:
-        return ""
-    selection = (
-        dict(payload.get("workstream_selection", {}))
-        if isinstance(payload.get("workstream_selection"), Mapping)
-        else {}
-    )
-    for field_name in ("selected_workstream", "top_candidate"):
-        row = dict(selection.get(field_name, {})) if isinstance(selection.get(field_name), Mapping) else {}
-        token = _workstream_token(str(row.get("entity_id", "")).strip())
-        if token:
-            return token
-    selection_payload = (
-        dict(context_packet.get("selection", {}))
-        if isinstance(context_packet.get("selection"), Mapping)
-        else {}
-    )
-    for token in _normalized_string_list(selection_payload.get("workstream_ids")):
-        workstream_token = _workstream_token(token)
-        if workstream_token:
-            return workstream_token
-    return ""
-
-def _payload_packet_kind(
-    payload: Mapping[str, Any] | None,
-    *,
-    context_packet: Mapping[str, Any] | None = None,
-    routing_handoff: Mapping[str, Any] | None = None,
-) -> str:
-    if isinstance(payload, Mapping):
-        packet_kind = str(payload.get("packet_kind", "")).strip()
-        if packet_kind:
-            return packet_kind
-    if isinstance(context_packet, Mapping):
-        packet_kind = str(context_packet.get("packet_kind", "")).strip()
-        if packet_kind:
-            return packet_kind
-        route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), Mapping) else {}
-        if isinstance(route.get("governance"), Mapping):
-            return "governance_slice"
-    if isinstance(routing_handoff, Mapping):
-        packet_kind = str(routing_handoff.get("packet_kind", "")).strip()
-        if packet_kind:
-            return packet_kind
-    return "impact" if isinstance(context_packet, Mapping) and context_packet else ""
 
 def _judgment_memory_item(
     *,
@@ -592,8 +466,8 @@ def _judgment_memory_area(
     provenance: Sequence[Mapping[str, Any]],
     updated_utc: str = "",
 ) -> dict[str, Any]:
-    normalized_items = [dict(item) for item in items if isinstance(item, Mapping)]
-    normalized_provenance = [dict(item) for item in provenance if isinstance(item, Mapping)]
+    normalized_items = [dict(item) for item in items if isinstance(item, context_engine_store.Mapping)]
+    normalized_provenance = [dict(item) for item in provenance if isinstance(item, context_engine_store.Mapping)]
     freshest = _latest_updated_utc(
         str(updated_utc or "").strip(),
         *[str(item.get("recorded_utc", "")).strip() for item in normalized_items],
@@ -627,69 +501,6 @@ def _provenance_item(
         "trust": str(trust or "").strip(),
     }
 
-def _derive_retrieval_memory_state(
-    *,
-    transition_status: str,
-    indexed_entities: int,
-    evidence_documents: int,
-    compiler_ready: bool,
-) -> str:
-    if transition_status == "standardized" and indexed_entities > 0:
-        return "strong"
-    if indexed_entities > 0 or evidence_documents > 0 or compiler_ready:
-        return "partial"
-    return "cold"
-
-def _load_latest_benchmark_report_snapshot(*, repo_root: Path) -> dict[str, Any]:
-    path = (runtime_root(repo_root=repo_root) / "odylith-benchmarks" / "latest.v1.json").resolve()
-    payload = odylith_context_cache.read_json_object(path)
-    return dict(payload) if isinstance(payload, Mapping) else {}
-
-def _build_judgment_memory_snapshot(
-    *,
-    repo_root: Path,
-    projection_updated_utc: str,
-    backlog_projection: Mapping[str, Any],
-    plan_projection: Mapping[str, Any],
-    bug_projection: Sequence[Mapping[str, Any]],
-    diagram_projection: Sequence[Mapping[str, Any]],
-    runtime_state: Mapping[str, Any],
-    optimization: Mapping[str, Any],
-    evaluation: Mapping[str, Any],
-    benchmark_report: Mapping[str, Any],
-    recent_bootstrap_packets: Sequence[Mapping[str, Any]],
-    active_sessions: Sequence[Mapping[str, Any]],
-    repo_dirty_paths: Sequence[str],
-    welcome_state: Mapping[str, Any],
-    previous_snapshot: Mapping[str, Any] | None,
-    retrieval_state: str,
-) -> dict[str, Any]:
-    return odylith_context_engine_memory_snapshot_runtime._build_judgment_memory_snapshot(repo_root=repo_root, projection_updated_utc=projection_updated_utc, backlog_projection=backlog_projection, plan_projection=plan_projection, bug_projection=bug_projection, diagram_projection=diagram_projection, runtime_state=runtime_state, optimization=optimization, evaluation=evaluation, benchmark_report=benchmark_report, recent_bootstrap_packets=recent_bootstrap_packets, active_sessions=active_sessions, repo_dirty_paths=repo_dirty_paths, welcome_state=welcome_state, previous_snapshot=previous_snapshot, retrieval_state=retrieval_state)
-
-def _build_memory_areas_snapshot(
-    *,
-    enabled: bool,
-    authoritative_truth: Mapping[str, Any],
-    compiler_state: Mapping[str, Any],
-    guidance_catalog: Mapping[str, Any],
-    runtime_state: Mapping[str, Any],
-    entity_counts: Mapping[str, Any],
-    backend_transition: Mapping[str, Any],
-    optimization: Mapping[str, Any],
-    evaluation: Mapping[str, Any],
-    judgment_memory: Mapping[str, Any] | None = None,
-) -> dict[str, Any]:
-    return odylith_context_engine_memory_snapshot_runtime._build_memory_areas_snapshot(enabled=enabled, authoritative_truth=authoritative_truth, compiler_state=compiler_state, guidance_catalog=guidance_catalog, runtime_state=runtime_state, entity_counts=entity_counts, backend_transition=backend_transition, optimization=optimization, evaluation=evaluation, judgment_memory=judgment_memory)
-
-def _odylith_disabled_memory_snapshot(
-    *,
-    repo_root: Path,
-    switch_snapshot: Mapping[str, Any],
-    optimization_snapshot: Mapping[str, Any],
-    evaluation_snapshot: Mapping[str, Any],
-) -> dict[str, Any]:
-    return odylith_context_engine_memory_snapshot_runtime._odylith_disabled_memory_snapshot(repo_root=repo_root, switch_snapshot=switch_snapshot, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
-
 def _odylith_disabled_optimization_snapshot(
     *,
     repo_root: Path,
@@ -698,7 +509,7 @@ def _odylith_disabled_optimization_snapshot(
     return {
         "contract": "optimization_snapshot.v1",
         "version": "v1",
-        "generated_utc": _utc_now(),
+        "generated_utc": context_engine_store._utc_now(),
         "status": "disabled",
         "status_reason": "odylith_disabled",
         "odylith_switch": dict(switch_snapshot),
@@ -736,7 +547,7 @@ def _odylith_disabled_optimization_snapshot(
         "evaluation_posture": {},
         "learning_loop": {},
         "recommendations": [
-            "Odylith is disabled; optimization telemetry is suppressed for ablation studies."
+            "Odylith is disabled; optimization diagnostics are suppressed for ablation studies."
         ],
     }
 
@@ -748,7 +559,7 @@ def _odylith_disabled_evaluation_snapshot(
     return {
         "contract": "evaluation_snapshot.v1",
         "version": "v1",
-        "generated_utc": _utc_now(),
+        "generated_utc": context_engine_store._utc_now(),
         "status": "disabled",
         "status_reason": "odylith_disabled",
         "odylith_switch": dict(switch_snapshot),
@@ -792,7 +603,7 @@ def _rebuild_component_entry(
     subcomponents: Sequence[str] | None = None,
     product_layer: str | None = None,
 ) -> component_registry.ComponentEntry:
-    return component_registry.ComponentEntry(
+    return context_engine_store.component_registry.ComponentEntry(
         component_id=entry.component_id,
         name=entry.name,
         kind=entry.kind,
@@ -817,7 +628,7 @@ def _apply_odylith_component_index_ablation(
 ) -> dict[str, component_registry.ComponentEntry]:
     filtered: dict[str, component_registry.ComponentEntry] = {}
     for component_id, entry in component_index.items():
-        if component_id == "odylith" or not isinstance(entry, component_registry.ComponentEntry):
+        if component_id == "odylith" or not isinstance(entry, context_engine_store.component_registry.ComponentEntry):
             continue
         filtered[component_id] = _rebuild_component_entry(
             entry,
@@ -835,7 +646,7 @@ def _apply_odylith_registry_snapshot_ablation(
 ) -> dict[str, Any]:
     components = _apply_odylith_component_index_ablation(report.components)
     mapped_events = [
-        component_registry.MappedEvent(
+        context_engine_store.component_registry.MappedEvent(
             event_index=row.event_index,
             ts_iso=row.ts_iso,
             kind=row.kind,
@@ -850,7 +661,7 @@ def _apply_odylith_registry_snapshot_ablation(
         for row in report.mapped_events
     ]
     unmapped_meaningful_events = [
-        component_registry.MappedEvent(
+        context_engine_store.component_registry.MappedEvent(
             event_index=row.event_index,
             ts_iso=row.ts_iso,
             kind=row.kind,
@@ -864,7 +675,7 @@ def _apply_odylith_registry_snapshot_ablation(
         )
         for row in report.unmapped_meaningful_events
     ]
-    filtered_report = component_registry.ComponentRegistryReport(
+    filtered_report = context_engine_store.component_registry.ComponentRegistryReport(
         components=components,
         mapped_events=mapped_events,
         unmapped_meaningful_events=unmapped_meaningful_events,
@@ -901,15 +712,15 @@ def _apply_odylith_registry_snapshot_ablation(
 def _odylith_runtime_entity_suppressed(*, repo_root: Path, entity: Mapping[str, Any]) -> bool:
     kind = str(entity.get("kind", "")).strip().lower()
     entity_id = str(entity.get("entity_id", "")).strip().lower()
-    path_token = _normalize_repo_token(str(entity.get("path", "")).strip(), repo_root=repo_root)
+    path_token = context_engine_store._normalize_repo_token(str(entity.get("path", "")).strip(), repo_root=repo_root)
     if kind == "component" and entity_id == "odylith":
         return True
-    return bool(path_token and path_token in _ODYLITH_SUPPRESSED_PATHS and kind in {"component", "doc"})
+    return bool(path_token and path_token in context_engine_store._ODYLITH_SUPPRESSED_PATHS and kind in {"component", "doc"})
 
 def _odylith_query_targets_disabled(*, repo_root: Path, query: str) -> bool:
     token = str(query or "").strip().lower()
-    normalized = _normalize_repo_token(str(query or "").strip(), repo_root=repo_root)
-    return token in {"odylith", "odylith-platform"} or normalized in _ODYLITH_SUPPRESSED_PATHS
+    normalized = context_engine_store._normalize_repo_token(str(query or "").strip(), repo_root=repo_root)
+    return token in {"odylith", "odylith-platform"} or normalized in context_engine_store._ODYLITH_SUPPRESSED_PATHS
 
 def _filter_odylith_search_results(
     *,
@@ -918,20 +729,12 @@ def _filter_odylith_search_results(
 ) -> list[dict[str, Any]]:
     filtered: list[dict[str, Any]] = []
     for row in results:
-        if not isinstance(row, Mapping):
+        if not isinstance(row, context_engine_store.Mapping):
             continue
         if _odylith_runtime_entity_suppressed(repo_root=repo_root, entity=row):
             continue
         filtered.append(dict(row))
     return filtered
-
-def load_runtime_memory_snapshot(
-    *,
-    repo_root: Path,
-    optimization_snapshot: Mapping[str, Any] | None = None,
-    evaluation_snapshot: Mapping[str, Any] | None = None,
-) -> dict[str, Any]:
-    return odylith_context_engine_memory_snapshot_runtime.load_runtime_memory_snapshot(repo_root=repo_root, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
 
 def _load_recent_bootstrap_packets(
     *,
@@ -939,15 +742,15 @@ def _load_recent_bootstrap_packets(
     bootstrap_limit: int,
 ) -> list[dict[str, Any]]:
     packets: list[dict[str, Any]] = []
-    root = Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     valid_bootstraps: list[tuple[Path, dict[str, Any]]] = []
-    for path in sorted(bootstraps_root(repo_root=root).glob("*.json")):
-        payload = odylith_context_cache.read_json_object(path)
+    for path in sorted(context_engine_store.bootstraps_root(repo_root=root).glob("*.json")):
+        payload = context_engine_store.odylith_context_cache.read_json_object(path)
         if not payload:
             continue
         valid_bootstraps.append((path, payload))
     valid_bootstraps.sort(
-        key=lambda item: _record_sort_timestamp(payload=item[1], key="bootstrapped_at", path=item[0]),
+        key=lambda item: context_engine_store._record_sort_timestamp(payload=item[1], key="bootstrapped_at", path=item[0]),
         reverse=True,
     )
     for path, payload in valid_bootstraps[: max(1, int(bootstrap_limit))]:
@@ -955,11 +758,11 @@ def _load_recent_bootstrap_packets(
     return packets
 
 def _packet_summary_from_bootstrap_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
-    return odylith_context_engine_session_packet_runtime._packet_summary_from_bootstrap_payload(payload=payload)
+    return odylith_context_engine_packet_summary_runtime._packet_summary_from_bootstrap_payload(payload=payload)
 
 def _repo_paths_overlap(*, repo_root: Path, left: str, right: str) -> bool:
-    left_token = _normalize_repo_token(str(left or "").strip(), repo_root=repo_root)
-    right_token = _normalize_repo_token(str(right or "").strip(), repo_root=repo_root)
+    left_token = context_engine_store._normalize_repo_token(str(left or "").strip(), repo_root=repo_root)
+    right_token = context_engine_store._normalize_repo_token(str(right or "").strip(), repo_root=repo_root)
     if not left_token or not right_token:
         return False
     if left_token == right_token:
@@ -976,16 +779,16 @@ def _file_cache_signature(path: Path) -> tuple[bool, int, int]:
     return (True, int(stat.st_mtime_ns), int(stat.st_size))
 
 def _judgment_memory_snapshot_cached(*, repo_root: Path) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    path = judgment_memory_path(repo_root=root)
+    root = context_engine_store.Path(repo_root).resolve()
+    path = context_engine_store.judgment_memory_path(repo_root=root)
     cache_key = str(path)
     signature = _file_cache_signature(path)
-    cached = _PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE.get(cache_key)
+    cached = context_engine_store._PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE.get(cache_key)
     if cached is not None and cached[0] == signature:
         return dict(cached[1])
-    snapshot = odylith_context_cache.read_json_object(path) if signature[0] else {}
-    payload = dict(snapshot) if isinstance(snapshot, Mapping) else {}
-    _PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE[cache_key] = (signature, payload)
+    snapshot = context_engine_store.odylith_context_cache.read_json_object(path) if signature[0] else {}
+    payload = dict(snapshot) if isinstance(snapshot, context_engine_store.Mapping) else {}
+    context_engine_store._PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE[cache_key] = (signature, payload)
     return dict(payload)
 
 def _load_judgment_workstream_hint(
@@ -993,14 +796,14 @@ def _load_judgment_workstream_hint(
     repo_root: Path,
     changed_paths: Sequence[str],
 ) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    normalized_paths = _normalize_changed_path_list(repo_root=root, values=changed_paths)
+    root = context_engine_store.Path(repo_root).resolve()
+    normalized_paths = context_engine_store._normalize_changed_path_list(repo_root=root, values=changed_paths)
     if not normalized_paths:
         return {}
     snapshot = _judgment_memory_snapshot_cached(repo_root=root)
-    starter_slice = dict(snapshot.get("starter_slice", {})) if isinstance(snapshot.get("starter_slice"), Mapping) else {}
+    starter_slice = dict(snapshot.get("starter_slice", {})) if isinstance(snapshot.get("starter_slice"), context_engine_store.Mapping) else {}
     workstream_id = _workstream_token(str(starter_slice.get("workstream_id", "")).strip())
-    starter_path = _normalize_repo_token(str(starter_slice.get("path", "")).strip(), repo_root=root)
+    starter_path = context_engine_store._normalize_repo_token(str(starter_slice.get("path", "")).strip(), repo_root=root)
     if not workstream_id or not starter_path:
         return {}
     matched_paths = [
@@ -1047,18 +850,18 @@ def _governance_runtime_first_snapshot(
     repo_root: Path,
     limit: int = 24,
 ) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     scan_limit = max(64, max(1, int(limit)) * 12)
     rows = [
         row
-        for row in odylith_control_state.load_timing_rows(repo_root=root, limit=scan_limit)
+        for row in context_engine_store.odylith_control_state.load_timing_rows(repo_root=root, limit=scan_limit)
         if str(row.get("category", "")).strip() == "sync"
         and str(row.get("operation", "")).strip() == "governance_runtime_first"
     ][: max(1, int(limit))]
     samples = [
         dict(row.get("metadata", {}))
         for row in rows
-        if isinstance(row, Mapping) and isinstance(row.get("metadata"), Mapping)
+        if isinstance(row, context_engine_store.Mapping) and isinstance(row.get("metadata"), context_engine_store.Mapping)
     ]
     attempted_rows = [row for row in samples if bool(row.get("runtime_fast_path"))]
 
@@ -1082,13 +885,13 @@ def _governance_runtime_first_snapshot(
         "evidence_source": "live_timings",
     }
     if int(live_snapshot.get("sample_size", 0) or 0) > 0:
-        _persist_runtime_proof_section(
+        context_engine_store._persist_runtime_proof_section(
             repo_root=root,
             section="governance_runtime_first",
             payload=live_snapshot,
         )
         return live_snapshot
-    return _sticky_snapshot_from_section(
+    return context_engine_store._sticky_snapshot_from_section(
         repo_root=root,
         section="governance_runtime_first",
         live_snapshot=live_snapshot,
@@ -1100,22 +903,22 @@ def _packet_benchmark_summary_for_runtime_packet(
     repo_root: Path,
     packet: Mapping[str, Any],
 ) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    corpus = odylith_context_cache.read_json_object(optimization_evaluation_corpus_path(repo_root=root))
-    if not isinstance(corpus, Mapping):
+    root = context_engine_store.Path(repo_root).resolve()
+    corpus = context_engine_store.odylith_context_cache.read_json_object(optimization_evaluation_corpus_path(repo_root=root))
+    if not isinstance(corpus, context_engine_store.Mapping):
         corpus = {}
-    cases = odylith_benchmark_contract.packet_benchmark_scenarios(corpus)
+    cases = context_engine_store.odylith_benchmark_contract.packet_benchmark_scenarios(corpus)
     matched_case_ids: list[str] = []
     drift_case_ids: list[str] = []
     satisfied_case_count = 0
     for case in cases:
-        match_spec = dict(case.get("match", {})) if isinstance(case.get("match"), Mapping) else {}
+        match_spec = dict(case.get("match", {})) if isinstance(case.get("match"), context_engine_store.Mapping) else {}
         if not _packet_matches_evaluation_case(packet, match_spec):
             continue
         case_id = str(case.get("case_id", "")).strip()
         if case_id:
             matched_case_ids.append(case_id)
-        expect_spec = dict(case.get("expect", {})) if isinstance(case.get("expect"), Mapping) else {}
+        expect_spec = dict(case.get("expect", {})) if isinstance(case.get("expect"), context_engine_store.Mapping) else {}
         expectation_ok, _details = _packet_satisfies_evaluation_expectations(packet, expect_spec)
         if expectation_ok:
             satisfied_case_count += 1
@@ -1163,10 +966,44 @@ def _packet_satisfies_evaluation_expectations(
         "expected_intent_family": "",
         "observed_intent_family": str(packet.get("intent_family", "")).strip(),
     }
-    if not isinstance(expect_spec, Mapping) or not expect_spec:
+    if not isinstance(expect_spec, context_engine_store.Mapping) or not expect_spec:
         return True, details
     matched = True
-    for field_name in ("packet_state", "intent_family", "accuracy_posture", "routing_confidence"):
+    for field_name in (
+        "packet_source",
+        "packet_kind",
+        "selection_state",
+        "packet_state",
+        "workstream",
+        "intent_family",
+        "accuracy_posture",
+        "routing_confidence",
+        "proof_resolution_state",
+        "proof_status",
+        "proof_frontier_phase",
+        "proof_first_failing_phase",
+        "claim_guard_highest_truthful_claim",
+        "claim_guard_claim_scope",
+        "claim_guard_gate_state",
+        "execution_engine_outcome",
+        "execution_engine_mode",
+        "execution_engine_next_move",
+        "execution_engine_current_phase",
+        "execution_engine_last_successful_phase",
+        "execution_engine_closure",
+        "execution_engine_wait_status",
+        "execution_engine_resume_token",
+        "execution_engine_validation_archetype",
+        "execution_engine_authoritative_lane",
+        "execution_engine_target_lane",
+        "execution_engine_host_family",
+        "execution_engine_model_family",
+        "execution_engine_component_id",
+        "execution_engine_canonical_component_id",
+        "execution_engine_identity_status",
+        "execution_engine_target_component_status",
+        "execution_engine_snapshot_reuse_status",
+    ):
         expected = _expected_token_set(expect_spec.get(field_name))
         if not expected:
             continue
@@ -1175,7 +1012,18 @@ def _packet_satisfies_evaluation_expectations(
         details[f"observed_{field_name}"] = observed
         if observed not in expected:
             matched = False
-    for field_name in ("within_budget", "route_ready", "native_spawn_ready", "narrowing_required"):
+    for field_name in (
+        "within_budget",
+        "route_ready",
+        "native_spawn_ready",
+        "narrowing_required",
+        "proof_state_present",
+        "claim_guard_hosted_frontier_advanced",
+        "claim_guard_same_fingerprint_as_last_falsification",
+        "proof_same_fingerprint_reopened",
+        "execution_engine_present",
+        "execution_engine_requires_reanchor",
+    ):
         if field_name not in expect_spec:
             continue
         expected_bool = bool(expect_spec.get(field_name))
@@ -1206,7 +1054,7 @@ def _architecture_timing_matches_evaluation_case(
     timing_row: Mapping[str, Any],
     match_spec: Mapping[str, Any],
 ) -> bool:
-    metadata = dict(timing_row.get("metadata", {})) if isinstance(timing_row.get("metadata"), Mapping) else {}
+    metadata = dict(timing_row.get("metadata", {})) if isinstance(timing_row.get("metadata"), context_engine_store.Mapping) else {}
     changed_paths = {
         str(token).strip()
         for token in metadata.get("changed_paths", [])
@@ -1228,70 +1076,8 @@ def _architecture_timing_matches_evaluation_case(
         return False
     return True
 
-def _architecture_timing_satisfies_evaluation_expectations(
-    timing_row: Mapping[str, Any],
-    expect_spec: Mapping[str, Any],
-) -> tuple[bool, dict[str, Any]]:
-    metadata = dict(timing_row.get("metadata", {})) if isinstance(timing_row.get("metadata"), Mapping) else {}
-    details = {
-        "observed_confidence_tier": str(metadata.get("confidence_tier", "")).strip(),
-        "observed_full_scan_recommended": bool(metadata.get("full_scan_recommended")),
-        "observed_contract_touchpoint_count": int(metadata.get("contract_touchpoint_count", 0) or 0),
-        "observed_execution_hint_mode": str(metadata.get("execution_hint_mode", "")).strip(),
-        "observed_risk_tier": str(metadata.get("risk_tier", "")).strip(),
-    }
-    if not isinstance(expect_spec, Mapping) or not expect_spec:
-        return True, details
-    matched = True
-    expected_confidence = _expected_token_set(expect_spec.get("confidence_tier"))
-    if expected_confidence:
-        details["expected_confidence_tier"] = sorted(expected_confidence)
-        if details["observed_confidence_tier"] not in expected_confidence:
-            matched = False
-    for field_name in ("full_scan_recommended", "resolved"):
-        if field_name not in expect_spec:
-            continue
-        expected_bool = bool(expect_spec.get(field_name))
-        observed_bool = bool(metadata.get(field_name))
-        details[f"expected_{field_name}"] = expected_bool
-        details[f"observed_{field_name}"] = observed_bool
-        if observed_bool != expected_bool:
-            matched = False
-    expected_execution_modes = _expected_token_set(expect_spec.get("execution_hint_mode"))
-    if expected_execution_modes:
-        details["expected_execution_hint_mode"] = sorted(expected_execution_modes)
-        if details["observed_execution_hint_mode"] not in expected_execution_modes:
-            matched = False
-    expected_risk_tiers = _expected_token_set(expect_spec.get("risk_tier"))
-    if expected_risk_tiers:
-        details["expected_risk_tier"] = sorted(expected_risk_tiers)
-        if details["observed_risk_tier"] not in expected_risk_tiers:
-            matched = False
-    if "contract_touchpoints_min" in expect_spec:
-        expected_min = int(expect_spec.get("contract_touchpoints_min", 0) or 0)
-        details["expected_contract_touchpoints_min"] = expected_min
-        if details["observed_contract_touchpoint_count"] < expected_min:
-            matched = False
-    if "authority_graph_edges_min" in expect_spec:
-        expected_min = int(expect_spec.get("authority_graph_edges_min", 0) or 0)
-        observed_count = int(metadata.get("authority_graph_edge_count", 0) or 0)
-        details["expected_authority_graph_edges_min"] = expected_min
-        details["observed_authority_graph_edge_count"] = observed_count
-        if observed_count < expected_min:
-            matched = False
-    return matched, details
-
-def _architecture_evaluation_snapshot(
-    *,
-    repo_root: Path,
-    corpus: Mapping[str, Any],
-    focus_limit: int = 4,
-    timing_limit: int = 48,
-) -> dict[str, Any]:
-    return odylith_context_engine_memory_snapshot_runtime._architecture_evaluation_snapshot(repo_root=repo_root, corpus=corpus, focus_limit=focus_limit, timing_limit=timing_limit)
-
 def orchestration_decision_ledgers_root(*, repo_root: Path) -> Path:
-    return (Path(repo_root).resolve() / ".odylith" / "subagent_orchestrator" / "decision-ledgers").resolve()
+    return (context_engine_store.Path(repo_root).resolve() / ".odylith" / "subagent_orchestrator" / "decision-ledgers").resolve()
 
 def _orchestration_adoption_snapshot_cache_signature(
     *,
@@ -1299,8 +1085,8 @@ def _orchestration_adoption_snapshot_cache_signature(
     limit: int,
 ) -> tuple[Any, ...]:
     root = orchestration_decision_ledgers_root(repo_root=repo_root)
-    proof_path = proof_surfaces_path(repo_root=repo_root)
-    proof_signature = odylith_context_cache.path_signature(proof_path)
+    proof_path = context_engine_store.proof_surfaces_path(repo_root=repo_root)
+    proof_signature = context_engine_store.odylith_context_cache.path_signature(proof_path)
     if not root.is_dir():
         return (str(root), int(limit), 0, 0, int(proof_signature.get("mtime_ns", 0) or 0))
     rows = sorted(
@@ -1315,11 +1101,11 @@ def load_orchestration_adoption_snapshot(
     repo_root: Path,
     limit: int = 12,
 ) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     cache_key = f"{root}:orchestration_adoption_snapshot:{max(1, int(limit))}"
     cache_signature = _orchestration_adoption_snapshot_cache_signature(repo_root=root, limit=limit)
-    now = time.monotonic()
-    cached = _PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE.get(cache_key)
+    now = context_engine_store.time.monotonic()
+    cached = context_engine_store._PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE.get(cache_key)
     if cached is not None:
         cached_signature, cached_until, cached_payload = cached
         if cached_signature == cache_signature and cached_until > now:
@@ -1338,11 +1124,11 @@ def load_orchestration_adoption_snapshot(
     rows: list[dict[str, Any]] = []
     latest_recorded_at = ""
     for path in ledger_paths:
-        ledger = odylith_context_cache.read_json_object(path)
-        if not isinstance(ledger, Mapping):
+        ledger = context_engine_store.odylith_context_cache.read_json_object(path)
+        if not isinstance(ledger, context_engine_store.Mapping):
             continue
-        decision_summary = dict(ledger.get("decision_summary", {})) if isinstance(ledger.get("decision_summary"), Mapping) else {}
-        adoption = dict(decision_summary.get("odylith_adoption", {})) if isinstance(decision_summary.get("odylith_adoption"), Mapping) else {}
+        decision_summary = dict(ledger.get("decision_summary", {})) if isinstance(ledger.get("decision_summary"), context_engine_store.Mapping) else {}
+        adoption = dict(decision_summary.get("odylith_adoption", {})) if isinstance(decision_summary.get("odylith_adoption"), context_engine_store.Mapping) else {}
         if not adoption:
             continue
         recorded_at = str(ledger.get("updated_at", "")).strip() or str(ledger.get("recorded_at", "")).strip()
@@ -1389,21 +1175,21 @@ def load_orchestration_adoption_snapshot(
     }
     payload = dict(live_snapshot)
     if int(live_snapshot.get("sample_size", 0) or 0) > 0:
-        _persist_runtime_proof_section(
+        context_engine_store._persist_runtime_proof_section(
             repo_root=root,
             section="orchestration_adoption",
             payload=live_snapshot,
         )
     else:
-        payload = _sticky_snapshot_from_section(
+        payload = context_engine_store._sticky_snapshot_from_section(
             repo_root=root,
             section="orchestration_adoption",
             live_snapshot=live_snapshot,
             valid_when=lambda snapshot: int(snapshot.get("sample_size", 0) or 0) > 0,
         )
-    _PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE[cache_key] = (
+    context_engine_store._PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE[cache_key] = (
         cache_signature,
-        now + _PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS,
+        now + context_engine_store._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS,
         dict(payload),
     )
     return payload
@@ -1418,8 +1204,8 @@ def persist_orchestration_adoption_snapshot(
     if int(payload.get("sample_size", 0) or 0) <= 0:
         return payload
     payload.setdefault("evidence_source", str(source or "external_proof").strip() or "external_proof")
-    return _persist_runtime_proof_section(
-        repo_root=Path(repo_root).resolve(),
+    return context_engine_store._persist_runtime_proof_section(
+        repo_root=context_engine_store.Path(repo_root).resolve(),
         section="orchestration_adoption",
         payload=payload,
     )
@@ -1432,11 +1218,11 @@ def load_runtime_optimization_snapshot(
 ) -> dict[str, Any]:
     """Summarize recent runtime packet and routing posture for operator tuning."""
 
-    root = Path(repo_root).resolve()
+    root = context_engine_store.Path(repo_root).resolve()
     cache_key = f"{root}:optimization_snapshot:{int(bootstrap_limit)}:{int(timing_limit)}"
-    cache_signature = _runtime_optimization_cache_signature(repo_root=root)
-    now = time.monotonic()
-    cached = _PROCESS_OPTIMIZATION_SNAPSHOT_CACHE.get(cache_key)
+    cache_signature = context_engine_store._runtime_optimization_cache_signature(repo_root=root)
+    now = context_engine_store.time.monotonic()
+    cached = context_engine_store._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE.get(cache_key)
     if cached is not None:
         cached_signature, cached_until, cached_payload = cached
         if cached_signature == cache_signature and cached_until > now:
@@ -1447,19 +1233,19 @@ def load_runtime_optimization_snapshot(
             repo_root=root,
             switch_snapshot=odylith_switch,
         )
-        _PROCESS_OPTIMIZATION_SNAPSHOT_CACHE[cache_key] = (
+        context_engine_store._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE[cache_key] = (
             cache_signature,
-            now + _PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS,
+            now + context_engine_store._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS,
             dict(payload),
         )
         return payload
     packets = _load_recent_bootstrap_packets(repo_root=root, bootstrap_limit=bootstrap_limit)
     timing_summary = load_runtime_timing_summary(repo_root=root, limit=max(1, int(timing_limit)))
-    learning_summary = odylith_evaluation_ledger.summarize(
+    learning_summary = context_engine_store.odylith_evaluation_ledger.summarize(
         repo_root=root,
         limit=max(64, bootstrap_limit * 8),
     )
-    operations = timing_summary.get("operations", []) if isinstance(timing_summary, Mapping) else []
+    operations = timing_summary.get("operations", []) if isinstance(timing_summary, context_engine_store.Mapping) else []
     if not isinstance(operations, list):
         operations = []
     governance_runtime_first = _governance_runtime_first_snapshot(repo_root=root, limit=max(12, timing_limit))
@@ -1618,58 +1404,58 @@ def load_runtime_optimization_snapshot(
     top_intent_family = next(iter(intent_family_distribution), "")
     learning_packet = (
         dict(learning_summary.get("packet_events", {}))
-        if isinstance(learning_summary.get("packet_events"), Mapping)
+        if isinstance(learning_summary.get("packet_events"), context_engine_store.Mapping)
         else {}
     )
     learning_router = (
         dict(learning_summary.get("router_outcomes", {}))
-        if isinstance(learning_summary.get("router_outcomes"), Mapping)
+        if isinstance(learning_summary.get("router_outcomes"), context_engine_store.Mapping)
         else {}
     )
     learning_orchestration = (
         dict(learning_summary.get("orchestration_feedback", {}))
-        if isinstance(learning_summary.get("orchestration_feedback"), Mapping)
+        if isinstance(learning_summary.get("orchestration_feedback"), context_engine_store.Mapping)
         else {}
     )
     learning_decision_quality = (
         dict(learning_summary.get("decision_quality", {}))
-        if isinstance(learning_summary.get("decision_quality"), Mapping)
+        if isinstance(learning_summary.get("decision_quality"), context_engine_store.Mapping)
         else {}
     )
     learning_decision_quality_confidence = (
         dict(learning_decision_quality.get("confidence", {}))
-        if isinstance(learning_decision_quality.get("confidence"), Mapping)
+        if isinstance(learning_decision_quality.get("confidence"), context_engine_store.Mapping)
         else {}
     )
     learning_trend = (
         dict(learning_summary.get("trend_posture", {}))
-        if isinstance(learning_summary.get("trend_posture"), Mapping)
+        if isinstance(learning_summary.get("trend_posture"), context_engine_store.Mapping)
         else {}
     )
     learning_control = (
         dict(learning_summary.get("control_posture", {}))
-        if isinstance(learning_summary.get("control_posture"), Mapping)
+        if isinstance(learning_summary.get("control_posture"), context_engine_store.Mapping)
         else {}
     )
     learning_freshness = (
         dict(learning_summary.get("freshness", {}))
-        if isinstance(learning_summary.get("freshness"), Mapping)
+        if isinstance(learning_summary.get("freshness"), context_engine_store.Mapping)
         else {}
     )
     learning_evidence_strength = (
         dict(learning_summary.get("evidence_strength", {}))
-        if isinstance(learning_summary.get("evidence_strength"), Mapping)
+        if isinstance(learning_summary.get("evidence_strength"), context_engine_store.Mapping)
         else {}
     )
     learning_advisories = (
         dict(learning_summary.get("control_advisories", {}))
-        if isinstance(learning_summary.get("control_advisories"), Mapping)
+        if isinstance(learning_summary.get("control_advisories"), context_engine_store.Mapping)
         else {}
     )
 
     latency_posture: dict[str, Any] = {}
     for row in operations:
-        if not isinstance(row, Mapping):
+        if not isinstance(row, context_engine_store.Mapping):
             continue
         operation = str(row.get("operation", "")).strip()
         if operation not in {"impact", "session_brief", "bootstrap_session"}:
@@ -1683,7 +1469,7 @@ def load_runtime_optimization_snapshot(
     recommendation_rows: list[str] = []
     if sample_size == 0:
         recommendation_rows.append(
-            f"Optimization history is sparse; run `{display_command('context-engine', '--repo-root', '.', 'bootstrap-session', '<path>')}` on a grounded slice to seed packet evidence."
+            f"Optimization history is sparse; run `{context_engine_store.display_command('context-engine', '--repo-root', '.', 'bootstrap-session', '<path>')}` on a grounded slice to seed packet evidence."
         )
     else:
         if within_budget_rate < 1.0:
@@ -1726,7 +1512,7 @@ def load_runtime_optimization_snapshot(
             recommendation_rows.append(
                 "Recent orchestration feedback shows merge or false-parallel regressions; keep parallel fan-out guarded unless the slice is explicitly disjoint."
             )
-    overall_freshness = dict(learning_freshness.get("overall", {})) if isinstance(learning_freshness.get("overall"), Mapping) else {}
+    overall_freshness = dict(learning_freshness.get("overall", {})) if isinstance(learning_freshness.get("overall"), context_engine_store.Mapping) else {}
     if str(overall_freshness.get("bucket", "")).strip() in {"aging", "stale"}:
         recommendation_rows.append(
             "Optimization history is aging or stale; prefer fresh grounded bootstrap sessions before trusting the current advisory loop for aggressive depth or fan-out."
@@ -1843,7 +1629,7 @@ def load_runtime_optimization_snapshot(
     payload = {
         "contract": "optimization_snapshot.v1",
         "version": "v1",
-        "generated_utc": _utc_now(),
+        "generated_utc": context_engine_store._utc_now(),
         "odylith_switch": odylith_switch,
         "sample_size": sample_size,
         "status": "active" if sample_size else "insufficient_history",
@@ -1999,6 +1785,136 @@ def load_runtime_optimization_snapshot(
             "native_spawn_ready": bool(latest_packet.get("native_spawn_ready")),
             "within_budget": bool(latest_packet.get("within_budget")),
             "miss_recovery_mode": str(latest_packet.get("miss_recovery_mode", "")).strip(),
+            "execution_engine_present": bool(latest_packet.get("execution_engine_present")),
+            "execution_engine_outcome": str(latest_packet.get("execution_engine_outcome", "")).strip(),
+            "execution_engine_requires_reanchor": bool(
+                latest_packet.get("execution_engine_requires_reanchor")
+            ),
+            "execution_engine_mode": str(latest_packet.get("execution_engine_mode", "")).strip(),
+            "execution_engine_next_move": str(latest_packet.get("execution_engine_next_move", "")).strip(),
+            "execution_engine_current_phase": str(
+                latest_packet.get("execution_engine_current_phase", "")
+            ).strip(),
+            "execution_engine_last_successful_phase": str(
+                latest_packet.get("execution_engine_last_successful_phase", "")
+            ).strip(),
+            "execution_engine_blocker": str(latest_packet.get("execution_engine_blocker", "")).strip(),
+            "execution_engine_closure": str(latest_packet.get("execution_engine_closure", "")).strip(),
+            "execution_engine_wait_status": str(
+                latest_packet.get("execution_engine_wait_status", "")
+            ).strip(),
+            "execution_engine_wait_detail": str(
+                latest_packet.get("execution_engine_wait_detail", "")
+            ).strip(),
+            "execution_engine_resume_token": str(
+                latest_packet.get("execution_engine_resume_token", "")
+            ).strip(),
+            "execution_engine_validation_archetype": str(
+                latest_packet.get("execution_engine_validation_archetype", "")
+            ).strip(),
+            "execution_engine_validation_minimum_pass_count": int(
+                latest_packet.get("execution_engine_validation_minimum_pass_count", 0) or 0
+            ),
+            "execution_engine_contradiction_count": int(
+                latest_packet.get("execution_engine_contradiction_count", 0) or 0
+            ),
+            "execution_engine_history_rule_count": int(
+                latest_packet.get("execution_engine_history_rule_count", 0) or 0
+            ),
+            "execution_engine_authoritative_lane": str(
+                latest_packet.get("execution_engine_authoritative_lane", "")
+            ).strip(),
+            "execution_engine_host_family": str(
+                latest_packet.get("execution_engine_host_family", "")
+            ).strip(),
+            "execution_engine_model_family": str(
+                latest_packet.get("execution_engine_model_family", "")
+            ).strip(),
+            "execution_engine_host_supports_interrupt": bool(
+                latest_packet.get("execution_engine_host_supports_interrupt")
+            ),
+            "execution_engine_host_supports_artifact_paths": bool(
+                latest_packet.get("execution_engine_host_supports_artifact_paths")
+            ),
+            "execution_engine_component_id": str(
+                latest_packet.get("execution_engine_component_id", "")
+            ).strip(),
+            "execution_engine_canonical_component_id": str(
+                latest_packet.get("execution_engine_canonical_component_id", "")
+            ).strip(),
+            "execution_engine_identity_status": str(
+                latest_packet.get("execution_engine_identity_status", "")
+            ).strip(),
+            "execution_engine_target_component_id": str(
+                latest_packet.get("execution_engine_target_component_id", "")
+            ).strip(),
+            "execution_engine_target_component_ids": [
+                str(token).strip()
+                for token in latest_packet.get("execution_engine_target_component_ids", [])
+                if isinstance(
+                    latest_packet.get("execution_engine_target_component_ids"),
+                    context_engine_store.Sequence,
+                )
+                and not isinstance(
+                    latest_packet.get("execution_engine_target_component_ids"),
+                    (str, bytes, bytearray),
+                )
+                and str(token).strip()
+            ][:4],
+            "execution_engine_target_component_status": str(
+                latest_packet.get("execution_engine_target_component_status", "")
+            ).strip(),
+            "execution_engine_target_lane": str(
+                latest_packet.get("execution_engine_target_lane", "")
+            ).strip(),
+            "execution_engine_candidate_target_count": int(
+                latest_packet.get("execution_engine_candidate_target_count", 0) or 0
+            ),
+            "execution_engine_diagnostic_anchor_count": int(
+                latest_packet.get("execution_engine_diagnostic_anchor_count", 0) or 0
+            ),
+            "execution_engine_has_writable_targets": bool(
+                latest_packet.get("execution_engine_has_writable_targets")
+            ),
+            "execution_engine_requires_more_consumer_context": bool(
+                latest_packet.get("execution_engine_requires_more_consumer_context")
+            ),
+            "execution_engine_consumer_failover": str(
+                latest_packet.get("execution_engine_consumer_failover", "")
+            ).strip(),
+            "execution_engine_commentary_mode": str(
+                latest_packet.get("execution_engine_commentary_mode", "")
+            ).strip(),
+            "execution_engine_suppress_routing_receipts": bool(
+                latest_packet.get("execution_engine_suppress_routing_receipts")
+            ),
+            "execution_engine_surface_fast_lane": bool(
+                latest_packet.get("execution_engine_surface_fast_lane")
+            ),
+            "execution_engine_snapshot_duration_ms": _safe_float(
+                latest_packet.get("execution_engine_snapshot_duration_ms")
+            ),
+            "execution_engine_snapshot_estimated_tokens": _safe_int(
+                latest_packet.get("execution_engine_snapshot_estimated_tokens")
+            ),
+            "execution_engine_runtime_contract_estimated_tokens": _safe_int(
+                latest_packet.get("execution_engine_runtime_contract_estimated_tokens")
+            ),
+            "execution_engine_total_payload_estimated_tokens": _safe_int(
+                latest_packet.get("execution_engine_total_payload_estimated_tokens")
+            ),
+            "execution_engine_snapshot_reuse_status": str(
+                latest_packet.get("execution_engine_snapshot_reuse_status", "")
+            ).strip(),
+            "execution_engine_handshake_version": str(
+                latest_packet.get("execution_engine_handshake_version", "")
+            ).strip(),
+            "turn_intent": str(latest_packet.get("turn_intent", "")).strip(),
+            "turn_surface_count": int(latest_packet.get("turn_surface_count", 0) or 0),
+            "turn_visible_text_count": int(latest_packet.get("turn_visible_text_count", 0) or 0),
+            "turn_active_tab": str(latest_packet.get("turn_active_tab", "")).strip(),
+            "turn_user_turn_id": str(latest_packet.get("turn_user_turn_id", "")).strip(),
+            "turn_supersedes_turn_id": str(latest_packet.get("turn_supersedes_turn_id", "")).strip(),
             "estimated_tokens": int(latest_packet.get("estimated_tokens", 0) or 0),
         }
         if latest_packet
@@ -2016,9 +1932,11 @@ def load_runtime_optimization_snapshot(
         },
         "recommendations": recommendation_rows[:4],
     }
-    _PROCESS_OPTIMIZATION_SNAPSHOT_CACHE[cache_key] = (
+    context_engine_store._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE[cache_key] = (
         cache_signature,
-        now + _PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS,
+        now + context_engine_store._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS,
         dict(payload),
     )
     return payload
+# Keep the store dependency explicit without pulling it through module bootstrap.
+from odylith.runtime.context_engine import odylith_context_engine_store as context_engine_store

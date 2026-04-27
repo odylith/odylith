@@ -1,3 +1,9 @@
+    function numericProgressOrNull(value) {
+      if (value === null || value === undefined || value === "") return null;
+      const numericValue = Number(value);
+      return Number.isFinite(numericValue) ? numericValue : null;
+    }
+
     function renderExecutionWaves(payload, state) {
       const host = document.getElementById("execution-waves-host");
       if (!host) return;
@@ -5,7 +11,7 @@
         host.innerHTML = "";
       };
       const ensureTarget = () => {
-        host.innerHTML = '<article class="card"><div id="execution-waves" class="muted"></div></article>';
+        host.innerHTML = '<article class="card execution-waves-card"><h2>Programs</h2><div id="execution-waves" class="muted"></div></article>';
         return host.querySelector("#execution-waves");
       };
       const programs = executionWavePrograms(payload);
@@ -16,6 +22,7 @@
       const scopedWorkstream = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : ""))
         ? String(state.workstream || "")
         : "";
+      const disclosureGroup = "programs";
       const scopedWaveView = executionWaveEntriesForScope(payload, scopedWorkstream);
       if (scopedWorkstream && !scopedWaveView.hasRelevantScope) {
         clearHost();
@@ -45,8 +52,12 @@
           .map((row) => {
             const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
             const plan = row && typeof row.plan === "object" ? row.plan : {};
-            const progressRatio = Number(plan && plan.progress_ratio);
-            return [ideaId, Number.isFinite(progressRatio) ? progressRatio : null];
+            const progressRatio = numericProgressOrNull(
+              Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")
+                ? plan.display_progress_ratio
+                : (Object.prototype.hasOwnProperty.call(plan, "progress_ratio") ? plan.progress_ratio : null)
+            );
+            return [ideaId, progressRatio];
           })
           .filter(([ideaId]) => ideaId)
       );
@@ -63,9 +74,9 @@
       const renderMemberChip = (ideaId, options = {}) => {
         const token = String(ideaId || "").trim();
         if (!WORKSTREAM_RE.test(token)) return "";
-        const tooltip = workstreamTooltipText(token, workstreamTitles, `Scope to ${token}`);
+        const tooltip = workstreamTooltipText(token, workstreamTitles, `Open radar for ${token}`);
         const tone = options && options.selected ? " wave-member-selected" : "";
-        return `<a class="chip chip-link execution-wave-chip-link${tone}" href="${escapeHtml(compassScopeHref(token, state))}" target="_top" data-execution-wave-scope="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
+        return `<a class="chip chip-link execution-wave-chip-link${tone}" href="${escapeHtml(radarWorkstreamHref(token))}" target="_top" data-execution-wave-scope="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(`${token}: ${tooltip}`)}">${escapeHtml(token)}</a>`;
       };
       const planHrefForPath = (value) => {
         const token = normalizeRepoPath(value);
@@ -109,6 +120,12 @@
           ? `${umbrellaTitle} (${umbrellaId})`
           : (umbrellaTitle || umbrellaId);
       };
+      const disclosureKeyForProgram = (program) => {
+        const umbrellaId = String(program && program.umbrella_id ? program.umbrella_id : "").trim();
+        if (umbrellaId) return `program:${umbrellaId}`;
+        const label = formatExecutionWaveProgramTitle(program);
+        return label ? `program:${label}` : "program:execution-waves";
+      };
       const executionWaveCompletionChip = (program) => {
         const completionLabel = String(program && program.completion_label || "").trim();
         if (!completionLabel) return "";
@@ -117,6 +134,7 @@
       const renderProgramSection = (entry) => {
         const program = entry && entry.program ? entry.program : null;
         if (!program) return "";
+        const persistenceKey = disclosureKeyForProgram(program);
         const sectionChips = [];
         const programWaveCount = Number(program && program.wave_count || 0);
         if (programWaveCount > 0) {
@@ -134,20 +152,25 @@
             title: formatExecutionWaveProgramTitle(program),
             entries: [entry],
             selectedWorkstreamId: scopedWorkstream,
+            persistenceKey,
             contextLine: "",
             summaryLine: programSummaryLine,
             sectionChips,
+            openByDefault: resolveCompassDisclosureOpen(disclosureGroup, state, persistenceKey, false),
           },
-          {
-            ...renderOptions,
-            hideProgramFocusTitle: true,
-            boardWrapperClass: "",
-          },
-        );
+        {
+          ...renderOptions,
+          hideProgramFocusTitle: true,
+          hideProgramFocusPanel: true,
+          boardWrapperClass: "",
+          sectionClassName: "execution-wave-section-program-card",
+        },
+      );
       };
 
       if (entries.length > 1) {
-        target.innerHTML = `<div class="execution-wave-program-stack">${entries.map(renderProgramSection).filter(Boolean).join("")}</div>`;
+        target.innerHTML = `<div class="execution-wave-program-stack execution-wave-program-stack-program">${entries.map(renderProgramSection).filter(Boolean).join("")}</div>`;
+        bindCompassDisclosurePersistence(target, disclosureGroup, state);
         return;
       }
 
@@ -183,6 +206,7 @@
         if (waveSpan) sectionChips.push(`<span class="label execution-wave-label wave-status-planned">${escapeHtml(waveSpan)}</span>`);
         if (roleLabel) sectionChips.push(`<span class="label execution-wave-label wave-role-chip">${escapeHtml(roleLabel)}</span>`);
       }
+      const sectionPersistenceKey = disclosureKeyForProgram(primaryProgram);
 
       target.innerHTML = renderExecutionWaveSection(
         {
@@ -191,16 +215,21 @@
             : "Execution Waves",
           entries,
           selectedWorkstreamId: scopedWorkstream,
+          persistenceKey: sectionPersistenceKey,
           programLabel: sectionLabel,
           contextLine: sectionContextLine,
           summaryLine: sectionSummaryLine,
           sectionChips,
+          openByDefault: resolveCompassDisclosureOpen(disclosureGroup, state, sectionPersistenceKey, false),
         },
         {
           ...renderOptions,
+          hideProgramFocusPanel: true,
           boardWrapperClass: "",
+          sectionClassName: "execution-wave-section-program-card",
         },
       );
+      bindCompassDisclosurePersistence(target, disclosureGroup, state);
 
       Array.from(target.querySelectorAll("[data-execution-wave-scope]")).forEach((node) => {
         if (String(node.tagName || "").toLowerCase() === "a") {

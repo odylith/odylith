@@ -1,8 +1,16 @@
 # Subagent Orchestrator
-Last updated: 2026-03-31
+
+## Odylith Discipline Contract
+- Subagent Orchestrator owns routed Coordination execution. Foreman-style UX
+  labels are benchmark vocabulary; runtime admissibility requires owner, goal,
+  expected output, stop condition, owned scope, validation expectation, and
+  closeout state before delegation proceeds.
+- Route-ready outputs must remain host-general across Codex and Claude while
+  preserving host capability differences in adapter fields only.
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-03-31
+Last updated (UTC): 2026-04-09
 
 ## Purpose
 Subagent Orchestrator is Odylith's prompt-level decomposition engine. It takes
@@ -10,9 +18,13 @@ one grounded prompt and decides whether the work remains local, becomes one
 delegated leaf, or expands into a conservative serial or parallel execution
 plan with explicit merge barriers.
 
-In Codex, this orchestration contract applies to substantive grounded repo work
-across the consumer lane and both Odylith product-repo maintainer postures:
-pinned dogfood and detached `source-local` maintainer dev.
+This orchestration contract applies to substantive grounded repo work across
+the consumer lane and both Odylith product-repo maintainer postures: pinned
+dogfood and detached `source-local` maintainer dev. Native spawn remains
+capability-gated by the resolved host runtime. Codex and Claude Code are both
+validated Odylith delegation hosts; Codex executes routed leaves through
+`spawn_agent`, while Claude Code executes the same bounded orchestration plan
+through Task-tool subagents and the checked-in `.claude/` project assets.
 
 ## Scope And Non-Goals
 ### The orchestrator owns
@@ -30,6 +42,10 @@ pinned dogfood and detached `source-local` maintainer dev.
 - Grounding the repo from scratch. It expects bounded context or request
   signals.
 - Spawning agents itself. It emits the plan the live agent should execute.
+- Global admissibility policy. Execution Engine decides whether the next
+  move is allowed before orchestration fan-out becomes relevant, and active
+  governed verify or recover posture may force local or serial follow-through
+  even when the slice would otherwise look parallel-safe.
 
 ## Developer Mental Model
 - The orchestrator sits one level above the router.
@@ -48,12 +64,13 @@ pinned dogfood and detached `source-local` maintainer dev.
   belongs in at most one short `Odylith Assist:` line grounded in concrete
   observed counts, measured deltas, or validation outcomes. Prefer
   `**Odylith Assist:**` when Markdown formatting is available. Lead with the
-  user win, not Odylith mechanics, link updated governance ids inline when
-  they were actually changed, and frame the edge against `odylith_off` or the
-  broader unguided path when the evidence supports it. Keep it crisp,
-  authentic, clear, simple, insightful, soulful, friendly, free-flowing,
-  human, and factual. It is not part of the orchestrator's mid-task rationale
-  stream.
+  user win, not Odylith mechanics, link updated governance IDs inline only
+  when they actually changed, name affected governance-contract IDs from
+  bounded request or packet truth when no governed file moved, and frame the
+  edge against `odylith_off` or the broader unguided path when the evidence
+  supports it. Keep it crisp, authentic, clear, simple, insightful, soulful,
+  friendly, free-flowing, human, and factual. It is not part of the
+  orchestrator's mid-task rationale stream.
 
 ## Public Command Surface
 Public entrypoint: `odylith subagent-orchestrator`
@@ -71,15 +88,17 @@ Public entrypoint: `odylith subagent-orchestrator`
   state for a decision.
 
 The CLI can optionally mirror plan and feedback audit rows into
-`odylith/compass/runtime/codex-stream.v1.jsonl`.
+`odylith/compass/runtime/agent-stream.v1.jsonl`, while retaining read
+compatibility for legacy `codex-stream.v1.jsonl` consumers during migration.
 
 ## Persistent State
 - `.odylith/subagent_orchestrator/tuning.v1.json`
   Local orchestration-mode bias and family-specific feedback.
 - `.odylith/subagent_orchestrator/decision-ledgers/`
   One JSON decision ledger per orchestration decision.
-- `odylith/compass/runtime/codex-stream.v1.jsonl`
-  Optional orchestration audit stream.
+- `odylith/compass/runtime/agent-stream.v1.jsonl`
+  Canonical optional orchestration audit stream, with legacy reader support
+  for `codex-stream.v1.jsonl`.
 
 ## Core Types
 ### `OrchestrationRequest`
@@ -186,6 +205,12 @@ Parallelism is intentionally conservative. The orchestrator requires:
 - bounded merge burden
 - no shared governance bottleneck that really belongs in the main thread
 
+Even with disjoint ownership, execution-engine posture can still force
+serial or local work. Active wait states, re-anchor requirements,
+contradictions, unsafe closure, verify or recover critical-path posture, and
+host-serial constraints are all allowed to suppress fan-out before the
+parallel-safety classifier would otherwise approve it.
+
 Paths under tightly coupled prefixes such as `odylith/`, `docs/`,
 `contracts/`, `skills/`, and similar governance-heavy trees are usually kept
 local or downgraded to serial planning unless the ownership boundary is very
@@ -281,3 +306,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Registered the public orchestrator as an Odylith-owned product component with product-local governance and feature history. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-02: Fixed the public CLI wrapper so `odylith subagent-orchestrator --repo-root . --help` and verbed invocations preserve the documented verb-first contract instead of misrouting `--repo-root` ahead of the orchestrator subcommand. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
+- 2026-04-09: Clarified that orchestration planning follows Execution Engine admissibility instead of acting as the product's first action-policy boundary. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

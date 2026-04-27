@@ -1,3 +1,5 @@
+"""Dirty Overlap helpers for the Odylith common layer."""
+
 from __future__ import annotations
 
 from collections import Counter
@@ -22,7 +24,12 @@ def _dirty_overlap_area(path: str) -> str:
         return "other"
     if normalized.startswith(".odylith/"):
         return "runtime_state"
-    if normalized in {"AGENTS.md", ".gitignore"} or normalized.startswith("odylith/AGENTS.md"):
+    if (
+        normalized in {"AGENTS.md", "CLAUDE.md", ".gitignore"}
+        or normalized.startswith(".claude/")
+        or normalized.startswith(("odylith/AGENTS.md", "odylith/CLAUDE.md"))
+        or (normalized.startswith("odylith/") and normalized.endswith(("/AGENTS.md", "/CLAUDE.md")))
+    ):
         return "managed_guidance"
     if normalized.startswith("odylith/agents-guidelines/") or normalized.startswith("odylith/skills/"):
         return "managed_guidance"

@@ -13,12 +13,14 @@ Key contracts:
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from functools import lru_cache
 import os
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from odylith.runtime.common.consumer_profile import canonical_truth_token
+from odylith.runtime.common.guidance_paths import has_project_guidance
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
@@ -59,6 +61,79 @@ GLOBAL_COORDINATION_PREFIXES: tuple[str, ...] = (
     "odylith/runtime/",
     "odylith/atlas/source/catalog/",
 )
+_PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX = "src/odylith/bundle/assets/odylith/"
+_BUNDLE_SOURCE_GLOBAL_COORDINATION_PREFIXES: tuple[str, ...] = (
+    "odylith/radar/source/ui/",
+    "odylith/radar/backlog-detail-shard-",
+    "odylith/radar/backlog-document-shard-",
+    "odylith/compass/runtime/",
+    "odylith/registry/registry-detail-shard-",
+    "odylith/atlas/source/catalog/",
+)
+_COMPILED_WORKSTREAM_PATH_INDEX_CACHE: dict[
+    int,
+    tuple[tuple[int, int], "CompiledWorkstreamPathIndex"],
+] = {}
+
+
+@dataclass(slots=True)
+class CompiledWorkstreamPathIndex:
+    """Prefix matcher for repo-normalized workstream evidence paths."""
+
+    ref_to_workstreams: dict[str, tuple[str, ...]]
+    _path_matches_cache: dict[str, tuple[str, ...]] = field(default_factory=dict)
+
+    def match_normalized_path(self, normalized_path: str) -> tuple[str, ...]:
+        token = str(normalized_path or "").strip().strip("/")
+        if not token:
+            return ()
+        cached = self._path_matches_cache.get(token)
+        if cached is not None:
+            return cached
+        matched: set[str] = set()
+        current = token
+        while current:
+            matched.update(self.ref_to_workstreams.get(current, ()))
+            parent, separator, _leaf = current.rpartition("/")
+            if not separator:
+                break
+            current = parent
+        ordered = tuple(sorted(matched))
+        self._path_matches_cache[token] = ordered
+        return ordered
+
+
+def compile_workstream_path_index(
+    ws_path_index: Mapping[str, set[str]] | CompiledWorkstreamPathIndex,
+) -> CompiledWorkstreamPathIndex:
+    if isinstance(ws_path_index, CompiledWorkstreamPathIndex):
+        return ws_path_index
+    cache_key = id(ws_path_index)
+    cache_signature = (
+        len(ws_path_index),
+        sum(len(refs) for refs in ws_path_index.values()),
+    )
+    cached = _COMPILED_WORKSTREAM_PATH_INDEX_CACHE.get(cache_key)
+    if cached is not None and cached[0] == cache_signature:
+        return cached[1]
+    ref_to_workstreams: dict[str, set[str]] = {}
+    for raw_workstream_id, refs in ws_path_index.items():
+        workstream_id = str(raw_workstream_id or "").strip()
+        if not workstream_id:
+            continue
+        for ref in refs:
+            normalized_ref = normalize_repo_token(str(ref or "")).strip().strip("/")
+            if not normalized_ref:
+                continue
+            ref_to_workstreams.setdefault(normalized_ref, set()).add(workstream_id)
+    compiled = CompiledWorkstreamPathIndex(
+        ref_to_workstreams={
+            ref: tuple(sorted(workstream_ids))
+            for ref, workstream_ids in ref_to_workstreams.items()
+        }
+    )
+    _COMPILED_WORKSTREAM_PATH_INDEX_CACHE[cache_key] = (cache_signature, compiled)
+    return compiled
 
 
 def normalize_repo_token(token: str, *, repo_root: Path | None = None) -> str:
@@ -70,14 +145,25 @@ def normalize_repo_token(token: str, *, repo_root: Path | None = None) -> str:
     """
 
     raw = str(token or "").strip()
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
     resolved_repo_root: Path | None = None
     if repo_root is not None:
         resolved_repo_root = repo_root.resolve()
+    elif session is not None:
+        resolved_repo_root = session.repo_root
     else:
         default_root_token = _default_repo_root_token_for_cwd(os.getcwd())
         if default_root_token:
             resolved_repo_root = Path(default_root_token)
     root_token = str(resolved_repo_root) if resolved_repo_root is not None else ""
+    if session is not None and (resolved_repo_root is None or resolved_repo_root == session.repo_root):
+        return session.get_or_compute(
+            namespace="normalize_repo_token",
+            key=f"{root_token}\n{raw}",
+            builder=lambda: _normalize_repo_token_cached(raw, root_token),
+        )
     return _normalize_repo_token_cached(raw, root_token)
 
 
@@ -87,7 +173,7 @@ def _default_repo_root_token_for_cwd(cwd_token: str) -> str:
     if not token:
         return ""
     cwd = Path(token).resolve()
-    if (cwd / "AGENTS.md").is_file() and ((cwd / ".odylith").exists() or (cwd / "odylith").exists() or (cwd / "src" / "odylith").is_dir()):
+    if has_project_guidance(repo_root=cwd) and ((cwd / ".odylith").exists() or (cwd / "odylith").exists() or (cwd / "src" / "odylith").is_dir()):
         return str(cwd)
     return ""
 
@@ -148,6 +234,27 @@ def _normalized_path_matches(normalized_changed_path: str, normalized_ref_path: 
     return normalized_changed_path.startswith(f"{normalized_ref_path}/")
 
 
+def _canonicalize_source_bundle_mirror_token(token: str) -> str:
+    normalized = str(token or "").strip().strip("/")
+    if not normalized.startswith(_PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX):
+        return normalized
+    suffix = normalized.removeprefix(_PRODUCT_BUNDLE_SOURCE_MIRROR_PREFIX).strip("/")
+    if not suffix:
+        return normalized
+    return f"odylith/{suffix}"
+
+
+def _is_generated_or_global_bundle_source_mirror(token: str) -> bool:
+    canonical = _canonicalize_source_bundle_mirror_token(token)
+    if canonical == token:
+        return False
+    if canonical in GLOBAL_COORDINATION_EXACT_PATHS:
+        return True
+    if any(canonical.startswith(prefix) for prefix in _BUNDLE_SOURCE_GLOBAL_COORDINATION_PREFIXES):
+        return True
+    return canonical.endswith(".svg") or canonical.endswith(".png")
+
+
 def path_matches(changed_path: str, ref_path: str) -> bool:
     """Return ``True`` when changed path equals or nests under ``ref_path``."""
 
@@ -156,26 +263,36 @@ def path_matches(changed_path: str, ref_path: str) -> bool:
     return _normalized_path_matches(left, right)
 
 
+def _is_global_coordination_token(token: str) -> bool:
+    normalized = str(token or "").strip().lower()
+    if not normalized:
+        return False
+    if normalized in GLOBAL_COORDINATION_EXACT_PATHS:
+        return True
+    return any(normalized.startswith(prefix) for prefix in GLOBAL_COORDINATION_PREFIXES)
+
+
 def is_global_coordination_path(path: str) -> bool:
     """Return ``True`` when a path belongs to global coordination artifacts."""
 
-    token = normalize_repo_token(path).lower()
-    if not token:
-        return False
-    if token in GLOBAL_COORDINATION_EXACT_PATHS:
+    return _is_global_coordination_token(normalize_repo_token(path))
+
+
+def _is_generated_or_global_token(token: str) -> bool:
+    normalized = str(token or "").strip().lower()
+    if not normalized:
         return True
-    return any(token.startswith(prefix) for prefix in GLOBAL_COORDINATION_PREFIXES)
+    if _is_generated_or_global_bundle_source_mirror(normalized):
+        return True
+    if _is_global_coordination_token(normalized):
+        return True
+    return normalized.endswith(".svg") or normalized.endswith(".png")
 
 
 def is_generated_or_global_path(path: str) -> bool:
     """Return ``True`` for generated artifacts or global coordination files."""
 
-    token = normalize_repo_token(path).lower()
-    if not token:
-        return True
-    if is_global_coordination_path(token):
-        return True
-    return token.endswith(".svg") or token.endswith(".png")
+    return _is_generated_or_global_token(normalize_repo_token(path))
 
 
 def collect_workstream_path_index_from_specs(
@@ -289,20 +406,19 @@ def collect_workstream_path_index_from_traceability(
 
 def map_paths_to_workstreams(
     paths: Iterable[str],
-    ws_path_index: Mapping[str, set[str]],
+    ws_path_index: Mapping[str, set[str]] | CompiledWorkstreamPathIndex,
     *,
     skip_generated_or_global: bool = True,
 ) -> list[str]:
     """Map changed paths to matching workstream IDs via the path-reference index."""
 
+    compiled_index = compile_workstream_path_index(ws_path_index)
     matched: set[str] = set()
     for path in paths:
         normalized = normalize_repo_token(path)
         if not normalized:
             continue
-        if skip_generated_or_global and is_generated_or_global_path(normalized):
+        if skip_generated_or_global and _is_generated_or_global_token(normalized):
             continue
-        for ws_id, refs in ws_path_index.items():
-            if any(_normalized_path_matches(normalized, ref) for ref in refs):
-                matched.add(ws_id)
+        matched.update(compiled_index.match_normalized_path(normalized))
     return sorted(matched)

@@ -55,6 +55,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     const upgradeReopen = document.getElementById("upgradeReopen");
     const upgradeSpotlightBackdrop = document.getElementById("upgradeSpotlightBackdrop");
     const upgradeSpotlightDismiss = document.getElementById("upgradeSpotlightDismiss");
+    const upgradeSpotlightLinks = Array.from(document.querySelectorAll("#shellUpgradeSpotlight .upgrade-spotlight-link"));
     const welcomeCopyPrompt = document.getElementById("welcomeCopyPrompt");
     const welcomeDismiss = document.getElementById("welcomeDismiss");
     const welcomeCopyStatus = document.getElementById("welcomeCopyStatus");
@@ -165,43 +166,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     let runtimeStatusLayoutFrame = 0;
     let lastUserInteractionAtMs = Date.now();
     const runtimeAutoReloadAtByTab = Object.create(null);
-    const ODYLITH_CHART_TEXT = "#27445e";
-    const ODYLITH_AXIS_TEXT = "rgba(71, 98, 127, 0.82)";
-    const ODYLITH_GRID_LINE = "rgba(148, 163, 184, 0.28)";
-    const ODYLITH_CHART_PALETTE = {
-      density: "#60a5fa",
-      readiness: "#a78bfa",
-      diversity: "#f59e0b",
-      utility: "#2dd4bf",
-      budget: "#2dd4bf",
-      routeReady: "#38bdf8",
-      spawnReady: "#c084fc",
-      tokens: "#fb7185",
-      execution: ["#7dd3fc", "#a78bfa", "#34d399", "#fb7185", "#f59e0b", "#60a5fa"],
-      latencyImpact: "#7dd3fc",
-      latencySession: "#34d399",
-      latencyBootstrap: "#f59e0b",
-      learningPacket: "#60a5fa",
-      learningAlignment: "#f59e0b",
-      learningYield: "#2dd4bf",
-      learningRouter: "#c084fc",
-      learningOrchestration: "#34d399",
-      radar: "#7dd3fc",
-    };
-    const odylithChartState = {
-      hydrated: false,
-      instances: [],
-      lastFingerprint: "",
-      retryTimer: 0,
-    };
-    const odylithFallbackMarkup = new WeakMap();
-
-    function readOdylithDrawerPayload() {
-      return payload && typeof payload === "object" && payload.odylith_drawer && typeof payload.odylith_drawer === "object"
-        ? payload.odylith_drawer
-        : null;
-    }
-
     function syncRecoveryDock() {
       const welcomeVisible = Boolean(welcomeState && !welcomeState.hidden);
       const upgradeVisible = Boolean(upgradeSpotlight && !upgradeSpotlight.hidden);
@@ -376,6 +340,21 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         window.requestAnimationFrame(() => {
           upgradeSpotlightDismiss.focus();
         });
+      }
+    }
+
+    function openUpgradeSpotlightLink(event) {
+      const link = event.currentTarget;
+      const href = link && link.href ? String(link.href).trim() : "";
+      if (!href) return;
+      const opened = window.open(href, "_blank");
+      if (opened) {
+        event.preventDefault();
+        try {
+          opened.opener = null;
+        } catch (_error) {
+          // Some browser contexts make opener read-only after noopener.
+        }
       }
     }
 
@@ -769,843 +748,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       return copied;
     }
 
-    function odylithSparkLabels(value, fallbackPrefix) {
-      if (!Array.isArray(value) || !value.length) return [`${fallbackPrefix}1`];
-      return value.map((item, index) => {
-        const token = String(item || "").trim();
-        return token || `${fallbackPrefix}${index + 1}`;
-      });
-    }
-
-    function odylithNumericSeries(value, fallback = [0]) {
-      if (!Array.isArray(value) || !value.length) return fallback.slice();
-      return value.map((item) => {
-        if (item === null || item === undefined || item === "") return null;
-        const numeric = Number(item);
-        return Number.isFinite(numeric) ? numeric : null;
-      });
-    }
-
-    function odylithChartFingerprint(drawer) {
-      if (!drawer || typeof drawer !== "object") return "none";
-      try {
-        return JSON.stringify(drawer.charts || {});
-      } catch (_error) {
-        return String(drawer.snapshot_time || "unknown");
-      }
-    }
-
-    function clearOdylithCharts() {
-      if (odylithChartState.retryTimer) {
-        window.clearTimeout(odylithChartState.retryTimer);
-        odylithChartState.retryTimer = 0;
-      }
-      odylithChartState.instances.forEach((chart) => {
-        try {
-          chart.dispose();
-        } catch (_error) {
-          // no-op
-        }
-      });
-      document.querySelectorAll(".odylith-chart-canvas").forEach((element) => {
-        const fallbackMarkup = odylithFallbackMarkup.get(element);
-        if (typeof fallbackMarkup === "string" && fallbackMarkup) {
-          element.innerHTML = fallbackMarkup;
-          element.dataset.odylithChartState = "fallback";
-        }
-      });
-      odylithChartState.instances = [];
-      odylithChartState.hydrated = false;
-    }
-
-    function ensureOdylithChartPlaceholder(element, message) {
-      if (!element) return;
-      element.innerHTML = `<div class="odylith-chart-empty">${message}</div>`;
-      element.dataset.odylithChartState = "placeholder";
-    }
-
-    function captureOdylithFallback(element) {
-      if (!element || odylithFallbackMarkup.has(element)) return;
-      odylithFallbackMarkup.set(element, element.innerHTML || "");
-    }
-
-    function restoreOdylithFallback(element) {
-      if (!element) return;
-      const fallbackMarkup = odylithFallbackMarkup.get(element);
-      if (typeof fallbackMarkup === "string" && fallbackMarkup) {
-        element.innerHTML = fallbackMarkup;
-        element.dataset.odylithChartState = "fallback";
-      }
-    }
-
-    function odylithBaseChartOption() {
-      return {
-        animationDuration: 360,
-        animationDurationUpdate: 240,
-        animationEasing: "cubicOut",
-        animationEasingUpdate: "cubicOut",
-        textStyle: {
-          color: ODYLITH_CHART_TEXT,
-          fontFamily: '"Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-        },
-        grid: {
-          top: 40,
-          left: 42,
-          right: 22,
-          bottom: 34,
-          containLabel: false,
-        },
-        tooltip: {
-          trigger: "axis",
-          backgroundColor: "rgba(255, 255, 255, 0.97)",
-          borderColor: "rgba(125, 159, 214, 0.4)",
-          borderWidth: 1,
-          textStyle: {
-            color: ODYLITH_CHART_TEXT,
-            fontSize: 11,
-          },
-          axisPointer: {
-            lineStyle: { color: "rgba(96, 165, 250, 0.42)", width: 1 },
-          },
-          extraCssText: "box-shadow: 0 16px 28px rgba(31,56,94,0.12); border-radius: 12px; backdrop-filter: blur(6px);",
-        },
-        legend: {
-          top: 2,
-          itemWidth: 8,
-          itemHeight: 8,
-          itemGap: 12,
-          textStyle: {
-            color: ODYLITH_AXIS_TEXT,
-            fontSize: 10,
-            fontWeight: 600,
-          },
-        },
-        xAxis: {
-          type: "category",
-          boundaryGap: false,
-          axisLine: { lineStyle: { color: ODYLITH_GRID_LINE } },
-          axisLabel: { color: ODYLITH_AXIS_TEXT, fontSize: 10, hideOverlap: true },
-          splitLine: { show: false },
-        },
-        yAxis: {
-          type: "value",
-          axisLine: { show: false },
-          axisLabel: { color: ODYLITH_AXIS_TEXT, fontSize: 10 },
-          splitLine: { lineStyle: { color: ODYLITH_GRID_LINE } },
-        },
-      };
-    }
-
-    function odylithLineSeries(name, data, color, extra = {}) {
-      return {
-        name,
-        type: "line",
-        smooth: 0.26,
-        symbol: "circle",
-        symbolSize: 6,
-        connectNulls: false,
-        lineStyle: { width: 2, color },
-        itemStyle: { color, borderColor: "#ffffff", borderWidth: 2 },
-        emphasis: { focus: "series" },
-        areaStyle: extra.area
-          ? {
-              color: new window.echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: `${color}${extra.areaAlpha || "30"}` },
-                { offset: 1, color: "rgba(255,255,255,0)" },
-              ]),
-            }
-          : undefined,
-        data,
-        ...extra,
-      };
-    }
-
-    function odylithScoreFill(value) {
-      const numeric = Number(value) || 0;
-      if (numeric >= 80) return "#2dd4bf";
-      if (numeric >= 60) return "#60a5fa";
-      if (numeric >= 40) return "#f59e0b";
-      return "#fb7185";
-    }
-
-    function odylithCompactInteger(value) {
-      const numeric = Number(value);
-      if (!Number.isFinite(numeric)) return "0";
-      return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(numeric);
-    }
-
-    function odylithSignedDelta(value, suffix = "") {
-      const numeric = Number(value);
-      if (!Number.isFinite(numeric) || numeric === 0) return "";
-      const rounded = Math.round(numeric);
-      return `${rounded > 0 ? "+" : ""}${rounded}${suffix}`;
-    }
-
-    function buildControlStorySnapshotOption(chart) {
-      const detail = chart && typeof chart.detail === "object" ? chart.detail : {};
-      const rows = [
-        ["Budget fit", Number(detail.budget_fit) || 0, ODYLITH_CHART_PALETTE.budget],
-        ["Utility", Number(detail.utility) || 0, ODYLITH_CHART_PALETTE.utility],
-        ["Alignment", Number(detail.alignment) || 0, ODYLITH_CHART_PALETTE.learningPacket],
-        ["Yield", Number(detail.yield) || 0, ODYLITH_CHART_PALETTE.learningAlignment],
-        ["Route ready", Number(detail.route_ready) || 0, ODYLITH_CHART_PALETTE.routeReady],
-      ];
-      const meta = [
-        String(detail.recorded_at || "").trim(),
-        String(detail.workstream || "").trim() ? `WS ${String(detail.workstream).trim()}` : "",
-        String(detail.session_id || "").trim() ? `Session ${String(detail.session_id).trim()}` : "",
-      ].filter(Boolean).join(" · ") || "Single routed slice available.";
-      return {
-        animationDuration: 360,
-        animationDurationUpdate: 240,
-        animationEasing: "cubicOut",
-        animationEasingUpdate: "cubicOut",
-        textStyle: {
-          color: ODYLITH_CHART_TEXT,
-          fontFamily: '"Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-        },
-        grid: {
-          top: 86,
-          left: 104,
-          right: 20,
-          bottom: 18,
-          containLabel: false,
-        },
-        tooltip: {
-          trigger: "item",
-          backgroundColor: "rgba(255, 255, 255, 0.97)",
-          borderColor: "rgba(125, 159, 214, 0.4)",
-          borderWidth: 1,
-          textStyle: { color: ODYLITH_CHART_TEXT, fontSize: 11 },
-          extraCssText: "box-shadow: 0 16px 28px rgba(31,56,94,0.12); border-radius: 12px;",
-          formatter: (params) => `${params.name}: ${Math.round(Number(params.value) || 0)}%`,
-        },
-        graphic: [
-          {
-            type: "text",
-            left: 10,
-            top: 8,
-            silent: true,
-            style: {
-              text: `${odylithCompactInteger(detail.tokens)} tokens`,
-              fill: ODYLITH_CHART_TEXT,
-              font: '700 18px "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-            },
-          },
-          {
-            type: "text",
-            left: 10,
-            top: 32,
-            silent: true,
-            style: {
-              text: `${String(detail.label || "Latest")} · ${String(detail.budget_state || "Budget unknown")} · ${String(detail.state || "Unknown")}`,
-              fill: ODYLITH_AXIS_TEXT,
-              font: '600 10px "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-            },
-          },
-          {
-            type: "text",
-            left: 10,
-            top: 48,
-            silent: true,
-            style: {
-              text: meta,
-              fill: ODYLITH_AXIS_TEXT,
-              font: '500 10px "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-            },
-          },
-        ],
-        xAxis: {
-          type: "value",
-          min: 0,
-          max: 100,
-          axisLine: { show: false },
-          axisTick: { show: false },
-          axisLabel: { color: ODYLITH_AXIS_TEXT, fontSize: 10 },
-          splitLine: { lineStyle: { color: ODYLITH_GRID_LINE } },
-        },
-        yAxis: {
-          type: "category",
-          inverse: true,
-          data: rows.map((row) => row[0]),
-          axisLine: { show: false },
-          axisTick: { show: false },
-          axisLabel: {
-            color: ODYLITH_AXIS_TEXT,
-            fontSize: 10,
-            width: 88,
-            overflow: "truncate",
-          },
-        },
-        series: [
-          {
-            type: "bar",
-            data: rows.map((row) => row[1]),
-            barWidth: 12,
-            showBackground: true,
-            backgroundStyle: { color: "rgba(191, 219, 254, 0.18)", borderRadius: 999 },
-            label: {
-              show: true,
-              position: "right",
-              color: ODYLITH_CHART_TEXT,
-              fontSize: 10,
-              fontWeight: 700,
-              formatter: (params) => `${Math.round(Number(params.value) || 0)}%`,
-            },
-            itemStyle: {
-              borderRadius: [0, 6, 6, 0],
-              color: (params) => rows[params.dataIndex][2],
-            },
-            emphasis: { focus: "series" },
-          },
-        ],
-      };
-    }
-
-    function buildControlStoryLollipopOption(chart) {
-      const base = odylithBaseChartOption();
-      const labels = odylithSparkLabels(chart.labels, "P");
-      const detail = chart && typeof chart.detail === "object" ? chart.detail : {};
-      const latestSpend = `${odylithCompactInteger(detail.tokens)} tokens`;
-      const tokenDelta = odylithSignedDelta(detail.token_delta, " tokens");
-      const spendNote = tokenDelta ? `Latest spend ${latestSpend} (${tokenDelta} vs prior).` : `Latest spend ${latestSpend}.`;
-      return {
-        ...base,
-        grid: { ...base.grid, top: 56, right: 24, bottom: 30 },
-        xAxis: { ...base.xAxis, data: labels, boundaryGap: true },
-        yAxis: {
-          ...base.yAxis,
-          min: 0,
-          max: 100,
-          name: "Signal",
-          nameTextStyle: { color: ODYLITH_AXIS_TEXT, fontSize: 10, padding: [0, 0, 0, 6] },
-        },
-        graphic: [
-          {
-            type: "text",
-            right: 10,
-            top: 8,
-            silent: true,
-            style: {
-              text: spendNote,
-              fill: ODYLITH_AXIS_TEXT,
-              font: '600 10px "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-            },
-          },
-        ],
-        series: [
-          odylithLineSeries("Utility", odylithNumericSeries(chart.utility, [0]), ODYLITH_CHART_PALETTE.utility, {
-            smooth: false,
-            symbolSize: 8,
-            lineStyle: { width: 1.6, color: ODYLITH_CHART_PALETTE.utility },
-            z: 4,
-            markLine: {
-              symbol: "none",
-              silent: true,
-              label: {
-                color: ODYLITH_AXIS_TEXT,
-                fontSize: 9,
-                formatter: "operator floor",
-              },
-              lineStyle: {
-                color: "rgba(37, 99, 235, 0.24)",
-                type: "dashed",
-              },
-              data: [{ yAxis: 70 }],
-            },
-          }),
-          odylithLineSeries("Alignment", odylithNumericSeries(chart.alignment, [0]), ODYLITH_CHART_PALETTE.learningPacket, {
-            smooth: false,
-            symbolSize: 8,
-            lineStyle: { width: 1.6, color: ODYLITH_CHART_PALETTE.learningPacket },
-            z: 5,
-          }),
-          odylithLineSeries("Yield", odylithNumericSeries(chart.yield, [0]), ODYLITH_CHART_PALETTE.learningAlignment, {
-            smooth: false,
-            symbolSize: 8,
-            lineStyle: { width: 1.6, color: ODYLITH_CHART_PALETTE.learningAlignment },
-            z: 5,
-          }),
-          odylithLineSeries("Route ready", odylithNumericSeries(chart.route_ready, [0]), ODYLITH_CHART_PALETTE.routeReady, {
-            smooth: false,
-            z: 4,
-            lineStyle: { width: 1.75, color: ODYLITH_CHART_PALETTE.routeReady, type: "dashed" },
-            symbolSize: 7,
-          }),
-        ],
-      };
-    }
-
-    function buildControlStoryTrendOption(chart) {
-      const base = odylithBaseChartOption();
-      const labels = odylithSparkLabels(chart.labels, "P");
-      const tokens = odylithNumericSeries(chart.tokens, [0]).map((value) => value ?? 0);
-      const tokenMax = Math.max(1000, ...tokens, 0);
-      return {
-        ...base,
-        axisPointer: {
-          link: [{ xAxisIndex: [0, 1] }],
-        },
-        legend: {
-          ...base.legend,
-          top: 4,
-        },
-        tooltip: {
-          trigger: "axis",
-          axisPointer: {
-            type: "line",
-            lineStyle: { color: "rgba(96, 165, 250, 0.38)", width: 1 },
-          },
-          backgroundColor: "rgba(255, 255, 255, 0.97)",
-          borderColor: "rgba(125, 159, 214, 0.4)",
-          borderWidth: 1,
-          textStyle: {
-            color: ODYLITH_CHART_TEXT,
-            fontSize: 11,
-          },
-          extraCssText: "box-shadow: 0 16px 28px rgba(31,56,94,0.12); border-radius: 12px; backdrop-filter: blur(6px);",
-          formatter: (params) => {
-            const rows = (Array.isArray(params) ? params : [params]).filter(Boolean);
-            const axisLabel = rows.find((row) => String(row.axisValueLabel || "").trim())?.axisValueLabel || "";
-            const order = ["Tokens", "Utility", "Alignment", "Yield", "Route ready"];
-            rows.sort((left, right) => order.indexOf(left.seriesName) - order.indexOf(right.seriesName));
-            const body = rows.map((row) => {
-              const value = Array.isArray(row.value) ? row.value[row.value.length - 1] : row.value;
-              const numeric = Number(value);
-              const formattedValue = row.seriesName === "Tokens"
-                ? `${odylithCompactInteger(numeric)} tokens`
-                : `${Math.round(Number.isFinite(numeric) ? numeric : 0)}%`;
-              return `${row.marker}${row.seriesName}: ${formattedValue}`;
-            }).join("<br/>");
-            return `${axisLabel ? `<strong>${axisLabel}</strong><br/>` : ""}${body}`;
-          },
-        },
-        grid: [
-          { top: 56, left: 44, right: 18, height: 74, containLabel: false },
-          { top: 156, left: 44, right: 18, height: 66, containLabel: false },
-        ],
-        xAxis: [
-          {
-            ...base.xAxis,
-            gridIndex: 0,
-            data: labels,
-            boundaryGap: true,
-            axisTick: { show: false },
-            axisLabel: { show: false },
-          },
-          {
-            ...base.xAxis,
-            gridIndex: 1,
-            data: labels,
-            boundaryGap: true,
-            axisTick: { show: false },
-            axisLabel: { color: ODYLITH_AXIS_TEXT, fontSize: 10, hideOverlap: true },
-          },
-        ],
-        yAxis: [
-          {
-            ...base.yAxis,
-            gridIndex: 0,
-            min: 0,
-            max: Math.ceil(tokenMax / 500) * 500,
-            name: "Tokens",
-            nameTextStyle: { color: ODYLITH_AXIS_TEXT, fontSize: 10, padding: [0, 0, 0, 4] },
-          },
-          {
-            ...base.yAxis,
-            gridIndex: 1,
-            min: 0,
-            max: 100,
-            name: "Signal",
-            axisLabel: { color: ODYLITH_AXIS_TEXT, fontSize: 10 },
-            nameTextStyle: { color: ODYLITH_AXIS_TEXT, fontSize: 10, padding: [0, 0, 0, 6] },
-          },
-        ],
-        graphic: [
-          {
-            type: "text",
-            left: 44,
-            top: 40,
-            silent: true,
-            style: {
-              text: "Spend",
-              fill: ODYLITH_AXIS_TEXT,
-              font: '700 10px "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-            },
-          },
-          {
-            type: "text",
-            left: 44,
-            top: 140,
-            silent: true,
-            style: {
-              text: "Outcome signals",
-              fill: ODYLITH_AXIS_TEXT,
-              font: '700 10px "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-            },
-          },
-        ],
-        series: [
-          {
-            name: "Tokens",
-            type: "bar",
-            xAxisIndex: 0,
-            yAxisIndex: 0,
-            barMaxWidth: 18,
-            itemStyle: {
-              color: new window.echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: "#fb7185" },
-                { offset: 1, color: "#fda4af" },
-              ]),
-              borderRadius: [7, 7, 0, 0],
-            },
-            emphasis: { focus: "series" },
-            data: tokens,
-          },
-          odylithLineSeries("Utility", odylithNumericSeries(chart.utility, [0]), ODYLITH_CHART_PALETTE.utility, {
-            xAxisIndex: 1,
-            yAxisIndex: 1,
-            smooth: 0.22,
-            symbolSize: 5,
-            lineStyle: { width: 2, color: ODYLITH_CHART_PALETTE.utility },
-            z: 4,
-            markLine: {
-              symbol: "none",
-              silent: true,
-              label: {
-                color: ODYLITH_AXIS_TEXT,
-                fontSize: 9,
-                formatter: "useful range",
-              },
-              lineStyle: {
-                color: "rgba(37, 99, 235, 0.24)",
-                type: "dashed",
-              },
-              data: [{ yAxis: 70 }],
-            },
-          }),
-          odylithLineSeries("Alignment", odylithNumericSeries(chart.alignment, [0]), ODYLITH_CHART_PALETTE.learningPacket, {
-            xAxisIndex: 1,
-            yAxisIndex: 1,
-            smooth: false,
-            step: "middle",
-            symbolSize: 5,
-            lineStyle: { width: 1.85, color: ODYLITH_CHART_PALETTE.learningPacket },
-            z: 5,
-          }),
-          odylithLineSeries("Yield", odylithNumericSeries(chart.yield, [0]), ODYLITH_CHART_PALETTE.learningAlignment, {
-            xAxisIndex: 1,
-            yAxisIndex: 1,
-            smooth: false,
-            symbolSize: 5,
-            lineStyle: { width: 1.85, color: ODYLITH_CHART_PALETTE.learningAlignment },
-            z: 5,
-          }),
-          odylithLineSeries("Route ready", odylithNumericSeries(chart.route_ready, [0]), ODYLITH_CHART_PALETTE.routeReady, {
-            xAxisIndex: 1,
-            yAxisIndex: 1,
-            z: 4,
-            lineStyle: { width: 1.75, color: ODYLITH_CHART_PALETTE.routeReady, type: "dashed" },
-            symbolSize: 5,
-          }),
-        ],
-      };
-    }
-
-    function buildControlStoryOption(drawer) {
-      const chart = drawer && drawer.charts && typeof drawer.charts.control_story === "object"
-        ? drawer.charts.control_story
-        : {};
-      const sampleCount = Number(chart.sample_count) || (Array.isArray(chart.labels) ? chart.labels.length : 0);
-      const mode = String(chart.mode || "").trim() || (sampleCount <= 1 ? "snapshot" : sampleCount <= 3 ? "lollipop" : "trend");
-      if (mode === "snapshot") return buildControlStorySnapshotOption(chart);
-      if (mode === "lollipop") return buildControlStoryLollipopOption(chart);
-      return buildControlStoryTrendOption(chart);
-    }
-
-    function buildExecutionFlowOption(drawer) {
-      const chart = drawer && drawer.charts && typeof drawer.charts.execution_flow === "object"
-        ? drawer.charts.execution_flow
-        : {};
-      const labels = odylithSparkLabels(chart.labels, "L");
-      const values = odylithNumericSeries(chart.values, [0]).map((value) => value ?? 0);
-      return {
-        animationDuration: 360,
-        animationDurationUpdate: 240,
-        animationEasing: "cubicOut",
-        animationEasingUpdate: "cubicOut",
-        textStyle: {
-          color: ODYLITH_CHART_TEXT,
-          fontFamily: '"Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-        },
-        grid: {
-          top: 34,
-          left: 122,
-          right: 24,
-          bottom: 18,
-          containLabel: false,
-        },
-        tooltip: {
-          trigger: "item",
-          backgroundColor: "rgba(255, 255, 255, 0.97)",
-          borderColor: "rgba(125, 159, 214, 0.4)",
-          borderWidth: 1,
-          textStyle: { color: ODYLITH_CHART_TEXT, fontSize: 11 },
-          extraCssText: "box-shadow: 0 16px 28px rgba(31,56,94,0.12); border-radius: 12px;",
-        },
-        graphic: chart.source
-          ? [
-              {
-                type: "text",
-                right: 10,
-                top: 6,
-                silent: true,
-                style: {
-                  text: String(chart.source),
-                  fill: ODYLITH_AXIS_TEXT,
-                  font: '600 10px "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-                },
-              },
-            ]
-          : [],
-        xAxis: {
-          type: "value",
-          axisLine: { show: false },
-          axisTick: { show: false },
-          axisLabel: { color: ODYLITH_AXIS_TEXT, fontSize: 10 },
-          splitLine: { lineStyle: { color: ODYLITH_GRID_LINE } },
-        },
-        yAxis: {
-          type: "category",
-          inverse: true,
-          data: labels,
-          axisLine: { show: false },
-          axisTick: { show: false },
-          axisLabel: {
-            color: ODYLITH_AXIS_TEXT,
-            fontSize: 10,
-            width: 108,
-            overflow: "truncate",
-          },
-        },
-        series: [
-          {
-            type: "bar",
-            barWidth: 14,
-            roundCap: true,
-            data: values,
-            label: {
-              show: true,
-              position: "right",
-              color: ODYLITH_CHART_TEXT,
-              fontSize: 10,
-              fontWeight: 700,
-            },
-            itemStyle: {
-              borderRadius: [0, 6, 6, 0],
-              color: (params) => ODYLITH_CHART_PALETTE.execution[params.dataIndex % ODYLITH_CHART_PALETTE.execution.length],
-            },
-            emphasis: { focus: "series" },
-          },
-        ],
-      };
-    }
-
-    function buildSignalEnvelopeOption(drawer) {
-      const base = odylithBaseChartOption();
-      const chart = drawer && drawer.charts && typeof drawer.charts.signal_envelope === "object"
-        ? drawer.charts.signal_envelope
-        : {};
-      const labels = odylithSparkLabels(chart.labels, "T");
-      return {
-        ...base,
-        xAxis: { ...base.xAxis, data: labels },
-        yAxis: { ...base.yAxis, max: 100, min: 0 },
-        series: [
-          odylithLineSeries("Density", odylithNumericSeries(chart.density, [0]), ODYLITH_CHART_PALETTE.density),
-          odylithLineSeries("Readiness", odylithNumericSeries(chart.readiness, [0]), ODYLITH_CHART_PALETTE.readiness),
-          odylithLineSeries("Diversity", odylithNumericSeries(chart.diversity, [0]), ODYLITH_CHART_PALETTE.diversity),
-          odylithLineSeries("Utility", odylithNumericSeries(chart.utility, [0]), ODYLITH_CHART_PALETTE.utility, {
-            area: true,
-            areaAlpha: "16",
-          }),
-        ],
-      };
-    }
-
-    function buildControlCalibrationOption(drawer) {
-      const chart = drawer && drawer.charts && typeof drawer.charts.control_calibration === "object"
-        ? drawer.charts.control_calibration
-        : {};
-      const labels = odylithSparkLabels(chart.labels, "C");
-      const values = odylithNumericSeries(chart.values, [0]).map((value) => value ?? 0);
-      return {
-        animationDuration: 360,
-        animationDurationUpdate: 240,
-        animationEasing: "cubicOut",
-        animationEasingUpdate: "cubicOut",
-        textStyle: {
-          color: ODYLITH_CHART_TEXT,
-          fontFamily: '"Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-        },
-        grid: {
-          top: 34,
-          left: 122,
-          right: 24,
-          bottom: 24,
-          containLabel: false,
-        },
-        tooltip: {
-          trigger: "item",
-          backgroundColor: "rgba(255, 255, 255, 0.97)",
-          borderColor: "rgba(125, 159, 214, 0.4)",
-          borderWidth: 1,
-          textStyle: { color: ODYLITH_CHART_TEXT, fontSize: 11 },
-          extraCssText: "box-shadow: 0 16px 28px rgba(31,56,94,0.12); border-radius: 12px;",
-        },
-        graphic: chart.source
-          ? [
-              {
-                type: "text",
-                right: 10,
-                top: 8,
-                silent: true,
-                style: {
-                  text: String(chart.source),
-                  fill: ODYLITH_AXIS_TEXT,
-                  font: '600 10px "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-                },
-              },
-            ]
-          : [],
-        xAxis: {
-          type: "value",
-          min: 0,
-          max: 100,
-          axisLine: { show: false },
-          axisTick: { show: false },
-          axisLabel: { color: ODYLITH_AXIS_TEXT, fontSize: 10 },
-          splitLine: { lineStyle: { color: ODYLITH_GRID_LINE } },
-        },
-        yAxis: {
-          type: "category",
-          inverse: true,
-          data: labels,
-          axisLine: { show: false },
-          axisTick: { show: false },
-          axisLabel: {
-            color: ODYLITH_AXIS_TEXT,
-            fontSize: 10,
-            width: 108,
-            overflow: "truncate",
-          },
-        },
-        series: [
-          {
-            type: "bar",
-            barWidth: 14,
-            roundCap: true,
-            data: values,
-            label: {
-              show: true,
-              position: "right",
-              color: ODYLITH_CHART_TEXT,
-              fontSize: 10,
-              fontWeight: 700,
-              formatter: ({ value }) => `${Math.round(Number(value) || 0)}`,
-            },
-            itemStyle: {
-              borderRadius: [0, 6, 6, 0],
-              color: (params) => odylithScoreFill(params.value),
-            },
-            markLine: {
-              symbol: "none",
-              silent: true,
-              lineStyle: {
-                color: "rgba(37, 99, 235, 0.24)",
-                type: "dashed",
-              },
-              label: {
-                color: ODYLITH_AXIS_TEXT,
-                fontSize: 9,
-                formatter: "maintainer floor",
-              },
-              data: [{ xAxis: 70 }],
-            },
-            emphasis: { focus: "series" },
-          },
-        ],
-      };
-    }
-
-    function initializeOdylithCharts(force = false) {
-      const chartElements = Array.from(document.querySelectorAll(".odylith-chart-canvas"));
-      if (!chartElements.length) return;
-      chartElements.forEach((element) => captureOdylithFallback(element));
-      const drawer = readOdylithDrawerPayload();
-      const fingerprint = odylithChartFingerprint(drawer);
-      const allEnhanced = chartElements.length > 0 && chartElements.every((element) => element.dataset.odylithChartState === "enhanced");
-      if (!force && odylithChartState.hydrated && allEnhanced && odylithChartState.lastFingerprint === fingerprint) {
-        return;
-      }
-      clearOdylithCharts();
-      odylithChartState.lastFingerprint = fingerprint;
-      if (!drawer || drawer.status === "disabled") {
-        chartElements.forEach((element) => ensureOdylithChartPlaceholder(element, "Odylith is disabled for this comparison run."));
-        return;
-      }
-      if (!window.echarts || typeof window.echarts.init !== "function") {
-        chartElements.forEach((element) => restoreOdylithFallback(element));
-        if (!odylithChartState.retryTimer) {
-          odylithChartState.retryTimer = window.setTimeout(() => {
-            odylithChartState.retryTimer = 0;
-            initializeOdylithCharts(force);
-          }, 450);
-        }
-        return;
-      }
-      const chartOptions = {
-        "control-story": buildControlStoryOption(drawer),
-        "execution-flow": buildExecutionFlowOption(drawer),
-        "signal-envelope": buildSignalEnvelopeOption(drawer),
-        "control-calibration": buildControlCalibrationOption(drawer),
-      };
-      let enhancedCount = 0;
-      chartElements.forEach((element) => {
-        const chartKey = String(element.dataset.odylithChart || "").trim();
-        const option = chartOptions[chartKey];
-        if (!option) {
-          restoreOdylithFallback(element);
-          return;
-        }
-        const fallbackMarkup = odylithFallbackMarkup.get(element) || element.innerHTML || "";
-        try {
-          element.innerHTML = "";
-          const chart = window.echarts.init(element, null, { renderer: "svg" });
-          chart.setOption(option, true);
-          element.dataset.odylithChartState = "enhanced";
-          odylithChartState.instances.push(chart);
-          enhancedCount += 1;
-        } catch (_error) {
-          if (fallbackMarkup) {
-            element.innerHTML = fallbackMarkup;
-          }
-          element.dataset.odylithChartState = "fallback";
-        }
-      });
-      odylithChartState.hydrated = enhancedCount === chartElements.length && chartElements.length > 0;
-    }
-
-    function resizeOdylithCharts() {
-      odylithChartState.instances.forEach((chart) => {
-        try {
-          chart.resize();
-        } catch (_error) {
-          // no-op
-        }
-      });
-    }
-
     function canonicalizeDiagramToken(value) {
       let token = String(value || "").trim().toUpperCase();
       if (!token) return "";
@@ -1622,12 +764,20 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       return "";
     }
 
+    const CASEBOOK_SORT_DEFAULT = "newest";
+    const CASEBOOK_SORT_TOKENS = new Set(["newest", "oldest", "bug-id", "priority", "status"]);
+
+    function canonicalizeCasebookSortToken(value) {
+      const token = String(value || "").trim().toLowerCase();
+      return CASEBOOK_SORT_TOKENS.has(token) ? token : CASEBOOK_SORT_DEFAULT;
+    }
+
     const tabStateMemory = {
       radar: { workstream: "", view: "" },
       atlas: { workstream: "", diagram: "" },
       compass: { workstream: "", window: "", date: "", audit_day: "" },
       registry: { component: "" },
-      casebook: { bug: "", severity: "", status: "" },
+      casebook: { bug: "", severity: "", status: "", sort: CASEBOOK_SORT_DEFAULT },
     };
 
     function sanitizeShellState(rawState) {
@@ -1645,6 +795,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         bug: "",
         severity: "",
         status: "",
+        sort: CASEBOOK_SORT_DEFAULT,
         diagram: "",
         view: "",
         window: "",
@@ -1679,6 +830,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       state.bug = String(rawState && rawState.bug ? rawState.bug : "").trim();
       state.severity = String(rawState && rawState.severity ? rawState.severity : "").trim().toLowerCase();
       state.status = String(rawState && rawState.status ? rawState.status : "").trim().toLowerCase();
+      state.sort = canonicalizeCasebookSortToken(rawState && rawState.sort ? rawState.sort : "");
       return state;
     }
 
@@ -1714,6 +866,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         bug: state.bug,
         severity: state.severity,
         status: state.status,
+        sort: state.sort,
       };
       return state;
     }
@@ -1749,6 +902,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       const bugToken = (params.get("bug") || "").trim();
       const severityToken = (params.get("severity") || "").trim().toLowerCase();
       const statusToken = (params.get("status") || "").trim().toLowerCase();
+      const sortToken = (params.get("sort") || "").trim().toLowerCase();
       // Compass prefers `scope`, but still accepts legacy `workstream` query links.
       const activeWorkstreamToken = tab === "compass"
         ? (normalizedScopeToken || normalizedWorkstreamToken)
@@ -1760,6 +914,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         bug: bugToken,
         severity: severityToken,
         status: statusToken,
+        sort: sortToken,
         diagram: canonicalizeDiagramToken(params.get("diagram") || ""),
         view: (params.get("view") || "").trim(),
         window: (params.get("window") || "").trim().toLowerCase(),
@@ -1840,6 +995,7 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
           bug: String(params.get("bug") || "").trim(),
           severity: String(params.get("severity") || "").trim().toLowerCase(),
           status: String(params.get("status") || "").trim().toLowerCase(),
+          sort: canonicalizeCasebookSortToken(params.get("sort") || ""),
         };
       } catch (_error) {
         return null;
@@ -1929,6 +1085,8 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
       if (state.bug) query.set("bug", state.bug);
       if (state.severity) query.set("severity", state.severity);
       if (state.status) query.set("status", state.status);
+      const sort = canonicalizeCasebookSortToken(state.sort || "");
+      if (sort !== CASEBOOK_SORT_DEFAULT) query.set("sort", sort);
       return query;
     }
 
@@ -1953,6 +1111,8 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         if (state.bug) query.set("bug", state.bug);
         if (state.severity) query.set("severity", state.severity);
         if (state.status) query.set("status", state.status);
+        const sort = canonicalizeCasebookSortToken(state.sort || "");
+        if (sort !== CASEBOOK_SORT_DEFAULT) query.set("sort", sort);
       } else if (state.workstream) {
         query.set("workstream", state.workstream);
       }
@@ -2022,12 +1182,6 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         setDrawerState(briefDrawer, briefDrawerPanel, briefToggle, false);
       }
       setDrawerState(odylithDrawer, odylithDrawerPanel, odylithToggle, open);
-      if (open) {
-        window.requestAnimationFrame(() => {
-          initializeOdylithCharts();
-          resizeOdylithCharts();
-        });
-      }
     }
 
     function applyTab(state, options = {}) {
@@ -2139,6 +1293,9 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
     if (upgradeReopen) {
       upgradeReopen.addEventListener("click", reopenUpgradeSpotlight);
     }
+    upgradeSpotlightLinks.forEach((link) => {
+      link.addEventListener("click", openUpgradeSpotlightLink);
+    });
     if (upgradeSpotlightDismissed()) {
       setUpgradeSpotlightHidden(true);
     } else if (upgradeSpotlight) {
@@ -2313,12 +1470,14 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         bug: frameState.bug || current.bug,
         severity: frameState.severity || current.severity,
         status: frameState.status || current.status,
+        sort: frameState.sort || current.sort,
       };
       if (
         next.tab === current.tab
         && next.bug === current.bug
         && next.severity === current.severity
         && next.status === current.status
+        && next.sort === current.sort
       ) {
         return;
       }
@@ -2399,12 +1558,14 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
         const bugToken = String(raw.bug || "").trim();
         const severityToken = String(raw.severity || "").trim().toLowerCase();
         const statusToken = String(raw.status || "").trim().toLowerCase();
+        const sortToken = canonicalizeCasebookSortToken(raw.sort || "");
         const next = {
           ...current,
           tab: "casebook",
           bug: bugToken,
           severity: severityToken,
           status: statusToken,
+          sort: sortToken,
         };
         applyTab(next, { pushHistory: false, syncFrames: false });
         return;
@@ -2418,13 +1579,8 @@ const payload = JSON.parse(document.getElementById("toolingDashboardData").textC
 
     window.addEventListener("resize", () => {
       scheduleRuntimeStatusLayoutSync();
-      resizeOdylithCharts();
     });
 
     applyTab(readStateFromUrl(), { pushHistory: false });
     setBriefDrawer(false);
     setOdylithDrawer(false);
-    window.requestAnimationFrame(() => {
-      initializeOdylithCharts();
-      resizeOdylithCharts();
-    });

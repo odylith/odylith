@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from urllib.parse import quote
 
 import pytest
@@ -12,11 +13,14 @@ from tests.integration.runtime.surface_browser_test_support import (
     _assert_registry_selection,
     _extract_query_param,
     _new_page,
+    _open_radar_topology_relations,
     _wait_for_compass_ready,
     _wait_for_shell_query_param,
     _wait_for_shell_tab,
     browser_context,
 )
+
+_WORKSTREAM_ID_RE = re.compile(r"^B-\d{3,}$")
 
 
 def _frame_anchor_actions(frame, selector: str) -> list[dict[str, str]]:  # noqa: ANN001
@@ -197,14 +201,6 @@ def _collect_compass_component_actions(compass, *, limit: int = 3) -> list[dict[
     return actions
 
 
-def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
-    panel = radar.locator("#detail details.topology-relations-panel").first
-    panel.wait_for(timeout=15000)
-    if panel.get_attribute("open") is None:
-        panel.evaluate("node => { node.open = true; }")
-    panel.locator(".topology-relations").wait_for(timeout=15000)
-
-
 def test_radar_b048_brutal_topology_and_surface_link_audit(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
@@ -315,6 +311,14 @@ def test_registry_detail_action_chip_audit_round_trips_cleanly(browser_context) 
     source_url = base_url + f"/odylith/index.html?tab=registry&component={quote(component_id, safe='')}"
     actions = _frame_anchor_actions(registry, "#detail a.detail-action-chip")
     assert actions, "expected Registry detail action chips"
+    workstream_actions = [
+        action
+        for action in actions
+        if _WORKSTREAM_ID_RE.fullmatch(str(action["label"]).strip())
+    ]
+    assert workstream_actions, "expected Registry detail workstream chips"
+    for action in workstream_actions:
+        assert _extract_query_param(str(action["href"]), "tab") == "radar"
 
     for href in dict.fromkeys(str(action["href"]) for action in actions):
         response = page.goto(source_url, wait_until="domcontentloaded")
@@ -341,11 +345,16 @@ def test_atlas_surface_links_and_context_pills_round_trip_cleanly(browser_contex
     actions = []
     actions.extend(_frame_anchor_actions(atlas, "#surfaceLinks a"))
     actions.extend(_frame_anchor_actions(atlas, "#registryLinks a"))
-    actions.extend(_frame_anchor_actions(atlas, "#activeWorkstreamLinks a.workstream-pill-link"))
-    actions.extend(_frame_anchor_actions(atlas, "#ownerWorkstreamLinks a.workstream-pill-link"))
-    actions.extend(_frame_anchor_actions(atlas, "#historicalWorkstreamLinks a.workstream-pill-link"))
+    workstream_actions = []
+    workstream_actions.extend(_frame_anchor_actions(atlas, "#activeWorkstreamLinks a.workstream-pill-link"))
+    workstream_actions.extend(_frame_anchor_actions(atlas, "#ownerWorkstreamLinks a.workstream-pill-link"))
+    workstream_actions.extend(_frame_anchor_actions(atlas, "#historicalWorkstreamLinks a.workstream-pill-link"))
+    actions.extend(workstream_actions)
     unique_hrefs = list(dict.fromkeys(str(action["href"]) for action in actions))
     assert unique_hrefs, "expected Atlas shell/context links"
+    assert workstream_actions, "expected Atlas workstream pills"
+    for action in workstream_actions:
+        assert _extract_query_param(str(action["href"]), "tab") == "radar"
 
     for href in unique_hrefs:
         response = page.goto(source_url, wait_until="domcontentloaded")
@@ -370,21 +379,51 @@ def test_compass_cross_surface_links_round_trip_cleanly(browser_context) -> None
 
     compass = page.frame_locator("#frame-compass")
     _wait_for_compass_ready(compass)
-    workstream_hrefs = list(
-        dict.fromkeys(
-            str(action["href"])
-            for action in _frame_anchor_actions(compass, "a.ws-id-btn")[:5]
-        )
-    )
-    assert workstream_hrefs, "expected Compass workstream deeplinks"
+    workstream_link_specs = [
+        ("a.ws-id-btn", "expected Compass current workstream deeplinks"),
+    ]
+    optional_workstream_link_specs = [
+        ("#execution-waves-host a.execution-wave-chip-link", "expected Compass execution-wave workstream deeplinks"),
+        ("#release-groups-host a.execution-wave-chip-link", "expected Compass release workstream deeplinks"),
+        ("a.workstream-id-chip", "expected Compass timeline workstream deeplinks"),
+    ]
 
-    for href in workstream_hrefs:
-        response = page.goto(source_url, wait_until="domcontentloaded")
-        assert response is not None and response.ok
-        _wait_for_compass_ready(compass)
-        compass.locator(f'a.ws-id-btn[href="{href}"]').first.wait_for(timeout=15000)
-        _click_frame_anchor_by_href(compass, "body", "a.ws-id-btn", href)
-        _assert_shell_target_from_href(page, href)
+    for selector, failure_message in workstream_link_specs + optional_workstream_link_specs:
+        if selector.startswith("#release-groups-host"):
+            release_summary = compass.locator("#release-groups-host summary").first
+            if release_summary.count():
+                release_summary.evaluate(
+                    """(node) => {
+                        const details = node.closest("details");
+                        if (details && !details.open) node.click();
+                    }"""
+                )
+        if selector.startswith("#execution-waves-host"):
+            wave_summary = compass.locator("#execution-waves-host summary").first
+            if wave_summary.count():
+                wave_summary.evaluate(
+                    """(node) => {
+                        const details = node.closest("details");
+                        if (details && !details.open) node.click();
+                    }"""
+                )
+        hrefs = list(
+            dict.fromkeys(
+                str(action["href"])
+                for action in _frame_anchor_actions(compass, selector)[:5]
+            )
+        )
+        if selector in {spec[0] for spec in optional_workstream_link_specs} and not hrefs:
+            continue
+        assert hrefs, failure_message
+        for href in hrefs:
+            assert _extract_query_param(href, "tab") == "radar"
+            response = page.goto(source_url, wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            _wait_for_compass_ready(compass)
+            compass.locator(f'{selector}[href="{href}"]').first.wait_for(timeout=15000)
+            _click_frame_anchor_by_href(compass, "body", selector, href)
+            _assert_shell_target_from_href(page, href)
 
     response = page.goto(source_url, wait_until="domcontentloaded")
     assert response is not None and response.ok

@@ -21,7 +21,9 @@ import re
 import time
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import odylith_benchmark_contract
 from odylith.runtime.common.consumer_profile import surface_root_path
 
@@ -33,6 +35,25 @@ _DEFAULT_FEATURE_HISTORY_LIMIT = 10
 _DEFAULT_VALIDATION_COMMAND_LIMIT = 8
 _DEFAULT_ARCHITECTURE_DETAIL_LEVEL = "compact"
 _VALID_ARCHITECTURE_DETAIL_LEVELS = frozenset({"full", "compact", "packet"})
+
+
+def _architecture_execution_hint(
+    *,
+    mode: str,
+    profile: str,
+    fanout: str,
+    risk_tier: str,
+    why: str,
+) -> dict[str, str]:
+    model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(profile)
+    return {
+        "mode": mode,
+        "model": model,
+        "reasoning_effort": reasoning_effort,
+        "fanout": fanout,
+        "risk_tier": risk_tier,
+        "why": why,
+    }
 _DEFAULT_ARCHITECTURE_BENCHMARK_CASES: tuple[dict[str, Any], ...] = (
     {
         "case_id": "architecture-odylith-self-grounding",
@@ -99,13 +120,9 @@ TOPOLOGY_DOMAIN_RULES: tuple[dict[str, Any], ...] = (
             "src/odylith/runtime/context_engine/odylith_context_cache.py",
             "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
             "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
-            "agents-guidelines/TOOLING.MD",
-            "agents-guidelines/ARCHITECTURE.MD",
         ),
         "components": ("odylith-context-engine",),
         "required_reads": (
-            "agents-guidelines/TOOLING.MD",
-            "agents-guidelines/ARCHITECTURE.MD",
             "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
             "odylith/atlas/source/odylith-context-and-agent-execution-stack.mmd",
         ),
@@ -142,17 +159,11 @@ def _utc_now() -> str:
 
 
 def _normalize_repo_path(*, repo_root: Path, value: Any) -> str:
-    token = str(value or "").strip()
-    if not token:
-        return ""
-    root = Path(repo_root).resolve()
-    try:
-        candidate = Path(token)
-        if candidate.is_absolute():
-            return candidate.resolve().relative_to(root).as_posix()
-    except Exception:
-        return token
-    return token
+    return repo_path_resolver.normalize_repo_token(
+        repo_root=repo_root,
+        value=value,
+        preserve_external_absolute=True,
+    )
 
 
 def _json_dict(value: Any) -> dict[str, Any]:
@@ -1084,7 +1095,9 @@ def _match_components(*, components: Sequence[Mapping[str, Any]], changed_paths:
         path in {
             "src/odylith/install/agents.py",
             "AGENTS.md",
+            "CLAUDE.md",
             "odylith/AGENTS.md",
+            "odylith/CLAUDE.md",
             "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
             "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
             "docs/benchmarks/README.md",
@@ -2923,40 +2936,36 @@ def _execution_hint(
     confidence_tier = str(coverage.get("confidence_tier", "")).strip()
     unresolved_edge_count = int(coverage.get("unresolved_edge_count", 0) or 0)
     if high_risk and (full_scan_recommended or confidence_tier == "low" or unresolved_edge_count > 0):
-        return {
-            "mode": "local_only",
-            "model": "gpt-5.4",
-            "reasoning_effort": "high",
-            "fanout": "no_fanout",
-            "risk_tier": "high",
-            "why": "High-risk architecture slice with incomplete coverage should stay local and fully grounded.",
-        }
+        return _architecture_execution_hint(
+            mode="local_only",
+            profile=agent_runtime_contract.FRONTIER_HIGH_PROFILE,
+            fanout="no_fanout",
+            risk_tier="high",
+            why="High-risk architecture slice with incomplete coverage should stay local and fully grounded.",
+        )
     if high_risk:
-        return {
-            "mode": "local_or_single_leaf",
-            "model": "gpt-5.4",
-            "reasoning_effort": "high",
-            "fanout": "bounded_single_leaf_only",
-            "risk_tier": "high",
-            "why": "High-risk architecture slice is grounded enough for deeper reasoning, but delegation should stay tightly bounded.",
-        }
+        return _architecture_execution_hint(
+            mode="local_or_single_leaf",
+            profile=agent_runtime_contract.FRONTIER_HIGH_PROFILE,
+            fanout="bounded_single_leaf_only",
+            risk_tier="high",
+            why="High-risk architecture slice is grounded enough for deeper reasoning, but delegation should stay tightly bounded.",
+        )
     if confidence_tier == "high":
-        return {
-            "mode": "bounded_analysis",
-            "model": "gpt-5.4-mini",
-            "reasoning_effort": "medium",
-            "fanout": "optional",
-            "risk_tier": "moderate",
-            "why": "Coverage is strong and the slice is not in a highest-risk topology domain.",
-        }
-    return {
-        "mode": "local_grounding_first",
-        "model": "gpt-5.4-mini",
-        "reasoning_effort": "medium",
-        "fanout": "no_fanout",
-        "risk_tier": "moderate",
-        "why": "Coverage is partial; narrow and ground further before delegation.",
-    }
+        return _architecture_execution_hint(
+            mode="bounded_analysis",
+            profile=agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE,
+            fanout="optional",
+            risk_tier="moderate",
+            why="Coverage is strong and the slice is not in a highest-risk topology domain.",
+        )
+    return _architecture_execution_hint(
+        mode="local_grounding_first",
+        profile=agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE,
+        fanout="no_fanout",
+        risk_tier="moderate",
+        why="Coverage is partial; narrow and ground further before delegation.",
+    )
 
 
 def _architecture_benchmark_summary(
@@ -3063,12 +3072,13 @@ def build_architecture_dossier(
                 "drift_case_ids": [],
             },
             "execution_hint": {
-                "mode": "local_only",
-                "model": "gpt-5.4",
-                "reasoning_effort": "high",
-                "fanout": "no_fanout",
-                "risk_tier": "high",
-                "why": "Architecture bundle is unavailable, so the slice cannot be trusted without direct source reads.",
+                **_architecture_execution_hint(
+                    mode="local_only",
+                    profile=agent_runtime_contract.FRONTIER_HIGH_PROFILE,
+                    fanout="no_fanout",
+                    risk_tier="high",
+                    why="Architecture bundle is unavailable, so the slice cannot be trusted without direct source reads.",
+                ),
             },
             "unresolved_questions": [
                 "Why is the compiled architecture bundle unavailable for this repo slice?",

@@ -18,6 +18,95 @@
       };
     }
 
+    const compassDisclosureStateMemory = Object.create(null);
+
+    function compassDisclosureRouteKey(state) {
+      const current = state && typeof state === "object" ? state : params();
+      const windowToken = current.window === "24h" ? "24h" : "48h";
+      const scopeToken = WORKSTREAM_RE.test(String(current.workstream || "").trim())
+        ? String(current.workstream || "").trim()
+        : "global";
+      const dateToken = DATE_RE.test(String(current.date || "").trim())
+        ? String(current.date || "").trim()
+        : "live";
+      const auditDayToken = DATE_RE.test(String(current.audit_day || "").trim())
+        ? String(current.audit_day || "").trim()
+        : "-";
+      return `${scopeToken}|${windowToken}|${dateToken}|${auditDayToken}`;
+    }
+
+    function compassDisclosureStateStorageKey(group, state) {
+      const token = String(group || "").trim().toLowerCase() || "default";
+      return `odylith.compass.disclosure:${window.location.pathname}:${token}:${compassDisclosureRouteKey(state)}`;
+    }
+
+    function readCompassDisclosureState(group, state) {
+      const key = compassDisclosureStateStorageKey(group, state);
+      let raw = compassDisclosureStateMemory[key] || "";
+      try {
+        if (window.sessionStorage) {
+          const stored = window.sessionStorage.getItem(key);
+          if (stored !== null) raw = stored;
+        }
+      } catch (_error) {
+        // Ignore storage access failures and fall back to in-memory state.
+      }
+      if (!raw) return {};
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (_error) {
+        return {};
+      }
+    }
+
+    function writeCompassDisclosureState(group, state, nextState) {
+      const key = compassDisclosureStateStorageKey(group, state);
+      let rendered = "{}";
+      try {
+        rendered = JSON.stringify(nextState && typeof nextState === "object" ? nextState : {});
+      } catch (_error) {
+        rendered = "{}";
+      }
+      compassDisclosureStateMemory[key] = rendered;
+      try {
+        if (window.sessionStorage) {
+          window.sessionStorage.setItem(key, rendered);
+        }
+      } catch (_error) {
+        // Ignore storage access failures and keep the in-memory copy.
+      }
+    }
+
+    function resolveCompassDisclosureOpen(group, state, disclosureKey, defaultOpen = false) {
+      const token = String(disclosureKey || "").trim();
+      if (!token) return Boolean(defaultOpen);
+      const storedState = readCompassDisclosureState(group, state);
+      if (!Object.prototype.hasOwnProperty.call(storedState, token)) {
+        return Boolean(defaultOpen);
+      }
+      return Boolean(storedState[token]);
+    }
+
+    function bindCompassDisclosurePersistence(root, group, state) {
+      const container = root instanceof Element ? root : document;
+      const storedState = readCompassDisclosureState(group, state);
+      Array.from(container.querySelectorAll("details[data-compass-disclosure-key]")).forEach((node) => {
+        const disclosureKey = String(node.getAttribute("data-compass-disclosure-key") || "").trim();
+        if (!disclosureKey) return;
+        if (Object.prototype.hasOwnProperty.call(storedState, disclosureKey)) {
+          node.open = Boolean(storedState[disclosureKey]);
+        }
+        if (node.dataset && node.dataset.compassDisclosureBound === "1") return;
+        if (node.dataset) node.dataset.compassDisclosureBound = "1";
+        node.addEventListener("toggle", () => {
+          const nextState = readCompassDisclosureState(group, state);
+          nextState[disclosureKey] = Boolean(node.open);
+          writeCompassDisclosureState(group, state, nextState);
+        });
+      });
+    }
+
     function toDate(value) {
       const ts = Date.parse(String(value || ""));
       if (Number.isNaN(ts)) return null;
@@ -114,24 +203,39 @@
         : {};
     }
 
+    function emptyHistoryArchiveMeta() {
+      return {
+        compressed: false,
+        path: "",
+        count: 0,
+        dates: [],
+        newest_date: "",
+        oldest_date: "",
+      };
+    }
+
     function normalizeHistoryIndexDates(historyLike) {
       const history = historyLike && typeof historyLike === "object" ? historyLike : {};
-      const archive = history && history.archive && typeof history.archive === "object"
-        ? history.archive
-        : {};
-      const snapshots = history && history.snapshots && typeof history.snapshots === "object"
-        ? Object.keys(history.snapshots)
-        : [];
       return normalizeHistoryDateTokens([
         ...(Array.isArray(history.dates) ? history.dates : []),
         ...(Array.isArray(history.restored_dates) ? history.restored_dates : []),
-        ...(Array.isArray(archive.dates) ? archive.dates : []),
-        ...snapshots,
       ]);
     }
 
     function knownHistoryDateTokens(payload) {
       return normalizeHistoryIndexDates(historyMeta(payload));
+    }
+
+    function loadableHistoryDateTokens(payload) {
+      const history = historyMeta(payload);
+      return normalizeHistoryDateTokens([
+        ...(Array.isArray(history.dates) ? history.dates : []),
+        ...(Array.isArray(history.restored_dates) ? history.restored_dates : []),
+      ]);
+    }
+
+    function knownHistoryDateSet(payload) {
+      return new Set(knownHistoryDateTokens(payload));
     }
 
     function choosePreferredLiveRuntimePayload(primaryPayload, secondaryPayload) {
@@ -232,7 +336,7 @@
 
     function rollingThirtyDayBounds(payload) {
       const maxDate = calendarMaxDateToken(payload) || toLocalDateToken(new Date());
-      const historyDates = knownHistoryDateTokens(payload);
+      const historyDates = loadableHistoryDateTokens(payload);
       const minDate = historyDates.length
         ? historyDates[historyDates.length - 1]
         : (DATE_RE.test(maxDate) ? shiftDateToken(maxDate, -29) : "");
@@ -389,12 +493,51 @@
       banner.title = text;
     }
 
+    function syncParentShellCompassUrl(query) {
+      try {
+        if (!window.parent || window.parent === window) return;
+        const parentLocation = window.parent.location;
+        if (!parentLocation || String(parentLocation.origin || "") !== String(window.location.origin || "")) return;
+        const parentUrl = new URL(String(parentLocation.href || ""));
+        const parentQuery = new URLSearchParams();
+        const scopeToken = String(query.get("scope") || "").trim();
+        const windowToken = String(query.get("window") || "").trim().toLowerCase();
+        const dateToken = String(query.get("date") || "").trim();
+        const auditDayToken = String(query.get("audit_day") || "").trim();
+
+        parentQuery.set("tab", "compass");
+        if (WORKSTREAM_RE.test(scopeToken)) {
+          parentQuery.set("scope", scopeToken);
+        }
+        if (windowToken === "24h" || windowToken === "48h") {
+          parentQuery.set("window", windowToken);
+        }
+        if (dateToken === "live" || DATE_RE.test(dateToken)) {
+          parentQuery.set("date", dateToken);
+        }
+        if (DATE_RE.test(auditDayToken)) {
+          parentQuery.set("audit_day", auditDayToken);
+        }
+
+        const nextSearch = parentQuery.toString();
+        const nextUrl = `${parentUrl.pathname}${nextSearch ? `?${nextSearch}` : ""}${parentUrl.hash || ""}`;
+        const currentUrl = `${parentLocation.pathname}${parentLocation.search}${parentLocation.hash}`;
+        if (nextUrl !== currentUrl) {
+          window.parent.history.replaceState(null, "", nextUrl);
+        }
+      } catch (_error) {
+        // Fall back to parent postMessage sync when direct same-origin history access is unavailable.
+      }
+    }
+
     function navigateCompass(nextQuery) {
       const query = nextQuery instanceof URLSearchParams
         ? nextQuery
         : new URLSearchParams(String(nextQuery || ""));
       query.delete("workstream");
       const localSearch = query.toString();
+
+      syncParentShellCompassUrl(query);
 
       try {
         if (window.parent && window.parent !== window) {
@@ -486,25 +629,36 @@
       }
     }
 
+    async function inflateGzipBase64JsonPayload(encoded) {
+      const token = String(encoded || "").trim();
+      if (!token || typeof DecompressionStream !== "function") return null;
+      try {
+        const binary = window.atob(token);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        const response = new Response(bytes);
+        if (!response.body) return null;
+        const inflated = new Response(response.body.pipeThrough(new DecompressionStream("gzip")));
+        const payload = await inflated.json();
+        return payload && typeof payload === "object" ? payload : null;
+      } catch (_error) {
+        return null;
+      }
+    }
+
     function liveHistoryMeta() {
       const runtime = window.__ODYLITH_COMPASS_RUNTIME__;
       if (!runtime || typeof runtime !== "object") return null;
       const history = runtime && typeof runtime === "object" && runtime.history && typeof runtime.history === "object"
         ? runtime.history
         : {};
-      const archive = history && history.archive && typeof history.archive === "object"
-        ? history.archive
-        : {};
-      const archiveDates = normalizeHistoryDateTokens(archive.dates);
       return {
         retention_days: Number(history.retention_days || 0),
         dates: normalizeHistoryDateTokens(history.dates),
         restored_dates: normalizeHistoryDateTokens(history.restored_dates),
-        archive: {
-          ...archive,
-          dates: archiveDates,
-          count: Math.max(Number(archive.count || 0), archiveDates.length),
-        },
+        archive: emptyHistoryArchiveMeta(),
       };
     }
 
@@ -518,10 +672,7 @@
       if (meta.retention_days > 0) history.retention_days = meta.retention_days;
       history.dates = [...meta.dates];
       history.restored_dates = [...meta.restored_dates];
-      history.archive = {
-        ...meta.archive,
-        dates: Array.isArray(meta.archive && meta.archive.dates) ? [...meta.archive.dates] : [],
-      };
+      history.archive = emptyHistoryArchiveMeta();
       payload.history = history;
       return payload;
     }
@@ -571,14 +722,36 @@
       return resolved && typeof resolved === "object" ? resolved : null;
     }
 
-    function embeddedHistorySnapshot(dayToken) {
+    async function embeddedHistorySnapshot(dayToken) {
       const token = String(dayToken || "").trim();
       if (!DATE_RE.test(token)) return null;
       const store = window.__ODYLITH_COMPASS_HISTORY__;
+      const storeDates = normalizeHistoryIndexDates(store);
+      const liveMeta = liveHistoryMeta();
+      const knownDates = liveMeta && Array.isArray(liveMeta.dates) && liveMeta.dates.length
+        ? normalizeHistoryDateTokens([
+          ...liveMeta.dates,
+          ...(Array.isArray(liveMeta.restored_dates) ? liveMeta.restored_dates : []),
+        ])
+        : storeDates;
+      if (!knownDates.includes(token)) return null;
       const snapshots = store && typeof store === "object" && store.snapshots && typeof store.snapshots === "object"
         ? store.snapshots
         : {};
-      const snapshot = cloneJsonPayload(snapshots[token]);
+      const entry = snapshots[token];
+      if (
+        entry
+        && typeof entry === "object"
+        && !Array.isArray(entry)
+        && entry.encoding === "gzip+base64+json"
+        && typeof entry.payload === "string"
+      ) {
+        const inflated = await inflateGzipBase64JsonPayload(entry.payload);
+        if (!inflated) return null;
+        snapshots[token] = inflated;
+        return applyLiveHistoryMeta(inflated);
+      }
+      const snapshot = cloneJsonPayload(entry);
       if (!snapshot) return null;
       return applyLiveHistoryMeta(snapshot);
     }
@@ -595,6 +768,7 @@
       if (historyAvailabilityLoad) return historyAvailabilityLoad;
       historyAvailabilityLoad = (async () => {
         let dates = [];
+        const liveMeta = liveHistoryMeta();
         const isFileProtocol = String(window.location.protocol || "").toLowerCase() === "file:";
         const indexHref = String(compassShell().history_index_href || "").trim();
         if (!isFileProtocol && indexHref) {
@@ -609,6 +783,12 @@
         if (!dates.length) {
           await ensureEmbeddedHistoryLoaded();
           dates = normalizeHistoryIndexDates(window.__ODYLITH_COMPASS_HISTORY__);
+        }
+        if (liveMeta && Array.isArray(liveMeta.dates) && liveMeta.dates.length) {
+          dates = normalizeHistoryDateTokens([
+            ...liveMeta.dates,
+            ...(Array.isArray(liveMeta.restored_dates) ? liveMeta.restored_dates : []),
+          ]);
         }
         historyAvailabilityDates = dates;
         historyAvailabilityLoad = null;
@@ -636,9 +816,11 @@
           }
         } catch (_error) {}
       }
-      await ensureEmbeddedHistoryLoaded();
-      const embeddedPayload = embeddedHistorySnapshot(token);
-      if (embeddedPayload) return { payload: embeddedPayload, warning: "" };
+      if (availableDates.has(token) || availableDates.size === 0) {
+        await ensureEmbeddedHistoryLoaded();
+        const embeddedPayload = await embeddedHistorySnapshot(token);
+        if (embeddedPayload) return { payload: embeddedPayload, warning: "" };
+      }
       return {
         payload: null,
         warning: warnOnFailure ? `No snapshot available for this day (${token}). Showing live runtime.` : "",
@@ -677,10 +859,21 @@
       // preloaded runtime JS global cannot pin Compass to an older render.
       const runtime = choosePreferredLiveRuntimePayload(fetchedRuntime, embeddedRuntime);
       if (runtime.payload) {
+        const reconciledRuntime = await reconcileRuntimePayloadWithSourceTruth(runtime.payload);
+        const reconciledPayload = reconciledRuntime && reconciledRuntime.payload && typeof reconciledRuntime.payload === "object"
+          ? reconciledRuntime.payload
+          : runtime.payload;
+        const payloadWarning = runtime.payload && typeof runtime.payload.warning === "string"
+          ? String(runtime.payload.warning || "").trim()
+          : "";
+        const reconciliationWarning = reconciledRuntime && typeof reconciledRuntime.warning === "string"
+          ? String(reconciledRuntime.warning || "").trim()
+          : "";
+        const combinedWarning = [warning, payloadWarning, reconciliationWarning].filter(Boolean).join(" ");
         return {
-          payload: runtime.payload,
+          payload: reconciledPayload,
           source: runtime.source === "primary" && fetchedRuntime ? "runtime-json" : "runtime-js",
-          warning,
+          warning: combinedWarning,
         };
       }
 
@@ -695,9 +888,10 @@
       if (!dayTokens.length) return payload;
 
       const todayToken = calendarMaxDateToken(payload) || toLocalDateToken(new Date());
+      const knownHistoryDays = knownHistoryDateSet(payload);
       const targetDays = dayTokens
         .map((token) => String(token || "").trim())
-        .filter((token) => DATE_RE.test(token) && token !== todayToken);
+        .filter((token) => DATE_RE.test(token) && token !== todayToken && knownHistoryDays.has(token));
       if (!targetDays.length) return payload;
 
       const mergedEvents = Array.isArray(payload.timeline_events) ? [...payload.timeline_events] : [];
@@ -743,21 +937,40 @@
       return payload;
     }
 
+    function currentWorkstreamRowsForState(payload, state) {
+      const payloadRowsByWindow = payload && payload.current_workstreams_by_window && typeof payload.current_workstreams_by_window === "object"
+        ? payload.current_workstreams_by_window
+        : null;
+      const windowKey = state && state.window === "24h" ? "24h" : "48h";
+      if (payloadRowsByWindow && Array.isArray(payloadRowsByWindow[windowKey]) && payloadRowsByWindow[windowKey].length) {
+        return payloadRowsByWindow[windowKey];
+      }
+      return Array.isArray(payload && payload.current_workstreams) ? payload.current_workstreams : [];
+    }
+
     function scopeWorkstreams(payload, state) {
-      const rows = Array.isArray(payload.current_workstreams) ? payload.current_workstreams : [];
+      const rows = currentWorkstreamRowsForState(payload, state);
       const executionRows = rows.filter((row) => {
         const status = String(row && row.status ? row.status : "").trim();
         return status === "planning" || status === "implementation";
       });
       const scopedIds = collectScopedWorkstreamIds(payload, state);
+      const promotedIds = payloadPromotedScopedWorkstreamIds(payload, state)
+        || scopedIds.filter((ideaId) => {
+          const signalMap = payloadWindowScopeSignals(payload, state);
+          return signalMap && scopeSignalRank(signalMap[ideaId]) >= 3;
+        });
       const scopedSet = new Set(scopedIds);
+      const promotedSet = new Set(promotedIds);
       const scopedRows = rows.filter((row) => scopedSet.has(String(row.idea_id || "").trim()));
+      const promotedRows = rows.filter((row) => promotedSet.has(String(row.idea_id || "").trim()));
       if (state.workstream) {
         const selectedRows = rows.filter((row) => String(row.idea_id || "").trim() === state.workstream);
         if (selectedRows.length) return selectedRows;
         const fallbackRow = selectedScopedWorkstreamFallback(payload, state.workstream);
         return fallbackRow ? [fallbackRow] : [];
       }
+      if (promotedRows.length) return promotedRows;
       if (scopedRows.length) return scopedRows;
       if (executionRows.length) return executionRows;
       return rows;
@@ -780,9 +993,6 @@
       const brief = standupBriefForState(payload, state);
       if (String(brief && brief.status ? brief.status : "") === "ready") {
         return standupBriefToDigestLines(brief);
-      }
-      if (!hasStructuredStandupBriefPayload(payload)) {
-        return legacyDigestLinesForState(payload, state);
       }
       return [];
     }
@@ -829,6 +1039,130 @@
       return lookup;
     }
 
+    const MAX_SCOPED_VERIFIED_FANOUT = 4;
+    const SCOPED_GOVERNANCE_ONLY_PREFIXES = [
+      "odylith/radar/source/",
+      "odylith/technical-plans/",
+      "odylith/casebook/",
+      "odylith/atlas/source/",
+      "odylith/registry/source/",
+    ];
+
+    function rowWorkstreamIds(row) {
+      const raw = Array.isArray(row && row.workstreams) ? row.workstreams : [];
+      const deduped = [];
+      const seen = new Set();
+      raw.forEach((item) => {
+        const token = String(item || "").trim();
+        if (!WORKSTREAM_RE.test(token) || seen.has(token)) return;
+        seen.add(token);
+        deduped.push(token);
+      });
+      return deduped;
+    }
+
+    function rowFiles(row) {
+      const raw = Array.isArray(row && row.files) ? row.files : [];
+      const deduped = [];
+      const seen = new Set();
+      raw.forEach((item) => {
+        const token = String(item || "").trim();
+        if (!token || seen.has(token)) return;
+        seen.add(token);
+        deduped.push(token);
+      });
+      return deduped;
+    }
+
+    function isScopedGovernanceOnlyFile(filePath) {
+      const token = String(filePath || "").trim();
+      if (!token) return false;
+      return SCOPED_GOVERNANCE_ONLY_PREFIXES.some((prefix) => token.startsWith(prefix));
+    }
+
+    function rowIsGovernanceOnlyLocalChange(row) {
+      const files = rowFiles(row);
+      if (!files.length) return false;
+      const kind = String(row && row.kind ? row.kind : "").trim();
+      if (kind === "local_change") {
+        return files.every((filePath) => isScopedGovernanceOnlyFile(filePath));
+      }
+      const rawEvents = Array.isArray(row && row.events) ? row.events : [];
+      const eventKinds = Array.from(new Set(
+        rawEvents
+          .map((item) => (item && typeof item === "object") ? String(item.kind || "").trim() : "")
+          .filter(Boolean)
+      ));
+      if (eventKinds.some((eventKind) => eventKind !== "local_change")) return false;
+      return files.every((filePath) => isScopedGovernanceOnlyFile(filePath));
+    }
+
+    function rowHasVerifiedScopedSignal(row) {
+      const ws = rowWorkstreamIds(row);
+      if (!ws.length) return false;
+      if (ws.length > MAX_SCOPED_VERIFIED_FANOUT) return false;
+      if (rowIsGovernanceOnlyLocalChange(row)) return false;
+      return true;
+    }
+
+    function payloadVerifiedScopedWorkstreamIds(payload, state) {
+      const scopedMap = payload && payload.verified_scoped_workstreams && typeof payload.verified_scoped_workstreams === "object"
+        ? payload.verified_scoped_workstreams
+        : null;
+      if (!scopedMap) return null;
+      const key = state && state.window === "24h" ? "24h" : "48h";
+      if (!Array.isArray(scopedMap[key])) return [];
+      const deduped = [];
+      const seen = new Set();
+      scopedMap[key].forEach((item) => {
+        const token = String(item || "").trim();
+        if (!WORKSTREAM_RE.test(token) || seen.has(token)) return;
+        seen.add(token);
+        deduped.push(token);
+      });
+      return deduped;
+    }
+
+    function scopeSignalRank(signal) {
+      const row = signal && typeof signal === "object" ? signal : {};
+      const explicitRank = Number(row.rank || 0);
+      if (Number.isFinite(explicitRank)) {
+        return Math.max(0, Math.min(5, explicitRank));
+      }
+      const rung = String(row.rung || "").trim().toUpperCase();
+      if (/^R[0-5]$/.test(rung)) return Number(rung.slice(1));
+      return 0;
+    }
+
+    function payloadWindowScopeSignals(payload, state) {
+      const scopedMap = payload && payload.window_scope_signals && typeof payload.window_scope_signals === "object"
+        ? payload.window_scope_signals
+        : null;
+      if (!scopedMap) return null;
+      const key = state && state.window === "24h" ? "24h" : "48h";
+      const raw = scopedMap[key];
+      if (!raw || typeof raw !== "object") return {};
+      return raw;
+    }
+
+    function payloadPromotedScopedWorkstreamIds(payload, state) {
+      const scopedMap = payload && payload.promoted_scoped_workstreams && typeof payload.promoted_scoped_workstreams === "object"
+        ? payload.promoted_scoped_workstreams
+        : null;
+      if (!scopedMap) return null;
+      const key = state && state.window === "24h" ? "24h" : "48h";
+      if (!Array.isArray(scopedMap[key])) return [];
+      const deduped = [];
+      const seen = new Set();
+      scopedMap[key].forEach((item) => {
+        const token = String(item || "").trim();
+        if (!WORKSTREAM_RE.test(token) || seen.has(token)) return;
+        seen.add(token);
+        deduped.push(token);
+      });
+      return deduped;
+    }
+
     function collectScopedWorkstreamIds(payload, state) {
       const summaryState = stateForSummary(state);
       const baseState = {
@@ -837,16 +1171,72 @@
         date: summaryState.date === "live" || DATE_RE.test(String(summaryState.date || "")) ? String(summaryState.date || "live") : "live",
         audit_day: "",
       };
-      const maxWorkstreamFanout = 4;
 
       const validIds = new Set(
-        (Array.isArray(payload.current_workstreams) ? payload.current_workstreams : [])
+        currentWorkstreamRowsForState(payload, baseState)
           .map((row) => String(row && row.idea_id ? row.idea_id : "").trim())
           .filter((token) => WORKSTREAM_RE.test(token))
       );
+      const sortScopedIds = (ids, signalMap = null) => ids.slice().sort((left, right) => {
+        if (signalMap !== null) {
+          const delta = scopeSignalRank(signalMap[right]) - scopeSignalRank(signalMap[left]);
+          if (delta !== 0) return delta;
+        }
+        return String(left || "").localeCompare(String(right || ""));
+      });
+      const scopedBriefMap = payload && payload.standup_brief_scoped && typeof payload.standup_brief_scoped === "object"
+        ? payload.standup_brief_scoped[baseState.window]
+        : null;
+      const readyScopedBriefIds = (ids) => ids.filter((token) => {
+        if (!scopedBriefMap || typeof scopedBriefMap !== "object") return false;
+        const brief = scopedBriefMap[token];
+        return brief && typeof brief === "object" && String(brief.status || "").trim() === "ready";
+      });
+      const signalMap = payloadWindowScopeSignals(payload, baseState);
+      if (signalMap !== null) {
+        const rankedSignalIds = Object.keys(signalMap)
+          .filter((token) => WORKSTREAM_RE.test(String(token || "").trim()))
+          .filter((token) => !validIds.size || validIds.has(String(token || "").trim()))
+          .filter((token) => scopeSignalRank(signalMap[token]) >= 2)
+        if (rankedSignalIds.length) {
+          return sortScopedIds(rankedSignalIds, signalMap);
+        }
+        if (scopedBriefMap && typeof scopedBriefMap === "object") {
+          const scopedBriefIds = Object.keys(scopedBriefMap)
+            .filter((token) => WORKSTREAM_RE.test(String(token || "").trim()))
+            .filter((token) => !validIds.size || validIds.has(String(token || "").trim()));
+          const readyIds = readyScopedBriefIds(scopedBriefIds);
+          if (readyIds.length) {
+            return sortScopedIds(readyIds, signalMap);
+          }
+          const payloadScopedIds = payloadVerifiedScopedWorkstreamIds(payload, baseState);
+          if (payloadScopedIds !== null) {
+            const filteredPayloadScopedIds = payloadScopedIds.filter((token) => !validIds.size || validIds.has(token));
+            const readyPayloadIds = readyScopedBriefIds(filteredPayloadScopedIds);
+            if (readyPayloadIds.length) {
+              return sortScopedIds(readyPayloadIds, signalMap);
+            }
+            if (filteredPayloadScopedIds.length) {
+              return sortScopedIds(filteredPayloadScopedIds, signalMap);
+            }
+          }
+          if (scopedBriefIds.length) {
+            return sortScopedIds(scopedBriefIds, signalMap);
+          }
+        }
+      }
+      const payloadScopedIds = payloadVerifiedScopedWorkstreamIds(payload, baseState);
+      if (payloadScopedIds !== null) {
+        const readyIds = readyScopedBriefIds(payloadScopedIds);
+        if (readyIds.length) {
+          return sortScopedIds(
+            readyIds.filter((token) => !validIds.size || validIds.has(token))
+          );
+        }
+        return payloadScopedIds.filter((token) => !validIds.size || validIds.has(token));
+      }
       const strictCounts = new Map();
       const boundedFanoutCounts = new Map();
-      const broadFanoutCounts = new Map();
       const bump = (map, token, amount = 1) => {
         const ws = String(token || "").trim();
         if (!WORKSTREAM_RE.test(ws)) return;
@@ -855,17 +1245,12 @@
       };
       const consumeRows = (rows) => {
         rows.forEach((row) => {
-          const ws = Array.isArray(row.workstreams)
-            ? Array.from(new Set(row.workstreams.map((token) => String(token || "").trim()).filter((token) => WORKSTREAM_RE.test(token))))
-            : [];
+          if (!rowHasVerifiedScopedSignal(row)) return;
+          const ws = rowWorkstreamIds(row);
           if (!ws.length) return;
           const fanout = ws.length;
           if (fanout === 1) {
             bump(strictCounts, ws[0], 1);
-            return;
-          }
-          if (maxWorkstreamFanout > 0 && fanout > maxWorkstreamFanout) {
-            ws.forEach((token) => bump(broadFanoutCounts, token, 1));
             return;
           }
           ws.forEach((token) => bump(boundedFanoutCounts, token, 1));
@@ -889,7 +1274,6 @@
       };
       strictCounts.forEach((count, ws) => addScore(ws, Number(count || 0) * 100));
       boundedFanoutCounts.forEach((count, ws) => addScore(ws, Number(count || 0) * 25));
-      broadFanoutCounts.forEach((count, ws) => addScore(ws, Number(count || 0) * 5));
       digestCounts.forEach((count, ws) => addScore(ws, Number(count || 0) * 60));
 
       if (scoreByWorkstream.size) {
@@ -902,12 +1286,10 @@
           .map(([ws]) => String(ws || ""));
       }
 
-      const executionFallbackRows = Array.isArray(payload.current_workstreams)
-        ? payload.current_workstreams.filter((row) => {
-            const status = String(row && row.status ? row.status : "").trim();
-            return status === "planning" || status === "implementation";
-          })
-        : [];
+      const executionFallbackRows = currentWorkstreamRowsForState(payload, baseState).filter((row) => {
+        const status = String(row && row.status ? row.status : "").trim();
+        return status === "planning" || status === "implementation";
+      });
       return executionFallbackRows
         .map((row) => String(row && row.idea_id ? row.idea_id : "").trim())
         .filter((token) => WORKSTREAM_RE.test(token))
@@ -956,7 +1338,7 @@
           next.date = clampedDate;
         }
         if (next.date === todayToken) {
-          // "Today" should run in live mode so Global reflects trailing 24/48h telemetry.
+          // "Today" should run in live mode so Global reflects trailing 24/48h activity.
           next.date = "live";
         }
       }
@@ -1025,6 +1407,12 @@
       const bounds = windowBounds(state, payload);
       const startMs = bounds && bounds.start instanceof Date ? bounds.start.getTime() : Number.NEGATIVE_INFINITY;
       const endMs = bounds && bounds.end instanceof Date ? bounds.end.getTime() : Number.POSITIVE_INFINITY;
+      const signalMap = payloadWindowScopeSignals(payload, state);
+      const verifiedScopedIds = state.workstream ? payloadVerifiedScopedWorkstreamIds(payload, state) : null;
+      const selectedScopeVerified = !state.workstream
+        || (signalMap !== null && scopeSignalRank(signalMap[String(state.workstream || "").trim()]) >= 2)
+        || verifiedScopedIds === null
+        || verifiedScopedIds.includes(String(state.workstream || "").trim());
       const filtered = rows.filter((row) => {
         const ts = toDate(row.ts_iso);
         if (!ts) return false;
@@ -1032,7 +1420,9 @@
         if (ms < startMs || ms > endMs) return false;
         if (selectedDays.size && !selectedDays.has(toLocalDateToken(ts))) return false;
         if (!state.workstream) return true;
-        const ws = Array.isArray(row.workstreams) ? row.workstreams.map((item) => String(item || "").trim()) : [];
+        if (!selectedScopeVerified) return false;
+        if (!rowHasVerifiedScopedSignal(row)) return false;
+        const ws = rowWorkstreamIds(row);
         return ws.includes(state.workstream);
       });
       filtered.sort((left, right) => {
@@ -1054,6 +1444,12 @@
       const bounds = windowBounds(state, payload);
       const startMs = bounds && bounds.start instanceof Date ? bounds.start.getTime() : Number.NEGATIVE_INFINITY;
       const endMs = bounds && bounds.end instanceof Date ? bounds.end.getTime() : Number.POSITIVE_INFINITY;
+      const signalMap = payloadWindowScopeSignals(payload, state);
+      const verifiedScopedIds = state.workstream ? payloadVerifiedScopedWorkstreamIds(payload, state) : null;
+      const selectedScopeVerified = !state.workstream
+        || (signalMap !== null && scopeSignalRank(signalMap[String(state.workstream || "").trim()]) >= 2)
+        || verifiedScopedIds === null
+        || verifiedScopedIds.includes(String(state.workstream || "").trim());
       const filtered = rows.filter((row) => {
         const ts = toDate(row.end_ts_iso || row.start_ts_iso);
         if (!ts) return false;
@@ -1061,7 +1457,9 @@
         if (ms < startMs || ms > endMs) return false;
         if (selectedDays.size && !selectedDays.has(toLocalDateToken(ts))) return false;
         if (!state.workstream) return true;
-        const ws = Array.isArray(row.workstreams) ? row.workstreams.map((item) => String(item || "").trim()) : [];
+        if (!selectedScopeVerified) return false;
+        if (!rowHasVerifiedScopedSignal(row)) return false;
+        const ws = rowWorkstreamIds(row);
         return ws.includes(state.workstream);
       });
       filtered.sort((left, right) => {

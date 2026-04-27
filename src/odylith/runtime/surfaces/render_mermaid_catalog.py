@@ -11,31 +11,38 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+from dataclasses import replace
 import json
-import os
 from pathlib import Path
 import re
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.surfaces import brand_assets
+from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.governance import delivery_intelligence_engine  # Backward-compatible test monkeypatch surface.
 from odylith.runtime.surfaces import generated_surface_cleanup
+from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
+from odylith.runtime.common import diagram_freshness
+from odylith.runtime.common import generated_refresh_guard
+from odylith.runtime.common.repo_path_resolver import RepoPathResolver
+from odylith.runtime.common.repo_shape import CONSUMER_REPO_ROLE, repo_role_from_local_shape
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.context_engine import odylith_context_cache
-from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import traceability_ui_lookup
-from odylith.runtime.governance import validate_backlog_contract as backlog_contract
-from odylith.install.manager import CONSUMER_REPO_ROLE, product_repo_role
 
 
 _SVG_VIEWBOX_RE = re.compile(r"viewBox\s*=\s*['\"]([^'\"]+)['\"]", re.IGNORECASE)
 _WORKSTREAM_ID_RE = re.compile(r"^B-\d{3,}$")
 _DIAGRAM_ID_RE = re.compile(r"^D-(\d{3,})$")
 _DIAGRAM_COMPACT_RE = re.compile(r"^D(\d{3,})$")
+_ATLAS_RENDER_GUARD_NAMESPACE = "generated-refresh-guards"
+_ATLAS_RENDER_GUARD_KEY = "atlas-render"
 
 
 def _extract_svg_viewbox_dimensions(svg_path: Path) -> tuple[float, float] | None:
@@ -69,7 +76,10 @@ def _extract_svg_viewbox_dimensions(svg_path: Path) -> tuple[float, float] | Non
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Render odylith/atlas/atlas.html from catalog metadata")
+    parser = argparse.ArgumentParser(
+        prog="odylith atlas render",
+        description="Render odylith/atlas/atlas.html from catalog metadata",
+    )
     parser.add_argument("--repo-root", default=".", help="Repository root")
     parser.add_argument(
         "--catalog",
@@ -113,24 +123,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, value: str) -> Path:
-    raw = str(value or "").strip()
-    path = Path(raw)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
 def _as_repo_path(repo_root: Path, target: Path) -> str:
-    try:
-        return target.relative_to(repo_root).as_posix()
-    except ValueError:
-        return str(target)
-
-
-def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
+    return RepoPathResolver(repo_root=repo_root).repo_path(target)
 
 
 def _load_component_index(
@@ -138,20 +132,60 @@ def _load_component_index(
     repo_root: Path,
 ) -> Mapping[str, component_registry.ComponentEntry]:
     manifest_path = component_registry.default_manifest_path(repo_root=repo_root)
-    catalog_path = _resolve(repo_root, component_registry.DEFAULT_CATALOG_PATH)
-    ideas_root = _resolve(repo_root, component_registry.DEFAULT_IDEAS_ROOT)
     if not manifest_path.is_file():
         return {}
     try:
-        components, _alias_to_component, _diagnostics = component_registry.build_component_index(
-            repo_root=repo_root,
-            manifest_path=manifest_path,
-            catalog_path=catalog_path,
-            ideas_root=ideas_root,
-        )
-    except Exception:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
         return {}
+    rows = payload.get("components") if isinstance(payload, Mapping) else None
+    if not isinstance(rows, list):
+        return {}
+    components: dict[str, component_registry.ComponentEntry] = {}
+    for raw in rows:
+        if not isinstance(raw, Mapping):
+            continue
+        entry = component_registry._component_entry_from_payload(raw)  # noqa: SLF001
+        component_id = component_registry.normalize_component_id(entry.component_id)
+        if not component_id or not str(entry.name).strip():
+            continue
+        components[component_id] = replace(
+            entry,
+            component_id=component_id,
+            aliases=[
+                normalized
+                for token in entry.aliases
+                for normalized in [component_registry.normalize_component_id(token)]
+                if normalized
+            ],
+            workstreams=[
+                normalized
+                for token in entry.workstreams
+                for normalized in [component_registry.normalize_workstream_id(token)]
+                if normalized
+            ],
+        )
     return components
+
+
+def _load_delivery_surface_payload(
+    *,
+    repo_root: Path,
+    surface: str,
+) -> dict[str, Any]:
+    try:
+        payload = delivery_intelligence_engine.load_delivery_intelligence_artifact(repo_root=repo_root)
+    except Exception:
+        payload = {}
+    if isinstance(payload, Mapping):
+        try:
+            return delivery_intelligence_engine.slice_delivery_intelligence_for_surface(
+                payload=payload,
+                surface=surface,
+            )
+        except Exception:
+            return {}
+    return {}
 
 
 def _component_catalog_rows(
@@ -186,7 +220,7 @@ def _surface_links_for_diagram(
         links.append(
             {
                 "file": f"Radar ({primary_workstream})",
-                "href": f"{tooling_shell_href}?tab=radar&workstream={primary_workstream}",
+                "href": f"{tooling_shell_href}{dashboard_shell_links.radar_workstream_href(primary_workstream)}",
                 "target": "_top",
             }
         )
@@ -235,6 +269,8 @@ def _validate_related_paths(
     context: str,
     errors: list[str],
     required: bool,
+    resolve_path: Callable[[str], Path] | None = None,
+    repo_path_for: Callable[[str | Path], str] | None = None,
 ) -> list[str]:
     resolved: list[str] = []
     for raw in values:
@@ -242,26 +278,70 @@ def _validate_related_paths(
         if not token:
             errors.append(f"{context}: `{field}` contains empty path value")
             continue
-        target = _resolve(repo_root, token)
+        target = (
+            resolve_path(token)
+            if resolve_path is not None
+            else surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token)
+        )
         if not target.exists():
             errors.append(f"{context}: `{field}` path does not exist: {token}")
             continue
-        resolved.append(_as_repo_path(repo_root, target))
+        if repo_path_for is not None:
+            resolved.append(repo_path_for(target))
+        else:
+            resolved.append(_as_repo_path(repo_root, target))
 
     if required and not resolved:
         errors.append(f"{context}: `{field}` must contain at least one valid path")
     return resolved
 
 
-def _extract_idea_id_from_backlog_path(*, repo_root: Path, token: str) -> str:
-    raw = str(token or "").strip()
-    if not raw:
-        return ""
-    target = _resolve(repo_root, raw)
-    if not target.is_file():
-        return ""
-    spec = backlog_contract._parse_idea_spec(target)
-    return str(spec.idea_id or "").strip()
+def _read_backlog_front_matter_fields(
+    *,
+    path: Path,
+    field_names: Sequence[str],
+    cache: dict[str, dict[str, str]] | None = None,
+) -> dict[str, str]:
+    target = Path(path).resolve()
+    cache_key = str(target)
+    if cache is not None and cache_key in cache:
+        return dict(cache[cache_key])
+
+    wanted = {str(name).strip() for name in field_names if str(name).strip()}
+    metadata = {name: "" for name in wanted}
+    if not wanted or not target.is_file():
+        if cache is not None:
+            cache[cache_key] = dict(metadata)
+        return metadata
+
+    try:
+        with target.open("r", encoding="utf-8") as handle:
+            for raw_line in handle:
+                line = raw_line.strip()
+                if line.startswith("## "):
+                    break
+                if not line or line in {"---", "..."} or line.startswith("#") or ":" not in line:
+                    continue
+                key, value = line.split(":", 1)
+                normalized_key = key.strip()
+                if normalized_key not in wanted or metadata[normalized_key]:
+                    continue
+                metadata[normalized_key] = value.strip()
+                if all(metadata[name] for name in wanted):
+                    break
+    except OSError:
+        metadata = {name: "" for name in wanted}
+
+    if cache is not None:
+        cache[cache_key] = dict(metadata)
+    return metadata
+
+
+def _stored_watch_fingerprints(item: Mapping[str, Any]) -> dict[str, str]:
+    raw = item.get("reviewed_watch_fingerprints", {})
+    if not isinstance(raw, Mapping):
+        return {}
+    return {str(key).strip(): str(value).strip() for key, value in raw.items() if str(key).strip() and str(value).strip()}
 
 
 def _max_mtime(path: Path, *, cache: dict[str, float] | None = None) -> float:
@@ -299,15 +379,24 @@ def _newest_watch_path(
     repo_root: Path,
     watch_paths: list[str],
     mtime_cache: dict[str, float] | None = None,
+    resolve_path: Callable[[str], Path] | None = None,
+    repo_path_for: Callable[[str | Path], str] | None = None,
 ) -> tuple[float, str]:
     newest_time = 0.0
     newest_path = ""
     for raw in watch_paths:
-        target = _resolve(repo_root, raw)
+        target = (
+            resolve_path(raw)
+            if resolve_path is not None
+            else surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=raw)
+        )
         score = _max_mtime(target, cache=mtime_cache)
         if score > newest_time:
             newest_time = score
-            newest_path = _as_repo_path(repo_root, target)
+            if repo_path_for is not None:
+                newest_path = repo_path_for(target)
+            else:
+                newest_path = _as_repo_path(repo_root, target)
     return newest_time, newest_path
 
 
@@ -353,7 +442,7 @@ def _load_catalog(
     if not isinstance(diagrams, list):
         return [], [f"{catalog_path}: `diagrams` must be a list"], stats
     if not diagrams:
-        if product_repo_role(repo_root=repo_root) == CONSUMER_REPO_ROLE:
+        if repo_role_from_local_shape(repo_root=repo_root) == CONSUMER_REPO_ROLE:
             return [], [], stats
         return [], [f"{catalog_path}: `diagrams` list is empty"], stats
 
@@ -361,8 +450,11 @@ def _load_catalog(
     seen_ids: set[str] = set()
     seen_slugs: set[str] = set()
     rendered: list[dict[str, Any]] = []
-    tooling_shell_href = _as_href(output_path, _resolve(repo_root, "odylith/index.html"))
+    path_resolver = RepoPathResolver(repo_root=repo_root, output_path=output_path)
+    tooling_shell_href = path_resolver.href("odylith/index.html")
     watch_path_mtime_cache: dict[str, float] = {}
+    watch_path_content_cache = diagram_freshness.ContentFingerprintCache()
+    backlog_metadata_cache: dict[str, dict[str, str]] = {}
 
     for idx, item in enumerate(diagrams):
         context = f"{catalog_path}: diagrams[{idx}]"
@@ -420,9 +512,9 @@ def _load_catalog(
                 errors.append(f"{context}: duplicate slug `{slug}`")
             seen_slugs.add(slug)
 
-        mmd_path = _resolve(repo_root, source_mmd) if source_mmd else None
-        svg_path = _resolve(repo_root, source_svg) if source_svg else None
-        png_path = _resolve(repo_root, source_png) if source_png else None
+        mmd_path = path_resolver.resolve(source_mmd) if source_mmd else None
+        svg_path = path_resolver.resolve(source_svg) if source_svg else None
+        png_path = path_resolver.resolve(source_png) if source_png else None
 
         if mmd_path is not None and not mmd_path.is_file():
             errors.append(f"{context}: source_mmd does not exist: {source_mmd}")
@@ -432,7 +524,7 @@ def _load_catalog(
             errors.append(f"{context}: source_png does not exist: {source_png}")
 
         for watch in watch_paths:
-            target = _resolve(repo_root, watch)
+            target = path_resolver.resolve(watch)
             if not target.exists():
                 errors.append(f"{context}: change_watch_paths entry does not exist: {watch}")
 
@@ -462,6 +554,8 @@ def _load_catalog(
             context=context,
             errors=errors,
             required=True,
+            resolve_path=path_resolver.resolve,
+            repo_path_for=path_resolver.repo_path,
         )
         related_plans = _validate_related_paths(
             repo_root=repo_root,
@@ -470,6 +564,8 @@ def _load_catalog(
             context=context,
             errors=errors,
             required=True,
+            resolve_path=path_resolver.resolve,
+            repo_path_for=path_resolver.repo_path,
         )
         related_docs = _validate_related_paths(
             repo_root=repo_root,
@@ -478,6 +574,8 @@ def _load_catalog(
             context=context,
             errors=errors,
             required=True,
+            resolve_path=path_resolver.resolve,
+            repo_path_for=path_resolver.repo_path,
         )
         related_code = _validate_related_paths(
             repo_root=repo_root,
@@ -486,6 +584,8 @@ def _load_catalog(
             context=context,
             errors=errors,
             required=False,
+            resolve_path=path_resolver.resolve,
+            repo_path_for=path_resolver.repo_path,
         )
         raw_related_workstreams = item.get("related_workstreams", [])
         related_workstreams: list[str] = []
@@ -501,12 +601,24 @@ def _load_catalog(
                     continue
                 related_workstreams.append(value)
         backlog_workstreams: list[str] = []
+        related_backlog_entries: list[dict[str, str]] = []
         for backlog_rel in related_backlog:
-            inferred = _normalize_workstream_id(
-                _extract_idea_id_from_backlog_path(repo_root=repo_root, token=backlog_rel)
+            metadata = _read_backlog_front_matter_fields(
+                path=path_resolver.resolve(backlog_rel),
+                field_names=("idea_id", "title"),
+                cache=backlog_metadata_cache,
             )
+            inferred = _normalize_workstream_id(metadata.get("idea_id", ""))
             if inferred:
                 backlog_workstreams.append(inferred)
+            related_backlog_entries.append(
+                {
+                    "file": backlog_rel,
+                    "href": path_resolver.href(backlog_rel),
+                    "idea_id": inferred,
+                    "title": str(metadata.get("title", "")).strip(),
+                }
+            )
         related_workstreams = sorted(set(related_workstreams))
         context_workstreams = sorted(set(related_workstreams) | set(backlog_workstreams))
         related_component_ids: set[str] = set()
@@ -550,18 +662,38 @@ def _load_catalog(
         viewbox_width = float(viewbox_dims[0]) if viewbox_dims else 0.0
         viewbox_height = float(viewbox_dims[1]) if viewbox_dims else 0.0
 
-        mmd_mtime = _max_mtime(mmd_path)
-        newest_watch_mtime, newest_watch_path = _newest_watch_path(
-            repo_root=repo_root,
-            watch_paths=watch_paths,
-            mtime_cache=watch_path_mtime_cache,
-        )
         stale_reasons: list[str] = []
+        current_watch_fingerprints = diagram_freshness.watched_path_fingerprints(
+            repo_root=repo_root,
+            watched_paths=watch_paths,
+            resolve_path=path_resolver.resolve,
+            cache=watch_path_content_cache,
+        )
+        stored_watch_fingerprints = _stored_watch_fingerprints(item)
 
-        if newest_watch_mtime > (mmd_mtime + 0.0001):
-            stale_reasons.append(
-                f"Linked implementation changed after diagram source update ({newest_watch_path})."
+        if stored_watch_fingerprints:
+            changed_watch_paths = [
+                token
+                for token in watch_paths
+                if stored_watch_fingerprints.get(token, "") != current_watch_fingerprints.get(token, "")
+            ]
+            if changed_watch_paths:
+                stale_reasons.append(
+                    f"Linked implementation changed after diagram source update ({changed_watch_paths[0]})."
+                )
+        else:
+            mmd_mtime = _max_mtime(mmd_path)
+            newest_watch_mtime, newest_watch_path = _newest_watch_path(
+                repo_root=repo_root,
+                watch_paths=watch_paths,
+                mtime_cache=watch_path_mtime_cache,
+                resolve_path=path_resolver.resolve,
+                repo_path_for=path_resolver.repo_path,
             )
+            if newest_watch_mtime > (mmd_mtime + 0.0001):
+                stale_reasons.append(
+                    f"Linked implementation changed after diagram source update ({newest_watch_path})."
+                )
 
         review_age_days = (today - review_date).days
         if review_age_days > max_review_age_days:
@@ -588,41 +720,35 @@ def _load_catalog(
                 "review_age_days": review_age_days,
                 "freshness": freshness,
                 "stale_reasons": stale_reasons,
-                "source_mmd_file": _as_repo_path(repo_root, mmd_path),
-                "source_svg_file": _as_repo_path(repo_root, svg_path),
-                "source_png_file": _as_repo_path(repo_root, png_path) if png_path else "",
-                "source_mmd_href": _as_href(output_path, mmd_path),
-                "source_svg_href": _as_href(output_path, svg_path),
-                "source_png_href": _as_href(output_path, png_path) if png_path else "",
+                "source_mmd_file": path_resolver.repo_path(mmd_path),
+                "source_svg_file": path_resolver.repo_path(svg_path),
+                "source_png_file": path_resolver.repo_path(png_path) if png_path else "",
+                "source_mmd_href": path_resolver.href(mmd_path),
+                "source_svg_href": path_resolver.href(svg_path),
+                "source_png_href": path_resolver.href(png_path) if png_path else "",
                 "svg_viewbox_width": viewbox_width,
                 "svg_viewbox_height": viewbox_height,
                 "initial_view_fit_factor": initial_view_fit_factor,
                 "components": components,
-                "related_backlog": [
-                    {
-                        "file": path,
-                        "href": _as_href(output_path, _resolve(repo_root, path)),
-                    }
-                    for path in related_backlog
-                ],
+                "related_backlog": related_backlog_entries,
                 "related_plans": [
                     {
                         "file": path,
-                        "href": _as_href(output_path, _resolve(repo_root, path)),
+                        "href": path_resolver.href(path),
                     }
                     for path in related_plans
                 ],
                 "related_docs": [
                     {
                         "file": path,
-                        "href": _as_href(output_path, _resolve(repo_root, path)),
+                        "href": path_resolver.href(path),
                     }
                     for path in related_docs
                 ],
                 "related_code": [
                     {
                         "file": path,
-                        "href": _as_href(output_path, _resolve(repo_root, path)),
+                        "href": path_resolver.href(path),
                     }
                     for path in related_code
                 ],
@@ -664,19 +790,10 @@ def _merge_related_workstreams_from_traceability(
     return by_diagram
 
 
-def _meaningful_active_diagram_touches(
+def _delivery_workstream_rows(
     *,
     delivery_intelligence: Mapping[str, Any],
-) -> dict[str, set[str]]:
-    """Return workstreams with recent meaningful evidence for each diagram.
-
-    Atlas needs a narrower notion of "active touches" than the broad
-    traceability graph. We only surface workstreams here when the delivery
-    intelligence slice says the scope both links to the diagram and still has
-    meaningful recent evidence worth operator attention.
-    """
-
-    by_diagram: dict[str, set[str]] = {}
+) -> list[tuple[str, Mapping[str, Any]]]:
     workstreams = (
         delivery_intelligence.get("workstreams", [])
         if isinstance(delivery_intelligence.get("workstreams"), list)
@@ -691,8 +808,23 @@ def _meaningful_active_diagram_touches(
         for snapshot in workstreams:
             if isinstance(snapshot, Mapping):
                 rows.append((str(snapshot.get("scope_id", "")), snapshot))
+    return rows
 
-    for raw_scope_id, snapshot in rows:
+
+def _meaningful_active_diagram_touches(
+    *,
+    delivery_intelligence: Mapping[str, Any],
+) -> dict[str, set[str]]:
+    """Return workstreams with recent meaningful evidence for each diagram.
+
+    Atlas needs a narrower notion of "active touches" than the broad
+    traceability graph. We only surface workstreams here when the delivery
+    intelligence slice says the scope both links to the diagram and still has
+    meaningful recent evidence worth operator attention.
+    """
+
+    by_diagram: dict[str, set[str]] = {}
+    for raw_scope_id, snapshot in _delivery_workstream_rows(delivery_intelligence=delivery_intelligence):
         workstream_id = _normalize_workstream_id(raw_scope_id) or _normalize_workstream_id(
             str(snapshot.get("scope_id", ""))
         )
@@ -714,40 +846,47 @@ def _meaningful_active_diagram_touches(
         if not linked_diagrams:
             continue
 
-        diagnostics = snapshot.get("diagnostics", {}) if isinstance(snapshot.get("diagnostics"), Mapping) else {}
-        change_vector = snapshot.get("change_vector", {}) if isinstance(snapshot.get("change_vector"), Mapping) else {}
-        evidence_bundle = (
-            snapshot.get("evidence_bundle", {})
-            if isinstance(snapshot.get("evidence_bundle"), Mapping)
-            else {}
-        )
-
-        live_actionable = bool(diagnostics.get("live_actionable", False))
-        status = str(diagnostics.get("status", "")).strip().lower()
-        latest_event = str(evidence_context.get("latest_event_ts_iso", "")).strip()
-        latest_explicit = str(evidence_context.get("latest_explicit_ts_iso", "")).strip()
-        has_recent_delta = bool(latest_event and (not latest_explicit or latest_event > latest_explicit))
-        has_meaningful_change = any(
-            int(change_vector.get(bucket, 0) or 0) > 0
-            for bucket in ("build_ci", "cli", "contract", "policy", "renderer", "runtime", "spec", "runbook")
-        )
-        if not has_meaningful_change:
-            has_meaningful_change = bool(evidence_bundle.get("code_references")) or bool(
-                evidence_bundle.get("changed_artifacts")
+        scope_signal = snapshot.get("scope_signal", {}) if isinstance(snapshot.get("scope_signal"), Mapping) else {}
+        if scope_signal:
+            if scope_signal_ladder.scope_signal_rank(scope_signal) < scope_signal_ladder.DEFAULT_PROMOTED_DEFAULT_RANK:
+                continue
+            if not bool(scope_signal.get("promoted_default", False)):
+                continue
+        else:
+            diagnostics = snapshot.get("diagnostics", {}) if isinstance(snapshot.get("diagnostics"), Mapping) else {}
+            change_vector = snapshot.get("change_vector", {}) if isinstance(snapshot.get("change_vector"), Mapping) else {}
+            evidence_bundle = (
+                snapshot.get("evidence_bundle", {})
+                if isinstance(snapshot.get("evidence_bundle"), Mapping)
+                else {}
             )
 
-        if not has_meaningful_change:
-            continue
+            live_actionable = bool(diagnostics.get("live_actionable", False))
+            status = str(diagnostics.get("status", "")).strip().lower()
+            latest_event = str(evidence_context.get("latest_event_ts_iso", "")).strip()
+            latest_explicit = str(evidence_context.get("latest_explicit_ts_iso", "")).strip()
+            has_recent_delta = bool(latest_event and (not latest_explicit or latest_event > latest_explicit))
+            has_meaningful_change = any(
+                int(change_vector.get(bucket, 0) or 0) > 0
+                for bucket in ("build_ci", "cli", "contract", "policy", "renderer", "runtime", "spec", "runbook")
+            )
+            if not has_meaningful_change:
+                has_meaningful_change = bool(evidence_bundle.get("code_references")) or bool(
+                    evidence_bundle.get("changed_artifacts")
+                )
 
-        if status in {"planning", "implementation"}:
-            qualifies_as_active = True
-        elif status == "parked":
-            qualifies_as_active = live_actionable or has_recent_delta
-        else:
-            qualifies_as_active = False
+            if not has_meaningful_change:
+                continue
 
-        if not qualifies_as_active:
-            continue
+            if status in {"planning", "implementation"}:
+                qualifies_as_active = True
+            elif status == "parked":
+                qualifies_as_active = live_actionable or has_recent_delta
+            else:
+                qualifies_as_active = False
+
+            if not qualifies_as_active:
+                continue
 
         for diagram_id in linked_diagrams:
             by_diagram.setdefault(diagram_id, set()).add(workstream_id)
@@ -761,6 +900,7 @@ def _workstream_title_entries(
     delivery_intelligence: Mapping[str, Any],
 ) -> list[dict[str, str]]:
     lookup: dict[str, str] = {}
+    path_resolver = RepoPathResolver(repo_root=repo_root)
 
     def remember(*, workstream_id: str, title: str) -> None:
         normalized_id = _normalize_workstream_id(workstream_id)
@@ -769,54 +909,34 @@ def _workstream_title_entries(
             return
         lookup[normalized_id] = text
 
-    workstreams = (
-        delivery_intelligence.get("workstreams", [])
-        if isinstance(delivery_intelligence.get("workstreams"), list)
-        else delivery_intelligence.get("workstreams", {})
-    )
-    if isinstance(workstreams, Mapping):
-        for raw_scope_id, snapshot in workstreams.items():
-            if not isinstance(snapshot, Mapping):
-                continue
-            remember(
-                workstream_id=str(raw_scope_id or snapshot.get("scope_id", "")),
-                title=str(snapshot.get("scope_label") or snapshot.get("title") or snapshot.get("label") or ""),
-            )
-    elif isinstance(workstreams, list):
-        for snapshot in workstreams:
-            if not isinstance(snapshot, Mapping):
-                continue
-            remember(
-                workstream_id=str(snapshot.get("scope_id", "")),
-                title=str(snapshot.get("scope_label") or snapshot.get("title") or snapshot.get("label") or ""),
-            )
+    for raw_scope_id, snapshot in _delivery_workstream_rows(delivery_intelligence=delivery_intelligence):
+        remember(
+            workstream_id=str(raw_scope_id or snapshot.get("scope_id", "")),
+            title=str(snapshot.get("scope_label") or snapshot.get("title") or snapshot.get("label") or ""),
+        )
 
-    spec_cache: dict[str, backlog_contract.IdeaSpec | None] = {}
+    backlog_metadata_cache: dict[str, dict[str, str]] = {}
     for diagram in diagrams:
         related_backlog = diagram.get("related_backlog", [])
         if not isinstance(related_backlog, list):
             continue
         for item in related_backlog:
-            raw_path = ""
-            if isinstance(item, Mapping):
-                raw_path = str(item.get("file", "")).strip()
-            else:
-                raw_path = str(item or "").strip()
-            if not raw_path:
+            if not isinstance(item, Mapping):
                 continue
-            target = _resolve(repo_root, raw_path)
-            cache_key = str(target)
-            if cache_key not in spec_cache:
-                if target.is_file():
-                    spec_cache[cache_key] = backlog_contract._parse_idea_spec(target)
-                else:
-                    spec_cache[cache_key] = None
-            spec = spec_cache[cache_key]
-            if spec is None:
-                continue
+            raw_path = str(item.get("file", "")).strip()
+            metadata = {
+                "idea_id": str(item.get("idea_id", "")).strip(),
+                "title": str(item.get("title", "")).strip(),
+            }
+            if not metadata["idea_id"] or not metadata["title"]:
+                metadata = _read_backlog_front_matter_fields(
+                    path=path_resolver.resolve(raw_path),
+                    field_names=("idea_id", "title"),
+                    cache=backlog_metadata_cache,
+                )
             remember(
-                workstream_id=str(spec.idea_id),
-                title=str(spec.metadata.get("title", "")),
+                workstream_id=str(metadata.get("idea_id", "")),
+                title=str(metadata.get("title", "")),
             )
 
     return [
@@ -843,6 +963,7 @@ def _attach_diagram_workstream_relationships(
         diagram_id = _normalize_diagram_id(str(diagram.get("diagram_id", "")))
         if not diagram_id:
             continue
+        traceability_workstreams = set(traceability_refs.get(diagram_id, set()))
         owners = {
             workstream
             for token in diagram.get("related_workstreams", [])
@@ -850,8 +971,11 @@ def _attach_diagram_workstream_relationships(
             for workstream in [_normalize_workstream_id(str(token or ""))]
             if workstream
         }
-        active_touches = set(active_refs.get(diagram_id, set())) - owners
-        historical_refs = set(traceability_refs.get(diagram_id, set())) - owners - active_touches
+        # Fail closed on Atlas "active touch" noise: only promote active workstreams
+        # that already have authored traceability to the diagram instead of letting
+        # broad delivery-intelligence linkage invent new diagram associations.
+        active_touches = (set(active_refs.get(diagram_id, set())) & traceability_workstreams) - owners
+        historical_refs = traceability_workstreams - owners - active_touches
         diagram["owner_workstreams"] = sorted(owners)
         diagram["active_workstreams"] = sorted(active_touches)
         diagram["historical_workstreams"] = sorted(historical_refs)
@@ -884,7 +1008,8 @@ def _render_html(
         kicker_selector=".eyebrow",
         title_selector=".title",
         subtitle_selector=".subtitle",
-        subtitle_max_width="unset",
+        subtitle_max_width="100%",
+        desktop_single_line_subtitle=False,
         mobile_breakpoint_px=760,
         mobile_title_size_px=22,
         mobile_subtitle_size_px=13,
@@ -1039,7 +1164,7 @@ def _render_html(
             ),
         )
     )
-    workstream_pill_button_css = dashboard_ui_primitives.detail_action_chip_css(
+    workstream_pill_button_css = dashboard_ui_primitives.surface_workstream_button_chip_css(
         selector=".artifact-list a.workstream-pill-link",
         border_color="#8cb8f4",
         background="#eaf3ff",
@@ -1093,9 +1218,10 @@ def _render_html(
 
     .layout {
       display: grid;
-      grid-template-columns: 340px minmax(0, 1fr);
-      gap: 16px;
+      grid-template-columns: 400px minmax(0, 1fr);
+      gap: 18px;
       max-width: 1580px;
+      min-width: 0;
       margin: 0 auto;
       padding: 20px;
     }
@@ -1109,6 +1235,7 @@ def _render_html(
     }
 
     .panel {
+      min-width: 0;
       border: 1px solid var(--border);
       border-radius: 22px;
       background: var(--surface);
@@ -1117,6 +1244,7 @@ def _render_html(
     }
 
     .sidebar {
+      min-width: 0;
       padding: 16px;
       position: sticky;
       top: 12px;
@@ -1133,6 +1261,7 @@ def _render_html(
       justify-content: space-between;
       align-items: flex-start;
       gap: 8px;
+      min-width: 0;
       padding-right: 46px;
     }
 
@@ -1172,6 +1301,8 @@ def _render_html(
 
     .search {
       width: 100%;
+      min-width: 0;
+      max-width: 100%;
       border-radius: 12px;
       border: 1px solid var(--border);
       background: var(--surface-strong);
@@ -1182,6 +1313,17 @@ def _render_html(
     .search:focus {
       outline: 2px solid rgba(14, 165, 163, 0.35);
       border-color: rgba(14, 165, 163, 0.45);
+    }
+
+    .filter-pair {
+      display: grid;
+      grid-template-columns: minmax(150px, 0.78fr) minmax(190px, 1fr);
+      gap: 10px;
+      align-items: end;
+    }
+
+    .filter-field {
+      min-width: 0;
     }
 
     .chip-row {
@@ -1312,6 +1454,7 @@ def _render_html(
       padding: 16px;
       display: grid;
       gap: 13px;
+      grid-template-columns: minmax(0, 1fr);
       grid-template-rows: auto auto auto 1fr;
       min-height: calc(100vh - 40px);
     }
@@ -1400,6 +1543,7 @@ def _render_html(
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
+      justify-content: flex-end;
     }
 
     .source-links-wrap {
@@ -1407,7 +1551,7 @@ def _render_html(
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: flex-end;
       width: 100%;
       min-width: 0;
     }
@@ -1506,9 +1650,12 @@ def _render_html(
       display: grid;
       gap: 12px;
       grid-template-columns: 1.2fr 0.8fr;
+      min-width: 0;
     }
 
     .section {
+      min-width: 0;
+      max-width: 100%;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: rgba(255, 255, 255, 0.88);
@@ -1527,9 +1674,13 @@ def _render_html(
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
       gap: 10px;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .component-card {
+      min-width: 0;
+      max-width: 100%;
       border: 1px solid rgba(3, 105, 161, 0.17);
       border-radius: 10px;
       padding: 9px 10px;
@@ -1570,6 +1721,8 @@ def _render_html(
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-width: 0;
+      max-width: 100%;
     }
 
     .workstream-context-list {
@@ -1645,6 +1798,9 @@ def _render_html(
       text-decoration: none;
       border-bottom: 1px dotted rgba(13, 68, 104, 0.38);
       width: fit-content;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .artifact-list a:hover {
@@ -1685,6 +1841,20 @@ def _render_html(
     }
 
     @media (max-width: 760px) {
+      .layout {
+        gap: 12px;
+        padding: 12px;
+      }
+
+      .sidebar,
+      .main {
+        padding: 12px;
+      }
+
+      .filter-pair {
+        grid-template-columns: 1fr;
+      }
+
       .diagram-facts {
         grid-template-columns: 1fr;
       }
@@ -1710,11 +1880,24 @@ def _render_html(
         <div id="kindFilters" class="chip-row"></div>
       </div>
 
-      <div>
-        <p class="eyebrow">Workstream Filter</p>
-        <select id="workstreamFilter" class="search">
-          <option value="all">All Workstreams</option>
-        </select>
+      <div class="filter-pair" id="sortWorkstreamFilters">
+        <div class="filter-field">
+          <p class="eyebrow">Sort Filter</p>
+          <select id="sortFilter" class="search">
+            <option value="newest">Newest Diagram</option>
+            <option value="oldest">Oldest Diagram</option>
+            <option value="reviewed">Recently Reviewed</option>
+            <option value="title">Title A-Z</option>
+            <option value="freshness">Needs Update First</option>
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <p class="eyebrow">Workstream Filter</p>
+          <select id="workstreamFilter" class="search">
+            <option value="all">All Workstreams</option>
+          </select>
+        </div>
       </div>
 
       <div>
@@ -1878,6 +2061,7 @@ def _render_html(
 
     const searchEl = document.getElementById("search");
     const kindFiltersEl = document.getElementById("kindFilters");
+    const sortFilterEl = document.getElementById("sortFilter");
     const workstreamFilterEl = document.getElementById("workstreamFilter");
     const listEl = document.getElementById("diagramList");
 
@@ -1922,6 +2106,7 @@ def _render_html(
     let activeIndex = 0;
     let selectedDiagramId = "";
     let kindFilter = "all";
+    let sortFilter = "newest";
     let freshnessFilter = "all";
     let workstreamFilter = "all";
     let activeDiagram = null;
@@ -1943,6 +2128,8 @@ def _render_html(
     const DIAGRAM_COMPACT_RE = /^D(\\d{3,})$/;
     const SIDEBAR_PREF_KEY = "mermaid.sidebar.collapsed";
     const TOOLING_BASE_HREF = __ODYLITH_TOOLING_BASE_HREF__;
+    const SORT_DEFAULT = "newest";
+    const SORT_TOKENS = new Set(["newest", "oldest", "reviewed", "title", "freshness"]);
     __ODYLITH_ATLAS_QUICK_TOOLTIP_RUNTIME__
 
     function normalizeSearchToken(value) {
@@ -1975,6 +2162,45 @@ def _render_html(
         return `D-${compact[1]}`;
       }
       return "";
+    }
+
+    function canonicalizeSortToken(value) {
+      const token = String(value || "").trim().toLowerCase();
+      return SORT_TOKENS.has(token) ? token : SORT_DEFAULT;
+    }
+
+    function diagramSequence(diagram) {
+      const match = canonicalizeDiagramId(diagram && diagram.diagram_id).match(/^D-(\\d+)$/);
+      return match ? Number(match[1]) : 0;
+    }
+
+    function compareText(left, right) {
+      const a = String(left || "").toLowerCase();
+      const b = String(right || "").toLowerCase();
+      return a > b ? 1 : (a < b ? -1 : 0);
+    }
+
+    function firstNonZero(...values) {
+      return values.find((value) => Number(value) !== 0) || 0;
+    }
+
+    function sortDiagrams(rows) {
+      const token = canonicalizeSortToken(sortFilter);
+      return [...rows].sort((left, right) => {
+        const newest = diagramSequence(right) - diagramSequence(left);
+        const oldest = diagramSequence(left) - diagramSequence(right);
+        const reviewed = compareText(right.last_reviewed_utc, left.last_reviewed_utc);
+        const title = compareText(left.title, right.title);
+        if (token === "oldest") return firstNonZero(oldest, compareText(left.last_reviewed_utc, right.last_reviewed_utc), title);
+        if (token === "reviewed") return firstNonZero(reviewed, newest, title);
+        if (token === "title") return firstNonZero(title, newest);
+        if (token === "freshness") {
+          const stale = (left.freshness === "stale" ? 0 : 1) - (right.freshness === "stale" ? 0 : 1);
+          const age = Number(right.review_age_days || 0) - Number(left.review_age_days || 0);
+          return firstNonZero(stale, age, newest, title);
+        }
+        return firstNonZero(newest, reviewed, title);
+      });
     }
 
     function ownerWorkstreamsForDiagram(diagram) {
@@ -2482,6 +2708,9 @@ def _render_html(
         button.className = "diagram-btn";
         button.type = "button";
         button.setAttribute("data-diagram", diagram.diagram_id);
+        button.setAttribute("data-diagram-reviewed", diagram.last_reviewed_utc || "");
+        button.setAttribute("data-diagram-freshness", diagram.freshness || "");
+        button.setAttribute("data-diagram-review-age", String(diagram.review_age_days || 0));
         const tooltip = diagramButtonTooltip(diagram);
         button.setAttribute("data-tooltip", tooltip);
         button.setAttribute("aria-label", tooltip);
@@ -2542,12 +2771,12 @@ def _render_html(
       });
     }
 
-    function applyFilters() {
+    function applyFilters(options = {}) {
       const needle = String(searchEl.value || "").trim().toLowerCase();
       const normalizedNeedle = normalizeSearchToken(needle);
-      normalizeSelectedDiagramWorkstreamFilter();
+      if (options.normalizeWorkstreamFilter !== false) normalizeSelectedDiagramWorkstreamFilter();
       const selectedToken = canonicalizeDiagramId(selectedDiagramId);
-      activeList = allDiagrams.filter((diagram) => {
+      activeList = sortDiagrams(allDiagrams.filter((diagram) => {
         const diagramToken = canonicalizeDiagramId(diagram.diagram_id);
         if (kindFilter !== "all" && diagram.kind !== kindFilter) {
           return false;
@@ -2587,7 +2816,7 @@ def _render_html(
         }
         const normalizedText = normalizeSearchToken(textParts.join(" "));
         return normalizedText.includes(normalizedNeedle);
-      });
+      }));
 
       if (!activeList.length && selectedToken) {
         const fallback = allDiagrams.find(
@@ -2687,9 +2916,14 @@ def _render_html(
     });
 
     searchEl.addEventListener("input", applyFilters);
+    sortFilterEl.addEventListener("change", () => {
+      sortFilter = canonicalizeSortToken(sortFilterEl.value || SORT_DEFAULT);
+      sortFilterEl.value = sortFilter;
+      applyFilters();
+    });
     workstreamFilterEl.addEventListener("change", () => {
       workstreamFilter = workstreamFilterEl.value || "all";
-      applyFilters();
+      applyFilters({ normalizeWorkstreamFilter: false });
       syncAtlasNavigation();
     });
 
@@ -2825,6 +3059,8 @@ def _render_html(
     const params = new URLSearchParams(window.location.search);
     const paramWorkstream = (params.get("workstream") || "").trim();
     const paramDiagram = (params.get("diagram") || "").trim();
+    sortFilter = canonicalizeSortToken(params.get("sort") || SORT_DEFAULT);
+    sortFilterEl.value = sortFilter;
     if (WORKSTREAM_ID_RE.test(paramWorkstream)) {
       workstreamFilter = paramWorkstream;
     }
@@ -2895,10 +3131,56 @@ def _selected_freshness_gate(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    catalog_path = _resolve(repo_root, args.catalog)
-    output_path = _resolve(repo_root, args.output)
-    traceability_graph_path = _resolve(repo_root, args.traceability_graph)
+    catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.catalog)
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
+    traceability_graph_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.traceability_graph)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="mermaid")
+    output_paths = [
+        output_path,
+        bundle_paths.payload_js_path,
+        bundle_paths.control_js_path,
+    ]
+    if source_bundle_mirror.source_bundle_root(repo_root=repo_root).is_dir():
+        for live_path in tuple(output_paths):
+            if source_bundle_mirror.should_mirror_live_path(repo_root=repo_root, live_path=live_path):
+                output_paths.append(source_bundle_mirror.bundle_mirror_path(repo_root=repo_root, live_path=live_path))
+    input_fingerprint = ""
+    if not args.check_only and not args.diagram_id:
+        skip_rebuild, input_fingerprint, cached_metadata = generated_refresh_guard.should_skip_rebuild(
+            repo_root=repo_root,
+            namespace=_ATLAS_RENDER_GUARD_NAMESPACE,
+            key=_ATLAS_RENDER_GUARD_KEY,
+            watched_paths=(
+                "odylith/atlas/source",
+                "odylith/radar/traceability-graph.v1.json",
+                "odylith/runtime/delivery_intelligence.v4.json",
+                "odylith/registry/source",
+                "src/odylith/runtime/surfaces",
+                "src/odylith/runtime/governance",
+                "src/odylith/runtime/common",
+            ),
+            output_paths=tuple(output_paths),
+            extra={
+                "max_review_age_days": int(args.max_review_age_days),
+                "runtime_mode": str(args.runtime_mode),
+            },
+        )
+        if skip_rebuild:
+            print("mermaid catalog render passed")
+            print(f"- output: {output_path}")
+            if cached_metadata:
+                print(f"- diagrams: {int(cached_metadata.get('diagram_count', 0) or 0)}")
+                print(f"- fresh: {int(cached_metadata.get('fresh_count', 0) or 0)}")
+                print(f"- stale: {int(cached_metadata.get('stale_count', 0) or 0)}")
+                stale_count = int(cached_metadata.get("stale_count", 0) or 0)
+            else:
+                stale_count = 0
+            if args.fail_on_stale and stale_count > 0:
+                print("mermaid catalog freshness FAILED")
+                print("- at least one diagram is stale; update diagram source/metadata and rerun")
+                return 3
+            return 0
     component_index = _load_component_index(repo_root=repo_root)
 
     diagrams, errors, stats = _load_catalog(
@@ -2927,11 +3209,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"- {err}")
         return 2
 
-    delivery_intelligence = odylith_context_engine_store.load_delivery_surface_payload(
+    delivery_intelligence = _load_delivery_surface_payload(
         repo_root=repo_root,
         surface="atlas",
-        runtime_mode=str(args.runtime_mode),
-        buckets=("workstreams",),
     )
 
     _attach_diagram_workstream_relationships(
@@ -2957,7 +3237,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         "diagrams": diagrams,
         "tooltip_lookup": tooltip_lookup,
     }
-    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="mermaid")
     generated_utc = stable_generated_utc.resolve_for_js_assignment_file(
         output_path=bundle_paths.payload_js_path,
         global_name="__ODYLITH_MERMAID_DATA__",
@@ -2966,7 +3245,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     brand_head_html = brand_assets.render_brand_head_html(repo_root=repo_root, output_path=output_path)
 
     if not args.check_only:
-        tooling_base_href = _as_href(output_path, _resolve(repo_root, "odylith/index.html"))
+        tooling_base_href = surface_path_helpers.relative_href(
+            output_path=output_path,
+            target=surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/index.html"),
+        )
         html = _render_html(
             diagrams=diagrams,
             stats=stats,
@@ -3013,10 +3295,27 @@ def main(argv: Sequence[str] | None = None) -> int:
             content=control_js,
             lock_key=str(bundle_paths.control_js_path),
         )
+        source_bundle_mirror.sync_live_paths(
+            repo_root=repo_root,
+            live_paths=(output_path, bundle_paths.payload_js_path, bundle_paths.control_js_path),
+        )
         generated_surface_cleanup.remove_legacy_generated_paths(
             active_outputs=(output_path,),
             legacy_paths=((repo_root / "mermaid" / "index.html").resolve(),),
         )
+        if input_fingerprint:
+            generated_refresh_guard.record_rebuild(
+                repo_root=repo_root,
+                namespace=_ATLAS_RENDER_GUARD_NAMESPACE,
+                key=_ATLAS_RENDER_GUARD_KEY,
+                input_fingerprint=input_fingerprint,
+                output_paths=tuple(output_paths),
+                metadata={
+                    "diagram_count": len(diagrams),
+                    "fresh_count": int(stats["fresh"]),
+                    "stale_count": int(stats["stale"]),
+                },
+            )
 
     print("mermaid catalog render passed")
     print(f"- output: {output_path}")
@@ -3042,7 +3341,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 3
 
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

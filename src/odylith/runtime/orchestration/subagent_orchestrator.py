@@ -1,4 +1,4 @@
-"""Prompt-level orchestration for accuracy-first Codex delegation.
+"""Prompt-level orchestration for accuracy-first host-aware delegation.
 
 This module sits above the bounded Subagent Router and decides whether a
 grounded repo-work prompt should stay local, run as one bounded leaf, or fan
@@ -25,26 +25,55 @@ from dataclasses import dataclass
 from dataclasses import field
 from enum import Enum
 from pathlib import Path
-import sys
 from typing import Any
 from typing import Mapping
 from typing import Sequence
 import uuid
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as compass_timeline
-from odylith.runtime.context_engine import packet_quality_codec
+from odylith.runtime.common.value_coercion import bool_value as _normalize_bool
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
+from odylith.runtime.execution_engine import runtime_lane_policy
 from odylith.runtime.context_engine import odylith_context_engine_store as odylith_store
 from odylith.runtime.evaluation import odylith_evaluation_ledger
-from odylith.runtime.memory import tooling_memory_contracts
-from odylith.runtime.orchestration import subagent_router as leaf_router
+from odylith.runtime.orchestration import subagent_router as leaf_router, subagent_tuning_surface
 from odylith.runtime.orchestration import subagent_orchestrator_runtime_signals
 from odylith.runtime.orchestration import subagent_orchestrator_subtasks_runtime
 from odylith.runtime.orchestration import subagent_orchestrator_odylith_runtime
+from odylith.runtime.orchestration.subagent_orchestrator_support import _ARCHITECTURE_GROUNDING_KEYWORDS
+from odylith.runtime.orchestration.subagent_orchestrator_support import _CODEX_HOT_PATH_PROFILE
+from odylith.runtime.orchestration.subagent_orchestrator_support import _GOVERNANCE_GROUNDING_KEYWORDS
+from odylith.runtime.orchestration.subagent_orchestrator_support import _clamp_confidence
+from odylith.runtime.orchestration.subagent_orchestrator_support import _compact_selection_state_parts
+from odylith.runtime.orchestration.subagent_orchestrator_support import _dedupe_strings
+from odylith.runtime.orchestration.subagent_orchestrator_support import _execution_profile_mapping
+from odylith.runtime.orchestration.subagent_orchestrator_support import _extract_context_signals_payload
+from odylith.runtime.orchestration.subagent_orchestrator_support import _float_value, _mapping_lookup
+from odylith.runtime.orchestration.subagent_orchestrator_support import _merge_context_signals
+from odylith.runtime.orchestration.subagent_orchestrator_support import _nested_mapping
+from odylith.runtime.orchestration.subagent_orchestrator_support import _normalize_context_signals
+from odylith.runtime.orchestration.subagent_orchestrator_support import _normalize_list
+from odylith.runtime.orchestration.subagent_orchestrator_support import _normalized_rate
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_component_ids
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_diagram_watch_gap_count
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_full_scan_recommended
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_paths
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_route_ready
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_routing_confidence
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_selection_state
+from odylith.runtime.orchestration.subagent_orchestrator_support import _odylith_payload_workstreams
+from odylith.runtime.orchestration.subagent_orchestrator_support import _payload_packet_kind
+from odylith.runtime.orchestration.subagent_orchestrator_support import _request_has_odylith_seeds, _request_seed_paths
+from odylith.runtime.orchestration.subagent_orchestrator_support import _sanitize_user_facing_lines
+from odylith.runtime.orchestration.subagent_orchestrator_support import _sanitize_user_facing_text
 
 
 DEFAULT_TUNING_PATH = ".odylith/subagent_orchestrator/tuning.v1.json"
 DEFAULT_DECISION_LEDGER_DIR = ".odylith/subagent_orchestrator/decision-ledgers"
-DEFAULT_STREAM_PATH = "odylith/compass/runtime/codex-stream.v1.jsonl"
+DEFAULT_STREAM_PATH = agent_runtime_contract.AGENT_STREAM_PATH
 DEFAULT_COMPONENT_ID = "subagent-orchestrator"
 _TUNING_VERSION = "v1"
 _DECISION_LEDGER_VERSION = "v1"
@@ -113,34 +142,6 @@ _ODYLITH_IMPLEMENTATION_PATH_PREFIXES: tuple[str, ...] = (
 _KNOWN_ODYLITH_OPERATIONS: frozenset[str] = frozenset(
     {"auto", "impact", "architecture", "governance_slice", "session_brief", "bootstrap_session"}
 )
-_GOVERNANCE_GROUNDING_KEYWORDS: tuple[str, ...] = (
-    "governance",
-    "workstream",
-    "backlog",
-    "plan binding",
-    "traceability",
-    "closeout",
-    "delivery truth",
-    "registry",
-    "compass",
-    "radar",
-    "sync_workstream_artifacts",
-    "governed surface",
-)
-_ARCHITECTURE_GROUNDING_KEYWORDS: tuple[str, ...] = (
-    "architecture",
-    "topology",
-    "control-plane",
-    "shared-stack",
-    "shared stack",
-    "diagram",
-    "mermaid",
-    "authority chain",
-    "blast radius",
-    "ownership boundary",
-    "tenant boundary",
-)
-_CODEX_HOT_PATH_PROFILE = "codex_hot_path"
 
 
 class OrchestrationMode(str, Enum):
@@ -351,323 +352,31 @@ class TuningState:
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
-
-
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
 def _normalize_multiline_string(value: Any) -> str:
     text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
     return "\n".join(line.rstrip() for line in text.split("\n")).strip()
 
 
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
-
-
-def _normalize_bool(value: Any, *, default: bool = False) -> bool:
-    if isinstance(value, bool):
-        return value
-    token = _normalize_token(value)
-    if token in {"1", "true", "yes", "y", "on"}:
-        return True
-    if token in {"0", "false", "no", "n", "off"}:
-        return False
-    return default
-
-
-def _normalize_list(value: Any) -> list[str]:
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return [_normalize_string(item) for item in value if _normalize_string(item)]
-    token = _normalize_string(value)
-    return [token] if token else []
-
-
-def _normalize_context_signals(value: Any) -> dict[str, Any]:
-    if not isinstance(value, Mapping):
-        return {}
-    return {_normalize_string(key): raw for key, raw in value.items() if _normalize_string(key)}
-
-
-def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
-    explicit = payload.get("context_signals")
-    if isinstance(explicit, Mapping):
-        return _normalize_context_signals(explicit)
-    extracted: dict[str, Any] = {}
-    for key in (
-        "routing_handoff",
-        "context_packet",
-        "evidence_pack",
-        "optimization_snapshot",
-        "architecture_audit",
-        "validation_bundle",
-        "governance_obligations",
-        "surface_refs",
-    ):
-        value = payload.get(key)
-        if isinstance(value, Mapping):
-            extracted[key] = dict(value)
-    diagram_watch_gaps = payload.get("diagram_watch_gaps")
-    if isinstance(diagram_watch_gaps, list):
-        extracted["diagram_watch_gaps"] = list(diagram_watch_gaps)
-    if extracted:
-        return _normalize_context_signals(extracted)
-    return _normalize_context_signals(payload.get("routing_handoff", {}))
-
-
 def _normalize_odylith_operation(value: Any) -> str:
     token = _normalize_token(value) or "auto"
     return token if token in _KNOWN_ODYLITH_OPERATIONS else "auto"
-
-
-def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    ordered: list[str] = []
-    for raw in values:
-        token = _normalize_string(raw)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        ordered.append(token)
-    return ordered
-
-
-def _sanitize_user_facing_text(value: Any) -> str:
-    return leaf_router._sanitize_user_facing_text(value)  # noqa: SLF001
-
-
-def _sanitize_user_facing_lines(values: Sequence[str]) -> list[str]:
-    return leaf_router._sanitize_user_facing_lines(values)  # noqa: SLF001
-
-
-def _mapping_lookup(payload: Mapping[str, Any], key: str) -> Any:
-    wanted = _normalize_token(key)
-    for raw_key, raw_value in payload.items():
-        if _normalize_token(raw_key) == wanted:
-            return raw_value
-    alias = {
-        "parallelism_hint": "p",
-        "reasoning_bias": "b",
-        "routing_confidence": "rc",
-        "intent_family": "i",
-        "intent_mode": "m",
-        "intent_critical_path": "cp",
-        "intent_confidence": "ic",
-        "intent_explicit": "ix",
-        "context_richness": "cr",
-        "accuracy_posture": "ap",
-        "utility_score": "us",
-        "context_density_level": "cd",
-        "reasoning_readiness_level": "rr",
-    }.get(wanted, "")
-    if alias:
-        for raw_key, raw_value in payload.items():
-            if _normalize_token(raw_key) == alias:
-                return raw_value
-    return None
-
-
-def _nested_mapping(payload: Mapping[str, Any], *path: str) -> dict[str, Any]:
-    current: Any = payload
-    for key in path:
-        if not isinstance(current, Mapping):
-            return {}
-        current = _mapping_lookup(current, key)
-    return dict(current) if isinstance(current, Mapping) else {}
-
-
-def _execution_profile_mapping(value: Any) -> dict[str, Any]:
-    profile = tooling_memory_contracts.execution_profile_mapping(value)
-    if not profile:
-        return {}
-    selected = leaf_router._preferred_router_profile_from_execution_profile(profile)  # noqa: SLF001
-    if selected is None:
-        return profile
-    profile["profile"] = selected.value
-    profile["model"] = selected.model
-    profile["reasoning_effort"] = selected.reasoning_effort
-    return profile
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
-
-
-def _float_value(value: Any) -> float:
-    try:
-        return float(value or 0.0)
-    except (TypeError, ValueError):
-        return 0.0
-
-
-def _normalized_rate(value: Any) -> float:
-    numeric = _float_value(value)
-    if numeric > 1.0:
-        numeric = numeric / 100.0 if numeric <= 100.0 else 1.0
-    return max(0.0, min(1.0, numeric))
-
-
-def _request_seed_paths(request: OrchestrationRequest) -> list[str]:
-    return _dedupe_strings([*request.candidate_paths, *request.claimed_paths])
-
-
-def _request_has_odylith_seeds(request: OrchestrationRequest) -> bool:
-    return bool(
-        _request_seed_paths(request)
-        or request.workstreams
-        or request.components
-        or request.session_id
-        or request.use_working_tree
-    )
-
-
-def _payload_context_packet(payload: Mapping[str, Any]) -> dict[str, Any]:
-    return dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
-
-
-def _payload_routing_handoff(payload: Mapping[str, Any]) -> dict[str, Any]:
-    return dict(payload.get("routing_handoff", {})) if isinstance(payload.get("routing_handoff"), Mapping) else {}
-
-
-def _compact_selection_state_parts(value: Any) -> tuple[str, str]:
-    token = _normalize_string(value)
-    if not token:
-        return "", ""
-    if token.startswith("x:"):
-        return "explicit", _normalize_string(token[2:])
-    if token.startswith("i:"):
-        return "inferred_confident", _normalize_string(token[2:])
-    return token, ""
-
-
-def _payload_packet_kind(payload: Mapping[str, Any], *, context_packet: Mapping[str, Any], routing_handoff: Mapping[str, Any]) -> str:
-    packet_kind = _normalize_token(payload.get("packet_kind"))
-    if packet_kind:
-        return packet_kind
-    packet_kind = _normalize_token(context_packet.get("packet_kind"))
-    if packet_kind:
-        return packet_kind
-    packet_kind = _normalize_token(routing_handoff.get("packet_kind"))
-    if packet_kind:
-        return packet_kind
-    route = _nested_mapping(context_packet, "route")
-    if route.get("governance"):
-        return "governance_slice"
-    return "impact" if context_packet else ""
-
-
-def _odylith_payload_full_scan_recommended(payload: Mapping[str, Any]) -> bool:
-    context_packet = _payload_context_packet(payload)
-    architecture_audit = dict(payload.get("architecture_audit", {})) if isinstance(payload.get("architecture_audit"), Mapping) else {}
-    return bool(
-        payload.get("full_scan_recommended")
-        or context_packet.get("full_scan_recommended")
-        or architecture_audit.get("full_scan_recommended")
-    )
-
-
-def _odylith_payload_route_ready(payload: Mapping[str, Any]) -> bool:
-    context_packet = _payload_context_packet(payload)
-    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), Mapping) else {}
-    routing_handoff = _payload_routing_handoff(payload)
-    return bool(payload.get("route_ready") or route.get("route_ready") or routing_handoff.get("route_ready"))
-
-
-def _odylith_payload_selection_state(payload: Mapping[str, Any]) -> str:
-    context_packet = _payload_context_packet(payload)
-    state, _ = _compact_selection_state_parts(payload.get("selection_state") or context_packet.get("selection_state"))
-    return _normalize_token(state)
-
-
-def _odylith_payload_routing_confidence(payload: Mapping[str, Any]) -> str:
-    context_packet = _payload_context_packet(payload)
-    packet_quality = packet_quality_codec.expand_packet_quality(
-        dict(context_packet.get("packet_quality", {}))
-        if isinstance(context_packet.get("packet_quality"), Mapping)
-        else {}
-    )
-    routing_handoff = _payload_routing_handoff(payload)
-    return (
-        _normalize_token(routing_handoff.get("routing_confidence"))
-        or _normalize_token(packet_quality.get("routing_confidence"))
-        or _normalize_token(payload.get("routing_confidence"))
-    )
-
-
-def _odylith_payload_diagram_watch_gap_count(payload: Mapping[str, Any]) -> int:
-    gaps = payload.get("diagram_watch_gaps", [])
-    return len(gaps) if isinstance(gaps, list) else 0
-
-
-def _odylith_payload_component_ids(payload: Mapping[str, Any]) -> list[str]:
-    component_rows = payload.get("components", [])
-    if not isinstance(component_rows, list):
-        return []
-    return _dedupe_strings(
-        str(row.get("entity_id", "")).strip()
-        for row in component_rows
-        if isinstance(row, Mapping) and str(row.get("entity_id", "")).strip()
-    )
-
-
-def _odylith_payload_workstreams(payload: Mapping[str, Any]) -> list[str]:
-    values: list[str] = []
-    for key in ("inferred_workstream", "workstream", "ws"):
-        token = _normalize_string(payload.get(key, ""))
-        if token:
-            values.append(token)
-    context_packet = _payload_context_packet(payload)
-    _, compact_workstream = _compact_selection_state_parts(context_packet.get("selection_state"))
-    if compact_workstream:
-        values.append(compact_workstream)
-    primary = dict(payload.get("primary_workstream", {})) if isinstance(payload.get("primary_workstream"), Mapping) else {}
-    primary_id = _normalize_string(primary.get("entity_id", ""))
-    if primary_id:
-        values.append(primary_id)
-    workstream_selection = dict(payload.get("workstream_selection", {})) if isinstance(payload.get("workstream_selection"), Mapping) else {}
-    selected = dict(workstream_selection.get("selected_workstream", {})) if isinstance(workstream_selection.get("selected_workstream"), Mapping) else {}
-    selected_id = _normalize_string(selected.get("entity_id", ""))
-    if selected_id:
-        values.append(selected_id)
-    candidate_rows = payload.get("candidate_workstreams", [])
-    if isinstance(candidate_rows, list):
-        values.extend(
-            str(row.get("entity_id", "")).strip()
-            for row in candidate_rows
-            if isinstance(row, Mapping) and str(row.get("entity_id", "")).strip()
-        )
-    return _dedupe_strings(values)
-
-
-def _odylith_payload_paths(payload: Mapping[str, Any]) -> list[str]:
-    context_packet = _payload_context_packet(payload)
-    anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), Mapping) else {}
-    values: list[str] = []
-    for key in ("changed_paths", "explicit_paths"):
-        raw = payload.get(key, [])
-        if isinstance(raw, list):
-            values.extend(str(token).strip() for token in raw if str(token).strip())
-    anchor_paths = anchors.get("changed_paths", [])
-    if isinstance(anchor_paths, list):
-        values.extend(str(token).strip() for token in anchor_paths if str(token).strip())
-    return _dedupe_strings(values)
-
-
 def _architecture_context_signals(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Expose normalized architecture signals from the shared runtime helper."""
+
     return subagent_orchestrator_odylith_runtime._architecture_context_signals(payload=payload)
 
 
 
 def _odylith_payload_grounded(payload: Mapping[str, Any]) -> bool:
+    """Report whether an Odylith payload already carries grounding evidence."""
+
     return subagent_orchestrator_odylith_runtime._odylith_payload_grounded(payload=payload)
 
 
 
 def _request_odylith_adoption(request: OrchestrationRequest) -> dict[str, Any]:
+    """Summarize how much Odylith context the request already contains."""
+
     return subagent_orchestrator_odylith_runtime._request_odylith_adoption(request=request)
 
 
@@ -680,6 +389,8 @@ def _decision_odylith_adoption(
     final_changed_paths: Sequence[str] | None = None,
     changed_path_source: str = "",
 ) -> dict[str, Any]:
+    """Summarize Odylith grounding and adoption facts for the final decision."""
+
     return subagent_orchestrator_odylith_runtime._decision_odylith_adoption(
         repo_root=repo_root,
         request=request,
@@ -694,6 +405,8 @@ def _request_prefers_architecture_grounding(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> bool:
+    """Tell whether the prompt leans toward architecture-grounded context."""
+
     return subagent_orchestrator_odylith_runtime._request_prefers_architecture_grounding(request=request, assessment=assessment)
 
 
@@ -702,6 +415,8 @@ def _request_prefers_governance_grounding(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> bool:
+    """Tell whether the prompt leans toward governance-grounded context."""
+
     return subagent_orchestrator_odylith_runtime._request_prefers_governance_grounding(request=request, assessment=assessment)
 
 
@@ -710,6 +425,8 @@ def _auto_odylith_operation(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> str:
+    """Infer the best Odylith grounding operation for this request."""
+
     return subagent_orchestrator_odylith_runtime._auto_odylith_operation(request=request, assessment=assessment)
 
 
@@ -720,11 +437,15 @@ def _auto_ground_request_with_odylith(
     repo_root: Path,
     assessment: leaf_router.TaskAssessment,
 ) -> OrchestrationRequest:
+    """Enrich the request with Odylith grounding when the slice earned it."""
+
     return subagent_orchestrator_odylith_runtime._auto_ground_request_with_odylith(request=request, repo_root=repo_root, assessment=assessment)
 
 
 
 def _architecture_policy_context(request: OrchestrationRequest) -> dict[str, Any]:
+    """Extract architecture fan-out policy from normalized request signals."""
+
     base = _normalize_context_signals(request.context_signals)
     routing_handoff = _nested_mapping(base, "routing_handoff")
     context_packet = _nested_mapping(base, "context_packet")
@@ -754,16 +475,22 @@ def _architecture_policy_context(request: OrchestrationRequest) -> dict[str, Any
 
 
 def _score_level(score: int) -> str:
+    """Map a numeric score into the stable verbal band used in summaries."""
+
     return subagent_orchestrator_odylith_runtime._score_level(score=score)
 
 
 
 def _intent_confidence_score(value: Any) -> int:
+    """Normalize intent-confidence input into the orchestrator score band."""
+
     return subagent_orchestrator_odylith_runtime._intent_confidence_score(value=value)
 
 
 
 def _profile_runtime_fields(profile_token: str) -> tuple[str, str, str]:
+    """Expand a profile token into host-visible runtime spawn fields."""
+
     return subagent_orchestrator_odylith_runtime._profile_runtime_fields(profile_token=profile_token)
 
 
@@ -787,6 +514,8 @@ def _subtask_odylith_execution_profile(
     spawn_worthiness: int,
     merge_burden: int,
 ) -> dict[str, Any]:
+    """Assemble the Odylith execution profile attached to one delegated leaf."""
+
     return subagent_orchestrator_odylith_runtime._subtask_odylith_execution_profile(request=request, assessment=assessment, subtask=subtask, intent_profile=intent_profile, architecture_audit=architecture_audit, base_root=base_root, base_context_packet=base_context_packet, base_optimization_snapshot=base_optimization_snapshot, route_ready=route_ready, narrowing_required=narrowing_required, validation_pressure=validation_pressure, utility_score=utility_score, token_efficiency_score=token_efficiency_score, routing_confidence_score=routing_confidence_score, spawn_worthiness=spawn_worthiness, merge_burden=merge_burden)
 
 
@@ -874,24 +603,6 @@ def _utility_level(score: int) -> str:
     if clamped >= 25:
         return "low"
     return "minimal"
-
-
-def _merge_context_signals(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str, Any]:
-    merged = {str(key): value for key, value in dict(base).items()}
-    for raw_key, raw_value in overlay.items():
-        key = _normalize_string(raw_key)
-        if not key:
-            continue
-        existing = merged.get(key)
-        if isinstance(existing, Mapping) and isinstance(raw_value, Mapping):
-            merged[key] = _merge_context_signals(dict(existing), dict(raw_value))
-        else:
-            merged[key] = raw_value
-    return merged
-
-
-def _clamp_confidence(value: int | float) -> int:
-    return max(0, min(4, int(round(float(value)))))
 
 
 def _clamp_bias(value: float) -> float:
@@ -1288,7 +999,7 @@ def _odylith_path_role(path: str) -> str:
     normalized = _normalized_repo_path(path)
     if not normalized.startswith("odylith/"):
         return ""
-    if normalized == "odylith/AGENTS.md":
+    if normalized in {"odylith/AGENTS.md", "odylith/CLAUDE.md"}:
         return "contract"
     if normalized.startswith(_ODYLITH_GOVERNANCE_PATH_PREFIXES):
         return "governance"
@@ -1315,7 +1026,7 @@ def _scope_role(paths: Sequence[str], *, needs_write: bool) -> str:
     odylith_roles = {_odylith_path_role(path) for path in paths if _odylith_path_role(path)}
     if not needs_write:
         return "analysis"
-    if paths and all(path.endswith("AGENTS.md") or path == "AGENTS.md" for path in paths if path):
+    if paths and all(path.endswith(("AGENTS.md", "CLAUDE.md")) or path in {"AGENTS.md", "CLAUDE.md"} for path in paths if path):
         return "docs"
     if odylith_roles and len(odylith_roles) == 1:
         return next(iter(odylith_roles))
@@ -1689,6 +1400,8 @@ def _adaptive_batch_mode(
     groups: Sequence[Sequence[str]],
     tuning: TuningState,
 ) -> tuple[OrchestrationMode, list[str]]:
+    """Choose the batch mode after safety checks and local tuning bias."""
+
     return subagent_orchestrator_runtime_signals._adaptive_batch_mode(
         request,
         assessment,
@@ -1739,6 +1452,10 @@ def _should_keep_local(
     notes: list[str] = []
     architecture_policy = _architecture_policy_context(request)
     context_summary = dict(assessment.context_signal_summary or {})
+    governance_guard = runtime_lane_policy.delegation_guard(context_summary)
+    if governance_guard.blocked and governance_guard.code not in reasons:
+        reasons.append(governance_guard.code)
+        notes.append(governance_guard.reason)
     odylith_confidence = _clamp_confidence(context_summary.get("odylith_execution_confidence_score", 0) or 0)
     odylith_profile = _normalize_token(context_summary.get("odylith_execution_profile", ""))
     odylith_delegate_preference = _normalize_token(context_summary.get("odylith_execution_delegate_preference", ""))
@@ -1950,6 +1667,8 @@ def _build_subtasks(
     mode: OrchestrationMode,
     groups: Sequence[Sequence[str]],
 ) -> list[SubtaskSlice]:
+    """Build the delegated leaf slices for the selected orchestration mode."""
+
     return subagent_orchestrator_subtasks_runtime._build_subtasks(
         request,
         mode=mode,
@@ -2067,6 +1786,8 @@ def _subtask_context_signals(
     mode: OrchestrationMode,
     all_subtasks: Sequence[SubtaskSlice],
 ) -> dict[str, Any]:
+    """Project parent assessment and request context into one leaf signal set."""
+
     return subagent_orchestrator_runtime_signals._subtask_context_signals(
         request,
         assessment,
@@ -2222,6 +1943,15 @@ def _effective_request(
     request: OrchestrationRequest,
     assessment: leaf_router.TaskAssessment,
 ) -> OrchestrationRequest:
+    """Backfill missing orchestration facts from the router assessment.
+
+    Callers sometimes provide only the prompt and a rough scope. The router can
+    infer stronger task-shape facts such as phase, task kind, and write
+    criticality, and the orchestrator wants one canonical request object before
+    it starts applying local gates or decomposition policy. Explicit caller
+    values always win over inferred ones.
+    """
+
     if (
         request.needs_write == assessment.needs_write
         and request.correctness_critical == assessment.correctness_critical
@@ -2256,19 +1986,28 @@ def _effective_request(
         context_signals=dict(request.context_signals),
     )
 
-subagent_orchestrator_odylith_runtime.bind(sys.modules[__name__])
-
-
 def orchestrate_prompt(
     request: OrchestrationRequest,
     *,
     repo_root: Path,
 ) -> OrchestrationDecision:
+    """Choose the orchestration mode for one grounded repo-work prompt.
+
+    The orchestrator first validates the prompt, then lets the leaf router
+    classify the slice, optionally enriches it with Odylith grounding, and only
+    then decides whether the work should stay local, run as one bounded leaf, or
+    split into a conservative serial or parallel batch. Hard local-only gates
+    always run before any adaptive or fan-out logic.
+    """
+
     _ensure_valid_request(request)
     base_route_request = _base_route_request(request)
     assessment = leaf_router.assess_request(base_route_request)
     request = _auto_ground_request_with_odylith(request, repo_root=repo_root, assessment=assessment)
     if request.context_signals:
+        # Grounding can add candidate paths or execution hints that materially
+        # change the router's confidence and task family, so re-assess once the
+        # enriched request is available.
         base_route_request = _base_route_request(request)
         assessment = leaf_router.assess_request(base_route_request)
     assessment_errors = _assessment_validation_errors(request, assessment)
@@ -2450,7 +2189,7 @@ def orchestrate_prompt(
     if any(subtask.route_model == "gpt-5.3-codex-spark" for subtask in routed_subtasks):
         budget_notes.append("lighter mechanical support leaves were routed toward Spark to conserve token budget")
     if any(subtask.route_model == "gpt-5.3-codex" for subtask in routed_subtasks):
-        budget_notes.append("mid-tier coding leaves were routed toward Codex profiles before escalating to GPT-5.4")
+        budget_notes.append("mid-tier coding leaves were routed toward write-focused profiles before escalating to GPT-5.4")
 
     rationale = {
         OrchestrationMode.SINGLE_LEAF: "delegated as one bounded leaf because the grounded scope did not justify decomposition",
@@ -2463,12 +2202,12 @@ def orchestrate_prompt(
         "Do not merge partial leaf outputs before all planned leaves report back.",
     ]
     execution_contract_notes = [
-        "For native `spawn_agent` calls, pass each leaf's `spawn_task_message` verbatim as `message`; do not rebuild the runtime banner or task contract from fragments.",
+        "For native host delegation calls, pass each leaf's `spawn_task_message` verbatim into the emitted payload; do not rebuild the runtime banner or task contract from fragments.",
         "Each delegated subtask now includes a ready-to-send `route_native_spawn_payload`; prefer it when issuing native host spawn calls.",
-        "For native `spawn_agent` calls, prefer the structured `route_spawn_agent_overrides` payload; use `route_spawn_overrides` for the richer lifecycle and idle-policy contract.",
+        "When the host supports `spawn_agent`, prefer the structured `route_spawn_agent_overrides` payload; use `route_spawn_overrides` for the richer lifecycle and idle-policy contract.",
         "Persist and reuse the per-decision inspection ledger at `inspection_artifacts.ledger_path`; it is the durable source of truth for spawned leaf ids, routed spawn payloads, transcript pointers, result handoffs, and `completion_closeout_overrides`-driven closeout state after agents are closed.",
-        "When a native payload is unavailable, explicitly pass route_model plus route_reasoning_effort instead of inheriting parent defaults.",
-        "The current native host accepts only built-in `agent_type` values and may still render parent-thread controls in the subagent UI; treat the routed runtime banner inside the delegated prompt as the authoritative requested runtime.",
+        "When a native payload is unavailable, explicitly carry the routed execution profile instead of inheriting parent defaults.",
+        "Some hosts accept only built-in delegated agent types and may still render parent-thread controls in the subagent UI; treat the routed runtime banner and native spawn payload as the authoritative requested runtime.",
         "Respect the emitted task-class routing policy fields; they are the explicit per-family baseline for model and reasoning selection.",
         "Treat `waiting on instruction` as an idle state owned by the main thread: either queue the next bounded follow-up immediately or close the agent.",
         "If a delegated leaf stays `waiting on instruction` for its emitted `route_idle_timeout_minutes` threshold, follow `route_idle_timeout_action` and `route_idle_timeout_escalation` instead of leaving the stale leaf open.",
@@ -3036,6 +2775,14 @@ def build_decision_ledger(
     request: OrchestrationRequest,
     decision: OrchestrationDecision,
 ) -> dict[str, Any]:
+    """Build the persisted inspection ledger for one orchestration decision.
+
+    The runtime decision object is optimized for execution. The ledger expands
+    that into a durable inspection record with summaries, follow-up state,
+    delegated leaf rows, and an append-only event trail so later tooling can
+    reconstruct how the orchestrator reached and evolved this decision.
+    """
+
     decision = _attach_inspection_artifacts(repo_root=repo_root, decision=decision)
     recorded_at = _now_timestamp()
     inspection_artifacts = dict(decision.inspection_artifacts)
@@ -3083,6 +2830,8 @@ def persist_decision_ledger(
     request: OrchestrationRequest,
     decision: OrchestrationDecision,
 ) -> dict[str, Any]:
+    """Persist a freshly built decision ledger to the canonical ledger path."""
+
     ledger = build_decision_ledger(repo_root=repo_root, request=request, decision=decision)
     inspection_artifacts = dict(ledger.get("inspection_artifacts", {}))
     ledger_path = Path(str(inspection_artifacts.get("ledger_path", ""))).expanduser().resolve()
@@ -3093,6 +2842,8 @@ def persist_decision_ledger(
 
 
 def load_decision_ledger(*, repo_root: Path, decision_id: str) -> dict[str, Any]:
+    """Load a persisted decision ledger or raise a structured lookup error."""
+
     path = decision_ledger_path(repo_root=repo_root, decision_id=decision_id)
     payload = _load_json_mapping(path)
     if not payload:
@@ -3105,6 +2856,8 @@ def load_decision_ledger(*, repo_root: Path, decision_id: str) -> dict[str, Any]
 
 
 def _subtask_ledger_map(ledger: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    """Index persisted subtask rows by subtask id for update-time merging."""
+
     subtasks = ledger.get("subtasks", [])
     if not isinstance(subtasks, Sequence) or isinstance(subtasks, (str, bytes, bytearray)):
         return {}
@@ -3116,6 +2869,14 @@ def _subtask_ledger_map(ledger: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def _merge_subtask_ledger_update(entry: dict[str, Any], update: Mapping[str, Any], *, recorded_at: str) -> None:
+    """Merge one partial runtime update into a persisted subtask row.
+
+    Ledger updates arrive incrementally from host runtime hooks, so this merger
+    must preserve untouched state, normalize older payload shapes, and keep the
+    nested inspection structure complete even when the incoming update only
+    mentions one subsection such as follow-up or closeout.
+    """
+
     state = dict(entry.get("inspection_state", {}))
     default_state = _default_subtask_inspection_state()
     for key, value in default_state.items():
@@ -3170,6 +2931,8 @@ def _merge_subtask_ledger_update(entry: dict[str, Any], update: Mapping[str, Any
         0,
         int(dict(entry.get("route_close_agent_overrides", {})).get("prequeue_same_scope_reuse_claim_minutes", 0) or 0),
     )
+    # Follow-up state evolves independently from result handoff and closeout, so
+    # it uses a dedicated merger that can honor same-scope reuse grace periods.
     state["followup"] = _merge_followup_state(
         existing=state.get("followup", _default_followup_state()),
         update=raw_followup if isinstance(raw_followup, Mapping) else {},
@@ -3195,6 +2958,8 @@ def _merge_subtask_ledger_update(entry: dict[str, Any], update: Mapping[str, Any
 
 
 def _append_ledger_event(ledger: dict[str, Any], event: dict[str, Any]) -> None:
+    """Append one event while enforcing the bounded rolling event history."""
+
     events = ledger.get("events", [])
     if not isinstance(events, list):
         events = []
@@ -3210,6 +2975,13 @@ def record_decision_ledger(
     decision_id: str,
     update: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Apply an incremental inspection update to an existing decision ledger.
+
+    This is the mutation path used after orchestration time: spawned agents can
+    report status, transcript pointers, handoff artifacts, follow-up claims, and
+    closeout state without rebuilding the entire ledger from scratch.
+    """
+
     ledger = load_decision_ledger(repo_root=repo_root, decision_id=decision_id)
     recorded_at = _now_timestamp()
     if _normalize_string(update.get("decision_id", "")) and _normalize_string(update.get("decision_id", "")) != _normalize_string(decision_id):
@@ -3294,6 +3066,8 @@ def append_orchestration_audit(
     feedback: ExecutionFeedback | None = None,
     stream_path: Path | None = None,
 ) -> dict[str, Any]:
+    """Emit a Compass timeline event for an orchestration decision or outcome."""
+
     stream = stream_path or (Path(repo_root).resolve() / DEFAULT_STREAM_PATH).resolve()
     artifacts = list(request.candidate_paths or ["src/odylith/runtime/orchestration/subagent_orchestrator.py"])
     components = [DEFAULT_COMPONENT_ID, *request.components]
@@ -3645,7 +3419,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             _emit_payload(payload, as_json=bool(args.json))
             return 0
         if args.command == "show-tuning":
-            _emit_payload(load_tuning_state(repo_root=repo_root).as_dict(), as_json=bool(args.json))
+            state = load_tuning_state(repo_root=repo_root).as_dict()
+            payload = subagent_tuning_surface.orchestrator_surface(repo_root=repo_root, state=state)
+            _emit_payload(payload, as_json=bool(args.json))
             return 0
         if args.command == "show-ledger":
             selected_decision_id = _load_decision_reference(

@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-041
-title: Odylith SWE-bench External Harness, Predictions Contract, and Reproducible Verified Adapter
+title: SWE-bench External Harness, Predictions Contract, and Reproducible Verified Adapter
 date: 2026-04-02
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 5
-impacted_lanes: both
 impacted_parts: external benchmark harnessing, SWE-bench Docker evaluation, SWE-bench Verified prediction artifacts, patch serialization, run manifest provenance, and benchmark publication trust
 sizing: L
 complexity: High

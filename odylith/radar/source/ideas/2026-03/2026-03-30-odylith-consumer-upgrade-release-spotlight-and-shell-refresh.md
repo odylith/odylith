@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-030
-title: Odylith Consumer Upgrade, Reinstall Recovery, and Shell Refresh
+title: Consumer Upgrade, Reinstall Recovery, and Shell Refresh
 date: 2026-03-30
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: service
 impacted_parts: upgrade and reinstall CLI, launcher recovery, tooling dashboard refresh, default Compass refresh, Atlas diagnostics, release spotlight payload, Mermaid worker failure handling, and shell upgrade UX
 sizing: L
 complexity: High
@@ -95,7 +94,7 @@ series of special cases.
 ## Non-Goals
 - changing product-repo maintainer upgrade posture beyond clearer guardrails
 - redesigning the main dashboard information architecture outside the popup
-- adding remote telemetry or hosted release analytics
+- adding remote usage tracking or hosted release analytics
 
 ## Risks
 - automatic surface refresh could make upgrade or reinstall feel slower if it blocks on shell rendering

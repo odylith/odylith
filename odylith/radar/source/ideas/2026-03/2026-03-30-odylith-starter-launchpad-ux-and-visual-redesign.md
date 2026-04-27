@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-028
-title: Odylith Starter Launchpad UX and Visual Redesign
+title: Starter Launchpad UX and Visual Redesign
 date: 2026-03-30
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: first-run launchpad, starter prompt handoff, chosen-slice framing, shell visual hierarchy, responsive onboarding layout, dismiss/reopen recovery affordances, and browser proof
 sizing: M
 complexity: Medium

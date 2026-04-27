@@ -1,3 +1,5 @@
+"""Exercise a local hosted-release install flow against a temporary repo."""
+
 from __future__ import annotations
 
 import argparse
@@ -102,6 +104,13 @@ def _install_cwd(repo_root: Path) -> Path:
     return nested
 
 
+def _release_smoke_temp_dir() -> tempfile.TemporaryDirectory[str]:
+    return tempfile.TemporaryDirectory(
+        prefix="odylith-release-smoke-",
+        ignore_cleanup_errors=True,
+    )
+
+
 def _require_output_contains(*, output: str, expected: str, label: str) -> None:
     if expected not in output:
         raise RuntimeError(f"{label} missing expected text: {expected!r}")
@@ -161,7 +170,7 @@ def main(argv: list[str] | None = None) -> int:
     server, base_url = _serve_directory(dist_dir)
     try:
         local_env = _local_release_env(base_url=base_url, version=args.version)
-        with tempfile.TemporaryDirectory(prefix="odylith-release-smoke-") as tmpdir:
+        with _release_smoke_temp_dir() as tmpdir:
             temp_root = Path(tmpdir)
             fresh_repo = _repo_root(temp_root, "fresh-install")
             _install_and_smoke(repo_root=fresh_repo, install_script=install_script, env=local_env)

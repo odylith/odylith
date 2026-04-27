@@ -86,11 +86,12 @@
   instead of a fully serial provider walk, and publish brief
   source/window/scope/fingerprint metadata into the Compass DOM so browser
   proof can assert real brief selection instead of inferring it from prose.
-  Then harden the voice contract itself: bump the brief schema to `v13`,
-  invalidate the old warmed cache, rewrite both provider and deterministic
-  paths toward plainer spoken narrative, and reject repeated stock lead-ins at
-  validation time so the live payload cannot slide back into canned prose. For
-  the remaining wrapper inconsistency, align the underlying renderer default
+  Then harden the voice contract itself: bump the brief schema again to
+  invalidate warmed cache entries when the narration contract tightens, rewrite
+  both provider and deterministic paths toward plainer spoken narrative, reject
+  repeated stock lead-ins plus canned status wrappers at validation time, and
+  revalidate warmed cache entries before reuse so the live payload cannot slide
+  back into canned prose. For the remaining wrapper inconsistency, align the underlying renderer default
   with `shell-safe`, give explicit `full` refresh a materially larger dashboard
   timeout budget than bounded shell-safe refresh, replace the bogus
   `compass update` recovery hint with a real rerender command, and write an
@@ -115,7 +116,7 @@
   with `42 passed` and
   `python -m pytest tests/unit/runtime/test_compass_dashboard_runtime.py tests/unit/runtime/test_render_compass_dashboard.py tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_deep.py -q`
   with `52 passed`, and the rerendered Compass runtime now carries brief schema
-  `v13`. A final closure pass should also prove the wrapper contract directly:
+  `v14`. A final closure pass should also prove the wrapper contract directly:
   focused unit coverage for the Compass dashboard refresh timeout and retry
   hint path, plus focused runtime-payload coverage proving that a failed full
   refresh marks the live Compass payload as stale-and-failed instead of leaving
@@ -138,6 +139,12 @@
 - Prevention: Explicit refresh should mean “rebuild current truth,” not
   “silently defer to stale artifacts,” but it also must not explode into
   sequential scoped narration work inside one synchronous shell refresh.
+  Shell-safe prevention now has two stricter guardrails: first, keep live
+  provider spend bounded to the global windows unless explicit deep refresh is
+  requested; second, persist narrative-relevant window fingerprints so a hot
+  refresh reuses the last validated live brief layer instead of repaying
+  deterministic scoped work or another provider turn when the story has not
+  materially changed.
 
 - Detected By: User report and screenshot on 2026-04-03 showing a slow Compass
   refresh attempt followed by the old deterministic local brief banner and
@@ -197,6 +204,16 @@
 - Agent Guardrails: Do not widen a shell-facing refresh command into
   per-workstream live narration unless the refresh surface exposes that extra
   cost and completion state clearly.
+- Agent Guardrails: Treat stock framing in Compass as a correctness regression,
+  not a polish nit. Do not ship or reuse provider, deterministic, or cached
+  briefs that restate queue labels, generic attention wrappers, sloganized
+  self-host status, or canned next-step scaffolding in place of real operator
+  judgment.
+- Agent Guardrails: Compass brief voice is plainspoken grounded maintainer
+  narration. Reject stagey metaphors like `pressure point`, `center of
+  gravity`, `muddy`, or `top lane`, reject dashboard-polished abstractions
+  like `window coverage spans`, and reject rhythmic summary prose even when
+  the facts themselves are current.
 
 - Preflight Checks: Inspect `CB-047`, `CB-019`, the active B-025 plan, the
   explicit refresh command path in `sync_workstream_artifacts.py`, and the
@@ -213,6 +230,22 @@
   workstreams come back provider- or cache-backed after refresh, and whether
   any deterministic or `provider_deferred` notice survives on a completed
   full-refresh artifact.
+- Monitoring Updates: Also watch for stock-framing regressions in the live
+  brief text itself; a factually current brief that slips back into house
+  phrases is still a failed Compass artifact.
+- Monitoring Updates: Also watch for drift back into stagey or dashboard-wise
+  language. A brief that says `pressure point`, `muddy`, or `window coverage
+  spans` has already failed the Compass voice contract even if the facts are
+  correct.
+- Monitoring Updates: Keep watching the bounded default path itself. Shell-safe
+  should stay global-live and scoped-cheap, and refresh status should expose
+  dead-worker truth plus phase detail instead of collapsing the whole runtime
+  build into one opaque `projection/memory` stall.
+- Monitoring Updates: Also watch the source facts that feed the narrator.
+  Whole-window coverage and plan-fed next actions are part of the same voice
+  contract; if those upstream facts slip back into checklist fragments or
+  canned wrappers, provider narration will regress even when the model prompt
+  stays unchanged.
 
 - Residual Risk: Full refresh is still materially slower than shell-safe
   refresh because scoped provider warming remains the long pole. The worker
@@ -224,7 +257,52 @@
   after the wrapper fix, explicit `full` refresh remains the more expensive
   path by design, so future work should still watch whether deeper scoped
   warming belongs in the synchronous dashboard refresh at all or should move to
-  a more explicit background proof path.
+  a more explicit background proof path. On 2026-04-09, the bounded default
+  path was recut again around deterministic precomputed timeline inputs and a
+  cheap-fast narration lane (`gpt-5.3-codex-spark` with low reasoning for
+  simple brief work). Source-local proof dropped to `0.78s` warm wall-clock
+  with `0.2s` internal runtime work and about `1.63s` on a tmpdir cold
+  shell-safe render, which means the remaining gap is now cold-start/runtime
+  bootstrap rather than wide provider fan-out. The same day also exposed one
+  more replay hole: warmed `v20` runtime-snapshot prose could survive a
+  stricter voice validator if the snapshot itself stayed in the same brief
+  epoch. The forward fix bumped the brief cache epoch again to `v21` and
+  locked runtime-snapshot reuse behind the current validator so older stocked
+  wording cannot leak back through snapshot reuse. A second follow-on then
+  cleaned the upstream fact text itself: whole-window coverage dropped the old
+  `A lot moved in this window` wrapper, B-021 next-action source text stopped
+  feeding raw checklist fragments into Compass, and shell-safe source-local
+  proof returned both `24h` and `48h` globals provider-backed again at
+  `27.29s` wall-clock. That restored live narration quality, but the default
+  path is still far above the product budget because `window facts prepared`
+  remains the long pole at about `10.8s`.
+  Later on 2026-04-09, another regression showed that even after the budget
+  cuts landed, the deterministic floor could still flatten live narration back
+  into stock wrappers like `A lot happened`, `moving with it too`, and
+  `Compass already proved the cost of local heuristics.` The forward fix
+  bumped the brief epoch again to `v22`, recut the deterministic rewrites to
+  use plain fact-anchored prose, and updated governed guidance so any test
+  that blesses canned Compass fallback wording is itself treated as stale
+  product contract. The same follow-on also closed the old minute-scale
+  refresh lane permanently and re-stated the only acceptable Compass runtime
+  lanes: hot exact-reuse under `50ms` of internal runtime work and complete
+  cold shell-safe refresh under `1s` of internal runtime work. Source-local
+  proof after that cut showed a hot reused runtime at `0.2s` internal work
+  with about `1.19s` launcher wall-clock, and a cold bounded rebuild at
+  `0.8s` internal work with about `1.20s` launcher wall-clock, which pins the
+  remaining miss on startup overhead rather than narration logic.
+  Another follow-on the same day then fixed the remaining default-path voice
+  regression: shell-safe globals were still falling back to deterministic most
+  of the time because global cache recovery only accepted exact current-packet
+  cache, the v22 validator rejected older narrated caches on pre-v22 stock
+  wording, and cached fact ids died whenever the packet regenerated ids. The
+  forward fix taught global cache reuse to carry forward the maintained
+  narrated layer, remap cached fact ids through stored evidence lookup when
+  only packet-local ids changed, and rewrite old whole-window coverage
+  summary bullets into the current plainer wording before validation. After a
+  one-time cheap structured global seed, source-local shell-safe refresh wrote
+  both global windows back as `cache exact` with no fresh provider call on the
+  bounded path, and `standup briefs built` stayed under `0.1s`.
 
 - Related Incidents/Bugs:
   [2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md](2026-03-29-compass-runtime-freshness-regressed-brief-risk-and-timeline-trust.md)

@@ -99,7 +99,7 @@ Related Bugs:
 - [ ] [.github/workflows/test.yml](/Users/freedom/code/odylith/.github/workflows/test.yml)
 - [ ] [odylith/SECURITY_POSTURE.md](/Users/freedom/code/odylith/odylith/SECURITY_POSTURE.md)
 - [ ] [odylith/agents-guidelines/SECURITY_AND_TRUST.md](/Users/freedom/code/odylith/odylith/agents-guidelines/SECURITY_AND_TRUST.md)
-- [ ] [odylith/skills/security-hardening/SKILL.md](/Users/freedom/code/odylith/odylith/skills/security-hardening/SKILL.md)
+- [ ] [odylith/skills/odylith-security-hardening/SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-security-hardening/SKILL.md)
 - [ ] [odylith/runtime/source/release-notes/v0.1.7.md](/Users/freedom/code/odylith/odylith/runtime/source/release-notes/v0.1.7.md)
 - [ ] [odylith/casebook/bugs/2026-04-01-runtime-launcher-wrapper-recursion-and-trust-boundary-hardening.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-01-runtime-launcher-wrapper-recursion-and-trust-boundary-hardening.md)
 - [ ] [odylith/registry/source/component_registry.v1.json](/Users/freedom/code/odylith/odylith/registry/source/component_registry.v1.json)

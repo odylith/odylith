@@ -7,11 +7,36 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
+from odylith.runtime.surfaces import compass_briefing_support
+from odylith.runtime.surfaces import compass_dashboard_base as compass_base
+from odylith.runtime.surfaces import compass_transaction_runtime
 
-def _host():
-    from odylith.runtime.surfaces import compass_dashboard_runtime as host
 
-    return host
+_collect_window_execution_updates = compass_briefing_support._collect_window_execution_updates
+_clean_execution_clause = compass_briefing_support._clean_execution_clause
+_estimate_remaining_days = compass_briefing_support._estimate_remaining_days
+_execution_status_phrase = compass_briefing_support._execution_status_phrase
+_action_tokens_for_workstream = compass_briefing_support._action_tokens_for_workstream
+_build_completed_group_lines = compass_briefing_support._build_completed_group_lines
+_is_synthetic_plan_execution_signal = compass_briefing_support._is_synthetic_plan_execution_signal
+_looks_generic_churn_summary = compass_briefing_support._looks_generic_churn_summary
+_narrative_signal_score = compass_briefing_support._narrative_signal_score
+_ordered_update_candidates = compass_briefing_support._ordered_update_candidates
+_plan_deliverable_label = compass_briefing_support._plan_deliverable_label
+_periodize = compass_briefing_support._periodize
+_progress_story = compass_briefing_support._progress_story
+_risk_phrase = compass_briefing_support._risk_phrase
+_sanitize_digest_summary = compass_briefing_support._sanitize_digest_summary
+_timeline_clause = compass_briefing_support._timeline_clause
+_ws_label = compass_briefing_support._ws_label
+_ws_why_context = compass_briefing_support._ws_why_context
+_humanize_execution_event_summary = compass_base._humanize_execution_event_summary
+_narrative_excerpt = compass_base._narrative_excerpt
+_normalize_sentence = compass_base._normalize_sentence
+_local_change_headline_phrase = compass_transaction_runtime._local_change_headline_phrase
+_split_source_vs_generated_files = compass_transaction_runtime._split_source_vs_generated_files
+_transaction_end_ts = compass_transaction_runtime._transaction_end_ts
 
 
 def _collect_window_transaction_updates(
@@ -21,19 +46,6 @@ def _collect_window_transaction_updates(
     max_items: int = 2,
     max_workstream_fanout: int = 16,
 ) -> list[dict[str, str]]:
-    host = _host()
-    _split_source_vs_generated_files = host._split_source_vs_generated_files
-    _narrative_excerpt = host._narrative_excerpt
-    _humanize_execution_event_summary = host._humanize_execution_event_summary
-    _is_synthetic_plan_execution_signal = host._is_synthetic_plan_execution_signal
-    _normalize_sentence = host._normalize_sentence
-    _local_change_headline_phrase = host._local_change_headline_phrase
-    _sanitize_digest_summary = host._sanitize_digest_summary
-    _looks_generic_churn_summary = host._looks_generic_churn_summary
-    _transaction_end_ts = host._transaction_end_ts
-    _narrative_signal_score = host._narrative_signal_score
-    _ordered_update_candidates = host._ordered_update_candidates
-
     prioritized: list[dict[str, str]] = []
     fallback: list[dict[str, str]] = []
     seen: set[str] = set()
@@ -184,21 +196,6 @@ def _build_outcome_digest_for_workstream(
     window_transactions: Sequence[Mapping[str, Any]],
     risk_posture: str,
 ) -> list[str]:
-    host = _host()
-    _estimate_remaining_days = host._estimate_remaining_days
-    _ws_why_context = host._ws_why_context
-    _ws_label = host._ws_label
-    _collect_window_execution_updates = host._collect_window_execution_updates
-    _progress_story = host._progress_story
-    _execution_status_phrase = host._execution_status_phrase
-    _clean_execution_clause = host._clean_execution_clause
-    _periodize = host._periodize
-    _timeline_clause = host._timeline_clause
-    _action_tokens_for_workstream = host._action_tokens_for_workstream
-    _plan_deliverable_label = host._plan_deliverable_label
-    _risk_phrase = host._risk_phrase
-    _normalize_sentence = host._normalize_sentence
-
     idea_id = str(row.get("idea_id", "")).strip()
     plan = row.get("plan", {})
     if not isinstance(plan, Mapping):
@@ -326,21 +323,6 @@ def _build_outcome_digest_global(
     window_transactions: Sequence[Mapping[str, Any]],
     window_hours: int,
 ) -> list[str]:
-    host = _host()
-    _ws_why_context = host._ws_why_context
-    _ws_label = host._ws_label
-    _estimate_remaining_days = host._estimate_remaining_days
-    _build_completed_group_lines = host._build_completed_group_lines
-    _collect_window_execution_updates = host._collect_window_execution_updates
-    _narrative_excerpt = host._narrative_excerpt
-    _action_tokens_for_workstream = host._action_tokens_for_workstream
-    _execution_status_phrase = host._execution_status_phrase
-    _clean_execution_clause = host._clean_execution_clause
-    _periodize = host._periodize
-    _timeline_clause = host._timeline_clause
-    _risk_phrase = host._risk_phrase
-    _normalize_sentence = host._normalize_sentence
-
     focused = ws_rows[:2]
     focused_primary = focused[0] if focused else {}
     primary_why_context = _ws_why_context(focused_primary if isinstance(focused_primary, Mapping) else {})
@@ -387,12 +369,11 @@ def _build_outcome_digest_global(
     else:
         completed_line = f"Completed in this window: no milestone closeout was recorded in the last {window_hours}h."
 
-    progressed_count = 0
-    for row in active_ws_rows:
-        plan = row.get("plan", {}) if isinstance(row, Mapping) else {}
-        ratio = float(plan.get("progress_ratio", 0.0) or 0.0) if isinstance(plan, Mapping) else 0.0
-        if ratio > 0:
-            progressed_count += 1
+    progress_summary = workstream_progress_runtime.summarize_active_progress(
+        [row for row in active_ws_rows if isinstance(row, Mapping)]
+    )
+    progressed_count = int(progress_summary.get("tracked", 0) or 0) + int(progress_summary.get("closed", 0) or 0)
+    active_untracked_count = int(progress_summary.get("active_untracked", 0) or 0)
 
     ranked_activity = sorted(
         [(ws_id, int(count)) for ws_id, count in event_counts_by_ws.items() if ws_id],
@@ -431,11 +412,17 @@ def _build_outcome_digest_global(
     if active_count <= 0:
         base_update = "no active implementation lane is currently open for this scope"
     elif progressed_count <= 0:
-        base_update = "active lanes are in planning setup and closure execution is starting"
+        if active_untracked_count > 0:
+            base_update = "active lanes are in implementation, but checklist progress is not yet captured"
+        else:
+            base_update = "active lanes are in planning setup and closure execution is starting"
     elif progressed_count >= active_count:
         base_update = "active lanes are translating plans into concrete implementation outcomes"
     else:
-        base_update = "planning and implementation are running in parallel across active lanes"
+        if active_untracked_count > 0:
+            base_update = "planning and implementation are running in parallel, and some implementation lanes still lack captured checklist progress"
+        else:
+            base_update = "planning and implementation are running in parallel across active lanes"
 
     if top_activity_labels:
         focus_scope = (
@@ -455,13 +442,13 @@ def _build_outcome_digest_global(
         f"{focus_clause}."
     )
     why_focus = _narrative_excerpt(
-        primary_use_story or "focused execution remains prerequisite for dependent platform lanes.",
+        primary_use_story or "focused execution remains prerequisite for dependent follow-on workstreams.",
         max_sentences=1,
         max_chars=280,
     )
     impact_focus = _narrative_excerpt(
         primary_architecture_consequence
-        or "gives operators a clearer contract and lower coordination risk across dependent lanes.",
+        or "gives operators a clearer contract and lower coordination risk across dependent work.",
         max_sentences=1,
         max_chars=280,
     )

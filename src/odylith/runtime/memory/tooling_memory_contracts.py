@@ -6,6 +6,10 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.consumer_profile import canonical_truth_token
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import string_rows as _string_rows
+from odylith.runtime.discipline import runtime as discipline_runtime
+from odylith.runtime.governance import guidance_behavior_runtime
 
 
 _ALLOWLIST_SOURCE_PREFIXES: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -52,36 +56,30 @@ def _mapping_rows(value: Any) -> list[dict[str, Any]]:
     return [dict(row) for row in value] if isinstance(value, list) else []
 
 
-def _string_rows(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = str(item or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
-
-
 def _mapping_value(value: Any) -> dict[str, Any]:
     return dict(value) if isinstance(value, Mapping) else {}
 
 
 def execution_profile_mapping(value: Any) -> dict[str, Any]:
     if isinstance(value, Mapping):
-        return dict(value)
+        profile = dict(value)
+        canonical_profile = agent_runtime_contract.canonical_execution_profile(profile.get("profile"))
+        if canonical_profile:
+            profile["profile"] = canonical_profile
+        return profile
     token = str(value or "").strip()
     if not token:
         return {}
     parts = [part.strip() for part in token.split("|")]
-    return {
+    profile = {
         key: part
         for key, part in zip(_EXECUTION_PROFILE_FIELDS, parts, strict=False)
         if part
     }
+    canonical_profile = agent_runtime_contract.canonical_execution_profile(profile.get("profile"))
+    if canonical_profile:
+        profile["profile"] = canonical_profile
+    return profile
 
 
 def compact_execution_profile_mapping(value: Any) -> dict[str, Any]:
@@ -636,8 +634,8 @@ def _hot_path_summary_only_contract(
     packet_kind: str,
     payload: Mapping[str, Any],
 ) -> bool:
-    delivery_profile = str(payload.get("delivery_profile", "")).strip().lower()
-    if delivery_profile != "codex_hot_path":
+    delivery_profile = agent_runtime_contract.canonical_delivery_profile(payload.get("delivery_profile"))
+    if delivery_profile != agent_runtime_contract.AGENT_HOT_PATH_PROFILE:
         return False
     return str(packet_kind or "").strip() in {"impact", "session_brief", "bootstrap_session"}
 
@@ -789,6 +787,14 @@ def build_context_packet(
     execution_profile = execution_profile_mapping(
         routing_handoff.get("odylith_execution_profile") or routing_handoff.get("execution_profile")
     )
+    guidance_behavior_summary = guidance_behavior_runtime.summary_from_sources(
+        payload,
+        limit=max(limit, 6),
+    )
+    discipline_summary = discipline_runtime.summary_from_sources(
+        payload,
+        limit=max(limit, 6),
+    )
     contract_policy = _compact_contract_policy(summary_only=summary_only)
     if summary_only:
         selected_counts = _mapping_value(retrieval_plan.get("selected_counts"))
@@ -803,6 +809,8 @@ def build_context_packet(
             },
             "packet_kind": str(packet_kind or "").strip(),
             "packet_state": str(packet_state or "").strip(),
+            **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
+            **({"discipline_summary": discipline_summary} if discipline_summary else {}),
             "selection_state": str(payload.get("selection_state", "")).strip()
             or str(retrieval_plan.get("selection_state", "")).strip(),
             "full_scan_recommended": bool(payload.get("full_scan_recommended")),
@@ -944,6 +952,8 @@ def build_context_packet(
         },
         "packet_kind": str(packet_kind or "").strip(),
         "packet_state": str(packet_state or "").strip(),
+        **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
+        **({"discipline_summary": discipline_summary} if discipline_summary else {}),
         "selection_state": str(payload.get("selection_state", "")).strip()
         or str(retrieval_plan.get("selection_state", "")).strip(),
         "full_scan_recommended": bool(payload.get("full_scan_recommended")),
@@ -1151,6 +1161,14 @@ def build_evidence_pack(
         adaptive_packet_profile=adaptive_packet_profile,
         summary_only=summary_only,
     )
+    guidance_behavior_summary = guidance_behavior_runtime.summary_from_sources(
+        payload,
+        limit=max(limit, 6),
+    )
+    discipline_summary = discipline_runtime.summary_from_sources(
+        payload,
+        limit=max(limit, 6),
+    )
     contract_policy = _compact_contract_policy(summary_only=summary_only)
     if summary_only:
         return {
@@ -1158,6 +1176,8 @@ def build_evidence_pack(
             "version": "v1",
             "packet_kind": str(packet_kind or "").strip(),
             "packet_state": str(packet_state or "").strip(),
+            **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
+            **({"discipline_summary": discipline_summary} if discipline_summary else {}),
             "selection_state": selection_state,
             "full_scan_recommended": bool(payload.get("full_scan_recommended")),
             "full_scan_reason": str(payload.get("full_scan_reason", "")).strip(),
@@ -1192,6 +1212,8 @@ def build_evidence_pack(
         "version": "v1",
         "packet_kind": str(packet_kind or "").strip(),
         "packet_state": str(packet_state or "").strip(),
+        **({"guidance_behavior_summary": guidance_behavior_summary} if guidance_behavior_summary else {}),
+        **({"discipline_summary": discipline_summary} if discipline_summary else {}),
         "selection_state": selection_state,
         "full_scan_recommended": bool(payload.get("full_scan_recommended")),
         "full_scan_reason": str(payload.get("full_scan_reason", "")).strip(),

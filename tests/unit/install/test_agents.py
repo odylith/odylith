@@ -63,6 +63,25 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable." in block
     assert "Start substantive turns with `./.odylith/bin/odylith start --repo-root .`" in block
     assert "`./.odylith/bin/odylith context --repo-root . <ref>` before raw repo search." in block
+    assert "CLI-first is non-negotiable for both Codex and Claude Code." in block
+    assert "Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting." in block
+    assert "hard policy violation, not a stylistic preference" in block
+    assert "odylith/agents-guidelines/CLI_FIRST_POLICY.md" in block
+    assert "CB-104" in block
+    assert "odylith bug capture" in block
+    assert "odylith backlog create" in block
+    assert "rerender only the owned surface" in block
+    assert "odylith radar refresh" in block
+    assert "odylith registry refresh" in block
+    assert "odylith casebook refresh" in block
+    assert "odylith atlas refresh" in block
+    assert "odylith compass refresh" in block
+    assert "odylith compass deep-refresh" in block
+    assert "missing-shim, or fallback-path details implicit" in block
+    assert "Keep the default operating lane shared across Codex and Claude Code" in block
+    assert "Treat AI slop as a regression." in block
+    assert "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md" in block
+    assert "odylith/skills/odylith-code-hygiene-guard/SKILL.md" in block
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in block
     assert "the exact file/workstream, the bug under test, or the validation in flight" in block
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in block
@@ -72,16 +91,20 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "literal commands" not in block
     assert "Keep normal commentary task-first and human." in block
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in block
-    assert "At closeout, you may add at most one short `Odylith Assist:` line" in block
+    assert "At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat" in block
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in block
     assert "Lead with the user win" in block
-    assert "link updated governance ids inline when they were actually changed" in block
-    assert "frame the edge against `odylith_off` or the broader unguided path" in block
+    assert "link updated governance IDs inline when they were actually changed" in block
+    assert "name the affected governance-contract IDs" in block
+    assert "Frame the edge against `odylith_off` or the broader unguided path" in block
     assert "Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual." in block
     assert "Ground the line in concrete observed counts, measured deltas, or validation outcomes" in block
+    assert "or a concrete chat-visibility complaint" in block
     assert "Use only concrete observed counts, measured deltas, or validation outcomes, and ground the line in concrete observed counts, measured deltas, or validation outcomes" not in block
     assert "Silence is better than filler." in block
     assert "At most one supplemental closeout line may appear" in block
+    assert "never say `fixed`, `cleared`, or `resolved` without qualification" in block
+    assert "same fingerprint as the last falsification or not" in block
     assert "follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step" in block
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in block
     assert "stop at diagnosis and maintainer-ready feedback" in block
@@ -93,10 +116,23 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "run `./.odylith/bin/odylith version --repo-root .` when the launcher exists" in block
     assert "If the launcher is missing, confirm that from the filesystem first" in block
     assert "substantive grounded consumer-lane work" in block
+    assert "default candidate" in block
+    assert "keep transport support separate from current-session spawn permission/effectiveness" in block
+    assert "validated Odylith delegation hosts under the same grounding and validation contract" in block
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in block
     assert "Odylith grounding:" not in block
     assert "Odylith didn't return immediately" not in block
     assert "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`." not in block
+    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in block
+    assert "`odylith codex intervention-status` or `odylith claude" in block
+    assert "low-latency delivery ledger for Teaser, Ambient Highlight, Observation," in block
+    assert "Proposal, and Assist readiness; hook payload generation alone is not enough" in block
+    assert "Only call a session or worktree fully end to end after `intervention-status` reports `Activation: ready` and `chat_visible_proof=proven_this_session`" in block
+    assert "`ledger_visible_with_pending_confirmation`, and `chat_confirmed_with_pending_confirmation` as partial proof" in block
+    assert "Explicit feedback that Odylith ambient highlights, interventions, Assist," in block
+    assert "ordinary low-signal short" in block
+    assert "Stop is the fallback closeout and live-beat recovery lane" in block
+    assert "unseen Ambient Highlight" in block
 
 
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
@@ -106,6 +142,9 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "the consumer lane and the Odylith product repo's maintainer mode" in block
     assert "pinned dogfood and detached `source-local` maintainer-dev posture" in block
     assert "pinned dogfood is the default proof posture and detached `source-local` is the explicit dev posture" in block
+    assert "Keep the default operating lane shared across Codex and Claude Code" in block
+    assert "rerender only the owned surface" in block
+    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in block
 
 
 def test_managed_block_matches_repo_root_product_scope_truth() -> None:

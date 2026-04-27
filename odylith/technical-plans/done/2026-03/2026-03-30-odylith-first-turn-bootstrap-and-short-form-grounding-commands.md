@@ -84,7 +84,7 @@ Related Bugs:
       get woven into ordinary commentary, while explicit `Odylith Insight:`,
       `Odylith History:`, and `Odylith Risks:` labels stay rare, earned, and
       one-at-a-time.
-- [x] Cross-lane closeout guidance allows at most one end-of-work
+- [x] Cross-posture closeout guidance allows at most one end-of-work
       `Odylith Assist:` line, preferably `**Odylith Assist:**` when Markdown is
       available, with linked updated governance ids inline and at most one
       supplemental closeout line chosen from `Odylith Risks:`,
@@ -139,9 +139,9 @@ Related Bugs:
 - [x] [AGENTS.md](/Users/freedom/code/odylith/odylith/AGENTS.md)
 - [x] [ODYLITH_CONTEXT_ENGINE.md](/Users/freedom/code/odylith/odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md)
 - [x] [VALIDATION_AND_TESTING.md](/Users/freedom/code/odylith/odylith/agents-guidelines/VALIDATION_AND_TESTING.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/session-context/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-session-context/SKILL.md)
 - [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-context-engine-operations/SKILL.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/delivery-governance-surface-ops/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
 - [x] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md)
 - [x] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/subagent-router/CURRENT_SPEC.md)
 - [x] [odylith_chatter_runtime.py](/Users/freedom/code/odylith/src/odylith/runtime/orchestration/odylith_chatter_runtime.py)
@@ -202,7 +202,7 @@ Related Bugs:
 ## Validation/Test Plan
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py tests/unit/install/test_agents.py tests/integration/install/test_manager.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py`
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py tests/integration/runtime/test_surface_browser_ux_audit.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py tests/integration/runtime/test_surface_browser_ux_audit.py`
 - [x] `git diff --check`
 
 ## Rollout/Communication
@@ -244,7 +244,7 @@ Related Bugs:
       instead of widening required reads just for branding.
 - [x] Router and orchestrator human-readable reasons now describe scope,
       readiness, and blockers without `Odylith ...` control-plane chatter.
-- [x] Registry now tracks `odylith-chatter` as the cross-lane narration
+- [x] Registry now tracks `odylith-chatter` as the cross-posture narration
       contract so the closeout-branding rule has a first-class component
       boundary and living spec.
 - [x] Shared orchestration runtime now emits one canonical
@@ -277,10 +277,10 @@ Related Bugs:
       context-artifact scan across ambient and closeout composition instead of
       repeating that packet work inside closeout.
 - [x] Focused Tribunal-safe chatter proof passed on 2026-04-07 via
-      `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_validate_component_registry_contract.py`
+      `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py tests/unit/runtime/test_validate_component_registry_contract.py`
       with `56 passed in 5.64s`, plus `git diff --check`.
 - [x] Deep-dive hardening proof passed on 2026-04-07 via
-      `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/install/test_agents.py tests/integration/install/test_manager.py tests/unit/runtime/test_validate_component_registry_contract.py`
+      `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_assist_closeout.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/install/test_agents.py tests/integration/install/test_manager.py tests/unit/runtime/test_validate_component_registry_contract.py`
       with `109 passed in 6.12s`, plus
-      `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py`
+      `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_render_registry_dashboard.py`
       with `29 passed in 5.50s`, plus `git diff --check`.

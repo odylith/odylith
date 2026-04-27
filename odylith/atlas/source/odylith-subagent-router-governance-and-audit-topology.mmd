@@ -12,7 +12,7 @@ flowchart LR
 
   subgraph LocalState["2. Local state and audit"]
     Tuning[".odylith/subagent_router/tuning.v1.json"]
-    Stream["odylith/compass/runtime/codex-stream.v1.jsonl"]
+    Stream["odylith/compass/runtime/agent-stream.v1.jsonl"]
     Outcome["Route decisions, escalation signals,<br/>rescope outcomes, and adaptive feedback"]
     FamilyBias["Family-aware soft bias + outcome counters"]
   end

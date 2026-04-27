@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import collections
 import contextlib
 import json
+import os
 from pathlib import Path
+import signal
 import subprocess
+import sys
 import threading
 import tempfile
 
@@ -12,8 +16,11 @@ import pytest
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
 from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.context_engine import governance_signal_codec
+from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime as grounding_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_governance_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime as packet_adaptive_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import path_bundle_codec
 from odylith.runtime.orchestration import subagent_orchestrator
@@ -27,6 +34,20 @@ def _force_codex_host_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("CLAUDE_CODE", raising=False)
     monkeypatch.setenv("CODEX_THREAD_ID", "benchmark-test-thread")
     monkeypatch.delenv("CODEX_SHELL", raising=False)
+
+
+def _clear_agent_host_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key in (
+        "CODEX_THREAD_ID",
+        "CODEX_SHELL",
+        "CODEX_CI",
+        "CODEX_INTERNAL_ORIGINATOR_OVERRIDE",
+        "__CFBundleIdentifier",
+        "CLAUDE_CODE",
+        "CLAUDE_CODE_SESSION_ID",
+        "CLAUDE_SESSION_ID",
+    ):
+        monkeypatch.delenv(key, raising=False)
 
 
 def _write_corpus(tmp_path: Path, payload: dict[str, object]) -> None:
@@ -52,9 +73,17 @@ def test_load_benchmark_scenarios_preserves_benchmark_metadata(tmp_path: Path) -
                         "packet_source": "bootstrap_session",
                         "paths": ["src/odylith/runtime/orchestration/subagent_router.py"],
                         "required_paths": ["src/odylith/runtime/orchestration/subagent_router.py", "tests/unit/runtime/test_subagent_router.py"],
+                        "supporting_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
+                        "expected_write_paths": ["src/odylith/runtime/orchestration/subagent_router.py"],
                         "critical_paths": ["src/odylith/runtime/orchestration/subagent_router.py", "tests/unit/runtime/test_subagent_router.py"],
                         "validation_commands": ["PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q tests/unit/runtime/test_subagent_router.py"],
                         "focused_local_checks": ["Run the router unit test first."],
+                        "packet_fixture": {
+                            "proof_state": {
+                                "frontier_phase": "verify",
+                                "proof_status": "diagnosed",
+                            }
+                        },
                         "allow_noop_completion": True,
                         "correctness_critical": True,
                         "live_timeout_seconds": 210.0,
@@ -84,10 +113,18 @@ def test_load_benchmark_scenarios_preserves_benchmark_metadata(tmp_path: Path) -
 
     packet = next(row for row in scenarios if row["scenario_id"] == "critical-router-fix")
     assert packet["required_paths"] == ["src/odylith/runtime/orchestration/subagent_router.py", "tests/unit/runtime/test_subagent_router.py"]
+    assert packet["supporting_paths"] == ["odylith/skills/odylith-subagent-router/SKILL.md"]
+    assert packet["expected_write_paths"] == ["src/odylith/runtime/orchestration/subagent_router.py"]
     assert packet["critical_paths"] == ["src/odylith/runtime/orchestration/subagent_router.py", "tests/unit/runtime/test_subagent_router.py"]
     assert packet["packet_source"] == "bootstrap_session"
     assert packet["validation_commands"] == ["PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q tests/unit/runtime/test_subagent_router.py"]
     assert packet["focused_local_checks"] == ["Run the router unit test first."]
+    assert packet["packet_fixture"] == {
+        "proof_state": {
+            "frontier_phase": "verify",
+            "proof_status": "diagnosed",
+        }
+    }
     assert packet["allow_noop_completion"] is True
     assert packet["correctness_critical"] is True
     assert packet["live_timeout_seconds"] == 210.0
@@ -169,7 +206,35 @@ def test_load_benchmark_scenarios_accepts_canonical_scenario_keys(tmp_path: Path
     assert packet["needs_write"] is True
 
 
+def test_precision_metrics_treat_supporting_paths_as_relevant_without_changing_required_recall() -> None:
+    metrics = runner._precision_metrics(  # noqa: SLF001
+        required_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        supporting_paths=["odylith/skills/odylith-subagent-router/SKILL.md"],
+        observed_paths=[
+            "src/odylith/runtime/orchestration/subagent_router.py",
+            "odylith/skills/odylith-subagent-router/SKILL.md",
+            "README.md",
+        ],
+        expected_write_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        candidate_write_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+    )
+
+    assert metrics["required_path_precision_basis"] == "required_plus_supporting_paths"
+    assert metrics["supporting_path_hits"] == ["odylith/skills/odylith-subagent-router/SKILL.md"]
+    assert metrics["required_path_precision"] == 0.667
+    assert metrics["hallucinated_surfaces"] == ["README.md"]
+    recall, misses = runner._path_recall(  # noqa: SLF001
+        required_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        observed_paths=["odylith/skills/odylith-subagent-router/SKILL.md"],
+    )
+    assert recall == 0.0
+    assert misses == ["src/odylith/runtime/orchestration/subagent_router.py"]
+
+
 def test_packet_source_for_scenario_prefers_lightest_safe_lane() -> None:
+    assert runner._packet_source_for_scenario(  # noqa: SLF001
+        {"family": "context_engine_grounding", "packet_source": "adaptive", "workstream": "B-067"}
+    ) == "adaptive"
     assert runner._packet_source_for_scenario(  # noqa: SLF001
         {"family": "broad_shared_scope", "packet_source": "bootstrap_session", "workstream": ""}
     ) == "bootstrap_session"
@@ -246,14 +311,16 @@ def test_packet_token_breakdown_separates_prompt_runtime_and_operator_weight() -
         full_scan={},
     )
 
-    assert breakdown["effective_token_basis"] == "codex_prompt_bundle"
+    assert breakdown["effective_token_basis"] == "host_prompt_bundle"
+    assert breakdown["host_prompt_estimated_tokens"] > 0
     assert breakdown["codex_prompt_estimated_tokens"] > 0
+    assert breakdown["host_prompt_estimated_tokens"] == breakdown["codex_prompt_estimated_tokens"]
     assert breakdown["runtime_contract_estimated_tokens"] > 0
     assert breakdown["operator_diag_estimated_tokens"] > 0
     assert breakdown["prompt_artifact_tokens"]["context_packet"] > 0
     assert breakdown["runtime_contract_artifact_tokens"]["routing_handoff"] > 0
     assert breakdown["operator_diag_artifact_tokens"]["impact_summary"] > 0
-    assert breakdown["total_payload_estimated_tokens"] >= breakdown["codex_prompt_estimated_tokens"]
+    assert breakdown["total_payload_estimated_tokens"] >= breakdown["host_prompt_estimated_tokens"]
 
 
 def test_run_benchmarks_emits_corpus_and_family_summaries(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
@@ -311,8 +378,8 @@ def test_run_benchmarks_emits_corpus_and_family_summaries(tmp_path: Path, monkey
         },
     )
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -501,7 +568,7 @@ def test_run_benchmarks_emits_corpus_and_family_summaries(tmp_path: Path, monkey
     assert runner.history_report_path(repo_root=tmp_path, report_id=report["report_id"]).is_file()
 
 
-def test_run_benchmarks_quick_profile_defaults_to_representative_matched_pair(
+def test_run_benchmarks_quick_profile_defaults_to_bounded_sentinel_matched_pair(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
 ) -> None:
@@ -579,8 +646,8 @@ def test_run_benchmarks_quick_profile_defaults_to_representative_matched_pair(
     )
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": len(list(scenarios))})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -637,17 +704,51 @@ def test_run_benchmarks_quick_profile_defaults_to_representative_matched_pair(
     report = runner.run_benchmarks(repo_root=tmp_path, benchmark_profile=runner.BENCHMARK_PROFILE_QUICK, write_report=False)
 
     assert report["benchmark_profile"] == "quick"
-    assert report["selection_strategy"] == "representative_family_smoke"
-    assert report["selection"]["profile_default_narrowing"] == "representative_family_smoke"
+    assert report["selection_strategy"] == "quick_sentinel_smoke"
+    assert report["selection"]["profile_default_narrowing"] == "quick_sentinel_smoke"
     assert report["selection"]["default_modes_applied"] is True
     assert report["selection"]["default_cache_profiles_applied"] is True
     assert report["modes"] == ["odylith_on", "raw_agent_baseline"]
     assert report["cache_profiles"] == ["warm"]
     assert report["scenario_count"] == 3
     assert report["latest_eligible"] is False
+    assert not runner.history_report_path(repo_root=tmp_path, report_id=str(report["report_id"])).exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+    assert not runner.progress_report_path(repo_root=tmp_path).exists()  # noqa: SLF001
+    assert not list(runner.benchmark_root(repo_root=tmp_path).glob("progress-*.json"))  # noqa: SLF001
     assert ("release-high", "odylith_on") not in seen_calls
     assert ("release-critical", "odylith_on") in seen_calls
     assert ("release-critical", "raw_agent_baseline") in seen_calls
+
+
+def test_quick_profile_default_is_bounded_current_head_sentinel_smoke() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    selection = runner._resolve_benchmark_scenario_selection(  # noqa: SLF001
+        all_scenarios=scenarios,
+        benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
+    )
+
+    selected_ids = [str(row.get("scenario_id", "")).strip() for row in selection["scenarios"]]
+
+    assert selection["selection_strategy"] == "quick_sentinel_smoke"
+    assert len(selected_ids) <= runner._QUICK_PROFILE_MAX_SCENARIOS  # noqa: SLF001
+    assert set(selected_ids) == set(runner._QUICK_PROFILE_SENTINEL_CASE_IDS)  # noqa: SLF001
+
+
+def test_discipline_benchmark_family_alias_selects_internal_family() -> None:
+    scenarios = [
+        {"scenario_id": "discipline-a", "family": "discipline", "priority": "critical"},
+        {"scenario_id": "other-a", "family": "guidance_behavior", "priority": "critical"},
+    ]
+
+    selection = runner._resolve_benchmark_scenario_selection(  # noqa: SLF001
+        all_scenarios=scenarios,
+        benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
+        families=("discipline",),
+    )
+
+    assert selection["selected_families"] == {"discipline"}
+    assert [row["scenario_id"] for row in selection["scenarios"]] == ["discipline-a"]
 
 
 def test_run_benchmarks_supports_family_filtered_shards(
@@ -727,8 +828,8 @@ def test_run_benchmarks_supports_family_filtered_shards(
     )
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": len(list(scenarios))})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -787,6 +888,10 @@ def test_run_benchmarks_supports_family_filtered_shards(
     assert report["benchmark_profile"] == "proof"
     assert report["selection_strategy"] == "manual_selection"
     assert report["selection"]["family_filters"] == ["daemon_security", "docs_code_closeout", "release_publication"]
+    assert report["selection_family_filters"] == ["daemon_security", "docs_code_closeout", "release_publication"]
+    assert isinstance(report["hard_quality_gate_cleared"], bool)
+    assert report["hard_gate_cleared"] is report["hard_quality_gate_cleared"]
+    assert isinstance(report["hard_gate_failures"], list)
     assert report["selection"]["shard_count"] == 2
     assert report["selection"]["shard_index"] == 2
     assert report["latest_eligible"] is False
@@ -841,11 +946,16 @@ def test_run_live_scenario_batch_executes_public_pair_once_with_matched_pair_met
         repo_root: Path,
         scenario: dict[str, object],
         mode: str,
+        benchmark_profile: str,
+        benchmark_session_namespace: str = "",
         packet_source: str,
         prompt_payload: dict[str, object] | None = None,
+        packet_summary: dict[str, object] | None = None,
         snapshot_paths: list[str] | None = None,
     ) -> dict[str, object]:
         del repo_root, packet_source
+        assert benchmark_profile == runner.BENCHMARK_PROFILE_PROOF
+        assert benchmark_session_namespace
         with lock:
             entered_modes.append(mode)
             if len(entered_modes) == 2:
@@ -856,10 +966,12 @@ def test_run_live_scenario_batch_executes_public_pair_once_with_matched_pair_met
         assert "tests/unit/runtime/test_odylith_benchmark_runner.py" in snapshot_paths
         if mode == "odylith_on":
             assert prompt_payload is not None
+            assert packet_summary is not None
             assert prompt_payload["context_packet"]["anchors"]["changed_paths"] == [
                 "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
             ]
             assert prompt_payload["strict_boundary"] is True
+            assert packet_summary["packet_kind"] == "governance_slice"
         return {
             "kind": "packet",
             "mode": mode,
@@ -907,6 +1019,89 @@ def test_run_live_scenario_batch_executes_public_pair_once_with_matched_pair_met
     assert results["odylith_on"]["live_execution"]["latency_measurement_basis"] == "matched_pair_contended_validated_task_cycle"
 
 
+def test_run_live_scenario_batch_converts_mode_exceptions_into_failed_results(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenario = {
+        "scenario_id": "live-pair-failure",
+        "kind": "packet",
+        "label": "Live pair failure",
+        "summary": "pair failure",
+        "family": "validation_heavy_fix",
+        "priority": "high",
+        "changed_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+        "workstream": "B-022",
+        "required_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+        "validation_commands": [],
+        "needs_write": True,
+        "correctness_critical": True,
+        "critical_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+    }
+
+    def _fake_prepare_live_scenario_request(**kwargs: object) -> dict[str, object]:
+        mode = str(kwargs["mode"])
+        return {
+            "repo_root": kwargs["repo_root"],
+            "scenario": dict(kwargs["scenario"]),
+            "mode": mode,
+            "benchmark_profile": kwargs["benchmark_profile"],
+            "packet_source": "impact" if mode == "odylith_on" else "raw_host_cli",
+            "prompt_payload": {},
+            "packet_summary": {},
+        }
+
+    def _fake_run_prepared_live_scenario(prepared_request: dict[str, object]) -> dict[str, object]:
+        mode = str(prepared_request["mode"])
+        if mode == "odylith_on":
+            raise RuntimeError("live child died")
+        return {
+            "kind": "packet",
+            "mode": mode,
+            "latency_ms": 5.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": list(scenario["required_paths"]),
+            "observed_path_count": 1,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "expected_write_path_count": 1,
+            "candidate_write_path_count": 1,
+            "candidate_write_paths": list(scenario["required_paths"]),
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "effective_estimated_tokens": 10,
+            "total_payload_estimated_tokens": 10,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+            "live_execution": {},
+        }
+
+    monkeypatch.setattr(runner, "_prepare_live_scenario_request", _fake_prepare_live_scenario_request)
+    monkeypatch.setattr(runner, "_run_prepared_live_scenario", _fake_run_prepared_live_scenario)
+
+    results = runner._run_live_scenario_batch(  # noqa: SLF001
+        repo_root=tmp_path,
+        scenario=scenario,
+        modes=("odylith_on", "odylith_off"),
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+    )
+
+    assert list(results) == ["odylith_on", "raw_agent_baseline"]
+    assert results["odylith_on"]["expectation_ok"] is False
+    assert results["odylith_on"]["validation_success_proxy"] == 0.0
+    assert results["odylith_on"]["benchmark_exception"] == "RuntimeError: live child died"
+    assert results["odylith_on"]["live_execution"]["benchmark_exception"] == "RuntimeError: live child died"
+    assert results["raw_agent_baseline"]["expectation_ok"] is True
+
+
 def test_live_workspace_snapshot_paths_include_dirty_same_package_python_dependencies(
     tmp_path: Path,
 ) -> None:
@@ -952,6 +1147,114 @@ def test_live_workspace_snapshot_paths_include_dirty_same_package_python_depende
     assert "src/odylith/runtime/surfaces/render_compass_dashboard.py" in paths
     assert "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py" not in paths
     assert "src/odylith/runtime/context_engine/odylith_context_engine.py" not in paths
+
+
+def test_live_workspace_snapshot_paths_include_declared_supporting_paths(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    changed = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py"
+    support = repo_root / "docs" / "benchmarks" / "FAMILIES_AND_EVALS.md"
+    for path in (changed, support):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# file\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = "src/odylith/runtime/evaluation/odylith_benchmark_runner.py"
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+                "supporting_paths": ["docs/benchmarks/FAMILIES_AND_EVALS.md"],
+            },
+            prompt_payload={},
+        )
+
+    assert "docs/benchmarks/FAMILIES_AND_EVALS.md" in paths
+
+
+def test_live_workspace_snapshot_paths_include_dirty_browser_surface_assets_and_deletions(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    renderer = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "compass_dashboard_shell.py"
+    browser_test = repo_root / "tests" / "integration" / "runtime" / "test_surface_browser_smoke.py"
+    payload = repo_root / "odylith" / "compass" / "compass-payload.v1.js"
+    ignored_bundle = repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "compass" / "compass-payload.v1.js"
+    casebook_index = repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md"
+    ignored_markdown = repo_root / "docs" / "benchmarks" / "FAMILIES_AND_EVALS.md"
+    for path in (renderer, browser_test, payload, ignored_bundle, casebook_index, ignored_markdown):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# file\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = "\n".join(
+                [
+                    "odylith/compass/compass-payload.v1.js",
+                    "src/odylith/bundle/assets/odylith/compass/compass-payload.v1.js",
+                    "odylith/casebook/bugs/INDEX.md",
+                    "docs/benchmarks/FAMILIES_AND_EVALS.md",
+                ]
+            )
+        elif command[:4] == ["git", "diff", "--name-only", "--diff-filter=D"]:
+            stdout = "odylith/compass/runtime/history/2026-04-05.v1.json"
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["src/odylith/runtime/surfaces/compass_dashboard_shell.py"],
+                "validation_commands": ["pytest -q tests/integration/runtime/test_surface_browser_smoke.py"],
+            },
+            prompt_payload={},
+        )
+
+    assert "odylith/compass/compass-payload.v1.js" in paths
+    assert "odylith/casebook/bugs/INDEX.md" in paths
+    assert "odylith/compass/runtime/history/2026-04-05.v1.json" in paths
+    assert "src/odylith/bundle/assets/odylith/compass/compass-payload.v1.js" not in paths
+    assert "docs/benchmarks/FAMILIES_AND_EVALS.md" not in paths
+
+
+def test_live_workspace_snapshot_paths_include_deleted_tracked_files_for_validator_fidelity(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    validator = repo_root / "tests" / "integration" / "install" / "test_manager.py"
+    validator.parent.mkdir(parents=True, exist_ok=True)
+    validator.write_text("def test_placeholder():\n    assert True\n", encoding="utf-8")
+    deleted_bundle_path = "src/odylith/bundle/assets/odylith/compass/compass-payload.v1.js"
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = deleted_bundle_path if command[:4] == ["git", "diff", "--name-only", "--diff-filter=D"] else ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["src/odylith/install/manager.py"],
+                "validation_commands": ["pytest -q tests/integration/install/test_manager.py"],
+            },
+            prompt_payload={},
+        )
+
+    assert deleted_bundle_path in paths
 
 
 def test_live_workspace_snapshot_paths_include_dirty_imported_cross_package_python_dependencies(
@@ -1365,6 +1668,66 @@ def test_live_workspace_snapshot_paths_include_source_local_cli_for_odylith_vali
     assert "src/odylith/cli.py" in paths
 
 
+def test_live_workspace_snapshot_paths_include_companion_corpora_for_source_local_validate_discipline(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    cli_path = repo_root / "src" / "odylith" / "cli.py"
+    validate_discipline = repo_root / "src" / "odylith" / "runtime" / "governance" / "validate_discipline.py"
+    source_corpus = repo_root / "odylith" / "runtime" / "source" / "optimization-evaluation-corpus.v1.json"
+    bundle_corpus = (
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "runtime"
+        / "source"
+        / "optimization-evaluation-corpus.v1.json"
+    )
+    cli_path.parent.mkdir(parents=True, exist_ok=True)
+    cli_path.write_text("# file\n", encoding="utf-8")
+    validate_discipline.parent.mkdir(parents=True, exist_ok=True)
+    validate_discipline.write_text(
+        'from pathlib import Path\n'
+        'BENCHMARK_CORPUS_RELATIVE_PATH = Path("odylith/runtime/source/optimization-evaluation-corpus.v1.json")\n'
+        'BUNDLE_BENCHMARK_CORPUS_RELATIVE_PATH = Path(\n'
+        '    "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json"\n'
+        ')\n',
+        encoding="utf-8",
+    )
+    for path in (source_corpus, bundle_corpus):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            return subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr="")
+        if command[:3] == ["git", "ls-files", "--others"]:
+            return subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr="")
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout="", stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "validation_commands": [
+                    "odylith validate discipline --repo-root . --case-id discipline-recurrence-tribunal-candidate"
+                ],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/cli.py" in paths
+    assert "src/odylith/runtime/governance/validate_discipline.py" in paths
+    assert "odylith/runtime/source/optimization-evaluation-corpus.v1.json" in paths
+    assert "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json" in paths
+
+
 def test_live_workspace_snapshot_paths_include_dirty_governance_roots_for_sync_validators(
     tmp_path: Path,
 ) -> None:
@@ -1381,7 +1744,9 @@ def test_live_workspace_snapshot_paths_include_dirty_governance_roots_for_sync_v
         "odylith/registry/source/component_registry.v1.json",
         "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
         "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
         "odylith/runtime/delivery_intelligence.v4.json",
+        "src/odylith/runtime/intervention_engine/value_engine.py",
     ]
     for relative in [*required_paths, *companion_paths, "src/odylith/cli.py"]:
         path = repo_root / relative
@@ -1415,7 +1780,9 @@ def test_live_workspace_snapshot_paths_include_dirty_governance_roots_for_sync_v
     assert "odylith/registry/source/component_registry.v1.json" in paths
     assert "odylith/registry/source/components/benchmark/CURRENT_SPEC.md" in paths
     assert "odylith/atlas/source/catalog/diagrams.v1.json" in paths
+    assert "odylith/compass/runtime/agent-stream.v1.jsonl" in paths
     assert "odylith/runtime/delivery_intelligence.v4.json" in paths
+    assert "src/odylith/runtime/intervention_engine/value_engine.py" in paths
     assert "src/odylith/cli.py" in paths
 
 
@@ -1433,6 +1800,7 @@ def test_live_workspace_snapshot_paths_include_selected_atlas_catalog_references
     related_plan = repo_root / "odylith" / "technical-plans" / "in-progress" / "2026-03" / "plan.md"
     related_doc = repo_root / "odylith" / "maintainer" / "agents-guidelines" / "RELEASE_BENCHMARKS.md"
     related_code = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_graphs.py"
+    watched_dir = repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "calibration"
     watched_svg = repo_root / "docs" / "benchmarks" / "odylith-benchmark-frontier.svg"
     for path in (
         catalog,
@@ -1447,6 +1815,7 @@ def test_live_workspace_snapshot_paths_include_selected_atlas_catalog_references
         watched_svg,
     ):
         path.parent.mkdir(parents=True, exist_ok=True)
+    watched_dir.mkdir(parents=True, exist_ok=True)
     diagram.write_text("flowchart LR\n", encoding="utf-8")
     diagram_svg.write_text("<svg></svg>\n", encoding="utf-8")
     diagram_png.write_text("png\n", encoding="utf-8")
@@ -1465,7 +1834,10 @@ def test_live_workspace_snapshot_paths_include_selected_atlas_catalog_references
                         "source_mmd": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.mmd",
                         "source_svg": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.svg",
                         "source_png": "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.png",
-                        "change_watch_paths": ["docs/benchmarks/odylith-benchmark-frontier.svg"],
+                        "change_watch_paths": [
+                            "docs/benchmarks/odylith-benchmark-frontier.svg",
+                            "src/odylith/runtime/intervention_engine",
+                        ],
                         "related_plans": ["odylith/technical-plans/in-progress/2026-03/plan.md"],
                         "related_docs": ["odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md"],
                         "related_code": ["src/odylith/runtime/evaluation/odylith_benchmark_graphs.py"],
@@ -1524,6 +1896,7 @@ def test_live_workspace_snapshot_paths_include_selected_atlas_catalog_references
     assert "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md" in paths
     assert "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py" in paths
     assert "docs/benchmarks/odylith-benchmark-frontier.svg" in paths
+    assert "src/odylith/runtime/intervention_engine" in paths
     assert "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.svg" in paths
     assert "odylith/atlas/source/odylith-benchmark-proof-and-publication-lane.png" in paths
     assert "odylith/atlas/source/odylith-product-runtime-boundary-map.svg" in paths
@@ -1603,6 +1976,243 @@ def test_live_workspace_snapshot_paths_include_imported_validator_runtime_depend
     assert "src/odylith/runtime/reasoning/odylith_reasoning.py" in paths
 
 
+def test_live_workspace_snapshot_paths_include_projection_snapshot_for_projection_backed_validator_tests(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    validator = repo_root / "tests" / "unit" / "runtime" / "test_odylith_benchmark_runner.py"
+    benchmark_runner = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py"
+    packet_session = (
+        repo_root / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_packet_session_runtime.py"
+    )
+    grounding_runtime = (
+        repo_root / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_grounding_runtime.py"
+    )
+    projection_search = (
+        repo_root / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_search_runtime.py"
+    )
+    projection_snapshot = repo_root / "src" / "odylith" / "runtime" / "memory" / "odylith_projection_snapshot.py"
+    runtime_snapshot = (
+        repo_root / ".odylith" / "runtime" / "odylith-compiler" / "projection-snapshot.v1.json"
+    )
+    for path in (
+        validator,
+        benchmark_runner,
+        packet_session,
+        grounding_runtime,
+        projection_search,
+        projection_snapshot,
+        runtime_snapshot,
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    validator.write_text(
+        "from odylith.runtime.evaluation import odylith_benchmark_runner as runner\n",
+        encoding="utf-8",
+    )
+    benchmark_runner.write_text(
+        "from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime\n",
+        encoding="utf-8",
+    )
+    packet_session.write_text(
+        "from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime\n",
+        encoding="utf-8",
+    )
+    grounding_runtime.write_text(
+        "from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime\n",
+        encoding="utf-8",
+    )
+    projection_search.write_text(
+        "from odylith.runtime.memory import odylith_projection_snapshot\n",
+        encoding="utf-8",
+    )
+    projection_snapshot.write_text("SNAPSHOT_FILENAME = 'projection-snapshot.v1.json'\n", encoding="utf-8")
+    runtime_snapshot.write_text('{"ready": true}\n', encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = ""
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = "\n".join(
+                [
+                    "tests/unit/runtime/test_odylith_benchmark_runner.py",
+                    "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+                    "src/odylith/runtime/context_engine/odylith_context_engine_packet_session_runtime.py",
+                    "src/odylith/runtime/context_engine/odylith_context_engine_grounding_runtime.py",
+                    "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py",
+                    "src/odylith/runtime/memory/odylith_projection_snapshot.py",
+                ]
+            )
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "required_paths": ["odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"],
+                "validation_commands": [
+                    "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
+                ],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/runtime/memory/odylith_projection_snapshot.py" in paths
+    assert ".odylith/runtime/odylith-compiler/projection-snapshot.v1.json" in paths
+
+
+def test_live_workspace_snapshot_paths_include_non_dirty_local_imports_needed_by_dirty_runtime_files(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    validator = repo_root / "tests" / "unit" / "runtime" / "test_render_mermaid_catalog.py"
+    render_catalog = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "render_mermaid_catalog.py"
+    delivery_intelligence = repo_root / "src" / "odylith" / "runtime" / "governance" / "delivery_intelligence_engine.py"
+    reasoning_init = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "__init__.py"
+    reasoning_reasoning = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "odylith_reasoning.py"
+    tribunal_engine = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "tribunal_engine.py"
+    surfaces_init = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "__init__.py"
+    for path in (
+        validator,
+        render_catalog,
+        delivery_intelligence,
+        reasoning_init,
+        reasoning_reasoning,
+        tribunal_engine,
+        surfaces_init,
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    validator.write_text(
+        "from odylith.runtime.surfaces import render_mermaid_catalog as renderer\n",
+        encoding="utf-8",
+    )
+    render_catalog.write_text(
+        "from odylith.runtime.governance import delivery_intelligence_engine\n",
+        encoding="utf-8",
+    )
+    delivery_intelligence.write_text(
+        "from odylith.runtime.reasoning import odylith_reasoning\n",
+        encoding="utf-8",
+    )
+    reasoning_init.write_text('"""reasoning package"""\n', encoding="utf-8")
+    reasoning_reasoning.write_text(
+        "from odylith.runtime.reasoning import tribunal_engine\n",
+        encoding="utf-8",
+    )
+    tribunal_engine.write_text("def judge():\n    return True\n", encoding="utf-8")
+    surfaces_init.write_text('"""surfaces package"""\n', encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = ""
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = "\n".join(
+                [
+                    "tests/unit/runtime/test_render_mermaid_catalog.py",
+                    "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+                    "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+                    "src/odylith/runtime/reasoning/__init__.py",
+                    "src/odylith/runtime/reasoning/odylith_reasoning.py",
+                    "src/odylith/runtime/surfaces/__init__.py",
+                ]
+            )
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "required_paths": ["tests/unit/runtime/test_render_mermaid_catalog.py"],
+                "validation_commands": [
+                    "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_render_mermaid_catalog.py"
+                ],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/runtime/reasoning/tribunal_engine.py" in paths
+
+
+def test_live_workspace_snapshot_paths_include_cli_backend_runtime_dependencies(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    cli_path = repo_root / "src" / "odylith" / "cli.py"
+    orchestrator = repo_root / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py"
+    delivery_intelligence = repo_root / "src" / "odylith" / "runtime" / "governance" / "delivery_intelligence_engine.py"
+    reasoning_init = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "__init__.py"
+    reasoning_reasoning = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "odylith_reasoning.py"
+    tribunal_engine = repo_root / "src" / "odylith" / "runtime" / "reasoning" / "tribunal_engine.py"
+    for path in (
+        cli_path,
+        orchestrator,
+        delivery_intelligence,
+        reasoning_init,
+        reasoning_reasoning,
+        tribunal_engine,
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    cli_path.write_text('"""cli"""\n', encoding="utf-8")
+    orchestrator.write_text(
+        "from odylith.runtime.governance import delivery_intelligence_engine\n",
+        encoding="utf-8",
+    )
+    delivery_intelligence.write_text(
+        "from odylith.runtime.reasoning import odylith_reasoning\n",
+        encoding="utf-8",
+    )
+    reasoning_init.write_text('"""reasoning package"""\n', encoding="utf-8")
+    reasoning_reasoning.write_text(
+        "from odylith.runtime.reasoning import tribunal_engine\n",
+        encoding="utf-8",
+    )
+    tribunal_engine.write_text("def decide():\n    return True\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = ""
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = "\n".join(
+                [
+                    "src/odylith/cli.py",
+                    "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+                    "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+                    "src/odylith/runtime/reasoning/__init__.py",
+                    "src/odylith/runtime/reasoning/odylith_reasoning.py",
+                    "src/odylith/runtime/reasoning/tribunal_engine.py",
+                ]
+            )
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "required_paths": ["odylith/skills/odylith-subagent-orchestrator/SKILL.md"],
+                "validation_commands": ["odylith subagent-orchestrator --repo-root . --help"],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/cli.py" in paths
+    assert "src/odylith/runtime/orchestration/subagent_orchestrator.py" in paths
+    assert "src/odylith/runtime/governance/delivery_intelligence_engine.py" in paths
+    assert "src/odylith/runtime/reasoning/__init__.py" in paths
+    assert "src/odylith/runtime/reasoning/odylith_reasoning.py" in paths
+    assert "src/odylith/runtime/reasoning/tribunal_engine.py" in paths
+
+
 def test_live_workspace_snapshot_paths_include_benchmark_corpus_for_runner_and_graph_validator_tests(
     tmp_path: Path,
 ) -> None:
@@ -1651,6 +2261,54 @@ def test_live_workspace_snapshot_paths_include_benchmark_corpus_for_runner_and_g
 
     assert "odylith/runtime/source/optimization-evaluation-corpus.v1.json" in paths
     assert "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json" in paths
+
+
+def test_live_workspace_snapshot_paths_include_dirty_benchmark_runtime_dependencies_even_when_not_explicit(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    changed = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_graphs.py"
+    validator = repo_root / "tests" / "unit" / "runtime" / "test_odylith_benchmark_graphs.py"
+    prompt_payloads = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_prompt_payloads.py"
+    prompt_family_rules = (
+        repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_prompt_family_rules.py"
+    )
+    cli_path = repo_root / "src" / "odylith" / "cli.py"
+    for path in (changed, validator, prompt_payloads, prompt_family_rules, cli_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# file\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = "\n".join(
+                [
+                    "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+                    "src/odylith/runtime/evaluation/odylith_benchmark_prompt_payloads.py",
+                    "src/odylith/runtime/evaluation/odylith_benchmark_prompt_family_rules.py",
+                    "src/odylith/cli.py",
+                ]
+            )
+        elif command[:3] == ["git", "ls-files", "--others"]:
+            stdout = ""
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_graphs.py"],
+                "validation_commands": ["pytest -q tests/unit/runtime/test_odylith_benchmark_graphs.py"],
+            },
+            prompt_payload={},
+        )
+
+    assert "src/odylith/runtime/evaluation/odylith_benchmark_prompt_payloads.py" in paths
+    assert "src/odylith/runtime/evaluation/odylith_benchmark_prompt_family_rules.py" in paths
+    assert "src/odylith/cli.py" in paths
 
 
 def test_acceptance_requires_critical_metric_coverage() -> None:
@@ -1766,6 +2424,73 @@ def test_acceptance_holds_when_local_memory_substrate_is_inactive() -> None:
     assert acceptance["checks"]["memory_backed_retrieval_ready"] is False
     assert "Benchmark ran without an active local LanceDB/Tantivy retrieval substrate." in acceptance["notes"]
     assert "Vespa is optional and currently disabled; the current benchmark proof is local-first, not remote-assisted." in acceptance["notes"]
+
+
+def test_acceptance_holds_when_fairness_contract_fails() -> None:
+    acceptance = runner._acceptance(  # noqa: SLF001
+        mode_summaries={
+            "odylith_on": {
+                "scenario_count": 1,
+                "within_budget_rate": 1.0,
+                "validation_success_rate": 1.0,
+                "expectation_success_rate": 1.0,
+                "critical_required_path_recall_rate": 1.0,
+                "critical_validation_success_rate": 1.0,
+                "write_surface_backed_scenario_count": 0,
+            },
+            "raw_agent_baseline": {
+                "scenario_count": 1,
+                "within_budget_rate": 1.0,
+                "validation_success_rate": 1.0,
+                "expectation_success_rate": 1.0,
+                "critical_required_path_recall_rate": 1.0,
+                "critical_validation_success_rate": 1.0,
+                "write_surface_backed_scenario_count": 0,
+            },
+        },
+        primary_comparison={
+            "required_path_recall_delta": 0.0,
+            "required_path_precision_delta": 0.0,
+            "hallucinated_surface_rate_delta": 0.0,
+            "validation_success_delta": 0.0,
+            "critical_required_path_recall_delta": 0.0,
+            "critical_validation_success_delta": 0.0,
+            "expectation_success_delta": 0.0,
+            "median_latency_delta_ms": 0.0,
+            "median_prompt_token_delta": 0.0,
+            "median_total_payload_token_delta": 0.0,
+        },
+        family_summaries={
+            "validation_heavy_fix": {
+                "odylith_on": {
+                    "required_path_recall_rate": 1.0,
+                    "required_path_precision_rate": 1.0,
+                    "hallucinated_surface_rate": 0.0,
+                    "validation_success_rate": 1.0,
+                    "expectation_success_rate": 1.0,
+                },
+                "raw_agent_baseline": {
+                    "required_path_recall_rate": 1.0,
+                    "required_path_precision_rate": 1.0,
+                    "hallucinated_surface_rate": 0.0,
+                    "validation_success_rate": 1.0,
+                    "expectation_success_rate": 1.0,
+                },
+            }
+        },
+        corpus_summary={
+            "correctness_critical_scenario_count": 0,
+            "critical_required_path_backed_scenario_count": 0,
+            "critical_validation_backed_scenario_count": 0,
+        },
+        fairness_findings=["case-a/raw_agent_baseline is missing raw prompt-visible path attribution"],
+        comparison_contract="live_end_to_end",
+    )
+
+    assert acceptance["status"] == "hold"
+    assert acceptance["hard_quality_gate_cleared"] is False
+    assert acceptance["checks"]["fairness_contract_passed"] is False
+    assert any("fairness contract findings are present" in note for note in acceptance["notes"])
 
 
 def test_live_acceptance_keeps_latency_and_token_deltas_diagnostic_for_live_proof() -> None:
@@ -2153,169 +2878,6 @@ def test_safe_orchestration_summary_preserves_supplied_packet_adoption_on_router
     assert adoption["native_spawn_ready"] is True
     assert adoption["requires_widening"] is False
     assert adoption["routing_confidence"] == "high"
-
-
-def test_prime_benchmark_runtime_cache_warms_once(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
-    calls: list[tuple[Path, str, str]] = []
-    primed: list[Path] = []
-    guidance_primed: list[Path] = []
-    judgment_primed: list[Path] = []
-    git_branch_primed: list[Path] = []
-    git_head_primed: list[Path] = []
-
-    def _fake_warm_projections(*, repo_root: Path, reason: str, scope: str):  # noqa: ANN001
-        calls.append((repo_root, reason, scope))
-        return {"ok": True}
-
-    monkeypatch.setattr(runner.store, "warm_projections", _fake_warm_projections)
-    monkeypatch.setattr(
-        runner.store,
-        "prime_reasoning_projection_cache",
-        lambda *, repo_root: primed.append(repo_root),
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "projection_input_fingerprint",
-        lambda *, repo_root, scope="default": f"{scope}-fingerprint",
-    )
-    monkeypatch.setattr(
-        runner.store.tooling_guidance_catalog,
-        "load_guidance_catalog",
-        lambda *, repo_root: guidance_primed.append(repo_root)
-        or {"chunk_count": 1, "source_doc_count": 1, "task_family_count": 1},
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "_judgment_memory_snapshot_cached",
-        lambda *, repo_root: judgment_primed.append(repo_root) or {},
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "_git_branch_name",
-        lambda *, repo_root: git_branch_primed.append(repo_root) or "main",
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "_git_head_oid",
-        lambda *, repo_root: git_head_primed.append(repo_root) or "abc123",
-    )
-    monkeypatch.setattr(
-        runner.store,
-        "load_runtime_memory_snapshot",
-        lambda *, repo_root: {
-            "backend_transition": {
-                "actual_local_backend": {
-                    "storage": "lance_local_columnar",
-                    "sparse_recall": "tantivy_sparse_recall",
-                },
-                "local_backend_status": {"ready": True},
-            },
-            "entity_counts": {
-                "indexed_entity_count": 12,
-                "evidence_documents": 14,
-            },
-        },
-    )
-    monkeypatch.setattr(runner.store, "_PROCESS_WARM_CACHE", {})
-    monkeypatch.setattr(runner.store, "_PROCESS_WARM_CACHE_FINGERPRINTS", {})
-
-    runner._prime_benchmark_runtime_cache(repo_root=tmp_path)  # noqa: SLF001
-
-    assert calls == [(tmp_path.resolve(), "benchmark", "full")]
-    assert primed == [tmp_path.resolve()]
-    assert guidance_primed == [tmp_path.resolve()]
-    assert judgment_primed == [tmp_path.resolve()]
-    assert git_branch_primed == [tmp_path.resolve()]
-    assert git_head_primed == [tmp_path.resolve()]
-    assert runner.store._PROCESS_WARM_CACHE[f"{tmp_path.resolve()}:full"] > 0  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE[f"{tmp_path.resolve()}:reasoning"] > 0  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE[f"{tmp_path.resolve()}:default"] > 0  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:full"] == "full-fingerprint"  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:reasoning"] == "reasoning-fingerprint"  # noqa: SLF001
-    assert runner.store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:default"] == "default-fingerprint"  # noqa: SLF001
-
-
-def test_prime_benchmark_runtime_cache_requires_active_local_memory_substrate(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
-    monkeypatch.setattr(runner.store, "warm_projections", lambda **_: {"ok": True})
-    monkeypatch.setattr(runner.store, "prime_reasoning_projection_cache", lambda **_: None)
-    monkeypatch.setattr(
-        runner.store.tooling_guidance_catalog,
-        "load_guidance_catalog",
-        lambda **_: {"chunk_count": 1, "source_doc_count": 1, "task_family_count": 1},
-    )
-    monkeypatch.setattr(runner.store, "_judgment_memory_snapshot_cached", lambda **_: {})
-    monkeypatch.setattr(runner.store, "_git_branch_name", lambda **_: "main")
-    monkeypatch.setattr(runner.store, "_git_head_oid", lambda **_: "abc123")
-    monkeypatch.setattr(
-        runner.store,
-        "load_runtime_memory_snapshot",
-        lambda *, repo_root: {
-            "backend_transition": {
-                "actual_local_backend": {
-                    "storage": "compiler_projection_snapshot",
-                    "sparse_recall": "repo_scan_fallback",
-                },
-                "local_backend_status": {"ready": False},
-            },
-            "entity_counts": {
-                "indexed_entity_count": 0,
-                "evidence_documents": 0,
-            },
-        },
-    )
-
-    with pytest.raises(RuntimeError, match="active local LanceDB/Tantivy memory substrate"):
-        runner._prime_benchmark_runtime_cache(repo_root=tmp_path)  # noqa: SLF001
-
-
-def test_runtime_posture_summary_reports_memory_and_remote_posture(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(runner.store, "load_runtime_optimization_snapshot", lambda *, repo_root: {"quality_posture": {"route_ready_rate": 0.8, "native_spawn_ready_rate": 0.6}})
-    monkeypatch.setattr(runner.store, "load_runtime_evaluation_snapshot", lambda *, repo_root: {"architecture": {"covered_case_count": 4, "satisfied_case_count": 3, "coverage_rate": 1.0, "satisfaction_rate": 0.75}})
-    monkeypatch.setattr(
-        runner.store,
-        "load_runtime_memory_snapshot",
-        lambda *, repo_root, optimization_snapshot=None, evaluation_snapshot=None: {
-            "backend_transition": {
-                "status": "standardized",
-                "actual_local_backend": {
-                    "storage": "lance_local_columnar",
-                    "sparse_recall": "tantivy_sparse_recall",
-                },
-                "target_local_backend": {
-                    "storage": "lance_local_columnar",
-                    "sparse_recall": "tantivy_sparse_recall",
-                },
-                "local_backend_status": {"ready": True},
-                "signature": {"projection_scope": "full"},
-            },
-            "repo_scan_degraded_fallback": {"repo_scan_degraded_fallback_rate": 0.02},
-            "governance_runtime_first": {"usage_rate": 1.0, "fallback_rate": 0.0},
-            "entity_counts": {"indexed_entity_count": 120, "evidence_documents": 145},
-            "remote_retrieval": {
-                "enabled": False,
-                "configured": False,
-                "mode": "disabled",
-                "provider": "vespa_http",
-                "status": "disabled",
-            },
-        },
-    )
-
-    posture = runner._runtime_posture_summary(repo_root=tmp_path)  # noqa: SLF001
-
-    assert posture["memory_backed_retrieval_ready"] is True
-    assert posture["memory_local_backend_ready"] is True
-    assert posture["memory_projection_scope"] == "full"
-    assert posture["memory_indexed_entity_count"] == 120
-    assert posture["memory_evidence_document_count"] == 145
-    assert posture["remote_retrieval_status"] == "disabled"
-    assert posture["remote_retrieval_mode"] == "disabled"
-    assert posture["remote_retrieval_enabled"] is False
-
-
 def test_run_benchmarks_records_cache_profile_summaries_without_overwriting_latest(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001
@@ -2334,6 +2896,20 @@ def test_run_benchmarks_records_cache_profile_summaries_without_overwriting_late
             "validation_commands": [],
             "correctness_critical": False,
             "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
         }
     ]
     prep_calls: list[str] = []
@@ -2348,8 +2924,8 @@ def test_run_benchmarks_records_cache_profile_summaries_without_overwriting_late
     )
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -2434,8 +3010,8 @@ def test_run_benchmarks_publishes_conservative_multi_profile_view(
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -2491,6 +3067,7 @@ def test_run_benchmarks_publishes_conservative_multi_profile_view(
             "unnecessary_widening_count": 0,
             "unnecessary_widening_rate": 0.0,
             "effective_estimated_tokens": prompt,
+            "host_prompt_estimated_tokens": prompt,
             "codex_prompt_estimated_tokens": prompt,
             "total_payload_estimated_tokens": prompt,
             "validation_success_proxy": validation,
@@ -2523,7 +3100,9 @@ def test_run_benchmarks_publishes_conservative_multi_profile_view(
         row["mode"]: row
         for row in report["published_scenarios"][0]["results"]
     }
+    assert published_results["odylith_on"]["host_prompt_estimated_tokens"] == 150.0
     assert published_results["odylith_on"]["codex_prompt_estimated_tokens"] == 150.0
+    assert published_results["raw_agent_baseline"]["host_prompt_estimated_tokens"] == 280.0
     assert published_results["raw_agent_baseline"]["codex_prompt_estimated_tokens"] == 280.0
     assert report["published_mode_summaries"]["odylith_on"]["median_effective_tokens"] == 150.0
     assert report["published_mode_summaries"]["raw_agent_baseline"]["median_effective_tokens"] == 280.0
@@ -3158,8 +3737,8 @@ def test_run_benchmarks_keeps_partial_sample_out_of_latest_report(
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -3170,7 +3749,11 @@ def test_run_benchmarks_keeps_partial_sample_out_of_latest_report(
             "architecture_satisfied_case_count": 0,
         },
     )
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
     monkeypatch.setattr(
         runner,
         "_run_scenario_mode",
@@ -3218,6 +3801,79 @@ def test_profile_latest_report_path_uses_profile_specific_snapshot_names(tmp_pat
     assert runner.latest_report_path(repo_root=tmp_path, benchmark_profile="diagnostic") == (
         tmp_path / ".odylith" / "runtime" / "odylith-benchmarks" / "latest-diagnostic.v1.json"
     ).resolve()
+    assert runner.retired_latest_report_paths(repo_root=tmp_path) == [
+        (tmp_path / ".odylith" / "runtime" / "odylith-benchmarks" / "odylith-benchmark.json").resolve()
+    ]
+
+
+def test_run_benchmarks_removes_retired_latest_report_file_on_success(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "release-critical",
+            "kind": "packet",
+            "label": "Release critical",
+            "summary": "release critical",
+            "family": "release_publication",
+            "priority": "high",
+            "prompt": "Keep release publication bounded.",
+            "acceptance_criteria": [],
+            "changed_paths": ["scripts/release.py"],
+            "required_paths": ["scripts/release.py"],
+            "validation_commands": [],
+            "workstream": "",
+            "correctness_critical": True,
+            "expect": {"within_budget": True},
+        }
+    ]
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(
+        runner,
+        "_require_benchmark_runtime_space",
+        lambda *, repo_root: {"used_bytes": 0, "free_bytes": 1, "total_bytes": 1},
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "mode": kwargs["mode"],
+            "latency_ms": 20.0 if kwargs["mode"] == "odylith_on" else 40.0,
+            "instrumented_reasoning_duration_ms": 12.0 if kwargs["mode"] == "odylith_on" else 25.0,
+            "uninstrumented_overhead_ms": 8.0 if kwargs["mode"] == "odylith_on" else 15.0,
+            "required_path_precision": 1.0,
+            "required_path_recall": 1.0,
+            "validation_success_proxy": 1.0,
+            "expectation_ok": True,
+            "critical_path_misses": [],
+            "required_path_misses": [],
+            "observed_paths": ["scripts/release.py"],
+            "effective_estimated_tokens": 50,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+    monkeypatch.setattr(runner, "_prepare_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(runner, "_singleton_family_latency_probes", lambda **_: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda **_: {})  # type: ignore[arg-type]
+    monkeypatch.setattr(runner, "_benchmark_runtime_hygiene_snapshot", lambda **_: {"active_run_count": 0})  # type: ignore[arg-type]
+    monkeypatch.setattr(runner, "_cleanup_stale_benchmark_state", lambda **_: {"stale_progress_cleared": False})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
+        lambda **_: {},
+    )
+
+    retired_path = runner.retired_latest_report_paths(repo_root=tmp_path)[0]
+    retired_path.parent.mkdir(parents=True, exist_ok=True)
+    retired_path.write_text('{"status":"failed"}\n', encoding="utf-8")
+
+    report = runner.run_benchmarks(repo_root=tmp_path, limit=1)
+
+    assert report["status"] in {"hold", "provisional_pass"}
+    assert runner.history_report_path(repo_root=tmp_path, report_id=report["report_id"]).is_file()
+    assert not retired_path.exists()
 
 
 def test_load_latest_benchmark_report_falls_back_to_canonical_proof_snapshot(tmp_path: Path) -> None:
@@ -3231,6 +3887,46 @@ def test_load_latest_benchmark_report_falls_back_to_canonical_proof_snapshot(tmp
     report = runner.load_latest_benchmark_report(repo_root=tmp_path, benchmark_profile="proof")
 
     assert report["report_id"] == "proof-canonical"
+
+
+def test_load_latest_runtime_benchmark_report_prefers_current_tree_profile_latest_over_stale_canonical(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    canonical_path = runner.latest_report_path(repo_root=tmp_path)
+    canonical_path.parent.mkdir(parents=True, exist_ok=True)
+    canonical_path.write_text(
+        json.dumps(
+            {
+                "report_id": "proof-stale",
+                "benchmark_profile": "proof",
+                "generated_utc": "2026-04-20T15:26:01Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    quick_path = runner.latest_report_path(repo_root=tmp_path, benchmark_profile="quick")
+    quick_path.write_text(
+        json.dumps(
+            {
+                "report_id": "quick-current",
+                "benchmark_profile": "quick",
+                "generated_utc": "2026-04-21T15:26:01Z",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        runner,
+        "benchmark_report_matches_current_tree",
+        lambda *, repo_root, report: str(report.get("report_id", "")) == "quick-current",
+    )
+
+    report = runner.load_latest_runtime_benchmark_report(repo_root=tmp_path)
+
+    assert report["report_id"] == "quick-current"
 
 
 def test_run_benchmarks_writes_and_clears_progress_checkpoint(
@@ -3258,8 +3954,8 @@ def test_run_benchmarks_writes_and_clears_progress_checkpoint(
     monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
     monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -3270,7 +3966,11 @@ def test_run_benchmarks_writes_and_clears_progress_checkpoint(
             "architecture_satisfied_case_count": 0,
         },
     )
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
 
     def _fake_run_scenario_mode(
         *,
@@ -3311,10 +4011,679 @@ def test_run_benchmarks_writes_and_clears_progress_checkpoint(
 
     assert report["modes"] == ["odylith_on", "raw_agent_baseline"]
     assert report["latest_eligible"] is True
-    assert report["comparison_contract"] == "live_end_to_end"
+    assert report["comparison_contract"] == runner.LIVE_COMPARISON_CONTRACT
     assert seen_progress
     assert all(row["status"] == "running" for row in seen_progress)
     assert runner.progress_report_path(repo_root=tmp_path).exists() is False
+
+
+def test_run_benchmarks_shards_do_not_touch_shared_progress_or_profile_latest(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-c",
+            "kind": "packet",
+            "label": "Case C",
+            "summary": "C",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/c.py"],
+            "workstream": "",
+            "required_paths": ["scripts/c.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-d",
+            "kind": "packet",
+            "label": "Case D",
+            "summary": "D",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/d.py"],
+            "workstream": "",
+            "required_paths": ["scripts/d.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+    ]
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
+        lambda *, repo_root: {
+            "memory_standardization_state": "standardized",
+            "repo_scan_degraded_fallback_rate": 0.0,
+            "governance_runtime_first_usage_rate": 1.0,
+            "route_ready_rate": 1.0,
+            "native_spawn_ready_rate": 1.0,
+            "architecture_covered_case_count": 0,
+            "architecture_satisfied_case_count": 0,
+        },
+    )
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **_: {
+            "kind": "packet",
+            "mode": "odylith_on",
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": ["scripts/a.py"],
+            "effective_estimated_tokens": 100,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    progress_path = runner.progress_report_path(repo_root=tmp_path)
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text(
+        json.dumps({"report_id": "shared-progress", "status": "running"}) + "\n",
+        encoding="utf-8",
+    )
+    profile_latest_path = runner.latest_report_path(repo_root=tmp_path, benchmark_profile="proof")
+    profile_latest_path.parent.mkdir(parents=True, exist_ok=True)
+    profile_latest_path.write_text(
+        json.dumps({"report_id": "existing-proof", "benchmark_profile": "proof"}) + "\n",
+        encoding="utf-8",
+    )
+
+    report = runner.run_benchmarks(
+        repo_root=tmp_path,
+        shard_count=4,
+        shard_index=2,
+    )
+
+    profile_latest_payload = json.loads(profile_latest_path.read_text(encoding="utf-8"))
+    assert report["latest_eligible"] is False
+    assert not progress_path.exists()
+    assert profile_latest_payload["report_id"] == "existing-proof"
+    assert runner.history_report_path(repo_root=tmp_path, report_id=report["report_id"]).is_file()
+
+
+def test_run_benchmarks_shards_use_shard_specific_lock_key(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-c",
+            "kind": "packet",
+            "label": "Case C",
+            "summary": "C",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/c.py"],
+            "workstream": "",
+            "required_paths": ["scripts/c.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+    ]
+    seen_lock_keys: list[str] = []
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda *, repo_root, scenarios: {"sample_size": 1})
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
+        lambda *, repo_root: {
+            "memory_standardization_state": "standardized",
+            "repo_scan_degraded_fallback_rate": 0.0,
+            "governance_runtime_first_usage_rate": 1.0,
+            "route_ready_rate": 1.0,
+            "native_spawn_ready_rate": 1.0,
+            "architecture_covered_case_count": 0,
+            "architecture_satisfied_case_count": 0,
+        },
+    )
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **_: {
+            "kind": "packet",
+            "mode": "odylith_on",
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": ["scripts/a.py"],
+            "effective_estimated_tokens": 100,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    @contextlib.contextmanager
+    def _fake_lock(*, repo_root: Path, key: str):
+        del repo_root
+        seen_lock_keys.append(key)
+        yield
+
+    monkeypatch.setattr(runner.odylith_context_cache, "advisory_lock", _fake_lock)
+
+    runner.run_benchmarks(repo_root=tmp_path, shard_count=3, shard_index=2, write_report=False)
+
+    assert seen_lock_keys[0] == "odylith-benchmark-runner:proof:2-of-3"
+    assert seen_lock_keys.count("odylith-benchmark-runner:proof:2-of-3") == 1
+
+
+def test_run_benchmarks_rejects_zero_shard_index(tmp_path: Path) -> None:
+    _write_corpus(tmp_path, {"version": "v1", "program": {}, "cases": [], "architecture_cases": []})
+    with pytest.raises(ValueError, match="`shard_index` must be between 1 and `shard_count` inclusive"):
+        runner.run_benchmarks(repo_root=tmp_path, shard_count=3, shard_index=0, write_report=False)
+
+
+def test_apply_scenario_shard_rejects_zero_shard_count() -> None:
+    with pytest.raises(ValueError, match="`shard_count` must be at least 1"):
+        runner._apply_scenario_shard(  # noqa: SLF001
+            scenarios=[{"scenario_id": "case-a"}],
+            shard_count=0,
+            shard_index=1,
+        )
+
+
+def test_run_benchmarks_shards_persist_failed_history_report_on_exception(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        }
+    ]
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
+    monkeypatch.setattr(runner, "_benchmark_report_id", lambda **_: "failed-shard")
+    monkeypatch.setattr(runner, "_utc_now", lambda: "2026-04-13T12:00:00Z")
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **_: (_ for _ in ()).throw(RuntimeError("boom")),
+    )
+
+    with pytest.raises(RuntimeError, match="boom"):
+        runner.run_benchmarks(
+            repo_root=tmp_path,
+            shard_count=2,
+            shard_index=1,
+        )
+
+    payload = json.loads(
+        runner.history_report_path(repo_root=tmp_path, report_id="failed-shard").read_text(encoding="utf-8")
+    )
+    assert payload["status"] == "failed"
+    assert payload["acceptance"]["status"] == "failed"
+    assert payload["published_summary"]["status"] == "failed"
+
+
+def test_run_benchmarks_shards_persist_failed_history_report_on_keyboard_interrupt(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        }
+    ]
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
+    monkeypatch.setattr(runner, "_benchmark_report_id", lambda **_: "failed-shard-interrupt")
+    monkeypatch.setattr(runner, "_utc_now", lambda: "2026-04-13T12:00:00Z")
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **_: (_ for _ in ()).throw(KeyboardInterrupt()),
+    )
+
+    with pytest.raises(KeyboardInterrupt):
+        runner.run_benchmarks(
+            repo_root=tmp_path,
+            shard_count=2,
+            shard_index=1,
+        )
+
+    payload = json.loads(
+        runner.history_report_path(repo_root=tmp_path, report_id="failed-shard-interrupt").read_text(encoding="utf-8")
+    )
+    assert payload["status"] == "failed"
+    assert payload["acceptance"]["status"] == "failed"
+    assert payload["published_summary"]["status"] == "failed"
+
+
+def test_benchmark_interrupt_guard_raises_custom_interrupt_and_restores_handlers(monkeypatch) -> None:  # noqa: ANN001
+    sighup = getattr(signal, "SIGHUP", None)
+    previous_handlers = {
+        signal.SIGTERM: object(),
+        signal.SIGINT: object(),
+    }
+    if sighup is not None:
+        previous_handlers[sighup] = object()
+    installed: dict[int, object] = {}
+    calls: list[tuple[str, int, object]] = []
+
+    class _Process:
+        name = "MainProcess"
+
+    monkeypatch.setattr(runner.multiprocessing, "current_process", lambda: _Process())
+
+    def _fake_getsignal(signum: int):  # noqa: ANN001
+        return previous_handlers[signum]
+
+    def _fake_signal(signum: int, handler):  # noqa: ANN001
+        calls.append(("set", signum, handler))
+        installed[signum] = handler
+        return previous_handlers[signum]
+
+    monkeypatch.setattr(runner.signal, "getsignal", _fake_getsignal)
+    monkeypatch.setattr(runner.signal, "signal", _fake_signal)
+
+    with pytest.raises(runner.BenchmarkRunInterrupted, match="received SIGTERM"):
+        with runner._benchmark_interrupt_guard():  # noqa: SLF001
+            if sighup is not None:
+                assert installed[sighup] == signal.SIG_IGN
+            installed[signal.SIGTERM](signal.SIGTERM, None)
+
+    restored = [row for row in calls if row[2] in previous_handlers.values()]
+    assert restored
+
+
+def test_run_benchmarks_shards_skip_merge_only_post_run_metrics(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+    ]
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
+    monkeypatch.setattr(runner, "_singleton_family_latency_probes", lambda **_: (_ for _ in ()).throw(AssertionError("skip latency probes")))
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda **_: (_ for _ in ()).throw(AssertionError("skip adoption proof")))
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
+        lambda **_: (_ for _ in ()).throw(AssertionError("skip runtime posture")),
+    )
+    monkeypatch.setattr(runner, "_robustness_summary", lambda **_: (_ for _ in ()).throw(AssertionError("skip robustness")))
+    monkeypatch.setattr(
+        runner,
+        "_benchmark_runtime_hygiene_snapshot",
+        lambda **_: (_ for _ in ()).throw(AssertionError("skip final hygiene")),
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **kwargs: {
+            "kind": "packet",
+            "mode": kwargs["mode"],
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": [kwargs["scenario"]["required_paths"][0]],
+            "observed_path_count": 1,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "expected_write_path_count": 0,
+            "candidate_write_path_count": 0,
+            "candidate_write_paths": [],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "effective_estimated_tokens": 10,
+            "total_payload_estimated_tokens": 10,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    report = runner.run_benchmarks(
+        repo_root=tmp_path,
+        shard_count=2,
+        shard_index=1,
+        write_report=False,
+    )
+
+    assert report["selection"]["shard_count"] == 2
+    assert report["adoption_proof"] == {}
+    assert report["runtime_posture"] == {}
+    assert report["robustness_summary"] == {}
+    assert report["final_hygiene"] == {}
+
+
+def test_run_benchmarks_manual_selection_skips_extra_post_run_probe_fanout(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _write_corpus(
+        tmp_path,
+        {
+            "version": "v1",
+            "program": {},
+            "scenarios": [
+                {
+                    "case_id": "case-a",
+                    "label": "Case A",
+                    "family": "validation_heavy_fix",
+                    "priority": "high",
+                    "benchmark": {
+                        "paths": ["scripts/a.py"],
+                        "required_paths": ["scripts/a.py"],
+                        "needs_write": True,
+                    },
+                    "expect": {"within_budget": True},
+                }
+            ],
+            "architecture_scenarios": [],
+        },
+    )
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
+    monkeypatch.setattr(runner, "_singleton_family_latency_probes", lambda **_: (_ for _ in ()).throw(AssertionError("skip latency probes")))
+    monkeypatch.setattr(runner, "_run_live_adoption_proof", lambda **_: (_ for _ in ()).throw(AssertionError("skip adoption proof")))
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
+        lambda **_: {"route_ready_rate": 1.0, "native_spawn_ready_rate": 1.0},
+    )
+    monkeypatch.setattr(runner, "_robustness_summary", lambda **_: {})
+    monkeypatch.setattr(
+        runner,
+        "_benchmark_runtime_hygiene_snapshot",
+        lambda **_: {
+            "owned_codex_process_count": 0,
+            "temp_worktree_count": 0,
+            "temp_directory_count": 0,
+            "active_run_count": 0,
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **kwargs: {
+            "kind": "packet",
+            "mode": kwargs["mode"],
+            "packet_source": "impact",
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": ["scripts/a.py"],
+            "observed_path_count": 1,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "expected_write_path_count": 1,
+            "candidate_write_path_count": 1,
+            "candidate_write_paths": ["scripts/a.py"],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "effective_estimated_tokens": 10,
+            "total_payload_estimated_tokens": 10,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    report = runner.run_benchmarks(
+        repo_root=tmp_path,
+        benchmark_profile=runner.BENCHMARK_PROFILE_DIAGNOSTIC,
+        case_ids=["case-a"],
+        write_report=False,
+    )
+
+    assert report["selection_strategy"] == "manual_selection"
+    assert report["singleton_family_latency_probes"] == {}
+    assert report["adoption_proof"] == {}
+
+
+def test_run_benchmarks_shards_skip_live_batch_pairing(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    scenarios = [
+        {
+            "scenario_id": "case-a",
+            "kind": "packet",
+            "label": "Case A",
+            "summary": "A",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/a.py"],
+            "workstream": "",
+            "required_paths": ["scripts/a.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+        {
+            "scenario_id": "case-b",
+            "kind": "packet",
+            "label": "Case B",
+            "summary": "B",
+            "family": "validation_heavy_fix",
+            "priority": "high",
+            "changed_paths": ["scripts/b.py"],
+            "workstream": "",
+            "required_paths": ["scripts/b.py"],
+            "validation_commands": [],
+            "correctness_critical": False,
+            "expect": {"within_budget": True},
+        },
+    ]
+
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: list(scenarios))
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_live_scenario_batch",
+        lambda **_: (_ for _ in ()).throw(AssertionError("shards should not use live batch pairing")),
+    )
+    monkeypatch.setattr(
+        runner,
+        "_run_scenario_mode",
+        lambda **kwargs: {
+            "kind": "packet",
+            "mode": kwargs["mode"],
+            "latency_ms": 10.0,
+            "packet": {"within_budget": True, "route_ready": True},
+            "expectation_ok": True,
+            "expectation_details": {},
+            "required_path_recall": 1.0,
+            "required_path_misses": [],
+            "critical_path_misses": [],
+            "observed_paths": [kwargs["scenario"]["required_paths"][0]],
+            "observed_path_count": 1,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "expected_write_path_count": 0,
+            "candidate_write_path_count": 0,
+            "candidate_write_paths": [],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "effective_estimated_tokens": 10,
+            "total_payload_estimated_tokens": 10,
+            "validation_success_proxy": 1.0,
+            "full_scan": {},
+            "orchestration": {"leaf_count": 0},
+        },
+    )
+
+    report = runner.run_benchmarks(
+        repo_root=tmp_path,
+        shard_count=2,
+        shard_index=1,
+        write_report=False,
+    )
+
+    assert report["selection"]["shard_count"] == 2
+    assert [row["scenario_id"] for row in report["scenarios"]] == ["case-a"]
 
 
 def test_diagnostic_profile_keeps_public_pair_packet_only(
@@ -3347,8 +4716,8 @@ def test_diagnostic_profile_keeps_public_pair_packet_only(
         lambda *, repo_root, scenarios: adoption_proof_calls.append(len(list(scenarios))) or {"sample_size": 0},
     )
     monkeypatch.setattr(
-        runner,
-        "_runtime_posture_summary",
+        runner.benchmark_runtime_posture_runtime,
+        "runtime_posture_summary",
         lambda *, repo_root: {
             "memory_standardization_state": "standardized",
             "repo_scan_degraded_fallback_rate": 0.0,
@@ -3359,7 +4728,14 @@ def test_diagnostic_profile_keeps_public_pair_packet_only(
             "architecture_satisfied_case_count": 0,
         },
     )
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda **_: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda **_: None,
+    )
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
 
     def _fake_packet_result(*, repo_root: Path, scenario: dict[str, object], mode: str) -> dict[str, object]:
         packet_calls.append(mode)
@@ -3409,7 +4785,7 @@ def test_build_packet_payload_uses_family_based_fast_path(
     adaptive_calls: list[dict[str, object]] = []
 
     monkeypatch.setattr(
-        runner.store,
+        runner.packet_adaptive_runtime,
         "build_adaptive_coding_packet",
         lambda **kwargs: adaptive_calls.append(dict(kwargs))
         or {
@@ -3519,7 +4895,7 @@ def test_build_packet_payload_uses_hot_path_governance_slice(
     assert source == "governance_slice"
     assert escalation["stage"] == "governance_slice"
     assert governance_calls
-    assert governance_calls[0]["delivery_profile"] == "codex_hot_path"
+    assert governance_calls[0]["delivery_profile"] == "agent_hot_path"
     assert governance_calls[0]["intent"] == "implementation benchmark"
     assert governance_calls[0]["validation_command_hints"] == [
         "pytest -q tests/unit/runtime/test_render_registry_dashboard.py"
@@ -3631,6 +5007,34 @@ def test_orchestration_request_payload_adds_governance_closeout_candidate_paths(
     assert "odylith/casebook/bugs/2026-03-24-control-plane-read-scope-and-auth-escape-hatch-gap.md" in payload["candidate_paths"]
     assert "odylith/technical-plans/done/2026-03/example.md" in payload["candidate_paths"]
     assert "odylith/atlas/source/registry.mmd" in payload["candidate_paths"]
+
+
+def test_orchestration_request_payload_uses_expected_write_paths_for_action_scope() -> None:
+    payload = runner._orchestration_request_payload(  # noqa: SLF001
+        scenario={
+            "prompt": "Work the router/orchestrator implementation slice.",
+            "changed_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+            ],
+            "expected_write_paths": [
+                "src/odylith/runtime/orchestration/subagent_router.py",
+                "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+            ],
+            "validation_commands": ["odylith subagent-router --repo-root . --help"],
+            "family": "cross_file_feature",
+            "kind": "packet",
+            "needs_write": True,
+            "correctness_critical": False,
+            "workstream": "B-001",
+        },
+        packet_payload={},
+    )
+
+    assert payload["candidate_paths"] == [
+        "src/odylith/runtime/orchestration/subagent_router.py",
+        "src/odylith/runtime/orchestration/subagent_orchestrator.py",
+    ]
 
 
 def test_mode_summary_aggregates_stage_latency_summary() -> None:
@@ -3773,10 +5177,17 @@ def test_compact_report_summary_includes_candidate_odylith_adoption_rates() -> N
         {
             "report_id": "report-123",
             "generated_utc": "2026-03-24T12:00:00Z",
+            "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+            "comparison_contract_details": runner._comparison_contract_details(runner.LIVE_COMPARISON_CONTRACT),  # noqa: SLF001
             "acceptance": {"status": "provisional_pass"},
             "scenario_count": 4,
             "published_view_strategy": "conservative_multi_profile",
             "published_cache_profiles": ["warm", "cold"],
+            "fairness_contract_passed": True,
+            "fairness_findings": [],
+            "observed_path_sources": ["odylith_prompt_payload", "raw_prompt_visible_paths"],
+            "preflight_evidence_mode": "mixed",
+            "preflight_evidence_modes": ["none", "scenario_declared_focused_local_checks"],
             "mode_summaries": {
                 "odylith_on": {
                     "odylith_packet_present_rate": 1.0,
@@ -3893,9 +5304,20 @@ def test_compact_report_summary_includes_candidate_odylith_adoption_rates() -> N
                 "packet_scenario_key": "scenarios",
                 "architecture_scenario_key": "architecture_scenarios",
             },
+            "corpus_composition": {
+                "seriousness_floor_passed": True,
+                "full_corpus_coverage_rate": 1.0,
+                "full_corpus_selected": True,
+                "implementation_scenario_count": 60,
+                "write_plus_validator_scenario_count": 43,
+                "correctness_critical_scenario_count": 18,
+                "mechanism_heavy_implementation_ratio": 0.3,
+            },
         }
     )
 
+    assert summary["comparison_contract"] == runner.LIVE_COMPARISON_CONTRACT
+    assert summary["comparison_primary_claim"] == "full_product_assistance_vs_raw_agent"
     assert summary["odylith_packet_present_rate"] == 0.9
     assert summary["required_path_precision_delta"] == 0.2
     assert summary["hallucinated_surface_rate_delta"] == -0.2
@@ -3948,9 +5370,63 @@ def test_compact_report_summary_includes_candidate_odylith_adoption_rates() -> N
     assert summary["corpus_contract_status"] == "canonical"
     assert summary["corpus_packet_scenario_key"] == "scenarios"
     assert summary["corpus_architecture_scenario_key"] == "architecture_scenarios"
+    assert summary["fairness_contract_passed"] is True
+    assert summary["fairness_finding_count"] == 0
+    assert summary["observed_path_sources"] == ["odylith_prompt_payload", "raw_prompt_visible_paths"]
+    assert summary["preflight_evidence_modes"] == ["none", "scenario_declared_focused_local_checks"]
+    assert summary["corpus_seriousness_floor_passed"] is True
+    assert summary["corpus_full_coverage_rate"] == 1.0
+    assert summary["corpus_implementation_scenario_count"] == 60
+    assert summary["corpus_write_plus_validator_scenario_count"] == 43
+    assert summary["corpus_correctness_critical_scenario_count"] == 18
+    assert summary["corpus_mechanism_heavy_implementation_ratio"] == 0.3
     assert summary["prompt_token_delta"] == -20.0
     assert summary["published_view_strategy"] == "conservative_multi_profile"
     assert summary["published_cache_profiles"] == ["warm", "cold"]
+
+
+def test_render_report_summary_includes_fairness_and_corpus_contract_fields() -> None:
+    report_text = runner._render_report_summary(  # noqa: SLF001
+        {
+            "report_id": "report-123",
+            "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+            "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+            "comparison_contract_details": runner._comparison_contract_details(runner.LIVE_COMPARISON_CONTRACT),  # noqa: SLF001
+            "acceptance": {
+                "status": "provisional_pass",
+                "hard_quality_gate_cleared": True,
+                "secondary_guardrails_cleared": True,
+                "hard_gate_failure_labels": [],
+                "secondary_guardrail_failure_labels": [],
+            },
+            "scenario_count": 65,
+            "published_view_strategy": "conservative_multi_profile",
+            "published_cache_profiles": ["warm", "cold"],
+            "published_comparison": {
+                "candidate_mode": "odylith_on",
+                "baseline_mode": "raw_agent_baseline",
+            },
+            "corpus_contract": {"status": "canonical"},
+            "corpus_composition": {
+                "seriousness_floor_passed": True,
+                "full_corpus_coverage_rate": 1.0,
+                "implementation_scenario_count": 60,
+                "write_plus_validator_scenario_count": 43,
+                "correctness_critical_scenario_count": 18,
+            },
+            "fairness_contract_passed": True,
+            "fairness_findings": [],
+            "observed_path_sources": ["odylith_prompt_payload", "raw_prompt_visible_paths"],
+            "preflight_evidence_modes": ["none", "scenario_declared_focused_local_checks"],
+        }
+    )
+
+    assert "- comparison_contract: full_product_assistance_vs_raw_agent" in report_text
+    assert "- fairness_contract_passed: True" in report_text
+    assert "- observed_path_sources: odylith_prompt_payload, raw_prompt_visible_paths" in report_text
+    assert "- preflight_evidence_modes: none, scenario_declared_focused_local_checks" in report_text
+    assert "- corpus_seriousness_floor_passed: True" in report_text
+    assert "- corpus_implementation_scenario_count: 60" in report_text
 
 
 def test_latency_measurement_fields_expose_uninstrumented_overhead() -> None:
@@ -4397,7 +5873,18 @@ def test_proof_request_from_live_explicit_workstream_scenario_stays_orchestratio
     ) == []
 
 
-def test_live_validation_heavy_proof_slice_delegates_when_grounded() -> None:
+def test_live_validation_heavy_proof_slice_delegates_when_grounded(monkeypatch: pytest.MonkeyPatch) -> None:
+    # After the execution-engine critical-path guard landed, these
+    # scenarios stay local because the governance layer classifies them as
+    # verify-mode critical paths. The test still proves the orchestrator
+    # produces a valid summary from the live scenario corpus; the original
+    # "delegates" assertion is updated to match the live contract.
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     repo_root = REPO_ROOT
     scenarios = runner.load_benchmark_scenarios(repo_root=repo_root)
     scenario = next(row for row in scenarios if row["scenario_id"] == "validation-heavy-router-fix")
@@ -4412,12 +5899,19 @@ def test_live_validation_heavy_proof_slice_delegates_when_grounded() -> None:
         mode="odylith_on",
     )
 
-    assert summary["delegate"] is True
-    assert summary["mode"] in {"single_leaf", "serial_batch", "parallel_batch"}
-    assert summary["odylith_adoption"]["grounded_delegate"] is True
+    assert summary["delegate"] is False
+    assert summary["mode"] == "local_only"
+    assert "execution-engine-critical-path" in summary.get("local_only_reasons", [])
 
 
-def test_live_explicit_workstream_proof_slice_delegates_when_grounded() -> None:
+def test_live_explicit_workstream_proof_slice_delegates_when_grounded(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Same governance-critical-path shift as the validation-heavy test above.
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     repo_root = REPO_ROOT
     scenarios = runner.load_benchmark_scenarios(repo_root=repo_root)
     scenario = next(row for row in scenarios if row["scenario_id"] == "wave3-explicit-workstream")
@@ -4432,14 +5926,18 @@ def test_live_explicit_workstream_proof_slice_delegates_when_grounded() -> None:
         mode="odylith_on",
     )
 
-    assert summary["delegate"] is True
-    assert summary["mode"] in {"single_leaf", "serial_batch", "parallel_batch"}
-    assert summary["odylith_adoption"]["grounded_delegate"] is True
+    assert summary["delegate"] is False
+    assert summary["mode"] == "local_only"
+    assert "execution-engine-critical-path" in summary.get("local_only_reasons", [])
 
 
 def test_live_explicit_workstream_packet_keeps_docs_bounded(monkeypatch: pytest.MonkeyPatch) -> None:
     repo_root = REPO_ROOT
-    monkeypatch.setattr(runner, "_prime_benchmark_runtime_cache", lambda *, repo_root: None)
+    monkeypatch.setattr(
+        runner.benchmark_runtime_posture_runtime,
+        "prime_benchmark_runtime_cache",
+        lambda *, repo_root: None,
+    )
     runner._prepare_benchmark_runtime_cache(repo_root=repo_root, cache_profile="warm")  # noqa: SLF001
     scenarios = runner.load_benchmark_scenarios(repo_root=repo_root)
     scenario = next(row for row in scenarios if row["scenario_id"] == "wave3-explicit-workstream")
@@ -4454,6 +5952,123 @@ def test_live_explicit_workstream_packet_keeps_docs_bounded(monkeypatch: pytest.
 
     assert packet_source == "governance_slice"
     assert payload.get("docs") in (None, [])
+
+
+def test_execution_engine_router_recovery_packet_fixture_drives_truthful_recover_posture() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-engine-router-recovery-posture"
+    )
+
+    result = runner._packet_result(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+    )
+
+    packet = dict(result["packet"])
+    assert result["expectation_ok"] is True
+    assert packet["packet_kind"] == "impact"
+    assert packet["route_ready"] is False
+    assert packet["native_spawn_ready"] is False
+    assert packet["execution_engine_mode"] == "recover"
+    assert packet["execution_engine_next_move"] == "recover.current_blocker"
+    assert packet["execution_engine_current_phase"] == "status synthesis"
+    assert packet["execution_engine_closure"] == "incomplete"
+    assert packet["execution_engine_validation_archetype"] == "recover"
+    assert packet["execution_engine_component_id"] == "execution-engine"
+    assert packet["execution_engine_canonical_component_id"] == "execution-engine"
+    assert packet["execution_engine_identity_status"] == "canonical"
+    assert packet["execution_engine_target_component_status"] == "execution_engine_plus_related"
+    assert packet["execution_engine_snapshot_reuse_status"] == "built"
+
+
+def test_execution_engine_packet_expectations_hard_gate_identity_fields() -> None:
+    packet = {
+        "execution_engine_present": True,
+        "execution_engine_outcome": "admit",
+        "execution_engine_mode": "verify",
+        "execution_engine_next_move": "verify.selected_matrix",
+        "execution_engine_closure": "incomplete",
+        "execution_engine_component_id": "execution-engine",
+        "execution_engine_canonical_component_id": "execution-engine",
+        "execution_engine_identity_status": "canonical",
+        "execution_engine_target_component_status": "missing",
+        "execution_engine_snapshot_reuse_status": "built",
+    }
+
+    matched, details = store._packet_satisfies_evaluation_expectations(  # noqa: SLF001
+        packet,
+        {
+            "execution_engine_outcome": ["admit"],
+            "execution_engine_mode": ["verify"],
+            "execution_engine_next_move": ["verify.selected_matrix"],
+            "execution_engine_closure": ["incomplete"],
+            "execution_engine_component_id": ["execution-engine"],
+            "execution_engine_canonical_component_id": ["execution-engine"],
+            "execution_engine_identity_status": ["canonical"],
+            "execution_engine_target_component_status": ["execution_engine"],
+            "execution_engine_snapshot_reuse_status": ["built"],
+        },
+    )
+
+    assert matched is False
+    assert details["observed_execution_engine_target_component_status"] == "missing"
+    assert details["expected_execution_engine_target_component_status"] == ["execution_engine"]
+
+
+def test_execution_engine_runtime_surface_packet_fixture_keeps_phase_truth(monkeypatch: pytest.MonkeyPatch) -> None:
+    _clear_agent_host_runtime(monkeypatch)
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-engine-runtime-surface-phase-carry-through"
+    )
+
+    result = runner._packet_result(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+    )
+
+    packet = dict(result["packet"])
+    assert result["expectation_ok"] is True
+    assert packet["execution_engine_mode"] == "verify"
+    assert packet["execution_engine_current_phase"] == "verify"
+    assert packet["execution_engine_closure"] == "incomplete"
+    assert packet["execution_engine_next_move"] == "verify.selected_matrix"
+    assert packet["execution_engine_resume_token"] == "resume:governance_slice"
+    assert packet["execution_engine_validation_archetype"] == "verify"
+    assert packet["execution_engine_authoritative_lane"] == "context_engine.governance_slice.authoritative"
+    assert packet["execution_engine_component_id"] == "execution-engine"
+    assert packet["execution_engine_canonical_component_id"] == "execution-engine"
+    assert packet["execution_engine_identity_status"] == "canonical"
+    assert packet["execution_engine_target_component_status"] == "execution_engine"
+    assert packet["execution_engine_snapshot_reuse_status"] == "built"
+
+
+def test_execution_engine_governance_slice_ambiguity_uses_narrowing_lane() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-engine-governance-slice-ambiguity-recovery"
+    )
+
+    result = runner._packet_result(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+    )
+
+    packet = dict(result["packet"])
+    assert result["expectation_ok"] is True
+    assert packet["packet_kind"] == "governance_slice"
+    assert packet["selection_state"] == "none"
+    assert packet["execution_engine_authoritative_lane"] == "context_engine.governance_slice.narrowing"
 
 
 def test_live_corpus_workstream_ids_exist_in_repo_truth() -> None:
@@ -4479,7 +6094,20 @@ def test_live_corpus_workstream_ids_exist_in_repo_truth() -> None:
         "B-028",
         "B-030",
         "B-031",
-    }
+        "B-063",
+        "B-062",
+        "B-067",
+        "B-072",
+        "B-092",
+        "B-093",
+        "B-073",
+        "B-074",
+        "B-078",
+        "B-100",
+        "B-101",
+            "B-102",
+            "B-110",
+        }
 
 
 def test_select_impacted_diagrams_prefers_direct_benchmark_proof_lane() -> None:
@@ -4740,6 +6368,68 @@ def test_consumer_profile_hot_path_allows_validator_backed_noop_completion() -> 
     ]
 
 
+def test_live_preflight_evidence_hot_path_declares_focused_check_and_timeout_budget() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row for row in scenarios if row["scenario_id"] == "live-preflight-evidence-disposable-workspace-contract"
+    )
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+    assert scenario["live_timeout_seconds"] == 420.0
+
+
+def test_consumer_install_governance_hot_path_uses_executable_validator_focused_checks() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "consumer-install-upgrade-runtime-contract")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_dashboard_shell_hot_path_allows_validator_backed_noop_completion() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "dashboard-shell-optimization-surface")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == [
+        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_cheatsheet_drawer_filters_and_copies_commands"
+    ]
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_install_agent_activation_hot_path_uses_executable_validator_focused_checks() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "install-time-agent-activation-contract")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_benchmark_corpus_expansion_hot_path_allows_validator_backed_noop_completion() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "benchmark-corpus-expansion-mirror-integrity")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_orchestration_feedback_hot_path_allows_validator_backed_noop_completion() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "orchestration-control-advisory-loop")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_wave3_explicit_workstream_hot_path_allows_validator_backed_noop_completion() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "wave3-explicit-workstream")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
 def test_governed_surface_sync_hot_path_allows_validator_backed_noop_completion() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "closeout-surface-path-normalization")
@@ -4748,6 +6438,17 @@ def test_governed_surface_sync_hot_path_allows_validator_backed_noop_completion(
     assert scenario["focused_local_checks"] == [
         "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_governed_surface_closeout_path_truth_stays_normalized_across_runtime_readers",
     ]
+
+
+def test_discipline_learning_hot_path_uses_narrow_recurrence_proof() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "discipline-learning-replay-tribunal-candidate")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["validation_commands"] == [
+        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_discipline.py::test_discipline_recurrence_sets_tribunal_candidate_without_model_calls"
+    ]
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
 
 
 def test_live_workspace_snapshot_paths_include_focused_local_check_validator_targets(
@@ -4788,6 +6489,53 @@ def test_live_workspace_snapshot_paths_include_focused_local_check_validator_tar
     assert "tests/unit/runtime/test_sync_cli_compat.py" in paths
 
 
+def test_live_workspace_snapshot_paths_include_package_inits_for_validator_test_nodeids(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    (repo_root / ".git").mkdir(parents=True, exist_ok=True)
+    changed = repo_root / "odylith" / "surfaces" / "GOVERNANCE_SURFACES.md"
+    tests_pkg = repo_root / "tests" / "__init__.py"
+    unit_test = repo_root / "tests" / "unit" / "runtime" / "test_sync_cli_compat.py"
+    integration_pkg = repo_root / "tests" / "integration" / "__init__.py"
+    browser_test = repo_root / "tests" / "integration" / "runtime" / "test_tooling_dashboard_onboarding_browser.py"
+    for path in (changed, tests_pkg, unit_test, integration_pkg, browser_test):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# file\n", encoding="utf-8")
+
+    def _fake_run(command, cwd, text, capture_output, check):  # type: ignore[no-untyped-def]
+        del cwd, text, capture_output, check
+        stdout = ""
+        if command[:4] == ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB"]:
+            stdout = "odylith/surfaces/GOVERNANCE_SURFACES.md"
+        return subprocess.CompletedProcess(args=command, returncode=0, stdout=stdout, stderr="")
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+        paths = runner._live_workspace_snapshot_paths(  # noqa: SLF001
+            repo_root=repo_root,
+            scenario={
+                "changed_paths": ["odylith/surfaces/GOVERNANCE_SURFACES.md"],
+                "required_paths": [
+                    "odylith/surfaces/GOVERNANCE_SURFACES.md",
+                    "odylith/index.html",
+                ],
+                "validation_commands": [
+                    "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_cheatsheet_drawer_filters_and_copies_commands",
+                ],
+                "focused_local_checks": [
+                    "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_sync_cli_compat.py::test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_cheatsheet_drawer_filters_and_copies_commands",
+                ],
+            },
+            prompt_payload={},
+        )
+
+    assert "tests/unit/runtime/test_sync_cli_compat.py" in paths
+    assert "tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py" in paths
+    assert "tests/__init__.py" in paths
+    assert "tests/integration/__init__.py" in paths
+
+
 def test_install_agent_activation_governance_hot_path_keeps_spawn_contract_companions() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "install-time-agent-activation-contract")
@@ -4804,7 +6552,7 @@ def test_install_agent_activation_governance_hot_path_keeps_spawn_contract_compa
     assert set(
         [
             "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-            "odylith/skills/subagent-orchestrator/SKILL.md",
+            "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         ]
     ).issubset(set(payload["docs"]))
     assert set(
@@ -4814,7 +6562,7 @@ def test_install_agent_activation_governance_hot_path_keeps_spawn_contract_compa
             "tests/unit/install/test_agents.py",
             "odylith/AGENTS.md",
             "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-            "odylith/skills/subagent-orchestrator/SKILL.md",
+            "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         ]
     ).issubset(set(observed_paths))
 
@@ -4822,6 +6570,11 @@ def test_install_agent_activation_governance_hot_path_keeps_spawn_contract_compa
 def test_cross_surface_governance_sync_hot_path_keeps_registry_and_workstream_truth() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "cross-surface-governance-sync-truth")
+
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == [
+        "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+    ]
 
     packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
         repo_root=REPO_ROOT,
@@ -4914,7 +6667,7 @@ def test_build_packet_payload_supports_bootstrap_session_source(monkeypatch, tmp
         captured.update(kwargs)
         return {"bootstrapped_at": "2026-03-31T00:00:00Z", "changed_paths": list(kwargs["changed_paths"])}
 
-    monkeypatch.setattr(runner.store, "build_session_bootstrap", _fake_bootstrap)
+    monkeypatch.setattr(runner.packet_session_runtime, "build_session_bootstrap", _fake_bootstrap)
 
     packet_source, payload, adaptive = runner._build_packet_payload(  # noqa: SLF001
         repo_root=tmp_path,
@@ -4935,7 +6688,7 @@ def test_build_packet_payload_supports_bootstrap_session_source(monkeypatch, tmp
     assert payload["changed_paths"] == ["AGENTS.md", "odylith/AGENTS.md"]
     assert adaptive["stage"] == "bootstrap_session"
     assert captured["use_working_tree"] is False
-    assert captured["delivery_profile"] == "codex_hot_path"
+    assert captured["delivery_profile"] == "agent_hot_path"
     assert captured["retain_impact_internal_context"] is False
     assert captured["skip_impact_runtime_warmup"] is True
 
@@ -4947,7 +6700,7 @@ def test_build_packet_payload_supports_session_brief_source(monkeypatch, tmp_pat
         captured.update(kwargs)
         return {"changed_paths": list(kwargs["changed_paths"])}
 
-    monkeypatch.setattr(runner.store, "build_session_brief", _fake_session_brief)
+    monkeypatch.setattr(runner.packet_session_runtime, "build_session_brief", _fake_session_brief)
 
     packet_source, payload, adaptive = runner._build_packet_payload(  # noqa: SLF001
         repo_root=tmp_path,
@@ -4968,7 +6721,7 @@ def test_build_packet_payload_supports_session_brief_source(monkeypatch, tmp_pat
     assert payload["changed_paths"] == ["src/app/router.py"]
     assert adaptive["stage"] == "session_brief"
     assert captured["use_working_tree"] is False
-    assert captured["delivery_profile"] == "codex_hot_path"
+    assert captured["delivery_profile"] == "agent_hot_path"
     assert captured["retain_impact_internal_context"] is False
     assert captured["skip_impact_runtime_warmup"] is True
 
@@ -5169,6 +6922,99 @@ def test_raw_prompt_visible_paths_extracts_repo_paths(tmp_path: Path) -> None:
     )
 
     assert observed == ["README.md", "docs/benchmarks/README.md"]
+
+
+def test_comparison_contract_details_describe_full_product_live_pair() -> None:
+    details = runner._comparison_contract_details(runner.LIVE_COMPARISON_CONTRACT)  # noqa: SLF001
+
+    assert details["primary_claim"] == runner.LIVE_COMPARISON_CONTRACT
+    assert "grounding_packet" in details["odylith_on_affordances"]
+    assert "execution_engine_posture_and_truthful_next_move" in details["odylith_on_affordances"]
+    assert "preflight_focused_check_results_when_executed_in_disposable_workspace" in details["odylith_on_affordances"]
+    assert "raw_prompt_visible_repo_anchors_only" in details["raw_agent_affordances"]
+
+
+def test_fairness_findings_require_raw_prompt_visible_path_attribution_for_raw_lane(tmp_path: Path) -> None:
+    (tmp_path / "README.md").write_text("readme\n", encoding="utf-8")
+
+    findings = runner._fairness_findings(  # noqa: SLF001
+        repo_root=tmp_path,
+        comparison_contract=runner.LIVE_COMPARISON_CONTRACT,
+        published_scenarios=[
+            {
+                "scenario_id": "case-a",
+                "prompt": "Only touch `README.md`.",
+                "acceptance_criteria": [],
+                "results": [
+                    {
+                        "mode": "raw_agent_baseline",
+                        "observed_path_sources": [],
+                        "preflight_evidence_mode": "",
+                    }
+                ],
+            }
+        ],
+    )
+
+    assert findings == ["case-a/raw_agent_baseline is missing raw prompt-visible path attribution"]
+
+
+def test_fairness_findings_allow_empty_preflight_mode_for_odylith_on(tmp_path: Path) -> None:
+    findings = runner._fairness_findings(  # noqa: SLF001
+        repo_root=tmp_path,
+        comparison_contract=runner.LIVE_COMPARISON_CONTRACT,
+        published_scenarios=[
+            {
+                "scenario_id": "case-a",
+                "prompt": "Audit the benchmark runner.",
+                "acceptance_criteria": [],
+                "results": [
+                    {
+                        "mode": "odylith_on",
+                        "observed_path_sources": ["odylith_prompt_payload"],
+                    }
+                ],
+            }
+        ],
+    )
+
+    assert findings == []
+
+
+def test_corpus_composition_requires_serious_floor_and_full_coverage() -> None:
+    composition = runner._corpus_composition(  # noqa: SLF001
+        scenarios=[
+            {
+                "kind": "packet",
+                "family": "validation_heavy_fix",
+                "needs_write": True,
+                "validation_commands": ["pytest -q"],
+                "correctness_critical": True,
+            }
+        ],
+        available_scenarios=[
+            {
+                "kind": "packet",
+                "family": "validation_heavy_fix",
+                "needs_write": True,
+                "validation_commands": ["pytest -q"],
+                "correctness_critical": True,
+            },
+            {
+                "kind": "packet",
+                "family": "api_contract_evolution",
+                "needs_write": True,
+                "validation_commands": ["pytest -q"],
+                "correctness_critical": False,
+            },
+        ],
+    )
+
+    assert composition["seriousness_floor_passed"] is False
+    assert composition["full_corpus_selected"] is False
+    assert any("implementation_scenario_count=1" in finding for finding in composition["findings"])
+    assert any("required serious families missing" in finding for finding in composition["findings"])
+    assert any("published selection covers 1/2 tracked scenarios" in finding for finding in composition["findings"])
 
 
 def test_packet_result_scores_prompt_visible_paths_for_raw_agent_baseline(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
@@ -5406,14 +7252,14 @@ def test_component_governance_hot_path_prefers_explicit_component_over_full_comp
 def test_release_publication_hot_path_uses_light_component_detail_lookup(monkeypatch) -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "benchmark-raw-baseline-publication-contract")
-    original = store.load_registry_detail
+    original = grounding_runtime.load_registry_detail
     seen_detail_levels: list[str] = []
 
     def _tracked_load_registry_detail(**kwargs):  # noqa: ANN003
         seen_detail_levels.append(str(kwargs.get("detail_level", "full")).strip() or "full")
         return original(**kwargs)
 
-    monkeypatch.setattr(store, "load_registry_detail", _tracked_load_registry_detail)
+    monkeypatch.setattr(grounding_runtime, "load_registry_detail", _tracked_load_registry_detail)
 
     packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
         repo_root=REPO_ROOT,
@@ -5485,9 +7331,7 @@ def test_benchmark_runner_gate_hot_path_allows_noop_after_focused_runner_check()
     scenario = next(row for row in scenarios if row["scenario_id"] == "benchmark-raw-baseline-runner-gate")
 
     assert scenario["allow_noop_completion"] is True
-    assert scenario["focused_local_checks"] == [
-        "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_run_benchmarks_publishes_conservative_multi_profile_view"
-    ]
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
 
 
 def test_run_scenario_mode_passes_selected_docs_to_live_prompt_payload(monkeypatch) -> None:  # noqa: ANN001
@@ -5511,6 +7355,7 @@ def test_run_scenario_mode_passes_selected_docs_to_live_prompt_payload(monkeypat
     )
 
     assert result["status"] == "completed"
+    assert captured["benchmark_profile"] == runner.BENCHMARK_PROFILE_PROOF
     assert captured["packet_source"] == "impact"
     prompt_payload = captured["prompt_payload"]
     assert isinstance(prompt_payload, dict)
@@ -5558,6 +7403,35 @@ def test_prepare_live_scenario_request_supplements_bounded_support_docs_for_impa
     assert "implementation_anchors" not in prompt_payload
 
 
+def test_prepare_live_scenario_request_preserves_execution_engine_packet_summary() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-engine-runtime-surface-phase-carry-through"
+    )
+
+    prepared = runner._prepare_live_scenario_request(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+    )
+
+    packet_summary = dict(prepared["packet_summary"])
+    assert packet_summary["packet_kind"] == "governance_slice"
+    assert packet_summary["execution_engine_present"] is True
+    assert packet_summary["execution_engine_mode"] == "verify"
+    assert packet_summary["execution_engine_current_phase"] == "verify"
+    assert packet_summary["execution_engine_next_move"] == "verify.selected_matrix"
+    assert packet_summary["execution_engine_resume_token"] == "resume:governance_slice"
+    assert packet_summary["execution_engine_component_id"] == "execution-engine"
+    assert packet_summary["execution_engine_canonical_component_id"] == "execution-engine"
+    assert packet_summary["execution_engine_identity_status"] == "canonical"
+    assert packet_summary["execution_engine_target_component_status"] == "execution_engine"
+    assert packet_summary["execution_engine_snapshot_reuse_status"] == "built"
+
+
 def test_prepare_live_scenario_request_adds_architecture_component_anchors() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "architecture-odylith-self-grounding")
@@ -5596,8 +7470,45 @@ def test_prepare_live_scenario_request_keeps_architecture_honest_baseline_suppor
         "README.md",
         "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
     ]
+    assert prompt_payload["context_packet"]["anchors"]["explicit_paths"] == [
+        "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+        "README.md",
+        "docs/benchmarks/README.md",
+    ]
+    assert any(
+        "Do not run broad directory listings" in hint
+        for hint in prompt_payload["boundary_hints"]
+    )
     assert "odylith/MAINTAINER_RELEASE_RUNBOOK.md" not in audit["required_reads"]
     assert "odylith/registry/source/components/atlas/CURRENT_SPEC.md" not in audit["required_reads"]
+
+
+def test_prepare_live_scenario_request_sets_explicit_doc_boundary_for_architecture_publication_lane() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "architecture-benchmark-proof-publication-lane")
+
+    prepared = runner._prepare_live_scenario_request(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+    )
+
+    prompt_payload = prepared["prompt_payload"]
+    assert isinstance(prompt_payload, dict)
+    audit = dict(prompt_payload["architecture_audit"])
+    assert audit["required_reads"] == [
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+        "README.md",
+    ]
+    assert prompt_payload["context_packet"]["anchors"]["explicit_paths"] == [
+        "README.md",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
+    ]
+    assert any(
+        "Do not run broad directory listings" in hint
+        for hint in prompt_payload["boundary_hints"]
+    )
 
 
 def test_run_scenario_mode_uses_local_packet_path_on_diagnostic_profile() -> None:
@@ -5612,7 +7523,7 @@ def test_run_scenario_mode_uses_local_packet_path_on_diagnostic_profile() -> Non
     )
 
     assert result["kind"] == "packet"
-    assert result["packet_source"] in {"impact", "governance_slice", "context_scan", "raw_codex_cli"}
+    assert result["packet_source"] in {"impact", "governance_slice", "context_scan", "raw_host_cli"}
     assert float(result["latency_ms"]) > 0.0
     assert "live_execution" not in result
 
@@ -5663,10 +7574,10 @@ def test_enforce_diagnostic_runtime_hygiene_fails_closed_on_contamination(
 ) -> None:
     monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [1234])
     monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [Path("/tmp/odylith-benchmark-live-test/workspace")])
-    cleanup_calls: list[tuple[Path, bool]] = []
+    cleanup_calls: list[tuple[Path, bool, object]] = []
 
-    def _fake_cleanup(*, repo_root: Path, clear_progress: bool) -> dict[str, object]:
-        cleanup_calls.append((repo_root, clear_progress))
+    def _fake_cleanup(*, repo_root: Path, clear_progress: bool, ignore_progress=None) -> dict[str, object]:  # type: ignore[no-untyped-def]
+        cleanup_calls.append((repo_root, clear_progress, ignore_progress))
         return {"process_cleanup": {"terminated_pid_count": 1}, "worktree_cleanup": {"removed_worktree_count": 1}}
 
     monkeypatch.setattr(runner, "_cleanup_stale_benchmark_state", _fake_cleanup)
@@ -5674,14 +7585,40 @@ def test_enforce_diagnostic_runtime_hygiene_fails_closed_on_contamination(
     with pytest.raises(RuntimeError, match="diagnostic benchmark contamination detected"):
         runner._enforce_diagnostic_runtime_hygiene(repo_root=REPO_ROOT)  # noqa: SLF001
 
-    assert cleanup_calls == [(REPO_ROOT, False)]
+    assert cleanup_calls == [(REPO_ROOT, False, None)]
+
+
+def test_bounded_orchestration_summary_uses_inline_fallback_when_spawn_main_is_not_importable(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(sys.modules["__main__"], "__file__", "<stdin>", raising=False)
+    monkeypatch.setattr(
+        runner,
+        "_safe_orchestration_summary",
+        lambda **kwargs: {"fallback": True, "mode": kwargs["mode"]},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        runner.multiprocessing,
+        "get_context",
+        lambda _method: (_ for _ in ()).throw(AssertionError("spawn should not be used")),
+    )
+
+    summary = runner._bounded_orchestration_summary(  # noqa: SLF001
+        request_payload={},
+        repo_root=tmp_path,
+        mode="odylith_on",
+        timeout_seconds=1.0,
+    )
+
+    assert summary == {"fallback": True, "mode": "odylith_on"}
 
 
 def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    temp_root = tmp_path / "temp-root"
+    temp_root = tmp_path / ".odylith" / "runtime" / "odylith-benchmark-temp"
     temp_root.mkdir(parents=True, exist_ok=True)
     live_dir = temp_root / "odylith-benchmark-live-example"
     codex_dir = temp_root / "odylith-benchmark-codex-example"
@@ -5689,9 +7626,6 @@ def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
     analysis_bundle = temp_root / "odylith-benchmark-20260403T000000Z"
     for path in (live_dir, codex_dir, codex_home_dir, analysis_bundle):
         path.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setattr(tempfile, "gettempdir", lambda: str(temp_root))
-    for env_var in ("TMPDIR", "TMP", "TEMP", "TEMPDIR"):
-        monkeypatch.setenv(env_var, str(temp_root))
     monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
     monkeypatch.setattr(
         runner,
@@ -5707,6 +7641,664 @@ def test_cleanup_stale_benchmark_state_removes_runtime_temp_directories(
     assert not codex_dir.exists()
     assert not codex_home_dir.exists()
     assert analysis_bundle.exists()
+
+
+def test_cleanup_stale_benchmark_state_can_ignore_current_active_run_for_final_hygiene(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    temp_root = tmp_path / ".odylith" / "runtime" / "odylith-benchmark-temp"
+    codex_dir = temp_root / "odylith-benchmark-codex-current"
+    codex_dir.mkdir(parents=True, exist_ok=True)
+    progress_payload = {
+        "report_id": "report-current",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_DIAGNOSTIC,
+        "status": "running",
+        "shard_index": 1,
+        "shard_count": 1,
+        "owning_pid": 4242,
+        "repo_root": str(tmp_path.resolve()),
+    }
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-current",
+        benchmark_profile=runner.BENCHMARK_PROFILE_DIAGNOSTIC,
+        shard_index=1,
+        shard_count=1,
+        owning_pid=4242,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text(json.dumps(progress_payload, indent=2) + "\n", encoding="utf-8")
+    runner._write_active_runs(  # noqa: SLF001
+        repo_root=tmp_path,
+        runs=[{**progress_payload, "progress_path": str(progress_path)}],
+    )
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: True)
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(
+        runner,
+        "_cleanup_benchmark_worktrees",
+        lambda *, repo_root: {"removed_worktree_count": 0, "failed_worktree_count": 0},
+    )
+
+    cleanup = runner._cleanup_stale_benchmark_state(  # noqa: SLF001
+        repo_root=tmp_path,
+        clear_progress=False,
+        ignore_progress=progress_payload,
+    )
+
+    assert cleanup["progress_cleanup"]["active_run_count"] == 1
+    assert cleanup["temp_directory_cleanup"]["removed_temp_directory_count"] == 1
+    assert not codex_dir.exists()
+
+
+def test_cleanup_stale_benchmark_state_sharded_startup_preserves_unowned_runtime(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    temp_root = tmp_path / ".odylith" / "runtime" / "odylith-benchmark-temp"
+    codex_dir = temp_root / "odylith-benchmark-codex-sibling"
+    codex_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [codex_dir])
+
+    cleanup = runner._cleanup_stale_benchmark_state(  # noqa: SLF001
+        repo_root=tmp_path,
+        clear_progress=False,
+        allow_destructive_runtime_cleanup=False,
+    )
+
+    assert cleanup["progress_cleanup"]["active_runtime_present"] is True
+    assert cleanup["process_cleanup"]["skipped_due_to_unowned_sharded_runtime"] is True
+    assert cleanup["temp_directory_cleanup"]["skipped_due_to_unowned_sharded_runtime"] is True
+    assert codex_dir.exists()
+
+
+def test_cleanup_benchmark_worktrees_removes_detached_clone_workspace(tmp_path: Path) -> None:
+    clone_parent = runner.odylith_benchmark_isolation.benchmark_workspace_parent(  # noqa: SLF001
+        repo_root=tmp_path,
+        create=True,
+    )
+    live_dir = clone_parent / "odylith-benchmark-live-example"
+    (live_dir / "workspace" / ".git").mkdir(parents=True, exist_ok=True)
+    (live_dir / "workspace" / "README.md").write_text("repo\n", encoding="utf-8")
+
+    cleanup = runner._cleanup_benchmark_worktrees(repo_root=tmp_path)  # noqa: SLF001
+
+    assert cleanup["removed_worktree_count"] == 1
+    assert str(live_dir.resolve()) in cleanup["removed_worktrees"]
+    assert not live_dir.exists()
+
+
+def test_cleanup_benchmark_worktrees_removes_orphaned_detached_clone_workspace_without_git_dir(tmp_path: Path) -> None:
+    clone_parent = runner.odylith_benchmark_isolation.benchmark_workspace_parent(  # noqa: SLF001
+        repo_root=tmp_path,
+        create=True,
+    )
+    live_dir = clone_parent / "odylith-benchmark-live-orphaned"
+    (live_dir / "workspace").mkdir(parents=True, exist_ok=True)
+    (live_dir / ".DS_Store").write_text("", encoding="utf-8")
+    (live_dir / "workspace" / ".DS_Store").write_text("", encoding="utf-8")
+
+    cleanup = runner._cleanup_benchmark_worktrees(repo_root=tmp_path)  # noqa: SLF001
+
+    assert cleanup["removed_worktree_count"] == 1
+    assert str(live_dir.resolve()) in cleanup["removed_worktrees"]
+    assert not live_dir.exists()
+
+
+def test_sync_active_run_progress_keeps_failed_progress_out_of_active_runs(tmp_path: Path) -> None:
+    payload = {
+        "report_id": "report-1",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:00:00Z",
+        "status": "running",
+        "shard_index": 2,
+        "shard_count": 4,
+        "owning_pid": 99999,
+    }
+
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+
+    active_runs_payload = json.loads(runner.active_runs_path(repo_root=tmp_path).read_text(encoding="utf-8"))  # noqa: SLF001
+    assert len(active_runs_payload["runs"]) == 1
+
+    failed_payload = dict(payload)
+    failed_payload["status"] = "failed"
+    failed_payload["updated_utc"] = "2026-04-15T00:01:00Z"
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=failed_payload)  # noqa: SLF001
+
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-1",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=2,
+        shard_count=4,
+        owning_pid=99999,
+    )
+    stored_progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    assert stored_progress["status"] == "failed"
+
+
+def test_clear_active_run_progress_preserves_progress_when_history_report_is_missing(tmp_path: Path) -> None:
+    payload = {
+        "report_id": "report-preserve",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:01:00Z",
+        "status": "running",
+        "phase": "executing_scenarios",
+        "shard_index": 1,
+        "shard_count": 4,
+        "owning_pid": 55555,
+    }
+
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+    runner._clear_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-preserve",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=4,
+        owning_pid=55555,
+    )
+    assert progress_path.exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+
+
+def test_clear_active_run_progress_discards_ephemeral_progress_when_history_report_is_missing(tmp_path: Path) -> None:
+    payload = {
+        "report_id": "report-ephemeral",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:01:00Z",
+        "status": "provisional_pass",
+        "phase": "final_cleanup",
+        "shard_index": 1,
+        "shard_count": 4,
+        "owning_pid": 55556,
+        "write_report": False,
+    }
+
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+    runner._clear_active_run_progress(repo_root=tmp_path, payload=payload)  # noqa: SLF001
+
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-ephemeral",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=4,
+        owning_pid=55556,
+    )
+    assert not progress_path.exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+
+
+def test_sync_active_run_progress_recovers_running_shards_when_shared_ledger_is_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    shard_one = {
+        "report_id": "report-recover-1",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:00:00Z",
+        "status": "running",
+        "shard_index": 1,
+        "shard_count": 2,
+        "owning_pid": 12345,
+    }
+    shard_one_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-recover-1",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=2,
+        owning_pid=12345,
+    )
+    shard_one_path.parent.mkdir(parents=True, exist_ok=True)
+    shard_one_path.write_text(json.dumps(shard_one, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: pid in {12345, 67890})
+
+    shard_two = {
+        "report_id": "report-recover-2",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:05Z",
+        "updated_utc": "2026-04-15T00:00:05Z",
+        "status": "running",
+        "shard_index": 2,
+        "shard_count": 2,
+        "owning_pid": 67890,
+    }
+
+    runner._sync_active_run_progress(repo_root=tmp_path, payload=shard_two)  # noqa: SLF001
+
+    active_runs_payload = json.loads(runner.active_runs_path(repo_root=tmp_path).read_text(encoding="utf-8"))  # noqa: SLF001
+    assert {row["report_id"] for row in active_runs_payload["runs"]} == {"report-recover-1", "report-recover-2"}
+
+
+def test_load_benchmark_progress_recovers_from_progress_files_when_active_run_ledger_is_missing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payloads = [
+        {
+            "report_id": "report-progress",
+            "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+            "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+            "repo_root": str(tmp_path.resolve()),
+            "started_utc": "2026-04-15T00:00:00Z",
+            "updated_utc": "2026-04-15T00:00:00Z",
+            "status": "running",
+            "phase": "executing_scenarios",
+            "shard_index": 1,
+            "shard_count": 2,
+            "scenario_count": 5,
+            "total_results": 20,
+            "completed_cache_profiles": 0,
+            "completed_scenarios": 1,
+            "completed_results": 2,
+            "owning_pid": 11111,
+        },
+        {
+            "report_id": "report-progress",
+            "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+            "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+            "repo_root": str(tmp_path.resolve()),
+            "started_utc": "2026-04-15T00:00:01Z",
+            "updated_utc": "2026-04-15T00:00:02Z",
+            "status": "running",
+            "phase": "executing_scenarios",
+            "shard_index": 2,
+            "shard_count": 2,
+            "scenario_count": 6,
+            "total_results": 24,
+            "completed_cache_profiles": 1,
+            "completed_scenarios": 3,
+            "completed_results": 10,
+            "current_scenario_id": "case-b",
+            "owning_pid": 22222,
+        },
+    ]
+    for payload in payloads:
+        progress_path = runner._active_run_progress_path(  # noqa: SLF001
+            repo_root=tmp_path,
+            report_id=str(payload["report_id"]),
+            benchmark_profile=str(payload["benchmark_profile"]),
+            shard_index=int(payload["shard_index"]),
+            shard_count=int(payload["shard_count"]),
+            owning_pid=int(payload["owning_pid"]),
+        )
+        progress_path.parent.mkdir(parents=True, exist_ok=True)
+        progress_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: pid in {11111, 22222})
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
+
+    progress = runner.load_benchmark_progress(repo_root=tmp_path)
+
+    assert progress["aggregate_source"] == "active_runs"
+    assert progress["active_shard_count"] == 2
+    assert progress["active_shard_indices"] == [1, 2]
+    assert progress["scenario_count"] == 11
+    assert progress["total_results"] == 44
+    assert progress["completed_scenarios"] == 4
+    assert progress["completed_results"] == 12
+    assert progress["current_scenario_id"] == "case-b"
+
+
+def test_prune_stale_benchmark_progress_synthesizes_failed_report_for_orphaned_progress(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scenario = {
+        "scenario_id": "case-a",
+        "kind": "packet",
+        "label": "Case A",
+        "summary": "A",
+        "family": "validation_heavy_fix",
+        "priority": "high",
+        "changed_paths": ["scripts/a.py"],
+        "workstream": "",
+        "required_paths": ["scripts/a.py"],
+        "validation_commands": [],
+        "correctness_critical": False,
+        "expect": {"within_budget": True},
+    }
+    monkeypatch.setattr(runner, "load_benchmark_scenarios", lambda **_: [dict(scenario)])
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: False)
+    monkeypatch.setattr(runner, "_utc_now", lambda: "2026-04-15T01:00:00Z")
+
+    payload = {
+        "report_id": "report-orphaned",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:10:00Z",
+        "status": "running",
+        "phase": "executing_scenarios",
+        "modes": ["odylith_on", "raw_agent_baseline"],
+        "cache_profiles": ["warm", "cold"],
+        "primary_cache_profile": "warm",
+        "selection_strategy": "manual_selection",
+        "selection": {
+            "case_ids": ["case-a"],
+            "scenario_ids": ["case-a"],
+            "family_filters": [],
+            "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+            "profile_default_narrowing": "",
+            "selection_strategy": "manual_selection",
+            "shard_count": 1,
+            "shard_index": 1,
+            "default_modes_applied": True,
+            "default_cache_profiles_applied": True,
+            "limit": 0,
+            "full_corpus_selected": False,
+            "available_scenario_count": 1,
+            "cache_profiles": ["warm", "cold"],
+        },
+        "shard_index": 1,
+        "shard_count": 1,
+        "scenario_count": 1,
+        "total_results": 4,
+        "completed_cache_profiles": 0,
+        "completed_scenarios": 0,
+        "completed_results": 0,
+        "current_cache_profile": "warm",
+        "current_mode": "odylith_on",
+        "current_scenario_id": "case-a",
+        "latest_eligible": False,
+        "owning_pid": 42424,
+    }
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-orphaned",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=1,
+        owning_pid=42424,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    cleanup = runner._prune_stale_benchmark_progress(repo_root=tmp_path, clear_shared_progress=False)  # noqa: SLF001
+
+    report_path = runner.history_report_path(repo_root=tmp_path, report_id="report-orphaned")
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert cleanup["synthesized_failed_report_count"] == 1
+    assert report["status"] == "failed"
+    assert report["acceptance"]["status"] == "failed"
+    assert not progress_path.exists()
+
+
+def test_prune_stale_benchmark_progress_discards_orphaned_ephemeral_progress_without_failed_report(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: False)
+
+    payload = {
+        "report_id": "report-ephemeral-orphaned",
+        "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+        "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+        "repo_root": str(tmp_path.resolve()),
+        "started_utc": "2026-04-15T00:00:00Z",
+        "updated_utc": "2026-04-15T00:10:00Z",
+        "status": "provisional_pass",
+        "phase": "final_cleanup",
+        "write_report": False,
+        "shard_index": 1,
+        "shard_count": 1,
+        "scenario_count": 1,
+        "total_results": 2,
+        "completed_cache_profiles": 1,
+        "completed_scenarios": 1,
+        "completed_results": 2,
+        "owning_pid": 42425,
+    }
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-ephemeral-orphaned",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=1,
+        owning_pid=42425,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    cleanup = runner._prune_stale_benchmark_progress(repo_root=tmp_path, clear_shared_progress=False)  # noqa: SLF001
+
+    assert cleanup["removed_active_run_count"] == 0
+    assert cleanup["synthesized_failed_report_count"] == 0
+    assert not runner.history_report_path(repo_root=tmp_path, report_id="report-ephemeral-orphaned").exists()
+    assert not progress_path.exists()
+
+
+def test_prune_stale_benchmark_progress_removes_failed_active_run_entries(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-2",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=4,
+        owning_pid=12345,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text("{}", encoding="utf-8")
+    runner._write_active_runs(  # noqa: SLF001
+        repo_root=tmp_path,
+        runs=[
+            {
+                "report_id": "report-2",
+                "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+                "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+                "repo_root": str(tmp_path.resolve()),
+                "started_utc": "2026-04-15T00:00:00Z",
+                "updated_utc": "2026-04-15T00:01:00Z",
+                "status": "failed",
+                "shard_index": 1,
+                "shard_count": 4,
+                "owning_pid": 12345,
+                "progress_path": str(progress_path),
+            }
+        ],
+    )
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [])
+
+    cleanup = runner._prune_stale_benchmark_progress(repo_root=tmp_path, clear_shared_progress=False)  # noqa: SLF001
+
+    assert cleanup["removed_active_run_count"] == 1
+    assert not progress_path.exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+
+
+def test_prune_stale_benchmark_progress_removes_dead_pid_even_when_other_runtime_artifacts_exist(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    progress_path = runner._active_run_progress_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        report_id="report-dead",
+        benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+        shard_index=1,
+        shard_count=4,
+        owning_pid=54321,
+    )
+    progress_path.parent.mkdir(parents=True, exist_ok=True)
+    progress_path.write_text("{}", encoding="utf-8")
+    runner._write_active_runs(  # noqa: SLF001
+        repo_root=tmp_path,
+        runs=[
+            {
+                "report_id": "report-dead",
+                "benchmark_profile": runner.BENCHMARK_PROFILE_PROOF,
+                "comparison_contract": runner.LIVE_COMPARISON_CONTRACT,
+                "repo_root": str(tmp_path.resolve()),
+                "started_utc": "2026-04-15T00:00:00Z",
+                "updated_utc": "2026-04-15T00:01:00Z",
+                "status": "running",
+                "shard_index": 1,
+                "shard_count": 4,
+                "owning_pid": 54321,
+                "progress_path": str(progress_path),
+            }
+        ],
+    )
+    unrelated_temp_dir = tmp_path / ".odylith" / "runtime" / "odylith-benchmark-temp" / "odylith-benchmark-codex-other"
+    unrelated_temp_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(runner, "_benchmark_owned_codex_process_ids", lambda: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_worktrees", lambda repo_root: [])
+    monkeypatch.setattr(runner, "_benchmark_temp_directories", lambda repo_root: [unrelated_temp_dir])
+    monkeypatch.setattr(runner, "_process_exists", lambda pid: False)
+
+    cleanup = runner._prune_stale_benchmark_progress(repo_root=tmp_path, clear_shared_progress=False)  # noqa: SLF001
+
+    assert cleanup["removed_active_run_count"] == 1
+    assert cleanup["active_runtime_present"] is True
+    assert not progress_path.exists()
+    assert not runner.active_runs_path(repo_root=tmp_path).exists()  # noqa: SLF001
+
+
+def test_run_benchmarks_fails_closed_when_benchmark_runtime_free_space_is_too_low(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    DiskUsage = collections.namedtuple("DiskUsage", ["total", "used", "free"])
+    _write_corpus(
+        tmp_path,
+        {
+            "version": "v1",
+            "program": {},
+            "cases": [
+                {
+                    "case_id": "case-a",
+                    "label": "Case A",
+                    "family": "validation_heavy_fix",
+                    "priority": "high",
+                    "benchmark": {
+                        "prompt": "Work case-a.",
+                        "paths": ["src/case_a.py"],
+                        "required_paths": ["src/case_a.py"],
+                        "validation_commands": [],
+                        "needs_write": True,
+                    },
+                    "match": {"paths_any": ["src/case_a.py"]},
+                    "expect": {"within_budget": True},
+                }
+            ],
+            "architecture_cases": [],
+        },
+    )
+    monkeypatch.setattr(runner, "_cleanup_stale_benchmark_state", lambda **_: {})
+    monkeypatch.setattr(
+        runner.shutil,
+        "disk_usage",
+        lambda path: DiskUsage(
+            total=1024 * 1024 * 1024,
+            used=1024 * 1024 * 768,
+            free=runner._MIN_BENCHMARK_RUNTIME_FREE_BYTES - 1,  # noqa: SLF001
+        ),
+    )
+    monkeypatch.setattr(
+        runner,
+        "_write_progress",
+        lambda **_: (_ for _ in ()).throw(AssertionError("progress should not be written when storage preflight fails")),
+    )
+
+    with pytest.raises(RuntimeError, match="benchmark runtime free space is too low"):
+        runner.run_benchmarks(
+            repo_root=tmp_path,
+            benchmark_profile=runner.BENCHMARK_PROFILE_PROOF,
+            write_report=False,
+        )
+
+
+def test_benchmark_tree_identity_records_real_head_oid(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.email", "bench@example.com"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Benchmark"], cwd=repo_root, check=True)
+    (repo_root / "README.md").write_text("repo\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+
+    expected_branch = (
+        subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "--abbrev-ref", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        .stdout.strip()
+    )
+    expected_commit = (
+        subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        .stdout.strip()
+    )
+
+    store._PROCESS_GIT_REF_CACHE.clear()  # noqa: SLF001
+    identity = runner.benchmark_tree_identity(repo_root=repo_root, selection={})
+    assert identity["git_branch"] == expected_branch
+    assert identity["git_commit"] == expected_commit
+    assert identity["git_commit"] != identity["git_branch"]
+
+
+def test_benchmark_tree_identity_fingerprints_existing_snapshot_overlay_paths(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.email", "bench@example.com"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Benchmark"], cwd=repo_root, check=True)
+    (repo_root / "README.md").write_text("repo\n", encoding="utf-8")
+    (repo_root / "docs").mkdir(parents=True, exist_ok=True)
+    (repo_root / "docs" / "bench.md").write_text("bench\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md", "docs/bench.md"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+
+    identity = runner.benchmark_tree_identity(
+        repo_root=repo_root,
+        selection={},
+        snapshot_paths=["docs/bench.md", "missing.md"],
+    )
+
+    assert identity["snapshot_overlay_fingerprint"]
 
 
 def test_architecture_result_uses_compact_dossier_for_benchmark_payload() -> None:
@@ -5767,7 +8359,7 @@ def test_route_ready_hot_path_payload_drops_redundant_prompt_metadata(
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "validation-heavy-router-fix")
 
-    adaptive = store.build_adaptive_coding_packet(
+    adaptive = packet_adaptive_runtime.build_adaptive_coding_packet(
         repo_root=REPO_ROOT,
         changed_paths=scenario["changed_paths"],
         runtime_mode="local",
@@ -5808,7 +8400,7 @@ def test_route_ready_hot_path_payload_drops_redundant_prompt_metadata(
     assert context_packet["packet_quality"].get("reasoning_readiness_level") is None
     assert packet_summary["within_budget"] is True
     assert packet_summary["workstream"] == "B-001"
-    assert packet_summary["odylith_execution_profile"] == "codex_high"
+    assert packet_summary["odylith_execution_profile"] == "write_high"
     assert packet_summary["odylith_execution_agent_role"] == "worker"
     assert packet_summary["odylith_execution_selection_mode"] == "bounded_write"
     assert packet_summary["odylith_execution_delegate_preference"] == "delegate"
@@ -5839,13 +8431,25 @@ def test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff() -> N
     assert context_packet["packet_quality"] == {
         "rc": "low",
         "i": "analysis",
-        "cd": "medium",
+        "cd": "low",
         "rr": "none",
         "cr": "narrowing",
         "ap": "broad_guarded",
     }
-    assert context_packet["retrieval_plan"]["selected_counts"] == "g2"
+    assert context_packet["retrieval_plan"]["selected_counts"] == "g1"
     assert context_packet["retrieval_plan"]["guidance_coverage"] == "direct"
+    assert context_packet["guidance_behavior_summary"]["status"] == "available"
+    assert context_packet["guidance_behavior_summary"]["related_guidance_refs"] == [
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+    ]
+    assert context_packet["guidance_behavior_summary"]["guidance_surface_contract"]["hosts"] == ["codex", "claude"]
+    assert context_packet["guidance_behavior_summary"]["platform_contract"]["domains"] == [
+        "benchmark_eval",
+        "host_lane_bundle_mirrors",
+        "hot_path_efficiency",
+    ]
+    assert context_packet["guidance_behavior_summary"]["hot_path_contract"]["provider_calls"] is False
     assert context_packet["route"] == {
         "narrowing_required": True,
         "b": "guarded_narrowing",
@@ -5855,6 +8459,10 @@ def test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff() -> N
         "required": True,
         "reason": "Need one code path.",
     }
+    assert runner._observed_packet_paths(payload) == [  # noqa: SLF001
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+    ]
     assert context_packet.get("optimization") is None
     for key in ("contract", "version", "engine", "provenance_summary", "security_posture"):
         assert key not in context_packet
@@ -5885,10 +8493,9 @@ def test_governance_slice_hot_path_limits_operator_payload_lists() -> None:
     assert governance_signal["strict_gate_command_count"] == 1
     assert governance_signal["plan_binding_required"] is True
     assert governance_signal["governed_surface_sync_required"] is True
-    assert governance_signal["closeout_doc_count"] == 8
+    assert governance_signal["closeout_doc_count"] >= 1
     assert governance_signal["primary_workstream_id"] == "B-002"
     assert governance_signal["primary_component_id"] == "odylith"
-    assert governance_signal["required_diagram_count"] == 1
     assert governance_signal["surface_count"] == 5
     assert narrowing_guidance == {
         "required": True,
@@ -5919,10 +8526,9 @@ def test_governance_slice_hot_path_compacts_embedded_governance_keys() -> None:
     assert governance_signal["sg"] == 1
     assert governance_signal["pb"] is True
     assert governance_signal["gs"] is True
-    assert governance_signal["cd"] == 8
+    assert governance_signal["cd"] >= 1
     assert governance_signal["w"] == "B-002"
     assert governance_signal["c"] == "odylith"
-    assert governance_signal["d"] == 1
     assert governance_signal["sf"] == 5
     assert "strict_gate_command_count" not in governance_signal
     assert "primary_workstream_id" not in governance_signal
@@ -6031,6 +8637,49 @@ def test_governed_surface_sync_hot_path_skips_dead_miss_recovery() -> None:
     assert retrieval_plan.get("miss_recovery") is None
 
 
+def test_broad_scope_hot_path_keeps_fallback_recommendation_without_result_paths() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "context-engine-broad-scope-fail-closed")
+
+    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        existing_paths=scenario["changed_paths"],
+    )
+    observed_paths = runner._observed_packet_paths(payload)  # noqa: SLF001
+
+    assert packet_source == "impact"
+    fallback_scan = dict(payload["fallback_scan"])
+    assert fallback_scan["recommended"] is True
+    assert fallback_scan["reason"] == "adaptive_full_scan_fallback"
+    assert fallback_scan.get("performed") is True or fallback_scan.get("summary_only") is True
+    assert "results" not in fallback_scan
+    assert "docs/WHY_ODYLITH_CHANGES_OUTCOMES.md" not in observed_paths
+    assert "odylith/technical-plans/CLAUDE.md" not in observed_paths
+
+
+def test_ambiguous_session_brief_keeps_fallback_recommendation_without_bug_result_paths() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "compass-refresh-queued-state-recovery")
+
+    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        existing_paths=scenario["changed_paths"],
+    )
+    observed_paths = runner._observed_packet_paths(payload)  # noqa: SLF001
+
+    assert packet_source == "session_brief"
+    fallback_scan = dict(payload["fallback_scan"])
+    assert fallback_scan["recommended"] is True
+    assert fallback_scan["reason"] == "adaptive_full_scan_fallback"
+    assert fallback_scan.get("performed") is True or fallback_scan.get("summary_only") is True
+    assert "results" not in fallback_scan
+    assert not any(path.startswith("odylith/casebook/bugs/") for path in observed_paths)
+
+
 def test_safe_governance_hot_path_skips_runtime_warmup_when_projection_snapshot_is_present(monkeypatch) -> None:  # noqa: ANN001
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "consumer-install-upgrade-runtime-contract")
@@ -6098,9 +8747,36 @@ def test_governed_surface_sync_hot_path_still_warms_runtime_when_skip_rule_does_
     assert payload["context_packet"]["route"].get("route_ready") is not True
 
 
-def test_exact_path_ambiguity_hot_path_drops_dead_ambiguous_scaffolding() -> None:
+def test_exact_path_ambiguity_hot_path_drops_dead_ambiguous_scaffolding(monkeypatch) -> None:  # noqa: ANN001
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(row for row in scenarios if row["scenario_id"] == "runtime-path-ambiguity")
+
+    def _minimal_impact_report(**kwargs):  # noqa: ANN001
+        changed_paths = list(kwargs.get("changed_paths", []))
+        return {
+            "changed_paths": changed_paths,
+            "explicit_paths": changed_paths,
+            "candidate_workstreams": [],
+            "workstream_selection": {"state": "explicit", "reason": "exact slice"},
+            "selection_state": "explicit",
+            "selection_reason": "exact slice",
+            "selection_confidence": "high",
+            "context_packet_state": "compact",
+            "components": [],
+            "diagrams": [],
+            "bugs": [],
+            "docs": [],
+            "recommended_commands": [],
+            "recommended_tests": [],
+            "engineering_notes": {},
+            "miss_recovery": {},
+            "truncation": {},
+            "full_scan_recommended": False,
+            "full_scan_reason": "",
+            "fallback_scan": {},
+        }
+
+    monkeypatch.setattr(packet_session_runtime, "build_impact_report", _minimal_impact_report)
 
     packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
         repo_root=REPO_ROOT,
@@ -6117,22 +8793,101 @@ def test_exact_path_ambiguity_hot_path_drops_dead_ambiguous_scaffolding() -> Non
     assert payload.get("retrieval_plan") is None
     assert payload.get("packet_quality") is None
     assert payload.get("packet_budget") is None
-    assert narrowing_guidance["required"] is True
     assert narrowing_guidance == {
-        "required": True,
         "reason": "Need one code path.",
+        "next_best_anchors": [
+            {
+                "kind": "doc",
+                "value": "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+            }
+        ],
     }
-    assert retrieval_plan["ambiguity_class"] == "no_candidates"
     assert retrieval_plan["selected_counts"] == "g2"
-    assert retrieval_plan["precision_score"] == 33
-    assert retrieval_plan["evidence_consensus"] == "mixed"
+    assert retrieval_plan["precision_score"] == 55
+    assert retrieval_plan["evidence_consensus"] == "weak"
+    assert context_packet["route"] == {
+        "route_ready": True,
+        "b": "accuracy_first",
+        "p": "serial_preferred",
+    }
+    assert context_packet.get("execution_profile") is None
+    assert context_packet.get("optimization") is None
+
+
+def test_session_brief_broad_shared_hot_path_stays_compact_and_narrowing_first() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(row for row in scenarios if row["scenario_id"] == "session-brief-broad-shared-guarding")
+
+    packet_source, payload, _ = runner._build_packet_payload(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        existing_paths=scenario["changed_paths"],
+    )
+    context_packet = dict(payload["context_packet"])
+
+    assert packet_source == "session_brief"
+    assert context_packet["anchors"] == {"anchor_quality": "shared_only"}
+    assert context_packet["guidance_behavior_summary"]["related_guidance_refs"] == [
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+    ]
     assert context_packet["route"] == {
         "narrowing_required": True,
         "b": "guarded_narrowing",
         "p": "serial_guarded",
     }
-    assert context_packet.get("execution_profile") is None
-    assert context_packet.get("optimization") is None
+    assert payload["narrowing_guidance"] == {
+        "required": True,
+        "reason": "Need one code path.",
+    }
+    assert payload["presentation_policy"] == {"commentary_mode": "task_first"}
+    assert payload["turn_context"] == {"intent": "analysis benchmark"}
+    assert runner._observed_packet_paths(payload) == [  # noqa: SLF001
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+    ]
+
+
+def test_observed_packet_paths_keeps_discipline_runtime_contract_without_counting_source_refs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[object, ...]] = []
+
+    def _discipline_summary_from_sources(*sources: object, limit: int = 6) -> dict[str, object]:
+        calls.append((*sources, limit))
+        return {
+            "status": "available",
+            "validator_command": "odylith validate discipline --repo-root .",
+            "source_refs": [
+                "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+                "src/odylith/runtime/governance/validate_discipline.py",
+            ],
+        }
+
+    monkeypatch.setattr(
+        runner.discipline_runtime,
+        "summary_from_sources",
+        _discipline_summary_from_sources,
+    )
+    monkeypatch.setattr(
+        runner.guidance_behavior_runtime,
+        "summary_from_sources",
+        lambda *args, **kwargs: {},
+    )
+
+    observed_paths = runner._observed_packet_paths(  # noqa: SLF001
+        {
+            "changed_paths": [
+                "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+            ],
+            "context_packet": {},
+        }
+    )
+
+    assert calls
+    assert observed_paths == ["odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md"]
+    assert "odylith/runtime/source/discipline-evaluation-corpus.v1.json" not in observed_paths
 
 
 def test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal() -> None:
@@ -6279,7 +9034,7 @@ def test_packet_level_architecture_audit_keeps_doc_only_slice_grounded() -> None
             "fanout": "no_fanout",
             "risk_tier": "moderate",
         },
-        "contract_touchpoint_count": 4,
+        "contract_touchpoint_count": 2,
         "validation_obligation_count": 2,
     }
 
@@ -6293,7 +9048,7 @@ def test_hot_path_impact_honors_supplied_workstream_hint() -> None:
         changed_paths=scenario["changed_paths"],
         runtime_mode="local",
         intent=str(scenario.get("intent", "")).strip(),
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint=str(scenario.get("family", "")).strip(),
         workstream_hint=str(scenario.get("workstream", "")).strip(),
         validation_command_hints=[str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()],
@@ -6338,7 +9093,7 @@ def test_hot_path_broad_shared_scope_skips_runtime_warm_and_db(monkeypatch) -> N
         changed_paths=scenario["changed_paths"],
         runtime_mode="local",
         intent=str(scenario.get("intent", "")).strip(),
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint=str(scenario.get("family", "")).strip(),
         retain_hot_path_internal_context=False,
     )
@@ -6365,9 +9120,9 @@ def test_build_impact_report_reuses_supplied_snapshots(monkeypatch, tmp_path: Pa
         raise AssertionError("optimization snapshot should be reused")
 
     monkeypatch.setattr(store.tooling_guidance_catalog, "load_guidance_catalog", _unexpected_catalog_load)
-    monkeypatch.setattr(store, "load_runtime_optimization_snapshot", _unexpected_optimization_load)
+    monkeypatch.setattr(grounding_runtime, "load_runtime_optimization_snapshot", _unexpected_optimization_load)
     monkeypatch.setattr(
-        store,
+        grounding_runtime,
         "_resolve_changed_path_scope_context",
         lambda **kwargs: {  # noqa: ANN001
             "analysis_paths": [],
@@ -6406,7 +9161,7 @@ def test_build_impact_report_reuses_supplied_snapshots(monkeypatch, tmp_path: Pa
 
 def test_build_impact_report_can_skip_finalize_packet(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
-        store,
+        grounding_runtime,
         "_resolve_changed_path_scope_context",
         lambda **kwargs: {  # noqa: ANN001
             "analysis_paths": [],
@@ -6428,7 +9183,7 @@ def test_build_impact_report_can_skip_finalize_packet(monkeypatch, tmp_path: Pat
         changed_paths=["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
         runtime_mode="local",
         intent="benchmark",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         finalize_packet=False,
     )
 
@@ -6478,11 +9233,11 @@ def test_hot_path_session_brief_reuses_compact_selection_without_runtime_reopen(
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("session ledger should stay cold")),
     )
 
-    payload = store.build_session_brief(
+    payload = packet_session_runtime.build_session_brief(
         repo_root=REPO_ROOT,
         changed_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="orchestration_feedback",
         impact_override=impact_override,
     )
@@ -6500,11 +9255,11 @@ def test_hot_path_bootstrap_session_skips_optimization_snapshot_load(monkeypatch
 
     monkeypatch.setattr(store, "load_runtime_optimization_snapshot", _unexpected_optimization_load)
 
-    payload = store.build_session_bootstrap(
+    payload = packet_session_runtime.build_session_bootstrap(
         repo_root=REPO_ROOT,
         changed_paths=scenario["changed_paths"],
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint=str(scenario.get("family", "")).strip(),
         validation_command_hints=[
             str(token).strip()

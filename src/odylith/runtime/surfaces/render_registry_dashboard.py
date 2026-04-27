@@ -8,20 +8,25 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import brand_assets
+from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import registry_forensic_evidence_ui
+from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.governance import delivery_intelligence_engine
 from odylith.runtime.governance import component_registry_intelligence as registry
 from odylith.runtime.surfaces import dashboard_time
-from odylith.runtime.governance import operator_readout
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.consumer_profile import load_consumer_profile
+from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.context_engine import odylith_runtime_surface_summary
 from odylith.runtime.governance import traceability_ui_lookup
@@ -49,10 +54,15 @@ _REGISTRY_SUMMARY_HEAVY_FIELDS = frozenset(
 )
 _REGISTRY_INTELLIGENCE_COMPONENT_FIELDS = (
     "confidence",
+    "claim_guard",
     "operator_readout",
     "posture_mode",
+    "proof_state",
+    "proof_state_resolution",
+    "scope_signal",
     "trajectory",
 )
+_REGISTRY_REFRESH_GUARD_KEY = "registry-dashboard-render"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -75,51 +85,25 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
-def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
-
-
-def _as_portable_href(output_path: Path, token: str) -> str:
-    path = Path(str(token or "").strip())
-    if not path:
-        return ""
-    rel = os.path.relpath(str(path), start=str(output_path.parent))
-    return Path(rel).as_posix()
-
-
-def _path_link(
+def _refresh_guard_watched_paths(
     *,
-    repo_root: Path,
-    output_path: Path,
-    token: str,
-) -> dict[str, str]:
-    target = _resolve(repo_root, token)
-    href = _as_href(output_path, target) if target.exists() else _as_portable_href(output_path, token)
-    return {
-        "path": str(token or "").strip(),
-        "href": href,
-    }
-
-
-def _path_links(
-    *,
-    repo_root: Path,
-    output_path: Path,
-    values: Sequence[str],
-) -> list[dict[str, str]]:
-    return [
-        _path_link(repo_root=repo_root, output_path=output_path, token=token)
-        for token in values
-        if str(token or "").strip()
-    ]
+    manifest_path: Path,
+    catalog_path: Path,
+    ideas_root: Path,
+    stream_path: Path,
+) -> tuple[Path | str, ...]:
+    return (
+        manifest_path,
+        catalog_path,
+        ideas_root,
+        stream_path,
+        "odylith/registry/source",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "src/odylith/runtime/common",
+        "src/odylith/runtime/context_engine",
+        "src/odylith/runtime/governance",
+        "src/odylith/runtime/surfaces",
+    )
 
 
 def _display_spec_markdown(markdown: str) -> str:
@@ -247,11 +231,15 @@ def _build_payload(
                 ],
             ),
         )
-        spec_target = _resolve(repo_root, entry.spec_ref) if entry.spec_ref else None
+        spec_target = (
+            surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=entry.spec_ref)
+            if entry.spec_ref
+            else None
+        )
         spec_href = (
-            _as_href(output_path, spec_target)
-            if spec_target is not None and spec_target.exists()
-            else _as_portable_href(output_path, entry.spec_ref)
+            surface_path_helpers.relative_href(output_path=output_path, target=spec_target)
+            if spec_target is not None
+            else ""
         )
         spec_snapshot = spec_snapshot_lookup.get(component_id)
         if not isinstance(spec_snapshot, registry.ComponentSpecSnapshot):
@@ -262,10 +250,11 @@ def _build_payload(
             )
         timeline_rows: list[dict[str, Any]] = []
         for event in timelines.get(component_id, []):
-            artifacts = _path_links(
+            artifacts = surface_path_helpers.path_links(
                 repo_root=repo_root,
                 output_path=output_path,
                 values=event.artifacts,
+                allow_missing=True,
             )
             timeline_rows.append(
                 {
@@ -302,15 +291,17 @@ def _build_payload(
                 "spec_last_updated": spec_snapshot.last_updated,
                 "spec_feature_history": list(spec_snapshot.feature_history),
                 "spec_markdown": _display_spec_markdown(spec_snapshot.markdown),
-                "spec_runbooks": _path_links(
+                "spec_runbooks": surface_path_helpers.path_links(
                     repo_root=repo_root,
                     output_path=output_path,
                     values=component_traceability.get(component_id, {}).get("runbooks", []),
+                    allow_missing=True,
                 ),
-                "spec_developer_docs": _path_links(
+                "spec_developer_docs": surface_path_helpers.path_links(
                     repo_root=repo_root,
                     output_path=output_path,
                     values=component_traceability.get(component_id, {}).get("developer_docs", []),
+                    allow_missing=True,
                 ),
                 "skill_trigger_tiers": spec_snapshot.skill_trigger_tiers,
                 "skill_trigger_structure": spec_snapshot.skill_trigger_structure,
@@ -401,7 +392,7 @@ def _build_registry_delivery_intelligence_payload(
     repo_root: Path,
     runtime_mode: str,
 ) -> dict[str, Any]:
-    payload = odylith_context_engine_store.load_delivery_surface_payload(
+    payload = delivery_surface_payload_runtime.load_delivery_surface_payload(
         repo_root=repo_root,
         surface="registry",
         runtime_mode=runtime_mode,
@@ -493,13 +484,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         linear-gradient(180deg, var(--bg-a), var(--bg-b));
     }
     __ODYLITH_REGISTRY_PAGE_BODY__
-    .shell {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 22px 18px 34px;
-      display: grid;
-      gap: 12px;
-    }
+    __ODYLITH_REGISTRY_SURFACE_SHELL_ROOT__
+    __ODYLITH_REGISTRY_SURFACE_SHELL__
     .panel {
       border: 1px solid var(--line);
       border-radius: 14px;
@@ -526,11 +512,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       justify-self: end;
       align-self: end;
     }
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 8px;
-    }
+    __ODYLITH_REGISTRY_KPI_GRID__
     __ODYLITH_REGISTRY_KPI_CARD_SURFACE__
     __ODYLITH_KPI_TYPOGRAPHY__
     .kpi-card.warn .kpi-label,
@@ -874,10 +856,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       display: grid;
       gap: 10px;
     }
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_LAYOUT__
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_LABEL__
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_COPY__
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_META__
     .context-section {
       border: 1px solid #d6e3f7;
       border-radius: 14px;
@@ -947,70 +925,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .empty {
       margin: 0;
     }
-    .timeline-head {
-      border-bottom: 1px solid var(--line);
-      padding: 12px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-    .timeline {
-      margin: 0;
-      list-style: none;
-      padding: 12px 14px 14px;
-      display: grid;
-      gap: 12px;
-      background: linear-gradient(180deg, #ffffff, #fcfeff);
-      min-width: 0;
-    }
-    .event {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #ffffff;
-      padding: 11px;
-      display: grid;
-      gap: 8px;
-      min-width: 0;
-    }
-    .event > * {
-      min-width: 0;
-    }
-    .event-top {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-    }
-    .event-summary {
-      margin: 0;
-      overflow-wrap: anywhere;
-    }
-    .artifact-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      min-width: 0;
-      max-width: 100%;
-    }
-    .artifact {
-      display: inline-flex;
-      align-items: flex-start;
-      border: 1px solid #d4e2f7;
-      border-radius: 8px;
-      min-height: 28px;
-      padding: 6px 10px;
-      text-decoration: none;
-      background: #f5f9ff;
-      box-sizing: border-box;
-      min-width: 0;
-      max-width: 100%;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-      line-height: 1.3;
-      flex: 0 1 auto;
-    }
+    __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_CSS__
     .diagnostics {
       border: 1px solid var(--warn-line);
       border-radius: 10px;
@@ -1136,11 +1051,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
         <section class="detail-panel">
           <div id="detail" class="detail-shell"></div>
-        <div id="chronology-anchor" class="timeline-head">
-          <span>Forensic Evidence</span>
-          <span id="timelineCount">0 events</span>
-        </div>
-        <ul id="timeline" class="timeline"></ul>
+        __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_MARKUP__
       </section>
     </section>
   </main>
@@ -1413,26 +1324,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return "Low";
     }
 
-    function intelligenceConfidenceBasis(confidence, explicitCount, syntheticCount, workstreamCount, baselineCount = 0) {
-      const explicit = Number(explicitCount || 0);
-      const synthetic = Number(syntheticCount || 0);
-      const workstreams = Number(workstreamCount || 0);
-      const baseline = Number(baselineCount || 0);
-      if (confidence === "High") {
-        return `High confidence because ${explicit} explicit checkpoint${explicit === 1 ? "" : "s"} and ${workstreams} linked workstream${workstreams === 1 ? "" : "s"} are present.`;
-      }
-      if (confidence === "Medium") {
-        return `Medium confidence because explicit evidence exists, but the picture still relies on a limited checkpoint set${synthetic > 0 ? " mixed with inferred local change" : ""}.`;
-      }
-      if (synthetic > 0) {
-        return "Low confidence because the read is driven mainly by inferred local change rather than explicit governance checkpoints.";
-      }
-      if (baseline > 0) {
-        return `Low confidence because Registry currently has ${baseline} documented spec history ${pluralize(baseline, "checkpoint", "checkpoints")} but no live mapped forensic evidence yet.`;
-      }
-      return "Low confidence because Registry does not yet have enough mapped evidence to form a strong narrative.";
-    }
-
     function latestExplicitEvent(events) {
       return (Array.isArray(events) ? events : []).find((event) => isExplicitTimelineEvent(event)) || null;
     }
@@ -1646,36 +1537,24 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return intelligenceScope("component", componentId);
     }
 
-    function operatorReadout(snapshot) {
-      const readout = snapshot && typeof snapshot.operator_readout === "object" ? snapshot.operator_readout : {};
-      return readout && typeof readout === "object" ? readout : {};
+    function scopeSignal(snapshot) {
+      const value = snapshot && typeof snapshot.scope_signal === "object" ? snapshot.scope_signal : {};
+      return value && typeof value === "object" ? value : {};
     }
 
-    __ODYLITH_REGISTRY_OPERATOR_READOUT_RUNTIME_JS__
-
-    function proofHref(ref, componentId, primaryWorkstream) {
-      const row = ref && typeof ref === "object" ? ref : {};
-      const surface = String(row.surface || "").trim().toLowerCase();
-      const value = String(row.value || "").trim();
-      if (surface === "shell" || surface === "tooling") return "../index.html";
-      if (surface === "compass") return hrefCompass(primaryWorkstream || value);
-      if (surface === "atlas") return hrefAtlas(primaryWorkstream || "", value);
-      if (surface === "radar") return hrefRadar(primaryWorkstream || value);
-      if (surface === "registry") return hrefRegistry(componentId || value.replace(/^component:/, ""));
-      return "../index.html?tab=registry";
+    function scopeSignalRank(snapshot) {
+      const signal = scopeSignal(snapshot);
+      const numeric = Number(signal.rank);
+      if (Number.isFinite(numeric)) return numeric;
+      const rung = String(signal.rung || "").trim().toUpperCase();
+      if (/^R\d+$/.test(rung)) return Number.parseInt(rung.slice(1), 10);
+      return 0;
     }
 
     function registryComponentHref(componentId) {
       const token = String(componentId || "").trim();
       if (!token) return "../index.html?tab=registry";
       return `../index.html?tab=registry&component=${encodeURIComponent(token)}`;
-    }
-
-    function renderProofRefs(refs, componentId, primaryWorkstream) {
-      return renderOperatorReadoutProofLinks(
-        refs,
-        (row) => proofHref(row, componentId, primaryWorkstream),
-      );
     }
 
     function toneClassForCategory(category) {
@@ -1715,7 +1594,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const token = String(layer || "").trim().toLowerCase();
       if (token === "shell_host") return "Owns the top-level Odylith shell and host routing surface.";
       if (token === "evidence_surface") return "Owns one of the operator-facing evidence and inspection surfaces.";
-      if (token === "memory_retrieval") return "Owns the derived local memory, sparse recall, packet compaction, and dense-context telemetry substrate.";
+      if (token === "memory_retrieval") return "Owns the derived local memory, sparse recall, packet compaction, and dense-context diagnostics substrate.";
       if (token === "intelligence") return "Owns case-building, reasoning, or remediation intelligence inside Odylith.";
       if (token === "agent_execution") return "Owns bounded agent routing, orchestration, or host-execution behavior.";
       if (token === "cli_bootstrap") return "Owns install, bootstrap, or operator command-entry boundaries for Odylith.";
@@ -1927,6 +1806,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           const leftCategory = String(left.category || "");
           const rightCategory = String(right.category || "");
           if (leftCategory !== rightCategory) return leftCategory.localeCompare(rightCategory);
+          const leftRank = scopeSignalRank(componentIntelligenceSnapshot(left.component_id));
+          const rightRank = scopeSignalRank(componentIntelligenceSnapshot(right.component_id));
+          if (leftRank !== rightRank) return rightRank - leftRank;
           const leftName = String(left.name || left.component_id || "");
           const rightName = String(right.name || right.component_id || "");
           return leftName.localeCompare(rightName);
@@ -2576,7 +2458,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const liveTimelineEvents = timelineEvents.filter((event) => !isBaselineTimelineEvent(event));
       const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
       const categoryToken = String(row.category || "").trim().toLowerCase();
-      const toneClass = toneClassForCategory(categoryToken);
       const latestEvent = liveTimelineEvents[0] || (timelineEvents.length ? timelineEvents[0] : null);
       const latestSummary = latestEvent
         ? String(latestEvent.summary || "(no summary)").trim()
@@ -2632,18 +2513,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         specRunbooks: Array.isArray(row.spec_runbooks) ? row.spec_runbooks : [],
         specDeveloperDocs: Array.isArray(row.spec_developer_docs) ? row.spec_developer_docs : [],
       };
-      const intelligenceSnapshot = componentIntelligenceSnapshot(row.component_id);
-      const confidenceToken = String(intelligenceSnapshot && intelligenceSnapshot.confidence || confidence).trim() || confidence;
-      const confidenceSummary = intelligenceConfidenceBasis(
-        confidenceToken,
-        explicitExecutiveEvents.length,
-        syntheticExecutiveEvents.length,
-        allWorkstreams.length,
-        baselineExecutiveEvents.length,
-      );
-      const postureMode = humanizeToken(String(intelligenceSnapshot && intelligenceSnapshot.posture_mode || "converging"));
-      const trajectory = humanizeToken(String(intelligenceSnapshot && intelligenceSnapshot.trajectory || "converging"));
-
       const metadata = [
         staticLabel(`Category: ${humanizeToken(row.category)}`, categoryDescription(row.category)),
         staticLabel(`Qualification: ${humanizeToken(row.qualification)}`, qualificationDescription(row.qualification)),
@@ -2796,7 +2665,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           <summary>
             <div class="context-head">
               <span class="detail-disclosure-title context-toggle-label">Topology</span>
-              <span class="detail-chip-label ${escapeHtml(toneClass)}" data-tooltip="${escapeHtml(categoryDescription(categoryToken))}">${escapeHtml(row.component_id)}</span>
             </div>
             <div class="context-head-actions">
               <span class="label" data-tooltip="Linked workstreams count.">Workstreams ${workstreams.length}</span>
@@ -2811,44 +2679,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       `;
     }
 
-    function renderTimeline(row) {
-      const events = row && Array.isArray(row.timeline) ? row.timeline : [];
-      const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
-      timelineCountEl.textContent = `${events.length} events`;
-      if (!events.length) {
-        timelineEl.innerHTML = "";
-        return;
-      }
-      timelineEl.innerHTML = events.map((event) => {
-        const workstreams = Array.isArray(event.workstreams) ? event.workstreams : [];
-        const artifacts = Array.isArray(event.artifacts) ? event.artifacts : [];
-        const wsPills = workstreams.length
-          ? workstreams.map((ws) => linkChip({
-              label: ws,
-              href: hrefRadar(ws),
-              tone: "tone-gov",
-              tooltip: `Workstream ${ws}. Open Radar context.`,
-            })).join("")
-          : '<span class="label">No scope</span>';
-
-        const artifactLinks = artifacts.length
-          ? artifacts.map((item) => `<a class="artifact" href="${escapeHtml(item.href || item.path || "")}" target="_top" data-tooltip="Artifact evidence path for this event.">${escapeHtml(item.path || "artifact")}</a>`).join("")
-          : '<span class="artifact">No artifacts</span>';
-
-        return `
-          <li class="event">
-            <div class="event-top">
-              <span class="label" data-tooltip="Codex stream event kind.">${escapeHtml(eventKindLabel(event.kind))}</span>
-              <span class="label" data-tooltip="Component-link confidence for this event.">confidence: ${escapeHtml(event.confidence || "none")}</span>
-              <span>${escapeHtml(event.ts_iso || "")}</span>
-            </div>
-            <p class="event-summary">${escapeHtml(event.summary || "(no summary)")}</p>
-            <div class="inline">${wsPills}</div>
-            <div class="artifact-list">${artifactLinks}</div>
-          </li>
-        `;
-      }).join("");
-    }
+    __ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__
 
     async function renderSelectedComponent(selectedId, filtered) {
       const selectedSummary = filtered.find((row) => String(row.component_id || "").toLowerCase() === String(selectedId || "").toLowerCase()) || null;
@@ -2949,6 +2780,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     page_body_css = dashboard_ui_primitives.page_body_typography_css(
         selector="html, body",
     )
+    surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
+    surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
+        selector=".shell",
+        display="grid",
+        gap_px=12,
+    )
     control_label_css = dashboard_ui_primitives.control_label_css(
         selector=".control-title",
     )
@@ -2959,9 +2796,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         letter_spacing_em=0.06,
         line_height=1.2,
     )
-    operator_readout_label_css = dashboard_ui_primitives.operator_readout_label_typography_css(
-        selector=".operator-readout-label",
-    )
     content_copy_css = dashboard_ui_primitives.content_copy_css(
         selectors=(
             ".trigger-list",
@@ -2969,7 +2803,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             ".spec-doc p",
             ".spec-doc ul",
             ".spec-doc li",
-            ".event-summary",
         ),
     )
     detail_identity_css = dashboard_ui_primitives.detail_identity_typography_css(
@@ -2979,31 +2812,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         medium_title_size_px=22,
         small_title_size_px=19,
     )
-    operator_readout_layout_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.operator_readout_host_shell_css(
-                shell_selector=".operator-readout-shell",
-                heading_selector=".operator-readout-shell .operator-readout-shell-heading",
-                body_selector=".operator-readout-shell .operator-readout-shell-body",
-            ),
-            dashboard_ui_primitives.operator_readout_host_heading_css(
-                selector=".operator-readout-shell .operator-readout-shell-heading",
-            ),
-            dashboard_ui_primitives.operator_readout_layout_css(
-                container_selector=".operator-readout",
-                meta_selector=".operator-readout-meta",
-                main_selector=".operator-readout-main",
-                details_selector=".operator-readout-details",
-                section_selector=".operator-readout-section",
-                proof_selector=".operator-readout-proof",
-                footnote_selector=".operator-readout-footnote",
-            ),
-        )
-    )
-    operator_readout_copy_css = dashboard_ui_primitives.operator_readout_copy_typography_css(
-        selector=".operator-readout-copy",
-        line_height=1.55,
-        color="#27445e",
+    kpi_grid_css = dashboard_ui_primitives.kpi_grid_layout_css(
+        container_selector=".kpis",
+        gap_px=8,
+        margin_top="0",
     )
     kpi_card_surface_css = dashboard_ui_primitives.kpi_card_surface_css(
         card_selector=".kpi-card",
@@ -3036,16 +2848,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         border_color="#ead3b6",
         color="#8a6137",
     )
-    operator_readout_meta_css = "\n\n".join(
-        (
-            dashboard_ui_primitives.operator_readout_meta_pill_css(
-                selector=".operator-readout-meta-item",
-            ),
-            dashboard_ui_primitives.operator_readout_meta_semantic_css(
-                selector=".operator-readout-meta-item",
-            ),
-        )
-    )
     summary_row_typography_css = dashboard_ui_primitives.inline_label_value_copy_css(
         row_selectors=(".summary-row",),
         label_selectors=(".summary-row strong",),
@@ -3066,10 +2868,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     detail_action_chip_css = dashboard_ui_primitives.detail_action_chip_css(
         selector=".detail-action-chip",
     )
-    detail_label_chip_css = dashboard_ui_primitives.detail_label_chip_css(
-        selector=".detail-chip-label",
-        color="var(--label-text)",
-    )
+    detail_label_chip_css = ""
     detail_action_chip_semantic_css = "\n\n".join(
         (
             dashboard_ui_primitives.subtle_link_label_tone_css(
@@ -3107,30 +2906,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
                 hover_border_color="#eeaa63",
                 hover_background="#ffeacf",
                 hover_color="#b45309",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".detail-chip-label.tone-gov",
-                background="#eaf3ff",
-                border_color="#8cb8f4",
-                color="#1f4795",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".detail-chip-label.tone-infra",
-                background="#e6fbf7",
-                border_color="#7ddfd4",
-                color="#0f766e",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".detail-chip-label.tone-data",
-                background="#f4ecff",
-                border_color="#c8a4f8",
-                color="#7e22ce",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".detail-chip-label.tone-engine",
-                background="#fff3e2",
-                border_color="#f3bf84",
-                color="#b45309",
             ),
         )
     )
@@ -3262,12 +3037,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
                 gap_px=6,
             ),
             dashboard_ui_primitives.button_typography_css(
-                selector=".artifact",
-                color="#31547a",
-                size_px=12,
-                line_height=1.0,
-            ),
-            dashboard_ui_primitives.button_typography_css(
                 selector=".diagnostics > summary",
                 color="#8a4b00",
                 size_px=12,
@@ -3291,12 +3060,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
                 line_height=1.4,
             ),
             dashboard_ui_primitives.supporting_copy_typography_css(
-                selector=".event-top",
-                color="var(--muted)",
-                size_px=12,
-                line_height=1.0,
-            ),
-            dashboard_ui_primitives.supporting_copy_typography_css(
                 selector=".diag-item",
                 color="#7a4100",
                 size_px=12,
@@ -3309,19 +3072,17 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     )
     return (
         html.replace("__ODYLITH_REGISTRY_PAGE_BODY__", page_body_css)
+        .replace("__ODYLITH_REGISTRY_SURFACE_SHELL_ROOT__", surface_shell_root_css)
+        .replace("__ODYLITH_REGISTRY_SURFACE_SHELL__", surface_shell_css)
         .replace("__ODYLITH_REGISTRY_HERO_PANEL__", hero_panel_css)
         .replace("__ODYLITH_REGISTRY_HEADER_TYPOGRAPHY__", header_typography_css)
         .replace("__ODYLITH_REGISTRY_FILTER_SHELL__", sticky_filter_shell_css)
         .replace("__ODYLITH_REGISTRY_STICKY_FILTER_BAR__", sticky_filter_css)
         .replace("__ODYLITH_REGISTRY_CONTROL_LABEL__", control_label_css)
         .replace("__ODYLITH_REGISTRY_BRIEF_LABELS__", brief_section_label_css)
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_RUNTIME_JS__", operator_readout.operator_readout_runtime_helpers_js())
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_LAYOUT__", operator_readout_layout_css)
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_LABEL__", operator_readout_label_css)
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_COPY__", operator_readout_copy_css)
-        .replace("__ODYLITH_REGISTRY_OPERATOR_READOUT_META__", operator_readout_meta_css)
         .replace("__ODYLITH_REGISTRY_WORKSPACE_LAYOUT__", workspace_layout_css)
         .replace("__ODYLITH_REGISTRY_DETAIL_IDENTITY_TYPOGRAPHY__", detail_identity_css)
+        .replace("__ODYLITH_REGISTRY_KPI_GRID__", kpi_grid_css)
         .replace("__ODYLITH_REGISTRY_KPI_CARD_SURFACE__", kpi_card_surface_css)
         .replace("__ODYLITH_KPI_TYPOGRAPHY__", kpi_typography_css)
         .replace("__ODYLITH_REGISTRY_LABEL_SURFACE__", label_surface_css)
@@ -3339,6 +3100,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .replace("__ODYLITH_REGISTRY_TOOLTIP_SURFACE__", tooltip_surface_css)
         .replace("__ODYLITH_REGISTRY_QUICK_TOOLTIP_RUNTIME__", tooltip_runtime_js)
         .replace("__ODYLITH_REGISTRY_CONTENT_COPY__", content_copy_css)
+        .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_CSS__", registry_forensic_evidence_ui.css())
+        .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_MARKUP__", registry_forensic_evidence_ui.markup())
+        .replace("__ODYLITH_REGISTRY_FORENSIC_EVIDENCE_RUNTIME__", registry_forensic_evidence_ui.runtime_js())
         .replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
         .replace("__DATA__", data_json)
     )
@@ -3347,17 +3111,50 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
-    output_path = _resolve(repo_root, str(args.output))
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.output))
 
     manifest_token = str(args.manifest).strip()
     manifest_path = (
         registry.default_manifest_path(repo_root=repo_root)
         if manifest_token == registry.DEFAULT_MANIFEST_PATH
-        else _resolve(repo_root, manifest_token)
+        else surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=manifest_token)
     )
-    catalog_path = _resolve(repo_root, str(args.catalog))
-    ideas_root = _resolve(repo_root, str(args.ideas_root))
-    stream_path = _resolve(repo_root, str(args.stream))
+    catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.catalog))
+    ideas_root = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.ideas_root))
+    stream_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.stream))
+    skip_rebuild, input_fingerprint, cached_metadata, bundle_paths, _output_paths = (
+        generated_surface_refresh_guards.should_skip_surface_rebuild(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="registry",
+            key=_REGISTRY_REFRESH_GUARD_KEY,
+            watched_paths=_refresh_guard_watched_paths(
+                manifest_path=manifest_path,
+                catalog_path=catalog_path,
+                ideas_root=ideas_root,
+                stream_path=stream_path,
+            ),
+            live_globs=("registry-detail-shard-*.v1.js",),
+            extra={"runtime_mode": str(args.runtime_mode).strip().lower() or "auto"},
+        )
+    )
+    if skip_rebuild:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == repo_root:
+            session.record_surface_decision(
+                surface="registry",
+                cache_hit=True,
+                built_from="refresh_guard_cache",
+                details={"input_fingerprint": input_fingerprint},
+            )
+        counts = dict(cached_metadata.get("counts", {})) if isinstance(cached_metadata, Mapping) else {}
+        print("registry dashboard render passed")
+        print(f"- output: {output_path}")
+        print(f"- components: {int(counts.get('components', 0) or 0)}")
+        print(f"- events: {int(counts.get('events', 0) or 0)}")
+        return 0
 
     payload = _build_payload(
         repo_root=repo_root,
@@ -3368,7 +3165,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         stream_path=stream_path,
         runtime_mode=str(args.runtime_mode),
     )
-    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="registry")
     component_rows = [
         row
         for row in payload.get("components", [])
@@ -3394,6 +3190,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         "available_backends": ["runtime", "staticSnapshot"],
         "runtime_base_url": "",
     }
+    payload["runtime_contract"] = derivation_provenance.build_surface_runtime_contract(
+        repo_root=repo_root,
+        surface="registry",
+        runtime_mode=str(args.runtime_mode),
+        built_from="surface_render",
+        cache_hit=False,
+        output_path=output_path,
+        extra={"input_fingerprint": input_fingerprint},
+    )
     payload["generated_utc"] = stable_generated_utc.resolve_for_js_assignment_file(
         output_path=bundle_paths.payload_js_path,
         global_name="__ODYLITH_REGISTRY_DATA__",
@@ -3422,18 +3227,35 @@ def main(argv: Sequence[str] | None = None) -> int:
             ),
         ),
     )
-    output_path.write_text(bundled_html, encoding="utf-8")
-    bundle_paths.payload_js_path.write_text(payload_js, encoding="utf-8")
-    bundle_paths.control_js_path.write_text(control_js, encoding="utf-8")
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=output_path,
+        content=bundled_html,
+        lock_key=str(output_path),
+    )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=bundle_paths.payload_js_path,
+        content=payload_js,
+        lock_key=str(bundle_paths.payload_js_path),
+    )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=bundle_paths.control_js_path,
+        content=control_js,
+        lock_key=str(bundle_paths.control_js_path),
+    )
     active_detail_paths: set[Path] = set()
     for filename, shard_payload in detail_shards:
         shard_path = output_path.parent / filename
-        shard_path.write_text(
-            dashboard_surface_bundle.render_payload_merge_js(
+        odylith_context_cache.write_text_if_changed(
+            repo_root=repo_root,
+            path=shard_path,
+            content=dashboard_surface_bundle.render_payload_merge_js(
                 global_name="__ODYLITH_REGISTRY_DETAIL_SHARDS__",
                 payload=shard_payload,
             ),
-            encoding="utf-8",
+            lock_key=str(shard_path),
         )
         active_detail_paths.add(shard_path.resolve())
     for stale_path in output_path.parent.glob("registry-detail-shard-*.v1.js"):
@@ -3441,6 +3263,44 @@ def main(argv: Sequence[str] | None = None) -> int:
             continue
         if stale_path.is_file():
             stale_path.unlink()
+    source_bundle_mirror.sync_live_paths(
+        repo_root=repo_root,
+        live_paths=(output_path, bundle_paths.payload_js_path, bundle_paths.control_js_path),
+    )
+    source_bundle_mirror.sync_live_glob(
+        repo_root=repo_root,
+        live_dir=output_path.parent,
+        pattern="registry-detail-shard-*.v1.js",
+    )
+    if input_fingerprint:
+        _bundle_paths, current_output_paths = generated_surface_refresh_guards.surface_output_paths(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="registry",
+            live_globs=("registry-detail-shard-*.v1.js",),
+        )
+        generated_surface_refresh_guards.record_surface_rebuild(
+            repo_root=repo_root,
+            key=_REGISTRY_REFRESH_GUARD_KEY,
+            input_fingerprint=input_fingerprint,
+            output_paths=current_output_paths,
+            metadata={
+                "counts": {
+                    "components": int(payload.get("counts", {}).get("components", 0) or 0),
+                    "events": int(payload.get("counts", {}).get("events", 0) or 0),
+                }
+            },
+        )
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None and session.repo_root == repo_root:
+        session.record_surface_decision(
+            surface="registry",
+            cache_hit=False,
+            built_from="surface_render",
+            details={"input_fingerprint": input_fingerprint},
+        )
 
     print("registry dashboard render passed")
     print(f"- output: {output_path}")

@@ -1,7 +1,10 @@
-%% Reviewed 2026-03-26 for B-001 to keep Odylith product topology and governance diagrams canonical in the public Atlas catalog.
+%% Reviewed 2026-04-17 for v0.1.11 to show operator evidence routing through Tribunal outcomes, Execution Engine snapshots, visible intervention proof, Remediator packets, and benchmark closure checks.
 flowchart LR
   Tribunal["Tribunal outcome<br/>case brief, systemic brief, proof refs,<br/>confidence, next discriminating check"]
+  Execution["Execution Engine snapshot<br/>admissibility, next move, validation, closure"]
+  Visible["Visible intervention decision<br/>Odylith Observation / Proposal / Assist<br/>fallback-ready vs chat-confirmed"]
   Packet["Remediator packet<br/>Approve and apply / Send to AI engine / Review manually"]
+  Benchmark["Benchmark proof route<br/>false-admit / false-deny + closure accuracy"]
 
   subgraph Inbox["Shell + Odylith"]
     Shell["Tooling shell<br/>Operator inbox preview<br/>top ranked cases + terse warnings"]
@@ -18,7 +21,12 @@ flowchart LR
 
   Tribunal --> Shell
   Tribunal --> Odylith
+  Execution --> Shell
+  Execution --> Odylith
+  Visible --> Shell
+  Visible --> Odylith
   Packet --> Odylith
+  Benchmark --> Odylith
 
   Shell -->|Open full case| Odylith
   Odylith -->|Open proof| Radar
@@ -26,6 +34,7 @@ flowchart LR
   Odylith -->|Open proof| Casebook
   Odylith -->|Open proof| Atlas
   Odylith -->|Open proof| Compass
+  Odylith -->|Open proof| Benchmark
 
   Radar -->|Native evidence only| Odylith
   Registry -->|Native evidence only| Odylith

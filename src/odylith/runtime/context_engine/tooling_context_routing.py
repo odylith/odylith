@@ -5,8 +5,11 @@ from __future__ import annotations
 import shlex
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import host_runtime as host_runtime_contract
+from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.context_engine import governance_signal_codec
+from odylith.runtime.context_engine import tooling_context_routing_spawn_policy
 
 
 def _dedupe_strings(values: Sequence[str]) -> list[str]:
@@ -26,14 +29,6 @@ def _truncate(text: str, *, max_chars: int = 140) -> str:
     if len(normalized) <= max_chars:
         return normalized
     return normalized[: max(0, max_chars - 1)].rstrip() + "…"
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
-
 
 def _normalized_string_list(value: Any) -> list[str]:
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
@@ -80,7 +75,10 @@ def _fallback_scan_commands(*, fallback_scan: Mapping[str, Any], retained_paths:
             for path in candidate_paths[:4]
         )
         return f"rg --files | rg {_shell_quote(pattern)}", followup
-    return r"rg --files | rg 'AGENTS\.md|odylith/AGENTS\.md|pyproject\.toml'", "sed -n '1,200p' AGENTS.md"
+    return (
+        r"rg --files | rg 'AGENTS\.md|CLAUDE\.md|odylith/(AGENTS|CLAUDE)\.md|pyproject\.toml'",
+        "if [ -f AGENTS.md ]; then sed -n '1,200p' AGENTS.md; else sed -n '1,200p' CLAUDE.md; fi",
+    )
 
 
 def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
@@ -164,6 +162,13 @@ def _score_from_level(value: Any) -> int:
     if token in {"none", "serial_guarded"}:
         return 1 if token == "serial_guarded" else 0
     return 0
+
+
+def _explicit_model_selection_fields(*, profile: str, host_capabilities: Mapping[str, Any]) -> tuple[str, str]:
+    return agent_runtime_contract.execution_profile_runtime_fields(
+        profile,
+        host_capabilities=host_capabilities,
+    )
 
 
 def grounded_ambiguous_write_candidate(
@@ -333,9 +338,6 @@ def native_spawn_execution_ready(
     governed_surface_sync_required: bool = False,
     host_runtime: str = "",
 ) -> bool:
-    resolved_host_runtime = host_runtime_contract.resolve_host_runtime(host_runtime)
-    if not host_runtime_contract.native_spawn_supported(resolved_host_runtime, default_when_unknown=False):
-        return False
     if not route_ready or full_scan_recommended or narrowing_required or not within_budget:
         return False
     if str(delegate_preference or "").strip() != "delegate":
@@ -344,6 +346,9 @@ def native_spawn_execution_ready(
         str(token or "").strip()
         for token in (model, reasoning_effort, agent_role, selection_mode)
     ):
+        return False
+    resolved_host_runtime = host_runtime_contract.resolve_host_runtime(host_runtime)
+    if not host_runtime_contract.native_spawn_supported(resolved_host_runtime, default_when_unknown=False):
         return False
     return bool(
         selected_test_count > 0
@@ -1517,12 +1522,22 @@ def build_routing_handoff(
     if not compact_bootstrap_handoff:
         utility_profile_handoff["retained_signal_count"] = _int_value(utility_profile.get("retained_signal_count"))
         utility_profile_handoff["density_per_1k_tokens"] = float(utility_profile.get("density_per_1k_tokens", 0.0) or 0.0)
-    resolved_host_runtime = host_runtime_contract.resolve_host_runtime(
-        final_payload.get("host_runtime"),
+    delegate_preference = str(execution_profile_payload.get("delegate_preference", "")).strip()
+    model = str(execution_profile_payload.get("model", "")).strip()
+    reasoning_effort = str(execution_profile_payload.get("reasoning_effort", "")).strip()
+    agent_role = str(execution_profile_payload.get("agent_role", "")).strip()
+    selection_mode = str(execution_profile_payload.get("selection_mode", "")).strip()
+    native_spawn_probe_needed = bool(
+        route_ready
+        and not bool(final_payload.get("full_scan_recommended"))
+        and not bool(narrowing_guidance.get("required"))
+        and bool(packet_quality_payload.get("within_budget"))
+        and delegate_preference == "delegate"
+        and all((model, reasoning_effort, agent_role, selection_mode))
     )
-    native_spawn_supported = host_runtime_contract.native_spawn_supported(
-        resolved_host_runtime,
-        default_when_unknown=False,
+    resolved_host_runtime, spawn_policy = tooling_context_routing_spawn_policy.probe(
+        final_payload.get("host_runtime"),
+        enabled=native_spawn_probe_needed,
     )
     packet_quality_handoff = {
         "context_richness": str(packet_quality_payload.get("context_richness", "")).strip(),
@@ -1584,11 +1599,11 @@ def build_routing_handoff(
             full_scan_recommended=bool(final_payload.get("full_scan_recommended")),
             narrowing_required=bool(narrowing_guidance.get("required")),
             within_budget=bool(packet_quality_payload.get("within_budget")),
-            delegate_preference=str(execution_profile_payload.get("delegate_preference", "")).strip(),
-            model=str(execution_profile_payload.get("model", "")).strip(),
-            reasoning_effort=str(execution_profile_payload.get("reasoning_effort", "")).strip(),
-            agent_role=str(execution_profile_payload.get("agent_role", "")).strip(),
-            selection_mode=str(execution_profile_payload.get("selection_mode", "")).strip(),
+            delegate_preference=delegate_preference,
+            model=model,
+            reasoning_effort=reasoning_effort,
+            agent_role=agent_role,
+            selection_mode=selection_mode,
             selected_test_count=len([row for row in tests if isinstance(row, Mapping)]),
             selected_command_count=len([str(token).strip() for token in commands if str(token).strip()]),
             selected_doc_count=len([str(token).strip() for token in docs if str(token).strip()]),
@@ -1601,7 +1616,7 @@ def build_routing_handoff(
             governed_surface_sync_required=bool(validation_bundle.get("governed_surface_sync_required")),
             host_runtime=resolved_host_runtime,
         ),
-        "native_spawn_supported": native_spawn_supported,
+        **spawn_policy.handoff_fields(),
         "within_budget": bool(packet_quality_payload.get("within_budget")),
     }
     if compact_bootstrap_handoff:
@@ -1753,13 +1768,14 @@ def build_routing_handoff(
         1 if bool(packet_quality_payload.get("within_budget")) else 0,
         1 if utility_signal_score >= 3 else 0,
     )
-    resolved_host_runtime = host_runtime_contract.resolve_host_runtime(
-        final_payload.get("host_runtime"),
+    execution_profile_probe_needed = bool(not bool(narrowing_guidance.get("required")) and route_ready)
+    resolved_host_capabilities = (
+        host_runtime_contract.resolve_host_capabilities(final_payload.get("host_runtime"))
+        if execution_profile_probe_needed
+        else {}
     )
-    native_spawn_supported = host_runtime_contract.native_spawn_supported(
-        resolved_host_runtime,
-        default_when_unknown=False,
-    )
+    resolved_host_runtime = str(resolved_host_capabilities.get("host_runtime", "")).strip()
+    spawn_policy = tooling_context_routing_spawn_policy.from_capabilities(resolved_host_capabilities)
     execution_profile = {
         "profile": "main_thread",
         "model": "",
@@ -1777,7 +1793,13 @@ def build_routing_handoff(
             "narrowing_required": bool(narrowing_guidance.get("required")),
             "within_budget": bool(packet_quality_payload.get("within_budget")),
             "deep_reasoning_ready": deep_reasoning_ready,
-            "native_spawn_supported": native_spawn_supported,
+            **spawn_policy.handoff_fields(),
+            "supports_local_structured_reasoning": bool(
+                resolved_host_capabilities.get("supports_local_structured_reasoning")
+            ),
+            "supports_explicit_model_selection": bool(
+                resolved_host_capabilities.get("supports_explicit_model_selection")
+            ),
             "context_density_score": _int_value(context_density.get("score")),
             "reasoning_readiness_score": _int_value(reasoning_readiness.get("score")),
             "validation_pressure_score": validation_score,
@@ -1785,6 +1807,9 @@ def build_routing_handoff(
             "risk_score": risk_score,
         },
         "host_runtime": resolved_host_runtime,
+        "host_family": str(resolved_host_capabilities.get("host_family", "")).strip(),
+        "model_family": str(resolved_host_capabilities.get("model_family", "")).strip(),
+        **spawn_policy.policy_fields(),
         "signals": {
             "grounding": {
                 "score": grounding_score,
@@ -1827,52 +1852,75 @@ def build_routing_handoff(
         },
     }
     if not bool(narrowing_guidance.get("required")) and route_ready:
-        profile = "mini_medium"
+        profile = agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
         selection_mode = "analysis_scout"
         if intent_family in {"analysis", "review", "diagnosis", "architecture"}:
             if intent_family == "architecture" and risk_score >= 3:
-                profile = "gpt54_high" if deep_reasoning_ready or utility_signal_score >= 3 else "codex_high"
+                profile = (
+                    agent_runtime_contract.FRONTIER_HIGH_PROFILE
+                    if deep_reasoning_ready or utility_signal_score >= 3
+                    else agent_runtime_contract.WRITE_HIGH_PROFILE
+                )
                 selection_mode = "architecture_grounding"
             else:
-                profile = "mini_high" if _int_value(reasoning_readiness.get("score")) >= 2 or utility_signal_score >= 3 else "mini_medium"
-                selection_mode = "analysis_synthesis" if profile == "mini_high" else "analysis_scout"
+                profile = (
+                    agent_runtime_contract.ANALYSIS_HIGH_PROFILE
+                    if _int_value(reasoning_readiness.get("score")) >= 2 or utility_signal_score >= 3
+                    else agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
+                )
+                selection_mode = (
+                    "analysis_synthesis"
+                    if profile == agent_runtime_contract.ANALYSIS_HIGH_PROFILE
+                    else "analysis_scout"
+                )
         elif validation_score >= 3 and (deep_reasoning_ready or risk_score >= 3):
-            profile = "gpt54_high"
+            profile = agent_runtime_contract.FRONTIER_HIGH_PROFILE
             selection_mode = "deep_validation"
         elif validation_score >= 3 or intent_family == "validation":
-            profile = "codex_high" if _int_value(reasoning_readiness.get("score")) >= 2 or utility_signal_score >= 3 else "codex_medium"
+            profile = (
+                agent_runtime_contract.WRITE_HIGH_PROFILE
+                if _int_value(reasoning_readiness.get("score")) >= 2 or utility_signal_score >= 3
+                else agent_runtime_contract.WRITE_MEDIUM_PROFILE
+            )
             selection_mode = "validation_focused"
-        elif intent_family in {"implementation", "write", "bugfix"} or actionability_score >= 3:
+        elif intent_family in {"implementation", "write", "bugfix", "ui_layout", "surface_copy", "surface_binding"} or actionability_score >= 3:
             if risk_score >= 3 or (deep_reasoning_ready and _int_value(context_density.get("score")) >= 3):
-                profile = "gpt54_high"
+                profile = agent_runtime_contract.FRONTIER_HIGH_PROFILE
                 selection_mode = "critical_accuracy"
             elif _int_value(reasoning_readiness.get("score")) >= 3 or utility_signal_score >= 3:
-                profile = "codex_high"
+                profile = agent_runtime_contract.WRITE_HIGH_PROFILE
                 selection_mode = "bounded_write"
             else:
-                profile = "codex_medium"
+                profile = agent_runtime_contract.WRITE_MEDIUM_PROFILE
                 selection_mode = "bounded_write"
         elif intent_family in {"docs", "governance"}:
-            profile = "spark_medium" if utility_signal_score >= 2 else "mini_medium"
-            selection_mode = "support_fast_lane" if profile == "spark_medium" else "analysis_scout"
+            profile = (
+                agent_runtime_contract.FAST_WORKER_PROFILE
+                if utility_signal_score >= 2
+                else agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE
+            )
+            selection_mode = (
+                "support_fast_lane"
+                if profile == agent_runtime_contract.FAST_WORKER_PROFILE
+                else "analysis_scout"
+            )
+        model, reasoning_effort = _explicit_model_selection_fields(
+            profile=profile,
+            host_capabilities=resolved_host_capabilities,
+        )
         execution_profile.update(
             {
                 "profile": profile,
-                "model": (
-                    "gpt-5.4-mini"
-                    if profile in {"mini_medium", "mini_high"}
-                    else "gpt-5.3-codex-spark"
-                    if profile == "spark_medium"
-                    else "gpt-5.3-codex"
-                    if profile in {"codex_medium", "codex_high"}
-                    else "gpt-5.4"
+                "model": model,
+                "reasoning_effort": reasoning_effort,
+                "agent_role": (
+                    "explorer"
+                    if profile in {
+                        agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE,
+                        agent_runtime_contract.ANALYSIS_HIGH_PROFILE,
+                    }
+                    else "worker"
                 ),
-                "reasoning_effort": (
-                    "medium"
-                    if profile in {"mini_medium", "spark_medium", "codex_medium"}
-                    else "high"
-                ),
-                "agent_role": "explorer" if profile in {"mini_medium", "mini_high"} else "worker",
                 "selection_mode": selection_mode,
                 "delegate_preference": "delegate",
             }
@@ -1881,9 +1929,18 @@ def build_routing_handoff(
             "score": max(
                 2,
                 min(
-                    4,
-                    execution_profile_score
-                    + (1 if execution_profile["profile"] in {"codex_high", "gpt54_high"} and deep_reasoning_ready else 0),
+                        4,
+                        execution_profile_score
+                        + (
+                            1
+                            if execution_profile["profile"]
+                            in {
+                                agent_runtime_contract.WRITE_HIGH_PROFILE,
+                                agent_runtime_contract.FRONTIER_HIGH_PROFILE,
+                            }
+                            and deep_reasoning_ready
+                            else 0
+                        ),
                 ),
             ),
             "level": _score_level(
@@ -1892,7 +1949,16 @@ def build_routing_handoff(
                     min(
                         4,
                         execution_profile_score
-                        + (1 if execution_profile["profile"] in {"codex_high", "gpt54_high"} and deep_reasoning_ready else 0),
+                        + (
+                            1
+                            if execution_profile["profile"]
+                            in {
+                                agent_runtime_contract.WRITE_HIGH_PROFILE,
+                                agent_runtime_contract.FRONTIER_HIGH_PROFILE,
+                            }
+                            and deep_reasoning_ready
+                            else 0
+                        ),
                     ),
                 )
             ),
@@ -1943,6 +2009,7 @@ def build_routing_handoff(
         host_runtime=resolved_host_runtime,
     )
     packet_quality_handoff["native_spawn_ready"] = native_spawn_ready_result
+    packet_quality_handoff.update(spawn_policy.handoff_fields())
     execution_signals_payload = (
         dict(execution_profile.get("signals", {}))
         if isinstance(execution_profile.get("signals"), Mapping)
@@ -2034,6 +2101,7 @@ def build_routing_handoff(
             "direct_guidance_count": _int_value(packet_quality.get("direct_guidance_chunk_count")),
         },
         "native_spawn_ready": native_spawn_ready_result,
+        **spawn_policy.policy_fields(),
         "reasoning_bias": reasoning_bias,
         "parallelism_hint": parallelism_hint,
         "top_guidance": top_guidance,

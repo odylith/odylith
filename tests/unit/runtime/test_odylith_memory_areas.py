@@ -5,6 +5,7 @@ from pathlib import Path
 
 from odylith.runtime.context_engine import odylith_context_engine as context_engine
 from odylith.runtime.context_engine import odylith_context_engine_store as store
+from odylith.runtime.evaluation import odylith_benchmark_runner as benchmark_runner
 
 
 def test_build_memory_areas_snapshot_uses_judgment_memory_posture() -> None:
@@ -122,6 +123,9 @@ def test_print_runtime_status_includes_judgment_memory_summary(capsys) -> None: 
 
     output = capsys.readouterr().out
     assert "- memory_areas: strong=6, partial=1" in output
+    assert "- memory_backend_fallback: no, source=live_backend, scope=live_backend_transition" in output
+    assert "- context_selection_degraded_fallback:" in output
+    assert "scope=recent_context_selection_events, memory_backend_fallback=no" in output
     assert "- memory_headline: Repo truth, retrieval memory, and decision memory are strong." in output
     assert "- judgment_memory: strong=5, partial=2, cold=1" in output
     assert "- judgment_headline: Decision memory and onboarding memory are durable." in output
@@ -428,4 +432,161 @@ def test_build_judgment_memory_snapshot_retains_negative_contradiction_and_onboa
     assert areas["onboarding"]["state"] == "partial"
     assert snapshot["headline"]
     assert snapshot["starter_slice"]["path"] == "src/odylith/runtime/context_engine"
-    assert snapshot["starter_slice"]["status"] == "inferred"
+    assert snapshot["starter_slice"]["status"] == "current"
+
+
+def test_build_judgment_memory_snapshot_prefers_current_tree_benchmark_report(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    benchmark_path = tmp_path / ".odylith" / "runtime" / "odylith-benchmarks"
+    benchmark_path.mkdir(parents=True, exist_ok=True)
+    (benchmark_path / "latest.v1.json").write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr(
+        benchmark_runner,
+        "load_latest_runtime_benchmark_report",
+        lambda *, repo_root: {
+            "generated_utc": "2026-04-21T15:26:01Z",
+            "acceptance": {"status": "provisional_pass"},
+            "comparison": {
+                "required_path_recall_delta": 0.370,
+                "validation_success_delta": 1.0,
+                "median_latency_delta_ms": 19.283,
+                "median_prompt_token_delta": -42.0,
+                "median_total_payload_token_delta": 1693.0,
+            },
+        },
+    )
+
+    snapshot = store._build_judgment_memory_snapshot(  # noqa: SLF001
+        repo_root=tmp_path,
+        projection_updated_utc="2026-04-21T16:00:00Z",
+        backlog_projection={"updated_utc": "2026-04-21", "active": [], "execution": [], "finished": [], "parked": []},
+        plan_projection={"active": [], "done": [], "parked": []},
+        bug_projection=[
+            {
+                "Date": "2026-04-21",
+                "Title": "Release lane remains risky",
+                "Severity": "P0",
+                "Status": "Open",
+                "Link": "[bug](odylith/casebook/bugs/release-risk.md)",
+            }
+        ],
+        diagram_projection=[],
+        runtime_state={},
+        optimization={},
+        evaluation={},
+        benchmark_report={
+            "generated_utc": "2026-04-15T16:25:58Z",
+            "acceptance": {"status": "hold"},
+            "comparison": {
+                "required_path_recall_delta": 0.0,
+                "validation_success_delta": 0.0,
+                "median_latency_delta_ms": 0.0,
+                "median_prompt_token_delta": 0.0,
+                "median_total_payload_token_delta": 0.0,
+            },
+        },
+        recent_bootstrap_packets=[],
+        active_sessions=[],
+        repo_dirty_paths=[],
+        welcome_state={},
+        previous_snapshot={},
+        retrieval_state="strong",
+    )
+
+    areas = {row["key"]: row for row in snapshot["areas"]}
+
+    assert areas["decisions"]["updated_utc"] == "2026-04-21T15:26:01Z"
+    assert any(
+        item["kind"] == "proof_outcome" and "provisional_pass" in item["summary"]
+        for item in areas["decisions"]["items"]
+    )
+    assert areas["contradictions"]["state"] == "strong"
+    assert areas["contradictions"]["summary"].startswith("5 cross-surface contradiction")
+    assert any(item["kind"] == "quality_vs_payload_cost" for item in areas["contradictions"]["items"])
+
+
+def test_architecture_evaluation_snapshot_counts_release_and_benchmark_live_rebuilds(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    corpus = {
+        "version": "v1",
+        "program": {},
+        "architecture_scenarios": [
+            {
+                "case_id": "release-runtime",
+                "label": "Release runtime boundary",
+                "priority": "medium",
+                "benchmark": {"paths": ["src/odylith/install/runtime.py"]},
+                "match": {
+                    "paths_any": ["src/odylith/install/runtime.py"],
+                    "domains_any": ["release"],
+                },
+                "expect": {"confidence_tier": ["high"], "contract_touchpoints_min": 2},
+            },
+            {
+                "case_id": "benchmark-publication",
+                "label": "Benchmark publication lane",
+                "priority": "medium",
+                "benchmark": {"paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"]},
+                "match": {
+                    "paths_any": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+                    "domains_any": ["benchmark"],
+                },
+                "expect": {"confidence_tier": ["high"], "contract_touchpoints_min": 2},
+            },
+        ],
+    }
+
+    monkeypatch.setattr(store.odylith_control_state, "load_timing_rows", lambda **_: [])
+    monkeypatch.setattr(store, "_runtime_proof_section", lambda **_: {})
+    monkeypatch.setattr(store, "_persist_runtime_proof_section", lambda **_: None)
+    monkeypatch.setattr(
+        store,
+        "_architecture_evaluation_proof_signature",
+        lambda **_: {"projection_fingerprint": "fp", "case_ids": ["release-runtime", "benchmark-publication"]},
+    )
+
+    def _fake_architecture_audit(*, changed_paths, **_kwargs):  # noqa: ANN001
+        if "src/odylith/install/runtime.py" in changed_paths:
+            return {
+                "changed_paths": changed_paths,
+                "coverage": {"confidence_tier": "high"},
+                "full_scan_recommended": False,
+                "resolved": True,
+                "contract_touchpoints": [{"path": "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md"}] * 2,
+                "execution_hint": {"mode": "bounded_analysis", "risk_tier": "moderate"},
+                "authority_graph": {"counts": {"edges": 8}},
+                "topology_domains": [{"domain_id": "release-install-runtime-boundary"}],
+                "blast_radius": {"component_ids": []},
+                "linked_components": [],
+            }
+        return {
+            "changed_paths": changed_paths,
+            "coverage": {"confidence_tier": "high"},
+            "full_scan_recommended": False,
+            "resolved": True,
+            "contract_touchpoints": [{"path": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md"}] * 3,
+            "execution_hint": {"mode": "bounded_analysis", "risk_tier": "moderate"},
+            "authority_graph": {"counts": {"edges": 13}},
+            "topology_domains": [],
+            "blast_radius": {"component_ids": ["benchmark"]},
+            "linked_components": [{"component_id": "benchmark"}],
+        }
+
+    monkeypatch.setattr(store, "build_architecture_audit", _fake_architecture_audit)
+
+    snapshot = store._architecture_evaluation_snapshot(  # noqa: SLF001
+        repo_root=tmp_path,
+        corpus=corpus,
+    )
+
+    assert snapshot["covered_case_count"] == 2
+    assert snapshot["satisfied_case_count"] == 2
+    assert snapshot["coverage_rate"] == 1.0
+    assert snapshot["satisfaction_rate"] == 1.0
+    assert snapshot["evidence_source"] == "live_rebuild"
+    assert all(row["status"] == "satisfied" for row in snapshot["focus_cases"])

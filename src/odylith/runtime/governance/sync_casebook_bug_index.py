@@ -1,3 +1,5 @@
+"""Sync Casebook Bug Index helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 import argparse
@@ -9,6 +11,7 @@ from typing import Iterable, Sequence
 
 from odylith.runtime.common.casebook_bug_ids import BUG_ID_FIELD, normalize_casebook_bug_id, resolve_casebook_bug_id
 from odylith.runtime.common.consumer_profile import truth_root_path
+from odylith.runtime.governance import casebook_source_validation
 
 
 _BUG_METADATA_LINE_RE = re.compile(r"^-?\s*([A-Za-z0-9/() _.-]+):\s*(.*)$")
@@ -26,6 +29,8 @@ _CANONICAL_STATUS = {
 
 @dataclass(frozen=True)
 class BugIndexRow:
+    """One rendered row in the authoritative Casebook bug index."""
+
     bug_id: str
     date: str
     title: str
@@ -36,6 +41,7 @@ class BugIndexRow:
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Parse CLI arguments for Casebook bug-index synchronization."""
     parser = argparse.ArgumentParser(
         prog="odylith governance sync-casebook-bug-index",
         description="Rebuild the Casebook bug index from authoritative markdown bug files.",
@@ -58,6 +64,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _canonical_status(value: str) -> str:
+    """Normalize raw bug status text onto the canonical index labels."""
     token = str(value or "").strip()
     if not token:
         return "Open"
@@ -65,6 +72,7 @@ def _canonical_status(value: str) -> str:
 
 
 def _slug_to_title(slug: str) -> str:
+    """Derive a display title from the markdown filename slug."""
     token = str(slug).strip().removesuffix(".md")
     match = _SLUG_DATE_RE.match(token)
     if match is not None:
@@ -74,6 +82,7 @@ def _slug_to_title(slug: str) -> str:
 
 
 def _parse_bug_fields(path: Path) -> dict[str, str]:
+    """Parse the metadata fields from one Casebook markdown bug file."""
     fields: dict[str, str] = {}
     current_key: str | None = None
     current_lines: list[str] = []
@@ -101,21 +110,28 @@ def _parse_bug_fields(path: Path) -> dict[str, str]:
     return fields
 
 
+def _should_skip_bug_markdown(*, bug_root: Path, path: Path) -> bool:
+    """Return whether a markdown path should be skipped by the bug-index scan."""
+    rel = path.relative_to(bug_root).as_posix()
+    if rel in {"AGENTS.md", "CLAUDE.md", "INDEX.md"}:
+        return True
+    return any(part.startswith(".") for part in path.relative_to(bug_root).parts)
+
+
 def _bug_files(bug_root: Path) -> list[Path]:
+    """Return the authoritative markdown bug files that feed the index."""
     if not bug_root.is_dir():
         return []
     rows: list[Path] = []
     for path in bug_root.rglob("*.md"):
-        rel = path.relative_to(bug_root).as_posix()
-        if rel in {"AGENTS.md", "INDEX.md"}:
-            continue
-        if any(part.startswith(".") for part in path.relative_to(bug_root).parts):
+        if _should_skip_bug_markdown(bug_root=bug_root, path=path):
             continue
         rows.append(path)
     return sorted(rows)
 
 
 def _build_bug_row(*, bug_root: Path, path: Path) -> BugIndexRow:
+    """Build one index row from a markdown bug record."""
     rel = path.relative_to(bug_root).as_posix()
     fields = _parse_bug_fields(path)
     match = _SLUG_DATE_RE.match(path.name.removesuffix(".md"))
@@ -141,6 +157,7 @@ def _build_bug_row(*, bug_root: Path, path: Path) -> BugIndexRow:
 
 
 def load_bug_rows_from_source(*, repo_root: Path) -> list[BugIndexRow]:
+    """Load and normalize all Casebook bug rows from markdown source."""
     bug_root = truth_root_path(repo_root=repo_root, key="casebook_bugs")
     rows = [_build_bug_row(bug_root=bug_root, path=path) for path in _bug_files(bug_root)]
     _assert_unique_bug_ids(rows=rows)
@@ -148,6 +165,7 @@ def load_bug_rows_from_source(*, repo_root: Path) -> list[BugIndexRow]:
 
 
 def _assert_unique_bug_ids(*, rows: Sequence[BugIndexRow]) -> None:
+    """Fail closed when two markdown bug records claim the same Bug ID."""
     seen: dict[str, str] = {}
     for row in rows:
         bug_id = str(row.bug_id).strip()
@@ -163,6 +181,7 @@ def _assert_unique_bug_ids(*, rows: Sequence[BugIndexRow]) -> None:
 
 
 def _render_bug_text_with_bug_id(*, text: str, bug_id: str) -> str:
+    """Insert or replace the Bug ID field in markdown bug text."""
     rendered: list[str] = []
     inserted = False
     replaced = False
@@ -189,6 +208,7 @@ def _render_bug_text_with_bug_id(*, text: str, bug_id: str) -> str:
 
 
 def migrate_casebook_bug_ids(*, repo_root: Path) -> list[Path]:
+    """Backfill missing Casebook Bug IDs while preserving existing numbering."""
     root = Path(repo_root).resolve()
     bug_root = truth_root_path(repo_root=root, key="casebook_bugs")
     files = _bug_files(bug_root)
@@ -218,6 +238,7 @@ def migrate_casebook_bug_ids(*, repo_root: Path) -> list[Path]:
 
 
 def _render_table(rows: Iterable[BugIndexRow]) -> list[str]:
+    """Render a bug-index markdown table for one status section."""
     ordered = list(rows)
     if not ordered:
         return ["None."]
@@ -234,6 +255,7 @@ def _render_table(rows: Iterable[BugIndexRow]) -> list[str]:
 
 
 def render_bug_index(*, repo_root: Path) -> str:
+    """Render the authoritative markdown Casebook bug index from source files."""
     rows = load_bug_rows_from_source(repo_root=repo_root)
     open_rows = sorted(
         [row for row in rows if row.status != "Closed"],
@@ -264,11 +286,20 @@ def render_bug_index(*, repo_root: Path) -> str:
 
 
 def sync_casebook_bug_index(*, repo_root: Path, migrate_bug_ids: bool = True) -> Path:
+    """Rebuild the Casebook bug index from markdown source records."""
     root = Path(repo_root).resolve()
     bug_root = truth_root_path(repo_root=root, key="casebook_bugs")
     bug_root.mkdir(parents=True, exist_ok=True)
     if migrate_bug_ids:
         migrate_casebook_bug_ids(repo_root=root)
+    validation = casebook_source_validation.validate_casebook_sources(repo_root=root)
+    if not validation.passed:
+        first_issue = validation.issues[0]
+        raise ValueError(
+            "Casebook source validation failed before index refresh; "
+            f"{first_issue.render(repo_root=validation.repo_root)}. "
+            "Run `odylith casebook validate --repo-root .`."
+        )
     index_path = bug_root / "INDEX.md"
     rendered = render_bug_index(repo_root=root)
     if not index_path.is_file() or index_path.read_text(encoding="utf-8") != rendered:
@@ -276,12 +307,27 @@ def sync_casebook_bug_index(*, repo_root: Path, migrate_bug_ids: bool = True) ->
     return index_path
 
 
+def _print_casebook_cli_failure(*, repo_root: Path, error: ValueError) -> int:
+    """Render the most useful CLI failure for bug-index sync errors."""
+    result = casebook_source_validation.validate_casebook_sources(repo_root=repo_root)
+    if not result.passed:
+        casebook_source_validation.print_casebook_source_validation_report(result)
+        return 2
+    print(f"error: {error}")
+    return 2
+
+
 def main(argv: Sequence[str] | None = None) -> int:
+    """CLI entrypoint for Casebook bug-index synchronization."""
     args = _parse_args(argv)
-    sync_casebook_bug_index(
-        repo_root=Path(args.repo_root).resolve(),
-        migrate_bug_ids=bool(args.migrate_bug_ids),
-    )
+    repo_root = Path(args.repo_root).resolve()
+    try:
+        sync_casebook_bug_index(
+            repo_root=repo_root,
+            migrate_bug_ids=bool(args.migrate_bug_ids),
+        )
+    except ValueError as exc:
+        return _print_casebook_cli_failure(repo_root=repo_root, error=exc)
     return 0
 
 

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.context_engine import surface_projection_fingerprint
 
 
@@ -22,6 +24,8 @@ def _seed_projection_tree(repo_root: Path) -> None:
     for relative_dir in (
         "odylith/radar/source/archive",
         "odylith/radar/source/ideas",
+        "odylith/radar/source/programs",
+        "odylith/radar/source/releases",
         "odylith/technical-plans/done",
         "odylith/technical-plans/parked",
         "odylith/casebook/bugs/archive",
@@ -47,3 +51,102 @@ def test_default_surface_projection_input_fingerprint_changes_when_bug_contract_
     updated = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
 
     assert updated != baseline
+
+
+def test_default_surface_projection_input_fingerprint_changes_when_release_source_changes(
+    tmp_path: Path,
+) -> None:
+    _seed_projection_tree(tmp_path)
+
+    baseline = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
+
+    release_events_path = tmp_path / "odylith" / "radar" / "source" / "releases" / "release-assignment-events.v1.jsonl"
+    release_events_path.write_text(
+        '{"action":"add","release_id":"release-0-1-11","workstream_id":"B-072","recorded_at":"2026-04-10T04:11:00Z"}\n',
+        encoding="utf-8",
+    )
+
+    updated = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
+
+    assert updated != baseline
+
+
+def test_default_surface_projection_input_fingerprint_changes_when_program_source_changes(
+    tmp_path: Path,
+) -> None:
+    _seed_projection_tree(tmp_path)
+
+    baseline = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
+
+    program_path = tmp_path / "odylith" / "radar" / "source" / "programs" / "B-072.execution-waves.v1.json"
+    program_path.write_text('{"umbrella_id":"B-072","version":"v1","waves":[]}\n', encoding="utf-8")
+
+    updated = surface_projection_fingerprint.default_surface_projection_input_fingerprint(repo_root=tmp_path)
+
+    assert updated != baseline
+
+
+def test_workspace_activity_fingerprint_ignores_generated_surface_outputs(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        surface_projection_fingerprint,
+        "_normalize_repo_token",
+        lambda token, *, repo_root: str(token).strip(),
+    )
+
+    collect_paths = [
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/compass.html",
+        "src/odylith/bundle/assets/odylith/compass/compass.html",
+    ]
+    monkeypatch.setattr(
+        governance,
+        "collect_git_changed_paths",
+        lambda *, repo_root: list(collect_paths),
+    )
+    monkeypatch.setattr(
+        component_registry,
+        "is_meaningful_workspace_artifact",
+        lambda _token: True,
+    )
+
+    assert surface_projection_fingerprint._workspace_activity_fingerprint(repo_root=tmp_path) == surface_projection_fingerprint.odylith_context_cache.fingerprint_payload([])  # noqa: SLF001
+
+
+def test_workspace_activity_fingerprint_keeps_source_truth_when_generated_outputs_change_too(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        surface_projection_fingerprint,
+        "_normalize_repo_token",
+        lambda token, *, repo_root: str(token).strip(),
+    )
+    monkeypatch.setattr(
+        component_registry,
+        "is_meaningful_workspace_artifact",
+        lambda _token: True,
+    )
+    monkeypatch.setattr(
+        surface_projection_fingerprint.odylith_context_cache,
+        "path_signature",
+        lambda path: str(Path(path).name),
+    )
+
+    monkeypatch.setattr(
+        governance,
+        "collect_git_changed_paths",
+        lambda *, repo_root: [
+            "odylith/compass/runtime/current.v1.json",
+            "src/odylith/runtime/surfaces/compass_dashboard_runtime.py",
+        ],
+    )
+    mixed = surface_projection_fingerprint._workspace_activity_fingerprint(repo_root=tmp_path)  # noqa: SLF001
+
+    monkeypatch.setattr(
+        governance,
+        "collect_git_changed_paths",
+        lambda *, repo_root: ["src/odylith/runtime/surfaces/compass_dashboard_runtime.py"],
+    )
+    source_only = surface_projection_fingerprint._workspace_activity_fingerprint(repo_root=tmp_path)  # noqa: SLF001
+
+    assert mixed == source_only

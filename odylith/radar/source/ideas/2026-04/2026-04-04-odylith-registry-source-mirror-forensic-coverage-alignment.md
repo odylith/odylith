@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-045
-title: Odylith Registry Source-Mirror Forensic Coverage Alignment
+title: Registry Source-Mirror Forensic Coverage Alignment
 date: 2026-04-04
 priority: P1
 commercial_value: 3
 product_impact: 4
 market_value: 3
-impacted_lanes: both
 impacted_parts: Registry forensic coverage, source-owned bundle mirrors, component workspace-activity mapping, and benchmark-safe evidence capture
 sizing: S
 complexity: Medium

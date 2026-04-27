@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-060
-title: Odylith v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening
+title: v0.1.10 Release Feedback Closure, Benchmark Re-Proof, and GA Lane Hardening
 date: 2026-04-07
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: release identity validation, benchmark proof and publication discipline, first-install shell refresh robustness, GitHub Actions runtime posture, post-publish dogfood cleanliness, and maintainer release workflow truth
 sizing: M
 complexity: High
@@ -50,11 +49,11 @@ it still hides supported controls, runs too quietly during some long steps,
 understates large dirty-overlap risk, and can rewrite unchanged generated JSON
 artifacts in ways that make file mtimes disagree with embedded
 `generated_utc`. Another downstream packet the same day exposed a Compass
-refresh trust gap: bounded `shell-safe` refresh behaved as designed, but the
-advertised deeper `--compass-refresh-profile full` path still shared the same
-hard dashboard timeout, could fail twice under realistic repo state, suggested
-the wrong recovery command, and silently left the old `shell-safe` payload
-active with no explicit failure marker. A 2026-04-08 follow-up packet showed
+refresh trust gap: bounded refresh behaved as designed, but Compass still
+advertised an older deeper rerender path that shared the same hard dashboard
+timeout, could fail twice under realistic repo state, suggested the wrong
+recovery command, and silently left the old bounded payload active with no
+explicit failure marker. A 2026-04-08 follow-up packet showed
 the shell host still projecting stale Compass state poorly: `tooling_shell`
 could refresh successfully after that failed deeper Compass rerender and keep
 presenting the older Compass brief with no shell-level admission that the
@@ -110,10 +109,10 @@ identity exceptions, or hand-waved benchmark deferrals.
   it: visible help for real controls, heartbeat progress on long steps,
   stronger dirty-overlap acknowledgement, durable warning-report pointers, and
   truthful generated-artifact timestamps
-- make Compass explicit refresh truthful end to end: aligned defaults between
-  the public dashboard CLI and the underlying renderer, a viable timeout budget
-  for `full`, an honest rerender hint on failure, and a live payload marker
-  when the requested deeper refresh does not land
+- make Compass refresh truthful end to end: expose canonical
+  `odylith compass refresh`, keep one bounded refresh contract with truthful
+  status/wait support, stamp the live payload when any requested refresh
+  fails, and retire the older minute-scale deeper rerender idea entirely
 - make shell refresh truthful about Compass child-runtime freshness: when only
   the wrapper rerenders, the shell must project stale or failed Compass
   child-runtime state instead of implying the visible brief is current
@@ -182,10 +181,10 @@ identity exceptions, or hand-waved benchmark deferrals.
 - downstream `odylith sync` runs expose their real control surface, stay visibly
   alive during long steps, require explicit acknowledgement for large dirty
   overlap, and keep generated-artifact metadata truthful on semantic no-op runs
-- downstream Compass full-refresh proof no longer times out under the old
-  shell-safe timeout budget, leaves a visible stale-and-failed marker when a
-  deeper refresh does fail, and never points operators at `odylith compass
-  update --repo-root .` as if that were a rerender command
+- downstream Compass refresh proof uses `odylith compass refresh --repo-root .`
+  as the canonical path, one bounded refresh contract queues with truthful
+  status/wait guidance, leaves a visible stale-and-failed marker when refresh
+  fails, and never revives a second deeper rerender lane
 - release CI no longer emits the Node 20 deprecation warning on pinned
   first-party actions
 - PR `pytest` and `candidate-proof` stay green on GitHub-hosted runners that do
@@ -291,10 +290,10 @@ Node 20 deprecation warning into GA.
   version, package version, and product pin now advance together before
   canonical preflight can continue.
 - Compass explicit-refresh hardening is now part of the landed `v0.1.10`
-  release-feedback slice: explicit `full` refresh no longer shares the old
-  shell-safe timeout budget, the failure hint points back to a real Compass
-  rerender command, and failed deeper refresh attempts mark the live payload so
-  operators do not silently keep serving a stale bounded snapshot.
+  release-feedback slice: `odylith compass refresh` is the canonical request
+  engine, default `shell-safe` refresh now queues with explicit status/wait
+  truth, failed refresh attempts mark the live payload, and timeout no longer
+  fans into a duplicate wrapper retry.
 - The same release-feedback slice now also owns shell-host truth for Compass:
   a successful wrapper refresh must not masquerade as fresh Compass runtime
   data when the visible brief still comes from an older or failed child

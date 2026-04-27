@@ -1,7 +1,7 @@
 """Render benchmark SVGs directly from Odylith benchmark reports.
 
 This module is the maintained README benchmark graph contract for Odylith
-release work. Keep the filenames, Codex framing, and visual tone stable across
+release work. Keep the filenames, proof-host framing, and visual tone stable across
 releases unless the product is intentionally redesigning the benchmark story.
 """
 
@@ -15,7 +15,9 @@ from pathlib import Path
 import statistics
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_marketing_graphs as marketing_graphs
+from odylith.runtime.evaluation import odylith_benchmark_mode
 from odylith.runtime.evaluation import odylith_benchmark_runner
 from odylith.runtime.evaluation import odylith_benchmark_taxonomy
 
@@ -47,7 +49,7 @@ POSTURE_TITLE = "Odylith benchmark operating posture"
 QUALITY_FRONTIER_TITLE = marketing_graphs.QUALITY_FRONTIER_TITLE
 FRONTIER_HEADING = "Live Benchmark: time to valid outcome vs live session input"
 HEATMAP_HEADING = "Live Benchmark Family Heatmap: where Odylith wins"
-POSTURE_HEADING = "Live Benchmark operating posture on the Codex benchmark corpus"
+POSTURE_HEADING = "Live Benchmark operating posture on the current proof-host corpus"
 QUALITY_FRONTIER_HEADING = marketing_graphs.QUALITY_FRONTIER_HEADING
 _VISUAL_CANDIDATE_MODE = "odylith_on"
 _VISUAL_BASELINE_MODE = "raw_agent_baseline"
@@ -55,24 +57,20 @@ _REPO_SCAN_BASELINE_MODE = "odylith_repo_scan_baseline"
 _LEGACY_REPO_SCAN_BASELINE_MODE = "full_scan_baseline"
 
 
-def _normalize_mode(mode: str) -> str:
-    return odylith_benchmark_runner._normalize_mode(str(mode or "").strip())  # noqa: SLF001
-
-
 def _lookup_mode_mapping(mapping: Mapping[str, Any], mode: str) -> Any:
-    target = _normalize_mode(mode)
+    target = odylith_benchmark_mode.normalize_public_mode(str(mode or "").strip())
     for key, value in mapping.items():
-        if _normalize_mode(str(key).strip()) == target:
+        if odylith_benchmark_mode.normalize_public_mode(str(key).strip()) == target:
             return value
     return None
 
 
 def _comparison_contract(report: Mapping[str, Any]) -> str:
-    return str(report.get("comparison_contract", "")).strip() or "live_end_to_end"
+    return str(report.get("comparison_contract", "")).strip() or odylith_benchmark_runner.LIVE_COMPARISON_CONTRACT
 
 
 def _is_live_end_to_end(report: Mapping[str, Any]) -> bool:
-    return _comparison_contract(report) == "live_end_to_end"
+    return odylith_benchmark_runner._is_live_comparison_contract(_comparison_contract(report))  # noqa: SLF001
 
 
 def _token_axis_noun(report: Mapping[str, Any]) -> str:
@@ -96,25 +94,25 @@ def _time_axis_label(report: Mapping[str, Any]) -> str:
 
 
 def _public_benchmark_name(report: Mapping[str, Any]) -> str:
-    return "Live Benchmark" if _is_live_end_to_end(report) else "Grounding Benchmark"
+    return "Live Benchmark" if _is_live_end_to_end(report) else "Internal Diagnostic Benchmark"
 
 
 def _frontier_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return FRONTIER_HEADING
-    return "Grounding Benchmark: packet/prompt time vs prompt-bundle input"
+    return "Internal Diagnostic Benchmark: packet/prompt time vs prompt-bundle input"
 
 
 def _heatmap_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return HEATMAP_HEADING
-    return "Grounding Benchmark Family Heatmap: where Odylith wins"
+    return "Internal Diagnostic Family Heatmap: where Odylith wins"
 
 
 def _posture_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return POSTURE_HEADING
-    return "Grounding Benchmark operating posture on the Codex benchmark corpus"
+    return "Internal Diagnostic operating posture on the current proof-host corpus"
 
 
 def _report_source_label(report: Mapping[str, Any]) -> str:
@@ -434,8 +432,8 @@ def _mode_label(mode: str) -> str:
         "odylith_on_no_fanout": "Odylith on (no fanout)",
         "odylith_repo_scan_baseline": "Repo-scan baseline",
         "full_scan_baseline": "Repo-scan baseline",
-        "raw_agent_baseline": "odylith_off (raw Codex CLI)",
-        "odylith_off": "odylith_off (raw Codex CLI)",
+        "raw_agent_baseline": "odylith_off (raw host CLI)",
+        "odylith_off": "odylith_off (raw host CLI)",
     }
     token = str(mode or "").strip()
     if token in labels:
@@ -449,8 +447,8 @@ def _mode_compact_label(mode: str) -> str:
         "odylith_on_no_fanout": "Odylith on / no fanout",
         "odylith_repo_scan_baseline": "Repo-scan baseline",
         "full_scan_baseline": "Repo-scan baseline",
-        "raw_agent_baseline": "odylith_off / raw Codex CLI",
-        "odylith_off": "odylith_off / raw Codex CLI",
+        "raw_agent_baseline": "odylith_off / raw host CLI",
+        "odylith_off": "odylith_off / raw host CLI",
     }
     token = str(mode or "").strip()
     if token in labels:
@@ -477,14 +475,18 @@ def _report_mode_order(report: Mapping[str, Any]) -> list[str]:
     published_table = dict(report.get("published_mode_table", {})) if isinstance(report.get("published_mode_table"), Mapping) else {}
     rows = published_table.get("mode_order", [])
     if isinstance(rows, list):
-        ordered = [_normalize_mode(str(mode).strip()) for mode in rows if str(mode).strip()]
+        ordered = [
+            odylith_benchmark_mode.normalize_public_mode(str(mode).strip())
+            for mode in rows
+            if str(mode).strip()
+        ]
         if ordered:
             return list(dict.fromkeys(mode for mode in ordered if mode))
 
     ordered: list[str] = []
 
     def _add(mode: Any) -> None:
-        token = _normalize_mode(str(mode or "").strip())
+        token = odylith_benchmark_mode.normalize_public_mode(str(mode or "").strip())
         if token and token not in ordered:
             ordered.append(token)
 
@@ -507,8 +509,12 @@ def _graph_comparison(report: Mapping[str, Any]) -> dict[str, Any]:
     comparison = _report_comparison(report)
     ordered_modes = _report_mode_order(report)
     available_modes = {str(mode).strip() for mode in ordered_modes if str(mode).strip()}
-    candidate_mode = _normalize_mode(str(comparison.get("candidate_mode", "")).strip() or _VISUAL_CANDIDATE_MODE)
-    baseline_mode = _normalize_mode(str(comparison.get("baseline_mode", "")).strip() or _VISUAL_BASELINE_MODE)
+    candidate_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("candidate_mode", "")).strip() or _VISUAL_CANDIDATE_MODE
+    )
+    baseline_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("baseline_mode", "")).strip() or _VISUAL_BASELINE_MODE
+    )
     if _VISUAL_CANDIDATE_MODE in available_modes and _VISUAL_BASELINE_MODE in available_modes:
         candidate_mode = _VISUAL_CANDIDATE_MODE
         baseline_mode = _VISUAL_BASELINE_MODE
@@ -541,12 +547,16 @@ def _graph_comparison(report: Mapping[str, Any]) -> dict[str, Any]:
 
 def _scenario_rows(report: Mapping[str, Any]) -> list[dict[str, Any]]:
     comparison = _graph_comparison(report)
-    candidate_mode = _normalize_mode(str(comparison.get("candidate_mode", "")).strip() or "odylith_on")
-    baseline_mode = _normalize_mode(str(comparison.get("baseline_mode", "")).strip() or "full_scan_baseline")
+    candidate_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("candidate_mode", "")).strip() or "odylith_on"
+    )
+    baseline_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("baseline_mode", "")).strip() or "full_scan_baseline"
+    )
     rows: list[dict[str, Any]] = []
     for scenario in _report_scenarios(report):
         results = {
-            _normalize_mode(str(row.get("mode", "")).strip()): row
+            odylith_benchmark_mode.normalize_public_mode(str(row.get("mode", "")).strip()): row
             for row in scenario.get("results", [])
             if isinstance(row, Mapping) and str(row.get("mode", "")).strip()
         }
@@ -559,16 +569,36 @@ def _scenario_rows(report: Mapping[str, Any]) -> list[dict[str, Any]]:
                 "scenario_id": str(scenario.get("scenario_id", "")).strip(),
                 "label": str(scenario.get("label", "")).strip() or str(scenario.get("scenario_id", "")).strip(),
                 "family": str(scenario.get("family", "")).strip(),
-                "candidate_prompt": float(candidate.get("codex_prompt_estimated_tokens", 0.0) or 0.0),
-                "baseline_prompt": float(baseline.get("codex_prompt_estimated_tokens", 0.0) or 0.0),
-                "candidate_latency": float(candidate.get("latency_ms", 0.0) or 0.0),
-                "baseline_latency": float(baseline.get("latency_ms", 0.0) or 0.0),
-                "candidate_total": float(candidate.get("total_payload_estimated_tokens", 0.0) or 0.0),
-                "baseline_total": float(baseline.get("total_payload_estimated_tokens", 0.0) or 0.0),
-                "required_path_recall_delta": float(candidate.get("required_path_recall", 0.0) or 0.0)
-                - float(baseline.get("required_path_recall", 0.0) or 0.0),
-                "validation_success_delta": float(candidate.get("validation_success_proxy", 0.0) or 0.0)
-                - float(baseline.get("validation_success_proxy", 0.0) or 0.0),
+                "candidate_prompt": benchmark_metric_helpers.numeric_value(
+                    candidate,
+                    "host_prompt_estimated_tokens",
+                    fallback_fields=("codex_prompt_estimated_tokens",),
+                ),
+                "baseline_prompt": benchmark_metric_helpers.numeric_value(
+                    baseline,
+                    "host_prompt_estimated_tokens",
+                    fallback_fields=("codex_prompt_estimated_tokens",),
+                ),
+                "candidate_latency": benchmark_metric_helpers.numeric_value(candidate, "latency_ms"),
+                "baseline_latency": benchmark_metric_helpers.numeric_value(baseline, "latency_ms"),
+                "candidate_total": benchmark_metric_helpers.numeric_value(
+                    candidate,
+                    "total_payload_estimated_tokens",
+                ),
+                "baseline_total": benchmark_metric_helpers.numeric_value(
+                    baseline,
+                    "total_payload_estimated_tokens",
+                ),
+                "required_path_recall_delta": benchmark_metric_helpers.numeric_delta(
+                    candidate,
+                    baseline,
+                    candidate_field="required_path_recall",
+                ),
+                "validation_success_delta": benchmark_metric_helpers.numeric_delta(
+                    candidate,
+                    baseline,
+                    candidate_field="validation_success_proxy",
+                ),
             }
         )
     return rows
@@ -902,13 +932,23 @@ def _render_family_heatmap_svg(report: Mapping[str, Any]) -> str:
     family_deltas = _report_family_deltas(report)
     report_comparison = _report_comparison(report)
     comparison = _graph_comparison(report)
-    candidate_mode = _normalize_mode(str(comparison.get("candidate_mode", "")).strip() or "odylith_on")
-    baseline_mode = _normalize_mode(str(comparison.get("baseline_mode", "")).strip() or "full_scan_baseline")
+    candidate_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("candidate_mode", "")).strip() or "odylith_on"
+    )
+    baseline_mode = odylith_benchmark_mode.normalize_public_mode(
+        str(comparison.get("baseline_mode", "")).strip() or "full_scan_baseline"
+    )
     candidate_label = _mode_label(candidate_mode)
     baseline_label = _mode_label(baseline_mode)
     uses_report_comparison = (
-        candidate_mode == _normalize_mode(str(report_comparison.get("candidate_mode", "")).strip() or "odylith_on")
-        and baseline_mode == _normalize_mode(str(report_comparison.get("baseline_mode", "")).strip() or "full_scan_baseline")
+        candidate_mode
+        == odylith_benchmark_mode.normalize_public_mode(
+            str(report_comparison.get("candidate_mode", "")).strip() or "odylith_on"
+        )
+        and baseline_mode
+        == odylith_benchmark_mode.normalize_public_mode(
+            str(report_comparison.get("baseline_mode", "")).strip() or "full_scan_baseline"
+        )
     )
     rows: list[dict[str, Any]] = []
     family_names = odylith_benchmark_taxonomy.ordered_family_names(
@@ -934,45 +974,66 @@ def _render_family_heatmap_svg(report: Mapping[str, Any]) -> str:
             {
                 "category": odylith_benchmark_taxonomy.family_group_label(family),
                 "family": family,
-                "baseline_prompt": float(baseline.get("median_effective_tokens", 0.0) or 0.0),
-                "baseline_latency": float(baseline.get("median_latency_ms", 0.0) or 0.0),
+                "baseline_prompt": benchmark_metric_helpers.numeric_value(
+                    baseline,
+                    "median_effective_tokens",
+                ),
+                "baseline_latency": benchmark_metric_helpers.numeric_value(
+                    baseline,
+                    "median_latency_ms",
+                ),
                 "prompt_delta": float(
                     delta_row.get(
                         "median_prompt_token_delta",
-                        float(candidate.get("median_effective_tokens", 0.0) or 0.0)
-                        - float(baseline.get("median_effective_tokens", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="median_effective_tokens",
+                        ),
                     )
                     or 0.0
                 ),
                 "latency_delta": float(
                     delta_row.get(
                         "median_latency_delta_ms",
-                        float(candidate.get("median_latency_ms", 0.0) or 0.0)
-                        - float(baseline.get("median_latency_ms", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="median_latency_ms",
+                        ),
                     )
                     or 0.0
                 ),
                 "recall_delta": float(
                     delta_row.get(
                         "required_path_recall_delta",
-                        float(candidate.get("required_path_recall_rate", 0.0) or 0.0)
-                        - float(baseline.get("required_path_recall_rate", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="required_path_recall_rate",
+                        ),
                     )
                     or 0.0
                 ),
                 "validation_delta": float(
                     delta_row.get(
                         "validation_success_delta",
-                        float(candidate.get("validation_success_rate", 0.0) or 0.0)
-                        - float(baseline.get("validation_success_rate", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="validation_success_rate",
+                        ),
                     )
                     or 0.0
                 ),
                 "expectation_delta": float(
                     delta_row.get(
                         "expectation_success_delta",
-                        float(candidate.get("expectation_success_rate", 0.0) or 0.0)
-                        - float(baseline.get("expectation_success_rate", 0.0) or 0.0),
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="expectation_success_rate",
+                        ),
                     )
                     or 0.0
                 ),
@@ -1158,7 +1219,7 @@ def _render_operating_posture_svg(report: Mapping[str, Any]) -> str:
     title_y = 88
     subtitle_y = 114
     subtitle_lines = _wrap_words(
-        "This is the system behavior behind the Codex scorecard: packet coverage, grounding, delegation readiness, and runtime posture.",
+        "This is the system behavior behind the current proof-host scorecard: packet coverage, grounding, delegation readiness, and runtime posture.",
         limit=118,
     )
     subtitle_bottom = subtitle_y + max(0, (len(subtitle_lines) - 1) * 18)
@@ -1285,14 +1346,18 @@ def _render_operating_posture_svg(report: Mapping[str, Any]) -> str:
     return _svg_canvas(title=POSTURE_TITLE, body=body, height=svg_height)
 
 
-def render_graph_assets(report: Mapping[str, Any], *, out_dir: Path) -> list[Path]:
-    out_dir.mkdir(parents=True, exist_ok=True)
-    outputs = {
+def render_graph_asset_contents(report: Mapping[str, Any]) -> dict[str, str]:
+    return {
         **marketing_graphs.render_marketing_graph_assets(report),
         FRONTIER_FILENAME: _render_frontier_svg(report),
         HEATMAP_FILENAME: _render_family_heatmap_svg(report),
         POSTURE_FILENAME: _render_operating_posture_svg(report),
     }
+
+
+def render_graph_assets(report: Mapping[str, Any], *, out_dir: Path) -> list[Path]:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    outputs = render_graph_asset_contents(report)
     written: list[Path] = []
     for name, contents in outputs.items():
         target = (out_dir / name).resolve()

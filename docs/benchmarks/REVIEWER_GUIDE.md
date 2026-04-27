@@ -7,7 +7,7 @@ This guide keeps reviewers on Odylith's actual claim.
 Before reviewing Odylith, read these in order:
 
 - [README](../../README.md)
-- [How To Read Odylith's Codex Benchmarks](README.md)
+- [How To Read Odylith's Benchmark Proof](README.md)
 - [Odylith Benchmark Metrics And Priorities](METRICS_AND_PRIORITIES.md)
 
 ## Review Rule
@@ -19,7 +19,7 @@ Odylith's primary claim is simple:
 - on the same task, `odylith_on` should produce a better valid outcome than
   `odylith_off`
 
-`odylith_off` is the public name for the raw Codex CLI lane. The report may
+`odylith_off` is the public name for the raw host CLI lane. The report may
 still store that lane as `raw_agent_baseline`, but reviewer-facing prose
 should prefer `odylith_off`.
 
@@ -27,17 +27,17 @@ Treat benchmark profiles separately:
 
 - `quick`: local developer signal only
 - `proof`: governing product benchmark
-- `diagnostic`: packet-and-prompt tuning view only
+- Grounding Benchmark: packet-and-prompt tuning view only
 
-Do not review a `quick` or `diagnostic` report as if it were the canonical
-publication proof.
+Do not review a `quick` or Grounding Benchmark report as if it were the
+canonical publication proof.
 
 ## What To Separate
 
 Keep these buckets separate:
 
 - `What Odylith proves today`
-  Codex-first measured proof on `odylith_on` versus `odylith_off`
+  currently published host-scoped proof on `odylith_on` versus `odylith_off`
 - `What Odylith plausibly helps but has not benchmarked yet`
   Claude-facing benefit from the same grounding, memory, and governance
   surfaces
@@ -47,10 +47,12 @@ Keep these buckets separate:
 Do not collapse those into one judgment.
 
 If the final review needs to name Odylith directly beyond lane labels, keep it
-to one final-only `Odylith Assist:` line backed by measured proof or a
-measured report, and follow
+to one evidence-backed `Odylith Assist:` line at closeout or for explicit
+visibility-feedback fallback, backed by measured proof or a measured report,
+and follow
 [Odylith Chatter](../../odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md)
-for the detailed closeout wording contract.
+for the detailed closeout wording contract, including the rule that any
+supplemental line must render before the final Assist line.
 
 ## Required Evaluation Order
 
@@ -95,15 +97,16 @@ Rules:
 - Evaluate `odylith_on` versus `odylith_off` on the same tasks before comparing Odylith to any other stack.
 - Treat `raw_agent_baseline` as the internal report alias for `odylith_off`.
 - Treat `odylith_repo_scan_baseline` as a secondary scaffold control, not as "Odylith off."
-- Hold the public pair to the same live Codex CLI model and reasoning contract.
-- Expect the public pair to run in an isolated temporary Codex home with no auto-consumed personal instructions, plugins, or repo guidance entrypoints in the disposable workspace.
+- Hold the public pair to the same live host CLI model and reasoning contract for the proof host under review.
+- Expect the public pair to run in an isolated temporary host home with no auto-consumed personal instructions, plugins, or repo guidance entrypoints in the disposable workspace.
 - Expect truth-bearing repo docs to remain available for explicit reads.
-- Treat `proof` as the governing benchmark and `diagnostic` as mechanism-only evidence.
+- Treat `proof` as the governing benchmark and the Grounding Benchmark as mechanism-only evidence.
 - Use this evaluation order: correctness and non-regression, grounding recall and precision, validation success and execution fit, robustness and consistency, latency to a valid outcome, prompt or payload efficiency, bounded budget behavior.
 - Treat tiers 1-4 as the hard quality gate.
 - Treat memory, Registry, Atlas, Compass, orchestration, and related surfaces as mechanisms unless you tie them to an execution consequence.
 - Keep these sections separate: `What Odylith proves today`, `What Odylith plausibly helps but has not benchmarked yet`, and `What is missing or weak in the current product`.
-- Preserve current lane truth: published measured benchmark proof is Codex-first today.
+- Preserve current lane truth: the full live proof was executed on Codex, while
+  Codex and Claude quick smokes provide bounded host-agnostic coverage.
 
 Required output shape:
 1. Claim being tested

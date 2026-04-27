@@ -79,7 +79,7 @@ Related Bugs:
 - [ ] [auto_update_mermaid_diagrams.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py)
 - [ ] [INSTALL.md](/Users/freedom/code/odylith/odylith/INSTALL.md)
 - [ ] [INSTALL_AND_UPGRADE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
-- [ ] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/delivery-governance-surface-ops/SKILL.md)
+- [ ] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
 - [ ] bundle mirrors under [src/odylith/bundle/assets/odylith](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith)
 - [ ] [test_runtime.py](/Users/freedom/code/odylith/tests/unit/install/test_runtime.py)
 - [ ] [test_cli.py](/Users/freedom/code/odylith/tests/unit/test_cli.py)

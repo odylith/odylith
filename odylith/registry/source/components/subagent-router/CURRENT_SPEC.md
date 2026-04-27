@@ -1,8 +1,15 @@
 # Subagent Router
-Last updated: 2026-03-31
+
+## Odylith Discipline Contract
+- Subagent Router owns the first Coordination affordance. Broad delegation is
+  inadmissible until Context/Scout-style narrowing is satisfied and a bounded
+  route-ready contract exists.
+- Discipline checks may recommend routing affordances but must not spawn
+  subagents or call host models to classify pressure.
+Last updated: 2026-04-09
 
 
-Last updated (UTC): 2026-03-31
+Last updated (UTC): 2026-04-09
 
 ## Purpose
 Subagent Router is Odylith's bounded leaf-routing engine. It takes one already
@@ -10,9 +17,11 @@ scoped task and decides whether the work should remain in the main thread or be
 delegated to one subagent, with an explicit model, reasoning-effort tier,
 agent role, lifecycle contract, and host-tool payload.
 
-In Codex, this routed profile ladder applies across substantive grounded
-consumer-lane work and both Odylith product-repo maintainer postures: pinned
-dogfood and detached `source-local` maintainer dev.
+This routed profile ladder applies across substantive grounded consumer-lane
+work and both Odylith product-repo maintainer postures: pinned dogfood and
+detached `source-local` maintainer dev. Native spawn remains capability-gated
+by the resolved host runtime, with Codex as the currently validated
+native-spawn host.
 
 ## Scope And Non-Goals
 ### The router owns
@@ -28,6 +37,10 @@ dogfood and detached `source-local` maintainer dev.
 - Repo grounding. It consumes bounded context signals rather than compiling
   them.
 - Spawning agents directly. It emits a decision contract for the caller.
+- Core admissibility policy. Execution Engine decides whether a next move
+  is allowed before routing chooses the best delegated profile, and the router
+  must fail closed when the governed frontier says the truthful next move is
+  re-anchor, local recovery, or waiting on an external dependency.
 
 ## Developer Mental Model
 - The router is the leaf authority. If a task has already been decomposed, the
@@ -44,11 +57,12 @@ dogfood and detached `source-local` maintainer dev.
   route explanation stream and limit it to one short `Odylith Assist:` line
   backed by concrete observed counts, measured deltas, or validation outcomes.
   Prefer `**Odylith Assist:**` when Markdown formatting is available. Lead
-  with the user win, not Odylith mechanics, link updated governance ids inline
-  when they were actually changed, and frame the edge against `odylith_off`
-  or the broader unguided path when the evidence supports it. Keep it crisp,
-  authentic, clear, simple, insightful, soulful, friendly, free-flowing,
-  human, and factual.
+  with the user win, not Odylith mechanics, link updated governance IDs inline
+  only when they actually changed, name affected governance-contract IDs from
+  bounded request or packet truth when no governed file moved, and frame the
+  edge against `odylith_off` or the broader unguided path when the evidence
+  supports it. Keep it crisp, authentic, clear, simple, insightful, soulful,
+  friendly, free-flowing, human, and factual.
 
 ## Public Command Surface
 Public entrypoint: `odylith subagent-router`
@@ -65,13 +79,15 @@ Public entrypoint: `odylith subagent-router`
 
 The CLI accepts inline JSON or `--input-file`/`--decision-file`/`--outcome-file`
 payloads and can optionally mirror audit rows into
-`odylith/compass/runtime/codex-stream.v1.jsonl`.
+`odylith/compass/runtime/agent-stream.v1.jsonl`, while retaining read
+compatibility for legacy `codex-stream.v1.jsonl` consumers during migration.
 
 ## Persistent State
 - `.odylith/subagent_router/tuning.v1.json`
   Local profile bias, family bias, outcome counts, and applied outcome keys.
-- `odylith/compass/runtime/codex-stream.v1.jsonl`
-  Optional route audit stream shared with Compass runtime posture.
+- `odylith/compass/runtime/agent-stream.v1.jsonl`
+  Canonical optional route audit stream shared with Compass runtime posture,
+  with legacy reader support for `codex-stream.v1.jsonl`.
 
 ## Core Types
 ### `RouteRequest`
@@ -134,36 +150,40 @@ Recorded execution result used for escalation or tuning:
 - notes and outcome id
 
 ## Profile Ladder
-The supported ordered profile ladder across those Codex lanes is:
+The supported ordered profile ladder across native-spawn-capable hosts is:
 - `main_thread`
   No delegation.
-- `mini_medium`
+- `analysis_medium`
   `gpt-5.4-mini`, `medium`.
-- `mini_high`
+- `analysis_high`
   `gpt-5.4-mini`, `high`.
-- `spark_medium`
+- `fast_worker`
   `gpt-5.3-codex-spark`, `medium`.
-- `codex_medium`
+- `write_medium`
   `gpt-5.3-codex`, `medium`.
-- `codex_high`
+- `write_high`
   `gpt-5.3-codex`, `high`.
-- `gpt54_high`
+- `frontier_high`
   `gpt-5.4`, `high`.
-- `gpt54_xhigh`
+- `frontier_xhigh`
   `gpt-5.4`, `xhigh`, gated.
+
+Legacy ids `mini_*`, `spark_medium`, `codex_*`, and `gpt54_*` remain accepted
+as read-compatibility aliases for one migration window, but new decisions and
+docs should emit the neutral canonical ids above.
 
 ## Task-Family Policy Baselines
 The router maintains explicit baseline policy per task family:
 - `mechanical_patch`
-  Defaults to `spark_medium` worker.
+  Defaults to `fast_worker` worker.
 - `bounded_bugfix`
-  Defaults to `codex_medium` worker.
+  Defaults to `write_medium` worker.
 - `bounded_feature`
-  Defaults to `codex_high` worker.
+  Defaults to `write_high` worker.
 - `analysis_review`
-  Defaults to `mini_high` explorer.
+  Defaults to `analysis_high` explorer.
 - `critical_change`
-  Defaults to `gpt54_high` worker.
+  Defaults to `frontier_high` worker.
 - `coordination_heavy`
   Defaults to `main_thread`.
 
@@ -181,8 +201,14 @@ The router combines three kinds of signals:
 - Context signals:
   extracted from keys such as `routing_handoff`, `context_packet`,
   `evidence_pack`, `optimization_snapshot`, `architecture_audit`,
-  `validation_bundle`, `governance_obligations`, `surface_refs`, and
-  `diagram_watch_gaps`.
+  `validation_bundle`, `governance_obligations`, `surface_refs`,
+  `diagram_watch_gaps`, and compact `execution_engine_*` summary fields.
+
+Execution Engine summary fields are first-class hard-gate inputs. Canonical
+Execution Engine identity, re-anchor pressure, live contradictions, semantic
+wait state, critical-path verify or recover modes, unsafe closure, and
+host-serial posture must all be allowed to keep a leaf local before any
+profile ladder scoring runs.
 
 The router also enforces implied write-surface rules. For example, prompts that
 mention tests, docs, governance artifacts, or contracts must declare path scope
@@ -213,12 +239,15 @@ Typical reasons a task stays local or is forced to rescope include:
 
 Important guardrails:
 - Hard gates override soft scoring.
-- `gpt54_xhigh` is not a default winner and should appear only after explicit
+- `frontier_xhigh` is not a default winner and should appear only after explicit
   risk or escalation logic unlocks it.
-- Host integration supports only native agent types:
-  `default`, `explorer`, and `worker`.
-- Custom named agents from `.codex/agents/` are not part of the router's host
-  contract.
+- Execution-governance defer or deny posture beats route-readiness scoring.
+- The current routed Codex host-tool contract still supports only native
+  `spawn_agent` agent types: `default`, `explorer`, and `worker`.
+- Odylith may also ship repo-scoped Codex CLI custom project agents under
+  `.codex/agents/*.toml`, but those are project-native Codex assets rather than
+  router-selectable `spawn_agent` types until the host integration proves
+  named-agent selection end to end.
 
 ## Tuning Model
 Tuning is local-only and bias-bounded:
@@ -297,3 +326,4 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Registered the public router as an Odylith-owned product component with its own spec and governance linkage in the public repo. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-02: Fixed the public CLI wrapper so `odylith subagent-router --repo-root . --help` and verbed invocations preserve the documented verb-first contract instead of misrouting `--repo-root` ahead of the router subcommand. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
+- 2026-04-09: Clarified that Subagent Router selects delegated execution profiles only after Execution Engine has screened the next move for admissibility. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))

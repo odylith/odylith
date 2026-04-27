@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.consumer_profile import surface_root_path, truth_root_path
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine.projection_contract_versions import projection_contract_version
@@ -30,6 +31,47 @@ def _normalize_repo_token(token: str, *, repo_root: Path) -> str:
     return ws_inference.normalize_repo_token(token, repo_root=repo_root)
 
 
+def _is_generated_surface_output(token: str) -> bool:
+    normalized = str(token or "").strip().lower()
+    if not normalized:
+        return True
+
+    if normalized.startswith("odylith/radar/source/"):
+        return False
+    if normalized.startswith("odylith/technical-plans/"):
+        return False
+    if normalized.startswith("odylith/casebook/bugs/"):
+        return False
+    if normalized.startswith("odylith/registry/source/"):
+        return False
+    if normalized.startswith("odylith/atlas/source/"):
+        return (
+            normalized.startswith("odylith/atlas/source/catalog/")
+            or normalized.endswith(".svg")
+            or normalized.endswith(".png")
+        )
+
+    if normalized.startswith("src/odylith/bundle/assets/odylith/"):
+        return True
+    if normalized.startswith("odylith/compass/"):
+        return True
+    if normalized.startswith("odylith/radar/"):
+        return True
+    if normalized.startswith("odylith/casebook/"):
+        return True
+    if normalized.startswith("odylith/atlas/"):
+        return True
+    if normalized.startswith("odylith/registry/"):
+        return True
+    if normalized.startswith("odylith/runtime/"):
+        return True
+    return normalized in {
+        "odylith/index.html",
+        "odylith/tooling-app.v1.js",
+        "odylith/tooling-payload.v1.js",
+    }
+
+
 def _workspace_activity_fingerprint(*, repo_root: Path) -> str:
     from odylith.runtime.governance import agent_governance_intelligence as governance
     from odylith.runtime.governance import component_registry_intelligence as component_registry
@@ -37,7 +79,11 @@ def _workspace_activity_fingerprint(*, repo_root: Path) -> str:
     rows: list[dict[str, Any]] = []
     for raw in governance.collect_git_changed_paths(repo_root=repo_root):
         normalized = _normalize_repo_token(str(raw), repo_root=repo_root)
-        if not normalized or not component_registry.is_meaningful_workspace_artifact(normalized):
+        if (
+            not normalized
+            or _is_generated_surface_output(normalized)
+            or not component_registry.is_meaningful_workspace_artifact(normalized)
+        ):
             continue
         candidate = (repo_root / normalized).resolve()
         rows.append(
@@ -59,6 +105,25 @@ def default_surface_projection_input_fingerprint(*, repo_root: Path) -> str:
     """
 
     root = Path(repo_root).resolve()
+    try:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except ImportError:  # pragma: no cover - defensive bootstrap fallback
+        governed_sync_session = None
+    if governed_sync_session is not None:
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == root:
+            return str(
+                session.get_or_compute(
+                    namespace="surface_projection_fingerprint",
+                    key="default",
+                    builder=lambda: _default_surface_projection_input_fingerprint_uncached(repo_root=root),
+                )
+            ).strip()
+    return _default_surface_projection_input_fingerprint_uncached(repo_root=root)
+
+
+def _default_surface_projection_input_fingerprint_uncached(*, repo_root: Path) -> str:
+    root = Path(repo_root).resolve()
     radar_source_root = truth_root_path(repo_root=root, key="radar_source")
     technical_plans_root = truth_root_path(repo_root=root, key="technical_plans")
     casebook_bugs_root = truth_root_path(repo_root=root, key="casebook_bugs")
@@ -66,7 +131,7 @@ def default_surface_projection_input_fingerprint(*, repo_root: Path) -> str:
     component_registry_path = truth_root_path(repo_root=root, key="component_registry")
     product_root = surface_root_path(repo_root=root, key="product_root")
     atlas_catalog_path = product_root / "atlas" / "source" / "catalog" / "diagrams.v1.json"
-    compass_stream_path = product_root / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    compass_stream_path = product_root / agent_runtime_contract.AGENT_STREAM_PATH.removeprefix("odylith/")
     traceability_graph_path = product_root / "radar" / "traceability-graph.v1.json"
     payload = {
         "workstreams": odylith_context_cache.fingerprint_payload(
@@ -75,6 +140,8 @@ def default_surface_projection_input_fingerprint(*, repo_root: Path) -> str:
                 "backlog_index": _path_fingerprint(radar_source_root / "INDEX.md"),
                 "backlog_archive": _path_fingerprint(radar_source_root / "archive"),
                 "ideas": _path_fingerprint(radar_source_root / "ideas"),
+                "programs": _path_fingerprint(radar_source_root / "programs", glob="*.json"),
+                "releases": _path_fingerprint(radar_source_root / "releases", glob="*.json*"),
             }
         ),
         "plans": odylith_context_cache.fingerprint_payload(

@@ -20,7 +20,10 @@ _STAGE_OUTPUTS = " ".join(generated_output_targets())
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Install Odylith Mermaid auto-sync pre-commit hook")
+    parser = argparse.ArgumentParser(
+        prog="odylith atlas install-autosync-hook",
+        description="Install Odylith Mermaid auto-sync pre-commit hook",
+    )
     parser.add_argument("--repo-root", default=".", help="Repository root")
     parser.add_argument("--force", action="store_true", help="Overwrite non-empty existing pre-commit hook")
     return parser.parse_args(argv)

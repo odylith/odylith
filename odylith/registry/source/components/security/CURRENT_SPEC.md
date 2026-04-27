@@ -50,7 +50,7 @@ and process-lifetime discipline across consumer, pinned-dogfood, and detached
 - `.github/workflows/test.yml`
 - `odylith/SECURITY_POSTURE.md`
 - `odylith/agents-guidelines/SECURITY_AND_TRUST.md`
-- `odylith/skills/security-hardening/SKILL.md`
+- `odylith/skills/odylith-security-hardening/SKILL.md`
 
 ## Lane Contract
 ### Consumer lane

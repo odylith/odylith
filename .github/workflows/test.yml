@@ -41,3 +41,86 @@ jobs:
         run: hatch env create
       - name: Run tests
         run: hatch run pytest -q
+
+  claude-cli-smoke:
+    if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    runs-on: ubuntu-24.04
+    needs: identity
+    permissions:
+      contents: read
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: "22"
+      - name: Install Claude Code CLI
+        run: npm install --global @anthropic-ai/claude-code@2.1.101
+      - name: Run Claude CLI smoke
+        run: |
+          set -euo pipefail
+          schema='{"type":"object","properties":{"root_imports_agents":{"type":"boolean"},"project_assets_present":{"type":"boolean"},"commands_present":{"type":"boolean"}},"required":["root_imports_agents","project_assets_present","commands_present"],"additionalProperties":false}'
+          claude -p \
+            --allowedTools Read Glob \
+            --max-turns 3 \
+            --json-schema "$schema" \
+            'Inspect CLAUDE.md, .claude/CLAUDE.md, .claude/settings.json, and the .claude/commands directory. Set root_imports_agents to true only if the repo-root CLAUDE.md includes "@AGENTS.md". Set project_assets_present to true only if .claude/CLAUDE.md and .claude/settings.json both exist. Set commands_present to true only if odylith-start.md, odylith-context.md, odylith-query.md, and odylith-sync-governance.md exist under .claude/commands.' \
+            > /tmp/claude-cli-smoke.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("/tmp/claude-cli-smoke.json").read_text(encoding="utf-8"))
+          assert payload == {
+              "root_imports_agents": True,
+              "project_assets_present": True,
+              "commands_present": True,
+          }
+          PY
+
+  claude-action-smoke:
+    if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    runs-on: ubuntu-24.04
+    needs: identity
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      - id: claude_action
+        uses: anthropics/claude-code-action@b47fd721da662d48c5680e154ad16a73ed74d2e0 # v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: >
+            Inspect CLAUDE.md, .claude/CLAUDE.md, .claude/settings.json, and
+            the .claude/commands directory. Report whether the repo-root
+            CLAUDE bridge imports AGENTS.md, whether the project Claude assets
+            exist, and whether the Odylith Claude commands for start, context,
+            query, and governance refresh are present.
+          claude_args: >-
+            --allowedTools Read Glob
+            --max-turns 3
+            --json-schema {"type":"object","properties":{"root_imports_agents":{"type":"boolean"},"project_assets_present":{"type":"boolean"},"commands_present":{"type":"boolean"}},"required":["root_imports_agents","project_assets_present","commands_present"],"additionalProperties":false}
+      - name: Assert Claude action smoke result
+        env:
+          STRUCTURED_OUTPUT: ${{ steps.claude_action.outputs.structured_output }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+
+          payload = json.loads(os.environ["STRUCTURED_OUTPUT"])
+          assert payload == {
+              "root_imports_agents": True,
+              "project_assets_present": True,
+              "commands_present": True,
+          }
+          PY

@@ -27,6 +27,7 @@ import urllib.error
 import urllib.request
 from typing import Any, Mapping, Protocol, Sequence
 
+from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.reasoning import tribunal_engine
 
 
@@ -51,13 +52,81 @@ _DEFAULT_CODEX_BIN_CANDIDATES: tuple[Path, ...] = (
     Path("/Applications/Codex.app/Contents/Resources/codex"),
     Path("~/Applications/Codex.app/Contents/Resources/codex").expanduser(),
 )
-_DEFAULT_CLAUDE_BIN_CANDIDATES: tuple[Path, ...] = ()
+_CLAUDE_CODE_APP_GLOB_PATTERNS: tuple[str, ...] = (
+    "~/Library/Application Support/Claude/claude-code/*/claude.app/Contents/MacOS/claude",
+    "~/Library/Application Support/Claude/claude-code-vm/*/claude",
+)
+_CLAUDE_CODE_STATIC_CANDIDATES: tuple[Path, ...] = (
+    Path("/usr/local/bin/claude"),
+    Path("~/.local/bin/claude").expanduser(),
+)
+
+
+def _discover_claude_bin_from_app_bundle() -> Path | None:
+    """Find the latest Claude Code binary from versioned app bundle paths."""
+    import glob as _glob
+
+    for pattern in _CLAUDE_CODE_APP_GLOB_PATTERNS:
+        expanded = str(Path(pattern).expanduser())
+        matches = sorted(_glob.glob(expanded), reverse=True)
+        for match in matches:
+            candidate = Path(match)
+            if candidate.is_file() and os.access(str(candidate), os.X_OK):
+                return candidate.resolve()
+    return None
 _RELEASE_LANE_ENV_PREFIX = "ODYLITH_RELEASE_"
 _LEGACY_CODEX_MODEL_ALIASES: frozenset[str] = frozenset(
     {
         "codex-spark 5.3",
         "codex spark 5.3",
     }
+)
+_CHEAP_STRUCTURED_CODEX_MODEL = "gpt-5.3-codex-spark"
+_CHEAP_STRUCTURED_CODEX_MODEL_LADDER: tuple[str, ...] = (
+    "gpt-5.3-codex-spark",
+    "gpt-5.3-codex",
+    "gpt-5.4-mini",
+)
+_CHEAP_STRUCTURED_CLAUDE_MODEL_LADDER: tuple[str, ...] = (
+    "haiku",
+    "sonnet",
+)
+_CHEAP_STRUCTURED_REASONING_EFFORT = "medium"
+_CHEAP_STRUCTURED_LADDER_ADVANCE_FAILURE_CODES: frozenset[str] = frozenset(
+    {
+        "credits_exhausted",
+        "rate_limited",
+    }
+)
+_CHEAP_STRUCTURED_MODEL_UNAVAILABLE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\bswitch to another model\b", re.IGNORECASE),
+    re.compile(r"\bunknown model\b", re.IGNORECASE),
+    re.compile(r"\bmodel\b.*\bnot found\b", re.IGNORECASE),
+    re.compile(r"\bmodel\b.*\bunavailable\b", re.IGNORECASE),
+    re.compile(r"\bunsupported model\b", re.IGNORECASE),
+)
+_PROVIDER_RATE_LIMIT_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\brate[\s-]*limit", re.IGNORECASE),
+    re.compile(r"\btoo many requests\b", re.IGNORECASE),
+    re.compile(r"\b429\b"),
+    re.compile(r"\bretry after\b", re.IGNORECASE),
+)
+_PROVIDER_CREDIT_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\binsufficient[_\s-]*quota\b", re.IGNORECASE),
+    re.compile(r"\binsufficient[_\s-]*credit", re.IGNORECASE),
+    re.compile(r"\bout of credits?\b", re.IGNORECASE),
+    re.compile(r"\bcredit limit\b", re.IGNORECASE),
+    re.compile(r"\busage limit\b", re.IGNORECASE),
+    re.compile(r"\bquota exceeded\b", re.IGNORECASE),
+    re.compile(r"\bbilling (?:hard )?limit\b", re.IGNORECASE),
+)
+_PROVIDER_AUTH_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\bunauthorized\b", re.IGNORECASE),
+    re.compile(r"\bauth(?:entication|orization)?\b", re.IGNORECASE),
+    re.compile(r"\bapi key\b", re.IGNORECASE),
+    re.compile(r"\bforbidden\b", re.IGNORECASE),
+    re.compile(r"\b401\b"),
+    re.compile(r"\b403\b"),
 )
 
 
@@ -99,8 +168,45 @@ class StructuredReasoningRequest:
     schema_name: str
     output_schema: Mapping[str, Any]
     prompt_payload: Mapping[str, Any]
+    model: str = ""
     reasoning_effort: str = ""
     timeout_seconds: float = 0.0
+
+
+@dataclass(frozen=True)
+class StructuredReasoningProfile:
+    """Provider-aware model/effort overrides for bounded structured work."""
+
+    provider: str
+    model: str = ""
+    reasoning_effort: str = ""
+
+
+class _ProviderRequestStateMixin:
+    """Track provider request metadata and the latest failure outcome."""
+
+    last_failure_code: str
+    last_failure_detail: str
+    last_request_model: str
+    last_request_reasoning_effort: str
+
+    def _initialize_request_state(self) -> None:
+        self.last_failure_code = ""
+        self.last_failure_detail = ""
+        self.last_request_model = ""
+        self.last_request_reasoning_effort = ""
+
+    def _clear_failure(self) -> None:
+        self.last_failure_code = ""
+        self.last_failure_detail = ""
+
+    def _record_failure(self, code: str, detail: str) -> None:
+        self.last_failure_code = str(code or "").strip()
+        self.last_failure_detail = str(detail or "").strip()
+
+    def _record_request(self, *, model: Any, reasoning_effort: Any) -> None:
+        self.last_request_model = str(model or "").strip()
+        self.last_request_reasoning_effort = str(reasoning_effort or "").strip().lower()
 
 
 def reasoning_config_path(*, repo_root: Path) -> Path:
@@ -136,6 +242,62 @@ def _normalize_timeout_seconds(value: Any, *, default: float = 20.0) -> float:
         return max(1.0, float(value))
     except (TypeError, ValueError):
         return max(1.0, float(default))
+
+
+def _normalized_failure_text(text: Any) -> str:
+    return re.sub(r"\s+", " ", str(text or "")).strip()
+
+
+def _normalized_failure_excerpt(text: Any, *, max_chars: int = 280) -> str:
+    token = _normalized_failure_text(text)
+    if not token:
+        return ""
+    if len(token) <= max_chars:
+        return token
+    head_chars = max(80, min(max_chars - 40, 140))
+    tail_chars = max(40, max_chars - head_chars - 5)
+    return f"{token[:head_chars].rstrip()} ... {token[-tail_chars:].lstrip()}"
+
+
+def _match_failure_pattern(
+    patterns: Sequence[re.Pattern[str]],
+    *,
+    haystack: str,
+) -> bool:
+    return any(pattern.search(haystack) for pattern in patterns)
+
+
+def _classify_provider_failure(
+    *,
+    provider_label: str,
+    detail_text: str,
+    invalid_response_detail: str,
+    returncode: int | None = None,
+    status_code: int | None = None,
+) -> tuple[str, str]:
+    normalized_detail = _normalized_failure_text(detail_text)
+    excerpt = _normalized_failure_excerpt(normalized_detail)
+    haystack = normalized_detail.lower()
+
+    if _match_failure_pattern(_PROVIDER_CREDIT_PATTERNS, haystack=haystack):
+        detail = excerpt or f"{provider_label} reported a possible credit or budget limit."
+        return "credits_exhausted", detail
+    if status_code == 429 or _match_failure_pattern(_PROVIDER_RATE_LIMIT_PATTERNS, haystack=haystack):
+        detail = excerpt or f"{provider_label} reported a rate-limit response."
+        return "rate_limited", detail
+    if status_code in {401, 403} or _match_failure_pattern(_PROVIDER_AUTH_PATTERNS, haystack=haystack):
+        detail = excerpt or f"{provider_label} rejected the request because of authentication or permission configuration."
+        return "auth_error", detail
+    if status_code is not None and status_code >= 500:
+        detail = excerpt or f"{provider_label} returned HTTP {status_code}."
+        return "provider_error", detail
+    if returncode not in (None, 0):
+        if excerpt:
+            return "provider_error", f"{provider_label} exited with status {returncode}. {excerpt}"
+        return "provider_error", f"{provider_label} exited with status {returncode}."
+    if excerpt:
+        return "invalid_response", excerpt
+    return "invalid_response", invalid_response_detail
 
 
 def _normalize_codex_reasoning_effort(value: Any) -> str:
@@ -182,7 +344,15 @@ def resolve_codex_bin(value: Any) -> str:
 
 
 def resolve_claude_bin(value: Any) -> str:
-    """Resolve a durable Claude Code CLI executable path when one is available."""
+    """Resolve a durable Claude Code CLI executable path when one is available.
+
+    Discovery order:
+    1. Explicit path from caller or environment variable
+    2. ``which claude`` on PATH
+    3. ``which claude-code`` on PATH
+    4. Versioned Claude.app bundle glob (picks the latest installed version)
+    5. Static fallback candidates (/usr/local/bin/claude, ~/.local/bin/claude)
+    """
 
     token = _normalize_string(value, default="claude")
     candidate = Path(token).expanduser()
@@ -196,7 +366,10 @@ def resolve_claude_bin(value: Any) -> str:
         fallback = shutil.which("claude-code")
         if fallback:
             return str(Path(fallback).resolve())
-        for candidate_path in _DEFAULT_CLAUDE_BIN_CANDIDATES:
+        bundle_bin = _discover_claude_bin_from_app_bundle()
+        if bundle_bin is not None:
+            return str(bundle_bin)
+        for candidate_path in _CLAUDE_CODE_STATIC_CANDIDATES:
             if _is_executable_file(candidate_path):
                 return str(candidate_path.resolve())
     return token
@@ -208,18 +381,11 @@ def _is_truthy_env(value: Any) -> bool:
 
 
 def _current_local_provider_hint(*, environ: Mapping[str, str]) -> str:
-    bundle_id = str(environ.get("__CFBundleIdentifier", "")).strip().lower()
-    if (
-        any(str(environ.get(key, "")).strip() for key in ("CODEX_THREAD_ID", "CODEX_SHELL"))
-        or "codex" in bundle_id
-    ):
-        return "codex-cli"
-    if (
-        any(key.startswith("CLAUDE_CODE") and _is_truthy_env(environ.get(key, "")) for key in environ)
-        or "claude" in bundle_id
-        or "anthropic" in bundle_id
-    ):
+    detected_host = host_runtime_contract.detect_host_runtime(environ=environ)
+    if detected_host == "claude_cli":
         return "claude-cli"
+    if detected_host == "codex_cli":
+        return "codex-cli"
     return ""
 
 
@@ -257,8 +423,8 @@ def _implicit_local_provider_name(
         return "codex-cli"
     if has_claude and not has_codex:
         return "claude-cli"
-    if has_codex:
-        return "codex-cli"
+    if has_codex and has_claude:
+        return hint or "claude-cli"
     return ""
 
 
@@ -316,6 +482,94 @@ def persisted_reasoning_config_payload(config: ReasoningConfig) -> dict[str, Any
     if str(config.api_key_env or "").strip():
         payload["api_key_env"] = str(config.api_key_env).strip()
     return payload
+
+
+def cheap_structured_reasoning_profile(
+    config: ReasoningConfig,
+    *,
+    environ: Mapping[str, str] | None = None,
+    previous_model: str = "",
+    failure_code: str = "",
+    failure_detail: str = "",
+) -> StructuredReasoningProfile:
+    """Return the cheap provider-aware profile for bounded structured narration.
+
+    This keeps lightweight structured update jobs fast and cheap across local
+    providers. For local-host narration the ladder is fixed and medium-reasoning:
+    pick the cheapest supported local model first, then step to the next cheap
+    rung only after a provider-budget or model-availability failure.
+    """
+
+    env = dict(os.environ if environ is None else environ)
+    provider = _normalize_provider(getattr(config, "provider", ""))
+    if provider == "auto-local" and _allow_implicit_local_provider(environ=env):
+        provider = _implicit_local_provider_name(
+            environ=env,
+            codex_bin=getattr(config, "codex_bin", "codex"),
+            claude_bin=getattr(config, "claude_bin", "claude"),
+        )
+    elif provider == "openai-compatible":
+        has_endpoint = all(
+            str(token or "").strip()
+            for token in (
+                getattr(config, "base_url", ""),
+                getattr(config, "api_key", ""),
+                getattr(config, "model", ""),
+            )
+        )
+        if not has_endpoint and _allow_implicit_local_provider(environ=env):
+            implicit_provider = _implicit_local_provider_name(
+                environ=env,
+                codex_bin=getattr(config, "codex_bin", "codex"),
+                claude_bin=getattr(config, "claude_bin", "claude"),
+            )
+            if implicit_provider:
+                provider = implicit_provider
+    model = _normalize_local_provider_model(provider, getattr(config, "model", ""))
+    ladder: tuple[str, ...]
+    if provider == "codex-cli":
+        ladder = _CHEAP_STRUCTURED_CODEX_MODEL_LADDER
+    elif provider == "claude-cli":
+        ladder = _CHEAP_STRUCTURED_CLAUDE_MODEL_LADDER
+    else:
+        ladder = ()
+    if ladder:
+        prior_model = _normalize_local_provider_model(provider, previous_model)
+        if not prior_model and failure_detail:
+            haystack = _normalized_failure_text(failure_detail).lower()
+            for candidate in ladder:
+                if str(candidate).strip().lower() in haystack:
+                    prior_model = candidate
+                    break
+        advance = str(failure_code or "").strip().lower() in _CHEAP_STRUCTURED_LADDER_ADVANCE_FAILURE_CODES
+        if not advance and failure_detail:
+            advance = _match_failure_pattern(
+                _CHEAP_STRUCTURED_MODEL_UNAVAILABLE_PATTERNS,
+                haystack=_normalized_failure_text(failure_detail),
+            )
+        selected_model = ladder[0]
+        if advance and prior_model in ladder:
+            selected_model = ladder[min(ladder.index(prior_model) + 1, len(ladder) - 1)]
+        return StructuredReasoningProfile(
+            provider=provider,
+            model=selected_model,
+            reasoning_effort=_CHEAP_STRUCTURED_REASONING_EFFORT,
+        )
+    if provider == "codex-cli":
+        return StructuredReasoningProfile(
+            provider=provider,
+            model=model or _CHEAP_STRUCTURED_CODEX_MODEL,
+            reasoning_effort=_CHEAP_STRUCTURED_REASONING_EFFORT,
+        )
+    if provider == "claude-cli":
+        return StructuredReasoningProfile(
+            provider=provider,
+            model=model,
+            reasoning_effort=_CHEAP_STRUCTURED_REASONING_EFFORT,
+        )
+    if provider == "openai-compatible":
+        return StructuredReasoningProfile(provider=provider, model=model, reasoning_effort="")
+    return StructuredReasoningProfile(provider=provider, model=model, reasoning_effort="")
 
 
 def _provider_system_prompt() -> str:
@@ -380,6 +634,10 @@ def _parse_structured_mapping_text(raw_text: str) -> Mapping[str, Any] | None:
     if "```" in text:
         fenced_segments = re.findall(r"```(?:json)?\s*(.*?)```", text, flags=re.DOTALL | re.IGNORECASE)
         candidates.extend(segment.strip() for segment in fenced_segments if str(segment).strip())
+    for line in text.splitlines():
+        line = line.strip()
+        if line.startswith("{") and line.endswith("}"):
+            candidates.append(line)
     first_brace = text.find("{")
     last_brace = text.rfind("}")
     if 0 <= first_brace < last_brace:
@@ -430,7 +688,7 @@ def _resolved_request_timeout_seconds(value: Any, *, default: float) -> float:
     return float(token)
 
 
-class OpenAICompatibleReasoningProvider:
+class OpenAICompatibleReasoningProvider(_ProviderRequestStateMixin):
     """Call an OpenAI-compatible chat-completions endpoint using JSON schema output."""
 
     def __init__(
@@ -445,19 +703,15 @@ class OpenAICompatibleReasoningProvider:
         self._api_key = str(api_key or "").strip()
         self._model = str(model or "").strip()
         self._timeout_seconds = float(timeout_seconds)
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _clear_failure(self) -> None:
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _record_failure(self, code: str, detail: str) -> None:
-        self.last_failure_code = str(code or "").strip()
-        self.last_failure_detail = str(detail or "").strip()
+        self._initialize_request_state()
 
     def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
-        if not self._base_url or not self._api_key or not self._model:
+        request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
+        self._record_request(
+            model=request_model,
+            reasoning_effort=getattr(request, "reasoning_effort", ""),
+        )
+        if not self._base_url or not self._api_key or not request_model:
             self._record_failure(
                 "unavailable",
                 "OpenAI-compatible provider is unconfigured for base_url, api_key, or model.",
@@ -468,7 +722,7 @@ class OpenAICompatibleReasoningProvider:
             default=self._timeout_seconds,
         )
         request_payload = {
-            "model": self._model,
+            "model": request_model,
             "temperature": 0,
             "messages": [
                 {
@@ -503,10 +757,24 @@ class OpenAICompatibleReasoningProvider:
         except TimeoutError:
             self._record_failure("timeout", f"Provider request exceeded {timeout_seconds:.1f}s.")
             return None
+        except urllib.error.HTTPError as exc:
+            body = ""
+            try:
+                body = exc.read().decode("utf-8", errors="ignore")
+            except OSError:
+                body = ""
+            code, detail = _classify_provider_failure(
+                provider_label="OpenAI-compatible provider",
+                detail_text=body or str(exc),
+                invalid_response_detail="Provider returned an unsuccessful HTTP response.",
+                status_code=int(getattr(exc, "code", 0) or 0),
+            )
+            self._record_failure(code, detail)
+            return None
         except urllib.error.URLError as exc:
             self._record_failure("transport_error", str(getattr(exc, "reason", exc)).strip())
             return None
-        except (OSError, urllib.error.HTTPError) as exc:
+        except OSError as exc:
             self._record_failure("transport_error", str(exc).strip())
             return None
         try:
@@ -547,7 +815,7 @@ class OpenAICompatibleReasoningProvider:
         return self.generate_structured(request=_default_tribunal_request(prompt_payload=prompt_payload))
 
 
-class CodexCliReasoningProvider:
+class CodexCliReasoningProvider(_ProviderRequestStateMixin):
     """Call the local Codex CLI in non-interactive schema-constrained mode."""
 
     def __init__(
@@ -564,16 +832,7 @@ class CodexCliReasoningProvider:
         self._model = str(model or "").strip()
         self._timeout_seconds = float(timeout_seconds)
         self._reasoning_effort = str(reasoning_effort or "").strip().lower() or "high"
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _clear_failure(self) -> None:
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _record_failure(self, code: str, detail: str) -> None:
-        self.last_failure_code = str(code or "").strip()
-        self.last_failure_detail = str(detail or "").strip()
+        self._initialize_request_state()
 
     def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
         if not shutil.which(self._codex_bin):
@@ -582,6 +841,8 @@ class CodexCliReasoningProvider:
         reasoning_effort = _normalize_codex_reasoning_effort(
             _normalize_string(getattr(request, "reasoning_effort", ""), default=self._reasoning_effort)
         )
+        request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
+        self._record_request(model=request_model, reasoning_effort=reasoning_effort)
         timeout_seconds = _resolved_request_timeout_seconds(
             getattr(request, "timeout_seconds", 0.0),
             default=self._timeout_seconds,
@@ -619,8 +880,8 @@ class CodexCliReasoningProvider:
                 "-C",
                 str(self._repo_root),
             ]
-            if self._model:
-                command.extend(["--model", self._model])
+            if request_model:
+                command.extend(["--model", request_model])
             command.append("-")
             try:
                 completed = subprocess.run(
@@ -648,10 +909,20 @@ class CodexCliReasoningProvider:
                     return result
             result = _parse_structured_mapping_text(getattr(completed, "stdout", ""))
             if result is None:
-                self._record_failure(
-                    "invalid_response",
-                    "Codex CLI did not return schema-valid structured JSON output.",
+                code, detail = _classify_provider_failure(
+                    provider_label="Codex CLI",
+                    detail_text="\n".join(
+                        token
+                        for token in (
+                            getattr(completed, "stderr", ""),
+                            getattr(completed, "stdout", ""),
+                        )
+                        if str(token or "").strip()
+                    ),
+                    invalid_response_detail="Codex CLI did not return schema-valid structured JSON output.",
+                    returncode=int(getattr(completed, "returncode", 0) or 0),
                 )
+                self._record_failure(code, detail)
                 return None
             self._clear_failure()
             return result
@@ -660,7 +931,118 @@ class CodexCliReasoningProvider:
         return self.generate_structured(request=_default_tribunal_request(prompt_payload=prompt_payload))
 
 
-class ClaudeCliReasoningProvider:
+class AnthropicDirectReasoningProvider(_ProviderRequestStateMixin):
+    """Call the Anthropic Messages API directly via httpx — no CLI subprocess overhead."""
+
+    _DEFAULT_MODEL = "claude-haiku-4-5"
+    _DEFAULT_TIMEOUT = 25.0
+
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        base_url: str = "",
+        model: str = "",
+        timeout_seconds: float = 0.0,
+        reasoning_effort: str = "",
+    ) -> None:
+        self._api_key = str(api_key or "").strip()
+        self._base_url = str(base_url or "").rstrip("/") or "https://api.anthropic.com"
+        self._model = str(model or "").strip() or self._DEFAULT_MODEL
+        self._timeout_seconds = float(timeout_seconds) if timeout_seconds and float(timeout_seconds) > 0 else self._DEFAULT_TIMEOUT
+        self._reasoning_effort = str(reasoning_effort or "").strip().lower()
+        self._initialize_request_state()
+
+    def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
+        try:
+            import httpx
+        except ImportError:
+            self._record_failure("unavailable", "httpx is not installed.")
+            return None
+        if not self._api_key:
+            self._record_failure("unavailable", "Anthropic API key is not configured.")
+            return None
+        request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
+        reasoning_effort = _normalize_string(
+            getattr(request, "reasoning_effort", ""), default=self._reasoning_effort
+        )
+        self._record_request(model=request_model, reasoning_effort=reasoning_effort)
+        timeout_seconds = _resolved_request_timeout_seconds(
+            getattr(request, "timeout_seconds", 0.0),
+            default=self._timeout_seconds,
+        )
+        messages = [
+            {
+                "role": "user",
+                "content": json.dumps(request.prompt_payload, sort_keys=True, ensure_ascii=False),
+            },
+        ]
+        body: dict[str, Any] = {
+            "model": request_model,
+            "max_tokens": 4096,
+            "system": str(request.system_prompt or "").strip(),
+            "messages": messages,
+        }
+        self._clear_failure()
+        try:
+            response = httpx.post(
+                f"{self._base_url}/v1/messages",
+                json=body,
+                headers={
+                    "x-api-key": self._api_key,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                timeout=timeout_seconds,
+            )
+        except httpx.TimeoutException:
+            self._record_failure("timeout", f"Anthropic API request exceeded {timeout_seconds:.1f}s.")
+            return None
+        except Exception as exc:
+            self._record_failure("network_error", _normalized_failure_text(str(exc)))
+            return None
+        if response.status_code != 200:
+            error_body = response.text[:500]
+            if response.status_code == 429 or any(p.search(error_body) for p in _PROVIDER_CREDIT_PATTERNS):
+                self._record_failure("credits_exhausted", error_body)
+            elif any(p.search(error_body) for p in _PROVIDER_AUTH_PATTERNS):
+                self._record_failure("auth_error", error_body)
+            else:
+                self._record_failure("provider_error", f"HTTP {response.status_code}: {error_body}")
+            return None
+        try:
+            response_data = response.json()
+        except (json.JSONDecodeError, ValueError) as exc:
+            self._record_failure("parse_error", f"Invalid JSON response: {exc}")
+            return None
+        content_blocks = response_data.get("content", [])
+        text = ""
+        for block in content_blocks:
+            if isinstance(block, Mapping) and block.get("type") == "text":
+                text = str(block.get("text", "")).strip()
+                break
+        if not text:
+            self._record_failure("empty_response", "Provider returned no text content.")
+            return None
+        text = text.strip()
+        if text.startswith("```"):
+            text = re.sub(r"^```(?:json)?\s*", "", text)
+            text = re.sub(r"\s*```\s*$", "", text)
+        try:
+            result = json.loads(text)
+        except (json.JSONDecodeError, ValueError):
+            self._record_failure("parse_error", f"Provider response was not valid JSON: {text[:200]}")
+            return None
+        if isinstance(result, Mapping):
+            return result
+        self._record_failure("invalid_schema", f"Provider returned non-object JSON: {type(result).__name__}")
+        return None
+
+    def generate_finding(self, *, prompt_payload: Mapping[str, Any]) -> Mapping[str, Any] | None:
+        return self.generate_structured(request=_default_tribunal_request(prompt_payload=prompt_payload))
+
+
+class ClaudeCliReasoningProvider(_ProviderRequestStateMixin):
     """Call the local Claude Code CLI in print-mode schema-constrained mode."""
 
     def __init__(
@@ -677,16 +1059,7 @@ class ClaudeCliReasoningProvider:
         self._model = str(model or "").strip()
         self._timeout_seconds = float(timeout_seconds)
         self._reasoning_effort = str(reasoning_effort or "").strip().lower() or "high"
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _clear_failure(self) -> None:
-        self.last_failure_code = ""
-        self.last_failure_detail = ""
-
-    def _record_failure(self, code: str, detail: str) -> None:
-        self.last_failure_code = str(code or "").strip()
-        self.last_failure_detail = str(detail or "").strip()
+        self._initialize_request_state()
 
     def generate_structured(self, *, request: StructuredReasoningRequest) -> Mapping[str, Any] | None:
         resolved_claude_bin = resolve_claude_bin(self._claude_bin)
@@ -696,6 +1069,8 @@ class ClaudeCliReasoningProvider:
         reasoning_effort = _normalize_claude_reasoning_effort(
             _normalize_string(getattr(request, "reasoning_effort", ""), default=self._reasoning_effort)
         )
+        request_model = _normalize_string(getattr(request, "model", ""), default=self._model)
+        self._record_request(model=request_model, reasoning_effort=reasoning_effort)
         timeout_seconds = _resolved_request_timeout_seconds(
             getattr(request, "timeout_seconds", 0.0),
             default=self._timeout_seconds,
@@ -712,20 +1087,22 @@ class ClaudeCliReasoningProvider:
             "json",
             "--input-format",
             "text",
-            "--json-schema",
-            json.dumps(request.output_schema, sort_keys=True, ensure_ascii=False),
             "--append-system-prompt",
-            str(request.system_prompt or "").strip(),
-            "--tools",
-            "",
+            (
+                str(request.system_prompt or "").strip()
+                + "\n\nReturn a JSON object matching this schema: "
+                + json.dumps(request.output_schema, sort_keys=True, ensure_ascii=False)
+            ),
             "--permission-mode",
             "plan",
             "--max-turns",
-            "1",
+            "2",
             "--no-session-persistence",
+            "--setting-sources",
+            "",
         ]
-        if self._model:
-            command.extend(["--model", self._model])
+        if request_model:
+            command.extend(["--model", request_model])
         if reasoning_effort:
             command.extend(["--effort", reasoning_effort])
         try:
@@ -746,16 +1123,44 @@ class ClaudeCliReasoningProvider:
             return None
         result = _parse_claude_structured_output(getattr(completed, "stdout", ""))
         if result is None:
-            self._record_failure(
-                "invalid_response",
-                "Claude CLI did not return schema-valid structured JSON output.",
+            code, detail = _classify_provider_failure(
+                provider_label="Claude CLI",
+                detail_text="\n".join(
+                    token
+                    for token in (
+                        getattr(completed, "stderr", ""),
+                        getattr(completed, "stdout", ""),
+                    )
+                    if str(token or "").strip()
+                ),
+                invalid_response_detail="Claude CLI did not return schema-valid structured JSON output.",
+                returncode=int(getattr(completed, "returncode", 0) or 0),
             )
+            self._record_failure(code, detail)
             return None
         self._clear_failure()
         return result
 
     def generate_finding(self, *, prompt_payload: Mapping[str, Any]) -> Mapping[str, Any] | None:
         return self.generate_structured(request=_default_tribunal_request(prompt_payload=prompt_payload))
+
+
+def provider_failure_metadata(provider: Any) -> dict[str, str]:
+    if isinstance(provider, OpenAICompatibleReasoningProvider):
+        provider_name = "openai-compatible"
+    elif isinstance(provider, CodexCliReasoningProvider):
+        provider_name = "codex-cli"
+    elif isinstance(provider, ClaudeCliReasoningProvider):
+        provider_name = "claude-cli"
+    else:
+        provider_name = str(getattr(provider, "provider_name", "")).strip() or type(provider).__name__
+    return {
+        "provider": provider_name,
+        "code": str(getattr(provider, "last_failure_code", "")).strip().lower(),
+        "detail": str(getattr(provider, "last_failure_detail", "")).strip(),
+        "model": str(getattr(provider, "last_request_model", "")).strip(),
+        "reasoning_effort": str(getattr(provider, "last_request_reasoning_effort", "")).strip().lower(),
+    }
 
 
 def reasoning_config_from_env(
@@ -881,7 +1286,7 @@ def provider_from_config(
             )
         if implicit_provider == "claude-cli":
             return ClaudeCliReasoningProvider(
-                repo_root=repo_root,
+                repo_root=repo_root or Path(".").resolve(),
                 claude_bin=resolve_claude_bin(config.claude_bin),
                 model=config.model,
                 timeout_seconds=config.timeout_seconds,
@@ -906,13 +1311,7 @@ def provider_from_config(
                     reasoning_effort=config.codex_reasoning_effort,
                 )
             if implicit_provider == "claude-cli":
-                return ClaudeCliReasoningProvider(
-                    repo_root=repo_root,
-                    claude_bin=resolve_claude_bin(config.claude_bin),
-                    model=config.model,
-                    timeout_seconds=config.timeout_seconds,
-                    reasoning_effort=config.claude_reasoning_effort,
-                )
+                return _build_claude_provider(config=config, repo_root=repo_root)
             return None
         return OpenAICompatibleReasoningProvider(
             base_url=config.base_url,
@@ -932,13 +1331,12 @@ def provider_from_config(
             reasoning_effort=config.codex_reasoning_effort,
         )
     if config.provider == "claude-cli":
-        resolved_claude_bin = resolve_claude_bin(config.claude_bin)
-        if repo_root is None or not _is_executable_file(Path(resolved_claude_bin).expanduser()):
+        if repo_root is None:
             return None
         return ClaudeCliReasoningProvider(
             repo_root=repo_root,
-            claude_bin=resolved_claude_bin,
-            model=_normalize_local_provider_model(config.provider, config.model),
+            claude_bin=resolve_claude_bin(config.claude_bin),
+            model=config.model,
             timeout_seconds=config.timeout_seconds,
             reasoning_effort=config.claude_reasoning_effort,
         )
@@ -983,9 +1381,12 @@ __all__ = [
     "OpenAICompatibleReasoningProvider",
     "ReasoningConfig",
     "ReasoningProvider",
+    "StructuredReasoningProfile",
     "StructuredReasoningRequest",
     "build_reasoning_payload",
+    "cheap_structured_reasoning_profile",
     "persisted_reasoning_config_payload",
+    "provider_failure_metadata",
     "provider_from_config",
     "resolve_claude_bin",
     "resolve_codex_bin",

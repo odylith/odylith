@@ -11,7 +11,6 @@ def test_build_template_context_defaults_to_odylith_shell_copy() -> None:
             "shell_version_label": "v0.1.6",
         },
         welcome_html="<section>Welcome</section>",
-        system_status_html="<section>Status</section>",
         maintainer_notes_html="<section>Notes</section>",
         cheatsheet_html="<section>Cheatsheet</section>",
     )
@@ -19,7 +18,6 @@ def test_build_template_context_defaults_to_odylith_shell_copy() -> None:
     assert built.shell_title == "Odylith"
     assert built.shell_subtitle == "Delivery Governance and Intelligence"
     assert built.welcome_html == "<section>Welcome</section>"
-    assert built.system_status_html == "<section>Status</section>"
     assert built.maintainer_notes_html == "<section>Notes</section>"
     assert built.cheatsheet_html == "<section>Cheatsheet</section>"
     assert built.style_css
@@ -33,7 +31,6 @@ def test_build_template_context_switches_title_in_ablation_mode() -> None:
             "odylith_switch": {"enabled": False, "mode": "disabled"},
         },
         welcome_html="",
-        system_status_html="",
         maintainer_notes_html="",
         cheatsheet_html="",
     )

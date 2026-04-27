@@ -1,9 +1,32 @@
 # Product Surfaces And Runtime
 
+## CLI-First Non-Negotiable
+- CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
+
 ## CLI Contract
 - The supported operator contract is the `odylith` CLI.
 - Use `odylith sync`, `odylith context-engine`, `odylith benchmark`, `odylith compass ...`, and `odylith atlas ...` as the public workflow.
 - Do not default back to removed local wrapper modules when the CLI already owns the surface.
+- Odylith Discipline exposes only local deterministic agent
+  tooling in v0.1.11: `odylith discipline status`, `odylith discipline check`,
+  `odylith discipline explain`, and
+  `odylith validate discipline`. Benchmark proof stays under
+  `odylith benchmark`; do not create a separate public proof lane.
+
+## Project-Root Host Assets
+- Odylith's managed project-root host assets are now split by host family:
+  `.claude/` for Claude Code, `.codex/` for Codex CLI project config, hooks,
+  and custom agents, and `.agents/skills/` for Codex repo-scoped skill shims.
+- The installer refreshes those assets through one shared project-root bundle
+  sync path; do not invent a second host-specific install pipeline for Codex.
+- Codex only activates the checked-in `.codex/` layer for trusted projects, so
+  the Codex project-asset contract is partly install-time and partly host trust
+  posture.
+- Keep `AGENTS.md` canonical across hosts. Checked-in host assets reinforce the
+  shared repo contract; they do not replace it.
+- The current routed `spawn_agent` host-tool contract and the checked-in Codex
+  CLI project assets are separate layers. Project agents in `.codex/agents/`
+  are not yet router-selectable `agent_type` values through this integration.
 
 ## Lane Matrix
 - Consumer lane:
@@ -33,10 +56,169 @@
     - if the current branch is `main`, create and switch to a new branch before any code or tracked-file edit
     - if work is already on a non-`main` branch, keep using that branch
   - source-file discipline posture:
-    - the repo-root file-size policy is non-negotiable in this maintainer lane
-    - `800` LOC is the soft limit, `1200` LOC requires an explicit exception and decomposition plan, `2000+` LOC is red-zone exception only, and tests cap at `1500` LOC
-    - when a hand-maintained source file is already beyond those thresholds, the next meaningful change should be refactor-first work that splits it into multiple focused files or modules with robustness, reliability, and reusability as explicit goals instead of growing the oversized file in place
-    - generated or mirrored bundle assets are excluded; govern their source-of-truth files instead
+    - follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the shared
+      consumer-safe documentation, reuse, robustness, and focused-validation
+      baseline
+    - follow
+      [../maintainer/agents-guidelines/CODING_STANDARDS.md](../maintainer/agents-guidelines/CODING_STANDARDS.md)
+      for maintainer-only file-size discipline, refactor-first posture, and
+      deep-scan coding policy
+
+## Observation And Proposal Contract
+- `**Odylith Observation**` and `Odylith Proposal` are shipped product
+  surfaces, not host-local flourishes. The same shared core must power them on
+  Codex and Claude.
+- The live mid-turn hot path for teaser, Observation, and Proposal belongs to
+  the intervention engine. `Odylith Chatter` owns the broader narration
+  posture and the evidence-backed `Odylith Assist:` closeout or explicit
+  visibility-feedback fallback instead of recomputing the hook-time surface.
+- The lane may change what evidence is available or whether apply is allowed,
+  but it must not fork the labels, confirmation phrase, or overall markdown UX
+  across detached `source-local`, pinned dogfood, and consumer pinned-runtime
+  posture.
+- The shipped confirmation phrase is fixed:
+  `apply this proposal`
+- Render that phrase as a quiet trailing sentence such as
+  `To apply, say "apply this proposal".`
+  rather than as the loudest visual element in the block.
+- The shipped default voice is also fixed for this release: friendly,
+  delightful, soulful, insightful, simple, clear, accurate, precise, and
+  above all human. Future voice packs may tune the voice later, but current
+  runtime and guidance must not drift into templated or mechanical copy.
+- The shipped markdown shape matters too: Observation should look like
+  `Odylith Assist` and stay to one short labeled line. Proposal should look
+  like a short ruled block with one calm lead line beginning `Odylith Proposal:`,
+  a few bullets, and one quiet confirmation line.
+- Observation copy must be rooted in the current user request, not command
+  catalog text, hook summaries, pending/proposal placeholders, or stale replay
+  state. If the current prompt only asks for command output, the right
+  live-narration choice is silence.
+- Odylith Discipline feeds this voice layer only when visible value is earned.
+  Passing checks stay silent, nudges need a concrete recovery action,
+  Observations need evidence the user benefits now, and visible claims require
+  `intervention-status`, transcript confirmation, or direct
+  `visible-intervention` fallback.
+- The same intervention moment must keep one stable session-local identity
+  across prompt, stop, and edit/bash checkpoints. Do not let a later hook
+  make the same moment feel like a fresh branded interruption just because it
+  added changed-path or assistant-summary evidence.
+- Checkpoint hooks carry two surfaces on purpose:
+  - hidden developer context with the full Observation/Proposal/Assist bundle
+    for continuity into the next model turn
+  - a visible checkpoint block for the user when the moment earns a real
+    Observation/Proposal beat, optionally followed by the matching
+    `Odylith Assist:` line when closeout continuity is already eligible for
+    that same moment
+- The primary visible intervention moment is the edit/bash checkpoint, not the
+  stop fallback. Stop may still recover a late Observation or a closeout
+  Assist line, and prompt-submit or visibility-feedback fallbacks append Assist
+  after the ruled live block, but the product should not make users wait until
+  stop to feel a live intervention.
+- When a host keeps checkpoint output hidden, Stop is the hard visibility
+  fallback for all earned Odylith live beats, not only Assist. Replay the
+  latest unseen Ambient Highlight, Observation, or Proposal before the Assist
+  line and send the combined text through the same one-shot continuation path.
+- Success-only governance refresh receipts must not drown out an earned
+  Observation or Proposal. Keep routine success quiet when a stronger live beat
+  exists; surface refresh status only when it failed, skipped, or when no live
+  intervention was earned.
+- First-match command-output routes are not live intervention moments. A plain
+  `Odylith, help` or `Odylith, show me what you can do` prompt must print the
+  requested stdout only, suppress prompt/stop replay, and exclude raw CLI usage
+  text from fact scoring, evidence classes, and live narration.
+- Rich reasoning signature and continuity identity are intentionally distinct.
+  Odylith may reason from more evidence as the moment matures, but the visible
+  thread should still feel like one evolving thought.
+- A later hook may suppress a duplicate Observation and still surface the
+  first eligible Proposal for that same moment. Do not require Proposal to
+  re-announce the already-earned Observation just to appear.
+- Missing launcher-backed anchor resolution is not permission to silence a
+  real prompt-submit teaser. Degraded context narrowing may remove the anchor
+  summary, but the earned intervention beat should still survive.
+- Prompt-submit teaser surfacing must follow the host's actual transcript
+  contract, not just the structured payload shape. On Claude Code, an earned
+  teaser prints from a dedicated `prompt-teaser` hook as a best-effort stdout
+  source; anchor context and assistant-render fallback stay in the separate
+  `prompt-context` JSON `additionalContext` hook. On Codex, the earned teaser
+  stays in hook `systemMessage` plus `hookSpecificOutput.additionalContext`,
+  with the same assistant-render fallback for chat visibility.
+- Hook output generation is not chat visibility. The shipped contract is:
+  hooks produce structured evidence and model/developer context; hosts may
+  render hook `systemMessage` or stdout when they support it; if not, the
+  assistant-render fallback must speak the exact Odylith Markdown in the next
+  visible assistant message.
+- Codex activation proof is three-part: hook feature enabled, the three
+  Odylith hooks wired in `.codex/hooks.json`, and assistant-render fallback
+  available in the payload. `codex debug prompt-input` proves AGENTS model
+  context, not chat-visible intervention UX; `codex exec --json` is not a
+  substitute for a rendered assistant message either.
+- Codex checkpoint proof must match the current host schema. Today Codex
+  `PostToolUse` exposes Bash only, so `.codex/hooks.json` matches `Bash`.
+  Native desktop write payloads such as `apply_patch`, `exec_command`, and
+  `unified_exec` remain parser-supported for manual/test fallback but are not
+  automatic hook coverage until Codex exposes those tool names to hooks.
+- Claude checkpoint proof must include both direct edit tools and Bash writes.
+  `post-edit-checkpoint` covers `Write|Edit|MultiEdit`; `post-bash-checkpoint`
+  covers `Bash` so shell edits, inline write scripts, and patch-style Bash
+  payloads do not disappear into hidden context until Stop.
+- `odylith codex visible-intervention` and `odylith claude
+  visible-intervention` are the shared manual escape hatches when a host keeps
+  hook output hidden. They render plain Markdown, not JSON, and agents should
+  show that output directly instead of rewriting it.
+- `odylith codex intervention-status` and `odylith claude
+  intervention-status` are the shared low-latency activation probes. They read
+  static host wiring plus the Compass-derived delivery ledger so operators can
+  see whether Teaser, Ambient Highlight, Observation, Proposal, and Assist are
+  armed and whether this session has actually recorded a visible-ready beat.
+- Treat Teaser and Ambient Highlight as distinct product lanes. Prompt submit
+  is teaser-only; ambient highlights belong to checkpoint and stop recovery
+  once enough evidence exists, and they should not be starved by an older
+  teaser after the signal matures.
+- Delivery-ledger state is derived from Compass intervention events. Do not
+  create a second host-local truth store just to answer "is it active here?";
+  add the missing delivery metadata to the existing stream event path.
+- `Odylith Assist` may recover at Stop from concrete validation proof in the
+  assistant summary when changed paths are unavailable. That proof path is
+  intentionally narrow: it can say the proof stayed tight, but it must not
+  claim artifact updates without changed-path or governed-target evidence.
+  It may still name affected governance-contract IDs from bounded request,
+  packet, or target-ref truth, provided the copy distinguishes "staying
+  inside" from "updating".
+- `Odylith Assist` may also recover at Stop from explicit product-visibility
+  feedback, such as a user saying ambient highlights, interventions,
+  Observations, Proposals, Assist, hooks, or chat output are not visible. This
+  is a narrow continuity lane; ordinary short acknowledgements still stay
+  silent.
+- If a closeout also earns `Odylith Risks:`, `Odylith Insight:`, or
+  `Odylith History:`, that supplemental line renders before
+  `Odylith Assist:`. Assist remains the final visible closeout line.
+- Stop visible-delivery dedupe must match the exact generated Odylith labels.
+  Do not suppress an Assist closeout merely because an Observation, Insight,
+  History, Risks, or Proposal label already appeared earlier.
+- If the user cannot tell in a breath why Odylith stepped in, or if the
+  Proposal turns into a mini report, the UX has failed.
+- Multiline Observation and Proposal markdown is part of the shipped product
+  contract. Do not flatten those blocks into one-line summaries in stream
+  events, Compass payloads, host surfaces, or regression fixtures.
+- When showing those surfaces to humans in guidance, demos, or regression
+  discussion, prefer rendered Markdown or plain prose. Do not wrap the product
+  moment in fenced raw Markdown unless you are debugging the raw source text.
+- Demo copy must carry real governed meaning. Decorative filler lines are not
+  harmless polish; they blur the interjection and make the product feel fake.
+- Preview-only proposals stay unappliable until every action in the bundle has
+  a safe CLI-backed apply lane. Do not partially apply the supported subset of
+  a richer proposal and call the contract satisfied.
+- Preserve prompt memory across intervention lifecycle events and pending
+  proposal state. Later host hooks must reason from the original human prompt
+  when it exists, not from Odylith's own pending/applied summary strings.
+- Empty or missing hook session ids must fall back to a stable host-local
+  synthetic session token. Intervention runtime must never widen an empty
+  session id into cross-session prompt or changed-path bleed.
+- Observation and proposal reasoning must stay on the hot-path evidence cone:
+  prompt excerpts, assistant summaries, changed paths, packet summaries,
+  delivery snapshots, active governed refs, and existing local runtime or
+  governance state. No wide repo search is allowed just to make the output
+  sound smarter.
 
 ## Runtime, Write, And Validation Boundaries
 - Runtime boundary: the invoked Odylith executable decides which interpreter runs Odylith itself.
@@ -57,6 +239,14 @@
   - local `file:` opening must keep working without a web server
 - Radar, Atlas, Compass, Registry, and Odylith are shell-owned child surfaces: direct opens should canonicalize back into `odylith/index.html` with the relevant tab/scope state preserved.
 - Prefer diagram-pinned Atlas routes when available so cross-surface links land on reviewed Mermaid context instead of a generic workstream view.
+- Product dashboard shells must never render internal diagnostic feeds as
+  product UI. Do not add or restore shell status drawers, status presenters,
+  cockpit grids, recorder tapes, chart canvases, ECharts hydration, snapshot
+  slabs, or legacy `odylith_drawer` render paths. Runtime diagnostics may stay
+  in explicit debug artifacts, but the top-level shell must not load, embed, or
+  render internal delivery,
+  evaluation, optimization, or memory snapshots. Browser tests must prove those
+  strings, selectors, scripts, and snapshot payload keys are absent.
 - Canonical generated roots are:
   - `odylith/radar/`
   - `odylith/atlas/`
@@ -69,6 +259,8 @@
 ## Refresh And Runtime Posture
 - Odylith refresh defaults to `on-demand`, not a mandatory background daemon and not part of the normal hot path for every local coding loop.
 - In consumer repos, the shell may show passive runtime-freshness warnings before commit time by reading existing local runtime state only; that notice must never start sync, never start background work, and never silently rewrite tracked `odylith/` truth.
+- Passive freshness warnings must stay narrow and failure-oriented. They are not
+  permission to reintroduce broad status cockpit chrome in the shell.
 - In consumer repos, autonomous Odylith fixes must not run `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, or `odylith dashboard refresh`; those mutate `odylith/` or `.odylith/` and belong to operator- or maintainer-authorized recovery flows.
 - In the Odylith product repo, keep the shell frozen for benchmark and proof posture: no passive live-refresh probe, no hidden dashboard heating, and no benchmark-lane-only convenience behavior.
 - Plain `odylith sync --repo-root .` is the fast selective upkeep path.
@@ -92,6 +284,24 @@
 - Odylith is the observer/control-plane surface: it owns signal intake, cheap correlation, queue ranking, approval state, clearance state, and the final operator-facing shell/CLI surface.
 - Tribunal is the reasoning engine beneath Odylith: it turns ranked scopes into dossiers, runs actors, adjudicates disagreement, and emits one maintainer brief plus systemic context.
 - Remediator compiles an adjudicated prescription into a bounded correction packet when the action is reviewable, allowlisted, validated, and reversible.
+- Guidance Behavior is a cross-layer proof contract, not a separate runtime
+  island. Context Engine attaches the compact summary, Execution Engine turns
+  it into recommended validation, Memory Contracts preserve the compact
+  summary, the intervention engine converts material failures into one
+  supported fact, Tribunal consumes the precomputed signal, and benchmark
+  proof stays on the existing quick `guidance_behavior` family path.
+- The same validator owns the platform end-to-end contract:
+  `odylith_guidance_behavior_platform_end_to_end.v1` proves benchmark/eval
+  wiring, Codex and Claude skill/command mirrors, installed consumer bundle
+  assets, install guidance, live/source-bundle byte parity, and hot-path
+  efficiency point to the same proof path. Do not treat benchmark, host
+  guidance, bundle, or latency surfaces as separate green islands.
+- This path must stay low-latency and high-signal across consumer, pinned
+  dogfood, and detached `source-local` lanes. Live hooks may read compact
+  availability evidence; explicit validation owns full proof. The hot path
+  must not widen into session/full scans, open the projection store, read the
+  delivery ledger, or probe host capabilities when the compact deterministic
+  validator summary already establishes the local guidance proof path.
 - Canonical Odylith runtime artifacts are:
   - `odylith/runtime/posture.v4.json`
   - `odylith/runtime/reasoning.v4.json`
@@ -158,11 +368,34 @@
 - deterministic fallback rows explain themselves through `deterministic_reason` and `deterministic_reason_detail`
 
 ## Compass Brief Runtime
-- Compass standup briefs should read like a maintainer giving a concise engineering standup, not like a generic dashboard summary.
-- The default live refresh should warm the primary 24h global standup brief first; secondary global windows may reuse cache or stay deterministic until they are warmed, so normal sync does not block on every window.
-- The local brief cache is an acceleration layer only; cache fingerprints must rotate when narration semantics change, and stale warmed briefs must not imply current traction without freshness evidence.
-- Exact cache hits may reuse directly, and bounded same-scope fallback is acceptable only when live refresh fails or is intentionally deferred.
-- If the provider returns no valid brief after bounded retry and repair, the standup panel must stay fail-closed.
+- The canonical brief contract lives in [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md).
+- `LLM writes, local code thinks` is the governing implementation rule for
+  Compass briefs.
+- Compass standup briefs should read like a thoughtful maintainer talking to a teammate, not like a dashboard summary or executive memo.
+- The only truthful brief source states are fresh `provider`, exact `cache`, or explicit `unavailable`.
+- Deterministic fallback narration is retired. If the provider does not yield a valid brief and there is no exact same-packet validated cache entry, the standup panel must stay fail-closed.
+- The local brief cache is an acceleration layer only. Cache fingerprints must rotate when narration semantics change, and stale warmed briefs must never imply current traction.
+- Exact cache hits may reuse directly, but exact now means exact narration-substrate identity rather than raw packet identity. Non-exact cache replay is not allowed.
+- Build a deterministic narration substrate locally before the provider call:
+  top winner facts, hard section budgets, compact storyline/self-host fields,
+  and prior accepted brief snapshot only.
+- Prefer delta narration over full regeneration. The provider should update
+  from changed winner facts and the prior accepted brief, not reread a giant
+  packet.
+- Call the provider only when the winner story moved materially. Freshness-only
+  drift, non-winner summary churn, and exact substrate matches must stay local.
+- Partial salvage is required. Keep valid global or scoped entries from a mixed
+  bundle response and repair only the missing subset once.
+- Keep narration provider diagnostics bounded to explicit brief state and debug
+  artifacts. Do not add a separate narration attempt recorder.
+- Global and scoped Compass narration should warm as one packet-level bundle.
+  Do not reintroduce a second scoped provider queue or scope-by-scope provider
+  fanout after refresh.
+- Non-ready Compass brief states must stay explicit and clearly labeled; they
+  must not silently impersonate a ready narrated brief for the selected scope
+  or packet.
+- `Copy Brief` should only appear when a real narrated brief is on screen.
+- Whole-window coverage facts stay upstream evidence; Compass must not synthesize stock coverage bullets to fill the panel.
 - Provider-output transport quirks such as missing sidecar files or transient stdout/file disagreements should degrade gracefully when the same schema-valid payload is still recoverable.
 
 ## Shared Surface Primitives
@@ -174,11 +407,20 @@
 - Keep shared tooltip, date/time, chip/button, and operator-readout behavior in the Odylith runtime surface primitives instead of renderer-local copies.
 - Keep displayed dates and the related day-bucket arithmetic on the shared dashboard time helpers instead of mixing local UTC slicing with Pacific-normalized display.
 - Do not reintroduce renderer-local compact chip/button styling, tooltip runtimes, or proof-link shells that fork the shared surface contract.
+- For alignment, spacing, overflow, symmetry, and similar visual UX refinements on Odylith surfaces, verify the rendered result in headless Chromium before closeout; CSS or DOM inspection alone is not enough.
+- When a visual bug is fixed, prefer adding or extending a Playwright/browser assertion in the surface browser suites so the layout contract stays proved at the rendered page level.
 
 ## Runtime Cadence And Overhead
 - Cheap observer polling stays adaptive and fingerprint-based.
 - The default active observer cadence is `30s`, with idle backoff up to `300s`.
+- Compass refresh should be push-first and daemon-first whenever possible:
+  changed projection fingerprint first, daemon-held hot payload second, local
+  rebuild only when the fingerprint actually moved.
 - Tribunal reasoning runs only when a case dossier fingerprint changes or leverage/uncertainty thresholds justify it.
 - Missing Tribunal cache during sync or shell refresh is not a license to start an implicit provider-backed reasoning pass; use deterministic Tribunal fallback there and keep explicit provider use on dedicated reasoning flows.
 - Systemic synthesis runs more selectively still, and remediation only proceeds after explicit approval.
 - The default maintainer loop is `sync + on-demand`; continuous watchers are optional local accelerators, not required background truth.
+- For Compass specifically:
+  - hot unchanged refresh should come from daemon-held in-memory state
+  - shell-safe blocking refresh spends `0` foreground provider calls
+  - live narration spend belongs to the background bundle lane only

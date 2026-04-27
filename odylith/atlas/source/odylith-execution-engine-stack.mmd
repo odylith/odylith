@@ -1,0 +1,32 @@
+%% Reviewed 2026-04-17 for v0.1.11 to align the Execution Engine with Context Engine handshake v1, host parity, shared snapshot reuse, visible interventions, and accuracy-first benchmark proof.
+flowchart LR
+    Truth["Repo truth<br/>Radar + Plans + Registry + Casebook + Atlas"] --> Context["Context Engine<br/>grounded packets + entity context"]
+    Context --> Handshake["Handshake v1<br/>canonical execution-engine identity<br/>packet kind + packet quality<br/>turn context + target resolution<br/>presentation policy + route readiness"]
+    Handshake --> Host["Execution Host Profile<br/>host family + model family + delegation style + capabilities"]
+    Handshake --> Contract["Execution Contract<br/>objective + lane + scope + hard constraints"]
+    Delivery["Delivery Intelligence<br/>shared posture + scope signal"] --> Contract
+    Proof["Proof State<br/>blocker lane + claim tier"] --> Frontier["Execution Frontier<br/>phase + blocker + next move"]
+    Tribunal["Tribunal<br/>diagnosis + rival explanations"] --> Rules["Validation + Contradictions<br/>matrix + failure blocking"]
+    Memory["Memory substrate<br/>session stream + proof ledger + intervention ledger"] --> Contract
+
+    subgraph Engine["Execution Engine"]
+        Host --> Policy["Admissibility Policy<br/>admit / deny / defer"]
+        Host --> Ladder["Runtime Profile Ladder<br/>(host_family, profile) &rarr; (model, reasoning_effort)<br/>Codex: gpt-5.4-mini / spark / codex / gpt-5.4<br/>Claude: haiku / sonnet / opus"]
+        Contract --> Policy
+        Policy --> Frontier
+        Frontier --> Closure["Resource Closure<br/>safe / incomplete / destructive"]
+        Closure --> Receipts["Semantic Receipts + Resume Handles<br/>external wait + re-anchor tokens"]
+        Receipts --> Rules
+        Ladder --> Policy
+        Policy --> Snapshot["Compact Snapshot<br/>snapshot_present + admissibility<br/>mode + next move + closure<br/>wait/resume + validation + host + cost"]
+    end
+
+    Policy --> Router["Subagent Router<br/>routed_spawn (Codex)<br/>task_tool_subagents (Claude)"]
+    Policy --> Orchestrator["Subagent Orchestrator"]
+    Policy --> Remediator["Remediator"]
+    Snapshot --> Surfaces["Compass + Shell + Packets + Dashboard"]
+    Snapshot --> Intervention["Visible Intervention Broker<br/>same execution summary used for Observation / Proposal / Assist"]
+    Snapshot --> Benchmark["Execution benchmark family<br/>false-admit + false-deny<br/>mode / next move / closure / validation<br/>wait-resume + re-anchor + delegation guard"]
+    Receipts --> Surfaces
+    Rules --> Surfaces
+    Rules --> Benchmark

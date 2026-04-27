@@ -141,6 +141,38 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             tags=("casebook", "create", "bug", "debugging"),
         ),
         _card(
+            card_id="plan-release-target",
+            category="Planning",
+            title="Release planning: pick the ship target",
+            summary="Use release planning when the question is which release one workstream should ship in. Example: add `B-067` to `0.1.11`. This does not decide umbrella sequencing or wave order.",
+            prompt="Add B-067 to release 0.1.11.",
+            command="odylith release add B-067 0.1.11 --repo-root .",
+            tags=("release", "planning", "ship-target", "0.1.11"),
+        ),
+        _card(
+            card_id="plan-program-waves",
+            category="Planning",
+            title="Program/wave planning: sequence umbrella execution",
+            summary="Use program/wave planning when the question is how one umbrella effort should execute. Start with `odylith program next` so the agent gets one exact next command instead of hand-editing wave JSON. This does not choose the release; the same workstream can still target `0.1.11` separately.",
+            prompt=(
+                "For umbrella workstream B-021, create a 3-wave execution program. "
+                "Make W1 the foundation wave, W2 the rollout wave, and W3 the hardening wave. "
+                "Put B-045 in W1, carry B-048 into W2, and keep the gates tied to the bound plans."
+            ),
+            command="odylith program next B-021 --repo-root .",
+            secondary_label="CLI",
+            tags=("program", "waves", "umbrella", "execution-order"),
+        ),
+        _card(
+            card_id="self-host-posture",
+            category="Validate",
+            title="Check self-host posture",
+            summary="Verify whether this product repo is pinned or detached before you trust release or benchmark proof.",
+            prompt="Check self-host posture before release proof.",
+            command="odylith validate self-host-posture --repo-root .",
+            tags=("self-host", "lane", "release-proof"),
+        ),
+        _card(
             card_id="surface-shell",
             category="Surfaces",
             title="Odylith Dashboard",
@@ -223,8 +255,8 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             category="Start",
             title="Search governed memory",
             summary="Search repo memory for the exact phrase, posture, or proof trail you want to recover fast.",
-            prompt="Search Odylith for benchmark proof posture.",
-            command='odylith query --repo-root . "benchmark proof posture"',
+            prompt="Search Odylith for payment webhook idempotency.",
+            command='odylith query --repo-root . "payment webhook idempotency"',
             tags=("query", "memory", "search"),
         ),
         _card(
@@ -237,12 +269,30 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             tags=("dashboard", "render", "shell"),
         ),
         _card(
+            card_id="refresh-compass-now",
+            category="Refresh",
+            title="Refresh Compass now",
+            summary="Run the quick cache-first Compass rerender when you want updated runtime artifacts without waiting on brief settlement.",
+            prompt="Refresh Compass now.",
+            command="odylith compass refresh --repo-root .",
+            tags=("compass", "refresh", "runtime"),
+        ),
+        _card(
+            card_id="deep-refresh-compass",
+            category="Refresh",
+            title="Deep-refresh Compass",
+            summary="Use the deep refresh Compass rerender when you want the same runtime refresh to wait for standup-brief settlement too.",
+            prompt="Deep refresh Compass and wait for brief settlement.",
+            command="odylith compass deep-refresh --repo-root .",
+            tags=("compass", "refresh", "deep refresh", "brief", "settled"),
+        ),
+        _card(
             card_id="watch-transactions",
             category="Refresh",
             title="Keep Compass warm",
-            summary="Run the watcher and keep execution evidence moving while you work.",
-            prompt="Start the Compass watcher every 10 seconds.",
-            command="odylith compass watch-transactions --repo-root . --interval-seconds 10",
+            summary="Run the change-driven watcher so Compass refreshes only when repo truth actually moves.",
+            prompt="Start the Compass watcher and keep it change-driven while you work.",
+            command="odylith compass watch-transactions --repo-root .",
             tags=("watch", "near-real-time", "refresh"),
         ),
         _card(
@@ -431,22 +481,31 @@ def _default_cards() -> tuple[AgentCheatsheetCard, ...]:
             tags=("developer-notes", "shell", "delete", "drop"),
         ),
         _card(
-            card_id="strict-sync",
+            card_id="sync-governance",
             category="Validate",
-            title="Run the strict canonical sync",
-            summary="Use the hardest proof path when you want release-grade confidence instead of a quick rerender.",
-            prompt="Run the strict Odylith sync before release proof.",
-            command="odylith sync --repo-root . --force --impact-mode full --registry-policy-mode enforce-critical --enforce-deep-skills",
-            tags=("sync", "proof", "contracts"),
+            title="Sync all governance surfaces",
+            summary="Run the full governance pipeline — validates contracts, renders all surfaces, mirrors the bundle.",
+            prompt="Sync the governance surfaces.",
+            command="odylith sync --repo-root . --force",
+            tags=("sync", "governance", "surfaces"),
         ),
         _card(
-            card_id="self-host-posture",
+            card_id="validate-backlog",
             category="Validate",
-            title="Check self-host posture",
-            summary="Verify whether the product repo is pinned or detached before you trust benchmark or release proof.",
-            prompt="Check self-host posture before release proof.",
-            command="odylith validate self-host-posture --repo-root .",
-            tags=("self-host", "lane", "release-proof"),
+            title="Validate the backlog",
+            summary="Check workstreams for schema, traceability, plan bindings, and queue posture.",
+            prompt="Validate the backlog.",
+            command="odylith validate backlog-contract --repo-root .",
+            tags=("validate", "backlog", "radar"),
+        ),
+        _card(
+            card_id="validate-registry",
+            category="Validate",
+            title="Validate the registry",
+            summary="Check components for shape, linkage, forensics, and policy.",
+            prompt="Validate the registry.",
+            command="odylith validate component-registry --repo-root .",
+            tags=("validate", "registry", "components"),
         ),
         _card(
             card_id="plan-binding-check",
@@ -529,7 +588,7 @@ def build_agent_cheatsheet_state(payload: Mapping[str, Any]) -> AgentCheatsheetS
         title=str(raw_state.get("title", "")).strip() or "Odylith Dashboard Cheatsheet",
         note=(
             str(raw_state.get("note", "")).strip()
-            or "Concrete examples. Replace the names and ids; when a prompt names a component like payments or a workstream id like B-025, Odylith scopes to the tied files and governed records."
+            or "Release planning picks the ship target for one workstream, like `B-067 -> 0.1.11`. Program/wave planning picks execution order under one umbrella, like `B-021 -> W1, W2, W3`. A workstream can belong to both. Replace the names and ids; when a prompt names a component like payments or a workstream id like B-025, Odylith scopes to the tied files and governed records."
         ),
         search_placeholder=(
             str(raw_state.get("search_placeholder", "")).strip()

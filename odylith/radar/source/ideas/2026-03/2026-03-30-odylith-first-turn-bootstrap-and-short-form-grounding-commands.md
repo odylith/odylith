@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-031
 
-title: Odylith First-Turn Bootstrap and Short-Form Grounding Commands
+title: First-Turn Bootstrap and Short-Form Grounding Commands
 
 date: 2026-03-30
 
@@ -13,8 +13,6 @@ commercial_value: 5
 product_impact: 5
 
 market_value: 4
-
-impacted_lanes: both
 
 impacted_parts: top-level CLI grounding entrypoints, repo-root AGENTS activation, shared and bundled guidance, consumer-safe skills, install/on/off messaging, and first-turn operator UX
 
@@ -58,9 +56,15 @@ workstream_merged_from:
 
 supersedes:
 
-superseded_by:
+superseded_by: B-069
 
 execution_model: standard
+
+## Historical Note
+This slice remains the factual record of the first short-form grounding and
+conversation-contract wave. Treat Codex-default first-turn language here as
+historical. `B-069` now owns the current cross-host bootstrap and shared
+conversation contract.
 
 ## Problem
 Odylith already has the right grounding packets, but the operator path is still
@@ -70,16 +74,17 @@ points at Odylith-first behavior in prose more than in one concrete command.
 That makes the product easier to bypass than it should be.
 
 ## Customer
-- Primary: Codex users in consumer repos who expect Odylith install or repo
-  activation to make Odylith the obvious first-turn workflow.
+- Primary: operators in consumer repos who expect Odylith install or repo
+  activation to make Odylith the obvious first-turn workflow on the current
+  host.
 - Secondary: Odylith maintainers dogfooding in the product repo and wanting the
   same short-form bootstrap path instead of teaching the nested command tree by
   memory.
 
 ## Opportunity
 If Odylith exposes one short top-level bootstrap path and keeps AGENTS, skills,
-help text, and install guidance aligned around it, then Codex can start from
-Odylith more consistently without extra product knowledge. That should improve
+help text, and install guidance aligned around it, then the current host can
+start from Odylith more consistently without extra product knowledge. That should improve
 first-turn grounding, reduce ad hoc repo scans, and make the product feel more
 opinionated immediately after install.
 

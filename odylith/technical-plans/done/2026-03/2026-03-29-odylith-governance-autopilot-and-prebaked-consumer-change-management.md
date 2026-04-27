@@ -73,12 +73,12 @@ Related Bugs:
 - [x] [agent-contracts.md](/Users/freedom/code/odylith/docs/specs/agent-contracts.md)
 - [x] [odylith-repo-integration-contract.md](/Users/freedom/code/odylith/docs/specs/odylith-repo-integration-contract.md)
 - [x] [AGENTS.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/AGENTS.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/delivery-governance-surface-ops/SKILL.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/casebook-bug-preflight/SKILL.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/casebook-bug-capture/SKILL.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/component-registry/SKILL.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/diagram-catalog/SKILL.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/session-context/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-casebook-bug-preflight/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-casebook-bug-capture/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-component-registry/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-diagram-catalog/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-session-context/SKILL.md)
 - [x] [agents.py](/Users/freedom/code/odylith/src/odylith/install/agents.py)
 - [x] [manager.py](/Users/freedom/code/odylith/src/odylith/install/manager.py)
 - [x] [test_agents.py](/Users/freedom/code/odylith/tests/unit/install/test_agents.py)
@@ -97,7 +97,7 @@ Related Bugs:
         Compass, and session steps in both the guidance and supporting skills.
 
 ## Validation/Test Plan
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/install/test_agents.py tests/integration/install/test_manager.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_agents.py tests/integration/install/test_manager.py`
 - [x] `git diff --check`
 - [x] `./.odylith/bin/odylith sync --repo-root . --check-only`
 

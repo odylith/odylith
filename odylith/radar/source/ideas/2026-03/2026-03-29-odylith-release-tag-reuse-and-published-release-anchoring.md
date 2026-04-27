@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-026
-title: Odylith Release Tag Reuse and Published Release Anchoring
+title: Release Tag Reuse and Published Release Anchoring
 date: 2026-03-29
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: canonical release versioning, maintainer release session truth, release runbook/spec accuracy, and published-vs-tag release integrity
 sizing: M
 complexity: High

@@ -1,3 +1,5 @@
+"""Regression coverage for context-engine control-state persistence helpers."""
+
 from __future__ import annotations
 
 import json
@@ -8,6 +10,7 @@ from odylith.runtime.context_engine import odylith_control_state
 
 
 def _seed_product_repo_shape(tmp_path: Path) -> None:
+    """Create the minimum product-repo shape needed for posture-sensitive tests."""
     (tmp_path / "pyproject.toml").write_text("[project]\nname='odylith'\nversion='0.1.0'\n", encoding="utf-8")
     (tmp_path / "src" / "odylith").mkdir(parents=True, exist_ok=True)
     registry_root = tmp_path / "odylith" / "registry" / "source"

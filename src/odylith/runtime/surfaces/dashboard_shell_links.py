@@ -8,7 +8,6 @@ dashboard renderer.
 from __future__ import annotations
 
 import html
-import os
 import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -16,6 +15,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 from odylith.runtime.governance import operator_readout
+from odylith.runtime.surfaces import surface_path_helpers
 
 _WORKSTREAM_RE = re.compile(r"\bB-\d{3,}\b")
 _DIAGRAM_RE = re.compile(r"\bD-\d{3,}\b")
@@ -42,6 +42,7 @@ def shell_href(
     bug: str = "",
     severity: str = "",
     status: str = "",
+    view: str = "",
 ) -> str:
     """Return a tooling-shell relative href preserving per-surface query rules."""
 
@@ -60,10 +61,18 @@ def shell_href(
             query.append(("status", status))
     elif workstream:
         query.append(("workstream", workstream))
+    if normalized_tab == "radar" and str(view or "").strip():
+        query.append(("view", str(view).strip()))
     if diagram:
         query.append(("diagram", diagram))
     token = urlencode(query)
     return f"?{token}" if token else ""
+
+
+def radar_workstream_href(workstream: str, *, view: str = "") -> str:
+    """Return the canonical shell route for one Radar workstream selection."""
+
+    return shell_href(tab="radar", workstream=workstream, view=view)
 
 
 def scope_lookup(
@@ -152,8 +161,7 @@ def surface_href(
 
 
 def _relative_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
+    return surface_path_helpers.relative_href(output_path=output_path, target=target)
 
 
 def linkify_shell_text(
@@ -219,6 +227,8 @@ def proof_href(row: Mapping[str, Any]) -> str:
 
     surface = str(row.get("surface", "")).strip().lower()
     value = str(row.get("value", "")).strip()
+    if surface == "casebook":
+        return shell_href(tab="casebook", bug=value)
     if surface == "registry":
         return shell_href(tab="registry", component=value.replace("component:", ""))
     if surface == "atlas":

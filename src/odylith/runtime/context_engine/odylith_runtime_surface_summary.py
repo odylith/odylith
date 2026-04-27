@@ -5,13 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping
 
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.evaluation import odylith_benchmark_runner
+from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime as memory_snapshot_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime as runtime_learning_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
-
-
-def _mapping(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
-
 
 def _string(value: Any) -> str:
     return str(value or "").strip()
@@ -32,7 +30,7 @@ def _int(value: Any) -> int:
 
 
 def _strings(value: Any, *, limit: int = 4) -> list[str]:
-    if not isinstance(value, list):
+    if not isinstance(value, (list, tuple, set)):
         return []
     rows: list[str] = []
     seen: set[str] = set()
@@ -62,9 +60,9 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
     """Return one bounded Odylith posture summary for Compass/Registry/shells."""
 
     try:
-        optimization = odylith_context_engine_store.load_runtime_optimization_snapshot(repo_root=repo_root)
-        evaluation = odylith_context_engine_store.load_runtime_evaluation_snapshot(repo_root=repo_root)
-        memory = odylith_context_engine_store.load_runtime_memory_snapshot(
+        optimization = runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=repo_root)
+        evaluation = memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=repo_root)
+        memory = memory_snapshot_runtime.load_runtime_memory_snapshot(
             repo_root=repo_root,
             optimization_snapshot=optimization,
             evaluation_snapshot=evaluation,
@@ -136,6 +134,60 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
             "latest_execution_mode": "",
             "latest_execution_delegate_preference": "",
             "latest_execution_source": "",
+            "latest_execution_engine_present": False,
+            "latest_execution_engine_outcome": "",
+            "latest_execution_engine_requires_reanchor": False,
+            "latest_execution_engine_mode": "",
+            "latest_execution_engine_next_move": "",
+            "latest_execution_engine_current_phase": "",
+            "latest_execution_engine_last_successful_phase": "",
+            "latest_execution_engine_blocker": "",
+            "latest_execution_engine_closure": "",
+            "latest_execution_engine_wait_status": "",
+            "latest_execution_engine_wait_detail": "",
+            "latest_execution_engine_resume_token": "",
+            "latest_execution_engine_validation_archetype": "",
+            "latest_execution_engine_validation_minimum_pass_count": 0,
+            "latest_execution_engine_validation_derived_from": [],
+            "latest_execution_engine_contradiction_count": 0,
+            "latest_execution_engine_history_rule_count": 0,
+            "latest_execution_engine_history_rule_hits": [],
+            "latest_execution_engine_pressure_signals": [],
+            "latest_execution_engine_nearby_denial_actions": [],
+            "latest_execution_engine_authoritative_lane": "",
+            "latest_execution_engine_host_family": "",
+            "latest_execution_engine_model_family": "",
+            "latest_execution_engine_host_supports_native_spawn": False,
+            "latest_execution_engine_host_supports_interrupt": False,
+            "latest_execution_engine_host_supports_artifact_paths": False,
+            "latest_execution_engine_component_id": "",
+            "latest_execution_engine_canonical_component_id": "",
+            "latest_execution_engine_identity_status": "",
+            "latest_execution_engine_target_component_id": "",
+            "latest_execution_engine_target_component_ids": [],
+            "latest_execution_engine_target_component_status": "",
+            "latest_execution_engine_target_lane": "",
+            "latest_execution_engine_candidate_target_count": 0,
+            "latest_execution_engine_diagnostic_anchor_count": 0,
+            "latest_execution_engine_has_writable_targets": False,
+            "latest_execution_engine_requires_more_consumer_context": False,
+            "latest_execution_engine_consumer_failover": "",
+            "latest_execution_engine_commentary_mode": "",
+            "latest_execution_engine_suppress_routing_receipts": False,
+            "latest_execution_engine_surface_fast_lane": False,
+            "latest_execution_engine_runtime_invalidated_by_step": "",
+            "latest_execution_engine_snapshot_duration_ms": 0.0,
+            "latest_execution_engine_snapshot_estimated_tokens": 0,
+            "latest_execution_engine_runtime_contract_estimated_tokens": 0,
+            "latest_execution_engine_total_payload_estimated_tokens": 0,
+            "latest_execution_engine_snapshot_reuse_status": "",
+            "latest_execution_engine_handshake_version": "",
+            "latest_turn_intent": "",
+            "latest_turn_surface_count": 0,
+            "latest_turn_visible_text_count": 0,
+            "latest_turn_active_tab": "",
+            "latest_turn_user_turn_id": "",
+            "latest_turn_supersedes_turn_id": "",
             "advisory_state": "unavailable",
             "advisory_confidence_score": 0,
             "advisory_confidence_level": "",
@@ -211,7 +263,7 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
     learning_loop = _mapping(optimization.get("learning_loop"))
     architecture_evaluation = _mapping(evaluation.get("architecture"))
     benchmark_report = odylith_benchmark_runner.compact_report_summary(
-        odylith_benchmark_runner.load_latest_benchmark_report(repo_root=repo_root)
+        odylith_benchmark_runner.load_latest_runtime_benchmark_report(repo_root=repo_root)
     )
     control_advisories = _merge_control_advisories(
         _mapping(optimization.get("control_advisories")),
@@ -376,6 +428,144 @@ def load_runtime_surface_summary(*, repo_root: Path) -> dict[str, Any]:
         "latest_execution_mode": _string(latest_packet.get("odylith_execution_selection_mode")),
         "latest_execution_delegate_preference": _string(latest_packet.get("odylith_execution_delegate_preference")),
         "latest_execution_source": _string(latest_packet.get("odylith_execution_source")),
+        "latest_execution_engine_present": bool(latest_packet.get("execution_engine_present")),
+        "latest_execution_engine_outcome": _string(latest_packet.get("execution_engine_outcome")),
+        "latest_execution_engine_requires_reanchor": bool(
+            latest_packet.get("execution_engine_requires_reanchor")
+        ),
+        "latest_execution_engine_mode": _string(latest_packet.get("execution_engine_mode")),
+        "latest_execution_engine_next_move": _string(latest_packet.get("execution_engine_next_move")),
+        "latest_execution_engine_current_phase": _string(
+            latest_packet.get("execution_engine_current_phase")
+        ),
+        "latest_execution_engine_last_successful_phase": _string(
+            latest_packet.get("execution_engine_last_successful_phase")
+        ),
+        "latest_execution_engine_blocker": _string(latest_packet.get("execution_engine_blocker")),
+        "latest_execution_engine_closure": _string(latest_packet.get("execution_engine_closure")),
+        "latest_execution_engine_wait_status": _string(
+            latest_packet.get("execution_engine_wait_status")
+        ),
+        "latest_execution_engine_wait_detail": _string(
+            latest_packet.get("execution_engine_wait_detail")
+        ),
+        "latest_execution_engine_resume_token": _string(
+            latest_packet.get("execution_engine_resume_token")
+        ),
+        "latest_execution_engine_validation_archetype": _string(
+            latest_packet.get("execution_engine_validation_archetype")
+        ),
+        "latest_execution_engine_validation_minimum_pass_count": _int(
+            latest_packet.get("execution_engine_validation_minimum_pass_count")
+        ),
+        "latest_execution_engine_validation_derived_from": _strings(
+            latest_packet.get("execution_engine_validation_derived_from")
+        ),
+        "latest_execution_engine_contradiction_count": _int(
+            latest_packet.get("execution_engine_contradiction_count")
+        ),
+        "latest_execution_engine_history_rule_count": _int(
+            latest_packet.get("execution_engine_history_rule_count")
+        ),
+        "latest_execution_engine_history_rule_hits": _strings(
+            latest_packet.get("execution_engine_history_rule_hits")
+        ),
+        "latest_execution_engine_pressure_signals": _strings(
+            latest_packet.get("execution_engine_pressure_signals")
+        ),
+        "latest_execution_engine_nearby_denial_actions": _strings(
+            latest_packet.get("execution_engine_nearby_denial_actions")
+        ),
+        "latest_execution_engine_authoritative_lane": _string(
+            latest_packet.get("execution_engine_authoritative_lane")
+        ),
+        "latest_execution_engine_host_family": _string(
+            latest_packet.get("execution_engine_host_family")
+        ),
+        "latest_execution_engine_model_family": _string(
+            latest_packet.get("execution_engine_model_family")
+        ),
+        "latest_execution_engine_host_supports_native_spawn": bool(
+            latest_packet.get("execution_engine_host_supports_native_spawn")
+        ),
+        "latest_execution_engine_host_supports_interrupt": bool(
+            latest_packet.get("execution_engine_host_supports_interrupt")
+        ),
+        "latest_execution_engine_host_supports_artifact_paths": bool(
+            latest_packet.get("execution_engine_host_supports_artifact_paths")
+        ),
+        "latest_execution_engine_component_id": _string(
+            latest_packet.get("execution_engine_component_id")
+        ),
+        "latest_execution_engine_canonical_component_id": _string(
+            latest_packet.get("execution_engine_canonical_component_id")
+        ),
+        "latest_execution_engine_identity_status": _string(
+            latest_packet.get("execution_engine_identity_status")
+        ),
+        "latest_execution_engine_target_component_id": _string(
+            latest_packet.get("execution_engine_target_component_id")
+        ),
+        "latest_execution_engine_target_component_ids": _strings(
+            latest_packet.get("execution_engine_target_component_ids")
+        ),
+        "latest_execution_engine_target_component_status": _string(
+            latest_packet.get("execution_engine_target_component_status")
+        ),
+        "latest_execution_engine_target_lane": _string(
+            latest_packet.get("execution_engine_target_lane")
+        ),
+        "latest_execution_engine_candidate_target_count": _int(
+            latest_packet.get("execution_engine_candidate_target_count")
+        ),
+        "latest_execution_engine_diagnostic_anchor_count": _int(
+            latest_packet.get("execution_engine_diagnostic_anchor_count")
+        ),
+        "latest_execution_engine_has_writable_targets": bool(
+            latest_packet.get("execution_engine_has_writable_targets")
+        ),
+        "latest_execution_engine_requires_more_consumer_context": bool(
+            latest_packet.get("execution_engine_requires_more_consumer_context")
+        ),
+        "latest_execution_engine_consumer_failover": _string(
+            latest_packet.get("execution_engine_consumer_failover")
+        ),
+        "latest_execution_engine_commentary_mode": _string(
+            latest_packet.get("execution_engine_commentary_mode")
+        ),
+        "latest_execution_engine_suppress_routing_receipts": bool(
+            latest_packet.get("execution_engine_suppress_routing_receipts")
+        ),
+        "latest_execution_engine_surface_fast_lane": bool(
+            latest_packet.get("execution_engine_surface_fast_lane")
+        ),
+        "latest_execution_engine_runtime_invalidated_by_step": _string(
+            latest_packet.get("execution_engine_runtime_invalidated_by_step")
+        ),
+        "latest_execution_engine_snapshot_duration_ms": _float(
+            latest_packet.get("execution_engine_snapshot_duration_ms")
+        ),
+        "latest_execution_engine_snapshot_estimated_tokens": _int(
+            latest_packet.get("execution_engine_snapshot_estimated_tokens")
+        ),
+        "latest_execution_engine_runtime_contract_estimated_tokens": _int(
+            latest_packet.get("execution_engine_runtime_contract_estimated_tokens")
+        ),
+        "latest_execution_engine_total_payload_estimated_tokens": _int(
+            latest_packet.get("execution_engine_total_payload_estimated_tokens")
+        ),
+        "latest_execution_engine_snapshot_reuse_status": _string(
+            latest_packet.get("execution_engine_snapshot_reuse_status")
+        ),
+        "latest_execution_engine_handshake_version": _string(
+            latest_packet.get("execution_engine_handshake_version")
+        ),
+        "latest_turn_intent": _string(latest_packet.get("turn_intent")),
+        "latest_turn_surface_count": _int(latest_packet.get("turn_surface_count")),
+        "latest_turn_visible_text_count": _int(latest_packet.get("turn_visible_text_count")),
+        "latest_turn_active_tab": _string(latest_packet.get("turn_active_tab")),
+        "latest_turn_user_turn_id": _string(latest_packet.get("turn_user_turn_id")),
+        "latest_turn_supersedes_turn_id": _string(latest_packet.get("turn_supersedes_turn_id")),
         "advisory_state": _string(control_advisories.get("state")) or _string(learning_loop.get("state")),
         "advisory_confidence_score": _int(advisory_confidence.get("score")),
         "advisory_confidence_level": _string(advisory_confidence.get("level")),

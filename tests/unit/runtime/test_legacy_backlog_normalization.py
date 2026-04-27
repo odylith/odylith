@@ -28,7 +28,10 @@ _SECTIONS = (
 
 
 def _idea_text(*, idea_id: str, title: str, founder_override: str) -> str:
-    body_sections = "\n\n".join([f"## {section}\nDetails." for section in _SECTIONS])
+    body_sections = "\n\n".join(
+        f"## {section}\nGrounded fixture coverage for {section.lower()} in this synthetic workstream."
+        for section in _SECTIONS
+    )
     return (
         "status: queued\n\n"
         f"idea_id: {idea_id}\n\n"
@@ -108,8 +111,15 @@ def test_normalize_legacy_backlog_index_preserves_existing_prose_and_adds_missin
         today=dt.date(2026, 4, 6),
     )
     text = (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+    idea_text = (
+        repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-06-legacy-sync-fix.md"
+    ).read_text(encoding="utf-8")
 
     assert result.changed is True
+    assert result.normalized_idea_specs == ("2026-04-06-legacy-sync-fix",)
+    assert result.normalized_table_sections == ("active", "finished")
+    assert "impacted_lanes" not in text
+    assert "impacted_lanes" not in idea_text
     assert "operator supplied context stays intact." in text
     assert "- expected outcome: clearer product truth and faster follow-on implementation planning." in text
     assert "- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins." in text
@@ -135,12 +145,42 @@ def test_normalize_legacy_backlog_index_backfills_override_review_checkpoint(tmp
         today=dt.date(2026, 4, 6),
     )
     text = (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+    idea_text = (
+        repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-06-legacy-sync-fix.md"
+    ).read_text(encoding="utf-8")
 
     assert result.changed is True
+    assert "impacted_lanes" not in text
+    assert "impacted_lanes" not in idea_text
     assert "keep the current rationale body." in text
     assert "Manual priority override applied to keep this workstream in a deliberate queue position." in text
     assert "Review checkpoint: 2026-04-06." in text
     assert "no manual priority override" not in text
+
+
+def test_normalize_legacy_backlog_index_trims_rationale_boundary_blank_lines(tmp_path: Path) -> None:
+    repo_root = _seed_repo(
+        tmp_path,
+        founder_override="no",
+        rationale_lines=[
+            "",
+            "",
+            "- why now: keep the body, not the padded boundary.",
+            "",
+            "",
+        ],
+    )
+
+    result = legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=repo_root,
+        today=dt.date(2026, 4, 6),
+    )
+    text = (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+
+    assert result.changed is True
+    assert "### B-101 (rank 1)\n- why now: keep the body, not the padded boundary." in text
+    assert "- ranking basis: score-based rank; no manual priority override.\n" in text
+    assert "- ranking basis: score-based rank; no manual priority override.\n\n\n" not in text
 
 
 def test_backlog_next_action_prefers_metadata_repairs_over_hidden_rationale_noise() -> None:

@@ -1,3 +1,5 @@
+"""Migration audit records for install and upgrade flows."""
+
 from __future__ import annotations
 
 from collections.abc import Iterable

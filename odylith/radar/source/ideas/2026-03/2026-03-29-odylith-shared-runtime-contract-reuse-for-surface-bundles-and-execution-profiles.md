@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-013
-title: Odylith Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles
+title: Shared Runtime Contract Reuse for Surface Bundles and Execution Profiles
 date: 2026-03-29
 priority: P1
 commercial_value: 3
 product_impact: 4
 market_value: 3
-impacted_lanes: both
 impacted_parts: shared execution-profile contracts, shared surface bundle bootstrap contracts, Dashboard, Radar, Registry, Casebook, Atlas, Compass, Subagent Router, and Subagent Orchestrator
 sizing: M
 complexity: Medium

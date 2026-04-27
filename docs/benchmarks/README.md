@@ -1,4 +1,4 @@
-# How To Read Odylith's Codex Benchmarks
+# How To Read Odylith's Benchmark Proof
 
 This folder explains the benchmark graphs published in the root
 [README](../../README.md).
@@ -28,16 +28,18 @@ Related docs:
 
 ## What Is Being Compared
 
-The canonical public proof compares two Codex-facing lanes on the same task:
+The canonical public proof compares two host-matched lanes on the same task:
 
 - `odylith_on`
-  Codex runs with Odylith grounding, narrowed evidence, repo-local memory,
-  governance surfaces, and runtime guidance.
+  the proof host runs with the full Odylith assistance stack: grounding,
+  narrowed evidence, repo-local memory, governance surfaces,
+  execution-engine posture, truthful next-move guidance, and bounded
+  orchestration or recovery policy.
 - `odylith_off`
-  is the public name for the raw Codex CLI lane. Internally the report may
-  still store this as `raw_agent_baseline`, but the lane itself is the same
-  live Codex CLI with no Odylith packet and no auto-consumed repo guidance
-  entrypoints in the disposable benchmark workspace.
+  is the public name for the raw host CLI lane. Internally the report may still
+  store this as `raw_agent_baseline`, but the lane itself is the same live CLI
+  with no Odylith packet and no auto-consumed repo guidance entrypoints in the
+  disposable benchmark workspace.
 
 The public headline comparison is:
 
@@ -52,48 +54,58 @@ Secondary lanes still exist for diagnosis:
 
 Those secondary lanes are not the public headline claim.
 
-The profiles answer different questions:
+The published benchmark views answer different questions:
 
-- `proof`
-  Does Odylith beat raw Codex CLI on the same live end-to-end task contract?
-- `diagnostic`
+- `Live Benchmark`
+  Does the full Odylith assistance stack beat the raw host CLI on the same
+  live end-to-end task contract?
+- `Grounding Benchmark`
   Does Odylith build a better grounded packet or prompt than `odylith_off`
-  before the live run starts?
+  before the live run starts? This is mechanism evidence, not the product
+  claim.
 
-`proof` governs the product claim. `diagnostic` only matters when it preserves
-or improves `proof`.
+The Live Benchmark governs the product claim. The Grounding Benchmark only
+matters when it preserves or improves the Live Benchmark.
 
-The current published measured proof is Codex-specific. Claude Code may still
-benefit from the same grounding and governance surfaces, but that is not yet
-Claude-native benchmark proof.
+The current full live proof was executed on Codex. Codex and Claude quick
+smokes provide bounded host-agnostic coverage, and a full Claude-host proof
+would be a separate published benchmark run.
+
+Tracked source truth now carries a more serious benchmark corpus than the last
+published reports: `82` tracked scenarios (`77` implementation plus `5`
+architecture), including explicit API evolution, stateful recovery,
+external-dependency recovery, destructive-scope control, Context Engine,
+Execution Engine, Guidance Behavior, and Discipline families. Publication
+claims must be refreshed from a rerun before they can speak for that expanded
+corpus.
 
 ## Closeout Framing
 
 Benchmark summaries should lead with measured proof, not product narration.
-If Odylith is named directly beyond lane labels, keep it to one final-only
-`Odylith Assist:` line backed by measured proof or a measured report, and
-follow
+If Odylith is named directly beyond lane labels, keep it to one evidence-backed
+`Odylith Assist:` line at closeout or for explicit visibility-feedback
+fallback, backed by measured proof or a measured report, and follow
 [Odylith Chatter](../../odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md)
-for the detailed closeout wording contract. Keep the benchmark lane metadata-
-only: do not widen required paths, hot-path docs, or validation commands just
+for the detailed closeout wording contract, including the rule that any
+supplemental line must render before the final Assist line. Keep the benchmark
+lane metadata-only: do not widen required paths, hot-path docs, or validation commands just
 to narrate Odylith.
 
-## Run Profiles
+## Run Views
 
-Odylith exposes three benchmark profiles:
+Odylith publishes three benchmark views:
 
 - `quick`
   local developer signal on the honest public pair
-- `proof`
+- `Live Benchmark`
   full publication proof on the live `odylith_on` versus `odylith_off` pair
-- `diagnostic`
-  packet-and-prompt tuning without the live end-to-end Codex pair
+- `Grounding Benchmark`
+  packet-and-prompt tuning without the live end-to-end host pair
 
 Canonical commands:
 
 - `./.odylith/bin/odylith benchmark --repo-root .`
 - `./.odylith/bin/odylith benchmark --repo-root . --profile proof`
-- `./.odylith/bin/odylith benchmark --repo-root . --profile diagnostic`
 
 The main machine-readable artifacts are:
 
@@ -101,80 +113,33 @@ The main machine-readable artifacts are:
   latest full-corpus proof artifact
 - `.odylith/runtime/odylith-benchmarks/latest-proof.v1.json`
   proof alias
-- `.odylith/runtime/odylith-benchmarks/latest-diagnostic.v1.json`
-  diagnostic alias
+- versioned raw-source bundle
+  archived Grounding Benchmark source JSON and logs
 - `docs/benchmarks/release-baselines.v1.json`
   versioned passing proof baselines
 
 ## Current Published Snapshot
 
-Current local published artifacts:
+Current published artifacts should be read from the generated snapshot files,
+not copied into this overview by hand:
 
-- Grounding Benchmark (`diagnostic`):
-  report `74cbe36427f2c375`, status `hold`, `37` scenarios
-- Live Benchmark (`proof`):
-  report `52aa3f76538cf12f`, status `provisional_pass`, `37` scenarios
+- [Current Grounding Benchmark Snapshot](GROUNDING_BENCHMARK_SNAPSHOT.md)
+- [Current Live Benchmark Snapshot](LIVE_BENCHMARK_SNAPSHOT.md)
+- [Benchmark Tables](BENCHMARK_TABLES.md)
+- `docs/benchmarks/latest-summary.v1.json`
+- `docs/benchmarks/proof/*.svg`
+- `docs/benchmarks/grounding/*.svg`
+- `docs/benchmarks/v0.1.11/`
+  versioned GitHub artifact bundle for the current proof, including compressed
+  raw source truth, provenance, rendered docs, and graphs
+- `docs/benchmarks/v0.1.10/`
+  previous README-backed benchmark archive
 
-Current diagnostic movement versus `odylith_off`:
-
-- `+0.320` required-path recall
-- `+0.084` required-path precision
-- `+0.690` validation success
-- `+1.000` expectation success
-- `+47` median prompt-bundle tokens
-- `+57` median total-payload tokens
-- `+7.045 ms` median packet latency
-
-Current live-proof movement versus `odylith_off`:
-
-- `+0.227` required-path recall
-- `+0.168` required-path precision
-- `-0.141` hallucinated-surface rate
-- `+0.069` validation success
-- `+0.124` write-surface precision
-- `+0.330` critical required-path recall
-- `+0.167` critical validation success
-- `+0.393` expectation success
-- `-52,561` median live-session input tokens
-- `-53,774` median total model tokens
-- `-12,426.968 ms` median time to valid outcome
-
-Current live-proof hard-gate blockers:
-
-- none on the current full proof
-
-Current live-proof secondary guardrails:
-
-- both cache profiles clear the hard quality gate
-- `within_budget_rate` is back above the `0.80` floor
-
-Current proof attention families:
-
-- `architecture`
-- `browser_surface_reliability`
-- `component_governance`
-- `cross_surface_governance_sync`
-- `governed_surface_sync`
-- `orchestration_feedback`
-
-Current diagnostic weak families:
-
-- `browser_surface_reliability`
-- `install_upgrade_runtime`
-- `runtime_state_integrity`
-
-Current product-repo baseline note:
-
-- the current full proof pass is the detached `source-local` benchmark posture
-- `benchmark_compare` still reports `warn` until a shipped release baseline is
-  recorded in `docs/benchmarks/release-baselines.v1.json`
-
-The published proof view is conservative:
-
-- it uses both `warm` and `cold` cache profiles
-- it publishes the less favorable same-profile result per scenario
-- it keeps the public headline on the primary pair instead of the prettier
-  secondary controls
+Do not infer release-safe benchmark posture from stale report ids outside the
+current snapshot or versioned artifact folders. The serious claim only
+refreshes when the selected proof report, generated snapshot docs,
+README-linked profile graph artifacts, and registry or governance truth all
+move together on the same validated tree.
 
 ## Fair Comparison Protocol
 
@@ -192,21 +157,33 @@ To compare Odylith fairly, hold these constant on both sides:
 For the public `odylith_on` versus `odylith_off` pair, the live runner also
 holds these constant explicitly:
 
-- the same Codex CLI binary
-- the same temporary Codex home with copied auth and pinned model or reasoning
-- no personal Codex instructions, plugins, or MCP config in that temporary
+- the same host CLI binary
+- the same temporary host home with copied auth and pinned model or reasoning
+- no personal host instructions, plugins, or MCP config in that temporary
   home
 - no auto-consumed `AGENTS.md`, `CLAUDE.md`, `.cursor/`, `.windsurf/`, or
   `.codex/` surfaces in the disposable benchmark workspace
 - truth-bearing repo docs remain available for explicit reads
 
+The declared lane difference is explicit, not hidden:
+
+- `odylith_on` may use declared Odylith affordances such as selected docs,
+  execution-engine posture, and scenario-declared focused checks
+- any preflight evidence injected into the Odylith lane must come from checks
+  executed inside the disposable benchmark workspace and be surfaced in the
+  report
+- the report must expose those affordances explicitly through the comparison
+  contract, observed-path sources, preflight-evidence fields, and fairness
+  findings
+
 Important reading rule:
 
 - live proof timing is matched-pair benchmark wall clock to a valid outcome,
   not solo-user interactive latency
-- live proof token cost is full multi-turn Codex session spend, not just the
+- live proof token cost is full multi-turn host session spend, not just the
   first prompt
-- prompt-bundle efficiency belongs to `diagnostic`, not to the live proof lane
+- prompt-bundle efficiency belongs to the Grounding Benchmark, not to the live
+  proof lane
 
 ## How Status Is Gated
 
@@ -309,8 +286,8 @@ The machine-readable sources are:
 
 - `.odylith/runtime/odylith-benchmarks/latest.v1.json`
 - `.odylith/runtime/odylith-benchmarks/latest-proof.v1.json`
-- `.odylith/runtime/odylith-benchmarks/latest-diagnostic.v1.json`
+- versioned raw-source bundle with the Grounding Benchmark source JSON
 - `docs/benchmarks/release-baselines.v1.json`
 
 The generated graphs in this folder are derived from those active proof and
-diagnostic artifacts.
+Grounding Benchmark artifacts.

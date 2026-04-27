@@ -2,6 +2,41 @@
   "version": "v1",
   "chunks": [
     {
+      "chunk_id": "coding-standards-documentation-reuse-robustness",
+      "note_kind": "guardrail",
+      "canonical_source": "odylith/agents-guidelines/CODING_STANDARDS.md",
+      "chunk_path": "odylith/agents-guidelines/CODING_STANDARDS.md",
+      "title": "Coding Standards",
+      "section": "Documentation, reuse, and robustness",
+      "summary": "Treat documentation, reuse, robustness, file-size discipline, refactor-first posture, and focused coding validation as one canonical coding-standards contract.",
+      "tags": [
+        "coding",
+        "documentation",
+        "reuse",
+        "robustness"
+      ],
+      "task_families": [
+        "architecture",
+        "cross_file_feature",
+        "docs_code_closeout",
+        "runtime_refactor"
+      ],
+      "risk_class": "maintainability",
+      "component_affinity": [
+        "odylith"
+      ],
+      "path_prefixes": [
+        "src/odylith/",
+        "odylith/registry/source/components/"
+      ],
+      "path_refs": [
+        "odylith/agents-guidelines/CODING_STANDARDS.md",
+        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+        "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
+      ],
+      "workstreams": []
+    },
+    {
       "chunk_id": "grounding-and-narrowing-bounded-proof-slices",
       "note_kind": "workflow",
       "canonical_source": "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
@@ -34,8 +69,8 @@
       ],
       "path_refs": [
         "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
-        "odylith/skills/subagent-router/SKILL.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md"
+        "odylith/skills/odylith-subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
       ],
       "workstreams": [
         "B-021",
@@ -308,13 +343,104 @@
         "odylith/runtime/"
       ],
       "path_refs": [
-        "odylith/skills/subagent-router/SKILL.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
       ],
       "workstreams": [
         "B-001",
         "B-038"
+      ]
+    },
+    {
+      "chunk_id": "guidance-behavior-cross-layer-proof",
+      "note_kind": "guidance",
+      "canonical_source": "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+      "chunk_path": "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+      "title": "Guidance Behavior Cross-Layer Proof",
+      "section": "Product Validation Expectations",
+      "summary": "Use the Guidance Behavior validator and quick benchmark family to prove grounding, CLI-first governed truth, queue non-adoption, fresh proof claims, bounded delegation, and visible-intervention proof across Codex, Claude, consumer, dogfood, and source-local lanes.",
+      "tags": [
+        "guidance-behavior",
+        "benchmark",
+        "host-parity",
+        "validation"
+      ],
+      "task_families": [
+        "validation",
+        "benchmark",
+        "agent-guidance",
+        "orchestration"
+      ],
+      "risk_class": "critical",
+      "component_affinity": [
+        "odylith-context-engine",
+        "execution-engine",
+        "odylith-memory-contracts",
+        "governance-intervention-engine",
+        "tribunal",
+        "benchmark"
+      ],
+      "path_prefixes": [
+        "odylith/agents-guidelines/",
+        "odylith/skills/",
+        ".agents/skills/",
+        ".claude/",
+        "odylith/runtime/source/",
+        "src/odylith/runtime/governance/"
+      ],
+      "path_refs": [
+        "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
+        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+        "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
+        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+      ],
+      "workstreams": [
+        "B-096",
+        "B-108",
+        "B-109"
+      ]
+    },
+    {
+      "chunk_id": "codex-host-contract-project-assets-trust",
+      "note_kind": "workflow",
+      "canonical_source": "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+      "chunk_path": "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+      "title": "Codex Host Contract",
+      "section": "Trusted project-root Codex assets",
+      "summary": "Keep checked-in Codex project assets under `.codex/` and `.agents/skills/` distinct from the routed built-in-role `spawn_agent` contract, and do not overclaim unsupported hook or statusline surfaces.",
+      "tags": [
+        "codex",
+        "project-assets",
+        "host-contract"
+      ],
+      "task_families": [
+        "agent_activation",
+        "cross_file_feature",
+        "exact_anchor_recall",
+        "orchestration_feedback"
+      ],
+      "risk_class": "host_contract_overclaim",
+      "component_affinity": [
+        "odylith",
+        "subagent-router"
+      ],
+      "path_prefixes": [
+        ".codex/",
+        ".agents/skills/",
+        "odylith/agents-guidelines/"
+      ],
+      "path_refs": [
+        ".codex/config.toml",
+        ".codex/hooks.json",
+        ".codex/agents/odylith-workstream.toml",
+        ".agents/skills/odylith-subagent-router/SKILL.md"
+      ],
+      "workstreams": [
+        "B-069",
+        "B-087"
       ]
     }
   ]

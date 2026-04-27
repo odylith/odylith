@@ -68,8 +68,8 @@ Related Bugs:
 - [x] [subagent_orchestrator.py](/Users/freedom/code/odylith/src/odylith/runtime/orchestration/subagent_orchestrator.py)
 - [x] [odylith_context_engine_store.py](/Users/freedom/code/odylith/src/odylith/runtime/context_engine/odylith_context_engine_store.py)
 - [x] [SUBAGENT_ROUTING_AND_ORCHESTRATION.md](/Users/freedom/code/odylith/odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/subagent-router/SKILL.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/subagent-orchestrator/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-subagent-router/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-subagent-orchestrator/SKILL.md)
 - [x] [test_odylith_evaluation_ledger.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_evaluation_ledger.py)
 - [x] [test_odylith_benchmark_runner.py](/Users/freedom/code/odylith/tests/unit/runtime/test_odylith_benchmark_runner.py)
 
@@ -86,7 +86,7 @@ Related Bugs:
     are in place.
 
 ## Validation/Test Plan
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_evaluation_ledger.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_subagent_surface_validation.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_evaluation_ledger.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_subagent_surface_validation.py`
 - [x] `odylith benchmark --repo-root .`
 - [ ] `git diff --check`
 

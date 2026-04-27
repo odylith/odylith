@@ -1,4 +1,4 @@
-%% Reviewed 2026-04-07 for B-058 and B-059 to make the compiler read models, retrieval lanes, and packet-safe memory contract explicit in Atlas.
+%% Reviewed 2026-04-17 for v0.1.11 to make compiler read models, session memory, delivery-ledger visibility, Execution Engine snapshots, Tribunal summaries, and packet-safe memory contracts explicit in Atlas.
 flowchart TB
     Truth["Tracked product truth<br/>Radar + Plans + Casebook + Registry + Atlas + guidance"] --> Compiler["Context Engine compiler/store<br/>projection build + retained packet assembly"]
 
@@ -14,16 +14,22 @@ flowchart TB
 
     subgraph Contracts["3. Packet-safe memory contract"]
         MemoryContracts["Memory Contracts<br/>allowlist + redaction + compaction + execution-profile tokens"]
+        SessionStream["Session stream contract<br/>recent turns + host family + model family<br/>proof events + user corrections"]
+        DeliveryLedger["Delivery ledger contract<br/>ambient + Observation + Proposal + Assist<br/>generated / fallback-ready / chat-confirmed"]
     end
 
     subgraph State["4. Derived runtime state"]
         CompilerState[".odylith/runtime/odylith-compiler<br/>bundle + snapshot artifacts"]
         MemoryState[".odylith/runtime/odylith-memory<br/>lance + tantivy + judgment memory + remote sync"]
+        SessionState[".odylith/runtime/session-streams<br/>cached hot-path summaries"]
     end
 
     subgraph Consumers["5. Runtime consumers"]
         Governance["Delivery Intelligence + governed surfaces"]
         Tribunal["Tribunal + Remediator"]
+        Execution["Execution Engine<br/>compact snapshot reuse"]
+        Intervention["Visible Intervention Broker<br/>Context + Execution + Memory + Tribunal decision"]
+        Benchmark["Benchmark proof<br/>recall and accuracy before latency budget"]
         Conversation["Router + Orchestrator + Odylith Chatter"]
     end
 
@@ -35,11 +41,22 @@ flowchart TB
     Snapshot --> MemoryContracts
     Backend --> MemoryContracts
     Remote --> MemoryContracts
+    MemoryContracts --> SessionStream
+    SessionStream --> DeliveryLedger
     Bundle --> CompilerState
     Snapshot --> CompilerState
     Backend --> MemoryState
     Remote --> MemoryState
+    SessionStream --> SessionState
+    DeliveryLedger --> SessionState
     MemoryContracts --> Governance
     MemoryContracts --> Tribunal
+    MemoryContracts --> Execution
+    SessionStream --> Execution
+    DeliveryLedger --> Intervention
+    Execution --> Intervention
+    Tribunal --> Intervention
+    MemoryContracts --> Benchmark
+    SessionStream --> Benchmark
     MemoryContracts --> Conversation
     Remote -. opt-in .-> Governance

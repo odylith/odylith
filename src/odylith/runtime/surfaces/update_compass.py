@@ -16,12 +16,15 @@ import argparse
 from pathlib import Path
 from typing import Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as timeline_logger
-from odylith.runtime.surfaces import render_compass_dashboard
-from odylith.runtime.context_engine import odylith_context_engine_store
+from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts
+from odylith.runtime.surfaces import compass_refresh_runtime
+from odylith.runtime.surfaces import surface_path_helpers
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    default_author, default_source = agent_runtime_contract.default_event_metadata()
     parser = argparse.ArgumentParser(
         prog="odylith compass update",
         description="Capture Update Compass statements into timeline + standup inputs.",
@@ -29,7 +32,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--repo-root", default=".", help="Repository root.")
     parser.add_argument(
         "--stream",
-        default="odylith/compass/runtime/codex-stream.v1.jsonl",
+        default=agent_runtime_contract.AGENT_STREAM_PATH,
         help="Compass local timeline stream path.",
     )
     parser.add_argument(
@@ -89,8 +92,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=timeline_logger.component_registry.DEFAULT_IDEAS_ROOT,
         help="Backlog ideas root for impacted-component inference.",
     )
-    parser.add_argument("--author", default="codex", help="Author label.")
-    parser.add_argument("--source", default="codex", help="Source label.")
+    parser.add_argument("--author", default=default_author, help="Author label.")
+    parser.add_argument("--source", default=default_source, help="Source label.")
     parser.add_argument(
         "--session-id",
         default="",
@@ -128,6 +131,17 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="",
         help="Optional ISO timestamp shared across appended events.",
     )
+    parser.add_argument("--proof-lane", default="", help="Optional proof lane id shared across appended events.")
+    parser.add_argument("--proof-fingerprint", default="", help="Optional live failure fingerprint shared across appended events.")
+    parser.add_argument("--proof-phase", default="", help="Optional proof frontier or phase label shared across appended events.")
+    parser.add_argument("--evidence-tier", default="", help="Optional proof evidence tier shared across appended events.")
+    parser.add_argument("--proof-status", default="", choices=("", *timeline_logger.PROOF_STATUSES), help="Optional proof status shared across appended events.")
+    parser.add_argument("--work-category", default="", choices=("", *timeline_logger.WORK_CATEGORIES), help="Optional proof work category shared across appended events.")
+    parser.add_argument("--local-head", default="", help="Optional deployment-truth local HEAD shared across appended events.")
+    parser.add_argument("--pushed-head", default="", help="Optional deployment-truth pushed branch HEAD shared across appended events.")
+    parser.add_argument("--published-source-commit", default="", help="Optional deployment-truth published source commit shared across appended events.")
+    parser.add_argument("--runner-fingerprint", default="", help="Optional deployment-truth runner fingerprint shared across appended events.")
+    parser.add_argument("--last-live-failing-commit", default="", help="Optional deployment-truth last live failing commit shared across appended events.")
     parser.add_argument(
         "--no-render",
         action="store_true",
@@ -140,13 +154,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Use incremental runtime refresh when available for local Compass updates.",
     )
     return parser.parse_args(argv)
-
-
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
 
 
 def _normalize_messages(values: Sequence[str]) -> list[str]:
@@ -173,12 +180,12 @@ def _event_requests(args: argparse.Namespace) -> list[tuple[str, str]]:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
-    stream_path = _resolve(repo_root, str(args.stream))
+    stream_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.stream))
     manifest_token = str(args.manifest).strip()
     manifest_path = (
         timeline_logger.component_registry.default_manifest_path(repo_root=repo_root)
         if manifest_token == timeline_logger.component_registry.DEFAULT_MANIFEST_PATH
-        else _resolve(repo_root, manifest_token)
+        else surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=manifest_token)
     )
 
     requests = _event_requests(args)
@@ -210,8 +217,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 author=str(args.author),
                 source=str(args.source),
                 manifest_path=manifest_path,
-                catalog_path=_resolve(repo_root, str(args.catalog)),
-                ideas_root=_resolve(repo_root, str(args.ideas_root)),
+                catalog_path=surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.catalog)),
+                ideas_root=surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.ideas_root)),
                 session_id=str(args.session_id),
                 transaction_id=str(args.transaction_id),
                 transaction_seq=seq_value,
@@ -219,6 +226,19 @@ def main(argv: Sequence[str] | None = None) -> int:
                 headline_hint=str(args.headline_hint),
                 transaction_boundary=boundary_value,
                 ts_iso=str(args.ts_iso),
+                proof_lane=str(args.proof_lane),
+                proof_fingerprint=str(args.proof_fingerprint),
+                proof_phase=str(args.proof_phase),
+                evidence_tier=str(args.evidence_tier),
+                proof_status=str(args.proof_status),
+                work_category=str(args.work_category),
+                deployment_truth={
+                    "local_head": str(args.local_head),
+                    "pushed_head": str(args.pushed_head),
+                    "published_source_commit": str(args.published_source_commit),
+                    "runner_fingerprint": str(args.runner_fingerprint),
+                    "last_live_failing_commit": str(args.last_live_failing_commit),
+                },
             )
         except ValueError as exc:
             print("update compass FAILED")
@@ -226,7 +246,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 2
         appended.append(payload)
 
-    odylith_context_engine_store.append_runtime_event(
+    odylith_context_engine_runtime_artifacts.append_runtime_event(
         repo_root=repo_root,
         event_type="compass_update",
         payload={
@@ -236,46 +256,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     if not args.no_render:
-        runtime_mode = str(args.runtime_mode).strip().lower()
-        if runtime_mode == "standalone":
-            rc = render_compass_dashboard.main(
-                [
-                    "--repo-root",
-                    str(repo_root),
-                    "--codex-stream",
-                    str(stream_path),
-                    "--runtime-mode",
-                    runtime_mode,
-                ]
-            )
-        else:
-            try:
-                _payload, _paths = render_compass_dashboard.refresh_runtime_artifacts(
-                    repo_root=repo_root,
-                    runtime_dir=_resolve(repo_root, "odylith/compass/runtime"),
-                    backlog_index_path=_resolve(repo_root, "odylith/radar/source/INDEX.md"),
-                    plan_index_path=_resolve(repo_root, "odylith/technical-plans/INDEX.md"),
-                    bugs_index_path=_resolve(repo_root, "odylith/casebook/bugs/INDEX.md"),
-                    traceability_graph_path=_resolve(repo_root, "odylith/radar/traceability-graph.v1.json"),
-                    mermaid_catalog_path=_resolve(repo_root, "odylith/atlas/source/catalog/diagrams.v1.json"),
-                    codex_stream_path=stream_path,
-                    retention_days=render_compass_dashboard.DEFAULT_HISTORY_RETENTION_DAYS,
-                    max_review_age_days=21,
-                    active_window_minutes=15,
-                    runtime_mode=runtime_mode,
-                )
-                rc = 0
-            except Exception:
-                if runtime_mode == "daemon":
-                    raise
-                rc = render_compass_dashboard.main(
-                    [
-                        "--repo-root",
-                        str(repo_root),
-                        "--codex-stream",
-                        str(stream_path),
-                    ]
-                )
+        refresh_result = compass_refresh_runtime.run_refresh(
+            repo_root=repo_root,
+            requested_profile="shell-safe",
+            requested_runtime_mode=str(args.runtime_mode),
+            wait=True,
+            status_only=False,
+            emit_output=True,
+        )
+        rc = int(refresh_result.get("rc", 0) or 0)
         if rc != 0:
             print("update compass FAILED")
             print("- timeline events were appended, but Compass render failed")

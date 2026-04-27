@@ -1,3 +1,5 @@
+"""Backlog Authoring helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 import argparse
@@ -8,13 +10,16 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import repo_path_resolver
+from odylith.runtime.governance import backlog_title_contract
 from odylith.runtime.governance import execution_wave_contract
+from odylith.runtime.governance import owned_surface_refresh
+from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 _WORKSTREAM_RE = re.compile(r"^B-(\d{3,})$")
 _SECTION_RE = re.compile(r"^##\s+(.+?)\s*$")
 _DEFAULT_PRIORITY = "P1"
-_DEFAULT_IMPACTED_LANES = "both"
 _DEFAULT_SIZING = "M"
 _DEFAULT_COMPLEXITY = "Medium"
 _DEFAULT_CONFIDENCE = "medium"
@@ -43,17 +48,25 @@ class CreatedBacklogItem:
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith backlog create",
-        description="Create one or more queued backlog workstreams and patch Radar INDEX.md automatically.",
+        description=(
+            "Create one or more queued backlog workstreams with grounded core detail "
+            "and patch Radar INDEX.md automatically."
+        ),
     )
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--backlog-index", default="odylith/radar/source/INDEX.md")
     parser.add_argument("--ideas-root", default="odylith/radar/source/ideas")
     parser.add_argument("--title", action="append", dest="titles", required=True)
+    parser.add_argument("--problem", required=True, help="Grounded Problem section text.")
+    parser.add_argument("--customer", required=True, help="Grounded Customer section text.")
+    parser.add_argument("--opportunity", required=True, help="Grounded Opportunity section text.")
+    parser.add_argument("--product-view", required=True, help="Grounded Product View section text.")
+    parser.add_argument("--success-metrics", required=True, help="Grounded Success Metrics section text.")
     parser.add_argument("--priority", default=_DEFAULT_PRIORITY)
     parser.add_argument("--commercial-value", type=int, default=3)
     parser.add_argument("--product-impact", type=int, default=3)
     parser.add_argument("--market-value", type=int, default=3)
-    parser.add_argument("--impacted-lanes", default=_DEFAULT_IMPACTED_LANES)
+    parser.add_argument("--impacted-lanes", default="", help=argparse.SUPPRESS)
     parser.add_argument("--impacted-parts", default="odylith")
     parser.add_argument("--sizing", default=_DEFAULT_SIZING)
     parser.add_argument("--complexity", default=_DEFAULT_COMPLEXITY)
@@ -66,20 +79,22 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--founder-override", action="store_true")
     parser.add_argument("--override-note", default="")
     parser.add_argument("--override-review-date", default="")
+    parser.add_argument(
+        "--release",
+        default="",
+        help="Optional release selector such as `next` or `release-0-1-12` for the newly created queued records.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--json", action="store_true", dest="as_json")
     return parser.parse_args(argv)
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _repo_relative_posix(*, repo_root: Path, path: Path) -> str:
-    return path.resolve().relative_to(repo_root.resolve()).as_posix()
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=path)
 
 
 def _backlog_link(*, repo_root: Path, path: Path, label: str) -> str:
@@ -158,7 +173,6 @@ def _render_idea_text(*, metadata: Mapping[str, str], sections: Mapping[str, str
         "commercial_value",
         "product_impact",
         "market_value",
-        "impacted_lanes",
         "impacted_parts",
         "sizing",
         "complexity",
@@ -243,27 +257,24 @@ def _update_backlog_last_updated(content: str, *, today: dt.date) -> str:
 
 
 def _default_sections_for_title(title: str) -> dict[str, str]:
-    plain_title = str(title).strip()
-    return {
-        "Problem": f"Odylith needs an explicit workstream for {plain_title} instead of leaving the slice implicit.",
-        "Customer": "Odylith maintainers and operators who need this capability to exist as governed product truth.",
-        "Opportunity": f"Bound {plain_title} as a queued workstream so implementation can attach to one clear source record.",
-        "Proposed Solution": f"Create the workstream for {plain_title} and refine the exact implementation plan during execution.",
-        "Scope": f"- Define and land the bounded work for {plain_title}.\n- Keep the first implementation wave narrow and test-backed.",
-        "Non-Goals": "- Do not widen this queued workstream into unrelated product cleanup.",
-        "Risks": "- The title may need refinement once the implementation owner confirms the exact boundary.",
-        "Dependencies": "- No explicit dependency recorded yet; confirm related workstreams before implementation starts.",
-        "Success Metrics": "- The workstream is specific enough to guide implementation and validation without further backlog surgery.",
-        "Validation": "- Run focused validation for the touched paths once implementation begins.",
-        "Rollout": "- Queue now, then bind a technical plan when the implementation wave starts.",
-        "Why Now": "This slice is active enough that it should exist as explicit backlog truth now.",
-        "Product View": "If the team is already acting as if this work exists, the backlog should say so explicitly.",
-        "Impacted Components": "- `odylith`",
-        "Interface Changes": "- None decided yet; record interface changes once implementation is scoped.",
-        "Migration/Compatibility": "- No migration impact recorded yet.",
-        "Test Strategy": "- Add targeted regression coverage when implementation begins.",
-        "Open Questions": "- Which existing workstreams or component specs should this attach to first?",
-    }
+    return backlog_contract.default_section_boilerplate(title)
+
+
+def _grounded_sections_for_title(*, title: str, args: argparse.Namespace) -> dict[str, str]:
+    sections = dict(_default_sections_for_title(title))
+    sections["Problem"] = str(args.problem).strip()
+    sections["Customer"] = str(args.customer).strip()
+    sections["Opportunity"] = str(args.opportunity).strip()
+    sections["Product View"] = str(args.product_view).strip()
+    sections["Success Metrics"] = str(args.success_metrics).strip()
+    validation_errors = backlog_contract.core_detail_section_errors(
+        title=title,
+        sections=sections,
+        path=Path("<generated>"),
+    )
+    if validation_errors:
+        raise ValueError("; ".join(validation_errors))
+    return sections
 
 
 def _build_metadata(
@@ -282,7 +293,6 @@ def _build_metadata(
         "commercial_value": str(int(args.commercial_value)),
         "product_impact": str(int(args.product_impact)),
         "market_value": str(int(args.market_value)),
-        "impacted_lanes": str(args.impacted_lanes).strip(),
         "impacted_parts": str(args.impacted_parts).strip(),
         "sizing": str(args.sizing).strip(),
         "complexity": str(args.complexity).strip(),
@@ -440,7 +450,7 @@ def create_queued_backlog_items(
         backlog_index_path=backlog_index_path,
         ideas_root=ideas_root,
     )
-    ideas, idea_errors = backlog_contract._validate_idea_specs(ideas_root)
+    ideas, idea_errors = backlog_contract._validate_idea_specs(ideas_root, repo_root=repo_root)
     if idea_errors:
         raise ValueError("; ".join(idea_errors))
     _, _, _, _, _, index_errors = backlog_contract._validate_backlog_index(
@@ -466,14 +476,17 @@ def create_queued_backlog_items(
     mutable_ideas = dict(ideas)
     reserved_paths: set[Path] = set()
     for raw_title in titles:
-        title = str(raw_title).strip()
+        title = backlog_title_contract.normalize_workstream_title(
+            title=str(raw_title).strip(),
+            repo_root=repo_root,
+        )
         if not title:
             raise ValueError("backlog titles must be non-empty")
         idea_id = _next_workstream_id(mutable_ideas)
         metadata = _build_metadata(idea_id=idea_id, title=title, today=today, args=args)
         idea_path = _unique_idea_path(ideas_root=ideas_root, title=title, today=today, reserved=reserved_paths)
         reserved_paths.add(idea_path)
-        sections = _default_sections_for_title(title)
+        sections = _grounded_sections_for_title(title=title, args=args)
         text = _render_idea_text(metadata=metadata, sections=sections)
         new_text_by_path[idea_path] = text
         item = CreatedBacklogItem(
@@ -488,6 +501,7 @@ def create_queued_backlog_items(
             path=idea_path,
             metadata=metadata,
             sections=set(sections),
+            section_bodies=dict(sections),
         )
 
     row_records: list[dict[str, Any]] = []
@@ -503,7 +517,6 @@ def create_queued_backlog_items(
                 "market_value": str(row["market_value"]).strip(),
                 "sizing": str(row["sizing"]).strip(),
                 "complexity": str(row["complexity"]).strip(),
-                "impacted_lanes": str(row["impacted_lanes"]).strip(),
                 "status": "queued",
                 "link": str(row["link"]).strip(),
                 "existing_order": ordinal,
@@ -523,7 +536,6 @@ def create_queued_backlog_items(
                 "market_value": metadata["market_value"],
                 "sizing": metadata["sizing"],
                 "complexity": metadata["complexity"],
-                "impacted_lanes": metadata["impacted_lanes"],
                 "status": "queued",
                 "link": _backlog_link(
                     repo_root=repo_root,
@@ -567,7 +579,6 @@ def create_queued_backlog_items(
                 str(row["market_value"]).strip(),
                 str(row["sizing"]).strip(),
                 str(row["complexity"]).strip(),
-                str(row["impacted_lanes"]).strip(),
                 "queued",
                 str(row["link"]).strip(),
             ]
@@ -601,12 +612,28 @@ def create_queued_backlog_items(
         "backlog_index": str(backlog_index_path.resolve()),
         "backlog_index_text": updated_index_text,
         "idea_files": {str(path.resolve()): text for path, text in new_text_by_path.items()},
+        "_candidate_idea_specs": mutable_ideas,
     }
+
+
+def _release_assignment_note(*, selector: str) -> str:
+    return (
+        "Target newly created queued backlog record(s) from "
+        f"`odylith backlog create --release {str(selector).strip()}`."
+    )
+
+
+def _refresh_status(*, surface: str, status: str, detail: str = "") -> dict[str, str]:
+    payload = {"surface": surface, "status": status}
+    if str(detail).strip():
+        payload["detail"] = str(detail).strip()
+    return payload
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
+    release_selector = str(args.release or "").strip()
     try:
         backlog_index_path, ideas_root = _resolve_governed_radar_paths(
             repo_root=repo_root,
@@ -620,20 +647,98 @@ def main(argv: Sequence[str] | None = None) -> int:
             titles=tuple(str(title) for title in args.titles),
             args=args,
         )
+        release_targeting = None
+        if release_selector:
+            release_targeting = release_planning_authoring.add_workstreams_to_release(
+                repo_root=repo_root,
+                workstream_ids=[str(item["idea_id"]) for item in result["created"]],
+                selector=release_selector,
+                note=_release_assignment_note(selector=release_selector),
+                idea_specs=result["_candidate_idea_specs"],
+                dry_run=True,
+            )
     except ValueError as exc:
         print(str(exc))
         return 2
+
+    radar_refresh = _refresh_status(
+        surface="radar",
+        status="skipped" if bool(args.dry_run) else "pending",
+        detail="dry-run" if bool(args.dry_run) else "",
+    )
+    compass_refresh = _refresh_status(
+        surface="compass",
+        status="skipped" if release_selector else "not_requested",
+        detail="dry-run" if bool(args.dry_run) and release_selector else "",
+    )
 
     if not bool(args.dry_run):
         for raw_path, text in result["idea_files"].items():
             Path(raw_path).write_text(str(text), encoding="utf-8")
         backlog_index_path.write_text(str(result["backlog_index_text"]), encoding="utf-8")
+        if release_selector:
+            try:
+                release_targeting = release_planning_authoring.add_workstreams_to_release(
+                    repo_root=repo_root,
+                    workstream_ids=[str(item["idea_id"]) for item in result["created"]],
+                    selector=release_selector,
+                    note=_release_assignment_note(selector=release_selector),
+                    idea_specs=result["_candidate_idea_specs"],
+                    dry_run=False,
+                )
+            except ValueError as exc:
+                print(f"Backlog create wrote queued records, but release targeting failed unexpectedly: {exc}")
+                return 1
+        try:
+            owned_surface_refresh.raise_for_failed_refresh(
+                repo_root=repo_root,
+                surface="radar",
+                operation_label="Backlog create",
+            )
+            radar_refresh = _refresh_status(surface="radar", status="passed")
+        except RuntimeError as exc:
+            print(str(exc))
+            return 1
+        if release_selector:
+            try:
+                owned_surface_refresh.raise_for_failed_refresh(
+                    repo_root=repo_root,
+                    surface="compass",
+                    operation_label="Backlog create release targeting",
+                )
+                compass_refresh = _refresh_status(surface="compass", status="passed")
+            except RuntimeError as exc:
+                print(str(exc))
+                return 1
+
+    release_payload = {
+        "selector": release_selector,
+        "release_id": "none",
+        "display_label": "none",
+        "events": [],
+    }
+    if release_targeting is not None:
+        release_row = release_targeting.get("release", {})
+        release_payload = {
+            "selector": release_selector,
+            "release_id": str(release_row.get("release_id", "")).strip(),
+            "display_label": str(release_row.get("display_label", "")).strip(),
+            "events": release_targeting.get("events", []),
+            "event_log_path": release_targeting.get("event_log_path", ""),
+        }
 
     if bool(args.as_json):
         payload = {
             "created": result["created"],
+            "created_ids": [str(item["idea_id"]) for item in result["created"]],
             "backlog_index": result["backlog_index"],
             "dry_run": bool(args.dry_run),
+            "release_target": release_payload,
+            "queued_status_preserved": True,
+            "refresh": {
+                "radar": radar_refresh,
+                "compass": compass_refresh,
+            },
         }
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
@@ -642,4 +747,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         for item in result["created"]:
             print(f"- {item['idea_id']}: {item['title']} -> {item['idea_path']}")
         print(f"- backlog_index: {result['backlog_index']}")
+        print(f"- created_ids: {', '.join(str(item['idea_id']) for item in result['created'])}")
+        print(f"- release_target: {release_payload['release_id'] or 'none'}")
+        print("- queued_status_preserved: yes")
+        print(f"- radar_refresh: {radar_refresh['status']}")
+        print(f"- compass_refresh: {compass_refresh['status']}")
     return 0

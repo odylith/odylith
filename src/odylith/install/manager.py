@@ -1,5 +1,13 @@
+"""Install, upgrade, and runtime management entrypoints for Odylith.
+
+Managed guidance refresh keeps the shared proof lanes explicit, including
+guidance behavior pressure cases, `odylith validate guidance-behavior --repo-root .`,
+and `odylith benchmark --profile quick --family guidance_behavior`.
+"""
+
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
@@ -14,13 +22,15 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, Sequence
 
 from odylith import __version__
+from odylith.runtime.common import agent_runtime_contract
+from odylith.install import bootstrap_assets
 from odylith.install.fs import atomic_write_text
 from odylith.install.managed_runtime import (
     CONTEXT_ENGINE_FEATURE_PACK_ID,
     MANAGED_RUNTIME_FEATURE_PACK_FILENAME,
     MANAGED_RUNTIME_FEATURE_PACK_SCHEMA_VERSION,
 )
-from odylith.install.agents import has_managed_block, update_agents_file
+from odylith.install.agents import GUIDANCE_FILENAMES, has_managed_block, update_guidance_file
 from odylith.install.migration_audit import LegacyReferenceAudit
 from odylith.install.migration_audit import audit_legacy_odyssey_references
 from odylith.install.repair import reset_local_state as reset_install_local_state
@@ -60,8 +70,16 @@ from odylith.install.state import (
     write_install_state,
     write_version_pin,
 )
+from odylith.install.value_engine_migration import migrate_visible_intervention_value_engine
 from odylith.runtime.common.consumer_profile import consumer_profile_path, write_consumer_profile
-from odylith.runtime.common.product_assets import bundled_product_root
+from odylith.runtime.common import claude_cli_capabilities
+from odylith.runtime.common import codex_cli_capabilities
+from odylith.runtime.common.guidance_paths import (
+    PROJECT_GUIDANCE_DISPLAY,
+    existing_top_level_guidance_paths,
+    has_project_guidance,
+)
+from odylith.runtime.common.product_assets import bundled_product_root, bundled_project_root_assets_root
 from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.memory import odylith_memory_backend
@@ -80,13 +98,21 @@ WRAPPED_RUNTIME_SOURCE = "wrapped_runtime"
 INSTALL_STATE_ONLY_RUNTIME_SOURCE = "install_state_only"
 MISSING_RUNTIME_SOURCE = "missing_runtime"
 _ODYLITH_GITIGNORE_ENTRY = "/.odylith/"
+_COMPASS_REFRESH_STATE_GITIGNORE_ENTRY = "/odylith/compass/runtime/refresh-state.v1.json"
 _ODYLITH_GITIGNORE_PATTERNS = {
     ".odylith",
     ".odylith/",
     "/.odylith",
     "/.odylith/",
 }
-_ODYLITH_GITIGNORE_ENTRIES = (_ODYLITH_GITIGNORE_ENTRY,)
+_COMPASS_REFRESH_STATE_GITIGNORE_PATTERNS = {
+    "odylith/compass/runtime/refresh-state.v1.json",
+    "/odylith/compass/runtime/refresh-state.v1.json",
+}
+_ODYLITH_GITIGNORE_ENTRIES = (
+    _ODYLITH_GITIGNORE_ENTRY,
+    _COMPASS_REFRESH_STATE_GITIGNORE_ENTRY,
+)
 _FIRST_RUN_SURFACE_TARGETS: tuple[str, ...] = (
     "odylith/index.html",
     "odylith/radar/radar.html",
@@ -134,6 +160,7 @@ class InstallSummary:
     gitignore_updated: bool = False
     pin_changed: bool = False
     pinned_version: str = ""
+    created_guidance_files: tuple[str, ...] = ()
     retention_warnings: tuple[str, ...] = ()
     migration: MigrationSummary | None = None
 
@@ -234,9 +261,8 @@ class StartPreflight:
 
 def _repo_root(path: str | Path, *, require_agents: bool = True) -> Path:
     root = Path(path).expanduser().resolve()
-    agents_file = root / "AGENTS.md"
-    if require_agents and not agents_file.is_file():
-        raise ValueError(f"repo root does not contain AGENTS.md: {root}")
+    if require_agents and not has_project_guidance(repo_root=root):
+        raise ValueError(f"repo root does not contain {PROJECT_GUIDANCE_DISPLAY}: {root}")
     return root
 
 
@@ -255,6 +281,8 @@ def _ensure_odylith_gitignore_entry(*, repo_root: Path, git_repo_present: bool |
     missing_entries: list[str] = []
     if not normalized_lines.intersection(_ODYLITH_GITIGNORE_PATTERNS):
         missing_entries.append(_ODYLITH_GITIGNORE_ENTRY)
+    if not normalized_lines.intersection(_COMPASS_REFRESH_STATE_GITIGNORE_PATTERNS):
+        missing_entries.append(_COMPASS_REFRESH_STATE_GITIGNORE_ENTRY)
     if not missing_entries:
         return False
     updated = existing
@@ -604,8 +632,13 @@ def plan_install_lifecycle(
             "repo_owned_truth",
             paths=(
                 "AGENTS.md",
+                "CLAUDE.md",
+                ".claude/",
+                ".codex/",
+                ".agents/skills/",
                 ".gitignore",
                 "odylith/AGENTS.md",
+                "odylith/CLAUDE.md",
                 "odylith/agents-guidelines/",
                 "odylith/skills/",
                 "odylith/runtime/source/",
@@ -706,8 +739,13 @@ def plan_reinstall_lifecycle(
             "managed_guidance",
             paths=(
                 "AGENTS.md",
+                "CLAUDE.md",
+                ".claude/",
+                ".codex/",
+                ".agents/skills/",
                 ".gitignore",
                 "odylith/AGENTS.md",
+                "odylith/CLAUDE.md",
                 "odylith/agents-guidelines/",
                 "odylith/skills/",
             ),
@@ -778,7 +816,17 @@ def plan_upgrade_lifecycle(
         _lifecycle_step(
             "Refresh the consumer profile and managed guidance before changing the active runtime.",
             "managed_guidance",
-            paths=("AGENTS.md", "odylith/AGENTS.md", "odylith/agents-guidelines/", "odylith/skills/"),
+            paths=(
+                "AGENTS.md",
+                "CLAUDE.md",
+                ".claude/",
+                ".codex/",
+                ".agents/skills/",
+                "odylith/AGENTS.md",
+                "odylith/CLAUDE.md",
+                "odylith/agents-guidelines/",
+                "odylith/skills/",
+            ),
         )
     )
     if source_repo_token:
@@ -814,6 +862,20 @@ def plan_upgrade_lifecycle(
                     if follow_latest
                     else "Target release: tracked repo pin."
                 ),
+            )
+        )
+        steps.append(
+            _lifecycle_step(
+                "Apply the v0.1.10 to v0.1.11 visible-intervention value-engine migration and remove stale signal-ranker artifacts.",
+                "runtime_state",
+                "repo_pin",
+                paths=(
+                    ".odylith/state/migrations/v0.1.11-visible-intervention-value-engine.v1.json",
+                    "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json",
+                    "odylith/runtime/source/intervention-signal-ranker-corpus.v1.json",
+                    "odylith/runtime/source/intervention-signal-ranker-calibration.v1.json",
+                ),
+                detail="v0.1.11 cuts over to deterministic_utility_v1; no signal-ranker compatibility shim is kept.",
             )
         )
         if write_pin or follow_latest:
@@ -992,453 +1054,39 @@ def _release_summary_fields(release: object | None) -> dict[str, object]:
     }
 
 
-def _repo_root_guidance_source() -> str:
-    return "\n".join(
-        [
-            "# Repo Guidance",
-            "",
-            "This file defines repo-root guidance for this workspace.",
-            "",
-            "## Working Rule",
-            "- Keep repo-root guidance here for paths outside `odylith/`.",
-            "- When Odylith is installed, work under `odylith/` follows `odylith/AGENTS.md` first.",
-            "- If this folder is not backed by Git yet, Odylith still installs here, but Git-aware features stay limited until `.git` exists.",
-            "",
-        ]
-    )
-
-
-def _ensure_repo_root_agents_file(*, repo_root: Path) -> bool:
-    path = Path(repo_root).resolve() / "AGENTS.md"
-    if path.is_file():
-        return False
-    atomic_write_text(path, _repo_root_guidance_source(), encoding="utf-8")
-    return True
-
-
-def _pyproject_payload(*, repo_root: Path) -> dict[str, object]:
-    path = repo_root / "pyproject.toml"
-    if not path.is_file():
-        return {}
-    try:
-        payload = tomllib.loads(path.read_text(encoding="utf-8"))
-    except (OSError, tomllib.TOMLDecodeError):
-        return {}
-    return dict(payload) if isinstance(payload, dict) else {}
-
-
-def product_source_version(*, repo_root: str | Path) -> str:
-    root = Path(repo_root).expanduser().resolve()
-    payload = _pyproject_payload(repo_root=root)
-    project = payload.get("project")
-    if not isinstance(project, Mapping):
-        return ""
-    return str(project.get("version") or "").strip()
-
-
-def product_repo_role(*, repo_root: str | Path) -> str:
-    root = Path(repo_root).expanduser().resolve()
-    payload = _pyproject_payload(repo_root=root)
-    project = payload.get("project")
-    project_name = str(project.get("name") or "").strip().lower() if isinstance(project, Mapping) else ""
-    has_product_shape = (
-        project_name == "odylith"
-        and (root / "src" / "odylith").is_dir()
-        and (root / "odylith" / "registry" / "source" / "component_registry.v1.json").is_file()
-        and (root / "odylith" / "radar" / "source" / "INDEX.md").is_file()
-    )
-    return PRODUCT_REPO_ROLE if has_product_shape else CONSUMER_REPO_ROLE
-
-
-def _customer_bootstrap_guidance() -> str:
-    return "\n".join(
-        [
-            "# Odylith Repo Guidance",
-            "",
-            "Scope: applies to the local customer-owned `odylith/` tree in this repository.",
-            "",
-            "## Ownership",
-            "- This starter tree is local repo truth, not a copy of the Odylith product repo.",
-            "- `odylith/runtime/source/product-version.v1.json` pins the intended Odylith product version.",
-            "- `odylith/runtime/source/tooling_shell.v1.json` is local repo shell metadata and stays customer-owned.",
-            "- `.odylith/trust/managed-runtime-trust/` is local Odylith runtime trust state and may be refreshed by install, upgrade, feature-pack activation, or doctor.",
-            "- `odylith/surfaces/brand/` is an Odylith-managed starter asset set for local HTML surfaces; first install and explicit repair may restore it, but normal upgrades should not rewrite it.",
-            "- `odylith/AGENTS.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets and may be refreshed by install, upgrade, or doctor.",
-            "- Truth under `odylith/radar/`, `odylith/technical-plans/`, `odylith/casebook/`, `odylith/registry/`, and `odylith/atlas/` belongs to this repository and must not be rewritten by normal upgrades.",
-            "- Product runtime code and product-managed assets run from `.odylith/` and the installed Odylith runtime package.",
-            "- Do not treat this folder as disposable cache; it belongs to the repository using Odylith.",
-            "",
-            "## Working Rule",
-            "- For work under `odylith/`, read this file first.",
-            "- Use `./.odylith/bin/odylith` for Odylith CLI workflows in this repository.",
-            "- Before any substantive repo scan or code change outside trivial fixes, the agent must start from the repo-local Odylith entrypoint and keep the active workstream, component, or packet in scope before raw repo search, tests, or edits.",
-            "- Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable.",
-            "- Start substantive turns with `./.odylith/bin/odylith start --repo-root .`; it chooses the safe first lane and prints the exact next command when Odylith cannot narrow the slice yet.",
-            "- When you already know the exact workstream, component, path, or id, use `./.odylith/bin/odylith context --repo-root . <ref>` before raw repo search. Use `./.odylith/bin/odylith query --repo-root . \"<terms>\"` only after concrete anchors already exist.",
-            "- In Codex commentary, keep startup, fallback, routing, and packet-selection internals implicit. Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight. If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history. Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates, and never prefix commentary with control-plane receipt labels. Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters.",
-            "- Keep normal commentary task-first and human. Weave Odylith-grounded facts into ordinary updates when they change the next move, and reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels for rare high-signal moments. Pick the strongest one or stay quiet.",
-            "- At closeout, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance ids inline when they were actually changed, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real.",
-            "- For substantive tasks, follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step; identify the active workstream, component, or packet; then move into repo scan, tests, and edits.",
-            "- In consumer repos, grounding Odylith is diagnosis authority, not blanket write authority: if the issue target is Odylith itself, stop at diagnosis and maintainer-ready feedback unless the operator explicitly authorizes Odylith mutation.",
-            "- Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes when they change `odylith/` or `.odylith/`; do not run them autonomously as Odylith fixes in consumer repos.",
-            "- Treat backlog/workstream, plan, Registry, Atlas, Casebook, Compass, and session upkeep as part of the same grounded Odylith workflow rather than as optional aftercare, but switch to evidence-and-handoff when the issue is Odylith itself in a consumer repo.",
-            "- Queued backlog items, case queues, and shell or Compass queue previews are not implicit implementation instructions. Unless the user explicitly asks to work a queued item, do not pick it up automatically just because it appears in Radar, Compass, the shell, or another Odylith queue surface.",
-            "- Search existing workstream, plan, bug, component, diagram, and recent session/Compass context first; for consumer Odylith-fix requests, cite that evidence and hand it off to the platform maintainer instead of extending or creating Odylith truth locally.",
-            "- If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation; if the issue is Odylith itself in a consumer repo, produce a maintainer-ready feedback packet instead.",
-            "- Use Odylith packets and managed skills to narrow the slice, gather proof, and keep intent plus constraints alive across turns, but do not treat grounding as permission to patch `odylith/` for consumer Odylith-fix requests.",
-            "- In Codex, treat routed or orchestrated native spawn as the default execution path for substantive grounded consumer-lane work unless Odylith explicitly keeps the slice local.",
-            "- In Claude Code, use Odylith grounding, memory, surfaces, and local orchestration guidance, but do not assume native spawn support.",
-            "- Treat the managed guidance files under `odylith/AGENTS.md`, `odylith/agents-guidelines/`, and `odylith/skills/` as the Odylith operating layer; keep repo-specific truth in the governance surfaces beside them.",
-            "",
-            "## Routing",
-            "- Context engine behavior: `agents-guidelines/ODYLITH_CONTEXT_ENGINE.md`",
-            "- Grounding and narrowing: `agents-guidelines/GROUNDING_AND_NARROWING.md`",
-            "- Governance and delivery surfaces: `agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md`",
-            "- Product surfaces and runtime: `agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md`",
-            "- Security and trust boundaries: `agents-guidelines/SECURITY_AND_TRUST.md`",
-            "- Subagent routing and execution posture: `agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md`",
-            "- Validation and testing: `agents-guidelines/VALIDATION_AND_TESTING.md`",
-            "- Install, upgrade, and recovery: `agents-guidelines/UPGRADE_AND_RECOVERY.md`",
-            "",
-            "## Skills",
-            "- `skills/delivery-governance-surface-ops/`",
-            "- `skills/odylith-context-engine-operations/`",
-            "- `skills/subagent-router/`",
-            "- `skills/subagent-orchestrator/`",
-            "- `skills/session-context/`",
-            "- `skills/component-registry/`",
-            "- `skills/diagram-catalog/`",
-            "- `skills/casebook-bug-capture/`",
-            "- `skills/casebook-bug-investigation/`",
-            "- `skills/casebook-bug-preflight/`",
-            "- `skills/compass-executive/`",
-            "- `skills/compass-timeline-stream/`",
-            "- `skills/registry-spec-sync/`",
-            "- `skills/schema-registry-governance/`",
-            "- `skills/security-hardening/`",
-            "",
-            "## Consumer Boundary",
-            "- Consumer installs intentionally exclude Odylith product-maintainer release workflow from the local repo guidance and skill set.",
-            "- Use the installed Odylith guidance and skills to power repo work here; do not mirror the Odylith product repo release process into this repository.",
-            "",
-        ]
-    )
-
-
-def _customer_shell_source(*, repo_root: Path) -> str:
-    payload = {
-        "shell_repo_label": f"Repo · {repo_root.name}",
-        "maintainer_notes": [],
-    }
-    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
-
-
-def _customer_shell_index_placeholder_source(*, repo_root: Path) -> str:
-    repo_label = repo_root.name or "repository"
-    return f"""<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Odylith | {repo_label}</title>
-    <style>
-      :root {{
-        color-scheme: light;
-        font-family: "SF Pro Display", "Segoe UI", sans-serif;
-        background:
-          radial-gradient(circle at top right, rgba(125, 211, 252, 0.18), transparent 34%),
-          linear-gradient(180deg, #f6fbff 0%, #eef5ff 100%);
-        color: #17324d;
-      }}
-
-      body {{
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        padding: 24px;
-      }}
-
-      main {{
-        width: min(760px, 100%);
-        display: grid;
-        gap: 16px;
-        padding: 28px;
-        border: 1px solid #cfe0f7;
-        border-radius: 28px;
-        background: rgba(255, 255, 255, 0.94);
-        box-shadow: 0 28px 64px rgba(22, 48, 82, 0.16);
-      }}
-
-      p {{
-        margin: 0;
-        line-height: 1.55;
-      }}
-
-      .eyebrow {{
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #1f5d7a;
-      }}
-
-      h1 {{
-        margin: 0;
-        font-size: clamp(32px, 5vw, 46px);
-        line-height: 1;
-        letter-spacing: -0.04em;
-        max-width: 12ch;
-      }}
-
-      .lede {{
-        max-width: 62ch;
-        color: #35557e;
-      }}
-
-      .card {{
-        display: grid;
-        gap: 10px;
-        padding: 16px 18px;
-        border: 1px solid #d8e5f8;
-        border-radius: 20px;
-        background: #f8fbff;
-      }}
-
-      code {{
-        display: inline-block;
-        padding: 5px 8px;
-        border-radius: 10px;
-        background: #edf4ff;
-        border: 1px solid #d4e4fb;
-        color: #17324d;
-        overflow-wrap: anywhere;
-      }}
-    </style>
-  </head>
-  <body>
-    <main>
-      <p class="eyebrow">Odylith</p>
-      <h1>The local shell is getting ready.</h1>
-      <p class="lede">
-        Odylith already created the repo-owned <code>odylith/</code> workspace for this {repo_label}. If the full shell
-        has not rendered yet, rerun <code>./.odylith/bin/odylith sync --repo-root . --force --impact-mode full</code>
-        from the repo root.
-      </p>
-      <section class="card">
-        <p><strong>Local shell entrypoint</strong></p>
-        <p><code>odylith/index.html</code></p>
-      </section>
-    </main>
-  </body>
-</html>
-"""
-
-
-def _customer_backlog_index_source(*, repo_root: Path) -> str:
-    updated = datetime.now(UTC).date().isoformat()
-    return "\n".join(
-        [
-            "# Backlog Index",
-            "",
-            f"Last updated (UTC): {updated}",
-            "",
-            "## Ranked Active Backlog",
-            "",
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-            "",
-            "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)",
-            "",
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-            "",
-            "## Parked (No Active Plan)",
-            "",
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-            "",
-            "## Finished (Linked to `odylith/technical-plans/done`)",
-            "",
-            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | impacted_lanes | status | link |",
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-            "",
-            "## Reorder Rationale Log",
-            "",
-        ]
-    ) + "\n"
-
-
-def _customer_plan_index_source() -> str:
-    return "\n".join(
-        [
-            "# Plan Index",
-            "",
-            "## Active Plans",
-            "",
-            "| Plan | Status | Created | Updated | Backlog |",
-            "| --- | --- | --- | --- | --- |",
-            "",
-            "## Parked Plans",
-            "",
-            "| Plan | Status | Created | Updated | Backlog |",
-            "| --- | --- | --- | --- | --- |",
-            "",
-        ]
-    ) + "\n"
-
-
-def _customer_component_registry_source() -> str:
-    payload = {
-        "version": "v1",
-        "components": [],
-    }
-    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
-
-
-def _customer_diagram_catalog_source() -> str:
-    payload = {
-        "version": "v1",
-        "diagrams": [],
-    }
-    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
-
-
-def _refresh_consumer_managed_guidance(*, repo_root: Path, repo_role: str, include_brand: bool, version: str = "") -> None:
-    if str(repo_role).strip() == PRODUCT_REPO_ROLE:
-        return
-    atomic_write_text(repo_root / "odylith" / "AGENTS.md", _customer_bootstrap_guidance(), encoding="utf-8")
-    _sync_managed_agents_guidelines(repo_root=repo_root)
-    _sync_managed_skills(repo_root=repo_root)
-    _sync_managed_release_notes(repo_root=repo_root, version=version)
-    if include_brand:
-        _sync_managed_surface_brand(repo_root=repo_root)
-
-
-def _sync_consumer_casebook_bug_index(*, repo_root: Path, repo_role: str) -> None:
-    if str(repo_role).strip() == PRODUCT_REPO_ROLE:
-        return
-    sync_casebook_bug_index.sync_casebook_bug_index(repo_root=repo_root, migrate_bug_ids=True)
-
-
-def _ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str = CONSUMER_REPO_ROLE) -> None:
-    directories = (
-        repo_root / "odylith",
-        repo_root / "odylith" / "runtime" / "source",
-        repo_root / "odylith" / "runtime" / "source" / "release-notes",
-        repo_root / "odylith" / "agents-guidelines",
-        repo_root / "odylith" / "skills",
-        repo_root / "odylith" / "surfaces" / "brand",
-        repo_root / "odylith" / "radar" / "source",
-        repo_root / "odylith" / "radar" / "source" / "ideas",
-        repo_root / "odylith" / "technical-plans",
-        repo_root / "odylith" / "technical-plans" / "in-progress",
-        repo_root / "odylith" / "technical-plans" / "done",
-        repo_root / "odylith" / "technical-plans" / "parked",
-        repo_root / "odylith" / "casebook" / "bugs",
-        repo_root / "odylith" / "registry" / "source" / "components",
-        repo_root / "odylith" / "atlas" / "source",
-        repo_root / "odylith" / "atlas" / "source" / "catalog",
-    )
-    for directory in directories:
-        directory.mkdir(parents=True, exist_ok=True)
-    _refresh_consumer_managed_guidance(
-        repo_root=repo_root,
-        repo_role=repo_role,
-        include_brand=True,
-        version=version,
-    )
-    shell_source_path = repo_root / "odylith" / "runtime" / "source" / "tooling_shell.v1.json"
-    if not shell_source_path.exists():
-        atomic_write_text(shell_source_path, _customer_shell_source(repo_root=repo_root), encoding="utf-8")
-    shell_index_path = repo_root / "odylith" / "index.html"
-    if not shell_index_path.exists():
-        atomic_write_text(
-            shell_index_path,
-            _customer_shell_index_placeholder_source(repo_root=repo_root),
-            encoding="utf-8",
-        )
-    backlog_index_path = repo_root / "odylith" / "radar" / "source" / "INDEX.md"
-    if not backlog_index_path.exists():
-        atomic_write_text(backlog_index_path, _customer_backlog_index_source(repo_root=repo_root), encoding="utf-8")
-    plan_index_path = repo_root / "odylith" / "technical-plans" / "INDEX.md"
-    if not plan_index_path.exists():
-        atomic_write_text(plan_index_path, _customer_plan_index_source(), encoding="utf-8")
-    component_registry_path = repo_root / "odylith" / "registry" / "source" / "component_registry.v1.json"
-    if not component_registry_path.exists():
-        atomic_write_text(component_registry_path, _customer_component_registry_source(), encoding="utf-8")
-    diagram_catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
-    if not diagram_catalog_path.exists():
-        atomic_write_text(diagram_catalog_path, _customer_diagram_catalog_source(), encoding="utf-8")
-    if not version_pin_path(repo_root=repo_root).is_file():
-        write_version_pin(repo_root=repo_root, version=version, repo_schema_version=DEFAULT_REPO_SCHEMA_VERSION)
-
-
-def _sync_managed_agents_guidelines(*, repo_root: Path) -> None:
-    source_root = bundled_product_root() / "agents-guidelines"
-    if not source_root.is_dir():
-        return
-    target_root = repo_root / "odylith" / "agents-guidelines"
-    target_root.mkdir(parents=True, exist_ok=True)
-    for source_path in source_root.rglob("*"):
-        if not source_path.is_file() or source_path.name == ".DS_Store":
-            continue
-        target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
-
-
-def _sync_managed_skills(*, repo_root: Path) -> None:
-    source_root = bundled_product_root() / "skills"
-    if not source_root.is_dir():
-        return
-    target_root = repo_root / "odylith" / "skills"
-    target_root.mkdir(parents=True, exist_ok=True)
-    for source_path in source_root.rglob("*"):
-        if not source_path.is_file() or source_path.name == ".DS_Store":
-            continue
-        target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
-
-
-def _sync_managed_surface_brand(*, repo_root: Path) -> None:
-    source_root = bundled_product_root() / "surfaces" / "brand"
-    if not source_root.is_dir():
-        return
-    target_root = repo_root / "odylith" / "surfaces" / "brand"
-    target_root.mkdir(parents=True, exist_ok=True)
-    for source_path in source_root.rglob("*"):
-        if not source_path.is_file() or source_path.name == ".DS_Store":
-            continue
-        target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
-
-
-def _sync_managed_release_notes(*, repo_root: Path, version: str = "") -> None:
-    source_root = bundled_product_root() / "runtime" / "source" / "release-notes"
-    target_root = repo_root / "odylith" / "runtime" / "source" / "release-notes"
-    target_root.mkdir(parents=True, exist_ok=True)
-    for candidate in target_root.iterdir():
-        if candidate.is_symlink() or candidate.is_file():
-            candidate.unlink()
-        elif candidate.is_dir():
-            shutil.rmtree(candidate)
-    if not source_root.is_dir():
-        return
-    normalized_version = str(version or "").strip().lstrip("v")
-    if not normalized_version:
-        return
-    source_path = source_root / f"v{normalized_version}.md"
-    if not source_path.is_file() or source_path.name == ".DS_Store":
-        return
-    shutil.copy2(source_path, target_root / source_path.name)
+_repo_root_guidance_source = bootstrap_assets.repo_root_guidance_source
+_repo_root_claude_source = bootstrap_assets.repo_root_claude_source
+_ensure_repo_root_guidance_files = bootstrap_assets.ensure_repo_root_guidance_files
+_existing_root_guidance_paths = existing_top_level_guidance_paths
+_update_root_guidance_files = bootstrap_assets.update_root_guidance_files
+product_source_version = bootstrap_assets.product_source_version
+product_repo_role = bootstrap_assets.product_repo_role
+_customer_bootstrap_guidance = bootstrap_assets.customer_bootstrap_guidance
+_customer_bootstrap_claude_source = bootstrap_assets.customer_bootstrap_claude_source
+_customer_shell_source = bootstrap_assets.customer_shell_source
+_customer_shell_index_placeholder_source = bootstrap_assets.customer_shell_index_placeholder_source
+_customer_backlog_index_source = bootstrap_assets.customer_backlog_index_source
+_customer_plan_index_source = bootstrap_assets.customer_plan_index_source
+_customer_component_registry_source = bootstrap_assets.customer_component_registry_source
+_customer_diagram_catalog_source = bootstrap_assets.customer_diagram_catalog_source
+_refresh_consumer_managed_guidance = bootstrap_assets.refresh_consumer_managed_guidance
+_sync_consumer_casebook_bug_index = bootstrap_assets.sync_consumer_casebook_bug_index
+_value_engine_migration_payload = bootstrap_assets.value_engine_migration_payload
+_ensure_customer_bootstrap = bootstrap_assets.ensure_customer_bootstrap
+_sync_managed_agents_guidelines = bootstrap_assets.sync_managed_agents_guidelines
+_sync_managed_scoped_guidance = bootstrap_assets.sync_managed_scoped_guidance
+_prune_removed_project_root_skill_shims = bootstrap_assets.prune_removed_project_root_skill_shims
+_sync_managed_project_root_assets = bootstrap_assets.sync_managed_project_root_assets
+_write_effective_codex_project_config = bootstrap_assets.write_effective_codex_project_config
+_write_effective_claude_project_settings = bootstrap_assets.write_effective_claude_project_settings
+_sync_managed_skills = bootstrap_assets.sync_managed_skills
+_sync_managed_surface_brand = bootstrap_assets.sync_managed_surface_brand
+_sync_managed_release_notes = bootstrap_assets.sync_managed_release_notes
 
 
 def _has_customer_starter_tree(*, repo_root: Path) -> bool:
     odylith_root = repo_root / "odylith"
-    return odylith_root.is_dir() and (odylith_root / "AGENTS.md").is_file()
+    return odylith_root.is_dir() and any((odylith_root / name).is_file() for name in GUIDANCE_FILENAMES)
 
 
 def _runtime_python(runtime_root: Path | None) -> Path | None:
@@ -1619,7 +1267,7 @@ def _append_self_host_timeline_event(
 
         timeline_logger.append_event(
             repo_root=repo_root,
-            stream_path=repo_root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl",
+            stream_path=agent_runtime_contract.resolve_agent_stream_path(repo_root=repo_root),
             kind="statement",
             summary=summary,
             workstream_values=[],
@@ -2013,7 +1661,28 @@ def _persist_runtime_state(
         active_version=active_version,
     )
     write_install_state(repo_root=repo_root, payload=normalized)
-    return normalized, retention_warnings
+    history_layout_warnings = _migrate_compass_history_layout(repo_root=repo_root)
+    return normalized, tuple([*retention_warnings, *history_layout_warnings])
+
+
+def _migrate_compass_history_layout(*, repo_root: Path) -> tuple[str, ...]:
+    runtime_dir = Path(repo_root).resolve() / "odylith" / "compass" / "runtime"
+    if not runtime_dir.exists():
+        return ()
+    try:
+        from odylith.runtime.surfaces import compass_dashboard_runtime
+
+        compass_dashboard_runtime.migrate_legacy_history_layout(
+            repo_root=Path(repo_root).resolve(),
+            runtime_dir=runtime_dir,
+        )
+    except Exception as exc:
+        return (
+            "Compass history cleanup could not normalize retained snapshots. "
+            "Active runtime stayed healthy; rerun `odylith compass refresh --repo-root .` after fixing repo writability. "
+            f"({exc})",
+        )
+    return ()
 
 
 def _version_sort_key(version: str) -> tuple[int, int, int, str]:
@@ -2204,8 +1873,9 @@ def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
             repo_schema_version=pin.repo_schema_version,
             migration_required=False,
         )
-    update_agents_file(
-        root / "AGENTS.md",
+    _ensure_repo_root_guidance_files(repo_root=root)
+    _update_root_guidance_files(
+        repo_root=root,
         install_active=install_integration_enabled(state),
         repo_role=repo_role,
     )
@@ -2242,7 +1912,8 @@ def install_bundle(
     root = _repo_root(repo_root, require_agents=False)
     migration = _migrate_legacy_install_if_needed(repo_root=root)
     with install_lock(repo_root=root):
-        repo_guidance_created = _ensure_repo_root_agents_file(repo_root=root)
+        created_guidance_files = _ensure_repo_root_guidance_files(repo_root=root)
+        repo_guidance_created = bool(created_guidance_files)
         git_repo_present = _git_repo_present(repo_root=root)
         gitignore_updated = _ensure_odylith_gitignore_entry(repo_root=root, git_repo_present=git_repo_present)
         previous_state = load_install_state(repo_root=root)
@@ -2252,7 +1923,7 @@ def install_bundle(
         repo_role = product_repo_role(repo_root=root)
         _ensure_customer_bootstrap(repo_root=root, version=resolved_version, repo_role=repo_role)
         written_profile = write_consumer_profile(repo_root=root)
-        update_agents_file(root / "AGENTS.md", install_active=integration_enabled, repo_role=repo_role)
+        _update_root_guidance_files(repo_root=root, install_active=integration_enabled, repo_role=repo_role)
         existing_runtime = current_runtime_root(repo_root=root)
         existing_version = current_runtime_version(repo_root=root)
         runtime_verification: dict[str, object] = (
@@ -2366,6 +2037,14 @@ def install_bundle(
             repo_role=repo_role,
             include_brand=False,
             version=active_version,
+            product_root=bundled_product_root(),
+        )
+        value_engine_migration = _value_engine_migration_payload(
+            repo_root=root,
+            repo_role=repo_role,
+            previous_version=pin_before.odylith_version if pin_before is not None else "",
+            target_version=active_version,
+            runtime_root=runtime_root,
         )
         append_install_ledger(
             repo_root=root,
@@ -2374,6 +2053,7 @@ def install_bundle(
                 "status": "ready",
                 "active_version": active_version,
                 "pinned_version": str(load_version_pin(repo_root=root, fallback_version=active_version).odylith_version),
+                "value_engine_migration": value_engine_migration,
             },
         )
         _append_self_host_timeline_event(
@@ -2397,6 +2077,7 @@ def install_bundle(
             gitignore_updated=gitignore_updated,
             pin_changed=pin_changed,
             pinned_version=pinned_version,
+            created_guidance_files=created_guidance_files,
             retention_warnings=retention_warnings,
             migration=migration,
         )
@@ -2424,7 +2105,7 @@ def upgrade_install(
             raise ValueError("customer Odylith starter tree missing; run `odylith install --repo-root .` or `odylith doctor --repo-root . --repair`")
         written_profile = write_consumer_profile(repo_root=root)
         integration_enabled = install_integration_enabled(previous_state)
-        update_agents_file(root / "AGENTS.md", install_active=integration_enabled, repo_role=repo_role)
+        _update_root_guidance_files(repo_root=root, install_active=integration_enabled, repo_role=repo_role)
         _refresh_consumer_managed_guidance(
             repo_root=root,
             repo_role=repo_role,
@@ -2434,6 +2115,7 @@ def upgrade_install(
                 state=previous_state,
                 active_version=current_version,
             ),
+            product_root=bundled_product_root(),
         )
 
         if source_repo:
@@ -2566,8 +2248,16 @@ def upgrade_install(
                 repo_role=repo_role,
                 include_brand=False,
                 version=current_version,
+                product_root=bundled_product_root(),
             )
             _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
+            value_engine_migration = _value_engine_migration_payload(
+                repo_root=root,
+                repo_role=repo_role,
+                previous_version=current_version,
+                target_version=current_version,
+                runtime_root=current_runtime,
+            )
             append_install_ledger(
                 repo_root=root,
                 payload={
@@ -2578,6 +2268,7 @@ def upgrade_install(
                     "pinned_version": pin.odylith_version if pin else current_version,
                     "previous_version": current_version,
                     "verification": current_verification,
+                    "value_engine_migration": value_engine_migration,
                 },
             )
             return UpgradeSummary(
@@ -2688,8 +2379,16 @@ def upgrade_install(
             repo_role=repo_role,
             include_brand=False,
             version=staged.version,
+            product_root=bundled_product_root(),
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
+        value_engine_migration = _value_engine_migration_payload(
+            repo_root=root,
+            repo_role=repo_role,
+            previous_version=current_version,
+            target_version=staged.version,
+            runtime_root=staged.root,
+        )
         append_install_ledger(
             repo_root=root,
             payload={
@@ -2700,6 +2399,7 @@ def upgrade_install(
                 "pinned_version": pin.odylith_version if pin else staged.version,
                 "previous_version": current_version,
                 "verification": staged.verification,
+                "value_engine_migration": value_engine_migration,
             },
         )
         _append_self_host_timeline_event(
@@ -2742,7 +2442,7 @@ def reinstall_install(
         raise ValueError(
             "`odylith reinstall` is only supported for consumer repos; use `odylith upgrade` or `odylith doctor --repo-root . --repair` in the Odylith product repo"
         )
-    _ensure_repo_root_agents_file(repo_root=root)
+    _ensure_repo_root_guidance_files(repo_root=root)
     _ensure_odylith_gitignore_entry(repo_root=root)
     request_token = str(version or "").strip() or "latest"
     resolved_release = fetch_release(repo_root=root, repo=release_repo, version=request_token)
@@ -2856,7 +2556,7 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
 
         written_profile = write_consumer_profile(repo_root=root)
         integration_enabled = install_integration_enabled(state)
-        update_agents_file(root / "AGENTS.md", install_active=integration_enabled, repo_role=repo_role)
+        _update_root_guidance_files(repo_root=root, install_active=integration_enabled, repo_role=repo_role)
         verification = {}
         installed_versions_payload = state.get("installed_versions")
         if isinstance(installed_versions_payload, Mapping):
@@ -2879,6 +2579,7 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
             repo_role=repo_role,
             include_brand=False,
             version=target_version,
+            product_root=bundled_product_root(),
         )
         pin = load_version_pin(repo_root=root, fallback_version=target_version)
         diverged = bool(pin and target_version != pin.odylith_version)
@@ -2923,7 +2624,11 @@ def uninstall_bundle(*, repo_root: str | Path) -> None:
     root = _repo_root(repo_root)
     with install_lock(repo_root=root):
         state = load_install_state(repo_root=root)
-        update_agents_file(root / "AGENTS.md", install_active=False, repo_role=product_repo_role(repo_root=root))
+        _update_root_guidance_files(
+            repo_root=root,
+            install_active=False,
+            repo_role=product_repo_role(repo_root=root),
+        )
         if state:
             updated_state = dict(state)
             updated_state["detached"] = True
@@ -2948,7 +2653,11 @@ def set_agents_integration(*, repo_root: str | Path, enabled: bool) -> tuple[boo
     with install_lock(repo_root=root):
         state = load_install_state(repo_root=root)
         write_consumer_profile(repo_root=root)
-        update_agents_file(root / "AGENTS.md", install_active=enabled, repo_role=product_repo_role(repo_root=root))
+        _update_root_guidance_files(
+            repo_root=root,
+            install_active=enabled,
+            repo_role=product_repo_role(repo_root=root),
+        )
         updated_state = dict(state)
         active_version = _observed_active_version(repo_root=root, state=updated_state)
         updated_state["detached"] = _effective_detached(state=updated_state, active_version=active_version)
@@ -3073,8 +2782,8 @@ def doctor_bundle(
     if reset_local_state and not repair:
         raise ValueError("reset_local_state requires repair=True")
     candidate_root = Path(repo_root).expanduser().resolve()
-    if not (candidate_root / "AGENTS.md").is_file():
-        return False, f"repo root does not contain AGENTS.md: {candidate_root}"
+    if not has_project_guidance(repo_root=candidate_root):
+        return False, f"repo root does not contain {PROJECT_GUIDANCE_DISPLAY}: {candidate_root}"
 
     root = _repo_root(candidate_root)
     cleared_paths: list[str] = []
@@ -3087,8 +2796,10 @@ def doctor_bundle(
     has_customer_tree = _has_customer_starter_tree(repo_root=root)
     has_consumer_profile = consumer_profile_path(repo_root=root).is_file()
     has_version_pin = version_pin_path(repo_root=root).is_file()
-    agents_text = (root / "AGENTS.md").read_text(encoding="utf-8")
-    has_managed = has_managed_block(agents_text)
+    guidance_block_state = {
+        path.name: has_managed_block(path.read_text(encoding="utf-8"))
+        for path in _existing_root_guidance_paths(repo_root=root)
+    }
     integration_enabled = install_integration_enabled(state)
     status = version_status(repo_root=root)
     repo_role = status.repo_role
@@ -3115,7 +2826,8 @@ def doctor_bundle(
     if consumer_lane_violation:
         runtime_healthy = False
         runtime_reasons.append(consumer_lane_violation)
-    healthy = runtime_healthy and has_customer_tree and has_consumer_profile and has_version_pin and has_managed == integration_enabled and bool(state)
+    has_expected_guidance_state = all(guidance_block_state.values()) if integration_enabled else not any(guidance_block_state.values())
+    healthy = runtime_healthy and has_customer_tree and has_consumer_profile and has_version_pin and has_expected_guidance_state and bool(state)
 
     if repair:
         _ensure_customer_bootstrap(
@@ -3125,7 +2837,7 @@ def doctor_bundle(
         )
         _ensure_odylith_gitignore_entry(repo_root=root)
         written_profile = write_consumer_profile(repo_root=root)
-        update_agents_file(root / "AGENTS.md", install_active=integration_enabled, repo_role=repo_role)
+        _update_root_guidance_files(repo_root=root, install_active=integration_enabled, repo_role=repo_role)
         runtime_verification: dict[str, object] = runtime_verification_evidence(runtime_root) if runtime_root is not None else {}
         if not runtime_healthy:
             if repo_role == PRODUCT_REPO_ROLE:
@@ -3215,6 +2927,7 @@ def doctor_bundle(
             repo_role=repo_role,
             include_brand=False,
             version=repaired_active_version,
+            product_root=bundled_product_root(),
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
         repaired_status = version_status(repo_root=root)
@@ -3241,7 +2954,7 @@ def doctor_bundle(
         and has_customer_tree
         and has_consumer_profile
         and has_version_pin
-        and has_managed == integration_enabled
+        and has_expected_guidance_state
         and bool(state)
     ):
         if status.repo_role == PRODUCT_REPO_ROLE:
@@ -3289,10 +3002,14 @@ def doctor_bundle(
         reasons.append("install state missing")
     if not has_version_pin:
         reasons.append("product version pin missing")
-    if integration_enabled and not has_managed:
-        reasons.append("Odylith scope block missing from AGENTS.md")
-    elif not integration_enabled and has_managed:
-        reasons.append("Odylith scope block present while Odylith is off")
+    if integration_enabled:
+        for filename, managed in sorted(guidance_block_state.items()):
+            if not managed:
+                reasons.append(f"Odylith scope block missing from {filename}")
+    else:
+        for filename, managed in sorted(guidance_block_state.items()):
+            if managed:
+                reasons.append(f"Odylith scope block present in {filename} while Odylith is off")
     if not has_consumer_profile:
         reasons.append("consumer profile missing")
     return False, "; ".join(reasons)

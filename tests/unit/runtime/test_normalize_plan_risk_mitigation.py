@@ -1,3 +1,5 @@
+"""Regression coverage for plan risk/mitigation normalization."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +8,7 @@ from odylith.runtime.governance import normalize_plan_risk_mitigation as normali
 
 
 def _seed_plan(path: Path, *, body: str) -> None:
+    """Write a plan fixture file for normalization tests."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(body, encoding="utf-8")
 

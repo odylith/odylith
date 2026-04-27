@@ -10,18 +10,21 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
 from typing import Any, Iterable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
+from odylith.common.json_objects import load_json_object as _load_json
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.governance import plan_progress
 from odylith.runtime.context_engine import odylith_context_engine_store
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference as ws_inference
+from odylith.runtime.surfaces import surface_path_helpers
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _CHECKBOX_RE = re.compile(r"^\s*-\s*\[(?P<mark>[xX ])\]\s+(?P<body>.+?)\s*$")
@@ -35,6 +38,21 @@ _CONVENTIONAL_COMMIT_PREFIX_RE = re.compile(
 )
 _RETIRED_SURFACE_MARKER = "sen" "tinel"
 _RETIRED_SURFACE_LABEL = "retired control surface"
+_CASEBOOK_BUG_PATH_PREFIX = "odylith/casebook/bugs/"
+_UNIT_RUNTIME_TEST_PREFIX = "tests/unit/runtime/"
+_ACTIVE_SURFACE_MODULE_STEMS: frozenset[str] = frozenset(
+    {
+        "compass_standup_brief_batch",
+        "compass_standup_brief_maintenance",
+        "compass_standup_brief_narrator",
+        "compass_standup_brief_substrate",
+        "compass_standup_brief_voice_validation",
+        "tooling_dashboard_cheatsheet_presenter",
+        "tooling_dashboard_release_presenter",
+        "tooling_dashboard_shell_presenter",
+        "tooling_dashboard_welcome_presenter",
+    }
+)
 _GENERIC_TX_HEADLINE_RE = re.compile(
     r"^(?:"
     r"(?:edited|updated|modified|changed)\s+(?:\d+\s+)?files?"
@@ -64,7 +82,6 @@ _BACKLOG_ROW_HEADERS: tuple[str, ...] = (
     "market_value",
     "sizing",
     "complexity",
-    "impacted_lanes",
     "status",
     "link",
 )
@@ -85,34 +102,23 @@ _COMPASS_TZ = ZoneInfo(_COMPASS_TIMEZONE)
 
 
 def _resolve(repo_root: Path, value: str) -> Path:
-    token = str(value or "").strip()
-    path = Path(token)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Backward-compatible wrapper over the shared surface path resolver."""
 
-
-def _as_repo_path(repo_root: Path, target: Path) -> str:
-    try:
-        return target.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError:
-        return target.as_posix()
+    return surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=value)
 
 
 def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
+    """Backward-compatible wrapper for legacy Compass helper consumers."""
+
+    return surface_path_helpers.relative_href(output_path=output_path, target=target)
+
+
+def _as_repo_path(repo_root: Path, target: Path) -> str:
+    return repo_path_resolver.display_repo_path(repo_root=repo_root, value=target)
 
 
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
-
-
-def _load_json(path: Path) -> dict[str, Any]:
-    raw = json.loads(path.read_text(encoding="utf-8"))
-    return raw if isinstance(raw, dict) else {}
-
-
 def _load_component_index(
     *,
     repo_root: Path,
@@ -125,6 +131,21 @@ def _load_component_index_runtime(
     repo_root: Path,
     runtime_mode: str,
 ) -> Mapping[str, component_registry.ComponentEntry]:
+    try:
+        from odylith.runtime.governance import component_registry_intelligence as registry_runtime
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except Exception:
+        registry_runtime = None
+        governed_sync_session = None
+    if registry_runtime is not None and governed_sync_session is not None:
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == Path(repo_root).resolve():
+            try:
+                report = registry_runtime.build_component_registry_report(repo_root=repo_root)
+                if report.components:
+                    return report.components
+            except Exception:
+                pass
     try:
         components = odylith_context_engine_store.load_component_index(
             repo_root=repo_root,
@@ -198,25 +219,99 @@ def _parse_backlog_rows(
     index_path: Path,
     runtime_mode: str,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    def _source_rows() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+        snapshot = backlog_contract.load_backlog_index_snapshot(index_path)
+        active_rows = backlog_contract.rows_as_mapping(
+            section=snapshot.get("active", {}),
+            expected_headers=_BACKLOG_ROW_HEADERS,
+        )
+        execution_rows = backlog_contract.rows_as_mapping(
+            section=snapshot.get("execution", {}),
+            expected_headers=_BACKLOG_ROW_HEADERS,
+        )
+        return active_rows, execution_rows
+
+    try:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+    except Exception:
+        governed_sync_session = None
+    if governed_sync_session is not None:
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == Path(repo_root).resolve() and index_path.is_file():
+            built = False
+
+            def _builder() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+                nonlocal built
+                built = True
+                return _source_rows()
+
+            active_rows, execution_rows = session.get_or_compute(
+                namespace="compass_backlog_rows",
+                key=(
+                    f"source:{str(runtime_mode).strip().lower()}\n"
+                    f"generation={session.generation}\n"
+                    f"index={index_path.resolve()}"
+                ),
+                builder=_builder,
+            )
+            session.record_cache_decision(
+                category="compass_backlog_rows",
+                cache_hit=not built,
+                built_from="sync_session_source_truth",
+                details={
+                    "generation": session.generation,
+                    "runtime_mode": str(runtime_mode).strip().lower(),
+                    "index_path": str(index_path),
+                },
+            )
+            return (
+                [dict(row) for row in active_rows if isinstance(row, Mapping)],
+                [dict(row) for row in execution_rows if isinstance(row, Mapping)],
+            )
     if str(runtime_mode).strip().lower() != "standalone":
-        projection = odylith_context_engine_store.load_backlog_rows(
-            repo_root=repo_root,
-            runtime_mode=runtime_mode,
-        )
+        projection: Mapping[str, Any]
+        if governed_sync_session is not None:
+            session = governed_sync_session.active_sync_session()
+            if session is not None and session.repo_root == Path(repo_root).resolve():
+                built = False
+
+                def _builder() -> Mapping[str, Any]:
+                    nonlocal built
+                    built = True
+                    return odylith_context_engine_store.load_backlog_rows(
+                        repo_root=repo_root,
+                        runtime_mode=runtime_mode,
+                    )
+
+                projection = session.get_or_compute(
+                    namespace="compass_backlog_rows",
+                    key=f"{str(runtime_mode).strip().lower()}\ngeneration={session.generation}",
+                    builder=_builder,
+                )
+                session.record_cache_decision(
+                    category="compass_backlog_rows",
+                    cache_hit=not built,
+                    built_from="sync_session",
+                    details={
+                        "generation": session.generation,
+                        "runtime_mode": str(runtime_mode).strip().lower(),
+                    },
+                )
+            else:
+                projection = odylith_context_engine_store.load_backlog_rows(
+                    repo_root=repo_root,
+                    runtime_mode=runtime_mode,
+                )
+        else:
+            projection = odylith_context_engine_store.load_backlog_rows(
+                repo_root=repo_root,
+                runtime_mode=runtime_mode,
+            )
         return (
-            list(projection.get("active", [])),
-            list(projection.get("execution", [])),
+            [dict(row) for row in projection.get("active", []) if isinstance(row, Mapping)],
+            [dict(row) for row in projection.get("execution", []) if isinstance(row, Mapping)],
         )
-    snapshot = backlog_contract.load_backlog_index_snapshot(index_path)
-    active_rows = backlog_contract.rows_as_mapping(
-        section=snapshot.get("active", {}),
-        expected_headers=_BACKLOG_ROW_HEADERS,
-    )
-    execution_rows = backlog_contract.rows_as_mapping(
-        section=snapshot.get("execution", {}),
-        expected_headers=_BACKLOG_ROW_HEADERS,
-    )
-    return active_rows, execution_rows
+    return _source_rows()
 
 
 def _parse_plan_active_rows(*, repo_root: Path, index_path: Path, runtime_mode: str) -> list[dict[str, str]]:
@@ -279,6 +374,134 @@ def _normalize_repo_token(token: str, *, repo_root: Path | None = None) -> str:
 
 def _safe_iso(ts: dt.datetime) -> str:
     return ts.astimezone(_COMPASS_TZ).isoformat(timespec="seconds")
+
+
+def _event_public_payload(event: Mapping[str, Any]) -> dict[str, Any]:
+    ts = event.get("ts")
+    ts_iso = str(event.get("ts_iso", "")).strip()
+    if not ts_iso and isinstance(ts, dt.datetime):
+        ts_iso = _safe_iso(ts)
+    return {
+        "id": str(event.get("id", "")).strip(),
+        "kind": str(event.get("kind", "")).strip(),
+        "ts_iso": ts_iso,
+        "summary": str(event.get("summary", "")).strip(),
+        "author": str(event.get("author", "")).strip(),
+        "sha": str(event.get("sha", "")).strip(),
+        "workstreams": [
+            str(item).strip()
+            for item in event.get("workstreams", [])
+            if str(item).strip()
+        ],
+        "files": [
+            str(item).strip()
+            for item in event.get("files", [])
+            if str(item).strip()
+        ][:64],
+        "source": str(event.get("source", "")).strip(),
+        "session_id": str(event.get("session_id", "")).strip(),
+        "transaction_id": str(event.get("transaction_id", "")).strip(),
+        "transaction_seq": event.get("transaction_seq"),
+        "transaction_boundary": str(event.get("transaction_boundary", "")).strip(),
+        "context": str(event.get("context", "")).strip(),
+        "headline_hint": str(event.get("headline_hint", "")).strip(),
+        "proof_lane": str(event.get("proof_lane", "")).strip(),
+        "proof_fingerprint": str(event.get("proof_fingerprint", "")).strip(),
+        "proof_phase": str(event.get("proof_phase", "")).strip(),
+        "evidence_tier": str(event.get("evidence_tier", "")).strip(),
+        "proof_status": str(event.get("proof_status", "")).strip(),
+        "work_category": str(event.get("work_category", "")).strip(),
+        "deployment_truth": dict(event.get("deployment_truth", {}))
+        if isinstance(event.get("deployment_truth"), Mapping)
+        else {},
+    }
+
+
+def _truncate_sentence(text: str, *, limit: int) -> str:
+    token = " ".join(str(text or "").split()).strip()
+    if not token:
+        return ""
+    if len(token) <= limit:
+        return token
+    if limit <= 4:
+        return token[:limit]
+    hard_limit = max(1, limit - 3)
+    boundary = token.rfind(" ", 0, hard_limit + 1)
+    if boundary < int(hard_limit * 0.6):
+        boundary = hard_limit
+    clipped = token[:boundary].rstrip(" ,;:-")
+    if not clipped:
+        clipped = token[:hard_limit].rstrip()
+    return f"{clipped}..."
+
+
+def _clip_sentence(text: str, *, limit: int = 160) -> str:
+    token = " ".join(str(text or "").split()).strip()
+    if not token:
+        return ""
+    return _truncate_sentence(token, limit=limit)
+
+
+def _narrative_excerpt(text: str, *, max_sentences: int = 1, max_chars: int = 220) -> str:
+    token = " ".join(str(text or "").split()).strip()
+    if not token:
+        return ""
+    sentences = re.split(r"(?<=[.!?])\s+", token)
+    chosen: list[str] = []
+    current_len = 0
+    for sentence in sentences:
+        part = sentence.strip()
+        if not part:
+            continue
+        projected = current_len + (1 if chosen else 0) + len(part)
+        if chosen and projected > max_chars:
+            break
+        if not chosen and len(part) > max_chars:
+            return _truncate_sentence(part, limit=max_chars)
+        chosen.append(part)
+        current_len = projected
+        if len(chosen) >= max_sentences:
+            break
+    if chosen:
+        return " ".join(chosen)
+    return _truncate_sentence(token, limit=max_chars)
+
+
+def _normalize_sentence(text: str) -> str:
+    return " ".join(str(text or "").split()).strip()
+
+
+def _humanize_commit_subject(summary: str) -> str:
+    token = _normalize_sentence(summary).replace("`", "")
+    if not token:
+        return ""
+    token = _CONVENTIONAL_COMMIT_PREFIX_RE.sub("", token).strip()
+    lowered = token.lower()
+    replacements: tuple[tuple[str, str], ...] = (
+        ("add ", "added "),
+        ("fix ", "fixed "),
+        ("update ", "updated "),
+        ("refactor ", "refactored "),
+        ("remove ", "removed "),
+        ("improve ", "improved "),
+        ("align ", "aligned "),
+        ("implement ", "implemented "),
+        ("make ", "made "),
+    )
+    for prefix, replacement in replacements:
+        if lowered.startswith(prefix):
+            return f"{replacement}{token[len(prefix):].strip()}"
+    return token
+
+
+def _humanize_execution_event_summary(*, kind: str, summary: str) -> str:
+    token = _normalize_sentence(summary).rstrip(".;")
+    if not token:
+        return ""
+    if kind == "commit":
+        token = _humanize_commit_subject(token)
+    token = token.replace("`", "")
+    return _narrative_excerpt(token, max_sentences=1, max_chars=220).strip()
 
 
 def _parse_date(token: str) -> dt.date | None:
@@ -402,18 +625,15 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
     commits: list[dict[str, Any]] = []
     current: dict[str, Any] | None = None
     files: list[str] = []
+    live_casebook_bug_paths = _load_casebook_index_paths(repo_root)
 
     for raw in out.splitlines():
         if "\x1f" in raw:
             if current is not None:
-                current["files"] = sorted(
-                    {
-                        normalized
-                        for item in files
-                        if item.strip()
-                        for normalized in [_normalize_repo_token(item, repo_root=repo_root)]
-                        if normalized and not _contains_retired_surface_marker(normalized)
-                    }
+                current["files"] = _normalized_publishable_activity_files(
+                    repo_root=repo_root,
+                    files=files,
+                    live_casebook_bug_paths=live_casebook_bug_paths,
                 )
                 commits.append(current)
             parts = raw.split("\x1f")
@@ -444,14 +664,10 @@ def _collect_git_commits(repo_root: Path, *, since_hours: int, my_name: str, my_
             files.append(raw.strip())
 
     if current is not None:
-        current["files"] = sorted(
-            {
-                normalized
-                for item in files
-                if item.strip()
-                for normalized in [_normalize_repo_token(item, repo_root=repo_root)]
-                if normalized and not _contains_retired_surface_marker(normalized)
-            }
+        current["files"] = _normalized_publishable_activity_files(
+            repo_root=repo_root,
+            files=files,
+            live_casebook_bug_paths=live_casebook_bug_paths,
         )
         commits.append(current)
 
@@ -488,9 +704,11 @@ def _collect_git_local_changes(repo_root: Path) -> list[dict[str, str]]:
         if " -> " in path:
             path = path.split(" -> ", 1)[1].strip()
         token = _normalize_repo_token(path, repo_root=repo_root)
-        if not token or _contains_retired_surface_marker(token):
-            continue
-        if _should_skip_internal_runtime_artifact(token):
+        if _should_skip_publishable_activity_path(
+            repo_root=repo_root,
+            path=token,
+            live_casebook_bug_paths=live_casebook_bug_paths,
+        ):
             continue
         if _should_skip_deleted_casebook_bug(
             repo_root=repo_root,
@@ -509,8 +727,53 @@ def _collect_git_local_changes(repo_root: Path) -> list[dict[str, str]]:
     return rows
 
 
+def _normalized_publishable_activity_files(
+    *,
+    repo_root: Path,
+    files: Sequence[str],
+    live_casebook_bug_paths: set[str],
+) -> list[str]:
+    return sorted(
+        {
+            normalized
+            for item in files
+            if str(item or "").strip()
+            for normalized in [_normalize_repo_token(str(item), repo_root=repo_root)]
+            if not _should_skip_publishable_activity_path(
+                repo_root=repo_root,
+                path=normalized,
+                live_casebook_bug_paths=live_casebook_bug_paths,
+            )
+        }
+    )
+
+
+def _should_skip_publishable_activity_path(
+    *,
+    repo_root: Path,
+    path: str,
+    live_casebook_bug_paths: set[str],
+) -> bool:
+    token = str(path or "").strip()
+    if not token:
+        return True
+    if _contains_retired_surface_marker(token):
+        return True
+    if _is_retired_surface_module_path(token):
+        return True
+    if _should_skip_internal_runtime_artifact(token):
+        return True
+    if _is_deindexed_missing_casebook_bug_path(
+        repo_root=repo_root,
+        path=token,
+        live_casebook_bug_paths=live_casebook_bug_paths,
+    ):
+        return True
+    return False
+
+
 def _load_casebook_index_paths(repo_root: Path) -> set[str]:
-    index_path = _resolve(repo_root, "odylith/casebook/bugs/INDEX.md")
+    index_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token="odylith/casebook/bugs/INDEX.md")
     if not index_path.is_file():
         return set()
     try:
@@ -545,7 +808,21 @@ def _should_skip_deleted_casebook_bug(
         return False
     if token in live_casebook_bug_paths:
         return False
-    return not _resolve(repo_root, token).exists()
+    return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
+
+
+def _is_deindexed_missing_casebook_bug_path(
+    *,
+    repo_root: Path,
+    path: str,
+    live_casebook_bug_paths: set[str],
+) -> bool:
+    token = str(path or "").strip()
+    if not token.startswith(_CASEBOOK_BUG_PATH_PREFIX) or not token.endswith(".md"):
+        return False
+    if token in live_casebook_bug_paths:
+        return False
+    return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
 
 
 def _should_skip_internal_runtime_artifact(path: str) -> bool:
@@ -568,12 +845,34 @@ def _should_skip_deleted_legacy_bug_path(
         return False
     if not (repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md").is_file():
         return False
-    return not _resolve(repo_root, token).exists()
+    return not surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token).exists()
 
 
 def _contains_retired_surface_marker(text: str) -> bool:
     token = str(text or "").strip().lower()
     return bool(token) and _RETIRED_SURFACE_MARKER in token
+
+
+def _surface_module_stem_from_activity_path(path: str) -> str:
+    token = str(path or "").strip().replace("\\", "/").lower()
+    if token.startswith("src/odylith/runtime/surfaces/") and token.endswith(".py"):
+        return Path(token).stem
+    if token.startswith(_UNIT_RUNTIME_TEST_PREFIX) and token.endswith(".py"):
+        stem = Path(token).stem
+        if stem.startswith("test_"):
+            return stem.removeprefix("test_")
+    return ""
+
+
+def _is_retired_surface_module_path(path: str) -> bool:
+    stem = _surface_module_stem_from_activity_path(path)
+    if not stem:
+        return False
+    governed_family = stem.startswith("compass_standup_brief_")
+    shell_presenter_family = stem.startswith("tooling_dashboard_") and stem.endswith("_presenter")
+    if not governed_family and not shell_presenter_family:
+        return False
+    return stem not in _ACTIVE_SURFACE_MODULE_STEMS
 
 
 def _sanitize_retired_surface_text(text: str) -> str:
@@ -626,7 +925,7 @@ def _local_change_event_ts(
 ) -> dt.datetime:
     token = str(path or "").strip()
     if token:
-        resolved = _resolve(repo_root, token)
+        resolved = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=token)
         ts = _file_mtime(resolved)
         if isinstance(ts, dt.datetime):
             return ts
@@ -649,7 +948,7 @@ def _parse_iso_ts(raw: str) -> dt.datetime | None:
     return parsed.astimezone(_COMPASS_TZ)
 
 
-def _load_codex_stream_events(
+def _load_agent_stream_events(
     *,
     repo_root: Path,
     stream_path: Path,
@@ -659,6 +958,7 @@ def _load_codex_stream_events(
         return []
 
     events: list[dict[str, Any]] = []
+    live_casebook_bug_paths = _load_casebook_index_paths(repo_root)
     for idx, raw in enumerate(stream_path.read_text(encoding="utf-8").splitlines(), start=1):
         line = str(raw or "").strip()
         if not line:
@@ -703,7 +1003,13 @@ def _load_codex_stream_events(
             seen_artifacts: set[str] = set()
             for token in artifact_values:
                 normalized = _normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
-                if not normalized or normalized in seen_artifacts:
+                if normalized in seen_artifacts:
+                    continue
+                if _should_skip_publishable_activity_path(
+                    repo_root=repo_root,
+                    path=normalized,
+                    live_casebook_bug_paths=live_casebook_bug_paths,
+                ):
                     continue
                 seen_artifacts.add(normalized)
                 artifacts.append(normalized)
@@ -724,7 +1030,11 @@ def _load_codex_stream_events(
             boundary = ""
         events.append(
             {
-                "id": f"codex:{kind}:{idx}:{ts.isoformat(timespec='seconds')}",
+                "id": agent_runtime_contract.timeline_event_id(
+                    kind=kind,
+                    index=idx,
+                    ts_iso=ts.isoformat(timespec="seconds"),
+                ),
                 "kind": kind,
                 "ts": ts,
                 "ts_iso": _safe_iso(ts),
@@ -745,6 +1055,19 @@ def _load_codex_stream_events(
 
     events.sort(key=lambda item: item.get("ts", dt.datetime.min.replace(tzinfo=dt.timezone.utc)), reverse=True)
     return events
+
+
+def _load_codex_stream_events(
+    *,
+    repo_root: Path,
+    stream_path: Path,
+    ws_path_index: Mapping[str, set[str]],
+) -> list[dict[str, Any]]:
+    return _load_agent_stream_events(
+        repo_root=repo_root,
+        stream_path=stream_path,
+        ws_path_index=ws_path_index,
+    )
 
 
 def _collect_workstream_path_index(

@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-012
-title: Odylith Local Provider Autodetect and Compass AI Brief Recovery
+title: Local Provider Autodetect and Compass AI Brief Recovery
 date: 2026-03-29
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: shared reasoning adapter, local provider autodetect, Claude Code compatibility, Compass standup narration, and AI brief cache warming
 sizing: M
 complexity: Medium
@@ -30,8 +29,18 @@ workstream_split_into:
 workstream_merged_into:
 workstream_merged_from:
 supersedes:
-superseded_by:
+superseded_by: B-069
 ---
+
+## Historical Note
+This slice remains factually correct about the first shared local-provider and
+Claude-compatible reasoning recovery work. Treat any normative host-contract
+language here as historical. `B-069` now owns the current cross-host product
+contract and the separation between host capability, model-family policy, and
+shared runtime canon. Compass brief contract language here also reflects the
+March 29 posture only; the current brief contract is now owned by
+`briefs-voice-contract` and allows only fresh `provider`, exact `cache`, or
+explicit `unavailable`.
 
 ## Problem
 Odylith's shared reasoning defaults assumed a hosted `openai-compatible`
@@ -73,7 +82,7 @@ the AI brief cache can warm and reuse the best available brief.
   briefs and writes the local brief cache
 
 ## Non-Goals
-- replacing deterministic fallback
+- replacing the then-current deterministic fallback brief path
 - changing subagent spawn policy in Claude Code
 - introducing hosted API-key requirements into default local usage
 
@@ -104,9 +113,9 @@ Ship as an additive shared-reasoning improvement and rerender Compass so the
 generated surface reflects the provider-authored brief path immediately.
 
 ## Why Now
-Compass is one of the clearest product-power moments. Leaving it stuck on a
-deterministic fallback when Odylith is already inside a local provider makes
-the product look weaker than it actually is.
+Compass is one of the clearest product-power moments. Leaving it stuck on the
+then-current deterministic fallback when Odylith is already inside a local
+provider made the product look weaker than it actually was.
 
 ## Product View
 If Odylith is already living inside Codex or Claude Code, asking for another
@@ -125,8 +134,9 @@ AI provider config before Compass can sound smart is the wrong product.
 ## Migration/Compatibility
 - additive only
 - explicit endpoint config still works when intentionally configured
-- deterministic fallback remains the fail-closed path when no runnable local
-  provider exists
+- at the time this slice shipped, deterministic fallback remained the
+  fail-closed path when no runnable local provider existed; that brief
+  contract is now retired under `briefs-voice-contract`
 
 ## Test Strategy
 - unit-test provider autodetect and Claude Code adapter behavior

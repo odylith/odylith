@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance import sync_session
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference
 
@@ -40,7 +42,6 @@ def _idea_text(*, idea_id: str, title: str, promoted_to_plan: str) -> str:
         "commercial_value: 5\n\n"
         "product_impact: 5\n\n"
         "market_value: 5\n\n"
-        "impacted_lanes: both\n\n"
         "impacted_parts: traceability\n\n"
         "sizing: M\n\n"
         "complexity: High\n\n"
@@ -101,6 +102,74 @@ def test_is_generated_or_global_path_treats_dashboard_shards_as_generated() -> N
     assert workstream_inference.is_generated_or_global_path(
         "odylith/runtime/source/optimization-evaluation-corpus.v1.json"
     ) is True
+
+
+def test_is_generated_or_global_path_applies_canonical_policy_to_bundle_source_mirrors() -> None:
+    assert (
+        workstream_inference.is_generated_or_global_path(
+            "src/odylith/bundle/assets/odylith/atlas/source/catalog/diagrams.v1.json"
+        )
+        is True
+    )
+    assert (
+        workstream_inference.is_generated_or_global_path(
+            "src/odylith/bundle/assets/odylith/radar/source/INDEX.md"
+        )
+        is True
+    )
+    assert (
+        workstream_inference.is_generated_or_global_path(
+            "src/odylith/bundle/assets/odylith/runtime/odylith-tribunal-and-remediation-design.md"
+        )
+        is False
+    )
+
+
+def test_normalize_changed_paths_expands_bundle_source_mirrors_to_canonical_paths(tmp_path: Path) -> None:
+    rows = governance.normalize_changed_paths(
+        repo_root=tmp_path,
+        values=[
+            "src/odylith/bundle/assets/odylith/FAQ.md",
+            "src/odylith/bundle/assets/project-root/.claude/settings.json",
+        ],
+    )
+
+    assert "src/odylith/bundle/assets/odylith/FAQ.md" in rows
+    assert "odylith/FAQ.md" in rows
+    assert "src/odylith/bundle/assets/project-root/.claude/settings.json" in rows
+    assert ".claude/settings.json" in rows
+
+
+def test_map_paths_to_workstreams_accepts_bundle_source_mirror_aliases(tmp_path: Path) -> None:
+    changed_paths = governance.normalize_changed_paths(
+        repo_root=tmp_path,
+        values=["src/odylith/bundle/assets/odylith/FAQ.md"],
+    )
+
+    rows = workstream_inference.map_paths_to_workstreams(
+        changed_paths,
+        {"B-083": {"odylith/FAQ.md"}},
+    )
+
+    assert rows == ["B-083"]
+
+
+def test_compiled_workstream_path_index_matches_nested_prefixes_without_rescanning() -> None:
+    compiled = workstream_inference.compile_workstream_path_index(
+        {
+            "B-001": {"src/odylith/runtime"},
+            "B-002": {"src/odylith/runtime/surfaces"},
+            "B-003": {"docs/runbooks"},
+        }
+    )
+
+    rows = workstream_inference.map_paths_to_workstreams(
+        ["src/odylith/runtime/surfaces/render_compass_dashboard.py"],
+        compiled,
+        skip_generated_or_global=False,
+    )
+
+    assert rows == ["B-001", "B-002"]
 
 
 def test_collect_workstream_path_index_from_specs(tmp_path: Path) -> None:
@@ -234,3 +303,36 @@ def test_normalize_repo_token_preserves_explicit_consumer_truth_root_paths(tmp_p
         )
         == "consumer-runbooks/platform/odylith-context-engine-operations.md"
     )
+
+
+def test_default_repo_root_token_for_cwd_accepts_claude_guidance(tmp_path: Path) -> None:
+    (tmp_path / "CLAUDE.md").write_text("# root\n", encoding="utf-8")
+    (tmp_path / ".odylith").mkdir()
+
+    assert workstream_inference._default_repo_root_token_for_cwd(str(tmp_path)) == str(tmp_path)  # noqa: SLF001
+
+
+def test_default_repo_root_token_for_cwd_accepts_project_claude_guidance(tmp_path: Path) -> None:
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".claude" / "CLAUDE.md").write_text("# root\n", encoding="utf-8")
+    (tmp_path / ".odylith").mkdir()
+
+    assert workstream_inference._default_repo_root_token_for_cwd(str(tmp_path)) == str(tmp_path)  # noqa: SLF001
+
+
+def test_normalize_repo_token_uses_active_sync_session_repo_root_without_cwd_lookup(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+
+    def _unexpected_getcwd() -> str:
+        raise AssertionError("normalize_repo_token should reuse the active sync session repo root")
+
+    monkeypatch.setattr(workstream_inference.os, "getcwd", _unexpected_getcwd)
+
+    with sync_session.activate_sync_session(session):
+        assert (
+            workstream_inference.normalize_repo_token("src/odylith/runtime/governance/workstream_inference.py")
+            == "src/odylith/runtime/governance/workstream_inference.py"
+        )

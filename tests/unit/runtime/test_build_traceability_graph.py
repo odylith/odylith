@@ -54,7 +54,6 @@ def _idea_text(
         "commercial_value: 5\n\n"
         "product_impact: 5\n\n"
         "market_value: 5\n\n"
-        "impacted_lanes: both\n\n"
         "impacted_parts: control grid\n\n"
         "sizing: L\n\n"
         "complexity: VeryHigh\n\n"
@@ -79,6 +78,75 @@ def _idea_text(
         "supersedes:\n\n"
         "superseded_by:\n\n"
         f"{sections}\n"
+    )
+
+
+def _write_release_planning_truth(repo_root: Path) -> None:
+    releases_dir = repo_root / "odylith" / "radar" / "source" / "releases"
+    releases_dir.mkdir(parents=True, exist_ok=True)
+    (releases_dir / "releases.v1.json").write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "updated_utc": "2026-03-01",
+                "aliases": {
+                    "current": "release-0-1-11",
+                    "next": "release-next",
+                },
+                "releases": [
+                    {
+                        "release_id": "release-0-1-11",
+                        "status": "active",
+                        "version": "0.1.11",
+                        "tag": "",
+                        "name": "Launch Title",
+                        "notes": "",
+                        "created_utc": "2026-03-01",
+                        "shipped_utc": "",
+                        "closed_utc": "",
+                    },
+                    {
+                        "release_id": "release-next",
+                        "status": "planning",
+                        "version": "",
+                        "tag": "",
+                        "name": "Next Cut",
+                        "notes": "",
+                        "created_utc": "2026-03-01",
+                        "shipped_utc": "",
+                        "closed_utc": "",
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (releases_dir / "release-assignment-events.v1.jsonl").write_text(
+        "\n".join(
+            (
+                json.dumps(
+                    {
+                        "action": "add",
+                        "workstream_id": "B-033",
+                        "release_id": "release-0-1-11",
+                        "recorded_at": "2026-03-01T00:00:00Z",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "action": "move",
+                        "workstream_id": "B-033",
+                        "from_release_id": "release-0-1-11",
+                        "to_release_id": "release-next",
+                        "recorded_at": "2026-03-02T00:00:00Z",
+                    }
+                ),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
     )
 
 
@@ -218,6 +286,53 @@ def test_build_traceability_graph_outputs_expected_nodes_edges(tmp_path: Path) -
     assert ws_b033["workstream_reopens"] == "B-021"
     assert ws_b033["workstream_split_from"] == "B-021"
     assert ws_b033["workstream_merged_into"] == "B-021"
+
+
+def test_build_traceability_graph_includes_release_catalog_and_active_release_edges(tmp_path: Path) -> None:
+    (tmp_path / "consumer_repo.yaml").write_text("repo: consumer\n", encoding="utf-8")
+    ideas_dir = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-03"
+    ideas_dir.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "radar").mkdir(parents=True, exist_ok=True)
+    ideas_dir.joinpath("2026-03-01-b-033.md").write_text(
+        _idea_text(idea_id="B-033", title="Child", execution_model="standard"),
+        encoding="utf-8",
+    )
+    (tmp_path / "odylith" / "atlas" / "source" / "catalog").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json").write_text(
+        json.dumps({"version": "1.0", "diagrams": []}),
+        encoding="utf-8",
+    )
+    _write_release_planning_truth(tmp_path)
+
+    rc = graph_builder.main(["--repo-root", str(tmp_path), "--output", "odylith/radar/traceability-graph.v1.json"])
+    assert rc == 0
+
+    payload = json.loads((tmp_path / "odylith" / "radar" / "traceability-graph.v1.json").read_text(encoding="utf-8"))
+    assert payload["summary"]["release_count"] == 2
+    assert payload["summary"]["active_release_assignment_count"] == 1
+    assert payload["current_release"]["release_id"] == "release-0-1-11"
+    assert payload["next_release"]["release_id"] == "release-next"
+    assert payload["release_aliases"]["current"]["release_id"] == "release-0-1-11"
+    assert payload["release_aliases"]["next"]["release_id"] == "release-next"
+    assert [row["release_id"] for row in payload["releases"]] == ["release-0-1-11", "release-next"]
+
+    release_edge = next(edge for edge in payload["edges"] if edge["edge_type"] == "active_release")
+    assert release_edge == {
+        "source": "B-033",
+        "target": "release:release-next",
+        "edge_type": "active_release",
+    }
+
+    release_node = next(node for node in payload["nodes"] if node["id"] == "release:release-next")
+    assert release_node["type"] == "release"
+    assert release_node["label"] == "Next Cut"
+    assert release_node["aliases"] == ["next"]
+
+    workstream = next(row for row in payload["workstreams"] if row["idea_id"] == "B-033")
+    assert workstream["active_release_id"] == "release-next"
+    assert workstream["active_release"]["display_label"] == "Next Cut"
+    assert len(workstream["release_history"]) == 2
+    assert "Latest move: Launch Title -> Next Cut" in workstream["release_history_summary"]
 
 
 def test_build_traceability_graph_keeps_generated_utc_stable_on_repeat_runs(tmp_path: Path) -> None:

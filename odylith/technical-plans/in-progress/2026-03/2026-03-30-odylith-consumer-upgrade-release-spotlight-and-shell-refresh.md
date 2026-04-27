@@ -110,7 +110,7 @@ Related Bugs:
 
 ## Non-Goals
 - [ ] Product-repo maintainer upgrade changes.
-- [ ] Adding hosted release telemetry.
+- [ ] Adding hosted release usage tracking.
 - [ ] Reworking unrelated dashboard panels.
 - [ ] Rewriting the full `odylith sync` contract for every surface.
 - [ ] Treating commit-time autofix as the primary consumer freshness posture.
@@ -132,8 +132,8 @@ Related Bugs:
 - [ ] [README.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/README.md)
 - [ ] [AGENTS.md](/Users/freedom/code/odylith/odylith/AGENTS.md)
 - [ ] [UPGRADE_AND_RECOVERY.md](/Users/freedom/code/odylith/odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/delivery-governance-surface-ops/SKILL.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/skills/delivery-governance-surface-ops/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
 - [x] [test_cli.py](/Users/freedom/code/odylith/tests/unit/test_cli.py)
 - [ ] [test_manager.py](/Users/freedom/code/odylith/tests/integration/install/test_manager.py)
 - [x] [test_shell_onboarding.py](/Users/freedom/code/odylith/tests/unit/runtime/test_shell_onboarding.py)

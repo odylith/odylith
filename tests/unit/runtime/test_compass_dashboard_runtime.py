@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import datetime as dt
 import gzip
 import json
@@ -9,6 +10,8 @@ import pytest
 
 from odylith.runtime.surfaces import compass_dashboard_runtime as runtime
 from odylith.runtime.surfaces import compass_runtime_payload_runtime
+from odylith.runtime.surfaces import compass_standup_brief_narrator
+from odylith.runtime.surfaces import compass_standup_runtime_reuse
 
 
 def _fixed_now(monkeypatch, *, year: int, month: int, day: int) -> None:  # noqa: ANN001
@@ -52,7 +55,377 @@ def test_default_traceability_warning_filter_rejects_maintainer_diagnostic() -> 
     )
 
 
-def test_write_runtime_snapshots_archives_days_older_than_retention(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_workstream_window_activity_detects_recent_completion_without_git_activity() -> None:
+    assert compass_runtime_payload_runtime._workstream_has_window_activity(  # noqa: SLF001
+        ws_id="B-003",
+        recent_completed=[{"backlog": "B-003", "plan": "plan.md"}],
+        window_events=[],
+        window_transactions=[],
+    )
+
+
+def test_workstream_window_activity_detects_events_and_transactions() -> None:
+    assert compass_runtime_payload_runtime._workstream_has_window_activity(  # noqa: SLF001
+        ws_id="B-003",
+        recent_completed=[],
+        window_events=[{"workstreams": ["B-003"]}],
+        window_transactions=[],
+    )
+    assert compass_runtime_payload_runtime._workstream_has_window_activity(  # noqa: SLF001
+        ws_id="B-003",
+        recent_completed=[],
+        window_events=[],
+        window_transactions=[{"workstreams": ["B-003"]}],
+    )
+    assert not compass_runtime_payload_runtime._workstream_has_window_activity(  # noqa: SLF001
+        ws_id="B-003",
+        recent_completed=[],
+        window_events=[],
+        window_transactions=[],
+    )
+
+
+def test_row_is_governance_only_local_change_rejects_scoped_verification() -> None:
+    row = {
+        "kind": "local_change",
+        "workstreams": ["B-040"],
+        "files": [
+            "odylith/radar/source/ideas/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
+        ],
+    }
+
+    assert compass_runtime_payload_runtime._row_is_governance_only_local_change(row)  # noqa: SLF001
+    assert not compass_runtime_payload_runtime._row_is_verified_scoped_signal(row)  # noqa: SLF001
+
+
+def test_row_is_verified_scoped_signal_rejects_broad_fanout_transaction() -> None:
+    row = {
+        "workstreams": ["B-001", "B-002", "B-003", "B-004", "B-005"],
+        "files": [
+            "odylith/radar/source/ideas/2026-03/example.md",
+        ],
+        "events": [{"kind": "local_change"}],
+    }
+
+    assert not compass_runtime_payload_runtime._row_is_verified_scoped_signal(row)  # noqa: SLF001
+
+
+def test_verified_scoped_window_ids_require_verified_rows_or_recent_completion() -> None:
+    verified = compass_runtime_payload_runtime._verified_scoped_window_ids(  # noqa: SLF001
+        known_ids={"B-040", "B-064"},
+        recent_completed=[{"backlog": "B-064"}],
+        window_events=[
+            {
+                "kind": "local_change",
+                "workstreams": ["B-040"],
+                "files": [
+                    "odylith/radar/source/ideas/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
+                ],
+            }
+        ],
+        window_transactions=[
+            {
+                "workstreams": ["B-064"],
+                "files": ["odylith/technical-plans/in-progress/example.md"],
+                "events": [{"kind": "plan_update"}],
+            }
+        ],
+    )
+
+    assert verified == {"B-064"}
+
+
+def test_compose_global_fact_packet_from_scoped_briefs_uses_scoped_narration_and_coverage() -> None:
+    base_packet = {
+        "version": "v1",
+        "window": "24h",
+        "scope": {"mode": "global", "label": "Global"},
+        "summary": {"window_hours": 24},
+        "sections": [
+            {"key": "completed", "label": "Completed in this window", "facts": []},
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "facts": [
+                    {
+                        "id": "F-010",
+                        "text": "Work moved across 3 workstreams: B-025, B-061, and B-063.",
+                        "kind": "window_coverage",
+                        "source": "portfolio",
+                        "workstreams": ["B-025", "B-061", "B-063"],
+                    }
+                ],
+            },
+            {"key": "next_planned", "label": "Next planned", "facts": []},
+            {"key": "risks_to_watch", "label": "Risks to watch", "facts": []},
+        ],
+    }
+    scoped_briefs = {
+        "B-025": {
+            "status": "ready",
+            "sections": [
+                {"key": "completed", "bullets": [{"text": "Closed the refresh retry loop."}]},
+                {"key": "current_execution", "bullets": [{"text": "Compass refresh is now working through cheaper scoped packs."}]},
+                {"key": "next_planned", "bullets": [{"text": "Land the next round of provider hardening."}]},
+                {"key": "risks_to_watch", "bullets": [{"text": "Global narration can still drift if coverage gets dropped."}]},
+            ],
+        }
+    }
+
+    packet = compass_runtime_payload_runtime._compose_global_fact_packet_from_scoped_briefs(  # noqa: SLF001
+        base_fact_packet=base_packet,
+        scoped_briefs_by_scope=scoped_briefs,
+        ordered_scope_ids=["B-025", "B-061", "B-063"],
+    )
+
+    current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
+    texts = [fact["text"] for fact in current_execution["facts"]]
+    assert "Compass refresh is now working through cheaper scoped packs." in texts
+    assert "Work moved across 3 workstreams: B-025, B-061, and B-063." in texts
+
+
+def test_inactive_scoped_brief_uses_quiet_window_copy() -> None:
+    brief = compass_runtime_payload_runtime._inactive_scoped_standup_brief(  # noqa: SLF001
+        ws_id="B-003",
+        window_hours=24,
+        generated_utc="2026-04-08T23:00:00Z",
+    )
+
+    assert brief["status"] == "unavailable"
+    assert brief["diagnostics"]["reason"] == "scoped_window_inactive"
+    assert brief["diagnostics"]["title"] == "Nothing moved in this window"
+    assert "B-003 was quiet in the last 24 hours" in brief["diagnostics"]["message"]
+
+
+def test_brief_with_known_failure_state_replaces_provider_deferred(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        compass_runtime_payload_runtime.compass_standup_brief_maintenance,
+        "failure_brief_for_fact_packet",
+        lambda **_kwargs: {
+            "status": "unavailable",
+            "source": "unavailable",
+            "fingerprint": "fp-known-failure",
+            "generated_utc": "2026-04-10T20:00:00Z",
+            "sections": [],
+            "diagnostics": {
+                "reason": "provider_error",
+                "title": "Brief unavailable right now",
+                "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+            },
+            "evidence_lookup": {},
+        },
+    )
+
+    brief = compass_runtime_payload_runtime._brief_with_known_failure_state(  # noqa: SLF001
+        repo_root=Path("/tmp"),
+        window_key="24h",
+        fact_packet={"scope": {"mode": "scoped"}},
+        generated_utc="2026-04-10T20:00:00Z",
+        brief={
+            "status": "unavailable",
+            "source": "unavailable",
+            "fingerprint": "fp-provider-deferred",
+            "generated_utc": "2026-04-10T20:00:00Z",
+            "sections": [],
+            "diagnostics": {
+                "reason": "provider_deferred",
+                "title": "Fresh brief still warming",
+                "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+            },
+            "evidence_lookup": {},
+        },
+        scope_id="B-012",
+    )
+
+    assert brief["diagnostics"]["reason"] == "provider_error"
+    assert "provider failed" in brief["diagnostics"]["message"].lower()
+
+
+def test_prior_runtime_state_rejects_mismatched_brief_schema() -> None:
+    state = compass_standup_runtime_reuse.prior_runtime_state(
+        payload={
+            "runtime_contract": {
+                "standup_brief_schema_version": "legacy",
+            },
+            "standup_runtime": {"24h": {"global_reuse_fingerprint": "x"}},
+            "standup_brief": {"24h": {"status": "ready"}},
+        }
+    )
+
+    assert state == {}
+
+
+def test_reuse_ready_brief_returns_cache_ready_payload_without_notice() -> None:
+    brief = {
+        "status": "ready",
+        "source": "provider",
+        "sections": [
+            {
+                "key": "completed",
+                "label": "Completed in this window",
+                "bullets": [{"text": "Closed the loop."}],
+            }
+        ],
+        "evidence_lookup": {"F-001": {"kind": "fact", "text": "Closed the loop."}},
+    }
+
+    reused = compass_standup_runtime_reuse.reuse_ready_brief(
+        brief=brief,
+        generated_utc="2026-04-09T17:00:00Z",
+        fingerprint="salient:test",
+    )
+
+    assert reused["status"] == "ready"
+    assert reused["source"] == "cache"
+    assert reused["cache_mode"] == "fallback"
+    assert reused["fingerprint"] == "salient:test"
+    assert "notice" not in reused
+
+
+def test_scoped_reuse_fingerprint_changes_when_activity_changes() -> None:
+    base_row = {
+        "idea_id": "B-025",
+        "title": "Compass refresh hardening",
+        "status": "implementation",
+        "activity": {"24h": {"commit_count": 1, "local_change_count": 2, "file_touch_count": 3}},
+        "plan": {"progress_ratio": 0.5, "done_tasks": 5, "total_tasks": 10, "next_tasks": ["Land the retry fix."]},
+        "timeline": {"last_activity_iso": "2026-04-09T09:00:00Z", "eta_days": 3, "eta_confidence": "medium"},
+    }
+
+    left = compass_standup_runtime_reuse.scoped_reuse_fingerprint(
+        row=base_row,
+        window_hours=24,
+        next_action_tokens=["Land the retry fix."],
+        completed_deliverables=["plan-a.md"],
+        execution_updates=[{"summary": "Shipped the retry hardening.", "kind": "implementation"}],
+        transaction_updates=[],
+        risk_summary="No critical blockers.",
+        self_host_snapshot={"posture": "pinned_release", "active_version": "0.1.11"},
+    )
+    right = compass_standup_runtime_reuse.scoped_reuse_fingerprint(
+        row={
+            **base_row,
+            "activity": {"24h": {"commit_count": 2, "local_change_count": 2, "file_touch_count": 3}},
+        },
+        window_hours=24,
+        next_action_tokens=["Land the retry fix."],
+        completed_deliverables=["plan-a.md"],
+        execution_updates=[{"summary": "Shipped the retry hardening.", "kind": "implementation"}],
+        transaction_updates=[],
+        risk_summary="No critical blockers.",
+        self_host_snapshot={"posture": "pinned_release", "active_version": "0.1.11"},
+    )
+
+    assert left != right
+
+
+def test_scoped_reuse_fingerprint_changes_when_visible_progress_semantics_change() -> None:
+    base_row = {
+        "idea_id": "B-068",
+        "title": "Context Engine Benchmark Family and Grounding Quality Gates",
+        "status": "implementation",
+        "activity": {"24h": {"commit_count": 0, "local_change_count": 2, "file_touch_count": 2}},
+        "plan": {
+            "progress_ratio": 0.0,
+            "done_tasks": 0,
+            "total_tasks": 15,
+            "progress_classification": "active_untracked",
+            "display_progress_label": "Checklist 0/15",
+            "display_progress_state": "checklist_only",
+            "next_tasks": ["Land the family acceptance checks."],
+        },
+        "timeline": {"last_activity_iso": "2026-04-09T20:00:00Z", "eta_days": None, "eta_confidence": "low"},
+    }
+
+    left = compass_standup_runtime_reuse.scoped_reuse_fingerprint(
+        row=base_row,
+        window_hours=24,
+        next_action_tokens=["Land the family acceptance checks."],
+        completed_deliverables=[],
+        execution_updates=[],
+        transaction_updates=[],
+        risk_summary="No critical blockers.",
+        self_host_snapshot={"posture": "pinned_release", "active_version": "0.1.11"},
+    )
+    right = compass_standup_runtime_reuse.scoped_reuse_fingerprint(
+        row={
+            **base_row,
+            "plan": {
+                **base_row["plan"],
+                "progress_ratio": 0.7857,
+                "done_tasks": 11,
+                "total_tasks": 14,
+                "progress_classification": "tracked",
+                "display_progress_label": "79% progress",
+                "display_progress_state": "percent",
+            },
+        },
+        window_hours=24,
+        next_action_tokens=["Land the family acceptance checks."],
+        completed_deliverables=[],
+        execution_updates=[],
+        transaction_updates=[],
+        risk_summary="No critical blockers.",
+        self_host_snapshot={"posture": "pinned_release", "active_version": "0.1.11"},
+    )
+
+    assert left != right
+
+
+def test_cached_governance_summary_for_shell_safe_reuses_current_payload(tmp_path: Path) -> None:
+    current_path = tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json"
+    current_path.parent.mkdir(parents=True, exist_ok=True)
+    current_path.write_text('{"governance": {"changed_paths": ["src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py"]}}', encoding="utf-8")
+
+    summary = compass_runtime_payload_runtime._cached_governance_summary_for_shell_safe(  # noqa: SLF001
+        repo_root=tmp_path,
+        refresh_profile="shell-safe",
+    )
+
+    assert summary == {
+        "changed_paths": ["src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py"],
+    }
+
+
+def test_cached_governance_summary_reuses_current_payload_for_shell_safe(tmp_path: Path) -> None:
+    current_path = tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json"
+    current_path.parent.mkdir(parents=True, exist_ok=True)
+    current_path.write_text('{"governance": {"changed_paths": ["shell-safe"]}}', encoding="utf-8")
+
+    assert compass_runtime_payload_runtime._cached_governance_summary_for_shell_safe(  # noqa: SLF001
+        repo_root=tmp_path,
+        refresh_profile="shell-safe",
+    ) == {"changed_paths": ["shell-safe"]}
+
+
+def test_cached_odylith_runtime_summary_for_shell_safe_reuses_current_payload(tmp_path: Path) -> None:
+    current_path = tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json"
+    current_path.parent.mkdir(parents=True, exist_ok=True)
+    current_path.write_text('{"odylith_runtime": {"memory_ready": true, "packet_count": 42}}', encoding="utf-8")
+
+    summary = compass_runtime_payload_runtime._cached_odylith_runtime_summary_for_shell_safe(  # noqa: SLF001
+        repo_root=tmp_path,
+        refresh_profile="shell-safe",
+    )
+
+    assert summary == {
+        "memory_ready": True,
+        "packet_count": 42,
+    }
+
+
+def test_cached_odylith_runtime_summary_reuses_current_payload_for_shell_safe(tmp_path: Path) -> None:
+    current_path = tmp_path / "odylith" / "compass" / "runtime" / "current.v1.json"
+    current_path.parent.mkdir(parents=True, exist_ok=True)
+    current_path.write_text('{"odylith_runtime": {"memory_ready": true}}', encoding="utf-8")
+
+    assert compass_runtime_payload_runtime._cached_odylith_runtime_summary_for_shell_safe(  # noqa: SLF001
+        repo_root=tmp_path,
+        refresh_profile="shell-safe",
+    ) == {"memory_ready": True}
+
+
+def test_write_runtime_snapshots_deletes_days_older_than_retention_and_clears_legacy_archive(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _fixed_now(monkeypatch, year=2026, month=3, day=20)
     runtime_dir = tmp_path / "odylith" / "compass" / "runtime"
     history_dir = runtime_dir / "history"
@@ -61,6 +434,14 @@ def test_write_runtime_snapshots_archives_days_older_than_retention(tmp_path: Pa
     (history_dir / "2026-03-01.v1.json").write_text(old_payload, encoding="utf-8")
     retained_payload = json.dumps(_payload(generated_utc="2026-03-05T00:00:00Z"), indent=2) + "\n"
     (history_dir / "2026-03-05.v1.json").write_text(retained_payload, encoding="utf-8")
+    archive_dir = history_dir / "archive"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    archived_payload = json.dumps(_payload(generated_utc="2026-02-28T00:00:00Z"), indent=2) + "\n"
+    (archive_dir / "2026-02-28.v1.json.gz").write_bytes(gzip.compress(archived_payload.encode("utf-8"), compresslevel=9))
+    (history_dir / "restore-pins.v1.json").write_text(
+        json.dumps({"version": "v1", "generated_utc": "2026-03-20T00:00:00Z", "dates": ["2026-02-28"]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
     runtime._write_runtime_snapshots(
         repo_root=tmp_path,
@@ -73,48 +454,36 @@ def test_write_runtime_snapshots_archives_days_older_than_retention(tmp_path: Pa
     assert index_payload["retention_days"] == 15
     assert index_payload["dates"] == ["2026-03-20", "2026-03-05"]
     assert index_payload["restored_dates"] == []
-    assert index_payload["archive"]["count"] == 1
-    assert index_payload["archive"]["dates"] == ["2026-03-01"]
+    assert index_payload["archive"]["count"] == 0
+    assert index_payload["archive"]["dates"] == []
+    assert index_payload["archive"]["path"] == ""
 
-    archived_path = history_dir / "archive" / "2026-03-01.v1.json.gz"
-    assert archived_path.is_file()
     assert not (history_dir / "2026-03-01.v1.json").exists()
-    restored_payload = json.loads(gzip.decompress(archived_path.read_bytes()).decode("utf-8"))
-    assert restored_payload["generated_utc"] == "2026-03-01T00:00:00Z"
+    assert not archive_dir.exists()
+    assert not (history_dir / "restore-pins.v1.json").exists()
 
     current_payload = json.loads((runtime_dir / "current.v1.json").read_text(encoding="utf-8"))
     assert current_payload["history"]["retention_days"] == 15
     assert current_payload["history"]["dates"] == ["2026-03-20", "2026-03-05"]
-    assert current_payload["history"]["archive"]["count"] == 1
+    assert current_payload["history"]["archive"]["count"] == 0
 
     embedded_raw = (history_dir / "embedded.v1.js").read_text(encoding="utf-8")
     embedded_payload = json.loads(
         embedded_raw.removeprefix("window.__ODYLITH_COMPASS_HISTORY__ = ").removesuffix(";\n")
     )
-    assert embedded_payload["archive"]["dates"] == ["2026-03-01"]
-    assert embedded_payload["snapshots"]["2026-03-01"]["generated_utc"] == "2026-03-01T00:00:00Z"
-    assert embedded_payload["snapshots"]["2026-03-01"]["history"]["archive"]["count"] == 1
+    assert embedded_payload["archive"]["dates"] == []
+    assert set(embedded_payload["snapshots"]) == {"2026-03-05", "2026-03-20"}
+    retained_snapshot = embedded_payload["snapshots"]["2026-03-05"]
+    assert retained_snapshot["encoding"] == "gzip+base64+json"
+    decoded_snapshot = json.loads(gzip.decompress(base64.b64decode(retained_snapshot["payload"])).decode("utf-8"))
+    assert decoded_snapshot["generated_utc"] == "2026-03-05T00:00:00Z"
+    assert decoded_snapshot["history"]["archive"]["count"] == 0
 
 
-def test_restore_archived_history_dates_keeps_restored_day_active(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
-    _fixed_now(monkeypatch, year=2026, month=3, day=20)
+def test_embedded_history_payload_uses_stable_gzip_bytes(tmp_path: Path) -> None:
     runtime_dir = tmp_path / "odylith" / "compass" / "runtime"
     history_dir = runtime_dir / "history"
-    archive_dir = history_dir / "archive"
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    archived_payload = json.dumps(_payload(generated_utc="2026-02-01T08:00:00Z"), indent=2) + "\n"
-    (archive_dir / "2026-02-01.v1.json.gz").write_bytes(gzip.compress(archived_payload.encode("utf-8"), compresslevel=9))
-
-    restored, already_active, pins_path = runtime.restore_archived_history_dates(
-        repo_root=tmp_path,
-        runtime_dir=runtime_dir,
-        dates=["2026-02-01"],
-    )
-    assert restored == ["2026-02-01"]
-    assert already_active == []
-    assert (history_dir / "2026-02-01.v1.json").is_file()
-    pins_payload = json.loads(pins_path.read_text(encoding="utf-8"))
-    assert pins_payload["dates"] == ["2026-02-01"]
+    history_dir.mkdir(parents=True, exist_ok=True)
 
     runtime._write_runtime_snapshots(
         repo_root=tmp_path,
@@ -122,11 +491,89 @@ def test_restore_archived_history_dates_keeps_restored_day_active(tmp_path: Path
         payload=_payload(generated_utc="2026-03-20T12:00:00Z"),
         retention_days=15,
     )
+    first_raw = (history_dir / "embedded.v1.js").read_text(encoding="utf-8")
+
+    runtime._write_runtime_snapshots(
+        repo_root=tmp_path,
+        runtime_dir=runtime_dir,
+        payload=_payload(generated_utc="2026-03-20T12:00:00Z"),
+        retention_days=15,
+    )
+    second_raw = (history_dir / "embedded.v1.js").read_text(encoding="utf-8")
+
+    assert second_raw == first_raw
+
+
+def test_restore_archived_history_dates_is_no_longer_supported(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="deleted instead of archived"):
+        runtime.restore_archived_history_dates(
+            repo_root=tmp_path,
+            runtime_dir=tmp_path / "odylith" / "compass" / "runtime",
+            dates=["2026-02-01"],
+        )
+
+
+def test_migrate_legacy_history_layout_rewrites_from_current_runtime_js_when_json_missing(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # noqa: ANN001
+    _fixed_now(monkeypatch, year=2026, month=3, day=20)
+    runtime_dir = tmp_path / "odylith" / "compass" / "runtime"
+    history_dir = runtime_dir / "history"
+    archive_dir = history_dir / "archive"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+
+    stale_active_day = "2026-03-01"
+    archived_day = "2026-02-28"
+    payload = _payload(generated_utc="2026-03-20T12:00:00Z")
+    payload["history"] = {
+        "retention_days": 15,
+        "dates": [stale_active_day],
+        "restored_dates": [],
+        "archive": {
+            "compressed": True,
+            "path": "archive",
+            "count": 1,
+            "dates": [archived_day],
+            "newest_date": archived_day,
+            "oldest_date": archived_day,
+        },
+    }
+
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    (runtime_dir / "current.v1.js").write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    (history_dir / f"{stale_active_day}.v1.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    (archive_dir / f"{archived_day}.v1.json.gz").write_bytes(
+        gzip.compress((json.dumps(payload, indent=2) + "\n").encode("utf-8"), compresslevel=9)
+    )
+    (history_dir / "restore-pins.v1.json").write_text(
+        json.dumps({"version": "v1", "generated_utc": "2026-03-20T12:00:00Z", "dates": [archived_day]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = runtime.migrate_legacy_history_layout(repo_root=tmp_path, runtime_dir=runtime_dir)
+
+    assert result["rewritten"] is True
+    assert "odylith/compass/runtime/history/archive" in result["removed_paths"]
+    assert not archive_dir.exists()
+    assert not (history_dir / "restore-pins.v1.json").exists()
+
+    current_payload = json.loads((runtime_dir / "current.v1.json").read_text(encoding="utf-8"))
+    assert current_payload["history"]["archive"]["count"] == 0
+    assert current_payload["history"]["dates"] == ["2026-03-20"]
 
     index_payload = json.loads((history_dir / "index.v1.json").read_text(encoding="utf-8"))
-    assert "2026-02-01" in index_payload["dates"]
-    assert index_payload["restored_dates"] == ["2026-02-01"]
-    assert (history_dir / "2026-02-01.v1.json").is_file()
+    assert index_payload["archive"]["count"] == 0
+    assert index_payload["dates"] == ["2026-03-20"]
+
+    embedded_payload = json.loads(
+        (history_dir / "embedded.v1.js").read_text(encoding="utf-8").removeprefix("window.__ODYLITH_COMPASS_HISTORY__ = ").removesuffix(";\n")
+    )
+    assert embedded_payload["archive"]["count"] == 0
+    assert set(embedded_payload["snapshots"]) == {"2026-03-20"}
 
 
 def test_self_host_risk_rows_surface_detached_source_local_product_repo() -> None:
@@ -196,7 +643,7 @@ def test_build_global_standup_fact_packet_includes_live_self_host_state() -> Non
 
     assert packet["summary"]["self_host"]["active_version"] == "0.1.4"
     current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
-    assert any(fact["kind"] == "self_host_status" for fact in current_execution["facts"])
+    assert not any(fact["kind"] == "self_host_status" for fact in current_execution["facts"])
 
 
 def test_build_scoped_standup_fact_packet_carries_live_self_host_summary_for_runtime_lane() -> None:
@@ -245,6 +692,111 @@ def test_build_scoped_standup_fact_packet_carries_live_self_host_summary_for_run
     assert any(fact["kind"] == "self_host_status" for fact in current_execution["facts"])
 
 
+def test_build_scoped_standup_fact_packet_humanizes_direction_and_repo_proof() -> None:
+    packet = runtime._build_scoped_standup_fact_packet(
+        row={
+            "idea_id": "B-083",
+            "title": "Claude Guidance Surface Parity and Install Contract Support",
+            "status": "implementation",
+            "why": {
+                "why_now": "Claude support is already part of the product claim.",
+                "opportunity": (
+                    "Make `CLAUDE.md` a first-class managed companion surface so install, repair, and runtime "
+                    "classification stop treating it like an afterthought."
+                ),
+            },
+            "plan": {
+                "progress_ratio": 0.0,
+                "done_tasks": 0,
+                "total_tasks": 17,
+            },
+            "timeline": {
+                "last_activity_iso": "2026-04-11T07:30:00Z",
+            },
+        },
+        next_actions=[],
+        recent_completed=[],
+        window_events=[],
+        window_transactions=[],
+        execution_updates=[
+            {"summary": "Collapse Compass brief warming into packet-level bundle."},
+            {"summary": "Land CLAUDE.md companion surface install and repair flow."},
+        ],
+        transaction_updates=[],
+        window_hours=24,
+        risk_rows={"bugs": [], "traceability": [], "stale_diagrams": []},
+        risk_summary="Risk posture: traceability warnings need cleanup.",
+        self_host_snapshot={
+            "repo_role": "product_repo",
+            "posture": "pinned_release",
+            "runtime_source": "pinned_runtime",
+            "release_eligible": True,
+            "pinned_version": "0.1.10",
+            "active_version": "0.1.10",
+            "launcher_present": True,
+        },
+        now=dt.datetime(2026, 4, 11, 8, 0, 0, tzinfo=dt.timezone.utc),
+    )
+
+    completed = next(section for section in packet["sections"] if section["key"] == "completed")
+    current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
+    assert any(
+        "Land CLAUDE.md companion surface install and repair flow." == fact["text"]
+        for fact in completed["facts"]
+    )
+    direction_fact = next(fact for fact in current_execution["facts"] if fact["kind"] == "direction")
+    assert "product claim" not in direction_fact["text"]
+    assert direction_fact["text"].startswith("Make `CLAUDE.md` a first-class managed companion surface")
+    assert not any(fact["kind"] == "self_host_status" for fact in current_execution["facts"])
+
+
+def test_build_scoped_standup_fact_packet_avoids_conditional_direction_fragment() -> None:
+    packet = runtime._build_scoped_standup_fact_packet(
+        row={
+            "idea_id": "B-025",
+            "title": "Cross-Surface Runtime Freshness and UX Browser Hardening",
+            "status": "implementation",
+            "why": {
+                "why_now": "Odylith cannot claim a live operating layer if Compass can go stale.",
+                "opportunity": (
+                    "If Compass and the broader shell invalidate stale runtime state correctly and the browser suite "
+                    "proves cross-tab, reload, and rolling-window behavior, then the Odylith UX feels reactive."
+                ),
+                "architecture_move": (
+                    "The architecture move is to harden runtime freshness across Compass and related shell flows."
+                ),
+            },
+            "plan": {
+                "progress_ratio": 0.2,
+                "done_tasks": 10,
+                "total_tasks": 50,
+            },
+            "timeline": {
+                "last_activity_iso": "2026-04-11T07:30:00Z",
+            },
+        },
+        next_actions=[{"backlog": "B-025", "task": "land the next browser-backed freshness checkpoint"}],
+        recent_completed=[],
+        window_events=[],
+        window_transactions=[],
+        execution_updates=[{"summary": "Checkpoint in-flight runtime and Compass work."}],
+        transaction_updates=[],
+        window_hours=24,
+        risk_rows={"bugs": [], "traceability": [], "stale_diagrams": []},
+        risk_summary="Risk posture: no critical blockers are currently surfaced.",
+        self_host_snapshot={},
+        now=dt.datetime(2026, 4, 11, 8, 0, 0, tzinfo=dt.timezone.utc),
+    )
+
+    current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
+    next_planned = next(section for section in packet["sections"] if section["key"] == "next_planned")
+    direction_fact = next(fact for fact in current_execution["facts"] if fact["kind"] == "direction")
+    next_fact = next(iter(next_planned["facts"]))
+    assert "land if " not in direction_fact["text"].lower()
+    assert "this gives operators a clearer contract" not in direction_fact["text"]
+    assert "Cross-Surface Runtime Freshness and UX Browser Hardening" in next_fact["text"]
+
+
 def test_build_global_standup_fact_packet_surfaces_live_self_host_risk() -> None:
     risks = runtime._self_host_risk_rows(
         snapshot={
@@ -286,6 +838,56 @@ def test_build_global_standup_fact_packet_surfaces_live_self_host_risk() -> None
 
     risks_to_watch = next(section for section in packet["sections"] if section["key"] == "risks_to_watch")
     assert any(fact["kind"] == "self_host_posture" for fact in risks_to_watch["facts"])
+
+
+def test_build_global_standup_fact_packet_marks_untracked_implementation_as_active_not_planning() -> None:
+    packet = runtime._build_global_standup_fact_packet(
+        ws_rows=[],
+        ws_index={
+            "B-068": {
+                "idea_id": "B-068",
+                "title": "Context Engine Benchmark Family and Grounding Quality Gates",
+                "status": "implementation",
+                "plan": {
+                    "total_tasks": 15,
+                    "done_tasks": 0,
+                    "progress_ratio": 0.0,
+                    "display_progress_label": "Checklist 0/15",
+                },
+            }
+        },
+        active_ws_rows=[
+            {
+                "idea_id": "B-068",
+                "title": "Context Engine Benchmark Family and Grounding Quality Gates",
+                "status": "implementation",
+                "plan": {
+                    "total_tasks": 15,
+                    "done_tasks": 0,
+                    "progress_ratio": 0.0,
+                    "display_progress_label": "Checklist 0/15",
+                },
+            }
+        ],
+        event_counts_by_ws={},
+        next_actions=[],
+        recent_completed=[],
+        window_events=[],
+        window_transactions=[],
+        window_hours=24,
+        risk_rows={"bugs": [], "traceability": [], "stale_diagrams": []},
+        risk_summary="Risk posture: no critical blockers are currently surfaced.",
+        kpis={"touched_workstreams": 1, "recent_completed_plans": 0, "critical_risks": 0},
+        self_host_snapshot={},
+        self_host_risks=[],
+        now=dt.datetime(2026, 4, 9, 12, 0, 0, tzinfo=dt.timezone.utc),
+    )
+
+    current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
+    posture_facts = [fact for fact in current_execution["facts"] if fact["kind"] == "portfolio_posture"]
+    assert posture_facts
+    assert "implementation" in posture_facts[0]["text"].lower()
+    assert "planning setup" not in posture_facts[0]["text"].lower()
 
 
 def test_compact_shadowed_auto_transactions_suppresses_shadowed_auto_global_row() -> None:
@@ -396,125 +998,75 @@ def test_generated_only_transaction_detection() -> None:
     )
 
 
-def test_global_brief_should_use_provider_for_24h_even_with_cache(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setattr(
-        runtime.compass_standup_brief_narrator,
-        "has_reusable_cached_brief",
-        lambda **_kwargs: True,
-    )
-
-    assert runtime._global_brief_should_use_provider(
-        repo_root=Path("/tmp/repo"),
-        fact_packet={"window": "24h"},
-        window_hours=24,
-    )
-
-
-def test_global_brief_should_use_provider_for_48h_even_with_cache(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setattr(
-        runtime.compass_standup_brief_narrator,
-        "has_reusable_cached_brief",
-        lambda **_kwargs: True,
-    )
-
-    assert runtime._global_brief_should_use_provider(
-        repo_root=Path("/tmp/repo"),
-        fact_packet={"window": "48h"},
-        window_hours=48,
-    )
-
-
-def test_global_brief_should_use_provider_for_48h_cache_miss(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setattr(
-        runtime.compass_standup_brief_narrator,
-        "has_reusable_cached_brief",
-        lambda **_kwargs: False,
-    )
-
-    assert runtime._global_brief_should_use_provider(
-        repo_root=Path("/tmp/repo"),
-        fact_packet={"window": "48h"},
-        window_hours=48,
-    )
-
-
-def test_global_brief_provider_allowed_uses_default_policy_for_shell_safe(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setattr(
-        runtime,
-        "_global_brief_should_use_provider",
-        lambda **_kwargs: True,
-    )
-
-    assert runtime._global_brief_provider_allowed(
+def test_global_brief_provider_is_disabled_in_shell_safe_foreground_even_for_global_windows() -> None:
+    assert not runtime._global_brief_provider_allowed(
         repo_root=Path("/tmp/repo"),
         fact_packet={"window": "24h"},
         window_hours=24,
         refresh_profile="shell-safe",
     )
-
-
-def test_global_brief_provider_allowed_uses_default_policy_for_full_refresh(monkeypatch) -> None:  # noqa: ANN001
-    monkeypatch.setattr(
-        runtime,
-        "_global_brief_should_use_provider",
-        lambda **_kwargs: False,
-    )
-
     assert not runtime._global_brief_provider_allowed(
         repo_root=Path("/tmp/repo"),
         fact_packet={"window": "48h"},
         window_hours=48,
-        refresh_profile="full",
+        refresh_profile="shell-safe",
     )
 
-    monkeypatch.setattr(
-        runtime,
-        "_global_brief_should_use_provider",
-        lambda **_kwargs: True,
-    )
 
-    assert runtime._global_brief_provider_allowed(
+def test_global_brief_provider_stays_disabled_for_non_global_windows() -> None:
+    assert not runtime._global_brief_provider_allowed(
         repo_root=Path("/tmp/repo"),
-        fact_packet={"window": "24h"},
-        window_hours=24,
-        refresh_profile="full",
+        fact_packet={"window": "12h"},
+        window_hours=12,
+        refresh_profile="shell-safe",
     )
 
 
-def test_scoped_brief_provider_allowed_disables_provider_for_shell_safe() -> None:
-    assert not compass_runtime_payload_runtime._scoped_brief_provider_allowed(refresh_profile="shell-safe")  # noqa: SLF001
-
-
-def test_scoped_brief_provider_allowed_uses_provider_for_full_refresh() -> None:
-    assert compass_runtime_payload_runtime._scoped_brief_provider_allowed(refresh_profile="full")  # noqa: SLF001
-
-
-def test_assert_full_refresh_brief_ready_accepts_ready_cache_without_notice() -> None:
-    compass_runtime_payload_runtime._assert_full_refresh_brief_ready(  # noqa: SLF001
-        brief={"status": "ready", "source": "cache"},
-        window_hours=24,
-        scope_label="global",
+def test_reusable_brief_sections_for_fact_packet_requires_voice_valid_sections(monkeypatch) -> None:  # noqa: ANN001
+    monkeypatch.setattr(
+        compass_standup_brief_narrator,
+        "_validated_cached_sections",
+        lambda **_kwargs: None,
     )
 
+    assert compass_runtime_payload_runtime._reusable_brief_sections_for_fact_packet(  # noqa: SLF001
+        brief={
+            "status": "ready",
+            "source": "provider",
+            "sections": [
+                {
+                    "key": "completed",
+                    "label": "Completed in this window",
+                    "bullets": [{"text": "Bad cached line.", "fact_ids": ["F-001"]}],
+                }
+            ],
+        },
+        fact_packet={"facts": [{"id": "F-001", "section_key": "completed", "text": "Good fact."}]},
+    ) is None
 
-def test_assert_full_refresh_brief_ready_rejects_non_clean_briefs() -> None:
-    with pytest.raises(RuntimeError, match="global 24h window; got status=ready, source=deterministic"):
-        compass_runtime_payload_runtime._assert_full_refresh_brief_ready(  # noqa: SLF001
-            brief={"status": "ready", "source": "deterministic"},
-            window_hours=24,
-            scope_label="global",
-        )
 
-    with pytest.raises(RuntimeError, match="B-025 48h window; got status=ready, source=cache"):
-        compass_runtime_payload_runtime._assert_full_refresh_brief_ready(  # noqa: SLF001
-            brief={
-                "status": "ready",
-                "source": "cache",
-                "notice": {"reason": "provider_timeout"},
-            },
-            window_hours=48,
-            scope_label="B-025",
-        )
+def test_reusable_brief_sections_for_fact_packet_accepts_clean_ready_brief(monkeypatch) -> None:  # noqa: ANN001
+    sections = [{"key": "completed", "label": "Completed in this window", "bullets": []}]
+    monkeypatch.setattr(
+        compass_standup_brief_narrator,
+        "_validated_cached_sections",
+        lambda **_kwargs: sections,
+    )
+
+    assert compass_runtime_payload_runtime._reusable_brief_sections_for_fact_packet(  # noqa: SLF001
+        brief={
+            "status": "ready",
+            "source": "provider",
+            "sections": [
+                {
+                    "key": "completed",
+                    "label": "Completed in this window",
+                    "bullets": [{"text": "Good cached line.", "fact_ids": ["F-001"]}],
+                }
+            ],
+        },
+        fact_packet={"facts": [{"id": "F-001", "section_key": "completed", "text": "Good fact."}]},
+    ) == sections
 
 
 def test_generated_only_transaction_detection_keeps_source_mixed_rows() -> None:

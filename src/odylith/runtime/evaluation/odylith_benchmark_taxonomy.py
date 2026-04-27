@@ -1,3 +1,5 @@
+"""Odylith Benchmark Taxonomy helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -19,6 +21,7 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
         description="Validator-backed repair work where the agent has to localize and fix a concrete defect.",
         families=(
             "validation_heavy_fix",
+            "stateful_bug_recovery",
             "browser_surface_reliability",
             "cli_contract_regression",
         ),
@@ -27,7 +30,7 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
         key="multi_file_features",
         label="Multi-File Features",
         description="Implementation-heavy feature work spanning multiple files or owners.",
-        families=("cross_file_feature", "merge_heavy_change"),
+        families=("cross_file_feature", "merge_heavy_change", "api_contract_evolution"),
     ),
     BenchmarkFamilyGroup(
         key="runtime_install_security",
@@ -38,6 +41,7 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
             "agent_activation",
             "daemon_security",
             "consumer_profile_compatibility",
+            "external_dependency_recovery",
             "runtime_state_integrity",
         ),
     ),
@@ -56,8 +60,13 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
     BenchmarkFamilyGroup(
         key="governance_release_integrity",
         label="Governance / Release Integrity",
-        description="Benchmark, Registry, Atlas, and release-proof integrity work.",
-        families=("component_governance", "release_publication"),
+        description="Benchmark, Registry, Atlas, release-proof, and live-proof integrity work.",
+        families=(
+            "component_governance",
+            "destructive_scope_control",
+            "live_proof_discipline",
+            "release_publication",
+        ),
     ),
     BenchmarkFamilyGroup(
         key="architecture_review",
@@ -71,6 +80,10 @@ FAMILY_GROUPS: tuple[BenchmarkFamilyGroup, ...] = (
         description="Control-plane and narrowing discipline families that explain how Odylith stays bounded.",
         families=(
             "broad_shared_scope",
+            "context_engine_grounding",
+            "execution_engine",
+            "guidance_behavior",
+            "discipline",
             "exact_path_ambiguity",
             "exact_anchor_recall",
             "explicit_workstream",
@@ -96,14 +109,16 @@ _FAMILY_ORDER = {
 
 
 def family_group_label(family: str) -> str:
-    group = _FAMILY_GROUP_BY_FAMILY.get(str(family or "").strip())
+    family_key = str(family or "").strip()
+    group = _FAMILY_GROUP_BY_FAMILY.get(family_key)
     if group is None:
         return "Other"
     return group.label
 
 
 def family_group_description(family: str) -> str:
-    group = _FAMILY_GROUP_BY_FAMILY.get(str(family or "").strip())
+    family_key = str(family or "").strip()
+    group = _FAMILY_GROUP_BY_FAMILY.get(family_key)
     if group is None:
         return ""
     return group.description

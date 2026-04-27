@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives as execution_wave_ui
 
 
@@ -15,6 +16,7 @@ def test_execution_wave_component_css_matches_shared_contract() -> None:
     assert ".execution-wave-card.is-current-wave" in css
     assert ".execution-wave-focus-grid" in css
     assert ".execution-wave-card-shell" in css
+    assert ".execution-wave-card-shell-full-copy" in css
     assert ".execution-wave-panel" in css
     assert ".execution-wave-chip-link" in css
     assert ".execution-wave-chip-link.wave-member-selected" in css
@@ -35,7 +37,17 @@ def test_execution_wave_component_css_matches_shared_contract() -> None:
         flags=re.S,
     )
     assert re.search(
-        r"\.execution-wave-chip-link\s*\{[^}]*font-family:\s*inherit;[^}]*color:\s*var\(--chip-link-text\);[^}]*font-size:\s*11px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*700;",
+        rf"\.execution-wave-chip-link\s*\{{[^}}]*font-family:\s*inherit;[^}}]*color:\s*var\(--chip-link-text\);[^}}]*font-size:\s*var\({re.escape(dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR)},\s*{re.escape(dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE)}\);[^}}]*line-height:\s*1;[^}}]*letter-spacing:\s*0\.01em;[^}}]*font-weight:\s*var\({re.escape(dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR)},\s*{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT}\);",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-card-shell-full-copy\s*\{[^}]*grid-template-areas:\s*\"title meta\"\s*\"sub sub\"\s*\"compact compact\";[^}]*row-gap:\s*8px;",
+        css,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.execution-wave-card-shell-full-copy \.execution-wave-sub\s*\{[^}]*grid-area:\s*sub;[^}]*max-width:\s*none;",
         css,
         flags=re.S,
     )
@@ -117,6 +129,8 @@ def test_execution_wave_runtime_helpers_expose_shared_renderer() -> None:
     assert "execution-wave-body-grid-members" in runtime
     assert "const waveProgress = executionWaveWaveProgress(wave, options);" in runtime
     assert 'const progressChip = waveProgress.percent ? `${waveProgress.percent} progress` : "";' in runtime
+    assert 'const openAttr = "";' in runtime
+    assert "Boolean(wave.default_open)" not in runtime
     assert '${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}' in runtime
     assert '${showProgramFocusTitle ? `<div class="execution-wave-focus-title">${escapeHtml(programLabel)}</div>` : ""}' in runtime
     assert '{ label: "Depends On", contentHtml: dependsOnHtml }' in runtime

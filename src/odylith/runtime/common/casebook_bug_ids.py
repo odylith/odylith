@@ -1,3 +1,5 @@
+"""Casebook Bug Ids helpers for the Odylith common layer."""
+
 from __future__ import annotations
 
 import hashlib

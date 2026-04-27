@@ -9,6 +9,7 @@ from pathlib import Path
 import statistics
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_runner
 
 
@@ -32,11 +33,11 @@ QUALITY_FRONTIER_HEADING = "Live Benchmark Quality Frontier: grounding recall vs
 
 
 def _comparison_contract(report: Mapping[str, Any]) -> str:
-    return str(report.get("comparison_contract", "")).strip() or "live_end_to_end"
+    return str(report.get("comparison_contract", "")).strip() or odylith_benchmark_runner.LIVE_COMPARISON_CONTRACT
 
 
 def _is_live_end_to_end(report: Mapping[str, Any]) -> bool:
-    return _comparison_contract(report) == "live_end_to_end"
+    return odylith_benchmark_runner._is_live_comparison_contract(_comparison_contract(report))  # noqa: SLF001
 
 
 def _time_axis_noun(report: Mapping[str, Any]) -> str:
@@ -44,13 +45,13 @@ def _time_axis_noun(report: Mapping[str, Any]) -> str:
 
 
 def _public_benchmark_name(report: Mapping[str, Any]) -> str:
-    return "Live Benchmark" if _is_live_end_to_end(report) else "Grounding Benchmark"
+    return "Live Benchmark" if _is_live_end_to_end(report) else "Internal Diagnostic Benchmark"
 
 
 def _quality_frontier_heading(report: Mapping[str, Any]) -> str:
     if _is_live_end_to_end(report):
         return QUALITY_FRONTIER_HEADING
-    return "Grounding Benchmark Quality Frontier: grounding recall vs packet time"
+    return "Internal Diagnostic Quality Frontier: grounding recall vs packet time"
 
 
 def _report_source_label(report: Mapping[str, Any]) -> str:
@@ -245,7 +246,7 @@ def _mode_compact_label(mode: str) -> str:
     if token == "odylith_on":
         return "Odylith on"
     if token in {"raw_agent_baseline", "odylith_off"}:
-        return "Odylith off / raw Codex CLI"
+        return "Odylith off / raw host CLI"
     if token in {"odylith_repo_scan_baseline", "full_scan_baseline"}:
         return "Repo-scan baseline"
     return token.replace("_", " ").strip() or "Benchmark mode"
@@ -349,9 +350,9 @@ def _quality_pairs(report: Mapping[str, Any]) -> tuple[list[dict[str, Any]], str
                 "label": str(scenario.get("label", "")).strip() or str(scenario.get("scenario_id", "")).strip(),
                 "family": _short_family(str(scenario.get("family", "")).strip()),
                 "baseline_recall": _clamp_unit(baseline.get("required_path_recall")),
-                "baseline_latency": float(baseline.get("latency_ms", 0.0) or 0.0),
+                "baseline_latency": benchmark_metric_helpers.numeric_value(baseline, "latency_ms"),
                 "candidate_recall": _clamp_unit(candidate.get("required_path_recall")),
-                "candidate_latency": float(candidate.get("latency_ms", 0.0) or 0.0),
+                "candidate_latency": benchmark_metric_helpers.numeric_value(candidate, "latency_ms"),
             }
         )
     return pairs, candidate_mode, baseline_mode
@@ -361,9 +362,7 @@ def render_quality_frontier_svg(report: Mapping[str, Any]) -> str:
     pairs, candidate_mode, baseline_mode = _quality_pairs(report)
     prompt_only_control = _prompt_only_control_baseline(report=report, baseline_mode=baseline_mode, pairs=pairs)
     candidate_compact_label = _mode_compact_label(candidate_mode)
-    baseline_compact_label = (
-        "Prompt-only raw Codex control" if prompt_only_control else _mode_compact_label(baseline_mode)
-    )
+    baseline_compact_label = "Prompt-only raw host control" if prompt_only_control else _mode_compact_label(baseline_mode)
     candidate_short_label = _mode_short_label(candidate_mode)
     baseline_short_label = "control" if prompt_only_control else _mode_short_label(baseline_mode)
     baseline_recalls = [float(row.get("baseline_recall", 0.0) or 0.0) for row in pairs]
@@ -420,7 +419,7 @@ def render_quality_frontier_svg(report: Mapping[str, Any]) -> str:
 
     subtitle_lines = _wrap_words(
         (
-            "Each line connects the same benchmark scenario with a prompt-only raw Codex control (red) "
+            "Each line connects the same benchmark scenario with a prompt-only raw host control (red) "
             f"and Odylith on (teal). Right is better and lower {time_axis_noun} is better."
             if prompt_only_control
             else f"Each line connects the same benchmark scenario with Odylith off (red) and Odylith on (teal). Right is better and lower {time_axis_noun} is better."

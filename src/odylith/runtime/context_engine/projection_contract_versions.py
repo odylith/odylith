@@ -10,6 +10,7 @@ from __future__ import annotations
 
 _PROJECTION_CONTRACT_VERSIONS = {
     "workstreams": "v1",
+    "releases": "v1",
     "plans": "v1",
     "bugs": "v3_casebook_bug_ids",
     "diagrams": "v1",

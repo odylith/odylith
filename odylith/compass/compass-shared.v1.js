@@ -39,7 +39,6 @@
       { key: "completed", label: "Completed in this window" },
       { key: "current_execution", label: "Current execution" },
       { key: "next_planned", label: "Next planned" },
-      { key: "why_this_matters", label: "Why this matters" },
       { key: "risks_to_watch", label: "Risks to watch" },
     ];
     let CURRENT_STANDUP_BRIEF = null;
@@ -213,78 +212,16 @@ initQuickTooltips();
       return Boolean(globalBrief || scopedBrief);
     }
 
-    function legacyDigestLinesForState(payload, state) {
-      const key = state.window === "24h" ? "24h" : "48h";
-      const globalList = Array.isArray(payload.digest && payload.digest[key]) ? payload.digest[key] : [];
-      const scopedMap = payload.digest_scoped && payload.digest_scoped[key] && typeof payload.digest_scoped[key] === "object"
-        ? payload.digest_scoped[key]
-        : {};
-      const scopedList = state.workstream && Array.isArray(scopedMap[state.workstream]) ? scopedMap[state.workstream] : [];
-      return scopedList.length ? scopedList : globalList;
-    }
-
-    function inferLegacyBulletVoice(sectionKey, bulletText, bulletIndex) {
-      const source = String(bulletText || "").trim();
-      const executiveMatch = source.match(/^(Executive|Product|Business)\s*:\s*(.+)$/i);
-      if (executiveMatch) {
-        return { voice: "executive", text: String(executiveMatch[2] || "").trim() };
-      }
-      const operatorMatch = source.match(/^(Operator|Technical)\s*:\s*(.+)$/i);
-      if (operatorMatch) {
-        return { voice: "operator", text: String(operatorMatch[2] || "").trim() };
-      }
-      if (sectionKey === "current_execution") {
-        return { voice: bulletIndex === 0 ? "executive" : "operator", text: source };
-      }
-      if (sectionKey === "why_this_matters") {
-        return { voice: bulletIndex === 0 ? "executive" : "operator", text: source };
-      }
-      return { voice: "operator", text: source };
-    }
-
-    function legacyDigestToBrief(lines, generatedUtc) {
-      const sourceLines = Array.isArray(lines) ? lines : [];
-      const sections = STANDUP_BRIEF_SECTION_SPECS.map((spec) => {
-        const matchedLine = sourceLines.find((line) => {
-          const parts = splitDigestLine(line);
-          return String(parts && parts.header ? parts.header : "").replace(/:\s*$/, "").trim() === spec.label;
-        }) || `${spec.label}:`;
-        const parts = splitDigestLine(matchedLine);
-        const bulletTexts = splitDigestBodyToBullets(parts.body);
-        return {
-          key: spec.key,
-          label: spec.label,
-          bullets: bulletTexts.map((bullet, index) => inferLegacyBulletVoice(spec.key, bullet, index)),
-        };
-      });
-      return {
-        status: "ready",
-        source: "legacy",
-        fingerprint: "legacy-history",
-        generated_utc: String(generatedUtc || "").trim(),
-        sections,
-      };
-    }
-
     function standupBriefToDigestLines(brief) {
       if (!brief || typeof brief !== "object" || String(brief.status || "") !== "ready") return [];
       const sections = Array.isArray(brief.sections) ? brief.sections : [];
       return STANDUP_BRIEF_SECTION_SPECS.map((spec) => {
         const section = sections.find((row) => row && String(row.key || "").trim() === spec.key) || {};
         const bullets = Array.isArray(section.bullets) ? section.bullets : [];
-        const voiceCount = new Set(
-          bullets
-            .map((bullet) => String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase())
-            .filter(Boolean)
-        ).size;
         const bulletTexts = bullets
           .map((bullet) => {
-            const voice = String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase();
             const text = String(bullet && bullet.text ? bullet.text : "").trim();
             if (!text) return "";
-            if (voiceCount > 1 && (voice === "executive" || voice === "operator")) {
-              return `${voice.charAt(0).toUpperCase()}${voice.slice(1)}: ${text}`;
-            }
             return text;
           })
           .filter(Boolean);
@@ -305,46 +242,266 @@ initQuickTooltips();
           config_source: String(diagnostics.config_source || "").trim(),
           config_path: String(diagnostics.config_path || "").trim(),
           attempted_utc: String(diagnostics.attempted_utc || "").trim(),
+          provider_failure_code: String(diagnostics.provider_failure_code || "").trim(),
+          provider_failure_detail: String(diagnostics.provider_failure_detail || "").trim(),
           validation_errors: Array.isArray(diagnostics.validation_errors) ? diagnostics.validation_errors : [],
         },
         sections: [],
       };
     }
 
+    function scopedWorkstreamRow(payload, workstreamId) {
+      const target = String(workstreamId || "").trim();
+      if (!target) return null;
+      const rows = workstreamRowsForLookup(payload);
+      return rows.find((row) => row && String(row.idea_id || "").trim() === target) || null;
+    }
+
+    function scopedWindowActivity(row, windowKey) {
+      const activity = row && row.activity && typeof row.activity === "object" ? row.activity : {};
+      const windowActivity = activity && activity[windowKey] && typeof activity[windowKey] === "object"
+        ? activity[windowKey]
+        : {};
+      return {
+        commitCount: Number(windowActivity.commit_count || 0),
+        localChangeCount: Number(windowActivity.local_change_count || 0),
+        fileTouchCount: Number(windowActivity.file_touch_count || 0),
+      };
+    }
+
+    function quietWindowStandupBrief(workstreamId, windowKey) {
+      const hourLabel = windowKey === "48h" ? "48" : "24";
+      return unavailableStandupBrief(
+        `${String(workstreamId || "This scope").trim()} was quiet in the last ${hourLabel} hours, so Compass has nothing new to brief for that scope.`,
+        {
+          reason: "scoped_window_inactive",
+          title: "Nothing moved in this window",
+        },
+      );
+    }
+
+    function cloneStructuredBrief(brief) {
+      return JSON.parse(JSON.stringify(brief && typeof brief === "object" ? brief : {}));
+    }
+
+    function readyGlobalBriefSelection(payload, preferredWindow) {
+      const standupBrief = payload && payload.standup_brief && typeof payload.standup_brief === "object"
+        ? payload.standup_brief
+        : {};
+      const preferred = preferredWindow === "48h" ? "48h" : "24h";
+      const alternates = preferred === "24h" ? ["24h", "48h"] : ["48h", "24h"];
+      for (const windowKey of alternates) {
+        const brief = standupBrief[windowKey];
+        if (!brief || typeof brief !== "object") continue;
+        if (String(brief.status || "").trim() === "ready") {
+          return {
+            brief,
+            window: windowKey,
+          };
+        }
+      }
+      return { brief: null, window: "" };
+    }
+
+    function scopedFallbackToGlobalBrief(globalBrief, workstreamId, message, reason, globalWindow) {
+      const cloned = cloneStructuredBrief(globalBrief);
+      cloned.notice = {
+        title: "Showing the global live brief",
+        message: String(message || "").trim(),
+        reason: String(reason || "scoped_brief_showing_global").trim(),
+      };
+      cloned.scope_fallback = {
+        workstream: String(workstreamId || "").trim(),
+        mode: "global_brief",
+        window: String(globalWindow || "").trim(),
+      };
+      return cloned;
+    }
+
+    function scopedLiveBriefFallbackMessage(workstreamId, diagnostics, requestedWindow, fallbackWindow) {
+      const scopedWorkstream = String(workstreamId || "This scope").trim() || "This scope";
+      const safeDiagnostics = diagnostics && typeof diagnostics === "object" ? diagnostics : {};
+      const reason = String(safeDiagnostics.reason || "").trim().toLowerCase();
+      const requested = requestedWindow === "48h" ? "48-hour" : "24-hour";
+      const fallback = fallbackWindow === "48h" ? "48-hour" : "24-hour";
+      const widerWindow = Boolean(fallbackWindow) && String(fallbackWindow).trim() !== String(requestedWindow || "").trim();
+      const borrowedLabel = widerWindow ? `${fallback} global live brief` : "global live brief";
+      if (reason === "provider_deferred") {
+        return `${scopedWorkstream} still needs its own ${requested} brief. Compass is showing the ${borrowedLabel} for now.`;
+      }
+      if (reason === "rate_limited") {
+        return `${scopedWorkstream} is waiting on narration provider capacity. Compass is showing the ${borrowedLabel} for now.`;
+      }
+      if (reason === "credits_exhausted") {
+        return `${scopedWorkstream} is waiting on narration provider budget. Compass is showing the ${borrowedLabel} for now.`;
+      }
+      if (reason === "timeout") {
+        return `${scopedWorkstream} asked the narration provider for a scoped brief, but the reply took too long. Compass is showing the ${borrowedLabel} while it retries in the background.`;
+      }
+      if (reason === "invalid_batch") {
+        return `${scopedWorkstream} got a scoped provider reply, but the brief was not usable yet. Compass is showing the ${borrowedLabel} while it retries in the background.`;
+      }
+      if (reason === "provider_unavailable" || reason === "transport_error" || reason === "auth_error" || reason === "provider_error") {
+        return `${scopedWorkstream} ran into a narration provider problem. That may be capacity, budget, access, or provider health, so Compass is showing the ${borrowedLabel} for now.`;
+      }
+      return `Compass could not load a scoped live brief for ${scopedWorkstream}, so it is showing the ${borrowedLabel} for now.`;
+    }
+
     function standupBriefForState(payload, state) {
       const key = state.window === "24h" ? "24h" : "48h";
-      const legacyLines = legacyDigestLinesForState(payload, state);
       if (hasStructuredStandupBriefPayload(payload)) {
-        const hasScopedSelection = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim());
+        const scopedWorkstream = WORKSTREAM_RE.test(String(state && state.workstream ? state.workstream : "").trim())
+          ? String(state.workstream || "").trim()
+          : "";
+        const hasScopedSelection = Boolean(scopedWorkstream);
+        const globalBriefSelection = readyGlobalBriefSelection(payload, key);
         const globalBrief = payload.standup_brief && payload.standup_brief[key] && typeof payload.standup_brief[key] === "object"
           ? payload.standup_brief[key]
           : null;
         const scopedMap = payload.standup_brief_scoped && payload.standup_brief_scoped[key] && typeof payload.standup_brief_scoped[key] === "object"
           ? payload.standup_brief_scoped[key]
           : {};
-        const scopedBrief = state.workstream && scopedMap[state.workstream] && typeof scopedMap[state.workstream] === "object"
-          ? scopedMap[state.workstream]
+        const scopedBrief = scopedWorkstream && scopedMap[scopedWorkstream] && typeof scopedMap[scopedWorkstream] === "object"
+          ? scopedMap[scopedWorkstream]
           : null;
         const scopedReady = scopedBrief && String(scopedBrief.status || "").trim() === "ready" ? scopedBrief : null;
-        const globalReady = globalBrief && String(globalBrief.status || "").trim() === "ready" ? globalBrief : null;
+        const globalReady = globalBriefSelection.brief;
+        const globalReadyWindow = String(globalBriefSelection.window || "").trim();
         const scopedReadySource = String(scopedReady && scopedReady.source ? scopedReady.source : "").trim();
         const globalReadySource = String(globalReady && globalReady.source ? globalReady.source : "").trim();
         if (hasScopedSelection && scopedReady) return scopedReady;
+        if (hasScopedSelection && scopedBrief) {
+          const diagnostics = scopedBrief.diagnostics && typeof scopedBrief.diagnostics === "object" ? scopedBrief.diagnostics : {};
+          const reason = String(diagnostics.reason || "").trim().toLowerCase();
+          if (reason === "scoped_window_inactive") {
+            const verifiedScopedIds = payload && payload.verified_scoped_workstreams && payload.verified_scoped_workstreams[key] && Array.isArray(payload.verified_scoped_workstreams[key])
+              ? payload.verified_scoped_workstreams[key].filter((token) => WORKSTREAM_RE.test(String(token || "").trim()))
+              : [];
+            const promotedScopedIds = payload && payload.promoted_scoped_workstreams && payload.promoted_scoped_workstreams[key] && Array.isArray(payload.promoted_scoped_workstreams[key])
+              ? payload.promoted_scoped_workstreams[key].filter((token) => WORKSTREAM_RE.test(String(token || "").trim()))
+              : [];
+            const scopeSignals = payload && payload.window_scope_signals && payload.window_scope_signals[key] && typeof payload.window_scope_signals[key] === "object"
+              ? payload.window_scope_signals[key]
+              : {};
+            const selectedSignal = scopeSignals && typeof scopeSignals === "object"
+              ? scopeSignals[scopedWorkstream]
+              : null;
+            const selectedSignalRow = selectedSignal && typeof selectedSignal === "object" ? selectedSignal : {};
+            const selectedExplicitRank = Number(selectedSignalRow.rank || 0);
+            const selectedRung = String(selectedSignalRow.rung || "").trim().toUpperCase();
+            const selectedFeatureVector = selectedSignalRow.feature_vector && typeof selectedSignalRow.feature_vector === "object"
+              ? selectedSignalRow.feature_vector
+              : {};
+            const selectedCaps = Array.isArray(selectedSignalRow.caps) ? selectedSignalRow.caps : [];
+            const windowHasPromotedScopedSignal = Object.values(scopeSignals).some((signal) => {
+              const row = signal && typeof signal === "object" ? signal : {};
+              const explicitRank = Number(row.rank || 0);
+              if (Number.isFinite(explicitRank) && explicitRank >= 2) return true;
+              const rung = String(row.rung || "").trim().toUpperCase();
+              return /^R[2-5]$/.test(rung);
+            });
+            const selectedHasPromotedScopedSignal = (
+              (Number.isFinite(selectedExplicitRank) && selectedExplicitRank >= 2)
+              || /^R[2-5]$/.test(selectedRung)
+            );
+            const selectedHasVerifiedOrPromotedScopedActivity = (
+              verifiedScopedIds.includes(scopedWorkstream)
+              || promotedScopedIds.includes(scopedWorkstream)
+              || selectedHasPromotedScopedSignal
+            );
+            const catalogRows = Array.isArray(payload && payload.workstream_catalog) ? payload.workstream_catalog : [];
+            const selectedScopedRow = catalogRows.find(
+              (row) => String(row && row.idea_id ? row.idea_id : "").trim() === scopedWorkstream
+            ) || scopedWorkstreamRow(payload, scopedWorkstream);
+            const selectedWindowActivity = scopedWindowActivity(selectedScopedRow, key);
+            const selectedHasRawWindowActivity = (
+              selectedWindowActivity.commitCount > 0
+              || selectedWindowActivity.localChangeCount > 0
+              || selectedWindowActivity.fileTouchCount > 0
+            );
+            const selectedGovernanceOnlyLocalChange = (
+              Boolean(selectedFeatureVector.governance_only_local_change)
+              || selectedCaps.some((token) => String(token || "").trim() === "governance_only_local_change")
+            );
+            const currentWindowRows = payload && payload.current_workstreams_by_window && Array.isArray(payload.current_workstreams_by_window[key])
+              ? payload.current_workstreams_by_window[key]
+              : [];
+            const selectedIsCurrentWindowScope = currentWindowRows.some(
+              (row) => String(row && row.idea_id ? row.idea_id : "").trim() === scopedWorkstream
+            );
+            if (
+              !selectedHasVerifiedOrPromotedScopedActivity
+              && !selectedGovernanceOnlyLocalChange
+              && (selectedHasRawWindowActivity || (!windowHasPromotedScopedSignal && selectedIsCurrentWindowScope))
+              && globalReady
+            ) {
+              return scopedFallbackToGlobalBrief(
+                globalReady,
+                scopedWorkstream,
+                `${scopedWorkstream} has no scoped live brief yet, so Compass is showing the ${globalReadyWindow === key ? "global live brief" : `${globalReadyWindow === "48h" ? "48-hour" : "24-hour"} global live brief`} while scoped narration stays in background warmup.`,
+                globalReadyWindow && globalReadyWindow !== key
+                  ? "scoped_window_inactive_background_warm_showing_wider_global"
+                  : "scoped_window_inactive_background_warm_showing_global",
+                globalReadyWindow || key,
+              );
+            }
+            return scopedBrief;
+          }
+          if (globalReady) {
+            const fallbackReason = reason || "scoped_brief_unavailable";
+            const widerWindow = globalReadyWindow && globalReadyWindow !== key;
+            const message = scopedLiveBriefFallbackMessage(scopedWorkstream, diagnostics, key, globalReadyWindow || key);
+            return scopedFallbackToGlobalBrief(
+              globalReady,
+              scopedWorkstream,
+              message,
+              widerWindow
+                ? `scoped_${fallbackReason}_showing_wider_global`
+                : `scoped_${fallbackReason}_showing_global`,
+              globalReadyWindow || key,
+            );
+          }
+          return scopedBrief;
+        }
+        if (hasScopedSelection) {
+          const scopedRow = scopedWorkstreamRow(payload, scopedWorkstream);
+          const activity = scopedWindowActivity(scopedRow, key);
+          if (scopedRow && activity.commitCount <= 0 && activity.localChangeCount <= 0 && activity.fileTouchCount <= 0) {
+            if (globalReady) {
+              return scopedFallbackToGlobalBrief(
+                globalReady,
+                scopedWorkstream,
+                `${scopedWorkstream} was quiet in this window, so Compass is showing the ${globalReadyWindow === key ? "global live brief" : `${globalReadyWindow === "48h" ? "48-hour" : "24-hour"} global live brief`} instead.`,
+                "scoped_window_quiet_showing_global",
+                globalReadyWindow || key,
+              );
+            }
+            return quietWindowStandupBrief(scopedWorkstream, key);
+          }
+          if (globalReady) {
+            const widerWindow = globalReadyWindow && globalReadyWindow !== key;
+            return scopedFallbackToGlobalBrief(
+              globalReady,
+              scopedWorkstream,
+              `Compass does not have a scoped ${key === "48h" ? "48-hour" : "24-hour"} live brief for ${scopedWorkstream} yet, so it is showing the ${widerWindow ? `${globalReadyWindow === "48h" ? "48-hour" : "24-hour"} global live brief` : "global live brief"} for now.`,
+              widerWindow ? "scoped_brief_missing_showing_wider_global" : "scoped_brief_missing_showing_global",
+              globalReadyWindow || key,
+            );
+          }
+          return unavailableStandupBrief(
+            `No scoped standup brief is available for ${scopedWorkstream}.`,
+            { reason: "scoped_brief_missing" },
+          );
+        }
+        if (globalBrief && String(globalBrief.status || "").trim() !== "ready") return globalBrief;
         if (globalReady && (globalReadySource === "provider" || globalReadySource === "cache")) return globalReady;
         if (globalReady) return globalReady;
-        if (hasScopedSelection && scopedBrief) return scopedBrief;
         if (scopedReady && (scopedReadySource === "provider" || scopedReadySource === "cache")) return scopedReady;
         if (scopedReady) return scopedReady;
-        if (legacyLines.length) {
-          return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);
-        }
         if (globalBrief) return globalBrief;
         return unavailableStandupBrief("No structured standup brief is available for this view.");
       }
-      if (legacyLines.length) {
-        return legacyDigestToBrief(legacyLines, payload && payload.generated_utc);
-      }
-      return unavailableStandupBrief("No standup brief is available for this view.");
+      return unavailableStandupBrief("No structured standup brief is available for this view.");
     }
 
     function radarWorkstreamHref(workstreamId, { view = "" } = {}) {
@@ -457,8 +614,19 @@ initQuickTooltips();
 
     function workstreamRowsForLookup(payload) {
       const catalog = Array.isArray(payload && payload.workstream_catalog) ? payload.workstream_catalog : [];
-      if (catalog.length) return catalog;
-      return Array.isArray(payload && payload.current_workstreams) ? payload.current_workstreams : [];
+      const current = Array.isArray(payload && payload.current_workstreams) ? payload.current_workstreams : [];
+      const merged = new Map();
+      catalog.forEach((row) => {
+        const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
+        if (!ideaId) return;
+        merged.set(ideaId, row);
+      });
+      current.forEach((row) => {
+        const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
+        if (!ideaId) return;
+        merged.set(ideaId, row);
+      });
+      return merged.size ? Array.from(merged.values()) : [];
     }
 
     function planLinkLookup(payload) {
@@ -471,11 +639,21 @@ initQuickTooltips();
         const links = row && row.links && typeof row.links === "object" ? row.links : {};
         const planFile = normalizeRepoPath(String(links.plan_file || "").trim());
         if (!planFile) return;
-        const href = `../index.html?tab=radar&workstream=${encodeURIComponent(ideaId)}&view=plan`;
+        const href = radarWorkstreamHref(ideaId, { view: "plan" });
         byWorkstream[ideaId] = href;
         byPlanFile[planFile] = { href, idea_id: ideaId };
       });
       return { byWorkstream, byPlanFile };
+    }
+
+    function radarWorkstreamHref(workstreamId, options = {}) {
+      const token = String(workstreamId || "").trim();
+      const params = new URLSearchParams();
+      params.set("tab", "radar");
+      if (WORKSTREAM_RE.test(token)) params.set("workstream", token);
+      const view = String(options && options.view ? options.view : "").trim().toLowerCase();
+      if (view) params.set("view", view);
+      return `../index.html?${params.toString()}`;
     }
 
     function planHrefLookup(payload) {
@@ -871,11 +1049,6 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     if (waveSpan) contextChips.push(`<span class="label execution-wave-label wave-status-active">${escapeHtml(waveSpan)}</span>`);
     if (roleLabel) contextChips.push(`<span class="label execution-wave-label wave-role-chip">${escapeHtml(roleLabel)}</span>`);
     if (contextMeta.has_next_wave) contextChips.push('<span class="label execution-wave-label wave-status-planned">Next relevant</span>');
-  } else {
-    const waveCount = Number(program.wave_count || 0);
-    if (waveCount > 0) {
-      contextChips.push(`<span class="label execution-wave-label wave-chip-program">${escapeHtml(`${waveCount}-wave program`)}</span>`);
-    }
   }
 
   const cardsHtml = waves.map((wave) => {
@@ -902,8 +1075,7 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     const sequenceChip = `${sequenceCount} of ${totalWaveCount}`;
     const waveProgress = executionWaveWaveProgress(wave, options);
     const progressChip = waveProgress.percent ? `${waveProgress.percent} progress` : "";
-    const openByDefault = Boolean(wave.default_open) || isSelectedMember;
-    const openAttr = openByDefault ? " open" : "";
+    const openAttr = "";
     const selectedNote = isSelectedMember ? String(selectedNoteBuilder(selectedWorkstream, contextMeta) || "").trim() : "";
     const supportBlocks = [];
     if (gatePreview) {
@@ -947,15 +1119,11 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     return `
       <details class="${cardClassNames.join(" ")}"${openAttr}>
         <summary class="execution-wave-card-summary">
-          <div class="execution-wave-card-shell">
-            <div class="execution-wave-card-copy">
-              <div class="execution-wave-title-row">
-                <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
-                <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
-                ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
-              </div>
-              <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
-              ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
+          <div class="execution-wave-card-shell execution-wave-card-shell-full-copy">
+            <div class="execution-wave-title-row">
+              <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
+              <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
+              ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
             </div>
             <div class="execution-wave-card-meta">
               <div class="execution-wave-card-stat-rail">
@@ -966,6 +1134,8 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
                 ${isSelectedMember ? `<span class="label execution-wave-label wave-role-chip">${escapeHtml(selectedBadgeLabel)}</span>` : ""}
               </div>
             </div>
+            <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
+            ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
           </div>
         </summary>
         <div class="execution-wave-card-body">
@@ -988,9 +1158,10 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
   const contextLine = contextMeta
     ? `This workstream participates across ${String(contextMeta.wave_span_label || "").trim() || "the program"} as ${String(contextMeta.role_label || "").trim() || "a member"}.`
     : "Umbrella-owned execution waves for this program.";
-
-  return `
-    <div class="execution-wave-board">
+  const hideProgramFocusPanel = Boolean(options.hideProgramFocusPanel);
+  const focusHtml = hideProgramFocusPanel
+    ? ""
+    : `
       <div class="execution-wave-focus">
         <div class="execution-wave-focus-grid">
           <div class="execution-wave-focus-copy">
@@ -998,9 +1169,14 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
             <div class="execution-wave-focus-line">${escapeHtml(contextLine)}</div>
             ${summaryLine ? `<div class="execution-wave-focus-line execution-wave-focus-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          <div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>
+          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
+    `;
+
+  return `
+    <div class="execution-wave-board">
+      ${focusHtml}
       <div class="execution-wave-sequence">${cardsHtml}</div>
     </div>
   `;
@@ -1016,10 +1192,15 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   const contextLine = String(section.contextLine || "").trim();
   const summaryLine = String(section.summaryLine || "").trim();
   const selectedWorkstreamId = String(section.selectedWorkstreamId || "").trim();
+  const disclosureKey = String(section.persistenceKey || "").trim();
+  const disclosureAttr = disclosureKey ? ` data-compass-disclosure-key="${escapeHtml(disclosureKey)}"` : "";
   const sectionChips = Array.isArray(section.sectionChips)
     ? section.sectionChips.filter((row) => String(row || "").trim())
     : [];
   const boardWrapperClass = String(options.boardWrapperClass || "").trim();
+  const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]
+    .filter(Boolean)
+    .join(" ");
   const boardsHtml = entries
     .map((entry) => renderExecutionWaveProgram(
       entry && entry.program ? entry.program : null,
@@ -1040,16 +1221,16 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   if (sectionHeaderVariant === "compass") {
     return `
       <section class="block">
-        <details class="execution-wave-section"${openAttr}>
+        <details class="${escapeHtml(sectionClassName)}"${openAttr}${disclosureAttr}>
           <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
-            <div class="execution-wave-section-copy">
-              <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>
-              ${programLabel ? `<div class="execution-wave-section-line">${escapeHtml(programLabel)}</div>` : ""}
-              ${contextLine ? `<div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>` : ""}
-              ${summaryLine ? `<div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
-            </div>
+            <span class="execution-wave-section-copy">
+              <span class="execution-wave-section-title">${escapeHtml(sectionTitle)}</span>
+              ${programLabel ? `<span class="execution-wave-section-line">${escapeHtml(programLabel)}</span>` : ""}
+              ${contextLine ? `<span class="execution-wave-section-line">${escapeHtml(contextLine)}</span>` : ""}
+              ${summaryLine ? `<span class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</span>` : ""}
+            </span>
             <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
-            ${sectionChips.length ? `<div class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</div>` : ""}
+            ${sectionChips.length ? `<span class="execution-wave-section-meta execution-wave-section-meta-bottom">${sectionChips.join("")}</span>` : ""}
           </summary>
           <div class="execution-wave-section-body">${boardsHtml}</div>
         </details>
@@ -1058,18 +1239,18 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   }
   return `
     <section class="block">
-      <details class="execution-wave-section"${openAttr}>
+      <details class="${escapeHtml(sectionClassName)}"${openAttr}${disclosureAttr}>
         <summary class="execution-wave-section-summary">
-          <div class="execution-wave-section-copy">
-            <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>
-            ${programLabel ? `<div class="execution-wave-section-line">${escapeHtml(programLabel)}</div>` : ""}
-            ${contextLine ? `<div class="execution-wave-section-line">${escapeHtml(contextLine)}</div>` : ""}
-            ${summaryLine ? `<div class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
-          </div>
-          <div class="execution-wave-section-meta">
+          <span class="execution-wave-section-copy">
+            <span class="execution-wave-section-title">${escapeHtml(sectionTitle)}</span>
+            ${programLabel ? `<span class="execution-wave-section-line">${escapeHtml(programLabel)}</span>` : ""}
+            ${contextLine ? `<span class="execution-wave-section-line">${escapeHtml(contextLine)}</span>` : ""}
+            ${summaryLine ? `<span class="execution-wave-section-line execution-wave-section-line-muted">${escapeHtml(summaryLine)}</span>` : ""}
+          </span>
+          <span class="execution-wave-section-meta">
             ${sectionChips.join("")}
             <span class="execution-wave-section-toggle execution-wave-section-toggle-triangle" aria-hidden="true"></span>
-          </div>
+          </span>
         </summary>
         <div class="execution-wave-section-body">${boardsHtml}</div>
       </details>

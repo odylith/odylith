@@ -1,4 +1,21 @@
-    function heroKpiRows(base, state, touchedIds, riskRows, waveSummary, scopedTouch, commitCount, localCount) {
+    function releaseHeroLabel(release) {
+      const releaseRow = release && typeof release === "object" ? release : {};
+      const nameLabel = String(releaseRow.name || "").trim();
+      if (nameLabel) return nameLabel;
+      const versionLabel = String(releaseRow.version || "").trim();
+      if (versionLabel) return versionLabel;
+      const effectiveLabel = String(
+        releaseRow.effective_name || releaseRow.display_label || ""
+      ).trim();
+      if (effectiveLabel) return effectiveLabel;
+      const tagLabel = String(releaseRow.tag || "").trim();
+      if (tagLabel) return /^v\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;
+      return String(release && (release.release_id || "") || "").trim();
+    }
+
+    function heroKpiRows(base, state, touchedIds, riskRows, scopedTouch, commitCount, localCount) {
+      const releaseSummary = payloadReleaseSummary(base.__payload);
+      const currentRelease = releaseSummary.current_release || {};
       const rows = [
         ["Commits", state.workstream ? commitCount : Number(base.commits || 0)],
         ["Local Changes", state.workstream ? localCount : Number(base.local_changes || 0)],
@@ -7,18 +24,24 @@
         ["Critical Risks", riskRows.bugs.length + riskRows.selfHost.length + riskRows.traceCritical.length + riskRows.stale.length],
         ["Completed Plans", Number(base.recent_completed_plans || 0)],
       ];
-      if (Number(waveSummary.program_count || 0) > 0) {
-        rows.push(["Active Waves", Number(waveSummary.active_wave_count || 0)]);
+      const currentReleaseLabel = releaseHeroLabel(currentRelease);
+      if (currentReleaseLabel) {
+        rows.push(["Target Release", currentReleaseLabel, "stat-release-only"]);
       }
       return rows;
     }
 
+    function payloadReleaseSummary(payload) {
+      return payload && payload.release_summary && typeof payload.release_summary === "object"
+        ? payload.release_summary
+        : {};
+    }
+
     function renderKpis(payload, state, events) {
       const key = state.window === "24h" ? "24h" : "48h";
-      const base = (payload.kpis && payload.kpis[key]) || {};
+      const base = { ...((payload.kpis && payload.kpis[key]) || {}), __payload: payload };
       const touchedIds = collectScopedWorkstreamIds(payload, state);
       const riskRows = resolveScopedRiskRows(payload, state);
-      const waveSummary = executionWavePayload(payload).summary || {};
       const scopedTouch = new Set();
       let commitCount = 0;
       let localCount = 0;
@@ -29,11 +52,11 @@
         for (const item of ws) scopedTouch.add(String(item || "").trim());
       }
 
-      const kpis = heroKpiRows(base, state, touchedIds, riskRows, waveSummary, scopedTouch, commitCount, localCount);
+      const kpis = heroKpiRows(base, state, touchedIds, riskRows, scopedTouch, commitCount, localCount);
       const target = document.getElementById("kpi-grid");
-      target.innerHTML = kpis.map(([label, value]) => `
-        <article class="stat">
-          <p class="kpi-label">${escapeHtml(label)}</p>
+      target.innerHTML = kpis.map(([label, value, cardClass]) => `
+        <article class="stat${cardClass ? ` ${cardClass}` : ""}">
+          ${label ? `<p class="kpi-label">${escapeHtml(label)}</p>` : ""}
           <p class="kpi-value">${escapeHtml(value)}</p>
         </article>
       `).join("");
@@ -112,13 +135,6 @@
       target.innerHTML = blocks.join("");
     }
 
-    function briefVoiceLabel(voice) {
-      const normalized = String(voice || "").trim().toLowerCase();
-      if (normalized === "executive") return "Executive/Product";
-      if (normalized === "operator") return "Operator/Technical";
-      return "";
-    }
-
     function briefEvidenceLookup(brief) {
       return brief && brief.evidence_lookup && typeof brief.evidence_lookup === "object"
         ? brief.evidence_lookup
@@ -161,25 +177,13 @@
       `;
     }
 
-    function renderBriefBullet(bullet, brief, linkContext, showVoiceLabel) {
-      const voice = String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase();
+    function renderBriefBullet(bullet, brief, linkContext) {
       const text = String(bullet && bullet.text ? bullet.text : "").trim();
       if (!text) return "";
-      const voiceLabel = showVoiceLabel ? briefVoiceLabel(voice) : "";
-      const itemClasses = ["brief-bullet"];
-      if (voiceLabel) {
-        itemClasses.push("has-voice");
-      }
-      if (voice === "executive" || voice === "operator") {
-        itemClasses.push(voice);
-      }
-      const prefixHtml = voiceLabel
-        ? `<span class="brief-bullet-prefix">${escapeHtml(voiceLabel)}:</span>`
-        : "";
       const evidenceHtml = renderBriefEvidence(bullet, brief, linkContext);
       return `
-        <li class="${escapeHtml(itemClasses.join(" "))}">
-          ${prefixHtml}<span class="brief-bullet-copy">${linkifyNarrativeText(text, linkContext)}</span>
+        <li class="brief-bullet">
+          <span class="brief-bullet-copy">${linkifyNarrativeText(text, linkContext)}</span>
           ${evidenceHtml ? `<div class="brief-bullet-support">${evidenceHtml}</div>` : ""}
         </li>
       `;
@@ -188,29 +192,64 @@
     function renderBriefMeta(brief) {
       if (!brief || typeof brief !== "object") return "";
       const source = String(brief.source || "").trim().toLowerCase();
-      if (source === "provider" || source === "cache" || source === "deterministic") {
+      if (source === "provider" || source === "cache") {
         const generated = compactTimestamp(brief.generated_utc);
-        const cacheMode = String(brief.cache_mode || "").trim().toLowerCase();
-        const sourceLabel = source === "provider"
-          ? "AI narrative · provider"
-          : (source === "cache"
-            ? (cacheMode === "fallback" ? "AI narrative · last known good cache" : "AI narrative · cache")
-            : "Deterministic local brief");
         return `
           <div class="standup-brief-meta">
-            <span class="standup-brief-chip">${escapeHtml(sourceLabel)}</span>
             <span class="standup-brief-generated">Generated ${escapeHtml(generated)}</span>
           </div>
         `;
       }
-      if (source === "legacy") {
-        return '<div class="brief-legacy-note">Legacy retained-history snapshot rendered through the compatibility path.</div>';
-      }
       return "";
     }
 
-    function renderBriefNotice(brief) {
+    function briefHasRenderableNarrative(brief) {
+      if (!brief || typeof brief !== "object") return false;
+      if (String(brief.status || "").trim() !== "ready") return false;
+      const source = String(brief.source || "").trim().toLowerCase();
+      return source === "provider" || source === "cache";
+    }
+
+    function syncBriefPresentationChrome(brief) {
+      const card = document.getElementById("standup-brief-card");
+      const copyButton = document.getElementById("copy-brief");
+      const copyStatus = document.getElementById("brief-copy-status");
+      const hasNarrative = briefHasRenderableNarrative(brief);
+
+      if (card) {
+        card.classList.toggle("standup-brief-card--compact", !hasNarrative);
+        if (card.dataset) {
+          card.dataset.briefMode = hasNarrative ? "narrative" : "status";
+        }
+      }
+
+      if (copyButton) {
+        copyButton.classList.toggle("hidden", !hasNarrative);
+        copyButton.disabled = !hasNarrative;
+        if (hasNarrative) {
+          copyButton.removeAttribute("aria-hidden");
+          copyButton.removeAttribute("tabindex");
+        } else {
+          copyButton.setAttribute("aria-hidden", "true");
+          copyButton.setAttribute("tabindex", "-1");
+        }
+      }
+
+      if (!hasNarrative && copyStatus) {
+        copyStatus.classList.add("hidden");
+        copyStatus.classList.remove("warn");
+        copyStatus.textContent = "";
+        copyStatus.title = "";
+      }
+    }
+
+    function visibleBriefNotice(brief) {
       const notice = brief && brief.notice && typeof brief.notice === "object" ? brief.notice : {};
+      return notice;
+    }
+
+    function renderBriefNotice(brief) {
+      const notice = visibleBriefNotice(brief);
       const title = String(notice.title || "").trim();
       const message = String(notice.message || "").trim();
       if (!title && !message) return "";
@@ -223,7 +262,18 @@
     }
 
     function renderUnavailableBrief(brief) {
-      return "";
+      const diagnostics = brief && brief.diagnostics && typeof brief.diagnostics === "object" ? brief.diagnostics : {};
+      const title = String(diagnostics.title || "").trim() || "Standup brief unavailable";
+      const message = String(diagnostics.message || "").trim() || "No standup brief is available for this view.";
+      const retryUtc = String(diagnostics.next_retry_utc || "").trim();
+      const retryCopy = retryUtc ? `Next retry ${compactTimestamp(retryUtc)}.` : "";
+      return `
+        <div class="brief-status-card brief-status-card--warn brief-status-card--compact" role="status" aria-live="polite">
+          <div class="brief-status-title">${escapeHtml(title)}</div>
+          <div class="brief-status-copy">${escapeHtml(message)}</div>
+          ${retryCopy ? `<div class="brief-status-meta">${escapeHtml(retryCopy)}</div>` : ""}
+        </div>
+      `;
     }
 
     function renderReadyBrief(brief, linkContext) {
@@ -231,13 +281,8 @@
       const sectionHtml = STANDUP_BRIEF_SECTION_SPECS.map((spec) => {
         const section = sections.find((row) => row && String(row.key || "").trim() === spec.key) || { bullets: [] };
         const bullets = Array.isArray(section.bullets) ? section.bullets : [];
-        const voiceCount = new Set(
-          bullets
-            .map((bullet) => String(bullet && bullet.voice ? bullet.voice : "").trim().toLowerCase())
-            .filter(Boolean)
-        ).size;
         const items = bullets
-          .map((bullet) => renderBriefBullet(bullet, brief, linkContext, voiceCount > 1))
+          .map((bullet) => renderBriefBullet(bullet, brief, linkContext))
           .filter(Boolean)
           .join("");
         return `
@@ -263,7 +308,7 @@
       const scopedWorkstream = WORKSTREAM_RE.test(String(safeState.workstream || "").trim())
         ? String(safeState.workstream || "").trim()
         : "";
-      const notice = safeBrief.notice && typeof safeBrief.notice === "object" ? safeBrief.notice : {};
+      const notice = visibleBriefNotice(safeBrief);
       const hasNotice = Boolean(String(notice.title || "").trim() || String(notice.message || "").trim());
       const dataset = {
         briefStatus: String(safeBrief.status || "").trim(),
@@ -287,12 +332,13 @@
       const linkContext = briefLinkContext(payload, state);
       CURRENT_STANDUP_BRIEF = brief;
       applyBriefDataset(target, brief, state);
+      syncBriefPresentationChrome(brief);
 
       if (!brief || typeof brief !== "object") {
         target.innerHTML = "";
         return;
       }
-      if (String(brief.status || "").trim() !== "ready") {
+      if (!briefHasRenderableNarrative(brief)) {
         target.innerHTML = renderUnavailableBrief(brief);
         return;
       }

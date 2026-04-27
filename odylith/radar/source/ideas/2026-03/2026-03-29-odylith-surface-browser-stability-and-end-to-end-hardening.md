@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-017
-title: Odylith Surface Browser Stability and End-to-End Hardening
+title: Surface Browser Stability and End-to-End Hardening
 date: 2026-03-29
 priority: P0
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: rendered surface stability, shell routing, deep links, browser smoke coverage, and release confidence
 sizing: M
 complexity: High

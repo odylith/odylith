@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
+from odylith.runtime.orchestration import subagent_orchestrator_support as orchestrator_support
 from odylith.runtime.orchestration import subagent_router as router
 
 
 def test_surface_prefixes_recognize_odylith_owned_guidance_paths() -> None:
-    assert router.surface_prefixes_for_path("odylith/skills/subagent-router/SKILL.md") == frozenset(
+    assert router.surface_prefixes_for_path("odylith/skills/odylith-subagent-router/SKILL.md") == frozenset(
         {"odylith", "skills", "docs"}
     )
     assert router.surface_prefixes_for_path("odylith/runtime/SUBAGENT_OPERATIONS.md") == frozenset(
@@ -16,15 +17,32 @@ def test_surface_prefixes_recognize_odylith_owned_guidance_paths() -> None:
     ) == frozenset({"src", "agents-guidelines", "docs"})
 
 
+def test_odylith_payload_component_ids_normalizes_component_rows_without_generator_leak() -> None:
+    components = orchestrator_support._odylith_payload_component_ids(  # noqa: SLF001
+        {
+            "components": [
+                {"entity_id": "execution-engine"},
+                {"entity_id": "execution-engine"},
+                {"entity_id": "governance-intervention-engine"},
+                {"entity_id": ""},
+                "ignored",
+            ]
+        }
+    )
+
+    assert components == ["execution-engine", "governance-intervention-engine"]
+    assert all("generator object" not in component for component in components)
+
+
 def test_implied_write_surface_validation_accepts_odylith_owned_guidance_paths() -> None:
     request = orchestrator.OrchestrationRequest(
         prompt="Fix a validation-heavy router slice and refresh the matching skills guidance.",
         acceptance_criteria=[
             "Refresh the operator guidance.",
-            "Keep the slice bounded to odylith/skills/subagent-router/SKILL.md and odylith/runtime/SUBAGENT_OPERATIONS.md.",
+            "Keep the slice bounded to odylith/skills/odylith-subagent-router/SKILL.md and odylith/runtime/SUBAGENT_OPERATIONS.md.",
         ],
         candidate_paths=[
-            "odylith/skills/subagent-router/SKILL.md",
+            "odylith/skills/odylith-subagent-router/SKILL.md",
             "odylith/runtime/SUBAGENT_OPERATIONS.md",
         ],
         task_kind="implementation",

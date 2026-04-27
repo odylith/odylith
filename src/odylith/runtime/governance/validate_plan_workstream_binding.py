@@ -1,6 +1,6 @@
 """Validate strict plan-to-workstream binding for new/touched active plans.
 
-This validator is intentionally fail-closed for execution governance:
+This validator is intentionally fail-closed for execution engine:
 - New/touched active plans cannot keep `Backlog = -`.
 - Bound workstreams must exist and remain in active execution statuses.
 - `promoted_to_plan` must point back to the active plan path.
@@ -13,6 +13,7 @@ from pathlib import Path
 import re
 from typing import Sequence
 
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import agent_governance_intelligence as governance
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
@@ -33,10 +34,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve one validator path token against the repo root."""
+
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def validate_plan_workstream_binding(

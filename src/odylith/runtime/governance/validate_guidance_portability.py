@@ -1,3 +1,5 @@
+"""Validate Guidance Portability helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 import argparse
@@ -27,9 +29,23 @@ def _iter_root_guidance(repo_root: Path) -> Iterable[Path]:
     for candidate in sorted(repo_root.iterdir()):
         if candidate.is_file() and candidate.name.endswith(".md"):
             yield candidate
+    yield from _iter_claude_guidance(repo_root)
     root_agents = repo_root / "AGENTS.md"
     if root_agents.is_file():
         yield root_agents
+
+
+def _iter_claude_guidance(repo_root: Path) -> Iterable[Path]:
+    claude_root = repo_root / ".claude"
+    if not claude_root.is_dir():
+        return
+    worktrees_root = claude_root / "worktrees"
+    for path in sorted(claude_root.rglob("*.md")):
+        if not path.is_file():
+            continue
+        if worktrees_root in path.parents:
+            continue
+        yield path
 
 
 def _iter_odylith_guidance(repo_root: Path) -> Iterable[Path]:

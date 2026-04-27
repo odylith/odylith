@@ -1,8 +1,26 @@
 # Odylith
-Last updated: 2026-04-07
+
+## Odylith Discipline Contract
+- For v0.1.11, Odylith owns Odylith Discipline as a platform
+  contract: local pressure observations, deterministic hard laws, adaptive
+  stance facets, ranked affordances, credit-safe budgets, compact learning,
+  Tribunal promotion, and benchmark sovereignty. The contract ids are
+  `odylith_discipline.v1`,
+  `odylith_discipline_learning.v1`, and
+  `odylith_discipline_runtime_budget.v1`.
+- The public command surface is `odylith discipline status/check/explain`,
+  `odylith validate discipline --repo-root .`, and the existing
+  `odylith benchmark --family discipline` path. Odylith Discipline hot
+  paths are deterministic and must not spend host model or provider credits.
+- The host/lane support contract is
+  `odylith_discipline_host_lane_support.v1`: Codex and Claude
+  are first-class host families, dev/dogfood/consumer are first-class lanes,
+  and host model aliases resolve to adapter families without turning Odylith Discipline
+  classification into a model-consuming path.
+Last updated: 2026-04-15
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-14
 
 ## Purpose
 Odylith is the installable local governance and execution agent and platform
@@ -92,6 +110,7 @@ remediation, and rendering.
 ### Governance and surface materialization
 - `odylith sync`
 - `odylith dashboard refresh`
+- `odylith release ...`
 - `odylith governance ...`
 - `odylith validate ...`
 - `odylith validate self-host-posture ...`
@@ -107,6 +126,44 @@ remediation, and rendering.
 - `odylith subagent-orchestrator ...`
 
 Public docs should describe these commands, not direct module entrypoints.
+- When a top-level command forwards into a backend parser, the top-level
+  `--help` surface must expose the backend flags rather than a shim-only
+  placeholder. `odylith bug capture --help` and `odylith compass log --help`
+  are canonical examples of that forwarded-help contract.
+- Forwarded help must preserve the public command identity and copy, not just
+  the backend flags. `odylith atlas render --help` must not degrade to
+  `cli.py`, `__main__.py`, or wrapper-internal descriptions when the command
+  routes through a lightweight proxy module.
+
+## Coding-Agent Host Contract
+- The default Odylith host contract is shared across Codex and Claude Code:
+  repo-root `AGENTS.md`, the repo-local launcher `./.odylith/bin/odylith`,
+  truthful `odylith ... --help`, and the grounded governance workflow should
+  mean the same thing on both hosts.
+- The baseline-safe Codex lane is the repo-root `AGENTS.md` contract plus the
+  repo-local launcher `./.odylith/bin/odylith`.
+- The checked-in `.codex/` project assets and repo-root `.agents/skills/`
+  shims are enhancements for hosts that honor them; they must not become the
+  only way routine governance work stays safe or discoverable.
+- Codex-specific shortcuts are only justified when a local capability probe or
+  native host feature materially reduces hops compared with the shared CLI
+  lane. The canonical proof surface for those optional optimizations is
+  `odylith codex compatibility`.
+- Repo-root `.agents/skills/` must stay a curated command-shim surface for the
+  high-frequency Odylith CLI lane: `start`, `context`, `query`,
+  `session-brief`, `sync`, `version`, `doctor`, `compass log`, and
+  `compass refresh`.
+- Specialist governance, packet, registry, diagram, and orchestration
+  workflows remain under `odylith/skills/` rather than being mirrored into the
+  default Codex discovery path.
+- Common consumer-lane governance authoring should stay one direct CLI hop:
+  `odylith bug capture --help`, `odylith backlog create --help`,
+  `odylith component register --help`, `odylith atlas scaffold --help`, and
+  `odylith compass log --help` must expose backend help instead of shim-only
+  parser surfaces.
+- Consumer-facing narration must keep `.agents/skills` lookup, missing-shim,
+  and fallback-source-path details implicit unless they change the next
+  user-visible action.
 
 ## Repository And State Layout
 ### Tracked product truth
@@ -121,6 +178,9 @@ Public docs should describe these commands, not direct module entrypoints.
   Canonical product component inventory.
 - `odylith/radar/source/`
   Product workstream backlog and ideas.
+- `odylith/radar/source/releases/`
+  Product repo-local release-planning truth for release catalog, alias
+  ownership, and append-only workstream targeting history.
 - `odylith/technical-plans/`
   Product implementation-plan record.
 - `odylith/casebook/bugs/`
@@ -248,6 +308,144 @@ Public docs should describe these commands, not direct module entrypoints.
    memory.
 3. Surfaces and coding-agent workflows read deterministic packets from the
    Context Engine rather than reparsing the repo every time.
+
+### Governed sync derivation contract
+- `odylith sync` is not allowed to behave like a bag of unrelated helpers that
+  all rediscover repo root, consumer profile, path canon, backlog specs,
+  Registry report state, and delivery inputs independently.
+- The correct execution shape is one sync-scoped derivation engine:
+  - one canonical repo root
+  - one consumer profile and truth-root resolution
+  - one canonical path-token space
+  - one shared parsed backlog/spec read model
+  - one shared Registry and delivery-intelligence evidence substrate
+  - one shared live governance context for release, workstream, and
+    execution-wave truth consumed by Compass and other runtime-backed surfaces
+- That shared derivation engine now owns one explicit derivation-generation
+  contract:
+  - projection/compiler/backend reuse is only legal when the runtime can prove
+    the active derivation generation still matches the substrate generation for
+    the current sync phase
+  - derivation generation advances on derivation-input mutations such as Atlas
+    catalog truth, Registry truth, traceability truth, and
+    delivery-intelligence truth, not on arbitrary generated HTML/JS churn
+- Shared projection substrates are immutable and content-addressed. The minimum
+  provenance tuple is:
+  - `repo_root`
+  - `projection_scope`
+  - `projection_fingerprint`
+  - `sync_generation`
+  - `code_version`
+  - output-affecting `flags`
+- Reuse must stay truthful:
+  - cache keys derive from content truth, generator code, and execution flags
+  - stat metadata may accelerate lookup, but it must not be the sole authority
+  - standalone and check-only posture must stay fail-closed and source-truth
+    equivalent
+  - if provenance, generation, or required-table expectations do not match,
+    the caller must rebuild locally instead of guessing
+- Shared reuse stops at the low-level substrate. Compass, Radar, Registry, and
+  other governed surfaces may share compiler/back-end substrates, but each
+  surface still owns its final payload shaping and final output bytes.
+- Generated outputs are content-addressed products of source truth. If a render
+  step produces byte-identical output for byte-identical inputs, Odylith should
+  not rewrite the file, should not dirty git, and should not invalidate
+  downstream derived work.
+- Heavy governed surfaces must also fingerprint their watched input cone and
+  emitted bundle set before payload construction so no-op Radar, Registry,
+  Casebook, and tooling-shell rerenders can exit before rebuilding the same
+  HTML/JS payloads.
+- When `odylith sync` has already selected a generated-surface render step,
+  that sync plan becomes the rebuild authority for the step. Radar, Registry,
+  Casebook, and tooling-shell renderers must therefore be able to bypass their
+  own expensive refresh-guard tree scan in that lane instead of paying for a
+  second rebuild decision before doing the real render work.
+- Runtime-backed render steps must run against settled truth. Atlas review and
+  catalog mutations, Registry spec reconciliation, and delivery-intelligence
+  refresh must settle before Compass, Radar, Registry, and shell consume the
+  projection/runtime lane, so one final warm can serve that whole render phase.
+- Selective sync also has a truth-only lane: when the explicit changed-path
+  slice is limited to Casebook bug markdown, active-plan files, and Registry
+  living-spec docs, `odylith sync` should validate and mirror that governed
+  memory slice without widening into Atlas, delivery-intelligence, or
+  dashboard renders. When those explicit changed paths already determine the
+  owned surfaces, the entrypoint must skip broad planner and git-rescan work
+  and keep only the targeted Radar/backlog validation still required by the
+  touched slice.
+- Forced/full sync must not pay the governance-packet reasoning lane just to
+  rediscover an all-surfaces impact set, and a direct sync projection warm must
+  prime the same-process runtime warm cache so later surface readers do not
+  rebuild the default projection again.
+- Within one sync phase, runtime-backed readers must reuse one already-warm
+  verdict per scope and one delivery-surface payload per argument set instead
+  of recomputing the same projection fingerprint chain on every load. Sync
+  must invalidate those session-scoped caches exactly when repo-owned truth or
+  delivery-intelligence artifacts change the active derivation phase.
+- Compass live governance context reuse must be keyed by the active sync
+  generation plus the settled traceability signature. If either changes, the
+  runtime must treat the previous release/workstream/wave snapshot as stale and
+  rebuild it locally instead of reusing a warm result.
+- Compass backlog-row reuse must also be keyed by the active sync generation
+  plus runtime mode. If either changes, or if the active sync session is
+  absent, Compass must rebuild the backlog rows locally instead of trusting a
+  stale warm payload.
+- Repo-scoped invalidation must also clear projected-input fingerprint caches,
+  not only warm verdicts, because generated derivation inputs such as the
+  traceability graph and delivery-intelligence artifact do not necessarily move
+  the workspace-activity token that guards projection fingerprint reuse.
+- Compass, Radar, and Registry payloads must carry additive runtime provenance
+  that explains:
+  - `projection_fingerprint`
+  - `projection_scope`
+  - `generation`
+  - `cache_hit`
+  - `built_from`
+  - `invalidated_by_step`
+- Projection-input tree signatures should be memoized per repo-state across
+  compatible scopes so default/reasoning/full compatibility checks do not keep
+  rescanning the same watched directories during one sync phase.
+- Projection invalidation must follow derivation inputs, not output noise:
+  generated HTML or JS writes are not allowed to clear warmed runtime state
+  unless they changed a projection input such as traceability truth,
+  delivery-intelligence truth, or other projection-owned source records.
+- Sync-side invalidation and any follow-up rerun lane must check the watched
+  derivation outputs before clearing warm state. Byte-identical traceability or
+  delivery outputs are not allowed to trigger a second compatible warm or a
+  second rerender just because the step executed.
+- Runtime projection readers for backlog rows, plan rows, bug rows, component
+  index, and Registry snapshots must reuse one signature-scoped row payload
+  within a stable projection fingerprint instead of reopening and reshaping the
+  same tables for later Compass, Radar, and Registry surfaces in the same run.
+- In-process heartbeat output is an operator hint, not a fixed per-step tax.
+  Sync must delay heartbeat emission until a step crosses a real slow-step
+  threshold, and fast steps must complete without paying a steady polling lane
+  or emitting misleading heartbeat chatter.
+- Projection/compiler/backend writes remain single-writer and atomic. Lock
+  batching is allowed, but the product must not weaken advisory-lock plus
+  atomic-replace semantics in order to chase latency.
+- Sync and runtime reuse must leave an operator-readable cache-explain trail
+  under `.odylith/cache/odylith-context-engine/` so invalidation events,
+  generation shifts, and surface reuse/rebuild decisions can be inspected after
+  the fact.
+- Component-artifact matching on the sync hot path must use indexed canonical
+  prefixes rather than repeated O(events x components x prefixes) normalization
+  scans, and follow-on Registry requirement sync passes must account for later
+  shell-facing steps that can still shift evidence consumed by component
+  forensics instead of running by superstition or skipping by false economy.
+- Source-bundle mirror artifacts under
+  `src/odylith/bundle/assets/odylith/...` must inherit canonical
+  generated/global policy when they are only echoing derived or coordination
+  truth, but mirror-only source docs must still map back to the owning
+  component. Registry workspace-activity collection must therefore dedupe
+  mirror/canonical aliases into one stable evidence token instead of treating
+  the final mirror step as fresh work every run.
+- The long-term ceiling is a reverse-dependency fixpoint engine or resident
+  daemon, but the first non-negotiable contract is simpler: one sync run must
+  reuse one shared read model instead of repeatedly reconstructing it.
+- Atlas auto-update is part of that fail-closed contract: `--all-stale`
+  review-only selections must not short-circuit on cached guard hits while the
+  catalog still reports stale diagrams, or sync and standalone proof will
+  diverge on the same source truth.
 
 ### 3. Decide execution posture
 1. `odylith subagent-router` decides whether one bounded task stays local or is
@@ -402,6 +600,10 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-11 · Implementation:** B-090 is closed.
+  - Scope: B-090
+- **2026-04-11 · Implementation:** B-089 has landed on 2026/freedom/v0.1.11 as the planned two-commit pair, working tree clean: 9402f5d — Mirror Codex host parity into Claude with baked CLI dispatchers (56 files:...
+  - Scope: B-089
 - **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
   - Scope: B-021, B-022
   - Evidence: README.md, docs/benchmarks/README.md +3 more
@@ -411,10 +613,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
 - **2026-03-23 · Decision:** Successor created: B-276 reopens B-275 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
-- **2026-03-20 · Decision:** Successor created: B-266 reopens B-265 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/casebook/CURRENT_SPEC.md +1 more
-- **2026-03-20 · Decision:** Successor created: B-258 reopens B-256 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -427,3 +625,18 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-02: Clarified the core product claim as control-plane leverage around the same base coding model, explicitly tying Odylith's value to improved context quality, search, validation, and recovery rather than any claim of beating model weights. (Plan: [B-033](odylith/radar/radar.html?view=plan&workstream=B-033))
 - 2026-04-05: Promoted the canonical benchmark guidance manifest into tracked product truth so benchmark and runtime guidance memory resolve from one family-tagged source instead of an implicit zero-guidance fallback. (Plan: [B-021](odylith/radar/radar.html?view=plan&workstream=B-021))
 - 2026-04-07: Split the hidden memory substrate into explicit governed subcomponents for projection bundle, projection snapshot, remote retrieval, and packet contracts so Registry can show the real memory topology instead of one coarse silhouette. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
+- 2026-04-08: Added `odylith release ...` and the repo-local release-planning contract so workstreams can target explicit ship lanes without smuggling release scope into prose, execution waves, or publication-only lore. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
+- 2026-04-12: Bound governed sync to a shared-read-model and content-addressed-write architecture so the product can cut warm sync latency by reusing one truthful derivation context instead of repeatedly rediscovering the same repo state. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-12: Tightened the governed sync fast path again so Compass reads backlog rows from the already-settled Radar source truth during sync and only the genuinely slow in-process render steps keep heartbeat wrapping; the same-day source-local proof came back at `5.9s` sync-reported / `6.96s` wall with `load_backlog_rows()` reduced to `0.034s` and `select.poll` reduced to `1.066s`. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Added truthful forwarded-help exposure for backend-owned CLI subcommands and a selective truth-only governed-memory sync lane so routine bug/plan/spec upkeep no longer requires source spelunking or a render-heavy sync wave. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Extended the quick-update contract so routine authoring commands rerender only their owned surface by default (`backlog create` -> Radar, `component register` -> Registry, `atlas scaffold` -> Atlas, `compass log` -> Compass), while selective direct Radar/Registry/Atlas/Casebook truth edits refresh the same surface-local lane and keep the shared projection compiler plus local LanceDB/Tantivy substrate fresh. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Propagated that owned-surface quick-refresh contract across repo-root guidance, consumer guidance, bundled docs, Codex shims, and Claude helper commands so dev, dogfood, and consumer lanes all teach the same single-surface refresh commands instead of a stale `dashboard refresh --surfaces <surface>` hop. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Tightened that quick-update lane again so explicit truth-only selective sync slices skip the runtime governance-packet planner and broad backlog preflight when the changed paths already determine the owned surfaces, source-truth bundle mirroring stays scoped to the explicit files instead of rescanning git, and single-surface Radar/Registry/Casebook refreshes stay on the in-process runtime fast path when the local LanceDB/Tantivy backend is ready. The same-day source-local proof came back at `radar refresh: 1.78s` wall, `registry refresh: 5.03s` wall, `casebook refresh: 1.67s` warm wall, `atlas refresh --atlas-sync: 0.35s` wall, and a four-surface selective sync at `6.9s` sync-reported / `7.33s` wall while the memory backend still reported `ready: true`. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Added a low-RAM-aware command-scoped `RuntimeReadSession`, one shared byte-budgeted process cache for hot runtime facts, an incremental `odylith show` import-graph manifest under `.odylith/runtime/latency-cache/`, fingerprint-gated no-op dashboard refresh reuse, and a shared Claude/Codex SessionStart stale-brief queue so repeated reads and refreshes stop widening into redundant work while the same LanceDB/Tantivy and surface-freshness invariants stay intact. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-18: Hardened the governed sync executor after B-110 QA exposed a structured-refresh return bug: callable sync steps now coerce pass/fail/queued dictionaries into explicit exit status, preserve queued refreshes as non-failures, and fail closed on malformed counters or failed structured payloads. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-14: Hardened the Codex post-bash governed-refresh lane so command-scoped selective sync stays exact under dirty worktrees, rename/move operations, shell control and redirection tails, and explicit inline `python -c` / `node -e` file-write one-liners, while Claude preserved the direct exact-path `PostToolUse` lane as the parity reference. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Re-profiled the old worst-row CLI lanes on the live source-local runtime and confirmed the earlier screenshot-class latency is stale: `dashboard refresh` now measures `7.75s` cold / `0.98s` warm, `context-engine warmup` `5.00s` cold / `1.47s` warm, `show` `1.03s` cold / `0.53s` warm, `governance-slice` `0.89s`, `query` `1.45s` cold / `1.37s` warm, `context-engine query` `1.40s` cold / `1.32s` warm, and `claude session-start` `1.96s` cold / `2.14s` warm. `impact` remains the main cold-path outlier at `5.65s` cold / `1.90s` warm. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
+- 2026-04-14: Narrowed the repo-root Codex skill surface to explicit command shims for the high-frequency CLI lane so routine governance upkeep defaults back to `AGENTS.md`, the launcher, and truthful help instead of a mirrored specialist skill stack. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
+- 2026-04-14: Extended the consumer-lane fast path so common governed authoring commands (`bug capture`, `backlog create`, `component register`, `atlas scaffold`, `compass log`) forward backend help and the installed guidance keeps shim and fallback plumbing out of normal user-facing narration. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
+- 2026-04-14: Tightened the forwarded-help contract so Atlas public help surfaces keep the real `odylith atlas ...` command name and user-facing descriptions instead of leaking `cli.py`, `__main__.py`, or refresh-wrapper copy. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
+- 2026-04-14: Reframed the host guidance so the default lane stays shared across Codex and Claude Code, while Codex-only advice is limited to capability-gated project-asset optimizations such as `odylith codex compatibility`. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))

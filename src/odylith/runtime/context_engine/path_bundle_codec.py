@@ -1,23 +1,11 @@
+"""Path Bundle Codec helpers for the Odylith context engine layer."""
+
 from __future__ import annotations
 
 from typing import Any
 from typing import Sequence
 
-
-def _string_rows(value: Any) -> list[str]:
-    rows: list[str] = []
-    seen: set[str] = set()
-    if isinstance(value, str):
-        value = [value]
-    if not isinstance(value, Sequence):
-        return rows
-    for item in value:
-        token = str(item or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
+from odylith.runtime.common.value_coercion import string_rows
 
 
 def _candidate_prefix(path: str, prefix_segments: int) -> str:
@@ -33,7 +21,7 @@ def _encode_bundle(prefix: str, rows: Sequence[str]) -> str:
 
 
 def compact_path_rows(rows: Sequence[str]) -> list[str]:
-    normalized = _string_rows(rows)
+    normalized = string_rows(rows, allow_scalar=True, allow_sequence=True)
     if len(normalized) < 2:
         return normalized
     remaining = set(normalized)
@@ -66,7 +54,7 @@ def compact_path_rows(rows: Sequence[str]) -> list[str]:
 
 def expand_path_rows(value: Any) -> list[str]:
     expanded: list[str] = []
-    for token in _string_rows(value):
+    for token in string_rows(value, allow_scalar=True, allow_sequence=True):
         if "{" not in token or not token.endswith("}"):
             expanded.append(token)
             continue
@@ -76,7 +64,7 @@ def expand_path_rows(value: Any) -> list[str]:
             expanded.append(token)
             continue
         expanded.extend(f"{prefix}{suffix}" for suffix in suffixes)
-    return _string_rows(expanded)
+    return string_rows(expanded, allow_scalar=True, allow_sequence=True)
 
 
 __all__ = [

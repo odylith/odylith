@@ -101,9 +101,9 @@ Related Bugs:
 - [x] [FAQ.md](/Users/freedom/code/odylith/odylith/FAQ.md)
 - [x] [INSTALL_AND_UPGRADE_RUNBOOK.md](/Users/freedom/code/odylith/odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
 - [x] [UPGRADE_AND_RECOVERY.md](/Users/freedom/code/odylith/odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/session-context/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-session-context/SKILL.md)
 - [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-context-engine-operations/SKILL.md)
-- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/delivery-governance-surface-ops/SKILL.md)
+- [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
 - [x] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/odylith/CURRENT_SPEC.md)
 - [x] bundled mirrors under [src/odylith/bundle/assets/odylith](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith)
 - [x] [test_cli.py](/Users/freedom/code/odylith/tests/unit/test_cli.py)
@@ -127,8 +127,8 @@ Related Bugs:
         focused contract tests on the updated text.
 
 ## Validation/Test Plan
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/test_cli.py tests/unit/install/test_agents.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_tooling_context_routing.py tests/integration/install/test_manager.py`
-- [x] `PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_tooling_context_packet_builder.py tests/unit/runtime/test_odylith_benchmark_runner.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py tests/unit/install/test_agents.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/unit/runtime/test_tooling_context_routing.py tests/integration/install/test_manager.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_tooling_context_packet_builder.py tests/unit/runtime/test_odylith_benchmark_runner.py`
 - [x] `git diff --check`
 
 ## Rollout/Communication

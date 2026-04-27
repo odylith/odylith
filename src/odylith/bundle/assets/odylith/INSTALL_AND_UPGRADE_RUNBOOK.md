@@ -78,7 +78,8 @@
   `.odylith/runtime/versions/`; they do not silently fall back into
   consumer-machine Python.
 - Verified release installs are the supported consumer contract.
-- Root `AGENTS.md` gets one Odylith pointer block.
+- Root `AGENTS.md` and `CLAUDE.md` each get one Odylith pointer block when
+  those guidance files exist after install.
 
 ## Isolation Guarantees
 
@@ -138,6 +139,8 @@
 - Poisoned-local-state repair path: `./.odylith/bin/odylith doctor --repo-root . --repair --reset-local-state`
 - Temporary agent-off switch: `./.odylith/bin/odylith off --repo-root .`
 - Re-enable switch: `./.odylith/bin/odylith on --repo-root .`
-- Uninstall preserves customer-owned `odylith/` truth, preserved local `.odylith/` state, and only removes the Odylith block in root `AGENTS.md`.
+- Uninstall preserves customer-owned `odylith/` truth, preserved local
+  `.odylith/` state, and only removes the Odylith block from supported root
+  guidance files such as `AGENTS.md` and `CLAUDE.md`.
 - Do not delete customer-owned Odylith truth, context, or local operational history to "clean" an install.
 - Do not ask users to clone Odylith for installation.

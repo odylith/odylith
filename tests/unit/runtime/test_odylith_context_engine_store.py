@@ -1,14 +1,16 @@
 import json
 from pathlib import Path
 
+from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime as grounding_runtime
-from odylith.runtime.context_engine import odylith_context_engine_session_packet_runtime as session_packet_runtime
-from odylith.runtime.context_engine import odylith_context_engine_projection_surface_runtime as surface_runtime
+from odylith.runtime.context_engine import odylith_context_engine_store as store
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as session_packet_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_registry_runtime as surface_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime as projection_search_runtime
 from odylith.runtime.context_engine import projection_repo_state_runtime
-from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.common.consumer_profile import write_consumer_profile
 from odylith.runtime.governance import component_registry_intelligence as component_registry
+from odylith.runtime.governance import sync_session
 
 
 def test_load_backlog_detail_uses_cached_runtime_projection_rows(monkeypatch, tmp_path: Path) -> None:
@@ -72,20 +74,128 @@ def test_load_backlog_detail_uses_cached_runtime_projection_rows(monkeypatch, tm
     second = store.load_backlog_detail(repo_root=repo_root, workstream_id="B-999", runtime_mode="local")
 
     assert first == second
-    assert first == {
+    assert first["idea_id"] == "B-999"
+    assert first["idea_file"] == "odylith/radar/source/ideas/2026-03/b-999-fast-path.md"
+    assert first["title"] == "Fast path"
+    assert first["metadata"] == {
         "idea_id": "B-999",
-        "idea_file": "odylith/radar/source/ideas/2026-03/b-999-fast-path.md",
-        "metadata": {
-            "idea_id": "B-999",
-            "title": "Fast path",
-            "promoted_to_plan": "odylith/technical-plans/b-999-plan.md",
-        },
-        "sections": {
-            "Context": "Runtime-backed workstream detail.",
-        },
-        "search_body": idea_path.read_text(encoding="utf-8"),
+        "title": "Fast path",
         "promoted_to_plan": "odylith/technical-plans/b-999-plan.md",
     }
+    assert first["sections"] == {
+        "Context": "Runtime-backed workstream detail.",
+    }
+    assert first["search_body"] == idea_path.read_text(encoding="utf-8")
+    assert first["promoted_to_plan"] == "odylith/technical-plans/b-999-plan.md"
+    assert first["problem"] == ""
+    assert first["customer"] == ""
+    assert first["opportunity"] == ""
+    assert first["founder_pov"] == ""
+    assert first["success_metrics"] == ""
+    assert calls == {"execute": 1, "close": 1}
+
+
+def test_load_backlog_list_reuses_cached_runtime_rows(monkeypatch, tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+    calls = {"execute": 0, "close": 0}
+
+    class _FakeCursor:
+        def __init__(self, rows):  # noqa: ANN001
+            self._rows = rows
+
+        def fetchone(self):  # noqa: ANN001
+            return self._rows[0] if self._rows else None
+
+        def fetchall(self):  # noqa: ANN001
+            return list(self._rows)
+
+    class _FakeConnection:
+        def execute(self, query: str, params=()):  # noqa: ANN001
+            calls["execute"] += 1
+            if "FROM projection_state" in query:
+                return _FakeCursor([{"payload_json": json.dumps({"updated_utc": "2026-04-11T00:00:00Z"})}])
+            section = str(params[0]) if params else ""
+            return _FakeCursor(
+                [
+                    {
+                        "rank": "1" if section == "active" else "-",
+                        "idea_id": f"B-{section[:3].upper() or '000'}",
+                        "title": f"{section.title()} item",
+                        "priority": "P1",
+                        "ordering_score": "100",
+                        "metadata_json": json.dumps({"commercial_value": "4", "status": section}),
+                        "idea_file": f"odylith/radar/source/ideas/{section}.md",
+                    }
+                ]
+            )
+
+        def close(self) -> None:
+            calls["close"] += 1
+
+    store.clear_runtime_process_caches(repo_root=repo_root)
+    monkeypatch.setitem(store.load_backlog_list.__globals__, "_warm_runtime", lambda **_kwargs: True)
+    monkeypatch.setitem(store.load_backlog_list.__globals__, "projection_input_fingerprint", lambda **_kwargs: "projection-fingerprint")
+    monkeypatch.setitem(store.load_backlog_list.__globals__, "_connect", lambda repo_root: _FakeConnection())
+    monkeypatch.setitem(
+        store.load_backlog_list.__globals__,
+        "_load_backlog_projection",
+        lambda **_kwargs: {"rationale_map": {"B-ACT": ["cached rationale"]}},
+    )
+
+    first = store.load_backlog_list(repo_root=repo_root, runtime_mode="auto")
+    second = store.load_backlog_list(repo_root=repo_root, runtime_mode="auto")
+
+    assert first == second
+    assert first["updated_utc"] == "2026-04-11T00:00:00Z"
+    assert first["rationale_map"] == {"B-ACT": ["cached rationale"]}
+    assert calls == {"execute": 5, "close": 1}
+
+
+def test_load_component_index_reuses_cached_runtime_rows(monkeypatch, tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+    calls = {"execute": 0, "close": 0}
+
+    class _FakeCursor:
+        def fetchall(self):  # noqa: ANN001
+            return [
+                {
+                    "component_id": "odylith",
+                    "name": "Odylith",
+                    "aliases_json": "[]",
+                    "workstreams_json": "[\"B-091\"]",
+                    "diagrams_json": "[\"D-036\"]",
+                    "owner": "freedom-research",
+                    "status": "active",
+                    "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
+                    "metadata_json": json.dumps({"component_id": "odylith", "name": "Odylith"}),
+                }
+            ]
+
+    class _FakeConnection:
+        def execute(self, query: str):  # noqa: ANN001
+            assert "FROM components" in query
+            calls["execute"] += 1
+            return _FakeCursor()
+
+        def close(self) -> None:
+            calls["close"] += 1
+
+    store.clear_runtime_process_caches(repo_root=repo_root)
+    monkeypatch.setitem(store.load_component_index.__globals__, "_warm_runtime", lambda **_kwargs: True)
+    monkeypatch.setitem(
+        store.load_component_index.__globals__,
+        "projection_input_fingerprint",
+        lambda **_kwargs: "projection-fingerprint",
+    )
+    monkeypatch.setitem(store.load_component_index.__globals__, "_connect", lambda repo_root: _FakeConnection())
+
+    first = store.load_component_index(repo_root=repo_root, runtime_mode="auto")
+    second = store.load_component_index(repo_root=repo_root, runtime_mode="auto")
+
+    assert first.keys() == {"odylith"}
+    assert first == second
     assert calls == {"execute": 1, "close": 1}
 
 
@@ -126,6 +236,7 @@ def test_load_backlog_detail_falls_back_to_markdown_specs_when_runtime_not_ready
     assert detail is not None
     assert detail["idea_file"] == "odylith/radar/source/ideas/2026-03/b-010-fallback.md"
     assert detail["promoted_to_plan"] == "odylith/technical-plans/b-010-plan.md"
+    assert detail["title"] == "Fallback detail"
     assert detail["metadata"]["title"] == "Fallback detail"
     assert detail["sections"] == {"Summary": "Fallback markdown parsing still works."}
 
@@ -468,54 +579,6 @@ def test_load_registry_detail_grounding_light_uses_runtime_component_fast_path(m
     assert calls["close"] == 1
 
 
-def test_build_session_brief_forwards_retain_impact_internal_context(monkeypatch, tmp_path: Path) -> None:
-    captured: dict[str, object] = {}
-
-    def _fake_build_session_brief(**kwargs):  # noqa: ANN001
-        captured.update(kwargs)
-        return {"changed_paths": list(kwargs.get("changed_paths", []))}
-
-    monkeypatch.setattr(session_packet_runtime, "build_session_brief", _fake_build_session_brief)
-
-    payload = store.build_session_brief(
-        repo_root=tmp_path,
-        changed_paths=["odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"],
-        runtime_mode="local",
-        delivery_profile="codex_hot_path",
-        family_hint="exact_path_ambiguity",
-        retain_impact_internal_context=False,
-        skip_impact_runtime_warmup=True,
-    )
-
-    assert payload == {"changed_paths": ["odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md"]}
-    assert captured["retain_impact_internal_context"] is False
-    assert captured["skip_impact_runtime_warmup"] is True
-
-
-def test_build_session_bootstrap_forwards_retain_impact_internal_context(monkeypatch, tmp_path: Path) -> None:
-    captured: dict[str, object] = {}
-
-    def _fake_build_session_bootstrap(**kwargs):  # noqa: ANN001
-        captured.update(kwargs)
-        return {"changed_paths": list(kwargs.get("changed_paths", []))}
-
-    monkeypatch.setattr(session_packet_runtime, "build_session_bootstrap", _fake_build_session_bootstrap)
-
-    payload = store.build_session_bootstrap(
-        repo_root=tmp_path,
-        changed_paths=["AGENTS.md", "odylith/AGENTS.md"],
-        runtime_mode="local",
-        delivery_profile="codex_hot_path",
-        family_hint="broad_shared_scope",
-        retain_impact_internal_context=False,
-        skip_impact_runtime_warmup=True,
-    )
-
-    assert payload == {"changed_paths": ["AGENTS.md", "odylith/AGENTS.md"]}
-    assert captured["retain_impact_internal_context"] is False
-    assert captured["skip_impact_runtime_warmup"] is True
-
-
 def test_build_session_brief_hot_path_requests_unfinalized_impact(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
 
@@ -549,12 +612,104 @@ def test_build_session_brief_hot_path_requests_unfinalized_impact(monkeypatch, t
         repo_root=tmp_path,
         changed_paths=["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="release_publication",
     )
 
     assert isinstance(payload.get("context_packet"), dict)
     assert captured["finalize_packet"] is False
+
+
+def test_build_session_brief_hot_path_preserves_guidance_behavior_contract(monkeypatch, tmp_path: Path) -> None:
+    def _fake_build_impact_report(**kwargs):  # noqa: ANN001
+        return {
+            "changed_paths": list(kwargs.get("changed_paths", [])),
+            "explicit_paths": list(kwargs.get("changed_paths", [])),
+            "candidate_workstreams": [],
+            "workstream_selection": {"state": "none", "reason": "narrow first"},
+            "selection_state": "none",
+            "selection_reason": "narrow first",
+            "selection_confidence": "low",
+            "context_packet_state": "gated_ambiguous",
+            "components": [],
+            "diagrams": [],
+            "docs": [],
+            "recommended_commands": [],
+            "recommended_tests": [],
+            "engineering_notes": {},
+            "miss_recovery": {},
+            "truncation": {},
+            "full_scan_recommended": False,
+            "full_scan_reason": "",
+            "fallback_scan": {},
+        }
+
+    guidance_summary = {
+        "contract": "odylith_guidance_behavior_runtime_summary.v1",
+        "family": "guidance_behavior",
+        "status": "available",
+        "validation_status": "not_run",
+        "case_count": 6,
+        "validator_command": "odylith validate guidance-behavior --repo-root .",
+        "runtime_layer_contract": {
+            "contract": "odylith_guidance_behavior_runtime_layers.v1",
+            "layers": [
+                "context_engine",
+                "execution_engine",
+                "memory_substrate",
+                "intervention_engine",
+                "tribunal",
+            ],
+            "hot_path": {"summary_only": True, "provider_calls": False},
+        },
+    }
+    captured_summary_kwargs: dict[str, object] = {}
+
+    monkeypatch.setattr(session_packet_runtime, "build_impact_report", _fake_build_impact_report)
+
+    def _fake_summary_for_packet(**kwargs):  # noqa: ANN001
+        captured_summary_kwargs.update(kwargs)
+        return dict(guidance_summary)
+
+    monkeypatch.setattr(
+        session_packet_runtime.tooling_context_packet_builder.guidance_behavior_runtime,
+        "summary_for_packet",
+        _fake_summary_for_packet,
+    )
+
+    payload = session_packet_runtime.build_session_brief(
+        repo_root=tmp_path,
+        changed_paths=["src/odylith/runtime/governance/validate_guidance_behavior.py"],
+        runtime_mode="local",
+        delivery_profile="agent_hot_path",
+        family_hint="guidance_behavior",
+        validation_command_hints=[
+            "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth"
+        ],
+    )
+
+    context_packet = dict(payload.get("context_packet", {}))
+    summary = dict(context_packet.get("guidance_behavior_summary", {}))
+    recommended_validation = dict(
+        dict(context_packet.get("execution_engine_handshake", {})).get("recommended_validation", {})
+    )
+
+    assert summary["status"] == "available"
+    assert summary["runtime_layer_contract"]["layers"] == [
+        "context_engine",
+        "execution_engine",
+        "memory_substrate",
+        "intervention_engine",
+        "tribunal",
+    ]
+    assert recommended_validation["guidance_behavior_status"] == "available"
+    assert list(captured_summary_kwargs["recommended_commands"]) == [
+        "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth"
+    ]
+    assert payload["recommended_commands"] == [
+        "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth",
+        guidance_summary["validator_command"],
+    ]
 
 
 def test_build_governance_slice_hot_path_requests_unfinalized_impact(monkeypatch, tmp_path: Path) -> None:
@@ -589,19 +744,19 @@ def test_build_governance_slice_hot_path_requests_unfinalized_impact(monkeypatch
         detail_levels.append(str(kwargs.get("detail_level", "full")).strip() or "full")
         return None
 
-    monkeypatch.setattr(store, "load_backlog_detail", _fake_load_backlog_detail)
-    monkeypatch.setattr(store, "load_registry_detail", lambda **kwargs: None)
-    monkeypatch.setattr(store, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
-    monkeypatch.setattr(store, "_governance_closeout_docs", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_governance_diagram_catalog_companions", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_companion_context_paths", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "load_backlog_detail", _fake_load_backlog_detail)
+    monkeypatch.setattr(grounding_runtime, "load_registry_detail", lambda **kwargs: None)
+    monkeypatch.setattr(grounding_runtime, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
+    monkeypatch.setattr(grounding_runtime, "_governance_closeout_docs", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_governance_diagram_catalog_companions", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_companion_context_paths", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: [])
 
     payload = grounding_runtime.build_governance_slice(
         repo_root=tmp_path,
         changed_paths=["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="release_publication",
     )
 
@@ -648,20 +803,20 @@ def test_build_governance_slice_hot_path_uses_grounding_light_workstream_detail(
         }
 
     monkeypatch.setattr(grounding_runtime, "build_impact_report", _fake_build_impact_report)
-    monkeypatch.setattr(store, "load_backlog_detail", _fake_load_backlog_detail)
-    monkeypatch.setattr(store, "load_registry_detail", lambda **kwargs: None)
-    monkeypatch.setattr(store, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
-    monkeypatch.setattr(store, "_governance_closeout_docs", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_governance_diagram_catalog_companions", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_companion_context_paths", lambda **kwargs: [])
-    monkeypatch.setattr(store, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "load_backlog_detail", _fake_load_backlog_detail)
+    monkeypatch.setattr(grounding_runtime, "load_registry_detail", lambda **kwargs: None)
+    monkeypatch.setattr(grounding_runtime, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
+    monkeypatch.setattr(grounding_runtime, "_governance_closeout_docs", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_governance_diagram_catalog_companions", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_companion_context_paths", lambda **kwargs: [])
+    monkeypatch.setattr(grounding_runtime, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: [])
 
     payload = grounding_runtime.build_governance_slice(
         repo_root=tmp_path,
         changed_paths=["odylith/registry/source/components/benchmark/CURRENT_SPEC.md"],
         workstream="B-020",
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="component_governance",
     )
 
@@ -706,19 +861,19 @@ def test_build_governance_slice_hot_path_prefers_authoritative_governance_docs_b
         return {"context_packet": {}, "route_ready": True}
 
     monkeypatch.setattr(grounding_runtime, "build_impact_report", _fake_build_impact_report)
-    monkeypatch.setattr(store, "load_backlog_detail", lambda **kwargs: None)
-    monkeypatch.setattr(store, "load_registry_detail", lambda **kwargs: None)
-    monkeypatch.setattr(store, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
-    monkeypatch.setattr(store, "_governance_closeout_docs", lambda **kwargs: ["README.md", "docs/benchmarks/README.md"])
-    monkeypatch.setattr(store, "_governance_diagram_catalog_companions", lambda **kwargs: ["odylith/atlas/source/catalog/diagrams.v1.json"])
-    monkeypatch.setattr(store, "_companion_context_paths", lambda **kwargs: ["odylith/technical-plans/example.md"])
-    monkeypatch.setattr(store, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: list(kwargs.get("docs", [])))
+    monkeypatch.setattr(grounding_runtime, "load_backlog_detail", lambda **kwargs: None)
+    monkeypatch.setattr(grounding_runtime, "load_registry_detail", lambda **kwargs: None)
+    monkeypatch.setattr(grounding_runtime, "_governance_surface_refs", lambda **kwargs: {"impacted_surfaces": {}, "reasons": {}})
+    monkeypatch.setattr(grounding_runtime, "_governance_closeout_docs", lambda **kwargs: ["README.md", "docs/benchmarks/README.md"])
+    monkeypatch.setattr(grounding_runtime, "_governance_diagram_catalog_companions", lambda **kwargs: ["odylith/atlas/source/catalog/diagrams.v1.json"])
+    monkeypatch.setattr(grounding_runtime, "_companion_context_paths", lambda **kwargs: ["odylith/technical-plans/example.md"])
+    monkeypatch.setattr(grounding_runtime, "_bounded_explicit_governance_closeout_docs", lambda **kwargs: list(kwargs.get("docs", [])))
     monkeypatch.setattr(
-        store,
+        grounding_runtime,
         "_governance_hot_path_docs",
         lambda **kwargs: ["odylith/registry/source/components/benchmark/CURRENT_SPEC.md"],
     )
-    monkeypatch.setattr(store, "_compact_hot_path_runtime_packet", lambda **kwargs: dict(kwargs.get("payload", {})))
+    monkeypatch.setattr(grounding_runtime, "_compact_hot_path_runtime_packet", lambda **kwargs: dict(kwargs.get("payload", {})))
     monkeypatch.setattr(store.tooling_context_packet_builder, "finalize_packet", _fake_finalize_packet)
 
     payload = grounding_runtime.build_governance_slice(
@@ -727,7 +882,7 @@ def test_build_governance_slice_hot_path_prefers_authoritative_governance_docs_b
         workstream="B-020",
         component="benchmark",
         runtime_mode="local",
-        delivery_profile="codex_hot_path",
+        delivery_profile="agent_hot_path",
         family_hint="component_governance",
     )
 
@@ -917,3 +1072,172 @@ def test_projection_input_fingerprint_recomputes_when_repo_state_changes(
 
     assert first != second
     assert calls["count"] == 2
+
+
+def test_load_delivery_surface_payload_reuses_sync_session_cache(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+    calls = {"artifact": 0, "slice": 0}
+
+    monkeypatch.setattr(store, "_warm_runtime", lambda **_: False)
+    monkeypatch.setattr(store, "_odylith_switch_snapshot", lambda **_: {"enabled": True})
+    monkeypatch.setattr(store, "load_orchestration_adoption_snapshot", lambda **_: {"status": "ready"})
+
+    def _fake_artifact(*, repo_root: Path) -> dict[str, object]:
+        assert repo_root == repo_root.resolve()
+        calls["artifact"] += 1
+        return {"shell": {"summary": {"count": 1}}, "workstreams": {"B-091": {"status": "active"}}}
+
+    def _fake_slice(*, payload, surface: str):  # noqa: ANN001
+        calls["slice"] += 1
+        return {
+            "surface": surface,
+            "summary": dict(payload.get("shell", {}).get("summary", {})),
+            "workstreams": dict(payload.get("workstreams", {})),
+        }
+
+    monkeypatch.setattr(store.delivery_intelligence_engine, "load_delivery_intelligence_artifact", _fake_artifact)
+    monkeypatch.setattr(store.delivery_intelligence_engine, "slice_delivery_intelligence_for_surface", _fake_slice)
+
+    with sync_session.activate_sync_session(sync_session.GovernedSyncSession(repo_root=repo_root)):
+        first = delivery_surface_payload_runtime.load_delivery_surface_payload(
+            repo_root=repo_root,
+            surface="shell",
+            runtime_mode="standalone",
+            include_shell_snapshots=False,
+        )
+        second = delivery_surface_payload_runtime.load_delivery_surface_payload(
+            repo_root=repo_root,
+            surface="shell",
+            runtime_mode="standalone",
+            include_shell_snapshots=False,
+        )
+
+    assert first == second
+    assert first is not second
+    assert calls == {"artifact": 1, "slice": 1}
+
+
+def test_load_delivery_surface_payload_includes_shell_snapshots_when_enabled(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.projection_search_runtime,
+        "_warm_runtime",
+        lambda **_: False,
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.runtime_learning_runtime,
+        "_odylith_switch_snapshot",
+        lambda **_: {"enabled": True},
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.runtime_learning_runtime,
+        "load_orchestration_adoption_snapshot",
+        lambda **_: {"status": "ready"},
+    )
+    monkeypatch.setattr(
+        store.delivery_intelligence_engine,
+        "load_delivery_intelligence_artifact",
+        lambda *, repo_root: {"shell": {"summary": {"count": 1}}},
+    )
+    monkeypatch.setattr(
+        store.delivery_intelligence_engine,
+        "slice_delivery_intelligence_for_surface",
+        lambda *, payload, surface: {
+            "surface": surface,
+            "summary": dict(payload.get("shell", {}).get("summary", {})),
+        },
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.runtime_learning_runtime,
+        "load_runtime_optimization_snapshot",
+        lambda **_: {"contract": "optimization_snapshot.v1", "status": "active"},
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.memory_snapshot_runtime,
+        "load_runtime_evaluation_snapshot",
+        lambda **_: {"contract": "evaluation_snapshot.v1", "status": "active"},
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.memory_snapshot_runtime,
+        "load_runtime_memory_snapshot",
+        lambda **kwargs: {
+            "contract": "memory_snapshot.v1",
+            "optimization_status": str(kwargs["optimization_snapshot"].get("status", "")).strip(),
+            "evaluation_status": str(kwargs["evaluation_snapshot"].get("status", "")).strip(),
+        },
+    )
+    monkeypatch.setattr(
+        delivery_surface_payload_runtime.runtime_learning_runtime,
+        "load_odylith_drawer_history",
+        lambda **_: {"contract": "odylith_drawer_history.v1", "packet_events": []},
+    )
+
+    payload = delivery_surface_payload_runtime.load_delivery_surface_payload(
+        repo_root=repo_root,
+        surface="shell",
+        runtime_mode="standalone",
+        include_shell_snapshots=True,
+    )
+
+    assert payload["surface"] == "shell"
+    assert payload["summary"] == {"count": 1}
+    assert payload["odylith_switch"] == {"enabled": True}
+    assert payload["orchestration_adoption_snapshot"] == {"status": "ready"}
+    assert payload["optimization_snapshot"] == {
+        "contract": "optimization_snapshot.v1",
+        "status": "active",
+    }
+    assert payload["evaluation_snapshot"] == {
+        "contract": "evaluation_snapshot.v1",
+        "status": "active",
+    }
+    assert payload["memory_snapshot"] == {
+        "contract": "memory_snapshot.v1",
+        "optimization_status": "active",
+        "evaluation_status": "active",
+    }
+    assert payload["odylith_drawer_history"] == {
+        "contract": "odylith_drawer_history.v1",
+        "packet_events": [],
+    }
+
+
+def test_warm_runtime_reuses_sync_session_cache(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True)
+    calls = {"count": 0}
+
+    def _fake_warm_runtime_uncached(**kwargs):  # noqa: ANN003
+        assert kwargs["repo_root"] == repo_root.resolve()
+        calls["count"] += 1
+        return True
+
+    monkeypatch.setattr(projection_search_runtime, "_warm_runtime_uncached", _fake_warm_runtime_uncached)
+
+    with sync_session.activate_sync_session(sync_session.GovernedSyncSession(repo_root=repo_root)):
+        assert projection_search_runtime._warm_runtime(  # noqa: SLF001
+            repo_root=repo_root,
+            runtime_mode="auto",
+            reason="test",
+            scope="default",
+        )
+        assert projection_search_runtime._warm_runtime(  # noqa: SLF001
+            repo_root=repo_root,
+            runtime_mode="auto",
+            reason="test",
+            scope="default",
+        )
+
+    assert calls["count"] == 1

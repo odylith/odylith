@@ -13,5 +13,5 @@ Use this guide for Odylith routing and orchestration behavior in the current rep
 
 - `odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md`
 - `odylith/agents-guidelines/GROUNDING_AND_NARROWING.md`
-- `odylith/skills/subagent-router/SKILL.md`
-- `odylith/skills/subagent-orchestrator/SKILL.md`
+- `odylith/skills/odylith-subagent-router/SKILL.md`
+- `odylith/skills/odylith-subagent-orchestrator/SKILL.md`

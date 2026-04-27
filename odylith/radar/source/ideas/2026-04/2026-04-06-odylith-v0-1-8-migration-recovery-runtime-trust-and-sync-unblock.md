@@ -1,13 +1,12 @@
 ---
 status: implementation
 idea_id: B-048
-title: Odylith v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock
+title: v0.1.8 Migration Recovery, Runtime Trust Robustness, and Sync Unblock
 date: 2026-04-06
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: managed runtime trust validation, repair and reinstall convergence, legacy migration auditing, Radar normalization before sync, sync failure summaries, lifecycle-plan output, and verifier warning presentation
 sizing: L
 complexity: High

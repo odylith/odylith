@@ -9,13 +9,29 @@
 <h2 align="center" style="font-size: 2.4rem;">Odylith Stops Coding Agents From Confidently Doing The Wrong Thing</h2>
 <p align="center" style="font-size: 1.35rem;"><strong>It makes coding agents operate like disciplined engineers instead of clever tourists.</strong></p>
 
-> [!IMPORTANT]
-> Odylith is not a standalone app or IDE. Install it into a repo, then use it
-> through Codex. Current public support is Codex only. In Odylith, Codex is
-> the execution interface and `odylith/index.html` is the operating surface
-> that keeps intent, constraints, topology, and execution state visible.
->
-> Odylith is GA on its supported public install platforms as of `2026-04-07`.
+## Intro
+
+Install Odylith into any repo. Use it through Codex or Claude Code.
+
+Without Odylith, every agent session starts from scratch. Reading the repo,
+inferring the architecture, guessing intent and constraints, discovering what
+went wrong last time. With Odylith, the agent starts from governed truth: the
+right slice, the real component boundaries, the live blockers, the invariants,
+the historical learnings from past failures, and the full execution history. It
+gets to the actual work faster, makes fewer wrong moves, and leaves durable
+evidence behind for the next session. The more you use Odylith, the better it
+gets. Every workstream, every bug, every component boundary, every decision
+teaches it more about your repo, so it grounds the next session deeper than the
+last.
+
+Odylith reasons about your repo through delivery intelligence, grounds every
+turn through local-first retrieval, governs every action through execution
+admissibility, adjudicates ambiguous postures through its Tribunal, and keeps
+its own durable memory across sessions. It runs through both Codex and Claude
+Code as first-class hosts.
+
+More on the operating frame:
+[Why Bolting Odylith Onto Codex Or Claude Code Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
 
 ## Quick Start
 
@@ -30,16 +46,21 @@ any subdirectory inside the same repo. The current GA platform contract covers
 macOS (Apple Silicon) and Linux (`x86_64`, `ARM64`). Intel macOS and Windows
 are not part of the current GA platform set.
 
-After install, open the repo in Codex. For first-run behavior,
-the first prompt to use, browser-shell behavior, and repo-root selection or
-reduced-mode details, see [First Run In An Odylith Repo](odylith/README.md#first-run).
-For more example prompts, see
-[Starter Prompt Inspirations](docs/STARTER_PROMPT_INSPIRATIONS.md).
-
 ## Prove It In 2 Minutes
 
-From the repo you just installed into, open `odylith/index.html` and follow the
-guidance in the Cheatsheet drawer.
+Open the repo in Codex or Claude Code and say:
+
+> **"Odylith, show me what you can do."**
+
+Odylith reads your repo — source structure, import graph, manifest files — and
+shows you the component boundaries, workstreams, architecture diagrams, and
+issues it can create. Each suggestion comes with the command to run it.
+
+Then open `odylith/index.html` in a browser and follow the Cheatsheet in the
+drawer.
+
+See **[Operator Instructions](docs/OPERATOR_INSTRUCTIONS.md)** for the full
+set of things you can ask the agent to do.
 
 > [!TIP]
 > **⭐ If Odylith makes your coding agent materially sharper in real repo work,
@@ -54,39 +75,24 @@ heart of the product: motion with a center, exploration with structure, and a
 path toward agentic AI swarms that replace rigid monoliths with adaptive,
 living networks.
 
-## Intro
+## Context Engine
 
-**Odylith changes the operating conditions for Codex.**
+The Context Engine answers one question: **"what is true and relevant?"** It
+narrows the repo to the smallest grounded slice before the agent reasons,
+plans, or asks the execution engine whether a move is admissible.
 
-- It replaces blind repo search with scoped grounding.
-- It gives the agent durable repo-local memory and a forensic trail.
-- It governs validation, diagnosis, recovery, and closeout.
+More on the Context Engine:
+[Context Engine](docs/CONTEXT_ENGINE.md)
 
-Base coding agents can read a repo, search files, sketch a plan, write code,
-and infer some local context from the code itself. But serious work depends on
-intent, constraints, ownership, validation obligations, and definition of done
-that are not reliably encoded in code alone.
+## Execution Engine
 
-With Odylith, that execution truth becomes explicit and durable in the
-repository, so the agent starts from governed context instead of
-reconstructing it from scratch on every turn.
+The execution engine answers one question: **"given what we know is true,
+what is the next admissible move?"** It sits between the Context Engine and
+the actual tool invocation layer, turning grounded context into a
+machine-readable contract that governs what the agent can and cannot do next.
 
-### Turn Requests Into Execution Truth
-
-Odylith gives coding agents two durable advantages: **delivery intelligence**
-and **delivery governance**.
-
-Delivery intelligence recovers intent, constraints, dependencies, topology,
-and validation requirements from the repository's real operating history.
-
-Delivery governance turns that into execution truth: the right slice, the
-right owner, the blockers, and the real definition of done.
-
-That is the real value: less time re-deriving the repository, more time making
-the right change.
-
-More on the operating frame:
-[Why Bolting Odylith Onto Codex Changes The Outcome](docs/WHY_ODYLITH_CHANGES_OUTCOMES.md)
+More on the execution engine:
+[Execution Engine](docs/EXECUTION_ENGINE.md)
 
 ## Tribunal
 
@@ -222,82 +228,93 @@ The example below shows case `CB-009` inside the Casebook shell.
 
 ## Benchmarks
 
+In chess, the first move does not decide the entire game. But it shapes the
+position. It defines the risk. It opens some lines and quietly closes others.
+Working with coding agents feels the same: the opening matters.
+
+**Odylith treats grounding as that opening move. In the v0.1.11 Grounding
+Benchmark, Odylith spends a median `+834` prompt-bundle input tokens and
+`+23 ms` packet time before the live agent run. That upfront cost is measured
+against substantially better grounding signals: required-path recall `+0.326`,
+validation-success proxy `+0.689`, and expectation-success proxy `+0.951`.
+In the matching Live Benchmark, that produces significant downstream savings:
+median total model tokens `-209,404` and median time to valid outcome
+`-1m 28s`, while live required-path recall, validation success, and expectation
+success also improve.**
+
+### v0.1.11 Current Benchmark Report
+
 Odylith publishes two benchmark views and keeps their claims separate:
 
-- `Grounding Benchmark` (`--profile diagnostic`): measures how well Odylith
-  builds the right grounded context before the live agent run
-- `Live Benchmark` (`--profile proof`): measures how well Odylith completes
-  the real task end to end against raw Codex CLI
+- `Grounding Benchmark`: measures how well Odylith builds the right grounded
+  context before the live agent run
+- `Live Benchmark`: measures how well Odylith completes the real task end to
+  end against Codex or Claude Code running without Odylith
 
-In README framing, `odylith_off` is the raw Codex CLI lane.
+In README framing, `odylith_off` means Codex or Claude Code running without
+Odylith.
 
-Current public proof posture is local-first memory on LanceDB plus Tantivy.
-These are first public eval runs and should be read as a baseline, not a
-ceiling. Odylith wins by grounding and operationalizing shared repo truth
-better, not by hiding truth from the baseline lane.
+Current v0.1.11 public proof posture is local-first on the Odylith Memory
+Substrate. These are first public eval runs and should be read as a baseline,
+not a ceiling. The current full live proof was executed on Codex, while bounded
+Codex and Claude smokes provide host-agnostic coverage and the benchmark
+contract remains host-neutral. Odylith wins by grounding and operationalizing
+shared repo truth better, not by hiding truth from the baseline lane or quietly
+using undeclared benchmark affordances.
 
 ### Grounding Benchmark
 
 > [!NOTE]
-> The Grounding Benchmark (`--profile diagnostic`) is not the product claim.
-> It isolates packet and prompt construction quality before any live Codex
-> session begins.
+> The Grounding Benchmark is not the product claim. It isolates packet and
+> prompt construction quality before any live host session begins.
 
 The Grounding Benchmark answers:
 
 - "Does Odylith build a better grounded packet/prompt than `odylith_off`?"
-- "What is the prep-time and prompt-size cost of Odylith’s retrieval/memory layer?"
+- "What is the prep-time and prompt-size cost of Odylith's retrieval/memory layer?"
 - "Does Odylith improve required-path coverage before the model starts working?"
 
-Grounding benchmark snapshot:
-[Current Grounding Benchmark Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md)
+Current grounding report:
+[9dcae95d5bb62c75](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
+generated `2026-04-25T11:20:25Z`, status `provisional_pass`.
 
-Grounding benchmark tables:
-[Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md)
+| Signal | Current grounding delta versus `odylith_off` |
+| --- | ---: |
+| Required-path recall | `+0.326` |
+| Required-path precision | `+0.049` |
+| Validation-success proxy | `+0.689` |
+| Critical required-path recall | `+0.278` |
+| Critical validation-success proxy | `+0.613` |
+| Expectation-success proxy | `+0.951` |
+| Median prompt-bundle input tokens | `+834` |
+| Median packet time | `+23 ms` |
 
-#### Grounding Graphs
-
-**Headline win:** Odylith starts the model with materially better grounding:
-`+0.320` required-path recall and `+0.690` validation-success proxy versus
-`odylith_off`.
-
-On the warm-cache diagnostic lane, `odylith_on` beat `odylith_off` across `37`
-seeded packet and prompt scenarios with:
-
-- `+0.320` required-path recall
-- `+0.084` required-path precision
-- `+0.690` validation-success proxy
-- `+7.048 ms` median wall clock (`9.881 ms` p95, `254.219 ms` total across all `37` pairs)
-
-The family heatmap uses the linked developer-first family order rather than raw
-token cost. The grounding quality frontier credits prompt-visible repo paths on
-the raw control lane, and the operating-posture view comes from the sampled
-`adoption_proof` slice.
+#### Current Grounding Graphs
 
 <p align="center">
   <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-family-heatmap.svg"
+    src="docs/benchmarks/grounding/odylith-benchmark-family-heatmap.svg"
     alt="Odylith grounding benchmark family heatmap"
     width="100%"
   />
 </p>
 <p align="center">
   <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-quality-frontier.svg"
+    src="docs/benchmarks/grounding/odylith-benchmark-quality-frontier.svg"
     alt="Odylith grounding benchmark quality frontier"
     width="100%"
   />
 </p>
 <p align="center">
   <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-frontier.svg"
+    src="docs/benchmarks/grounding/odylith-benchmark-frontier.svg"
     alt="Odylith grounding benchmark frontier"
     width="100%"
   />
 </p>
 <p align="center">
   <img
-    src="docs/benchmarks/diagnostic/odylith-benchmark-operating-posture.svg"
+    src="docs/benchmarks/grounding/odylith-benchmark-operating-posture.svg"
     alt="Odylith grounding benchmark operating posture"
     width="100%"
   />
@@ -306,42 +323,61 @@ the raw control lane, and the operating-posture view comes from the sampled
 ### Live Benchmark
 
 > [!TIP]
-> The Live Benchmark (`--profile proof`) is the product-claim lane. Current
-> full-proof status: `provisional_pass`.
+> The Live Benchmark is the product-claim lane. It measures full end-to-end task
+> completion after grounding, execution posture, focused checks, and validation
+> policy are allowed to operate under the declared comparison contract.
 
 The Live Benchmark answers:
 
-- "Does Odylith beat raw Codex CLI on the same live end-to-end task contract?"
+- "Does Odylith beat Codex or Claude Code without Odylith on the same live
+  end-to-end task contract?"
 - "What is the full matched-pair time to valid outcome?"
 - "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
 
-Live benchmark snapshot:
-[Current Live Benchmark Snapshot](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md)
+Current live proof report:
+[44f2a3d83d2c9975](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
+generated `2026-04-25T11:19:38Z`, status `provisional_pass`.
 
-Live benchmark tables:
-[Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md)
+| Signal | Current live proof delta versus `odylith_off` |
+| --- | ---: |
+| Required-path recall | `+0.258` |
+| Required-path precision | `+0.421` |
+| Hallucinated-surface rate | `-0.397` |
+| Validation success | `+0.081` |
+| Critical required-path recall | `+0.206` |
+| Critical validation success | `+0.097` |
+| Expectation success | `+0.688` |
+| Write-surface precision | `+0.011` |
+| Unnecessary widening | `-0.011` |
+| Median live-session input tokens | `-206,626` |
+| Median total model tokens | `-209,404` |
+| Median time to valid outcome | `-1m 28s` |
 
-#### Live Graphs
+Publication status:
 
-**Headline win:** Odylith reaches valid outcomes faster and with far less
-model spend: `-12.43s` median time to valid outcome and `-52,561` median
-live-session input tokens versus `odylith_off`.
+- hard-gate blockers: none
+- fairness contract passed: `True`
+- corpus seriousness floor passed: `True`
+- tracked-corpus coverage: `82 / 82` scenarios
+- full matched pairs: `164` across `warm` and `cold`
+- conservative published comparison: `82` same-scenario pairs
+- warm/cold robustness consistency: `True`
 
-On the conservative published proof view, `odylith_on` beat `odylith_off`
-across `37` seeded scenarios with:
+Read the timing and token wins as benchmark wall-clock and full-session spend,
+not solo-user interactive latency. Scenario-declared focused checks and no-op
+proxy evidence are part of the declared benchmark contract and remain visible
+in the machine-readable reports.
 
-- `-12.43s` median time to valid outcome
-- `-52,561` median live-session input tokens
-- `+0.227` required-path recall
-- `+0.168` required-path precision
-- `+0.393` expectation success
+Full current artifacts:
+[Live Snapshot](docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md),
+[Grounding Benchmark Snapshot](docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md),
+[Benchmark Tables](docs/benchmarks/BENCHMARK_TABLES.md), and
+[How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md).
+The versioned GitHub artifact bundle, including the compressed raw source
+truth, is stored under
+[docs/benchmarks/v0.1.11](docs/benchmarks/v0.1.11/README.md).
 
-This published view keeps the scenario-wise worst-of-warm/cold result for each
-scenario, drawn from `74` matched pairs (`148` total live results), so the
-headline stays conservative rather than cherry-picked.
-
-The family heatmap uses the linked developer-first family order rather than
-prompt-token cost.
+#### Current Live Graphs
 
 <p align="center">
   <img
@@ -372,8 +408,52 @@ prompt-token cost.
   />
 </p>
 
-Need help reading the graphs, reports, and artifacts? See
-[How To Read Odylith's Codex Benchmarks](docs/benchmarks/README.md).
+### v0.1.10 Benchmark Archive
+
+The previous README-backed benchmark bundle is retained under
+[docs/benchmarks/v0.1.10](docs/benchmarks/v0.1.10/README.md) instead of being
+mixed into the current v0.1.11 claim.
+
+- archived live proof snapshot: report `2d8444952aef28d2`, generated
+  `2026-04-24T00:57:09Z`, status `hold`
+- archived Grounding Benchmark snapshot: report `dd35a4aab061f49f`, generated
+  before the v0.1.11 refresh
+- archived legacy graph set: report `926bfeab4e887ade`, retained from the
+  older unprofiled graph filenames
+
+<details>
+<summary>v0.1.10 archived live graphs</summary>
+
+<p align="center">
+  <img
+    src="docs/benchmarks/v0.1.10/proof/odylith-benchmark-family-heatmap.svg"
+    alt="Archived Odylith live benchmark family heatmap"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/v0.1.10/proof/odylith-benchmark-quality-frontier.svg"
+    alt="Archived Odylith live benchmark quality frontier"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/v0.1.10/proof/odylith-benchmark-frontier.svg"
+    alt="Archived Odylith live benchmark frontier"
+    width="100%"
+  />
+</p>
+<p align="center">
+  <img
+    src="docs/benchmarks/v0.1.10/proof/odylith-benchmark-operating-posture.svg"
+    alt="Archived Odylith live benchmark operating posture"
+    width="100%"
+  />
+</p>
+
+</details>
 
 ## Best Fit Use Cases
 
@@ -414,5 +494,5 @@ This repo also uses Odylith on itself.
 - [What Gets Installed](docs/specs/odylith-repo-integration-contract.md#what-gets-installed)
 - [Repo Integration Contract](docs/specs/odylith-repo-integration-contract.md)
 - [Install and Upgrade Runbook](odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
-- [How To Read Odylith's Codex Benchmarks](docs/benchmarks/README.md)
+- [How To Read Odylith's Benchmark Proof](docs/benchmarks/README.md)
 - [Project Status And Disclosures](docs/STATUS_AND_DISCLOSURES.md)

@@ -1,5 +1,8 @@
 # Delivery And Governance Surfaces
 
+## CLI-First Non-Negotiable
+- CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
+
 - Odylith should carry closeout obligations, validation bundles, and affected-surface truth together.
 - Surface updates should be driven from grounded packet output, not freehand heuristics.
 - The right goal is truthful closeout with less operator effort, not more narration.
@@ -8,6 +11,7 @@
 ## Source Contracts
 - Use the local source contracts under `odylith/` as the operational authority for their surfaces:
   - `odylith/radar/source/AGENTS.md`
+  - `odylith/radar/source/releases/AGENTS.md`
   - `odylith/technical-plans/AGENTS.md`
   - `odylith/casebook/bugs/AGENTS.md`
   - `odylith/registry/source/AGENTS.md`
@@ -15,6 +19,14 @@
 ## Consumer Boundary
 - In consumer repos, an Odylith product issue uses these surfaces for diagnosis, not self-directed mutation.
 - Gather evidence from Radar, Atlas, Registry, Casebook, Compass, and plans as usual, but stop at maintainer-ready feedback unless the operator explicitly authorizes Odylith mutation.
+- Consumer source truth must never be seeded from Odylith product-repo
+  maintainer truth. The source-owned install bundle may ship reusable product
+  shells, static assets, managed guidance, skills, release notes, brand assets,
+  and runtime corpora, but it must not carry raw Radar, Casebook, Compass,
+  Registry, Atlas, or technical-plan truth from this maintainer repo.
+- `src/odylith/runtime/surfaces/source_bundle_mirror.py` owns that fail-closed
+  bundle boundary. Any new bundle mirror path must pass its consumer-safe
+  filter and be covered by a contract test before it ships.
 
 ## Governance Autopilot
 - Treat this as the default for substantive grounded repo work when the slice is repo-owned or maintainer-authorized Odylith work.
@@ -28,6 +40,38 @@
 - Always run Casebook preflight: search existing bugs first, record `no related bug found` when true, and capture a new bug immediately for a named failure mode or repeated-debug loop.
 - Keep Compass and session context current with intent, constraints, validation obligations, artifact links, and major decisions so the next turn inherits real repo memory instead of starting cold.
 - Fail closed when evidence is too weak to update a governed surface truthfully.
+- Odylith Discipline turns pressure into governed learning
+  without turning every event into a surface update. Radar carries the B-110
+  umbrella and waves, Registry carries component ownership, Atlas carries the
+  loop topology, Compass carries compact practice/proof events when useful,
+  Casebook records repeated failures, and benchmark surfaces publish measured
+  proof only from generated reports.
+- Durable learning is gated. Session memory may nudge the current turn, but
+  durable practice, doctrine, and public claims require deterministic
+  validation, benchmark evidence, or Tribunal/governance promotion.
+- Scope visibility, promotion, and expensive compute budgets now share one
+  ladder contract. Do not rebuild urgency heuristics locally once Delivery
+  Intelligence has published `scope_signal`.
+- The canonical ladder is:
+  - `R0 suppressed_noise`
+  - `R1 background_trace`
+  - `R2 verified_local`
+  - `R3 active_scope`
+  - `R4 actionable_priority`
+  - `R5 blocking_frontier`
+- Default operational views should hide low-signal scopes by default rather
+  than inventing a fake "activity" story from governance-only churn, generated
+  churn, or broad fanout evidence.
+- Preserve explicit deep links for low-signal scopes, but keep them quiet:
+  unavailable brief or empty local timeline is honest; borrowed global
+  activity is not.
+- `scope_signal.budget_class` is the shared compute gate:
+  - `none`
+  - `cache_only`
+  - `fast_simple`
+  - `escalated_reasoning`
+- Keep that budget contract provider-neutral. Map it onto Codex, Claude, or
+  future hosts in adapter code, not in product guidance.
 
 ## Severe Bug Capture
 - Casebook preflight is not optional when the slice exposes a named failure mode, repeat-debug loop, or correctness-sensitive breakage.
@@ -69,6 +113,7 @@
 - Global/generated coordination artifacts are not strict workstream implementation evidence by themselves.
 - For new workstream intake:
   - create or update the idea spec under `odylith/radar/source/ideas/YYYY-MM/` using the template contract
+  - in the Odylith product repo, title the slice directly and do not prefix the Radar workstream title with `Odylith`
   - compute ordering with the Radar ordering model
   - reorder `odylith/radar/source/INDEX.md` with truthful rationale
   - bind new implementation plans to existing workstreams first, or backfill the workstream before continuing implementation
@@ -83,14 +128,157 @@
   - targeted tests
   - guidance docs
 
+## Release Planning Truth
+- Release planning is a separate additive contract. It does not replace generic workstream topology, umbrella execution waves, or the canonical maintainer publication lane.
+- Use release planning when the operator is answering "what release should this workstream ship in?"
+  Example: `B-067 -> 0.1.11` through `odylith release add B-067 0.1.11`.
+- Use program or wave planning when the operator is answering "how should this umbrella effort execute?"
+  Example: umbrella `B-021 -> W1, W2, W3` through the umbrella execution-wave contract in Radar source.
+- When coding agents are authoring or maintaining that contract directly, use
+  the program/wave command surface instead of hand-editing the JSON:
+  - `odylith program create B-072`
+  - `odylith program status B-072`
+  - `odylith program next B-072`
+  - `odylith wave assign B-072 W1 B-073 --role primary`
+  - `odylith wave gate-add B-072 W1 B-073 --label "child plan gate"`
+- One workstream may participate in both contracts at once because release picks the ship lane while waves pick the execution order.
+- The canonical source files are:
+  - `odylith/radar/source/releases/releases.v1.json`
+  - `odylith/radar/source/releases/release-assignment-events.v1.jsonl`
+- `release_id` is the immutable source key. `version`, `tag`, and `name` are optional metadata. `current` and `next` are explicit aliases owned by source truth, not inferred from semver or dates.
+- One workstream may have at most one active target release at a time. Carry-forward belongs in append-only `move` history or explicit child workstreams, not simultaneous active multi-release membership.
+- Use the release authoring CLI instead of inventing prose-only release ownership:
+  - `odylith release list`
+  - `odylith release show current`
+  - `odylith release add B-123 current`
+  - `odylith release move B-123 next`
+  - `odylith release remove B-123`
+  - `odylith release update release:<id> --name "..." --alias current`
+- Selector resolution is exact and fail-closed:
+  - exact `release_id`
+  - explicit alias
+  - exact `version`
+  - exact `tag`
+  - unique exact `name`
+- Program and wave selector resolution should follow the same fail-closed
+  posture: exact umbrella id, exact wave id, and no fuzzy "closest match"
+  shortcuts when source truth would become ambiguous.
+- Do not leave `finished`, `parked`, or `superseded` workstreams in active releases.
+- Do not mutate a `shipped` or `closed` release except by moving alias ownership off it before lifecycle closure.
+- Release `name` is explicit operator-owned source truth. Matching authored
+  release notes may exist for the same `version`, but they must never rename
+  or override the release-planning record without explicit maintainer
+  authorization.
+- In practice, release names only change through an explicit
+  `odylith release create ... --name` or `odylith release update ... --name`
+  operation.
+- If `name` is blank, governed release surfaces may fall back to `version`,
+  then `tag`, then `release_id`, but never to a release-note title.
+- Compass `Release Targets` layout is operator-owned. Keep `Targeted
+  Workstreams` and `Completed Workstreams` in the established stacked format,
+  and do not reintroduce side-by-side or auto-fit multi-column release boards
+  without explicit operator authorization.
+- Release-target member progress is operator-facing contract too. Source those
+  badges from shared workstream-progress semantics rather than raw
+  `plan.progress_ratio`:
+  - active implementation with tracked execution work shows the tracked
+    percent
+  - active implementation with zero checked execution tasks shows
+    checklist-only or unknown state, never fake `0% progress`
+  - planning or queued work may still show truthful `0% progress`
+- Inside those release-member cards, keep the workstream title on its own
+  second row under the ID/status chips. Short titles must not collapse back
+  into the first row.
+- In Compass's default unscoped view, `Current Workstreams` is a residual
+  board, not a second copy of governance-grouped work. Filter out any
+  workstream already represented in `Programs` or `Release Targets`, and only
+  keep it in `Current Workstreams` when the operator explicitly scopes to that
+  workstream.
+- Governance KPI/stat cards are operator-facing shared shell contract too.
+  Compass hero KPIs, Radar summary stats, Registry summary KPIs, and Casebook
+  summary KPIs must consume the shared grid/card/label-value helpers instead
+  of carrying local stat-card CSS forks in source templates or renderers.
+- Treat top-line release cards as part of that same shared KPI contract:
+  keep the label visible, prefer explicit release truth for the value, and do
+  not let local surface styling or stale summary templates improvise a
+  different layout.
+
+## Shared Workstream Button Contract
+- Interactive `B-###` workstream buttons are a distinct compact shell-surface
+  contract, not a side effect of broader identifier-link styling.
+- The canonical source is `src/odylith/runtime/surfaces/dashboard_ui_primitives.py`.
+- Radar, Compass, execution-wave member stacks, and sibling non-Atlas surfaces
+  must consume the shared workstream-button tokens/helpers instead of
+  hardcoding local font-size, font-weight, or padding overrides.
+- Interactive `B-###` workstream buttons also share one destination contract:
+  they open the canonical Radar workstream route, not a local Compass scope or
+  another surface-local approximation. Local scope selection belongs in row
+  expansion, filter state, or other clearly separate controls.
+- Generic chip or label selectors must explicitly exclude interactive
+  `B-###` controls; broader chip styling must never resize or repad workstream
+  buttons by accident.
+- When a surface owns source-generated shell assets, keep one canonical
+  generator or loader path and make live checked-in artifacts plus
+  consumer-safe shipped bundle mirrors match that output exactly.
+- Do not keep static forks of generated shared CSS in local surface templates.
+  Compose shared generated CSS plus thin surface-specific overrides only.
+- If the workstream-button contract changes, update the shared primitive,
+  affected renderers/templates, focused tests, and governed docs/specs
+  together in the same slice.
+- Headless browser proof must click representative `B-###` controls in
+  Compass current-workstream rows, Compass release and execution-wave stacks,
+  Atlas workstream pills, and Registry workstream chips, then verify the shell
+  lands on `tab=radar&workstream=B-###`.
+- The same rule applies to shared shell CSS release-layout overrides: do not
+  let Dashboard or Compass base styles silently change the established Compass
+  release-target layout. If release layout must change, treat it as an
+  operator-approved contract change and update the renderer, shared CSS, tests,
+  specs, and Casebook memory together.
+- The same discipline applies to top-line KPI/stat cards: do not hardcode
+  local `.stats`, `.stat`, `.kpi-card`, `.kpi-label`, or `.kpi-value`
+  contracts when the shared Dashboard KPI helpers already express the same
+  surface. Update the shared primitive path, affected renderers/loaders,
+  browser proof, and governed docs/specs together.
+- Generic deep-link buttons such as `Registry`, `Spec`, proof refs, and
+  `D-###` diagram links are shared shell contract too. Keep them on the
+  centralized deep-link chip helper/tokens in
+  `src/odylith/runtime/surfaces/dashboard_ui_primitives.py` instead of
+  carrying local CSS forks in Compass, Radar, Registry, Casebook, or Atlas.
+- Operator-owned shell-surface contracts such as compact `B-###` buttons and
+  stacked Compass `Release Targets` require headless browser proof in both the
+  normal and compact shell layouts, not just string or snapshot assertions.
+- Browser proof for shared KPI/stat-card contracts must verify the computed
+  padding, radius, label typography, value typography, and release-card
+  labeling across Compass, Radar, Registry, and Casebook.
+- Browser proof for shared deep-link buttons must verify the computed
+  font-size, font-weight, padding, and radius across Compass workstream
+  detail, Radar detail, Registry detail, and Casebook detail.
+
 ## Refresh, Sync, And Clean Proof
 - `odylith sync --repo-root . --force --odylith-mode refresh --registry-policy-mode enforce-critical --enforce-deep-skills` is the strict canonical refresh path.
 - `odylith sync --repo-root .` is the normal selective fast path for in-session upkeep.
+- `odylith sync --repo-root . --debug-cache` is the operator-facing cache
+  explain lane when you need to inspect why a shared substrate or surface was
+  reused or rebuilt.
 - Use `--check-commit-ready` for staged commit validation and `--check-clean` for strict clean-snapshot proof; do not conflate those contracts.
 - Do not rely on the optional autosync hook against a mixed staged/unstaged worktree.
 - Consumer-shell freshness warnings are advisory only: they may point at fresher runtime state or mixed local truth, but they must not become implicit permission for background tracked-file mutation.
 - If strict sync is blocked only by Mermaid freshness, repair that with `odylith atlas auto-update ...`, rerender Atlas, then rerun the strict sync gate.
 - Compass runtime snapshots under `odylith/compass/runtime/*` remain local high-churn artifacts and should stay uncommitted.
+
+## Shared Derivation Surface Contract
+- Shared projection/compiler/backend reuse is only acceptable when the active
+  provenance tuple matches exactly and, during an active sync, the derivation
+  generation still matches the current truth phase.
+- Compass, Radar, and Registry payloads should carry additive runtime
+  provenance so stale or surprising surface behavior is explainable from the
+  payload itself instead of guessed from file mtimes or git churn.
+- Fail closed on any reuse mismatch. A surface that cannot prove the active
+  generation, projection fingerprint, or required substrate state must rebuild
+  locally rather than trusting a warm artifact.
+- Keep single-writer discipline for compiler/backend/cache artifacts. Batch
+  locks if needed, but do not weaken advisory-lock plus atomic-write semantics
+  in order to chase lower latency.
 
 ## Registry, Atlas, And Component Specs
 - `odylith/registry/source/component_registry.v1.json` is the component inventory source of truth.
@@ -110,7 +298,7 @@
 - When touching a spec, backfill missing feature-history plan links in the same change instead of leaving mixed provenance quality behind.
 - Keep component-spec requirement evidence synchronized through `odylith governance sync-component-spec-requirements ...`; the component spec is the living contract, not transient timeline cards.
 - Keep one canonical source of requirement history per component spec; do not duplicate feature-history narratives in ad hoc side panels.
-- Meaningful Codex timeline events must map to at least one component via explicit tags or deterministic inference.
+- Meaningful agent timeline events must map to at least one component via explicit tags or deterministic inference.
 - Component-governance audit streams are fail-closed, and deep-skill enforcement stays centralized in validator/sync paths rather than copied into renderer-local policy.
 - Skill trigger mappings in component specs use structured tiers:
   - `### Baseline`
@@ -124,13 +312,31 @@
   - explicit Compass events
   - recent tracked path matches
   - mapped workstream-linked evidence
+- Registry component detail is not the place for a default proof-state or
+  live-status card. Proof-state internals such as `Proof Control`,
+  `Live Blocker`, `Fingerprint`, `Frontier`, `Evidence tier`,
+  `Truthful claim`, and commit-hash deployment details should stay in
+  underlying intelligence or explicit forensic tooling, not the default
+  Registry detail surface.
 
 ## Compass Standup Contract
-- Compass standup is AI-authored only, but deterministic runtime evidence still owns fact selection, ranking, and fail-closed validation.
-- The standup contract should stay compressed and causal: verified movement, current proof, forcing function, impact, and the most relevant watch item should dominate over generic portfolio narration.
-- `Why this matters` must pair the customer or use-story need with the architecture or operator consequence explicitly.
-- `Next planned` should synthesize actionable near-term work, not just file paths, deferred scope, or generic portfolio posture.
-- Cache reuse must stay freshness-bound and fail closed; stale or missing provider output should not masquerade as live progress.
+- The canonical contract lives in [Briefs Voice Contract](../registry/source/components/briefs-voice-contract/CURRENT_SPEC.md).
+- Compass standup is provider-authored only, but deterministic runtime evidence still owns fact selection, ranking, and fail-closed validation.
+- Voice is non-negotiable: a thoughtful maintainer talking to a teammate. Friendly, calm, direct, simple, factual, precise, and human.
+- Briefs should surface humane judgment: what changed, why it matters, what is next, and what could still break.
+- Celebrate real wins with restraint. When things are shaky, be steady and reassuring without hiding the truth.
+- Repeated house phrases, workstream-title restatement, workstream roll calls, repeated window leads, canned next/why/timing wrappers, stagey metaphor, and polished portable summary prose are correctness failures even when the facts are true.
+- Whole-window coverage facts are evidence, not a mandatory bullet. Compass must not inject stock coverage lines like `Most of the work here was in ...` just to satisfy bookkeeping.
+- Every bullet must stay visibly tethered to the cited fact language. If the cited facts disappear and the sentence still works as a polished status card, it is too generic for Compass.
+- Do not reintroduce `Executive/Product` or `Operator/Technical` brief bullets, a second narrator, or any deterministic fallback voice split.
+- Compass brief runtime now has one truthful source triad only: fresh `provider`, exact `cache`, or explicit `unavailable`.
+- Cache reuse must stay exact-fingerprint only, voice-valid, and fail closed. Contract changes must rotate the brief epoch and invalidate stale warmed prose.
+- Only ready `provider` or exact `cache` briefs get the full standup-brief stage. Non-ready states should stay compact, truthful, and obviously not-final.
+- `Copy Brief` is reserved for real narrated briefs, not unavailable-state chrome.
+- Timeline-audit and window-coverage material should stay deterministic and precomputed upstream. Compass brief generation should consume that evidence instead of rediscovering timeline shape with a second narrator.
+- For Compass brief enrichment, detect the active local host and stay on the bounded structured local ladder with `medium` reasoning only. On Codex that means `gpt-5.3-codex-spark` first, then `gpt-5.3-codex`, then `gpt-5.4-mini` only if the cheaper rung is exhausted or unavailable. On Claude that means `haiku` first, then `sonnet` only if the cheaper rung is exhausted or unavailable. Do not keep retrying the same failed cheap rung indefinitely, and do not escalate to a more expensive lane without evidence.
+- Hot-path Compass upkeep is budget-owned. Compass now has only two acceptable runtime lanes: unchanged refresh under `50ms` of internal runtime work and complete cold shell-safe refresh under `1s` of internal runtime work on the normal local path. Do not revive a slower third lane.
+- Compass now has one bounded refresh profile only. Keep `odylith compass refresh --repo-root .` as the quick cache-first rerender and `odylith compass deep-refresh --repo-root .` as the same rerender plus brief settlement. Do not revive a second `full` profile or another expensive truth lane. If a user says `full` in prose, route that request to `odylith compass deep-refresh --repo-root .`.
 
 ## Lifecycle Closeout
 - Treat lifecycle reconciliation as part of implementation, not postscript cleanup.
@@ -139,13 +345,19 @@
 - Partially implemented active work stays in `odylith/technical-plans/in-progress/` with explicit residual scope.
 - Minimum lifecycle validation is the backlog, traceability, risk-mitigation, and strict sync proof path.
 
+## Live Proof Claim Discipline
+- For live blocker lanes, unqualified `fixed`, `cleared`, or `resolved` language is only valid after hosted proof advances past the prior failing phase.
+- Force three checks before live-resolution language: same fingerprint as the last falsification or not, hosted frontier advanced or not, and whether the claim is code-only, preview-only, or live.
+- If the same failure fingerprint returns after a claimed fix, reuse and re-pin the same bug and blocker seam instead of narrating a fresh mystery.
+- Do not let docs, UX polish, observability, or broader hardening masquerade as blocker clearance while the live frontier is unchanged.
+
 ## Compass Timeline And Operator Evidence
 - Log meaningful implementation decisions and slices through `odylith compass log ...` or `odylith compass update ...` with workstream, component, and artifact linkage whenever known.
 - Carry active intent, constraints, validation obligations, and unresolved questions forward in Compass/session updates so future agents inherit the current operating context instead of reconstructing it from scratch.
 - Plan links shown to users must target the canonical rendered Radar plan route, not raw `odylith/technical-plans/**/*.md` files.
 - Keep Compass transaction headlines intent-first and outcome-first; never degrade to file-count-only labels.
 - Treat Registry synthetic workspace activity as forensic-only support for timelines, not as a replacement for explicit Compass decision or implementation logging.
-- `odylith compass watch-transactions --repo-root . --interval-seconds <n>` is the supported near-real-time local watcher for transaction cards and Radar execution overlays.
+- `odylith compass watch-transactions --repo-root .` is the supported change-driven local watcher for transaction cards and Radar execution overlays. It should wake on daemon or local watcher signals first and fall back to coarse polling only when no push-backed watcher exists.
 
 ## Backlog Execution Programs
 - Umbrella-owned execution waves are a repo-local backlog contract, not ad hoc plan prose.
@@ -156,6 +368,14 @@
 - `execution_model: umbrella_waves` is valid only for umbrella workstreams.
 - Validation fails closed for missing companion files, non-umbrella owners, non-reciprocal parent/child topology, duplicate same-wave role assignment, unknown wave references, and gate refs whose `plan_path` no longer matches the bound workstream plan.
 - Execution-program metadata is additive only. Generic workstream topology stays canonical for repo-wide relationships, and deployment waves are a separate concept.
+- Repo-local release planning is a separate additive layer again: execution waves describe staged umbrella execution, while releases describe target ship lanes for individual workstreams.
+- Keep release closeout lifecycle-driven instead of member-count-driven: the
+  active target release owned by the `current` alias stays visible in Compass
+  until an explicit `shipped` or `closed` lifecycle update, even if its
+  targeted workstream count falls to zero.
+- During that closeout window, Compass may show finished work completed in the
+  active target release as historical completed members while keeping
+  active-target membership separate.
 - When umbrella-owned execution waves evolve, update the program files, validator/traceability consumers, tests, and docs together in the same slice.
 
 ## Odylith Intelligence Plane

@@ -28,6 +28,12 @@ def _extract_shell_function(script_text: str, name: str, next_name: str) -> str:
     return script_text[start:end].strip()
 
 
+def _extract_shell_block(script_text: str, start_marker: str, end_marker: str) -> str:
+    start = script_text.index(start_marker)
+    end = script_text.index(end_marker)
+    return script_text[start:end].strip()
+
+
 def _run_detect_repo_root(*, tmp_path: Path, install_script_text: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     helper = tmp_path / "detect_repo_root.sh"
     detect_repo_root = _extract_shell_function(install_script_text, "detect_repo_root", "describe_repo_root_choice")
@@ -51,6 +57,70 @@ def _run_detect_repo_root(*, tmp_path: Path, install_script_text: str, cwd: Path
         check=False,
         capture_output=True,
         text=True,
+    )
+
+
+def _run_verify_sigstore_identity(
+    *,
+    tmp_path: Path,
+    install_script_text: str,
+    stderr_text: str,
+    stdout_text: str = "",
+    exit_code: int = 0,
+) -> subprocess.CompletedProcess[str]:
+    helper = tmp_path / "verify_sigstore_identity.sh"
+    fake_python = tmp_path / "fake-bootstrap-python"
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    shell_block = _extract_shell_block(
+        install_script_text,
+        "sigstore_stderr_is_benign() {",
+        'release_version="${ODYLITH_VERSION:-latest}"',
+    )
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+    fake_python.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "printf '%s' \"${ODYLITH_FAKE_SIGSTORE_STDOUT:-}\"",
+                "printf '%s' \"${ODYLITH_FAKE_SIGSTORE_STDERR:-}\" >&2",
+                "exit \"${ODYLITH_FAKE_SIGSTORE_EXIT:-0}\"",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+    helper.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/odylith-sigstore.XXXXXX")"',
+                'trap \'rm -rf "$tmpdir"\' EXIT',
+                f'bootstrap_python="{fake_python}"',
+                'signer_identity="freedom-research"',
+                'oidc_issuer="https://token.actions.githubusercontent.com"',
+                shell_block,
+                'verify_sigstore_identity "$1" "$2"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    helper.chmod(0o755)
+    env = {
+        "ODYLITH_FAKE_SIGSTORE_STDERR": stderr_text,
+        "ODYLITH_FAKE_SIGSTORE_STDOUT": stdout_text,
+        "ODYLITH_FAKE_SIGSTORE_EXIT": str(exit_code),
+    }
+    return subprocess.run(
+        ["bash", str(helper), str(asset_path), str(bundle_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
     )
 
 
@@ -91,11 +161,11 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert " ██████╗ ██████╗ ██╗   ██╗██╗     ██╗████████╗██╗  ██╗" in text
     assert "██╔═══██╗██╔══██╗╚██╗ ██╔╝██║     ██║╚══██╔══╝██║  ██║" in text
     assert " ╚═════╝ ╚═════╝    ╚═╝   ╚══════╝╚═╝   ╚═╝   ╚═╝  ╚═╝" in text
-    assert "repo_root_reason='agents'" in text
+    assert "repo_root_reason='guidance'" in text
     assert "repo_root_reason='git'" in text
     assert "repo_root_reason='folder'" in text
-    assert "No root AGENTS.md was found above this directory. Odylith will create one at the detected Git root." in text
-    assert "No enclosing AGENTS.md or .git was found. Odylith will treat the current folder as the repo root and create a root AGENTS.md here." in text
+    assert "No root AGENTS.md, CLAUDE.md, or .claude/CLAUDE.md was found above this directory. Odylith will create the root guidance entrypoints at the detected Git root and sync the managed Claude and Codex project assets there." in text
+    assert "No enclosing AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, or .git was found. Odylith will treat the current folder as the repo root and create root AGENTS.md, root CLAUDE.md, and managed project-root Claude and Codex assets here." in text
     assert "Git-aware features stay limited until this folder is backed by Git." in text
     assert "working-tree intelligence, background autospawn, and git-fsmonitor watcher help stay reduced for now." in text
     assert 'say "Odylith is getting this repo ready."' in text
@@ -104,8 +174,10 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'say "Your repo\'s own Python toolchain stays untouched."' in text
     assert "sigstore_stderr_is_benign() {" in text
     assert "verify_sigstore_identity() {" in text
-    assert "grep -Eiq 'unsupported key type:[[:space:]]*7'" in text
+    assert "grep -Eiq 'unsupported([[:space:]]+[^[:space:]]+:[0-9]+)?[[:space:]]+key type:[[:space:]]*7'" in text
     assert "grep -Eiq 'tuf.*offline|offline.*tuf'" in text
+    assert 'stripped="${line#"${line%%[![:space:]]*}"}"' in text
+    assert 'folded="$folded $stripped"' in text
     assert 'step "Fetching the secure bootstrap runtime"' in text
     assert 'step "Verifying signed release evidence"' in text
     assert 'step "Activating Odylith"' in text
@@ -184,7 +256,53 @@ def test_generated_install_script_detect_repo_root_is_strict_mode_safe_from_nest
     completed = _run_detect_repo_root(tmp_path=tmp_path, install_script_text=output_path.read_text(encoding="utf-8"), cwd=nested)
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    assert completed.stdout.splitlines() == [str(repo_root), "agents"]
+    assert completed.stdout.splitlines() == [str(repo_root), "guidance"]
+
+
+def test_generated_install_script_detect_repo_root_accepts_nested_claude_path(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    repo_root = tmp_path / "fresh-install"
+    repo_root.mkdir()
+    (repo_root / "CLAUDE.md").write_text("# Repo Root\n", encoding="utf-8")
+    nested = repo_root / "workspace" / "nested"
+    nested.mkdir(parents=True)
+
+    completed = _run_detect_repo_root(tmp_path=tmp_path, install_script_text=output_path.read_text(encoding="utf-8"), cwd=nested)
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout.splitlines() == [str(repo_root), "guidance"]
+
+
+def test_generated_install_script_detect_repo_root_accepts_nested_project_claude_path(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    repo_root = tmp_path / "fresh-install"
+    (repo_root / ".claude").mkdir(parents=True)
+    (repo_root / ".claude" / "CLAUDE.md").write_text("# Project Root\n", encoding="utf-8")
+    nested = repo_root / "workspace" / "nested"
+    nested.mkdir(parents=True)
+
+    completed = _run_detect_repo_root(tmp_path=tmp_path, install_script_text=output_path.read_text(encoding="utf-8"), cwd=nested)
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout.splitlines() == [str(repo_root), "guidance"]
 
 
 def test_generated_install_script_detect_repo_root_falls_back_to_current_folder_without_markers(tmp_path: Path) -> None:
@@ -205,6 +323,56 @@ def test_generated_install_script_detect_repo_root_falls_back_to_current_folder_
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
     assert completed.stdout.splitlines() == [str(nested), "folder"]
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_wrapped_trusted_root_warning(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text=(
+            "Failed to load a trusted root key: unsupported  trust.py:177\n"
+            "                    key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_preserves_unexpected_warning(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text=(
+            "Failed to load a trusted root key: unsupported  trust.py:177\n"
+            "                    key type: 7\n"
+            "warning: unexpected verifier chatter\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert "unexpected verifier chatter" in completed.stderr
+    assert "unsupported  trust.py:177" not in completed.stderr
 
 
 def test_publish_release_assets_rejects_non_canonical_release_context() -> None:
@@ -514,7 +682,22 @@ def test_dogfood_activate_bootstraps_missing_launcher_before_upgrade() -> None:
 
     assert 'if [[ ! -x "$odylith_launcher" ]]; then' in text
     assert 'odylith_cli doctor --repo-root . --repair' in text
-    assert text.index('odylith_cli doctor --repo-root . --repair') < text.index('launcher_cli upgrade --repo-root .')
+    assert text.index('odylith_cli doctor --repo-root . --repair') < text.index('source_version="$(current_source_version)"')
+
+
+def test_dogfood_activate_uses_source_upgrade_across_release_boundaries() -> None:
+    text = (REPO_ROOT / "bin" / "dogfood-activate").read_text(encoding="utf-8")
+
+    assert 'source_version="$(current_source_version)"' in text
+    assert 'version_status="$(launcher_cli version --repo-root .)"' in text
+    assert 'active_version="$(printf \'%s\\n\' "$version_status" | sed -n \'s/^Active: //p\' | head -n 1)"' in text
+    assert 'pinned_version="$(printf \'%s\\n\' "$version_status" | sed -n \'s/^Pinned: //p\' | head -n 1)"' in text
+    assert 'if [[ -n "$source_version" && -n "$active_version" && "$source_version" != "$active_version" ]]; then' in text
+    assert 'odylith_cli upgrade --repo-root . --to "$source_version" --write-pin' in text
+    assert 'elif [[ -n "$source_version" && -n "$pinned_version" && "$source_version" == "$active_version" && "$source_version" == "$pinned_version" ]]; then' in text
+    assert 'launcher_cli dashboard refresh --repo-root .' in text
+    assert 'else' in text
+    assert 'launcher_cli upgrade --repo-root .' in text
 
 
 def test_dev_validate_surfaces_detached_source_local_lane() -> None:

@@ -1,13 +1,13 @@
 """Compiler-backed local projection store for installed maintainer tooling.
 
 This module keeps markdown/JSON source artifacts authoritative while providing
-an optional compiled runtime layer for fast local Codex sessions. The store is
+an optional compiled runtime layer for fast local host sessions. The store is
 local-only, archive-aware, and safe to rebuild at any time.
 
 Design constraints:
 - source markdown, JSON contracts, and generated tracked artifacts remain
   authoritative;
-- projections must be safe under concurrent Codex sessions sharing one repo;
+- projections must be safe under concurrent coding-agent sessions sharing one repo;
 - cache invalidation is fingerprint-driven and fail-open to reparsing;
 - strict standalone validation paths must continue to work without the store.
 """
@@ -28,6 +28,7 @@ import shlex
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 from typing import Any, Callable, Iterable, Mapping, Sequence
@@ -38,16 +39,35 @@ from odylith.runtime.governance import delivery_intelligence_engine
 from odylith.runtime.evaluation import odylith_ablation
 from odylith.runtime.context_engine import odylith_architecture_mode
 from odylith.runtime.context_engine import odylith_context_engine_code_graph_runtime
+from odylith.runtime.context_engine import odylith_context_engine_contracts
 from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.context_engine import odylith_context_engine_engineering_notes_runtime
+from odylith.runtime.context_engine import odylith_context_engine_evaluation_contract_runtime
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime
+from odylith.runtime.context_engine import odylith_context_engine_judgment_memory_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_architecture_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_summary_runtime
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_governance_runtime
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_bootstrap_runtime
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_core_runtime
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_packet_finalize_runtime
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_backlog_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime
-from odylith.runtime.context_engine import odylith_context_engine_session_packet_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_entity_runtime
 from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_query_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_registry_runtime
+from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime
+from odylith.runtime.context_engine import odylith_context_engine_process_state
+from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts
+from odylith.runtime.context_engine import odylith_context_engine_runtime_support
+from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon
 from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime
+from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.evaluation import odylith_evaluation_ledger
 from odylith.runtime.memory import odylith_memory_backend
 from odylith.runtime.memory import odylith_projection_bundle
@@ -60,6 +80,7 @@ from odylith.runtime.context_engine import tooling_context_routing as routing
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine.projection_contract_versions import projection_contract_version
 from odylith.runtime.context_engine import tooling_guidance_catalog
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.common import odylith_benchmark_contract
 from odylith.runtime.common.consumer_profile import (
@@ -79,17 +100,18 @@ STATE_JS_FILENAME = odylith_control_state.STATE_JS_FILENAME
 STATE_JS_GLOBAL_NAME = odylith_control_state.STATE_JS_GLOBAL_NAME
 EVENTS_FILENAME = odylith_control_state.EVENTS_FILENAME
 TIMINGS_FILENAME = odylith_control_state.TIMINGS_FILENAME
-PID_FILENAME = "odylith-context-engine.pid"
-STOP_FILENAME = "odylith-context-engine.stop"
-SOCKET_FILENAME = "odylith-context-engine.sock"
-DAEMON_METADATA_FILENAME = "odylith-context-engine-daemon.json"
-DAEMON_USAGE_FILENAME = "odylith-context-engine-daemon-usage.v1.json"
-PROOF_SURFACES_FILENAME = "odylith-proof-surfaces.v1.json"
-SESSIONS_DIRNAME = "sessions"
-BOOTSTRAPS_DIRNAME = "bootstraps"
-JUDGMENT_MEMORY_FILENAME = "odylith-judgment-memory.v1.json"
-SCHEMA_VERSION = "v6"
-_CODEX_HOT_PATH_PROFILE = "codex_hot_path"
+PID_FILENAME = odylith_context_engine_runtime_artifacts.PID_FILENAME
+STOP_FILENAME = odylith_context_engine_runtime_artifacts.STOP_FILENAME
+SOCKET_FILENAME = odylith_context_engine_runtime_artifacts.SOCKET_FILENAME
+DAEMON_METADATA_FILENAME = odylith_context_engine_runtime_artifacts.DAEMON_METADATA_FILENAME
+DAEMON_USAGE_FILENAME = odylith_context_engine_runtime_artifacts.DAEMON_USAGE_FILENAME
+PROOF_SURFACES_FILENAME = odylith_context_engine_runtime_artifacts.PROOF_SURFACES_FILENAME
+SESSIONS_DIRNAME = odylith_context_engine_runtime_artifacts.SESSIONS_DIRNAME
+BOOTSTRAPS_DIRNAME = odylith_context_engine_runtime_artifacts.BOOTSTRAPS_DIRNAME
+JUDGMENT_MEMORY_FILENAME = odylith_context_engine_runtime_artifacts.JUDGMENT_MEMORY_FILENAME
+SCHEMA_VERSION = odylith_context_engine_runtime_support.SCHEMA_VERSION
+_AGENT_HOT_PATH_PROFILE = agent_runtime_contract.AGENT_HOT_PATH_PROFILE
+_CODEX_HOT_PATH_PROFILE = _AGENT_HOT_PATH_PROFILE
 _FALLBACK_LOCAL_MEMORY_BACKEND = {
     "provider": "odylith-context-engine",
     "storage": "compiler_projection_snapshot",
@@ -226,8 +248,10 @@ def _normalize_bug_field_key(field: str) -> str:
 
 _BUG_CORE_FIELD_ORDER_SET = frozenset(_normalize_bug_field_key(name) for name in _BUG_CORE_FIELD_ORDER)
 _ARCHIVE_GLOB = "*.md"
-_PROCESS_WARM_CACHE_TTL_SECONDS = 300.0
-_PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS = 60.0
+_PROCESS_WARM_CACHE_TTL_SECONDS = odylith_context_engine_process_state._PROCESS_WARM_CACHE_TTL_SECONDS
+_PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS = (
+    odylith_context_engine_process_state._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE_TTL_SECONDS
+)
 SESSION_STALE_SECONDS = 60 * 60 * 4
 _WORKSTREAM_SELECTION_GAP_MIN = 35
 _WORKSTREAM_SELECTION_CONFIDENT_SCORE = 80
@@ -261,21 +285,26 @@ _FULL_SCAN_EXCLUDED_GLOBS = (
     "!node_modules/**",
 )
 _TOPOLOGY_DOMAIN_RULES: tuple[dict[str, Any], ...] = odylith_architecture_mode.TOPOLOGY_DOMAIN_RULES
-_PROCESS_WARM_CACHE: dict[str, float] = {}
-_PROCESS_WARM_CACHE_FINGERPRINTS: dict[str, str] = {}
-_PROCESS_PROJECTION_ROWS_CACHE: dict[str, tuple[str, Any]] = {}
-_PROCESS_OPTIMIZATION_SNAPSHOT_CACHE: dict[str, tuple[tuple[Any, ...], float, dict[str, Any]]] = {}
-_PROCESS_MISS_RECOVERY_INDEX_CACHE: dict[str, tuple[str, dict[str, Any]]] = {}
-_PROCESS_PATH_SCOPE_CACHE: dict[str, tuple[str, dict[str, Any]]] = {}
-_PROCESS_PATH_SIGNAL_PROFILE_CACHE: dict[str, dict[str, Any]] = {}
-_PROCESS_ARCHITECTURE_PACKET_CACHE: dict[str, dict[str, Any]] = {}
-_PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE: dict[str, tuple[tuple[Any, ...], float, dict[str, Any]]] = {}
-_PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE: dict[str, tuple[tuple[bool, int, int], dict[str, Any]]] = {}
-_PROCESS_GIT_REF_CACHE: dict[str, tuple[float, dict[str, str]]] = {}
-_PROCESS_PROJECTION_CONNECTION_CACHE: dict[str, tuple[tuple[Any, ...], Any]] = {}
-_PROCESS_GIT_REF_CACHE_TTL_SECONDS = 5.0
+_PROCESS_WARM_CACHE = odylith_context_engine_process_state._PROCESS_WARM_CACHE
+_PROCESS_WARM_CACHE_FINGERPRINTS = odylith_context_engine_process_state._PROCESS_WARM_CACHE_FINGERPRINTS
+_PROCESS_PROJECTION_ROWS_CACHE = odylith_context_engine_process_state._PROCESS_PROJECTION_ROWS_CACHE
+_PROCESS_OPTIMIZATION_SNAPSHOT_CACHE = odylith_context_engine_process_state._PROCESS_OPTIMIZATION_SNAPSHOT_CACHE
+_PROCESS_MISS_RECOVERY_INDEX_CACHE = odylith_context_engine_process_state._PROCESS_MISS_RECOVERY_INDEX_CACHE
+_PROCESS_PATH_SCOPE_CACHE = odylith_context_engine_process_state._PROCESS_PATH_SCOPE_CACHE
+_PROCESS_PATH_SIGNAL_PROFILE_CACHE = odylith_context_engine_process_state._PROCESS_PATH_SIGNAL_PROFILE_CACHE
+_PROCESS_ARCHITECTURE_PACKET_CACHE = odylith_context_engine_process_state._PROCESS_ARCHITECTURE_PACKET_CACHE
+_PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE = (
+    odylith_context_engine_process_state._PROCESS_ORCHESTRATION_ADOPTION_SNAPSHOT_CACHE
+)
+_PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE = (
+    odylith_context_engine_process_state._PROCESS_JUDGMENT_MEMORY_SNAPSHOT_CACHE
+)
+_PROCESS_GIT_REF_CACHE = odylith_context_engine_process_state._PROCESS_GIT_REF_CACHE
+_PROCESS_PROJECTION_CONNECTION_CACHE = odylith_context_engine_process_state._PROCESS_PROJECTION_CONNECTION_CACHE
+_PROCESS_GIT_REF_CACHE_TTL_SECONDS = odylith_context_engine_process_state._PROCESS_GIT_REF_CACHE_TTL_SECONDS
 _ENTITY_KIND_ALIASES: dict[str, str] = {
     "workstream": "workstream",
+    "release": "release",
     "plan": "plan",
     "bug": "bug",
     "decision": "decision",
@@ -317,79 +346,18 @@ _ENTITY_KIND_ALIASES: dict[str, str] = {
     "code": "code",
     "test": "test",
 }
-_BASE_PROJECTION_NAMES = (
-    "workstreams",
-    "plans",
-    "bugs",
-    "diagrams",
-    "components",
-    "codex_events",
-    "traceability",
-    "delivery",
-)
-_FULL_ONLY_PROJECTION_NAMES = (
-    "engineering_graph",
-    "code_graph",
-    "test_graph",
-)
-_REASONING_PROJECTION_NAMES = (
-    "workstreams",
-    "plans",
-    "bugs",
-    "diagrams",
-    "components",
-    "codex_events",
-    "traceability",
-    *_FULL_ONLY_PROJECTION_NAMES,
-)
-_ENGINEERING_NOTE_KINDS = (
-    "decision",
-    "invariant",
-    "ownership",
-    "architecture",
-    "deployment",
-    "observability",
-    "pitfall",
-    "engineering_standard",
-    "contract_policy",
-    "schema_change",
-    "contract_evolution",
-    "runbook",
-    "testing",
-    "tooling_policy",
-    "workflow",
-    "entrypoint",
-    "service_guidance",
-    "testing_playbook",
-    "guardrail",
-    "bug_learning",
-    "schema_contract",
-    "make_target",
-)
+_BASE_PROJECTION_NAMES = odylith_context_engine_runtime_support.BASE_PROJECTION_NAMES
+_FULL_ONLY_PROJECTION_NAMES = odylith_context_engine_runtime_support.FULL_ONLY_PROJECTION_NAMES
+_REASONING_PROJECTION_NAMES = odylith_context_engine_runtime_support.REASONING_PROJECTION_NAMES
+_ENGINEERING_NOTE_KINDS = odylith_context_engine_contracts._ENGINEERING_NOTE_KINDS
 ENGINEERING_NOTE_KINDS = _ENGINEERING_NOTE_KINDS
-_ENGINEERING_NOTE_KIND_SET = frozenset(_ENGINEERING_NOTE_KINDS)
+_ENGINEERING_NOTE_KIND_SET = odylith_context_engine_contracts._ENGINEERING_NOTE_KIND_SET
 _ENGINEERING_CORE_PATHS: tuple[tuple[str, str], ...] = (
     ("decisions", "agents-guidelines/DECISIONS.MD"),
     ("invariants", "agents-guidelines/INVARIANTS.MD"),
     ("ownership", "agents-guidelines/DATA_OWNERSHIP.MD"),
 )
-_SECTION_NOTE_SOURCES: tuple[tuple[str, str], ...] = (
-    ("architecture", "agents-guidelines/ARCHITECTURE.MD"),
-    ("deployment", "agents-guidelines/DEPLOYMENT.MD"),
-    ("observability", "agents-guidelines/OBSERVABILITY.MD"),
-    ("pitfall", "agents-guidelines/PITFALLS.md"),
-    ("engineering_standard", "agents-guidelines/ENGINEERING_STANDARDS.MD"),
-    ("contract_policy", "agents-guidelines/contracts/CONTRACTS.md"),
-    ("schema_change", "agents-guidelines/SCHEMA_CHANGE_CHECKLIST.MD"),
-    ("contract_evolution", "agents-guidelines/CONTRACT_EVOLUTION.MD"),
-    ("testing", "agents-guidelines/TESTING.MD"),
-    ("tooling_policy", "agents-guidelines/TOOLING.MD"),
-    ("workflow", "agents-guidelines/WORKFLOW.md"),
-    ("entrypoint", "agents-guidelines/ENTRYPOINTS.MD"),
-    ("service_guidance", "agents-guidelines/SERVICES.md"),
-    ("testing_playbook", "agents-guidelines/TESTING_PLAYBOOK.MD"),
-    ("guardrail", "agents-guidelines/GUARDRAILS.MD"),
-)
+_SECTION_NOTE_SOURCES = odylith_context_engine_contracts._SECTION_NOTE_SOURCES
 _GUIDANCE_CHUNK_MANIFEST_PATH = "agents-guidelines/indexable-guidance-chunks.v1.json"
 _GUIDANCE_CHUNK_ROOT = "agents-guidelines/indexable"
 _MISS_RECOVERY_GENERIC_QUERY_TOKENS = frozenset(
@@ -445,6 +413,7 @@ _MISS_RECOVERY_ALLOWED_KINDS = (
     "make_target",
     "entrypoint",
     "plan",
+    "release",
     "bug",
     "workstream",
     "component",
@@ -471,6 +440,7 @@ _MISS_RECOVERY_KIND_PRIORITY = {
     "make_target": 1,
     "entrypoint": 1,
     "plan": 2,
+    "release": 2,
     "bug": 2,
     "workstream": 2,
     "component": 2,
@@ -522,7 +492,6 @@ _TEST_HISTORY_REPORT_GLOBS: tuple[tuple[str, str], ...] = (
     (".odylith/runtime/test-results", "*.xml"),
 )
 _SESSION_CLAIM_MODES = frozenset({"shared", "exclusive"})
-_RUNTIME_TIMING_LIMIT = 512
 _SESSION_RECORD_RETENTION_LIMIT = 256
 _BOOTSTRAP_RECORD_RETENTION_LIMIT = 96
 _CORRUPT_DB_BACKUP_LIMIT = 4
@@ -551,121 +520,75 @@ _IMPACT_ENGINEERING_NOTES_PER_KIND_LIMIT_EXPLICIT = 1
 
 
 def _utc_now() -> str:
-    return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return odylith_context_engine_runtime_support.utc_now()
 
 
 def _env_truthy(name: str) -> bool:
     token = str(os.environ.get(str(name or "").strip(), "")).strip().lower()
     return token in {"1", "true", "yes", "on", "enabled"}
 
-
-def runtime_root(*, repo_root: Path) -> Path:
-    return odylith_control_state.runtime_root(repo_root=repo_root)
-
-
-def projection_snapshot_path(*, repo_root: Path) -> Path:
-    return odylith_projection_snapshot.snapshot_path(repo_root=repo_root)
-
-
-def state_path(*, repo_root: Path) -> Path:
-    return odylith_control_state.state_path(repo_root=repo_root)
-
-
-def state_js_path(*, repo_root: Path) -> Path:
-    return odylith_control_state.state_js_path(repo_root=repo_root)
-
-
-def ensure_state_js_probe_asset(*, repo_root: Path) -> Path | None:
-    return odylith_control_state.ensure_state_js_probe_asset(repo_root=repo_root)
-
-
-def events_path(*, repo_root: Path) -> Path:
-    return odylith_control_state.events_path(repo_root=repo_root)
-
-
-def timings_path(*, repo_root: Path) -> Path:
-    return odylith_control_state.timings_path(repo_root=repo_root)
-
-
-def pid_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / PID_FILENAME).resolve()
-
-
-def daemon_metadata_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / DAEMON_METADATA_FILENAME).resolve()
-
-
-def stop_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / STOP_FILENAME).resolve()
-
-
-def socket_path(*, repo_root: Path) -> Path:
-    preferred = (runtime_root(repo_root=repo_root) / SOCKET_FILENAME).resolve()
-    if len(str(preferred)) < 100:
-        return preferred
-    token = odylith_context_cache.fingerprint_payload(str(Path(repo_root).resolve()))[:16]
-    return (Path(tempfile.gettempdir()) / f"odylith-tooling-{token}.sock").resolve()
+runtime_root = odylith_context_engine_runtime_artifacts.runtime_root
+projection_snapshot_path = odylith_context_engine_runtime_artifacts.projection_snapshot_path
+state_path = odylith_context_engine_runtime_artifacts.state_path
+state_js_path = odylith_context_engine_runtime_artifacts.state_js_path
+ensure_state_js_probe_asset = odylith_context_engine_runtime_artifacts.ensure_state_js_probe_asset
+events_path = odylith_context_engine_runtime_artifacts.events_path
+timings_path = odylith_context_engine_runtime_artifacts.timings_path
+pid_path = odylith_context_engine_runtime_artifacts.pid_path
+daemon_metadata_path = odylith_context_engine_runtime_artifacts.daemon_metadata_path
+stop_path = odylith_context_engine_runtime_artifacts.stop_path
+socket_path = odylith_context_engine_runtime_artifacts.socket_path
+daemon_usage_path = odylith_context_engine_runtime_artifacts.daemon_usage_path
+proof_surfaces_path = odylith_context_engine_runtime_artifacts.proof_surfaces_path
+sessions_root = odylith_context_engine_runtime_artifacts.sessions_root
+bootstraps_root = odylith_context_engine_runtime_artifacts.bootstraps_root
+judgment_memory_path = odylith_context_engine_runtime_artifacts.judgment_memory_path
+read_runtime_state = odylith_context_engine_runtime_artifacts.read_runtime_state
+write_runtime_state = odylith_context_engine_runtime_artifacts.write_runtime_state
+append_runtime_event = odylith_context_engine_runtime_artifacts.append_runtime_event
+_load_runtime_proof_surfaces = odylith_context_engine_runtime_artifacts.load_runtime_proof_surfaces
+_runtime_proof_section = odylith_context_engine_runtime_artifacts.runtime_proof_section
+_persist_runtime_proof_section = odylith_context_engine_runtime_artifacts.persist_runtime_proof_section
+workspace_daemon_key = odylith_context_engine_workspace_daemon.workspace_daemon_key
+runtime_request_namespace = odylith_context_engine_workspace_daemon.runtime_request_namespace
+runtime_request_namespace_from_payload = odylith_context_engine_workspace_daemon.runtime_request_namespace_from_payload
+_runtime_daemon_pid = odylith_context_engine_workspace_daemon.runtime_daemon_pid
+_read_runtime_daemon_metadata = odylith_context_engine_workspace_daemon.read_runtime_daemon_metadata
+_runtime_daemon_pid_alive = odylith_context_engine_workspace_daemon.runtime_daemon_pid_alive
+_runtime_daemon_owner_pid = odylith_context_engine_workspace_daemon.runtime_daemon_owner_pid
+_normalize_loopback_host = odylith_context_engine_workspace_daemon.normalize_loopback_host
+runtime_daemon_transport = odylith_context_engine_workspace_daemon.runtime_daemon_transport
+read_runtime_daemon_usage = odylith_context_engine_workspace_daemon.read_runtime_daemon_usage
+record_runtime_daemon_usage = odylith_context_engine_workspace_daemon.record_runtime_daemon_usage
+record_runtime_timing = odylith_context_engine_runtime_support.record_runtime_timing
+git_fsmonitor_status = odylith_context_engine_runtime_support.git_fsmonitor_status
+bootstrap_git_fsmonitor = odylith_context_engine_runtime_support.bootstrap_git_fsmonitor
+watcher_backend_report = odylith_context_engine_runtime_support.watcher_backend_report
+preferred_watcher_backend = odylith_context_engine_runtime_support.preferred_watcher_backend
 
 
-def daemon_usage_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / DAEMON_USAGE_FILENAME).resolve()
-
-
-def proof_surfaces_path(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / PROOF_SURFACES_FILENAME).resolve()
-
-
-def sessions_root(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / SESSIONS_DIRNAME).resolve()
-
-
-def bootstraps_root(*, repo_root: Path) -> Path:
-    return (runtime_root(repo_root=repo_root) / BOOTSTRAPS_DIRNAME).resolve()
-
-
-def judgment_memory_path(*, repo_root: Path) -> Path:
-    return (odylith_memory_backend.local_backend_root(repo_root=repo_root) / JUDGMENT_MEMORY_FILENAME).resolve()
-
-
-def _load_runtime_proof_surfaces(*, repo_root: Path) -> dict[str, Any]:
-    payload = odylith_context_cache.read_json_object(proof_surfaces_path(repo_root=repo_root))
-    return dict(payload) if isinstance(payload, Mapping) else {}
-
-
-def _runtime_proof_section(*, repo_root: Path, section: str) -> dict[str, Any]:
-    payload = _load_runtime_proof_surfaces(repo_root=repo_root)
-    value = payload.get(section)
-    return dict(value) if isinstance(value, Mapping) else {}
-
-
-def _persist_runtime_proof_section(
+def request_runtime_daemon(
     *,
     repo_root: Path,
-    section: str,
-    payload: Mapping[str, Any],
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    existing = _load_runtime_proof_surfaces(repo_root=root)
-    document = {
-        "contract": "odylith_proof_surfaces.v1",
-        "version": "v1",
-        "updated_utc": _utc_now(),
-    }
-    for key, value in existing.items():
-        if key in {"contract", "version", "updated_utc"}:
-            continue
-        if isinstance(value, Mapping):
-            document[key] = dict(value)
-    section_payload = dict(payload)
-    section_payload.setdefault("recorded_utc", _utc_now())
-    document[section] = section_payload
-    odylith_context_cache.write_json_if_changed(
-        repo_root=root,
-        path=proof_surfaces_path(repo_root=root),
-        payload=document,
-        lock_key=str(proof_surfaces_path(repo_root=root)),
+    command: str,
+    payload: Mapping[str, Any] | None = None,
+    required: bool = False,
+    timeout_seconds: float = 5.0,
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
+    """Preserve the store-owned daemon request contract while delegating transport work."""
+    return odylith_context_engine_workspace_daemon.request_runtime_daemon(
+        repo_root=repo_root,
+        command=command,
+        payload=payload,
+        required=required,
+        timeout_seconds=timeout_seconds,
+        transport_reader=runtime_daemon_transport,
+        metadata_reader=_read_runtime_daemon_metadata,
+        namespace_builder=runtime_request_namespace_from_payload,
+        timing_recorder=record_runtime_timing,
+        socket_factory=socket.socket,
+        socket_path_resolver=socket_path,
     )
-    return section_payload
 
 
 def _memory_backend_proof_signature(
@@ -804,370 +727,6 @@ def _sticky_snapshot_from_section(
     return live
 
 
-def workspace_daemon_key(*, repo_root: Path) -> str:
-    return odylith_context_cache.fingerprint_payload(str(Path(repo_root).resolve()))[:16]
-
-
-def runtime_request_namespace(
-    *,
-    repo_root: Path,
-    command: str = "",
-    changed_paths: Sequence[str] = (),
-    session_id: str = "",
-    claimed_paths: Sequence[str] = (),
-    working_tree_scope: str = "repo",
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    scope_token = str(working_tree_scope or "repo").strip().lower() or "repo"
-    normalized_changed = _normalize_changed_path_list(repo_root=root, values=changed_paths)
-    normalized_claimed = _normalize_changed_path_list(repo_root=root, values=claimed_paths)
-    normalized_session = re.sub(r"[^A-Za-z0-9._-]+", "-", str(session_id or "").strip()).strip("-")
-    namespace_payload = {
-        "command": str(command or "").strip().lower(),
-        "working_tree_scope": scope_token,
-        "session_id": normalized_session,
-        "changed_paths": normalized_changed,
-        "claimed_paths": normalized_claimed,
-    }
-    request_namespace = odylith_context_cache.fingerprint_payload(namespace_payload)[:16]
-    session_namespaced = bool(normalized_session or normalized_claimed or scope_token == "session")
-    return {
-        "workspace_key": workspace_daemon_key(repo_root=root),
-        "request_namespace": request_namespace,
-        "session_namespaced": session_namespaced,
-        "session_namespace": request_namespace if session_namespaced else "",
-        "working_tree_scope": scope_token,
-        "session_id_present": bool(normalized_session),
-        "claim_path_count": len(normalized_claimed),
-        "changed_path_count": len(normalized_changed),
-    }
-
-
-def runtime_request_namespace_from_payload(
-    *,
-    repo_root: Path,
-    command: str,
-    payload: Mapping[str, Any],
-) -> dict[str, Any]:
-    return runtime_request_namespace(
-        repo_root=repo_root,
-        command=command,
-        changed_paths=payload.get("paths", []) if isinstance(payload.get("paths"), list) else (),
-        session_id=str(payload.get("session_id", "")).strip(),
-        claimed_paths=payload.get("claim_paths", []) if isinstance(payload.get("claim_paths"), list) else (),
-        working_tree_scope=str(payload.get("working_tree_scope", "repo")).strip() or "repo",
-    )
-
-
-def _runtime_daemon_pid(*, repo_root: Path) -> int:
-    path = pid_path(repo_root=repo_root)
-    if not path.is_file():
-        return 0
-    try:
-        return max(0, int(path.read_text(encoding="utf-8").strip() or 0))
-    except (OSError, ValueError):
-        return 0
-
-
-def _read_runtime_daemon_metadata(*, repo_root: Path) -> dict[str, Any]:
-    path = daemon_metadata_path(repo_root=repo_root)
-    if not path.is_file():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
-    if not isinstance(payload, Mapping):
-        return {}
-    try:
-        pid = max(0, int(payload.get("pid", 0) or 0))
-    except (TypeError, ValueError):
-        pid = 0
-    return {
-        "pid": pid,
-        "auth_token": str(payload.get("auth_token", "")).strip(),
-        "spawn_reason": str(payload.get("spawn_reason", "")).strip(),
-        "started_utc": str(payload.get("started_utc", "")).strip(),
-    }
-
-
-def _runtime_daemon_pid_alive(pid: int) -> bool:
-    if int(pid or 0) <= 0:
-        return False
-    try:
-        os.kill(int(pid), 0)
-    except OSError:
-        return False
-    return True
-
-
-def _runtime_daemon_owner_pid(*, repo_root: Path) -> int:
-    pid = _runtime_daemon_pid(repo_root=repo_root)
-    if pid > 0:
-        return pid
-    metadata_pid = int(_read_runtime_daemon_metadata(repo_root=repo_root).get("pid", 0) or 0)
-    return metadata_pid if metadata_pid > 0 else 0
-
-
-def _normalize_loopback_host(value: Any) -> str:
-    token = str(value or "").strip().lower()
-    if not token:
-        return "127.0.0.1"
-    if token in {"127.0.0.1", "localhost", "::1"}:
-        return token
-    return ""
-
-
-def runtime_daemon_transport(*, repo_root: Path) -> dict[str, Any] | None:
-    root = Path(repo_root).resolve()
-    owner_pid = _runtime_daemon_owner_pid(repo_root=root)
-    if not _runtime_daemon_pid_alive(owner_pid):
-        return None
-    runtime_socket = socket_path(repo_root=root)
-    try:
-        if runtime_socket.is_socket():
-            return {
-                "transport": "unix",
-                "path": str(runtime_socket),
-                "pid": owner_pid,
-            }
-    except OSError:
-        return None
-    if not runtime_socket.is_file():
-        return None
-    try:
-        payload = json.loads(runtime_socket.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    if not isinstance(payload, Mapping):
-        return None
-    transport = str(payload.get("transport", "")).strip().lower()
-    if transport != "tcp":
-        return None
-    host = _normalize_loopback_host(payload.get("host", ""))
-    if not host:
-        return None
-    try:
-        port = int(payload.get("port", 0) or 0)
-    except (TypeError, ValueError):
-        return None
-    try:
-        transport_pid = int(payload.get("pid", 0) or 0)
-    except (TypeError, ValueError):
-        transport_pid = 0
-    if port <= 0:
-        return None
-    if transport_pid > 0 and transport_pid != owner_pid:
-        return None
-    return {
-        "transport": "tcp",
-        "host": host,
-        "port": port,
-        "pid": owner_pid,
-    }
-
-
-def request_runtime_daemon(
-    *,
-    repo_root: Path,
-    command: str,
-    payload: Mapping[str, Any] | None = None,
-    required: bool = False,
-    timeout_seconds: float = 5.0,
-) -> tuple[dict[str, Any], dict[str, Any]] | None:
-    root = Path(repo_root).resolve()
-    daemon_metadata = _read_runtime_daemon_metadata(repo_root=root)
-    transport = runtime_daemon_transport(repo_root=root)
-    if transport is None:
-        if required:
-            raise RuntimeError("odylith context engine daemon unavailable")
-        return None
-    started_at = time.perf_counter()
-    command_token = str(command or "").strip()
-    request_payload = dict(payload or {})
-    session_scope = runtime_request_namespace_from_payload(
-        repo_root=root,
-        command=command_token,
-        payload=request_payload,
-    )
-    if str(transport.get("transport", "")).strip() == "tcp":
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        connect_target: Any = (
-            str(transport.get("host", "")).strip() or "127.0.0.1",
-            int(transport.get("port", 0) or 0),
-        )
-    else:
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        connect_target = str(transport.get("path", "")).strip() or str(socket_path(repo_root=root))
-    sock.settimeout(timeout_seconds)
-    try:
-        sock.connect(connect_target)
-        rendered = json.dumps(
-            {
-                "command": command_token,
-                "payload": request_payload,
-                **({"auth_token": str(daemon_metadata.get("auth_token", "")).strip()} if str(daemon_metadata.get("auth_token", "")).strip() else {}),
-            },
-            sort_keys=True,
-        ).encode("utf-8") + b"\n"
-        sock.sendall(rendered)
-        sock.shutdown(socket.SHUT_WR)
-        chunks: list[bytes] = []
-        while True:
-            data = sock.recv(65536)
-            if not data:
-                break
-            chunks.append(data)
-    except OSError as exc:
-        if required:
-            raise RuntimeError("odylith context engine daemon request failed") from exc
-        return None
-    finally:
-        with contextlib.suppress(OSError):
-            sock.close()
-    if not chunks:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned no response")
-        return None
-    try:
-        response = json.loads(b"".join(chunks).decode("utf-8"))
-    except json.JSONDecodeError as exc:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned invalid JSON") from exc
-        return None
-    if not isinstance(response, Mapping):
-        if required:
-            raise RuntimeError("odylith context engine daemon returned an invalid payload")
-        return None
-    if not bool(response.get("ok", False)):
-        message = str(response.get("error", "")).strip() or "odylith context engine daemon request failed"
-        if required:
-            raise RuntimeError(message)
-        return None
-    daemon_payload = response.get("payload", {})
-    runtime_execution = {
-        "source": "workspace_daemon",
-        "transport": str(transport.get("transport", "")).strip() or "unknown",
-        "workspace_daemon_reused": True,
-        "workspace_key": str(session_scope.get("workspace_key", "")).strip(),
-        "request_namespace": str(session_scope.get("request_namespace", "")).strip(),
-        "session_namespaced": bool(session_scope.get("session_namespaced")),
-        "session_namespace": str(session_scope.get("session_namespace", "")).strip(),
-        "working_tree_scope": str(session_scope.get("working_tree_scope", "")).strip(),
-        "session_id_present": bool(session_scope.get("session_id_present")),
-        "claim_path_count": int(session_scope.get("claim_path_count", 0) or 0),
-        "changed_path_count": int(session_scope.get("changed_path_count", 0) or 0),
-    }
-    record_runtime_timing(
-        repo_root=root,
-        category="daemon",
-        operation=command_token or "request",
-        duration_ms=(time.perf_counter() - started_at) * 1000.0,
-        metadata={
-            "required": bool(required),
-            "transport": str(runtime_execution["transport"]),
-            "authenticated": bool(str(daemon_metadata.get("auth_token", "")).strip()),
-            "workspace_daemon_reused": True,
-            "session_namespaced": bool(runtime_execution["session_namespaced"]),
-            "session_namespace": str(runtime_execution["session_namespace"]),
-            "request_namespace": str(runtime_execution["request_namespace"]),
-        },
-    )
-    return (
-        dict(daemon_payload) if isinstance(daemon_payload, Mapping) else {"value": daemon_payload},
-        runtime_execution,
-    )
-
-
-def read_runtime_daemon_usage(*, repo_root: Path) -> dict[str, Any]:
-    payload = odylith_context_cache.read_json_object(daemon_usage_path(repo_root=repo_root))
-    if not payload:
-        return {}
-    command_counts = {
-        str(key).strip(): int(value or 0)
-        for key, value in dict(payload.get("command_counts", {})).items()
-        if str(key).strip()
-    } if isinstance(payload.get("command_counts"), Mapping) else {}
-    recent_namespaces = [
-        str(token).strip()
-        for token in payload.get("recent_session_namespaces", [])
-        if str(token).strip()
-    ] if isinstance(payload.get("recent_session_namespaces"), list) else []
-    seen_namespaces = [
-        str(token).strip()
-        for token in payload.get("seen_session_namespaces", [])
-        if str(token).strip()
-    ] if isinstance(payload.get("seen_session_namespaces"), list) else []
-    return {
-        "workspace_key": str(payload.get("workspace_key", "")).strip(),
-        "request_count": int(payload.get("request_count", 0) or 0),
-        "session_scoped_request_count": int(payload.get("session_scoped_request_count", 0) or 0),
-        "unique_session_namespace_count": int(payload.get("unique_session_namespace_count", 0) or 0),
-        "last_command": str(payload.get("last_command", "")).strip(),
-        "last_request_utc": str(payload.get("last_request_utc", "")).strip(),
-        "last_session_namespace": str(payload.get("last_session_namespace", "")).strip(),
-        "last_working_tree_scope": str(payload.get("last_working_tree_scope", "")).strip(),
-        "recent_session_namespaces": recent_namespaces[:8],
-        "seen_session_namespaces": seen_namespaces[:64],
-        "command_counts": command_counts,
-    }
-
-
-def record_runtime_daemon_usage(
-    *,
-    repo_root: Path,
-    command: str,
-    payload: Mapping[str, Any],
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    target = daemon_usage_path(repo_root=root)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    scope = runtime_request_namespace_from_payload(
-        repo_root=root,
-        command=command,
-        payload=payload,
-    )
-    with odylith_context_cache.advisory_lock(repo_root=root, key=str(target)):
-        existing = read_runtime_daemon_usage(repo_root=root)
-        command_counts = dict(existing.get("command_counts", {})) if isinstance(existing.get("command_counts"), Mapping) else {}
-        command_token = str(command or "").strip() or "request"
-        command_counts[command_token] = int(command_counts.get(command_token, 0) or 0) + 1
-        recent_namespaces = [
-            token
-            for token in existing.get("recent_session_namespaces", [])
-            if str(token).strip()
-        ] if isinstance(existing.get("recent_session_namespaces"), list) else []
-        seen_namespaces = [
-            token
-            for token in existing.get("seen_session_namespaces", [])
-            if str(token).strip()
-        ] if isinstance(existing.get("seen_session_namespaces"), list) else []
-        session_namespace = str(scope.get("session_namespace", "")).strip()
-        if session_namespace:
-            recent_namespaces = [session_namespace, *[token for token in recent_namespaces if token != session_namespace]][:8]
-            if session_namespace not in seen_namespaces:
-                seen_namespaces = [session_namespace, *seen_namespaces][:64]
-        updated_payload = {
-            "workspace_key": str(scope.get("workspace_key", "")).strip() or workspace_daemon_key(repo_root=root),
-            "request_count": int(existing.get("request_count", 0) or 0) + 1,
-            "session_scoped_request_count": int(existing.get("session_scoped_request_count", 0) or 0)
-            + (1 if bool(scope.get("session_namespaced")) else 0),
-            "unique_session_namespace_count": len(seen_namespaces),
-            "last_command": command_token,
-            "last_request_utc": _utc_now(),
-            "last_session_namespace": session_namespace,
-            "last_working_tree_scope": str(scope.get("working_tree_scope", "")).strip(),
-            "recent_session_namespaces": recent_namespaces,
-            "seen_session_namespaces": seen_namespaces,
-            "command_counts": command_counts,
-        }
-        rendered = json.dumps(updated_payload, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
-        current = target.read_text(encoding="utf-8") if target.is_file() else ""
-        if current != rendered:
-            target.write_text(rendered, encoding="utf-8")
-    return updated_payload
-
-
 def _safe_unlink(path: Path) -> bool:
     try:
         path.unlink()
@@ -1257,161 +816,7 @@ def prune_runtime_records(*, repo_root: Path) -> dict[str, int]:
 
 
 def _projection_names_for_scope(scope: str) -> tuple[str, ...]:
-    token = str(scope or "default").strip().lower()
-    if token == "full":
-        return (*_BASE_PROJECTION_NAMES, *_FULL_ONLY_PROJECTION_NAMES)
-    if token == "reasoning":
-        return _REASONING_PROJECTION_NAMES
-    return _BASE_PROJECTION_NAMES
-
-
-def _watchdog_available() -> bool:
-    try:
-        import watchdog.observers  # type: ignore  # pragma: no cover
-    except ImportError:  # pragma: no cover - optional dependency
-        return False
-    return True
-
-
-def git_fsmonitor_status(*, repo_root: Path) -> dict[str, Any]:
-    """Return availability and activation status for Git's fsmonitor daemon."""
-
-    root = Path(repo_root).resolve()
-    try:
-        completed = subprocess.run(
-            ["git", "-C", str(root), "fsmonitor--daemon", "status"],
-            capture_output=True,
-            check=False,
-            text=True,
-        )
-    except OSError:
-        return {
-            "supported": False,
-            "active": False,
-            "detail": "",
-            "returncode": 127,
-        }
-    detail = "\n".join(
-        token
-        for token in (
-            str(completed.stdout or "").strip(),
-            str(completed.stderr or "").strip(),
-        )
-        if token
-    ).strip()
-    normalized = detail.lower()
-    supported = "fsmonitor-daemon" in normalized and "not a git command" not in normalized
-    active = supported and " is watching " in normalized
-    return {
-        "supported": supported,
-        "active": active,
-        "detail": detail,
-        "returncode": int(completed.returncode),
-    }
-
-
-def bootstrap_git_fsmonitor(*, repo_root: Path) -> dict[str, Any]:
-    """Start Git fsmonitor when supported, keeping the operation local-only."""
-
-    root = Path(repo_root).resolve()
-    before = git_fsmonitor_status(repo_root=root)
-    if not bool(before.get("supported")):
-        return {
-            "supported": False,
-            "active": False,
-            "started": False,
-            "status": "unsupported",
-            "detail": str(before.get("detail", "")).strip(),
-        }
-    if bool(before.get("active")):
-        return {
-            "supported": True,
-            "active": True,
-            "started": False,
-            "status": "already-active",
-            "detail": str(before.get("detail", "")).strip(),
-        }
-    try:
-        completed = subprocess.run(
-            ["git", "-C", str(root), "fsmonitor--daemon", "start"],
-            capture_output=True,
-            check=False,
-            text=True,
-        )
-    except OSError as exc:
-        return {
-            "supported": True,
-            "active": False,
-            "started": False,
-            "status": "failed",
-            "detail": str(exc),
-        }
-    after = git_fsmonitor_status(repo_root=root)
-    if bool(after.get("active")):
-        detail = str(after.get("detail", "")).strip() or str(completed.stdout or "").strip()
-        return {
-            "supported": True,
-            "active": True,
-            "started": True,
-            "status": "started",
-            "detail": detail,
-        }
-    detail = "\n".join(
-        token
-        for token in (
-            str(completed.stdout or "").strip(),
-            str(completed.stderr or "").strip(),
-            str(after.get("detail", "")).strip(),
-        )
-        if token
-    ).strip()
-    return {
-        "supported": True,
-        "active": False,
-        "started": False,
-        "status": "failed",
-        "detail": detail,
-    }
-
-
-def watcher_backend_report(*, repo_root: Path) -> dict[str, Any]:
-    """Describe watcher capability and the best local backend currently usable."""
-
-    root = Path(repo_root).resolve()
-    watchman_available = bool(shutil.which("watchman"))
-    watchdog_available = _watchdog_available()
-    git_fsmonitor = git_fsmonitor_status(repo_root=root)
-    preferred = "poll"
-    if watchman_available:
-        preferred = "watchman"
-    elif watchdog_available:
-        preferred = "watchdog"
-    elif bool(git_fsmonitor.get("active")):
-        preferred = "git-fsmonitor"
-    best_bootstrappable = "watchman" if watchman_available else "watchdog" if watchdog_available else "git-fsmonitor" if bool(git_fsmonitor.get("supported")) else "poll"
-    bootstrap_recommended = preferred == "poll" and best_bootstrappable == "git-fsmonitor"
-    return {
-        "watchman_available": watchman_available,
-        "watchdog_available": watchdog_available,
-        "git_fsmonitor_supported": bool(git_fsmonitor.get("supported")),
-        "git_fsmonitor_active": bool(git_fsmonitor.get("active")),
-        "git_fsmonitor_detail": str(git_fsmonitor.get("detail", "")).strip(),
-        "preferred_backend": preferred,
-        "best_bootstrappable_backend": best_bootstrappable,
-        "bootstrap_recommended": bootstrap_recommended,
-    }
-
-
-def preferred_watcher_backend(*, repo_root: Path | None = None) -> str:
-    """Return the preferred local invalidation backend available in this env."""
-
-    if shutil.which("watchman"):
-        return "watchman"
-    if _watchdog_available():
-        return "watchdog"
-    if repo_root is not None and bool(git_fsmonitor_status(repo_root=Path(repo_root).resolve()).get("active")):
-        return "git-fsmonitor"
-    return "poll"
+    return odylith_context_engine_runtime_support.projection_names_for_scope(scope)
 
 
 def watch_targets(*, repo_root: Path) -> tuple[str, ...]:
@@ -1431,7 +836,7 @@ def watch_targets(*, repo_root: Path) -> tuple[str, ...]:
         component_registry.DEFAULT_IDEAS_ROOT,
         component_registry.DEFAULT_STREAM_PATH,
         component_registry.DEFAULT_TRACEABILITY_GRAPH_PATH,
-        "odylith/compass/runtime/codex-stream.v1.jsonl",
+        agent_runtime_contract.AGENT_STREAM_PATH,
         delivery_intelligence_engine.DEFAULT_OUTPUT_PATH,
         *_ENGINEERING_WATCH_PATHS,
         "docs/runbooks",
@@ -1452,56 +857,6 @@ def watch_targets(*, repo_root: Path) -> tuple[str, ...]:
         seen.add(token)
         rows.append(token)
     return tuple(rows)
-
-
-def read_runtime_state(*, repo_root: Path) -> dict[str, Any]:
-    return odylith_control_state.read_state(repo_root=repo_root)
-
-
-def write_runtime_state(*, repo_root: Path, payload: Mapping[str, Any]) -> None:
-    odylith_control_state.write_state(repo_root=repo_root, payload=payload)
-
-
-def append_runtime_event(*, repo_root: Path, event_type: str, payload: Mapping[str, Any]) -> None:
-    odylith_control_state.append_event(
-        repo_root=repo_root,
-        event_type=str(event_type).strip() or "projection_update",
-        payload=dict(payload),
-        version=SCHEMA_VERSION,
-        ts_iso=_utc_now(),
-    )
-
-
-def record_runtime_timing(
-    *,
-    repo_root: Path,
-    category: str,
-    operation: str,
-    duration_ms: float,
-    metadata: Mapping[str, Any] | None = None,
-) -> None:
-    ts_iso = _utc_now()
-    odylith_control_state.append_timing(
-        repo_root=Path(repo_root).resolve(),
-        row={
-            "timing_id": odylith_context_cache.fingerprint_payload(
-                {
-                    "ts_iso": ts_iso,
-                    "pid": os.getpid(),
-                    "category": str(category or "").strip(),
-                    "operation": str(operation or "").strip(),
-                    "duration_ms": round(float(duration_ms or 0.0), 3),
-                    "metadata": dict(metadata or {}),
-                }
-            ),
-            "ts_iso": ts_iso,
-            "category": str(category or "").strip() or "runtime",
-            "operation": str(operation or "").strip() or "unknown",
-            "duration_ms": round(float(duration_ms or 0.0), 3),
-            "metadata": dict(metadata or {}),
-        },
-        retention_limit=_RUNTIME_TIMING_LIMIT,
-    )
 
 
 
@@ -1567,15 +922,38 @@ _judgment_memory_area = odylith_context_engine_runtime_learning_runtime._judgmen
 
 _provenance_item = odylith_context_engine_runtime_learning_runtime._provenance_item
 
-_derive_retrieval_memory_state = odylith_context_engine_runtime_learning_runtime._derive_retrieval_memory_state
+def _derive_retrieval_memory_state(
+    *,
+    transition_status: str,
+    indexed_entities: int,
+    evidence_documents: int,
+    compiler_ready: bool,
+) -> str:
+    return odylith_context_engine_evaluation_contract_runtime.derive_retrieval_memory_state(
+        transition_status=transition_status,
+        indexed_entities=indexed_entities,
+        evidence_documents=evidence_documents,
+        compiler_ready=compiler_ready,
+    )
 
-_load_latest_benchmark_report_snapshot = odylith_context_engine_runtime_learning_runtime._load_latest_benchmark_report_snapshot
 
-_build_judgment_memory_snapshot = odylith_context_engine_runtime_learning_runtime._build_judgment_memory_snapshot
+def _load_latest_benchmark_report_snapshot(*, repo_root: Path) -> dict[str, Any]:
+    return odylith_context_engine_evaluation_contract_runtime.load_latest_benchmark_report_snapshot(
+        context_engine_store=sys.modules[__name__],
+        repo_root=repo_root,
+    )
 
-_build_memory_areas_snapshot = odylith_context_engine_runtime_learning_runtime._build_memory_areas_snapshot
 
-_odylith_disabled_memory_snapshot = odylith_context_engine_runtime_learning_runtime._odylith_disabled_memory_snapshot
+def _build_judgment_memory_snapshot(**kwargs: Any) -> dict[str, Any]:
+    return odylith_context_engine_judgment_memory_runtime.build_judgment_memory_snapshot(
+        context_engine_store=sys.modules[__name__],
+        **kwargs,
+    )
+
+
+_build_memory_areas_snapshot = odylith_context_engine_memory_snapshot_runtime._build_memory_areas_snapshot
+
+_odylith_disabled_memory_snapshot = odylith_context_engine_memory_snapshot_runtime._odylith_disabled_memory_snapshot
 
 _odylith_disabled_optimization_snapshot = odylith_context_engine_runtime_learning_runtime._odylith_disabled_optimization_snapshot
 
@@ -1593,11 +971,11 @@ _odylith_query_targets_disabled = odylith_context_engine_runtime_learning_runtim
 
 _filter_odylith_search_results = odylith_context_engine_runtime_learning_runtime._filter_odylith_search_results
 
-load_runtime_memory_snapshot = odylith_context_engine_runtime_learning_runtime.load_runtime_memory_snapshot
+load_runtime_memory_snapshot = odylith_context_engine_memory_snapshot_runtime.load_runtime_memory_snapshot
 
 _load_recent_bootstrap_packets = odylith_context_engine_runtime_learning_runtime._load_recent_bootstrap_packets
 
-_packet_summary_from_bootstrap_payload = odylith_context_engine_runtime_learning_runtime._packet_summary_from_bootstrap_payload
+_packet_summary_from_bootstrap_payload = odylith_context_engine_packet_summary_runtime._packet_summary_from_bootstrap_payload
 
 _repo_paths_overlap = odylith_context_engine_runtime_learning_runtime._repo_paths_overlap
 
@@ -1619,11 +997,29 @@ _packet_matches_evaluation_case = odylith_context_engine_runtime_learning_runtim
 
 _packet_satisfies_evaluation_expectations = odylith_context_engine_runtime_learning_runtime._packet_satisfies_evaluation_expectations
 
-_architecture_timing_matches_evaluation_case = odylith_context_engine_runtime_learning_runtime._architecture_timing_matches_evaluation_case
+def _architecture_timing_matches_evaluation_case(
+    timing_row: Mapping[str, Any],
+    match_spec: Mapping[str, Any],
+) -> bool:
+    return odylith_context_engine_evaluation_contract_runtime.architecture_timing_matches_evaluation_case(
+        context_engine_store=sys.modules[__name__],
+        timing_row=timing_row,
+        match_spec=match_spec,
+    )
 
-_architecture_timing_satisfies_evaluation_expectations = odylith_context_engine_runtime_learning_runtime._architecture_timing_satisfies_evaluation_expectations
 
-_architecture_evaluation_snapshot = odylith_context_engine_runtime_learning_runtime._architecture_evaluation_snapshot
+def _architecture_timing_satisfies_evaluation_expectations(
+    timing_row: Mapping[str, Any],
+    expect_spec: Mapping[str, Any],
+) -> tuple[bool, dict[str, Any]]:
+    return odylith_context_engine_evaluation_contract_runtime.architecture_timing_satisfies_evaluation_expectations(
+        context_engine_store=sys.modules[__name__],
+        timing_row=timing_row,
+        expect_spec=expect_spec,
+    )
+
+
+_architecture_evaluation_snapshot = odylith_context_engine_memory_snapshot_runtime._architecture_evaluation_snapshot
 
 orchestration_decision_ledgers_root = odylith_context_engine_runtime_learning_runtime.orchestration_decision_ledgers_root
 
@@ -1657,398 +1053,402 @@ class _ProjectionCursor:
         return dict(self._rows[0]) if self._rows else None
 
 
-_ProjectionConnection = odylith_context_engine_projection_query_runtime._ProjectionConnection
+_ProjectionConnection = odylith_context_engine_projection_search_runtime._ProjectionConnection
 
 
 
-_projection_snapshot_cache_signature = odylith_context_engine_projection_query_runtime._projection_snapshot_cache_signature
+_projection_snapshot_cache_signature = odylith_context_engine_projection_search_runtime._projection_snapshot_cache_signature
 
 
 
-_connect = odylith_context_engine_projection_query_runtime._connect
+_connect = odylith_context_engine_projection_search_runtime._connect
 
 
 
-_path_fingerprint = odylith_context_engine_projection_query_runtime._path_fingerprint
+_path_fingerprint = odylith_context_engine_projection_search_runtime._path_fingerprint
 
 
 
-_test_history_report_inputs = odylith_context_engine_projection_query_runtime._test_history_report_inputs
+_test_history_report_inputs = odylith_context_engine_projection_search_runtime._test_history_report_inputs
 
 
 
-_workspace_activity_fingerprint = odylith_context_engine_projection_query_runtime._workspace_activity_fingerprint
+_workspace_activity_fingerprint = odylith_context_engine_projection_search_runtime._workspace_activity_fingerprint
 
 
 
-_radar_source_root = odylith_context_engine_projection_query_runtime._radar_source_root
+_radar_source_root = odylith_context_engine_projection_search_runtime._radar_source_root
 
 
 
-_technical_plans_root = odylith_context_engine_projection_query_runtime._technical_plans_root
+_technical_plans_root = odylith_context_engine_projection_search_runtime._technical_plans_root
 
 
 
-_casebook_bugs_root = odylith_context_engine_projection_query_runtime._casebook_bugs_root
+_casebook_bugs_root = odylith_context_engine_projection_search_runtime._casebook_bugs_root
 
 
 
-_component_specs_root = odylith_context_engine_projection_query_runtime._component_specs_root
+_component_specs_root = odylith_context_engine_projection_search_runtime._component_specs_root
 
 
 
-_component_registry_path = odylith_context_engine_projection_query_runtime._component_registry_path
+_component_registry_path = odylith_context_engine_projection_search_runtime._component_registry_path
 
 
 
-_product_root = odylith_context_engine_projection_query_runtime._product_root
+_product_root = odylith_context_engine_projection_search_runtime._product_root
 
 
 
-_atlas_catalog_path = odylith_context_engine_projection_query_runtime._atlas_catalog_path
+_atlas_catalog_path = odylith_context_engine_projection_search_runtime._atlas_catalog_path
 
 
 
-_compass_stream_path = odylith_context_engine_projection_query_runtime._compass_stream_path
+_compass_stream_path = odylith_context_engine_projection_search_runtime._compass_stream_path
 
 
 
-_traceability_graph_path = odylith_context_engine_projection_query_runtime._traceability_graph_path
+_traceability_graph_path = odylith_context_engine_projection_search_runtime._traceability_graph_path
 
 
 
-_projected_input_fingerprints = odylith_context_engine_projection_query_runtime._projected_input_fingerprints
+_projected_input_fingerprints = odylith_context_engine_projection_search_runtime._projected_input_fingerprints
 
 
 
-projection_input_fingerprint = odylith_context_engine_projection_query_runtime.projection_input_fingerprint
+projection_input_fingerprint = odylith_context_engine_projection_search_runtime.projection_input_fingerprint
 
 
 
-_archive_files = odylith_context_engine_projection_query_runtime._archive_files
+_archive_files = odylith_context_engine_projection_search_runtime._archive_files
 
 
 
-_collect_markdown_sections = odylith_context_engine_projection_query_runtime._collect_markdown_sections
+_collect_markdown_sections = odylith_context_engine_projection_search_runtime._collect_markdown_sections
 
 
 
-_parse_markdown_table = odylith_context_engine_projection_query_runtime._parse_markdown_table
+_parse_markdown_table = odylith_context_engine_projection_search_runtime._parse_markdown_table
 
 
 
-_parse_link_target = odylith_context_engine_projection_query_runtime._parse_link_target
+_parse_link_target = odylith_context_engine_projection_search_runtime._parse_link_target
 
 
 
-_load_idea_specs = odylith_context_engine_projection_query_runtime._load_idea_specs
+_load_idea_specs = odylith_context_engine_projection_search_runtime._load_idea_specs
 
 
 
-_load_backlog_projection = odylith_context_engine_projection_query_runtime._load_backlog_projection
+_load_backlog_projection = odylith_context_engine_projection_search_runtime._load_backlog_projection
 
 
 
-_load_plan_projection = odylith_context_engine_projection_query_runtime._load_plan_projection
+_load_plan_projection = odylith_context_engine_projection_search_runtime._load_plan_projection
 
 
 
-_load_bug_projection = odylith_context_engine_projection_query_runtime._load_bug_projection
+_load_bug_projection = odylith_context_engine_projection_search_runtime._load_bug_projection
 
 
 
-_normalize_bug_projection_rows = odylith_context_engine_projection_query_runtime._normalize_bug_projection_rows
+_normalize_bug_projection_rows = odylith_context_engine_projection_search_runtime._normalize_bug_projection_rows
 
 
 
-_normalize_bug_link_target = odylith_context_engine_projection_query_runtime._normalize_bug_link_target
+_normalize_bug_link_target = odylith_context_engine_projection_search_runtime._normalize_bug_link_target
 
 
 
-_is_bug_placeholder_row = odylith_context_engine_projection_query_runtime._is_bug_placeholder_row
+_is_bug_placeholder_row = odylith_context_engine_projection_search_runtime._is_bug_placeholder_row
 
 
 
-_safe_json = odylith_context_engine_projection_query_runtime._safe_json
+_safe_json = odylith_context_engine_projection_search_runtime._safe_json
 
 
 
-_raw_text = odylith_context_engine_projection_query_runtime._raw_text
+_raw_text = odylith_context_engine_projection_search_runtime._raw_text
 
 
 
-_load_codex_event_projection = odylith_context_engine_projection_query_runtime._load_codex_event_projection
+_load_codex_event_projection = odylith_context_engine_projection_search_runtime._load_codex_event_projection
 
 
 
-_load_traceability_projection = odylith_context_engine_projection_query_runtime._load_traceability_projection
+_load_traceability_projection = odylith_context_engine_projection_search_runtime._load_traceability_projection
 
 
 
-_load_diagram_projection = odylith_context_engine_projection_query_runtime._load_diagram_projection
+_load_release_projection = odylith_context_engine_projection_runtime._load_release_projection
 
 
 
-_looks_like_repo_path = odylith_context_engine_projection_query_runtime._looks_like_repo_path
+_load_diagram_projection = odylith_context_engine_projection_search_runtime._load_diagram_projection
 
 
 
-_extract_path_refs = odylith_context_engine_projection_query_runtime._extract_path_refs
+_looks_like_repo_path = odylith_context_engine_projection_search_runtime._looks_like_repo_path
 
 
 
-_extract_workstream_refs = odylith_context_engine_projection_query_runtime._extract_workstream_refs
+_extract_path_refs = odylith_context_engine_projection_search_runtime._extract_path_refs
 
 
 
-_first_summary = odylith_context_engine_projection_query_runtime._first_summary
+_extract_workstream_refs = odylith_context_engine_projection_search_runtime._extract_workstream_refs
 
 
 
-_note_title = odylith_context_engine_projection_query_runtime._note_title
+_first_summary = odylith_context_engine_projection_search_runtime._first_summary
 
 
 
-_string_list = odylith_context_engine_projection_query_runtime._string_list
+_note_title = odylith_context_engine_projection_search_runtime._note_title
 
 
 
-_parse_markdown_fields = odylith_context_engine_projection_query_runtime._parse_markdown_fields
+_string_list = odylith_context_engine_projection_search_runtime._string_list
 
 
 
-_trim_multiline_lines = odylith_context_engine_projection_query_runtime._trim_multiline_lines
+_parse_markdown_fields = odylith_context_engine_projection_search_runtime._parse_markdown_fields
 
 
 
-_join_bug_field_lines = odylith_context_engine_projection_query_runtime._join_bug_field_lines
+_trim_multiline_lines = odylith_context_engine_projection_search_runtime._trim_multiline_lines
 
 
 
-_parse_bug_entry_fields = odylith_context_engine_projection_query_runtime._parse_bug_entry_fields
+_join_bug_field_lines = odylith_context_engine_projection_search_runtime._join_bug_field_lines
 
 
 
-_bug_archive_bucket_from_link_target = odylith_context_engine_projection_query_runtime._bug_archive_bucket_from_link_target
+_parse_bug_entry_fields = odylith_context_engine_projection_search_runtime._parse_bug_entry_fields
 
 
 
-canonicalize_bug_status = odylith_context_engine_projection_query_runtime.canonicalize_bug_status
+_bug_archive_bucket_from_link_target = odylith_context_engine_projection_search_runtime._bug_archive_bucket_from_link_target
 
 
 
-_bug_is_open = odylith_context_engine_projection_query_runtime._bug_is_open
+canonicalize_bug_status = odylith_context_engine_projection_search_runtime.canonicalize_bug_status
 
 
 
-_ordered_bug_detail_sections = odylith_context_engine_projection_query_runtime._ordered_bug_detail_sections
+_bug_is_open = odylith_context_engine_projection_search_runtime._bug_is_open
 
 
 
-_bug_summary_from_fields = odylith_context_engine_projection_query_runtime._bug_summary_from_fields
+_ordered_bug_detail_sections = odylith_context_engine_projection_search_runtime._ordered_bug_detail_sections
 
 
 
-_component_rows_from_index = odylith_context_engine_projection_query_runtime._component_rows_from_index
+_bug_summary_from_fields = odylith_context_engine_projection_search_runtime._bug_summary_from_fields
 
 
 
-_build_bug_reference_lookup = odylith_context_engine_projection_query_runtime._build_bug_reference_lookup
+_component_rows_from_index = odylith_context_engine_projection_search_runtime._component_rows_from_index
 
 
 
-_related_bug_refs_from_text = odylith_context_engine_projection_query_runtime._related_bug_refs_from_text
+_build_bug_reference_lookup = odylith_context_engine_projection_search_runtime._build_bug_reference_lookup
 
 
 
-_classify_bug_path_refs = odylith_context_engine_projection_query_runtime._classify_bug_path_refs
+_related_bug_refs_from_text = odylith_context_engine_projection_search_runtime._related_bug_refs_from_text
 
 
 
-_component_matches_for_bug_paths = odylith_context_engine_projection_query_runtime._component_matches_for_bug_paths
+_classify_bug_path_refs = odylith_context_engine_projection_search_runtime._classify_bug_path_refs
 
 
 
-_diagram_refs_for_bug_components = odylith_context_engine_projection_query_runtime._diagram_refs_for_bug_components
+_component_matches_for_bug_paths = odylith_context_engine_projection_search_runtime._component_matches_for_bug_paths
 
 
 
-_bug_intelligence_coverage = odylith_context_engine_projection_query_runtime._bug_intelligence_coverage
+_diagram_refs_for_bug_components = odylith_context_engine_projection_search_runtime._diagram_refs_for_bug_components
 
 
 
-_split_bug_guidance_items = odylith_context_engine_projection_query_runtime._split_bug_guidance_items
+_bug_intelligence_coverage = odylith_context_engine_projection_search_runtime._bug_intelligence_coverage
 
 
 
-_bug_agent_guidance = odylith_context_engine_projection_query_runtime._bug_agent_guidance
+_split_bug_guidance_items = odylith_context_engine_projection_search_runtime._split_bug_guidance_items
 
 
 
-_load_component_match_rows_from_components = odylith_context_engine_projection_query_runtime._load_component_match_rows_from_components
+_bug_agent_guidance = odylith_context_engine_projection_search_runtime._bug_agent_guidance
 
 
 
-_load_component_match_rows = odylith_context_engine_projection_query_runtime._load_component_match_rows
+_load_component_match_rows_from_components = odylith_context_engine_projection_search_runtime._load_component_match_rows_from_components
 
 
 
-_components_for_paths = odylith_context_engine_projection_query_runtime._components_for_paths
+_load_component_match_rows = odylith_context_engine_projection_search_runtime._load_component_match_rows
 
 
 
-_load_adr_notes = odylith_context_engine_projection_query_runtime._load_adr_notes
+_components_for_paths = odylith_context_engine_projection_search_runtime._components_for_paths
 
 
 
-_load_invariant_notes = odylith_context_engine_projection_query_runtime._load_invariant_notes
+_load_adr_notes = odylith_context_engine_projection_search_runtime._load_adr_notes
 
 
 
-_load_data_ownership_notes = odylith_context_engine_projection_query_runtime._load_data_ownership_notes
+_load_invariant_notes = odylith_context_engine_projection_search_runtime._load_invariant_notes
 
 
 
-_load_section_bullet_notes = odylith_context_engine_projection_query_runtime._load_section_bullet_notes
+_load_data_ownership_notes = odylith_context_engine_projection_search_runtime._load_data_ownership_notes
 
 
 
-_markdown_title = odylith_context_engine_projection_query_runtime._markdown_title
+_load_section_bullet_notes = odylith_context_engine_projection_search_runtime._load_section_bullet_notes
 
 
 
-_load_guidance_chunk_notes = odylith_context_engine_projection_query_runtime._load_guidance_chunk_notes
+_markdown_title = odylith_context_engine_projection_search_runtime._markdown_title
 
 
 
-_load_runbook_notes = odylith_context_engine_projection_query_runtime._load_runbook_notes
+_load_guidance_chunk_notes = odylith_context_engine_projection_search_runtime._load_guidance_chunk_notes
 
 
-_projection_state_row = odylith_context_engine_projection_query_runtime._projection_state_row
 
+_load_runbook_notes = odylith_context_engine_projection_search_runtime._load_runbook_notes
 
 
-_empty_projection_tables = odylith_context_engine_projection_query_runtime._empty_projection_tables
+_projection_state_row = odylith_context_engine_projection_search_runtime._projection_state_row
 
 
 
-warm_projections = odylith_context_engine_projection_query_runtime.warm_projections
+_empty_projection_tables = odylith_context_engine_projection_search_runtime._empty_projection_tables
 
 
 
-_runtime_enabled = odylith_context_engine_projection_query_runtime._runtime_enabled
+warm_projections = odylith_context_engine_projection_search_runtime.warm_projections
 
 
 
-_warm_runtime = odylith_context_engine_projection_query_runtime._warm_runtime
+_runtime_enabled = odylith_context_engine_projection_search_runtime._runtime_enabled
 
 
 
-_projection_cache_signature = odylith_context_engine_projection_query_runtime._projection_cache_signature
+_warm_runtime = odylith_context_engine_projection_search_runtime._warm_runtime
 
 
 
-_cached_projection_rows = odylith_context_engine_projection_query_runtime._cached_projection_rows
+_projection_cache_signature = odylith_context_engine_projection_search_runtime._projection_cache_signature
 
 
 
-clear_runtime_process_caches = odylith_context_engine_projection_query_runtime.clear_runtime_process_caches
+_cached_projection_rows = odylith_context_engine_projection_search_runtime._cached_projection_rows
 
 
 
-prime_reasoning_projection_cache = odylith_context_engine_projection_query_runtime.prime_reasoning_projection_cache
+clear_runtime_process_caches = odylith_context_engine_projection_search_runtime.clear_runtime_process_caches
 
 
 
-_path_signature = odylith_context_engine_projection_query_runtime._path_signature
+prime_reasoning_projection_cache = odylith_context_engine_projection_search_runtime.prime_reasoning_projection_cache
 
 
 
-_architecture_bundle_mermaid_signature_hash = odylith_context_engine_projection_query_runtime._architecture_bundle_mermaid_signature_hash
+_path_signature = odylith_context_engine_projection_search_runtime._path_signature
 
 
 
-_bootstraps_signature = odylith_context_engine_projection_query_runtime._bootstraps_signature
+_architecture_bundle_mermaid_signature_hash = odylith_context_engine_projection_search_runtime._architecture_bundle_mermaid_signature_hash
 
 
 
-_runtime_optimization_cache_signature = odylith_context_engine_projection_query_runtime._runtime_optimization_cache_signature
+_bootstraps_signature = odylith_context_engine_projection_search_runtime._bootstraps_signature
 
 
 
-_merge_search_results = odylith_context_engine_projection_query_runtime._merge_search_results
+_runtime_optimization_cache_signature = odylith_context_engine_projection_search_runtime._runtime_optimization_cache_signature
 
 
 
-_repair_odylith_backend = odylith_context_engine_projection_query_runtime._repair_odylith_backend
+_merge_search_results = odylith_context_engine_projection_search_runtime._merge_search_results
 
 
 
-_search_row_from_entity = odylith_context_engine_projection_query_runtime._search_row_from_entity
+_repair_odylith_backend = odylith_context_engine_projection_search_runtime._repair_odylith_backend
 
 
 
-search_entities_payload = odylith_context_engine_projection_query_runtime.search_entities_payload
+_search_row_from_entity = odylith_context_engine_projection_search_runtime._search_row_from_entity
 
 
 
-search_entities = odylith_context_engine_projection_query_runtime.search_entities
+search_entities_payload = odylith_context_engine_projection_search_runtime.search_entities_payload
 
 
 
-_miss_recovery_query_tokens = odylith_context_engine_projection_query_runtime._miss_recovery_query_tokens
+search_entities = odylith_context_engine_projection_search_runtime.search_entities
 
 
 
-_build_miss_recovery_queries = odylith_context_engine_projection_query_runtime._build_miss_recovery_queries
+_miss_recovery_query_tokens = odylith_context_engine_projection_search_runtime._miss_recovery_query_tokens
 
 
 
-_repo_scan_inferred_kind = odylith_context_engine_projection_query_runtime._repo_scan_inferred_kind
+_build_miss_recovery_queries = odylith_context_engine_projection_search_runtime._build_miss_recovery_queries
 
 
 
-_repo_scan_recovery_rows = odylith_context_engine_projection_query_runtime._repo_scan_recovery_rows
+_repo_scan_inferred_kind = odylith_context_engine_projection_search_runtime._repo_scan_inferred_kind
 
 
 
-_recovery_search_payload = odylith_context_engine_projection_query_runtime._recovery_search_payload
+_repo_scan_recovery_rows = odylith_context_engine_projection_search_runtime._repo_scan_recovery_rows
 
 
 
-_recovery_search_rows = odylith_context_engine_projection_query_runtime._recovery_search_rows
+_recovery_search_payload = odylith_context_engine_projection_search_runtime._recovery_search_payload
 
 
 
-_recovery_note_like_kind = odylith_context_engine_projection_query_runtime._recovery_note_like_kind
+_recovery_search_rows = odylith_context_engine_projection_search_runtime._recovery_search_rows
 
 
 
-_miss_recovery_projection_path_kind = odylith_context_engine_projection_query_runtime._miss_recovery_projection_path_kind
+_recovery_note_like_kind = odylith_context_engine_projection_search_runtime._recovery_note_like_kind
 
 
 
-_miss_recovery_projection_terms = odylith_context_engine_projection_query_runtime._miss_recovery_projection_terms
+_miss_recovery_projection_path_kind = odylith_context_engine_projection_search_runtime._miss_recovery_projection_path_kind
 
 
 
-_cached_miss_recovery_projection_index = odylith_context_engine_projection_query_runtime._cached_miss_recovery_projection_index
+_miss_recovery_projection_terms = odylith_context_engine_projection_search_runtime._miss_recovery_projection_terms
 
 
 
-_projection_miss_recovery_rows = odylith_context_engine_projection_query_runtime._projection_miss_recovery_rows
+_cached_miss_recovery_projection_index = odylith_context_engine_projection_search_runtime._cached_miss_recovery_projection_index
 
 
 
-_compact_miss_recovery_result = odylith_context_engine_projection_query_runtime._compact_miss_recovery_result
+_projection_miss_recovery_rows = odylith_context_engine_projection_search_runtime._projection_miss_recovery_rows
 
 
 
-_compact_miss_recovery_for_packet = odylith_context_engine_projection_query_runtime._compact_miss_recovery_for_packet
+_compact_miss_recovery_result = odylith_context_engine_projection_search_runtime._compact_miss_recovery_result
 
 
 
-_collect_retrieval_miss_recovery = odylith_context_engine_projection_query_runtime._collect_retrieval_miss_recovery
+_compact_miss_recovery_for_packet = odylith_context_engine_projection_search_runtime._compact_miss_recovery_for_packet
+
+
+
+_collect_retrieval_miss_recovery = odylith_context_engine_projection_search_runtime._collect_retrieval_miss_recovery
 
 
 
@@ -2105,6 +1505,10 @@ _context_lookup_aliases = odylith_context_engine_projection_query_runtime._conte
 
 
 _workstream_lookup_aliases = odylith_context_engine_projection_query_runtime._workstream_lookup_aliases
+
+
+
+_release_lookup_aliases = odylith_context_engine_projection_query_runtime._release_lookup_aliases
 
 
 
@@ -2247,63 +1651,63 @@ _summarize_entity = odylith_context_engine_projection_query_runtime._summarize_e
 
 
 
-_entity_from_row = odylith_context_engine_projection_query_runtime._entity_from_row
+_entity_from_row = odylith_context_engine_projection_entity_runtime._entity_from_row
 
 
 
-_entity_by_kind_id = odylith_context_engine_projection_query_runtime._entity_by_kind_id
+_entity_by_kind_id = odylith_context_engine_projection_entity_runtime._entity_by_kind_id
 
 
 
-_entity_by_path = odylith_context_engine_projection_query_runtime._entity_by_path
+_entity_by_path = odylith_context_engine_projection_entity_runtime._entity_by_path
 
 
 
-_unique_entity_by_path_alias = odylith_context_engine_projection_query_runtime._unique_entity_by_path_alias
+_unique_entity_by_path_alias = odylith_context_engine_projection_entity_runtime._unique_entity_by_path_alias
 
 
 
-_projection_exact_search_results = odylith_context_engine_projection_query_runtime._projection_exact_search_results
+_projection_exact_search_results = odylith_context_engine_projection_entity_runtime._projection_exact_search_results
 
 
 
-_repo_scan_candidate_search_results = odylith_context_engine_projection_query_runtime._repo_scan_candidate_search_results
+_repo_scan_candidate_search_results = odylith_context_engine_projection_entity_runtime._repo_scan_candidate_search_results
 
 
 
-_resolve_context_entity = odylith_context_engine_projection_query_runtime._resolve_context_entity
+_resolve_context_entity = odylith_context_engine_projection_entity_runtime._resolve_context_entity
 
 
 
-_relation_rows = odylith_context_engine_projection_query_runtime._relation_rows
+_relation_rows = odylith_context_engine_projection_entity_runtime._relation_rows
 
 
 
-_related_entities = odylith_context_engine_projection_query_runtime._related_entities
+_related_entities = odylith_context_engine_projection_entity_runtime._related_entities
 
 
 
-_recent_context_events = odylith_context_engine_projection_query_runtime._recent_context_events
+_recent_context_events = odylith_context_engine_projection_entity_runtime._recent_context_events
 
 
 
-_delivery_context_rows = odylith_context_engine_projection_query_runtime._delivery_context_rows
+_delivery_context_rows = odylith_context_engine_projection_entity_runtime._delivery_context_rows
 
 
 
-load_context_dossier = odylith_context_engine_projection_query_runtime.load_context_dossier
+load_context_dossier = odylith_context_engine_projection_entity_runtime.load_context_dossier
 
 
 
-load_backlog_rows = odylith_context_engine_projection_query_runtime.load_backlog_rows
+load_backlog_rows = odylith_context_engine_projection_backlog_runtime.load_backlog_rows
 
 
 
-_markdown_section_bodies = odylith_context_engine_projection_query_runtime._markdown_section_bodies
+_markdown_section_bodies = odylith_context_engine_projection_backlog_runtime._markdown_section_bodies
 
 
 
-load_backlog_list = odylith_context_engine_projection_query_runtime.load_backlog_list
+load_backlog_list = odylith_context_engine_projection_backlog_runtime.load_backlog_list
 
 
 
@@ -2354,10 +1758,98 @@ def _runtime_backlog_detail_rows(
     return dict(rows) if isinstance(rows, Mapping) else {}
 
 
+def _metadata_id_list(value: object, pattern: re.Pattern[str]) -> list[str]:
+    values: list[str] = []
+    seen: set[str] = set()
+    for raw in str(value or "").replace(";", ",").split(","):
+        token = str(raw or "").strip().upper()
+        if not token or not pattern.fullmatch(token) or token in seen:
+            continue
+        seen.add(token)
+        values.append(token)
+    return values
+
+
+def _normalize_backlog_detail_payload(
+    *,
+    idea_id: str,
+    idea_file: str,
+    metadata: Mapping[str, object],
+    sections: Mapping[str, str],
+    promoted_to_plan: str,
+) -> dict[str, Any]:
+    normalized_sections = {
+        str(key).strip(): str(value).strip()
+        for key, value in sections.items()
+        if str(key).strip()
+    }
+    founder_pov = (
+        str(normalized_sections.get("Product View", "")).strip()
+        or str(normalized_sections.get("Founder POV", "")).strip()
+    )
+    return {
+        "idea_id": str(idea_id or "").strip().upper(),
+        "idea_file": str(idea_file or "").strip(),
+        "metadata": dict(metadata) if isinstance(metadata, Mapping) else {},
+        "sections": normalized_sections,
+        "promoted_to_plan": str(promoted_to_plan or "").strip(),
+        "title": str(metadata.get("title", "")).strip(),
+        "priority": str(metadata.get("priority", "")).strip(),
+        "ordering_score": str(metadata.get("ordering_score", "")).strip(),
+        "commercial_value": str(metadata.get("commercial_value", "")).strip(),
+        "product_impact": str(metadata.get("product_impact", "")).strip(),
+        "market_value": str(metadata.get("market_value", "")).strip(),
+        "sizing": str(metadata.get("sizing", "")).strip(),
+        "complexity": str(metadata.get("complexity", "")).strip(),
+        "status": str(metadata.get("status", "")).strip(),
+        "confidence": str(metadata.get("confidence", "")).strip(),
+        "founder_override": str(metadata.get("founder_override", "")).strip(),
+        "ordering_rationale": str(metadata.get("ordering_rationale", "")).strip(),
+        "impacted_parts": str(metadata.get("impacted_parts", "")).strip(),
+        "implemented_summary": str(metadata.get("implemented_summary", "")).strip(),
+        "workstream_type": str(metadata.get("workstream_type", "")).strip().lower(),
+        "problem": str(normalized_sections.get("Problem", "")).strip(),
+        "customer": str(normalized_sections.get("Customer", "")).strip(),
+        "opportunity": str(normalized_sections.get("Opportunity", "")).strip(),
+        "founder_pov": founder_pov,
+        "success_metrics": (
+            str(normalized_sections.get("Success Metrics", "")).strip()
+            or str(normalized_sections.get("Success Metric", "")).strip()
+        ),
+        "workstream_parent": str(metadata.get("workstream_parent", "")).strip(),
+        "workstream_children": _metadata_id_list(metadata.get("workstream_children", ""), _WORKSTREAM_ID_RE),
+        "workstream_depends_on": _metadata_id_list(metadata.get("workstream_depends_on", ""), _WORKSTREAM_ID_RE),
+        "workstream_blocks": _metadata_id_list(metadata.get("workstream_blocks", ""), _WORKSTREAM_ID_RE),
+        "related_diagram_ids": _metadata_id_list(metadata.get("related_diagram_ids", ""), _DIAGRAM_ID_RE),
+        "workstream_reopens": _metadata_id_list(metadata.get("workstream_reopens", ""), _WORKSTREAM_ID_RE),
+        "workstream_reopened_by": _metadata_id_list(metadata.get("workstream_reopened_by", ""), _WORKSTREAM_ID_RE),
+        "workstream_split_from": _metadata_id_list(metadata.get("workstream_split_from", ""), _WORKSTREAM_ID_RE),
+        "workstream_split_into": _metadata_id_list(metadata.get("workstream_split_into", ""), _WORKSTREAM_ID_RE),
+        "workstream_merged_into": _metadata_id_list(metadata.get("workstream_merged_into", ""), _WORKSTREAM_ID_RE),
+        "workstream_merged_from": _metadata_id_list(metadata.get("workstream_merged_from", ""), _WORKSTREAM_ID_RE),
+    }
+
+
+def _grounding_light_backlog_detail_payload(
+    *,
+    idea_id: str,
+    idea_file: str,
+    metadata: Mapping[str, object],
+    promoted_to_plan: str,
+) -> dict[str, Any]:
+    return {
+        "idea_id": str(idea_id or "").strip().upper(),
+        "idea_file": str(idea_file or "").strip(),
+        "metadata": dict(metadata) if isinstance(metadata, Mapping) else {},
+        "promoted_to_plan": str(promoted_to_plan or "").strip(),
+    }
+
+
 def _runtime_backlog_detail(
     *,
     repo_root: Path,
     workstream_id: str,
+    detail_level: str = "full",
 ) -> dict[str, Any] | None:
     _refresh_runtime_helper_bindings()
     root = Path(repo_root).resolve()
@@ -2370,20 +1862,29 @@ def _runtime_backlog_detail(
     idea_path = (root / idea_token).resolve() if not Path(idea_token).is_absolute() else Path(idea_token).resolve()
     if not idea_path.is_file():
         return None
-    raw_text = _raw_text(idea_path)
     metadata = dict(row.get("metadata", {})) if isinstance(row.get("metadata"), Mapping) else {}
     metadata.setdefault("idea_id", str(workstream_id or "").strip().upper())
     promoted_to_plan = str(metadata.get("promoted_to_plan", "")).strip()
     if promoted_to_plan:
         metadata["promoted_to_plan"] = _normalize_repo_token(promoted_to_plan, repo_root=root)
-    return {
-        "idea_id": str(workstream_id or "").strip().upper(),
-        "idea_file": str(idea_path.relative_to(root)) if idea_path.is_relative_to(root) else str(idea_path),
-        "metadata": metadata,
-        "sections": _markdown_section_bodies(raw_text),
-        "search_body": raw_text,
-        "promoted_to_plan": str(metadata.get("promoted_to_plan", "")).strip(),
-    }
+    idea_file = str(idea_path.relative_to(root)) if idea_path.is_relative_to(root) else str(idea_path)
+    if str(detail_level or "").strip().lower() == "grounding_light":
+        return _grounding_light_backlog_detail_payload(
+            idea_id=str(workstream_id or "").strip().upper(),
+            idea_file=idea_file,
+            metadata=metadata,
+            promoted_to_plan=str(metadata.get("promoted_to_plan", "")).strip(),
+        )
+    raw_text = _raw_text(idea_path)
+    normalized = _normalize_backlog_detail_payload(
+        idea_id=str(workstream_id or "").strip().upper(),
+        idea_file=idea_file,
+        metadata=metadata,
+        sections=_markdown_section_bodies(raw_text),
+        promoted_to_plan=str(metadata.get("promoted_to_plan", "")).strip(),
+    )
+    normalized["search_body"] = raw_text
+    return normalized
 
 
 
@@ -2403,19 +1904,14 @@ def load_backlog_detail(
     del runtime_mode
     if not _odylith_ablation_active(repo_root=root):
         try:
-            runtime_detail = _runtime_backlog_detail(repo_root=root, workstream_id=token)
+            runtime_detail = _runtime_backlog_detail(
+                repo_root=root,
+                workstream_id=token,
+                detail_level=normalized_detail_level,
+            )
         except RuntimeError:
             runtime_detail = None
         if runtime_detail is not None:
-            if normalized_detail_level == "grounding_light":
-                return {
-                    "idea_id": str(runtime_detail.get("idea_id", "")).strip().upper(),
-                    "idea_file": str(runtime_detail.get("idea_file", "")).strip(),
-                    "metadata": dict(runtime_detail.get("metadata", {}))
-                    if isinstance(runtime_detail.get("metadata"), Mapping)
-                    else {},
-                    "promoted_to_plan": str(runtime_detail.get("promoted_to_plan", "")).strip(),
-                }
             return runtime_detail
     spec = _load_idea_specs(repo_root=root).get(token)
     if spec is None:
@@ -2423,147 +1919,61 @@ def load_backlog_detail(
     metadata = dict(spec.metadata)
     if str(metadata.get("promoted_to_plan", "")).strip():
         metadata["promoted_to_plan"] = _normalize_repo_token(str(metadata.get("promoted_to_plan", "")).strip(), repo_root=root)
+    idea_file = str(spec.path.relative_to(root)) if spec.path.is_relative_to(root) else str(spec.path)
     if normalized_detail_level == "grounding_light":
-        return {
-            "idea_id": token,
-            "idea_file": str(spec.path.relative_to(root)) if spec.path.is_relative_to(root) else str(spec.path),
-            "metadata": metadata,
-            "promoted_to_plan": str(metadata.get("promoted_to_plan", "")).strip(),
-        }
+        return _grounding_light_backlog_detail_payload(
+            idea_id=token,
+            idea_file=idea_file,
+            metadata=metadata,
+            promoted_to_plan=str(metadata.get("promoted_to_plan", "")).strip(),
+        )
     raw_text = _raw_text(spec.path)
-    return {
-        "idea_id": token,
-        "idea_file": str(spec.path.relative_to(root)) if spec.path.is_relative_to(root) else str(spec.path),
-        "metadata": metadata,
-        "sections": _markdown_section_bodies(raw_text),
-        "search_body": raw_text,
-        "promoted_to_plan": str(metadata.get("promoted_to_plan", "")).strip(),
-    }
+    normalized = _normalize_backlog_detail_payload(
+        idea_id=token,
+        idea_file=idea_file,
+        metadata=metadata,
+        sections=_markdown_section_bodies(raw_text),
+        promoted_to_plan=str(metadata.get("promoted_to_plan", "")).strip(),
+    )
+    normalized["search_body"] = raw_text
+    return normalized
 
 
 
-load_backlog_document = odylith_context_engine_projection_query_runtime.load_backlog_document
+load_backlog_document = odylith_context_engine_projection_backlog_runtime.load_backlog_document
 
 
 
-load_plan_rows = odylith_context_engine_projection_query_runtime.load_plan_rows
+load_plan_rows = odylith_context_engine_projection_backlog_runtime.load_plan_rows
 
 
 
-load_bug_rows = odylith_context_engine_projection_query_runtime.load_bug_rows
+load_bug_rows = odylith_context_engine_projection_backlog_runtime.load_bug_rows
 
 
 
-load_bug_snapshot = odylith_context_engine_projection_query_runtime.load_bug_snapshot
+load_bug_snapshot = odylith_context_engine_projection_backlog_runtime.load_bug_snapshot
 
 
 
-_component_entry_from_runtime_row = odylith_context_engine_projection_query_runtime._component_entry_from_runtime_row
+_component_entry_from_runtime_row = odylith_context_engine_projection_registry_runtime._component_entry_from_runtime_row
 
 
 
-load_component_index = odylith_context_engine_projection_query_runtime.load_component_index
+load_component_index = odylith_context_engine_projection_registry_runtime.load_component_index
 
 
 
-load_registry_list = odylith_context_engine_projection_query_runtime.load_registry_list
+load_registry_list = odylith_context_engine_projection_registry_runtime.load_registry_list
 
 
 
-load_component_registry_snapshot = odylith_context_engine_projection_query_runtime.load_component_registry_snapshot
+load_component_registry_snapshot = odylith_context_engine_projection_registry_runtime.load_component_registry_snapshot
 
 
 
-load_registry_detail = odylith_context_engine_projection_query_runtime.load_registry_detail
+load_registry_detail = odylith_context_engine_projection_registry_runtime.load_registry_detail
 
-
-
-def load_delivery_surface_payload(
-    *,
-    repo_root: Path,
-    surface: str,
-    runtime_mode: str = "auto",
-    buckets: Sequence[str] | None = None,
-    include_shell_snapshots: bool = True,
-) -> dict[str, Any]:
-    requested_buckets = {
-        str(token or "").strip().lower()
-        for token in (buckets or [])
-        if str(token or "").strip()
-    }
-    root = Path(repo_root).resolve()
-    surface_token = str(surface).strip().lower()
-    odylith_switch = _odylith_switch_snapshot(repo_root=root)
-    payload: dict[str, Any] = {}
-    if _warm_runtime(repo_root=root, runtime_mode=runtime_mode, reason="delivery_surface"):
-        connection = _connect(root)
-        try:
-            row = connection.execute(
-                "SELECT payload_json FROM delivery_surfaces WHERE surface = ?",
-                (surface_token,),
-            ).fetchone()
-            if row is not None:
-                raw_payload = json.loads(str(row["payload_json"]))
-                payload = dict(raw_payload) if isinstance(raw_payload, Mapping) else {}
-        finally:
-            connection.close()
-    if not payload:
-        try:
-            artifact_payload = delivery_intelligence_engine.load_delivery_intelligence_artifact(repo_root=root)
-        except Exception:
-            artifact_payload = {}
-        sliced = delivery_intelligence_engine.slice_delivery_intelligence_for_surface(
-            payload=artifact_payload,
-            surface=surface_token,
-        )
-        payload = dict(sliced) if isinstance(sliced, Mapping) else {}
-    if requested_buckets:
-        for bucket in (
-            "summary",
-            "case_queue",
-            "systemic_brief",
-            "surface_scope",
-            "grid_scope",
-            "components",
-            "workstreams",
-            "diagrams",
-            "surfaces",
-            "grid",
-            "surface",
-        ):
-            if bucket in requested_buckets:
-                continue
-            payload.pop(bucket, None)
-    if surface_token == "shell":
-        payload["odylith_switch"] = odylith_switch
-        payload["orchestration_adoption_snapshot"] = load_orchestration_adoption_snapshot(repo_root=root)
-    if surface_token == "shell" and include_shell_snapshots:
-        if not bool(odylith_switch.get("enabled", True)):
-            payload.pop("memory_snapshot", None)
-            payload.pop("optimization_snapshot", None)
-            payload.pop("evaluation_snapshot", None)
-            payload.pop("odylith_drawer_history", None)
-            return payload
-        optimization_snapshot = (
-            dict(payload.get("optimization_snapshot", {}))
-            if isinstance(payload.get("optimization_snapshot"), Mapping)
-            else load_runtime_optimization_snapshot(repo_root=root)
-        )
-        evaluation_snapshot = (
-            dict(payload.get("evaluation_snapshot", {}))
-            if isinstance(payload.get("evaluation_snapshot"), Mapping)
-            else load_runtime_evaluation_snapshot(repo_root=root)
-        )
-        payload["optimization_snapshot"] = optimization_snapshot
-        payload["evaluation_snapshot"] = evaluation_snapshot
-        if "memory_snapshot" not in payload:
-            payload["memory_snapshot"] = load_runtime_memory_snapshot(
-                repo_root=root,
-                optimization_snapshot=optimization_snapshot,
-                evaluation_snapshot=evaluation_snapshot,
-            )
-        payload["odylith_drawer_history"] = load_odylith_drawer_history(repo_root=root)
-    return payload
 
 
 _compact_bug_row_for_governance_packet = odylith_context_engine_hot_path_runtime._compact_bug_row_for_governance_packet
@@ -2574,27 +1984,27 @@ _compact_component_entry_for_governance_packet = odylith_context_engine_hot_path
 
 
 
-_governance_surface_refs = odylith_context_engine_hot_path_runtime._governance_surface_refs
+_governance_surface_refs = odylith_context_engine_hot_path_governance_runtime._governance_surface_refs
 
 
 
-_governance_closeout_docs = odylith_context_engine_hot_path_runtime._governance_closeout_docs
+_governance_closeout_docs = odylith_context_engine_hot_path_governance_runtime._governance_closeout_docs
 
 
 
-_bounded_explicit_governance_closeout_docs = odylith_context_engine_hot_path_runtime._bounded_explicit_governance_closeout_docs
+_bounded_explicit_governance_closeout_docs = odylith_context_engine_hot_path_governance_runtime._bounded_explicit_governance_closeout_docs
 
 
 
-_governance_state_actions = odylith_context_engine_hot_path_runtime._governance_state_actions
+_governance_state_actions = odylith_context_engine_hot_path_governance_runtime._governance_state_actions
 
 
 
-_governance_requires_architecture_audit = odylith_context_engine_hot_path_runtime._governance_requires_architecture_audit
+_governance_requires_architecture_audit = odylith_context_engine_hot_path_governance_runtime._governance_requires_architecture_audit
 
 
 
-_governance_diagram_catalog_companions = odylith_context_engine_hot_path_runtime._governance_diagram_catalog_companions
+_governance_diagram_catalog_companions = odylith_context_engine_hot_path_governance_runtime._governance_diagram_catalog_companions
 
 
 
@@ -2603,8 +2013,9 @@ _COMPANION_CONTEXT_RULES: tuple[dict[str, Any], ...] = (
         "match_paths": ("src/odylith/install/agents.py",),
         "paths": (
             "odylith/AGENTS.md",
+            "odylith/CLAUDE.md",
             "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-            "odylith/skills/subagent-orchestrator/SKILL.md",
+            "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         ),
     },
     {
@@ -2656,59 +2067,59 @@ _COMPANION_CONTEXT_RULES: tuple[dict[str, Any], ...] = (
 )
 
 
-_companion_context_paths_for_normalized_changed_paths = odylith_context_engine_hot_path_runtime._companion_context_paths_for_normalized_changed_paths
+_companion_context_paths_for_normalized_changed_paths = odylith_context_engine_hot_path_governance_runtime._companion_context_paths_for_normalized_changed_paths
 
 
 
-_companion_context_paths = odylith_context_engine_hot_path_runtime._companion_context_paths
+_companion_context_paths = odylith_context_engine_hot_path_governance_runtime._companion_context_paths
 
 
 
-_governance_hot_path_docs = odylith_context_engine_hot_path_runtime._governance_hot_path_docs
+_governance_hot_path_docs = odylith_context_engine_hot_path_governance_runtime._governance_hot_path_docs
 
 
 
-_governance_explicit_slice_grounded = odylith_context_engine_hot_path_runtime._governance_explicit_slice_grounded
+_governance_explicit_slice_grounded = odylith_context_engine_hot_path_governance_runtime._governance_explicit_slice_grounded
 
 
 
-_governance_can_skip_runtime_warmup = odylith_context_engine_hot_path_runtime._governance_can_skip_runtime_warmup
+_governance_can_skip_runtime_warmup = odylith_context_engine_hot_path_governance_runtime._governance_can_skip_runtime_warmup
 
 
 
-build_governance_slice = odylith_context_engine_hot_path_runtime.build_governance_slice
+build_governance_slice = odylith_context_engine_hot_path_governance_runtime.build_governance_slice
 
 
 
-select_impacted_diagrams = odylith_context_engine_hot_path_runtime.select_impacted_diagrams
+select_impacted_diagrams = odylith_context_engine_hot_path_governance_runtime.select_impacted_diagrams
 
 
 
-_path_touches_watch = odylith_context_engine_hot_path_runtime._path_touches_watch
+_path_touches_watch = odylith_context_engine_hot_path_governance_runtime._path_touches_watch
 
 
 
-_normalized_watch_path = odylith_context_engine_hot_path_runtime._normalized_watch_path
+_normalized_watch_path = odylith_context_engine_hot_path_governance_runtime._normalized_watch_path
 
 
 
-_architecture_rule_matches_path = odylith_context_engine_hot_path_runtime._architecture_rule_matches_path
+_architecture_rule_matches_path = odylith_context_engine_hot_path_governance_runtime._architecture_rule_matches_path
 
 
 
-_collect_topology_domains = odylith_context_engine_hot_path_runtime._collect_topology_domains
+_collect_topology_domains = odylith_context_engine_hot_path_governance_runtime._collect_topology_domains
 
 
 
-_component_matches_changed_path = odylith_context_engine_hot_path_runtime._component_matches_changed_path
+_component_matches_changed_path = odylith_context_engine_hot_path_governance_runtime._component_matches_changed_path
 
 
 
-_load_architecture_diagrams = odylith_context_engine_hot_path_runtime._load_architecture_diagrams
+_load_architecture_diagrams = odylith_context_engine_hot_path_governance_runtime._load_architecture_diagrams
 
 
 
-_collect_diagram_watch_gaps = odylith_context_engine_hot_path_runtime._collect_diagram_watch_gaps
+_collect_diagram_watch_gaps = odylith_context_engine_hot_path_governance_runtime._collect_diagram_watch_gaps
 
 
 
@@ -2900,27 +2311,27 @@ _hot_path_can_stay_fail_closed_without_full_scan = odylith_context_engine_hot_pa
 
 
 
-_impact_summary_payload = odylith_context_engine_hot_path_runtime._impact_summary_payload
+_impact_summary_payload = odylith_context_engine_hot_path_delivery_runtime._impact_summary_payload
 
 
 
-_delivery_profile_hot_path = odylith_context_engine_hot_path_runtime._delivery_profile_hot_path
+_delivery_profile_hot_path = odylith_context_engine_hot_path_delivery_runtime._delivery_profile_hot_path
 
 
 
-_elapsed_stage_ms = odylith_context_engine_hot_path_runtime._elapsed_stage_ms
+_elapsed_stage_ms = odylith_context_engine_hot_path_delivery_runtime._elapsed_stage_ms
 
 
 
-_compact_stage_timings = odylith_context_engine_hot_path_runtime._compact_stage_timings
+_compact_stage_timings = odylith_context_engine_hot_path_delivery_runtime._compact_stage_timings
 
 
 
-_normalize_family_hint = odylith_context_engine_hot_path_runtime._normalize_family_hint
+_normalize_family_hint = odylith_context_engine_hot_path_delivery_runtime._normalize_family_hint
 
 
 
-_impact_family_profile = odylith_context_engine_hot_path_runtime._impact_family_profile
+_impact_family_profile = odylith_context_engine_hot_path_delivery_runtime._impact_family_profile
 
 
 
@@ -2970,318 +2381,318 @@ _HOT_PATH_SUMMARY_ONLY_FALLBACK_FAMILIES = frozenset(
 )
 
 
-_hot_path_dashboard_surface_like = odylith_context_engine_hot_path_runtime._hot_path_dashboard_surface_like
+_hot_path_dashboard_surface_like = odylith_context_engine_hot_path_delivery_runtime._hot_path_dashboard_surface_like
 
 
 
-_hot_path_routing_confidence_rank = odylith_context_engine_hot_path_runtime._hot_path_routing_confidence_rank
+_hot_path_routing_confidence_rank = odylith_context_engine_hot_path_delivery_runtime._hot_path_routing_confidence_rank
 
 
 
-_hot_path_packet_rank = odylith_context_engine_hot_path_runtime._hot_path_packet_rank
+_hot_path_packet_rank = odylith_context_engine_hot_path_delivery_runtime._hot_path_packet_rank
 
 
 
-_hot_path_auto_escalation_trigger = odylith_context_engine_hot_path_runtime._hot_path_auto_escalation_trigger
+_hot_path_auto_escalation_trigger = odylith_context_engine_hot_path_delivery_runtime._hot_path_auto_escalation_trigger
 
 
 
-_hot_path_can_hold_local_narrowing_without_full_scan = odylith_context_engine_hot_path_runtime._hot_path_can_hold_local_narrowing_without_full_scan
+_hot_path_can_hold_local_narrowing_without_full_scan = odylith_context_engine_hot_path_delivery_runtime._hot_path_can_hold_local_narrowing_without_full_scan
 
 
 
-_compact_hot_path_auto_escalation = odylith_context_engine_hot_path_runtime._compact_hot_path_auto_escalation
+_compact_hot_path_auto_escalation = odylith_context_engine_hot_path_delivery_runtime._compact_hot_path_auto_escalation
 
 
-_hot_path_selected_validation_count = odylith_context_engine_hot_path_runtime._hot_path_selected_validation_count
+_hot_path_selected_validation_count = odylith_context_engine_hot_path_delivery_runtime._hot_path_selected_validation_count
 
 
 
-_hot_path_route_ready = odylith_context_engine_hot_path_runtime._hot_path_route_ready
+_hot_path_route_ready = odylith_context_engine_hot_path_delivery_runtime._hot_path_route_ready
 
 
 
-_hot_path_full_scan_recommended = odylith_context_engine_hot_path_runtime._hot_path_full_scan_recommended
+_hot_path_full_scan_recommended = odylith_context_engine_hot_path_delivery_runtime._hot_path_full_scan_recommended
 
 
 
-_hot_path_full_scan_reason = odylith_context_engine_hot_path_runtime._hot_path_full_scan_reason
+_hot_path_full_scan_reason = odylith_context_engine_hot_path_delivery_runtime._hot_path_full_scan_reason
 
 
 
-_hot_path_routing_confidence = odylith_context_engine_hot_path_runtime._hot_path_routing_confidence
+_hot_path_routing_confidence = odylith_context_engine_hot_path_delivery_runtime._hot_path_routing_confidence
 
 
 
-_should_escalate_hot_path_to_session_brief = odylith_context_engine_hot_path_runtime._should_escalate_hot_path_to_session_brief
+_should_escalate_hot_path_to_session_brief = odylith_context_engine_hot_path_delivery_runtime._should_escalate_hot_path_to_session_brief
 
 
 
-_fallback_scan_payload = odylith_context_engine_hot_path_runtime._fallback_scan_payload
+_fallback_scan_payload = odylith_context_engine_hot_path_delivery_runtime._fallback_scan_payload
 
 
 
-_compact_hot_path_session_payload = odylith_context_engine_hot_path_runtime._compact_hot_path_session_payload
+_compact_hot_path_session_payload = odylith_context_engine_hot_path_delivery_runtime._compact_hot_path_session_payload
 
 
 
-_compact_hot_path_workstream_context = odylith_context_engine_hot_path_runtime._compact_hot_path_workstream_context
+_compact_hot_path_workstream_context = odylith_context_engine_hot_path_delivery_runtime._compact_hot_path_workstream_context
 
 
 
-_compact_hot_path_active_conflicts = odylith_context_engine_hot_path_runtime._compact_hot_path_active_conflicts
+_compact_hot_path_active_conflicts = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_active_conflicts
 
 
 
-_hot_path_keep_architecture_audit = odylith_context_engine_hot_path_runtime._hot_path_keep_architecture_audit
+_hot_path_keep_architecture_audit = odylith_context_engine_hot_path_packet_core_runtime._hot_path_keep_architecture_audit
 
 
 
-_hot_path_workstream_selection = odylith_context_engine_hot_path_runtime._hot_path_workstream_selection
+_hot_path_workstream_selection = odylith_context_engine_hot_path_packet_core_runtime._hot_path_workstream_selection
 
 
 
-_compact_hot_path_workstream_selection = odylith_context_engine_hot_path_runtime._compact_hot_path_workstream_selection
+_compact_hot_path_workstream_selection = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_workstream_selection
 
 
 
-_compact_hot_path_retrieval_plan = odylith_context_engine_hot_path_runtime._compact_hot_path_retrieval_plan
+_compact_hot_path_retrieval_plan = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_retrieval_plan
 
 
 
-_compact_hot_path_packet_quality = odylith_context_engine_hot_path_runtime._compact_hot_path_packet_quality
+_compact_hot_path_packet_quality = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_packet_quality
 
 
 
-_compact_hot_path_intent = odylith_context_engine_hot_path_runtime._compact_hot_path_intent
+_compact_hot_path_intent = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_intent
 
 
 
-_hot_path_signal_score = odylith_context_engine_hot_path_runtime._hot_path_signal_score
+_hot_path_signal_score = odylith_context_engine_hot_path_packet_core_runtime._hot_path_signal_score
 
 
 
-_hot_path_synthesized_execution_profile = odylith_context_engine_hot_path_runtime._hot_path_synthesized_execution_profile
+_hot_path_synthesized_execution_profile = odylith_context_engine_hot_path_packet_core_runtime._hot_path_synthesized_execution_profile
 
 
 
-_hot_path_recomputed_readiness = odylith_context_engine_hot_path_runtime._hot_path_recomputed_readiness
+_hot_path_recomputed_readiness = odylith_context_engine_hot_path_packet_core_runtime._hot_path_recomputed_readiness
 
 
 
-_compact_hot_path_routing_handoff = odylith_context_engine_hot_path_runtime._compact_hot_path_routing_handoff
+_compact_hot_path_routing_handoff = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_routing_handoff
 
 
 
-_compact_hot_path_route_execution_profile = odylith_context_engine_hot_path_runtime._compact_hot_path_route_execution_profile
+_compact_hot_path_route_execution_profile = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_route_execution_profile
 
 
 
-_encode_hot_path_execution_profile = odylith_context_engine_hot_path_runtime._encode_hot_path_execution_profile
+_encode_hot_path_execution_profile = odylith_context_engine_hot_path_packet_core_runtime._encode_hot_path_execution_profile
 
 
 
-_decode_hot_path_execution_profile = odylith_context_engine_hot_path_runtime._decode_hot_path_execution_profile
+_decode_hot_path_execution_profile = odylith_context_engine_hot_path_packet_core_runtime._decode_hot_path_execution_profile
 
 
 
-_hot_path_execution_profile_runtime_fields = odylith_context_engine_hot_path_runtime._hot_path_execution_profile_runtime_fields
+_hot_path_execution_profile_runtime_fields = odylith_context_engine_hot_path_packet_core_runtime._hot_path_execution_profile_runtime_fields
 
 
 
-_compact_hot_path_payload_within_budget = odylith_context_engine_hot_path_runtime._compact_hot_path_payload_within_budget
+_compact_hot_path_payload_within_budget = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_payload_within_budget
 
 
 
-_synthesized_hot_path_execution_profile_from_context_packet = odylith_context_engine_hot_path_runtime._synthesized_hot_path_execution_profile_from_context_packet
+_synthesized_hot_path_execution_profile_from_context_packet = odylith_context_engine_hot_path_packet_core_runtime._synthesized_hot_path_execution_profile_from_context_packet
 
 
 
-_governance_closeout_doc_count = odylith_context_engine_hot_path_runtime._governance_closeout_doc_count
+_governance_closeout_doc_count = odylith_context_engine_hot_path_packet_core_runtime._governance_closeout_doc_count
 
 
 
-_trim_common_hot_path_context_packet = odylith_context_engine_hot_path_runtime._trim_common_hot_path_context_packet
+_trim_common_hot_path_context_packet = odylith_context_engine_hot_path_packet_core_runtime._trim_common_hot_path_context_packet
 
 
 
-_compact_hot_path_narrowing_guidance = odylith_context_engine_hot_path_runtime._compact_hot_path_narrowing_guidance
+_compact_hot_path_narrowing_guidance = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_narrowing_guidance
 
 
 
-_source_hot_path_within_budget = odylith_context_engine_hot_path_runtime._source_hot_path_within_budget
+_source_hot_path_within_budget = odylith_context_engine_hot_path_packet_core_runtime._source_hot_path_within_budget
 
 
 
-_fast_finalize_compact_hot_path_packet = odylith_context_engine_hot_path_runtime._fast_finalize_compact_hot_path_packet
+_fast_finalize_compact_hot_path_packet = odylith_context_engine_hot_path_packet_core_runtime._fast_finalize_compact_hot_path_packet
 
 
 
-_compact_hot_path_packet_metrics = odylith_context_engine_hot_path_runtime._compact_hot_path_packet_metrics
+_compact_hot_path_packet_metrics = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_packet_metrics
 
 
 
-_drop_redundant_hot_path_routing_handoff = odylith_context_engine_hot_path_runtime._drop_redundant_hot_path_routing_handoff
+_drop_redundant_hot_path_routing_handoff = odylith_context_engine_hot_path_packet_core_runtime._drop_redundant_hot_path_routing_handoff
 
 
 
-_compact_hot_path_fallback_scan = odylith_context_engine_hot_path_runtime._compact_hot_path_fallback_scan
+_compact_hot_path_fallback_scan = odylith_context_engine_hot_path_packet_core_runtime._compact_hot_path_fallback_scan
 
 
 
-_compact_governance_validation_bundle_for_hot_path = odylith_context_engine_hot_path_runtime._compact_governance_validation_bundle_for_hot_path
+_compact_governance_validation_bundle_for_hot_path = odylith_context_engine_hot_path_packet_bootstrap_runtime._compact_governance_validation_bundle_for_hot_path
 
 
 
-_compact_hot_path_surface_reason_token = odylith_context_engine_hot_path_runtime._compact_hot_path_surface_reason_token
+_compact_hot_path_surface_reason_token = odylith_context_engine_hot_path_packet_bootstrap_runtime._compact_hot_path_surface_reason_token
 
 
 
-_compact_governance_obligations_for_hot_path = odylith_context_engine_hot_path_runtime._compact_governance_obligations_for_hot_path
+_compact_governance_obligations_for_hot_path = odylith_context_engine_hot_path_packet_bootstrap_runtime._compact_governance_obligations_for_hot_path
 
 
 
-_compact_governance_surface_refs_for_hot_path = odylith_context_engine_hot_path_runtime._compact_governance_surface_refs_for_hot_path
+_compact_governance_surface_refs_for_hot_path = odylith_context_engine_hot_path_packet_bootstrap_runtime._compact_governance_surface_refs_for_hot_path
 
 
 
-_compact_governance_signal_for_hot_path = odylith_context_engine_hot_path_runtime._compact_governance_signal_for_hot_path
+_compact_governance_signal_for_hot_path = odylith_context_engine_hot_path_packet_bootstrap_runtime._compact_governance_signal_for_hot_path
 
 
 
-_embedded_governance_signal = odylith_context_engine_hot_path_runtime._embedded_governance_signal
+_embedded_governance_signal = odylith_context_engine_hot_path_packet_bootstrap_runtime._embedded_governance_signal
 
 
 
-_hot_path_validation_bundle = odylith_context_engine_hot_path_runtime._hot_path_validation_bundle
+_hot_path_validation_bundle = odylith_context_engine_hot_path_packet_bootstrap_runtime._hot_path_validation_bundle
 
 
 
-_hot_path_governance_obligations = odylith_context_engine_hot_path_runtime._hot_path_governance_obligations
+_hot_path_governance_obligations = odylith_context_engine_hot_path_packet_bootstrap_runtime._hot_path_governance_obligations
 
 
 
-_validation_bundle_command_count = odylith_context_engine_hot_path_runtime._validation_bundle_command_count
+_validation_bundle_command_count = odylith_context_engine_hot_path_packet_bootstrap_runtime._validation_bundle_command_count
 
 
 
-_governance_obligation_count = odylith_context_engine_hot_path_runtime._governance_obligation_count
+_governance_obligation_count = odylith_context_engine_hot_path_packet_bootstrap_runtime._governance_obligation_count
 
 
 
-_compact_hot_path_runtime_packet = odylith_context_engine_hot_path_runtime._compact_hot_path_runtime_packet
+_compact_hot_path_runtime_packet = odylith_context_engine_hot_path_packet_finalize_runtime._compact_hot_path_runtime_packet
 
 
 
-_hot_path_payload_is_compact = odylith_context_engine_hot_path_runtime._hot_path_payload_is_compact
+_hot_path_payload_is_compact = odylith_context_engine_hot_path_packet_finalize_runtime._hot_path_payload_is_compact
 
 
 
-_update_compact_hot_path_runtime_packet = odylith_context_engine_hot_path_runtime._update_compact_hot_path_runtime_packet
+_update_compact_hot_path_runtime_packet = odylith_context_engine_hot_path_packet_finalize_runtime._update_compact_hot_path_runtime_packet
 
 
 
-_trim_route_ready_hot_path_prompt_payload = odylith_context_engine_hot_path_runtime._trim_route_ready_hot_path_prompt_payload
+_trim_route_ready_hot_path_prompt_payload = odylith_context_engine_hot_path_packet_finalize_runtime._trim_route_ready_hot_path_prompt_payload
 
 
 
-_compact_workstream_metadata_for_packet = odylith_context_engine_hot_path_runtime._compact_workstream_metadata_for_packet
+_compact_workstream_metadata_for_packet = odylith_context_engine_hot_path_packet_finalize_runtime._compact_workstream_metadata_for_packet
 
 
 
-_compact_workstream_evidence_for_packet = odylith_context_engine_hot_path_runtime._compact_workstream_evidence_for_packet
+_compact_workstream_evidence_for_packet = odylith_context_engine_hot_path_packet_finalize_runtime._compact_workstream_evidence_for_packet
 
 
 
-_compact_workstream_row_for_packet = odylith_context_engine_hot_path_runtime._compact_workstream_row_for_packet
+_compact_workstream_row_for_packet = odylith_context_engine_hot_path_packet_finalize_runtime._compact_workstream_row_for_packet
 
 
 
-_compact_workstream_reference_for_packet = odylith_context_engine_hot_path_runtime._compact_workstream_reference_for_packet
+_compact_workstream_reference_for_packet = odylith_context_engine_hot_path_packet_finalize_runtime._compact_workstream_reference_for_packet
 
 
 
-_compact_workstream_selection_for_packet = odylith_context_engine_hot_path_runtime._compact_workstream_selection_for_packet
+_compact_workstream_selection_for_packet = odylith_context_engine_hot_path_packet_finalize_runtime._compact_workstream_selection_for_packet
 
 
 
-_compact_bootstrap_workstream_selection = odylith_context_engine_hot_path_runtime._compact_bootstrap_workstream_selection
+_compact_bootstrap_workstream_selection = odylith_context_engine_hot_path_packet_finalize_runtime._compact_bootstrap_workstream_selection
 
 
 
-_compact_neighbor_row_for_packet = odylith_context_engine_hot_path_runtime._compact_neighbor_row_for_packet
+_compact_neighbor_row_for_packet = odylith_context_engine_hot_path_packet_finalize_runtime._compact_neighbor_row_for_packet
 
 
 
-_prioritized_neighbor_rows = odylith_context_engine_hot_path_runtime._prioritized_neighbor_rows
+_prioritized_neighbor_rows = odylith_context_engine_hot_path_packet_finalize_runtime._prioritized_neighbor_rows
 
 
 
-_compact_code_neighbors_for_packet = odylith_context_engine_hot_path_runtime._compact_code_neighbors_for_packet
+_compact_code_neighbors_for_packet = odylith_context_engine_hot_path_delivery_runtime._compact_code_neighbors_for_packet
 
 
 
-_compact_architecture_audit_for_packet = odylith_context_engine_hot_path_runtime._compact_architecture_audit_for_packet
+_compact_architecture_audit_for_packet = odylith_context_engine_hot_path_scope_runtime._compact_architecture_audit_for_packet
 
 
 
-_compact_packet_level_architecture_audit = odylith_context_engine_hot_path_runtime._compact_packet_level_architecture_audit
+_compact_packet_level_architecture_audit = odylith_context_engine_hot_path_scope_runtime._compact_packet_level_architecture_audit
 
 
 
-_workstream_selection = odylith_context_engine_hot_path_runtime._workstream_selection
+_workstream_selection = odylith_context_engine_hot_path_scope_runtime._workstream_selection
 
 
 
-_bug_excerpt = odylith_context_engine_hot_path_runtime._bug_excerpt
+_bug_excerpt = odylith_context_engine_hot_path_scope_runtime._bug_excerpt
 
 
 
-_session_record_path = odylith_context_engine_hot_path_runtime._session_record_path
+_session_record_path = odylith_context_engine_hot_path_scope_runtime._session_record_path
 
 
 
-_bootstrap_record_path = odylith_context_engine_hot_path_runtime._bootstrap_record_path
+_bootstrap_record_path = odylith_context_engine_hot_path_scope_runtime._bootstrap_record_path
 
 
 
-_parse_iso_utc = odylith_context_engine_hot_path_runtime._parse_iso_utc
+_parse_iso_utc = odylith_context_engine_hot_path_scope_runtime._parse_iso_utc
 
 
 
-_normalize_claim_mode = odylith_context_engine_hot_path_runtime._normalize_claim_mode
+_normalize_claim_mode = odylith_context_engine_hot_path_scope_runtime._normalize_claim_mode
 
 
 
-_lease_expires_utc = odylith_context_engine_hot_path_runtime._lease_expires_utc
+_lease_expires_utc = odylith_context_engine_hot_path_scope_runtime._lease_expires_utc
 
 
 
-_is_session_expired = odylith_context_engine_hot_path_runtime._is_session_expired
+_is_session_expired = odylith_context_engine_hot_path_scope_runtime._is_session_expired
 
 
 
-_load_session_state = odylith_context_engine_hot_path_runtime._load_session_state
+_load_session_state = odylith_context_engine_hot_path_scope_runtime._load_session_state
 
 
 
-_resolve_changed_path_scope_context = odylith_context_engine_hot_path_runtime._resolve_changed_path_scope_context
+_resolve_changed_path_scope_context = odylith_context_engine_hot_path_scope_runtime._resolve_changed_path_scope_context
 
 
 
-_claim_sets = odylith_context_engine_hot_path_runtime._claim_sets
+_claim_sets = odylith_context_engine_hot_path_scope_runtime._claim_sets
 
 
 
-list_session_states = odylith_context_engine_hot_path_runtime.list_session_states
+list_session_states = odylith_context_engine_hot_path_scope_runtime.list_session_states
 
 
 
-register_session_state = odylith_context_engine_hot_path_runtime.register_session_state
+register_session_state = odylith_context_engine_hot_path_scope_runtime.register_session_state
 
 
 
-_collect_impacted_components = odylith_context_engine_hot_path_runtime._collect_impacted_components
+_collect_impacted_components = odylith_context_engine_hot_path_scope_runtime._collect_impacted_components
 
 
 
@@ -3295,7 +2706,7 @@ def _collect_impacted_workstreams(
     return_diagnostics: bool = False,
 ) -> list[dict[str, Any]] | tuple[list[dict[str, Any]], dict[str, Any]]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_hot_path_runtime._collect_impacted_workstreams(
+    return odylith_context_engine_hot_path_scope_runtime._collect_impacted_workstreams(
         connection,
         repo_root=repo_root,
         changed_paths=changed_paths,
@@ -3306,19 +2717,19 @@ def _collect_impacted_workstreams(
 
 
 
-_engineering_note_match = odylith_context_engine_hot_path_runtime._engineering_note_match
+_engineering_note_match = odylith_context_engine_hot_path_scope_runtime._engineering_note_match
 
 
 
-_collect_relevant_notes = odylith_context_engine_hot_path_runtime._collect_relevant_notes
+_collect_relevant_notes = odylith_context_engine_hot_path_scope_runtime._collect_relevant_notes
 
 
 
-_collect_relevant_bugs = odylith_context_engine_hot_path_runtime._collect_relevant_bugs
+_collect_relevant_bugs = odylith_context_engine_hot_path_scope_runtime._collect_relevant_bugs
 
 
 
-_collect_code_neighbors = odylith_context_engine_hot_path_runtime._collect_code_neighbors
+_collect_code_neighbors = odylith_context_engine_hot_path_scope_runtime._collect_code_neighbors
 
 
 
@@ -3331,7 +2742,7 @@ def _collect_recommended_tests(
     limit: int,
 ) -> list[dict[str, Any]]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_hot_path_runtime._collect_recommended_tests(
+    return odylith_context_engine_hot_path_scope_runtime._collect_recommended_tests(
         connection,
         repo_root=repo_root,
         changed_paths=changed_paths,
@@ -3341,151 +2752,24 @@ def _collect_recommended_tests(
 
 
 
-_collect_component_validation_commands = odylith_context_engine_hot_path_runtime._collect_component_validation_commands
+_collect_component_validation_commands = odylith_context_engine_hot_path_delivery_runtime._collect_component_validation_commands
 
 
 
-_recommended_validation_commands = odylith_context_engine_hot_path_runtime._recommended_validation_commands
+_recommended_validation_commands = odylith_context_engine_hot_path_delivery_runtime._recommended_validation_commands
 
 
 
-_is_governance_sync_command = odylith_context_engine_hot_path_runtime._is_governance_sync_command
+_is_governance_sync_command = odylith_context_engine_hot_path_delivery_runtime._is_governance_sync_command
 
 
 
-_workstream_status_rank = odylith_context_engine_hot_path_runtime._workstream_status_rank
+_workstream_status_rank = odylith_context_engine_hot_path_delivery_runtime._workstream_status_rank
 
 
 
-_workstream_rank_tuple = odylith_context_engine_hot_path_runtime._workstream_rank_tuple
+_workstream_rank_tuple = odylith_context_engine_hot_path_delivery_runtime._workstream_rank_tuple
 
-
-
-_condense_delivery_scope = odylith_context_engine_hot_path_runtime._condense_delivery_scope
-
-
-
-def _compact_context_dossier(
-    dossier: Mapping[str, Any],
-    *,
-    relation_limit_per_kind: int = 4,
-    event_limit: int = 5,
-    delivery_limit: int = 3,
-) -> dict[str, Any]:
-    if not bool(dossier.get("resolved")):
-        return {
-            "resolved": False,
-            "lookup": dict(dossier.get("lookup", {})) if isinstance(dossier.get("lookup"), Mapping) else {},
-            "candidate_matches": dossier.get("matches", [])[:3] if isinstance(dossier.get("matches"), list) else [],
-            "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
-            "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
-            "fallback_scan": dict(dossier.get("fallback_scan", {}))
-            if isinstance(dossier.get("fallback_scan"), Mapping)
-            else {},
-        }
-    related = dossier.get("related_entities", {})
-    entity_payload = dict(dossier.get("entity", {})) if isinstance(dossier.get("entity"), Mapping) else {}
-    compact_entity = {
-        key: value
-        for key, value in {
-            "entity_id": str(entity_payload.get("entity_id", "")).strip(),
-            "title": str(entity_payload.get("title", "")).strip(),
-            "status": str(entity_payload.get("status", "")).strip(),
-            "priority": str(entity_payload.get("priority", "")).strip(),
-            "owner": str(entity_payload.get("owner", "")).strip(),
-            "workstream_type": str(entity_payload.get("workstream_type", "")).strip(),
-            "plan_ref": str(entity_payload.get("plan_ref", "")).strip(),
-            "diagram_id_count": len(entity_payload.get("related_diagram_ids", []))
-            if isinstance(entity_payload.get("related_diagram_ids"), list)
-            else 0,
-            "child_count": len(entity_payload.get("workstream_children", []))
-            if isinstance(entity_payload.get("workstream_children"), list)
-            else 0,
-            "dependency_count": len(entity_payload.get("workstream_depends_on", []))
-            if isinstance(entity_payload.get("workstream_depends_on"), list)
-            else 0,
-        }.items()
-        if value not in ("", [], {}, None, 0)
-    }
-    def _compact_related_row(row: Mapping[str, Any]) -> dict[str, Any]:
-        compact = {
-            key: value
-            for key, value in {
-                "entity_id": str(row.get("entity_id", "")).strip(),
-                "title": str(row.get("title", "")).strip(),
-                "status": str(row.get("status", "")).strip(),
-            }.items()
-            if value not in ("", [], {}, None)
-        }
-        path = str(row.get("path", "")).strip()
-        entity_id = str(row.get("entity_id", "")).strip()
-        if path and path != entity_id:
-            compact["path"] = path
-        return compact
-
-    compact_related = {}
-    if isinstance(related, Mapping):
-        for kind, rows in related.items():
-            if isinstance(rows, list):
-                compact_rows = [
-                    _compact_related_row(row)
-                    for row in rows[: max(1, int(relation_limit_per_kind))]
-                    if isinstance(row, Mapping)
-                ]
-                if compact_rows:
-                    compact_related[str(kind)] = compact_rows
-    events = dossier.get("recent_codex_events", [])
-    compact_events = []
-    if isinstance(events, list):
-        for row in events[: max(1, int(event_limit))]:
-            if not isinstance(row, Mapping):
-                continue
-            compact_events.append(
-                {
-                    "ts_iso": str(row.get("ts_iso", "")).strip(),
-                    "kind": str(row.get("kind", "")).strip(),
-                    "summary": str(row.get("summary", "")).strip(),
-                    "workstreams": [str(token).strip() for token in row.get("workstreams", []) if str(token).strip()][:2]
-                    if isinstance(row.get("workstreams"), list) and row.get("workstreams")
-                    else [],
-                    "components": [str(token).strip() for token in row.get("components", []) if str(token).strip()][:2]
-                    if isinstance(row.get("components"), list) and row.get("components")
-                    else [],
-                }
-            )
-    scopes = dossier.get("delivery_scopes", [])
-    compact_scopes = []
-    if isinstance(scopes, list):
-        compact_scopes = [_condense_delivery_scope(scope) for scope in scopes[: max(1, int(delivery_limit))] if isinstance(scope, Mapping)]
-    relations = dossier.get("relations", [])
-    relation_count = len(relations) if isinstance(relations, list) else 0
-    return {
-        "resolved": True,
-        "entity": compact_entity,
-        "lookup": dict(dossier.get("lookup", {})) if isinstance(dossier.get("lookup"), Mapping) else {},
-        "related_entities": compact_related,
-        "recent_codex_events": compact_events,
-        "delivery_scope_summaries": compact_scopes,
-        "relation_count": relation_count,
-        "candidate_matches": dossier.get("matches", [])[:3] if isinstance(dossier.get("matches"), list) else [],
-        "full_scan_recommended": bool(dossier.get("full_scan_recommended")),
-        "full_scan_reason": str(dossier.get("full_scan_reason", "")).strip(),
-    }
-
-
-def compact_context_dossier_for_delivery(
-    dossier: Mapping[str, Any],
-    *,
-    relation_limit_per_kind: int = 2,
-    event_limit: int = 2,
-    delivery_limit: int = 1,
-) -> dict[str, Any]:
-    return _compact_context_dossier(
-        dossier,
-        relation_limit_per_kind=max(1, int(relation_limit_per_kind)),
-        event_limit=max(1, int(event_limit)),
-        delivery_limit=max(1, int(delivery_limit)),
-    )
 
 
 def build_impact_report(
@@ -3544,7 +2828,7 @@ def build_architecture_audit(
     detail_level: str = "compact",
 ) -> dict[str, Any]:
     _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_architecture_audit(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, detail_level=detail_level)
+    return odylith_context_engine_packet_architecture_runtime.build_architecture_audit(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, detail_level=detail_level)
 
 
 
@@ -3662,79 +2946,6 @@ def _bootstrap_relevant_docs(
     return _dedupe_strings([doc for _score, doc in scored])[: max(1, int(limit))]
 
 
-def build_session_brief(
-    *,
-    repo_root: Path,
-    changed_paths: Sequence[str] = (),
-    use_working_tree: bool = False,
-    working_tree_scope: str = "session",
-    runtime_mode: str = "auto",
-    session_id: str = "",
-    workstream: str = "",
-    generated_surfaces: Sequence[str] = (),
-    intent: str = "",
-    claim_mode: str = "shared",
-    claimed_paths: Sequence[str] = (),
-    lease_seconds: int = 15 * 60,
-    delivery_profile: str = "full",
-    family_hint: str = "",
-    validation_command_hints: Sequence[str] = (),
-    impact_override: Mapping[str, Any] | None = None,
-    retain_impact_internal_context: bool | None = None,
-    skip_impact_runtime_warmup: bool = False,
-) -> dict[str, Any]:
-    _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_session_brief(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=generated_surfaces, intent=intent, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, impact_override=impact_override, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
-
-
-
-def build_session_bootstrap(
-    *,
-    repo_root: Path,
-    changed_paths: Sequence[str] = (),
-    use_working_tree: bool = False,
-    working_tree_scope: str = "session",
-    runtime_mode: str = "auto",
-    session_id: str = "",
-    workstream: str = "",
-    generated_surfaces: Sequence[str] = (),
-    intent: str = "",
-    claim_mode: str = "shared",
-    claimed_paths: Sequence[str] = (),
-    lease_seconds: int = 15 * 60,
-    doc_limit: int = 8,
-    command_limit: int = 10,
-    test_limit: int = 8,
-    delivery_profile: str = "full",
-    family_hint: str = "",
-    validation_command_hints: Sequence[str] = (),
-    retain_impact_internal_context: bool | None = None,
-    skip_impact_runtime_warmup: bool = False,
-) -> dict[str, Any]:
-    _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_session_bootstrap(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, runtime_mode=runtime_mode, session_id=session_id, workstream=workstream, generated_surfaces=generated_surfaces, intent=intent, claim_mode=claim_mode, claimed_paths=claimed_paths, lease_seconds=lease_seconds, doc_limit=doc_limit, command_limit=command_limit, test_limit=test_limit, delivery_profile=delivery_profile, family_hint=family_hint, validation_command_hints=validation_command_hints, retain_impact_internal_context=retain_impact_internal_context, skip_impact_runtime_warmup=skip_impact_runtime_warmup)
-
-
-
-def build_adaptive_coding_packet(
-    *,
-    repo_root: Path,
-    changed_paths: Sequence[str],
-    use_working_tree: bool = False,
-    working_tree_scope: str = "repo",
-    session_id: str = "",
-    claimed_paths: Sequence[str] = (),
-    runtime_mode: str = "auto",
-    intent: str = "",
-    family_hint: str = "",
-    workstream_hint: str = "",
-    validation_command_hints: Sequence[str] = (),
-) -> dict[str, Any]:
-    _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_adaptive_coding_packet(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, intent=intent, family_hint=family_hint, workstream_hint=workstream_hint, validation_command_hints=validation_command_hints)
-
-
-
 def _local_runtime_execution_summary(
     *,
     repo_root: Path,
@@ -3768,30 +2979,8 @@ def _local_runtime_execution_summary(
     }
 
 
-def build_adaptive_coding_packet_reusing_daemon(
-    *,
-    repo_root: Path,
-    changed_paths: Sequence[str],
-    use_working_tree: bool = False,
-    working_tree_scope: str = "repo",
-    session_id: str = "",
-    claimed_paths: Sequence[str] = (),
-    runtime_mode: str = "auto",
-    intent: str = "",
-    family_hint: str = "",
-    workstream_hint: str = "",
-    validation_command_hints: Sequence[str] = (),
-) -> dict[str, Any]:
-    _refresh_runtime_helper_bindings()
-    return odylith_context_engine_session_packet_runtime.build_adaptive_coding_packet_reusing_daemon(repo_root=repo_root, changed_paths=changed_paths, use_working_tree=use_working_tree, working_tree_scope=working_tree_scope, session_id=session_id, claimed_paths=claimed_paths, runtime_mode=runtime_mode, intent=intent, family_hint=family_hint, workstream_hint=workstream_hint, validation_command_hints=validation_command_hints)
-
-
 def _refresh_runtime_helper_bindings() -> None:
-    odylith_context_engine_session_packet_runtime.bind(globals())
-    odylith_context_engine_memory_snapshot_runtime.bind(globals())
-    odylith_context_engine_projection_query_runtime.bind(globals())
-    odylith_context_engine_hot_path_runtime.bind(globals())
-    odylith_context_engine_runtime_learning_runtime.bind(globals())
+    return None
 
 
 _refresh_runtime_helper_bindings()
@@ -3801,14 +2990,9 @@ __all__ = [
     "SCHEMA_VERSION",
     "append_runtime_event",
     "bootstraps_root",
-    "build_adaptive_coding_packet",
-    "build_adaptive_coding_packet_reusing_daemon",
     "build_architecture_audit",
     "build_governance_slice",
     "build_impact_report",
-    "build_session_bootstrap",
-    "build_session_brief",
-    "compact_context_dossier_for_delivery",
     "daemon_usage_path",
     "ensure_state_js_probe_asset",
     "events_path",
@@ -3824,7 +3008,6 @@ __all__ = [
     "bootstrap_git_fsmonitor",
     "load_component_index",
     "load_component_registry_snapshot",
-    "load_delivery_surface_payload",
     "load_orchestration_adoption_snapshot",
     "load_plan_rows",
     "load_registry_detail",

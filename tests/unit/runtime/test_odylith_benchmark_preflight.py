@@ -20,4 +20,4 @@ def test_prime_benchmark_runtime_cache_requires_populated_guidance_catalog(
     )
 
     with pytest.raises(RuntimeError, match="populated guidance catalog"):
-        runner._prime_benchmark_runtime_cache(repo_root=tmp_path)  # noqa: SLF001
+        runner.benchmark_runtime_posture_runtime.prime_benchmark_runtime_cache(repo_root=tmp_path)

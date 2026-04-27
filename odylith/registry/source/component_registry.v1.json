@@ -27,7 +27,10 @@
         "B-005",
         "B-031",
         "B-058",
-        "B-059"
+        "B-059",
+        "B-062",
+        "B-063",
+        "B-072"
       ],
       "diagrams": [
         "D-001",
@@ -40,7 +43,10 @@
         "D-020",
         "D-025",
         "D-021",
-        "D-022"
+        "D-022",
+        "D-026",
+        "D-030",
+        "D-031"
       ],
       "owner": "product",
       "status": "active",
@@ -55,6 +61,7 @@
         "radar",
         "atlas",
         "compass",
+        "briefs-voice-contract",
         "registry",
         "casebook",
         "release",
@@ -67,6 +74,9 @@
         "odylith-memory-contracts",
         "benchmark",
         "odylith-chatter",
+        "delivery-intelligence",
+        "proof-state",
+        "execution-engine",
         "subagent-router",
         "subagent-orchestrator",
         "tribunal",
@@ -124,7 +134,8 @@
       ],
       "workstreams": [
         "B-001",
-        "B-059"
+        "B-059",
+        "B-063"
       ],
       "diagrams": [
         "D-001",
@@ -158,7 +169,8 @@
       ],
       "workstreams": [
         "B-001",
-        "B-059"
+        "B-059",
+        "B-063"
       ],
       "diagrams": [
         "D-001",
@@ -195,7 +207,9 @@
       ],
       "workstreams": [
         "B-001",
-        "B-059"
+        "B-025",
+        "B-059",
+        "B-071"
       ],
       "diagrams": [
         "D-001",
@@ -213,6 +227,39 @@
         "manifest"
       ],
       "product_layer": "evidence_surface"
+    },
+    {
+      "component_id": "briefs-voice-contract",
+      "name": "Briefs Voice Contract",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "compass-brief-contract",
+        "brief-voice"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/surfaces/compass_standup_brief_narrator.py",
+        "src/odylith/runtime/surfaces/compass_standup_brief_voice_validation.py",
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "odylith/skills/odylith-compass-executive/SKILL.md"
+      ],
+      "workstreams": [
+        "B-025",
+        "B-071"
+      ],
+      "diagrams": [
+        "D-032"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Governed narration contract that keeps Compass briefs human, factual, friendly, and fail-closed.",
+      "why_tracked": "Prevents brief-quality drift by keeping prompt, validator, cache policy, skills, and guidance under one product-owned contract.",
+      "spec_ref": "odylith/registry/source/components/briefs-voice-contract/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
     },
     {
       "component_id": "registry",
@@ -302,12 +349,17 @@
         "bin/consumer-rehearsal",
         "bin/ga-gate",
         "bin/_odylith.sh",
+        "src/odylith/runtime/governance/release_planning_authoring.py",
+        "src/odylith/runtime/governance/release_planning_contract.py",
+        "src/odylith/runtime/governance/release_planning_view_model.py",
         "src/odylith/runtime/governance/validate_self_host_posture.py",
+        "odylith/radar/source/releases",
         "odylith/MAINTAINER_RELEASE_RUNBOOK.md",
         "odylith/maintainer/GTM_AND_RELEASE_CHECKLIST.md"
       ],
       "workstreams": [
-        "B-005"
+        "B-005",
+        "B-063"
       ],
       "diagrams": [
         "D-022"
@@ -341,7 +393,7 @@
         ".github/workflows/test.yml",
         "odylith/SECURITY_POSTURE.md",
         "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
-        "odylith/skills/security-hardening/SKILL.md"
+        "odylith/skills/odylith-security-hardening/SKILL.md"
       ],
       "workstreams": [
         "B-033",
@@ -378,7 +430,15 @@
         "B-009",
         "B-010",
         "B-058",
-        "B-059"
+        "B-059",
+        "B-063",
+        "B-082",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
       ],
       "diagrams": [
         "D-002",
@@ -389,7 +449,8 @@
         "D-018",
         "D-019",
         "D-020",
-        "D-025"
+        "D-025",
+        "D-030"
       ],
       "owner": "product",
       "status": "active",
@@ -634,11 +695,11 @@
         "odylith/agents-guidelines/ODYLITH_CONTEXT_ENGINE.md",
         "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
         "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
-        "odylith/skills/delivery-governance-surface-ops/SKILL.md",
+        "odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md",
         "odylith/skills/odylith-context-engine-operations/SKILL.md",
-        "odylith/skills/session-context/SKILL.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
-        "odylith/skills/subagent-router/SKILL.md",
+        "odylith/skills/odylith-session-context/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md",
         "odylith/maintainer/AGENTS.md",
         "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
         "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md",
@@ -683,10 +744,11 @@
       ],
       "path_prefixes": [
         "src/odylith/runtime/orchestration/subagent_orchestrator.py",
-        "odylith/skills/subagent-orchestrator/SKILL.md"
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-072"
       ],
       "diagrams": [
         "D-002",
@@ -718,10 +780,11 @@
       ],
       "path_prefixes": [
         "src/odylith/runtime/orchestration/subagent_router.py",
-        "odylith/skills/subagent-router/SKILL.md"
+        "odylith/skills/odylith-subagent-router/SKILL.md"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-072"
       ],
       "diagrams": [
         "D-002",
@@ -741,6 +804,84 @@
       "product_layer": "agent_execution"
     },
     {
+      "component_id": "execution-engine",
+      "name": "Execution Engine",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [],
+      "path_prefixes": [
+        "src/odylith/runtime/execution_engine"
+      ],
+      "workstreams": [
+        "B-072",
+        "B-073",
+        "B-074",
+        "B-075",
+        "B-076",
+        "B-077",
+        "B-078",
+        "B-079",
+        "B-082",
+        "B-099",
+        "B-100",
+        "B-101",
+        "B-102",
+        "B-103",
+        "B-104"
+      ],
+      "diagrams": [
+        "D-002",
+        "D-030",
+        "D-031"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Constraint-aware execution runtime that materializes task contracts, admissibility decisions, frontiers, closure, receipts, contradiction records, and host-aware execution hints before Odylith acts.",
+      "why_tracked": "Owns the boundary that turns grounding into governed next-action control instead of soft prompt advice.",
+      "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "agent_execution"
+    },
+    {
+      "component_id": "delivery-intelligence",
+      "name": "Delivery Intelligence",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "delivery-intelligence-engine",
+        "delivery-snapshot"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/governance/delivery_intelligence_engine.py",
+        "src/odylith/runtime/delivery/delivery_intelligence_narrator.py",
+        "odylith/runtime/delivery_intelligence.v4.json"
+      ],
+      "workstreams": [
+        "B-047",
+        "B-061",
+        "B-062",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-005",
+        "D-009",
+        "D-026"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Scope-synthesis engine that turns governed repo truth, runtime evidence, Tribunal results, and proof-state signals into one delivery snapshot consumed by sync, shell, packets, and narration.",
+      "why_tracked": "Provides the shared intelligence boundary that keeps operator readouts and downstream runtime consumers from rebuilding inconsistent scope summaries.",
+      "spec_ref": "odylith/registry/source/components/delivery-intelligence/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    },
+    {
       "component_id": "tribunal",
       "name": "Tribunal",
       "kind": "runtime",
@@ -754,7 +895,8 @@
         "odylith/runtime/odylith-tribunal-and-remediation-design.md"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-072"
       ],
       "diagrams": [
         "D-002",
@@ -777,6 +919,37 @@
       "product_layer": "intelligence"
     },
     {
+      "component_id": "proof-state",
+      "name": "Proof State",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "live-proof-control",
+        "blocker-frontier"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/governance/proof_state",
+        ".odylith/runtime/odylith-proof-surfaces.v1.json"
+      ],
+      "workstreams": [
+        "B-062",
+        "B-072"
+      ],
+      "diagrams": [
+        "D-026"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Split-authority live-proof control plane that keeps blocker identity, frontier movement, falsification memory, and claim tier coherent across governed truth and runtime surfaces.",
+      "why_tracked": "Turns proof discipline into a shared product contract so repeated live blocker fingerprints stay pinned instead of drifting behind adjacent progress.",
+      "spec_ref": "odylith/registry/source/components/proof-state/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "product_layer": "intelligence"
+    },
+    {
       "component_id": "remediator",
       "name": "Remediator",
       "kind": "runtime",
@@ -790,7 +963,8 @@
         "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md"
       ],
       "workstreams": [
-        "B-001"
+        "B-001",
+        "B-072"
       ],
       "diagrams": [
         "D-003",
@@ -805,6 +979,53 @@
       "sources": [
         "manifest"
       ],
+      "product_layer": "intelligence"
+    },
+    {
+      "component_id": "governance-intervention-engine",
+      "name": "Governance Intervention Engine",
+      "kind": "runtime",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [
+        "conversation-observation-engine",
+        "governed-proposal-engine"
+      ],
+      "path_prefixes": [
+        ".claude/settings.json",
+        ".codex/hooks.json",
+        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+        "odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md",
+        "src/odylith/bundle/assets/project-root/.claude/settings.json",
+        "src/odylith/bundle/assets/project-root/.codex/hooks.json",
+        "src/odylith/runtime/common/claude_cli_capabilities.py",
+        "src/odylith/runtime/common/codex_cli_capabilities.py",
+        "src/odylith/runtime/intervention_engine",
+        "src/odylith/runtime/surfaces/claude_host_post_edit_checkpoint.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_teaser.py",
+        "src/odylith/runtime/surfaces/claude_host_stop_summary.py",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/codex_host_stop_summary.py"
+      ],
+      "workstreams": [
+        "B-096"
+      ],
+      "diagrams": [
+        "D-038"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Shared conversation-observation runtime that turns live Codex and Claude evidence into corroborated Odylith observations, confirmation-gated governed proposals, and CLI-first apply flows.",
+      "why_tracked": "Keeps the observation and proposal product contract explicit so cross-host UX, voice, audit events, and governed writes do not drift into host-local heuristics.",
+      "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "subcomponents": [],
       "product_layer": "intelligence"
     }
   ]

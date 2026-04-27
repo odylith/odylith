@@ -1,18 +1,43 @@
+"""Odylith Benchmark Prompt Family Rules helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 
 _ZERO_SUPPORT_DOC_EXPANSION_FAMILIES = frozenset(
     {
+        "api_contract_evolution",
         "component_governance",
+        "context_engine_grounding",
+        "execution_engine",
         "compass_brief_freshness",
         "consumer_profile_compatibility",
         "cross_file_feature",
+        "destructive_scope_control",
         "daemon_security",
         "exact_anchor_recall",
         "explicit_workstream",
         "governed_surface_sync",
+        "guidance_behavior",
+        "discipline",
+        "live_proof_discipline",
         "orchestration_feedback",
         "orchestration_intelligence",
+    }
+)
+
+_NO_WEAK_SUPPORT_DOC_FALLBACK_FAMILIES = frozenset(
+    {
+        "api_contract_evolution",
+        "browser_surface_reliability",
+        "cli_contract_regression",
+        "cross_file_feature",
+        "destructive_scope_control",
+        "docs_code_closeout",
+        "external_dependency_recovery",
+        "merge_heavy_change",
+        "runtime_state_integrity",
+        "stateful_bug_recovery",
+        "validation_heavy_fix",
     }
 )
 
@@ -20,6 +45,7 @@ _CURATED_DOC_OVERRIDE_FAMILIES = frozenset(
     {
         *_ZERO_SUPPORT_DOC_EXPANSION_FAMILIES,
         "cross_surface_governance_sync",
+        "live_proof_discipline",
         "release_publication",
     }
 )
@@ -48,6 +74,10 @@ def family_anchors_all_required_docs(family: str) -> bool:
     return _normalized_family(family) in _REQUIRED_DOC_ANCHOR_FAMILIES
 
 
+def family_disallows_weak_support_doc_fallback(family: str) -> bool:
+    return _normalized_family(family) in _NO_WEAK_SUPPORT_DOC_FALLBACK_FAMILIES
+
+
 def support_doc_family_rank(*, path: str, family: str) -> int:
     lowered = str(path or "").strip().lower()
     normalized_family = _normalized_family(family)
@@ -68,6 +98,22 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
             lowered.endswith(".mmd") and "/atlas/source/" in lowered
         ):
             return 1
+        return 4
+    if normalized_family == "context_engine_grounding":
+        if lowered.endswith("/runtime/context_engine_operations.md"):
+            return 0
+        if lowered.endswith("/components/odylith-context-engine/current_spec.md"):
+            return 1
+        if lowered.endswith("/atlas/source/odylith-context-and-agent-execution-stack.mmd"):
+            return 2
+        return 4
+    if normalized_family == "execution_engine":
+        if lowered.endswith("/components/execution-engine/current_spec.md"):
+            return 0
+        if lowered.endswith("/atlas/source/odylith-execution-engine-stack.mmd"):
+            return 1
+        if lowered.endswith("/technical-plans/done/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"):
+            return 2
         return 4
     if normalized_family == "compass_brief_freshness":
         if lowered.endswith("/components/compass/current_spec.md"):
@@ -90,6 +136,56 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
             return 0
         if lowered.endswith("/radar/source/index.md"):
             return 1
+        return 4
+    if normalized_family == "live_proof_discipline":
+        if lowered.endswith("/components/proof-state/current_spec.md"):
+            return 0
+        if "/casebook/bugs/" in lowered or "/technical-plans/" in lowered:
+            return 1
+        if lowered.endswith("/delivery_intelligence.v4.json"):
+            return 2
+        return 4
+    if normalized_family == "guidance_behavior":
+        if lowered == "agents.md" or lowered.endswith("/agents.md"):
+            return 0
+        if lowered.endswith("/guidance-behavior-evaluation-corpus.v1.json"):
+            return 0
+        if lowered.endswith("/validate_guidance_behavior.py"):
+            return 1
+        if lowered.endswith("/cli_first_policy.md"):
+            return 1
+        if lowered.endswith("/components/subagent-orchestrator/current_spec.md"):
+            return 1
+        if ".agents/skills/" in lowered and lowered.endswith("/skill.md"):
+            return 2
+        return 4
+    if normalized_family == "discipline":
+        if lowered.endswith("/discipline-evaluation-corpus.v1.json"):
+            return 0
+        if lowered.endswith("/validate_discipline.py"):
+            return 0
+        if lowered.startswith("src/odylith/runtime/discipline/") or "/src/odylith/runtime/discipline/" in lowered:
+            return 1
+        if lowered == "agents.md" or lowered.endswith("/agents.md"):
+            return 1
+        if lowered.endswith("/components/benchmark/current_spec.md"):
+            return 1
+        if lowered.endswith("/components/execution-engine/current_spec.md"):
+            return 1
+        if lowered.endswith("/components/odylith-context-engine/current_spec.md"):
+            return 1
+        if lowered.endswith("/components/odylith-memory-contracts/current_spec.md"):
+            return 1
+        if lowered.endswith("/components/tribunal/current_spec.md"):
+            return 1
+        if lowered.endswith("/agents-guidelines/validation_and_testing.md"):
+            return 2
+        if lowered.endswith("/agents-guidelines/odylith_context_engine.md"):
+            return 2
+        if lowered.endswith("/skill.md") and (
+            "odylith-discipline" in lowered or "odylith-discipline" in lowered
+        ):
+            return 2
         return 4
     if normalized_family == "cross_surface_governance_sync":
         if lowered.endswith("/component_registry.v1.json") or lowered.endswith("/atlas/source/catalog/diagrams.v1.json"):
@@ -144,6 +240,7 @@ def support_doc_family_rank(*, path: str, family: str) -> int:
 
 __all__ = [
     "family_anchors_all_required_docs",
+    "family_disallows_weak_support_doc_fallback",
     "family_uses_curated_doc_overrides",
     "family_zero_support_doc_expansion",
     "support_doc_family_rank",

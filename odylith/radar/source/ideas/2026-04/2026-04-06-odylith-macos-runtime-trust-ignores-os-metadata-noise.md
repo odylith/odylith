@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-049
-title: Odylith macOS Runtime Trust Ignores OS Metadata Noise
+title: macOS Runtime Trust Ignores OS Metadata Noise
 date: 2026-04-06
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: managed runtime tree manifest generation, trust validation, feature-pack preflight, and macOS metadata handling
 sizing: S
 complexity: Medium

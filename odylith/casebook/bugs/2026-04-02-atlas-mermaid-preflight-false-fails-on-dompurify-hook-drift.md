@@ -138,7 +138,7 @@
   `tests/unit/runtime/test_auto_update_mermaid_diagrams.py`
 
 - Runbook References: `odylith/registry/source/components/atlas/CURRENT_SPEC.md`,
-  `odylith/skills/delivery-governance-surface-ops/SKILL.md`,
+  `odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md`,
   `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
 - Fix Commit/PR: Pending.

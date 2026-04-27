@@ -10,9 +10,68 @@ Paths under `odylith/` follow `odylith/AGENTS.md`.
 - Direct repo scan before that start step is a policy violation unless the task is trivial or Odylith is unavailable.
 - Start substantive turns with `./.odylith/bin/odylith start --repo-root .`; it chooses the safe first lane and prints the exact next command when Odylith cannot narrow the slice yet.
 - When you already know the exact workstream, component, path, or id, use `./.odylith/bin/odylith context --repo-root . <ref>` before raw repo search. Use `./.odylith/bin/odylith query --repo-root . "<terms>"` only after concrete anchors already exist.
+- CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, call the CLI command and do not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code so delegated work inherits the same contract.
+- Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, plan, bug, spec, component, and diagram upkeep. Treat `.agents/skills/` and `odylith/skills/` as specialist overlays for advanced packet control, orchestration, or high-risk lanes rather than as the default path.
+- When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`, go straight to that CLI and keep any `.agents/skills` lookup, missing-shim, or fallback-path details implicit unless they change the next user-visible action.
+- `odylith backlog create` is fail-closed and must receive grounded Problem, Customer, Opportunity, Product View, and Success Metrics text; never create or accept a title-only, placeholder, or boilerplate Radar workstream.
+- For quick visibility after a narrow truth change, rerender only the owned surface: `odylith radar refresh`, `odylith registry refresh`, `odylith casebook refresh`, `odylith atlas refresh`, or `odylith compass refresh`. Use `odylith compass deep-refresh` when you also want brief settlement. Keep `odylith sync` as the broader governance and correctness lane.
+- Keep the default operating lane shared across Codex and Claude Code: repo-root guidance, the repo-local launcher, truthful `odylith ... --help`, and the grounded governance workflow should mean the same thing on both hosts. Add host-specific tips only when the host exposes a real native capability that materially reduces hops.
+- Treat AI slop as a regression. Apply that bar across any language and across runtime code, hooks, prompts, docs, config, templates, generators, and managed assets. Apply it to any codebase or project surface: services, libraries, apps, CLIs, infra glue, scripts, docs, prompts, hooks, templates, config, and generated assets all count. Structural cleanup is not permission to drift behavior, UX, or UI; preserve semantics deliberately and prove the touched contract on the real toolchain or surface that owns it. No transitional states: do not replace one slop class with another, move ownership not just file boundaries, do not hide the old owner behind compatibility wrappers, lazy proxies, facade accessors, or mirror-only indirection, and do not treat a shared helper or kernel as a cleanup ornament. Partial shared-kernel adoption is still incomplete; if a shared helper or kernel lands, the touched callers must adopt it or the pass is incomplete. Do not call a slop cleanup complete just because the first smell disappeared; if the replacement smell still exists in the touched slice, the pass is incomplete. When the user asks for repo-wide or lane-wide anti-slop hardening, update guidance, skills, install-generated guidance, host contracts, mirrors, and enforcement tests together; prose-only hardening is incomplete. Guidance-only hardening without updated tests, validators, or mirror-content checks is incomplete. Repo-wide or lane-wide anti-slop claims require two proof layers: fresh behavior proof for the touched slice and a fresh structural inventory for the claimed scope. One does not substitute for the other. For shared hot paths, user-visible flows, or high-risk structural moves, land characterization or contract-focused tests before or alongside the refactor. When browser-rendered dashboards, onboarding, HTML/CSS/JS shells, or other browser-proved surfaces move, rerun the full headless browser matrix and cover the real rendered states that own the contract, including normal, empty/fallback, and degraded or error states when they exist. Use `odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` and `odylith/skills/odylith-code-hygiene-guard/SKILL.md` when quality pressure is high.
+- For guidance behavior pressure cases, use `odylith validate guidance-behavior --repo-root .` for deterministic proof and `odylith benchmark --profile quick --family guidance_behavior` for benchmark-family proof. Compact packet summaries only prove the proof path is available; fresh validation still requires the explicit command.
+- Odylith Discipline is the v0.1.11 shared Codex/Claude behavior contract: hard laws are deterministic, runtime pressure is open-world, stance is local and credit-safe, passing checks stay quiet, and durable learning requires validator, benchmark, or Tribunal/governance proof. Use `odylith discipline status/check/explain`, `odylith validate discipline --repo-root .`, and `odylith benchmark --profile quick --family discipline --no-write-report --json`; none of those discipline hot paths may call host models, providers, subagents, broad scans, full validation, or projection expansion.
+- A plain `Odylith, help` request is the CLI help fast path. Use the first available `odylith --help` command and print stdout only.
+- A plain `Odylith, show me what you can do` request is the advisory `odylith show` repo-capability demo. It is not a request to prove intervention UX, diagnose install posture, run `start`, run `doctor`, or explain missing launcher state. Use the first available show command and print stdout only.
 - In Codex commentary, keep startup, fallback, routing, and packet-selection internals implicit. Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight. If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history. Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates, and never prefix commentary with control-plane receipt labels. Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters.
 - Keep normal commentary task-first and human. Weave Odylith-grounded facts into ordinary updates when they change the next move, and reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels for rare high-signal moments. Pick the strongest one or stay quiet.
-- At closeout, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance ids inline when they were actually changed, and frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real.
+- Treat live teaser, `**Odylith Observation**`, and `Odylith Proposal` as the
+  intervention-engine fast path. Treat `Odylith Assist:` as the chatter-owned
+  closeout. Do not collapse those two layers into one ad hoc narration path.
+- When the shared conversation-observation runtime earns a full
+  `**Odylith Observation**` or `**Odylith Proposal**`, preserve those exact
+  labels, keep the markdown warm and human, and keep the moment rooted in the
+  original user prompt rather than Odylith's own pending/applied summary
+  strings.
+- Preserve the shipped shape too: Observation should look like
+  `Odylith Assist`, which means one short labeled line. Proposal should be a
+  short ruled block with the heading, a couple of lines, a few bullets, and
+  the confirmation line.
+- Keep one stable intervention identity across teaser, Observation, and
+  Proposal for the same session-local moment. Later hooks may add evidence or
+  surface the first eligible Proposal, but they must not make the same moment
+  feel like a fresh branded interruption.
+- For Codex and Claude checkpoint hooks, keep the full Observation,
+  Proposal, and Assist bundle in hidden developer context for continuity, but
+  surface the earned Observation/Proposal beat visibly at the hook moment when
+  the host renders hook output. If the host keeps hook output hidden, render
+  the assistant-visible fallback Markdown in chat instead of claiming the
+  engine is active. Stop is the fallback closeout and live-beat recovery lane,
+  not the primary intervention moment; unseen Ambient Highlight,
+  Observation, or Proposal beats may replay there before Assist.
+- Hook `systemMessage` or `additionalContext` generation is not proof of
+  chat-visible UX. The user-visible contract is satisfied only by rendered
+  chat text or by a host channel that is proven visible in the active session.
+  When in doubt, run `odylith codex visible-intervention` or `odylith claude
+  visible-intervention` and show that Markdown directly.
+- Before claiming the intervention UX is active in a specific chat, run or
+  cite `odylith codex intervention-status` or `odylith claude
+  intervention-status` for that host/session. That status surface is the
+  low-latency delivery ledger for Teaser, Ambient Highlight, Observation,
+  Proposal, and Assist readiness; hook payload generation alone is not enough.
+- Only call a session or worktree fully end to end after `intervention-status` reports `Activation: ready` and `chat_visible_proof=proven_this_session`. Treat `ledger_visible_unconfirmed`, `pending_confirmation`, `ledger_visible_with_pending_confirmation`, and `chat_confirmed_with_pending_confirmation` as partial proof, not completion, and treat `degraded` or `unproven_this_session` as not active yet.
+- Existing Codex and Claude sessions may not hot-reload changed hooks,
+  guidance, or source-local runtime code. After changing intervention
+  visibility behavior, prove it in a newly started or explicitly reloaded
+  session, or render `visible-intervention` output directly in the existing
+  chat instead of claiming other open sessions are active.
+- If you need to show that UX to a human in-chat, prefer rendered Markdown or
+  plain prose. Do not wrap the product moment in fenced raw Markdown unless
+  the task is explicitly about debugging the raw source text.
+- At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance IDs inline when they were actually changed, and when no governed file moved, name the affected governance-contract IDs from bounded request or packet truth without calling them updated. Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes, or a concrete chat-visibility complaint. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real; when it appears, it must render before `Odylith Assist:` so Assist remains the final closeout line.
+- Explicit feedback that Odylith ambient highlights, interventions, Assist,
+  Observations, Proposals, hooks, or chat output are not visible is a real
+  closeout signal. A short `Odylith Assist:` may acknowledge that visibility
+  continuity without claiming artifact updates; ordinary low-signal short
+  turns should still stay silent.
 - For substantive tasks, follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step; identify the active workstream, component, or packet; then move into repo scan, tests, and edits.
 - In consumer repos, grounding Odylith is diagnosis authority, not blanket write authority: if the issue target is Odylith itself, stop at diagnosis and maintainer-ready feedback unless the operator explicitly authorizes Odylith mutation.
 - Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes when they change `odylith/` or `.odylith/`; do not run them autonomously as Odylith fixes in consumer repos.
@@ -22,8 +81,8 @@ Paths under `odylith/` follow `odylith/AGENTS.md`.
 - `./.odylith/bin/odylith` chooses how Odylith runs; it does not decide which repo files the agent may edit, and target-repo code still validates on the target repo's own toolchain.
 - Before diagnosing install, upgrade, rollback, or launcher state, run `./.odylith/bin/odylith version --repo-root .` when the launcher exists and treat that live posture as authoritative over older Compass, shell, or release-history context.
 - If the launcher is missing, confirm that from the filesystem first and use Odylith's current repair contract instead of assuming the repo is on a legacy consumer path.
-- In Codex, treat Odylith-routed native subagent spawn as the default execution path for substantive grounded work across the consumer lane and the Odylith product repo's maintainer mode, including pinned dogfood and detached `source-local` maintainer-dev posture, unless Odylith explicitly keeps the slice local.
-- In Claude Code, use Odylith grounding, memory, surfaces, and local orchestration guidance, but do not assume native spawn support.
+- In Codex, treat Odylith-routed native subagent spawn as the default candidate for substantive grounded work across the consumer lane and the Odylith product repo's maintainer mode, including pinned dogfood and detached `source-local` maintainer-dev posture, when the route is bounded and the active host policy allows spawn; keep transport support separate from current-session spawn permission/effectiveness.
+- Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract. Codex emits routed `spawn_agent` payloads subject to active host policy; Claude Code executes the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.
 - Repo-root guidance in this file remains authoritative for paths outside `odylith/`.
 - In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`.
 - In the Odylith product repo's maintainer mode, pinned dogfood is the default proof posture and detached `source-local` is the explicit dev posture for live unreleased `src/odylith/*` execution.
@@ -99,6 +158,18 @@ Odylith is a product repo, not a host repo.
   or historical material that cannot be rewritten.
 - When configuring local Git for this repo, use the `freedom-research`
   identity.
+- Git commit messages count as repo metadata under this rule. Do not add
+  `Co-Authored-By:` (or any other trailer) for Claude, Claude Code,
+  Anthropic, Codex, OpenAI, "Generated with ...", "Made with ...",
+  ChatGPT, Cursor, Windsurf, Copilot, or any other coding-assistant or
+  model identity. Commit messages must end with the body content and
+  nothing else. The contributor on every commit is `freedom-research`,
+  and assistant attribution does not belong in tracked git history.
+- This rule applies to commits authored interactively, commits authored
+  through any AI coding assistant (Claude Code, Codex, Cursor, Aider,
+  etc.), and commits generated by automation in this repository. If an
+  assistant tool default would add such a trailer, override that default
+  for this repository before creating the commit.
 
 ## Source File Size Discipline
 - This source-file size policy is non-negotiable in the Odylith product repo.
@@ -120,6 +191,64 @@ Odylith is a product repo, not a host repo.
 - Prefer `1-2` file refactors per PR with characterization tests first.
 - Prioritize refactor waves by size x churn x centrality, not size alone, and
   do not launch repo-wide "all files above X" rewrites as the default policy.
+
+## Anti-Slop Non-Negotiables
+- Treat AI slop as a regression in this repository.
+- Apply that bar to any codebase or project surface: services, libraries,
+  apps, CLIs, infra glue, scripts, docs, prompts, hooks, templates, config,
+  and generated assets all count.
+- Apply that bar across runtime code, hooks, prompts, docs, config,
+  templates, generators, and managed assets, regardless of language.
+- Structural cleanup is not permission to drift behavior, UX, or UI. Preserve
+  semantics deliberately and prove the touched contract on the real toolchain
+  or surface that owns it.
+- Do not ship fake modularization. `def _host()` plus a wall of rebound private
+  host symbols is banned.
+- Do not replace that shim with `bind(host)`, `_HOST_BIND_NAMES`, generic
+  `bind_*_runtime(globals(), host)` injection, or scratch-local bind lists that
+  still hide the real dependency graph.
+- No transitional states. Do not replace one slop class with alias walls,
+  `_store()` shims, compatibility wrappers, kernel ornaments, or host-mirror
+  drift.
+- Do not hide the old owner behind compatibility wrappers, lazy proxies,
+  facade accessors, or mirror-only indirection after a nominal extraction.
+- Move ownership, not just file boundaries.
+- Do not duplicate generic coercion helpers such as `_mapping`,
+  `_json_dict`, `_normalize_*`, `_delta`, or `_parts` across files when one
+  shared owner is appropriate.
+- Do not treat a new shared helper or kernel as a cleanup ornament. Adopt it
+  in the touched slice or leave a bounded follow-up plan tied to the same slop
+  class.
+- Partial shared-kernel adoption is still incomplete. If a shared helper or
+  kernel lands, the touched callers must adopt it or the pass is incomplete.
+- Do not keep host-mirror files near-identical when a shared helper, shared
+  renderer, or shared formatter would remove the duplication.
+- Do not call a slop cleanup complete just because the first smell
+  disappeared. If the replacement smell still exists in the touched slice, the
+  pass is incomplete.
+- Do not add filler comments or docstrings. Comments must explain invariants,
+  failure modes, boundary assumptions, or non-obvious state transitions.
+- New or materially rewritten runtime Python modules must carry a truthful
+  module docstring.
+- Every anti-slop cleanup must add or update enforcement tests.
+- For shared hot paths, user-visible flows, or high-risk structural moves,
+  land characterization or contract-focused tests before or alongside the
+  refactor instead of relying on post hoc confidence.
+- When you tighten the anti-slop bar in one lane, propagate it across shared
+  guidance, host contracts, install-generated guidance, skills, and shipped
+  mirrors in the same change.
+- When the user asks for repo-wide or lane-wide anti-slop hardening, update
+  the guidance, skills, install-generated guidance, host contracts, mirrors,
+  and enforcement tests together; prose-only hardening is incomplete.
+- Guidance-only hardening without updated tests, validators, or mirror-content
+  checks is incomplete.
+- Repo-wide or lane-wide anti-slop claims require two proof layers: fresh
+  behavior proof for the touched slice and a fresh structural inventory for
+  the claimed scope. One does not substitute for the other.
+- Use `odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` and
+  `odylith/skills/odylith-code-hygiene-guard/SKILL.md` when refactor pressure,
+  duplicate helper churn, fake extraction pressure, or AI-shaped entropy is in
+  play.
 
 ## Change Hygiene
 - Keep product docs and bundle docs aligned when the product contract changes.

@@ -178,14 +178,14 @@ def test_explicit_workstream_prompt_payload_does_not_expand_beyond_required_skil
         repo_root=Path("/tmp"),
         scenario={
             "family": "explicit_workstream",
-            "required_paths": ["odylith/skills/subagent-orchestrator/SKILL.md"],
+            "required_paths": ["odylith/skills/odylith-subagent-orchestrator/SKILL.md"],
         },
         prompt_payload={
             "context_packet": {
                 "retrieval_plan": {
                     "selected_docs": [
                         "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md",
-                        "odylith/skills/subagent-orchestrator/SKILL.md",
+                        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
                     ]
                 }
             }
@@ -195,14 +195,14 @@ def test_explicit_workstream_prompt_payload_does_not_expand_beyond_required_skil
         full_payload={
             "docs": [
                 "odylith/runtime/TRIBUNAL_AND_REMEDIATION.md",
-                "odylith/skills/subagent-orchestrator/SKILL.md",
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
                 "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
             ]
         },
     )
 
-    assert payload["docs"] == ["odylith/skills/subagent-orchestrator/SKILL.md"]
-    assert payload["context_packet"]["anchors"]["explicit_paths"] == ["odylith/skills/subagent-orchestrator/SKILL.md"]
+    assert payload["docs"] == ["odylith/skills/odylith-subagent-orchestrator/SKILL.md"]
+    assert payload["context_packet"]["anchors"]["explicit_paths"] == ["odylith/skills/odylith-subagent-orchestrator/SKILL.md"]
     retrieval_plan = payload.get("context_packet", {}).get("retrieval_plan", {})
     assert "selected_docs" not in retrieval_plan
     assert any("listed skills" in hint for hint in payload["boundary_hints"])

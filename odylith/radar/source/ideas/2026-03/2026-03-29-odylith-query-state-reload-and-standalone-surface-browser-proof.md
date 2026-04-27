@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-018
-title: Odylith Query-State Reload and Standalone Surface Browser Proof
+title: Query-State Reload and Standalone Surface Browser Proof
 date: 2026-03-29
 priority: P0
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: shell query-state routing, standalone surface redirects, reload persistence, browser proof depth, and release confidence
 sizing: M
 complexity: High

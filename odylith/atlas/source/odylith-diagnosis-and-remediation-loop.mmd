@@ -1,6 +1,9 @@
-%% Reviewed 2026-03-30 for the Tribunal fallback and provider-breaker contract before release proof.
+%% Reviewed 2026-04-17 for v0.1.11 to show Context Engine packet evidence, Execution Engine admissibility, Tribunal diagnosis, visible intervention proof, and Remediator validation as one loop.
 flowchart LR
-    delivery["Delivery scope + grounded evidence"] --> dossier["Grounded dossier"]
+    context["Context Engine packet<br/>target resolution + route readiness"] --> dossier["Grounded dossier"]
+    execution["Execution Engine snapshot<br/>admissibility + next move + validation"] --> dossier
+    memory["Memory/session stream<br/>proof events + delivery ledger"] --> dossier
+    delivery["Delivery scope + grounded evidence"] --> dossier
     dossier --> tribunal["Tribunal actor pass + adjudication"]
     tribunal --> provider["Optional provider refinement"]
     provider --> validator["Named-evidence validation"]
@@ -9,3 +12,5 @@ flowchart LR
     tribunal --> fallback
     fallback --> packet
     packet --> validation["Validation + rollback guidance"]
+    tribunal --> intervention["Visible Intervention Broker<br/>Observation / Proposal risk signal"]
+    validation --> benchmark["Benchmark proof<br/>truthful closure + false-admit guard"]

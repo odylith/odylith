@@ -13,14 +13,13 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../surfaces/brand/favicon/favicon-16.png" />
   <link rel="apple-touch-icon" sizes="256x256" href="../surfaces/brand/icon/odylith-icon-256x256.png" />
   <link rel="mask-icon" href="../surfaces/brand/icon/odylith-icon-monochrome.svg" color="#173f83" />
-  <link rel="stylesheet" href="compass-style-base.v1.css?v=1775452526291408992" />
-  <link rel="stylesheet" href="compass-style-execution-waves.v1.css?v=1775452526291579250" />
-  <link rel="stylesheet" href="compass-style-surface.v1.css?v=1775452526292019939" />
+  <link rel="stylesheet" href="compass-style-base.v1.css?v=1776382192882020422" />
+  <link rel="stylesheet" href="compass-style-execution-waves.v1.css?v=1776391005117048111" />
+  <link rel="stylesheet" href="compass-style-surface.v1.css?v=1775757431138420548" />
 </head>
 <body data-surface-ready="loading">
   <main class="shell">
     <section class="hero">
-      <p class="kicker">Delivery Posture and Risk Brief</p>
       <h1>Executive Compass</h1>
       <p class="subtitle">Current workstream direction, risks, and runtime evidence across Radar, plans, bugs, and Atlas traceability.</p>
       <section class="stats" id="kpi-grid"></section>
@@ -34,7 +33,6 @@
           <option value="">Global</option>
         </select>
         <button class="pill subtle" id="scope-global" type="button">Global</button>
-        <button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>
         <span class="grow"></span>
         <span class="pill subtle" id="scope-pill">Scope: Global</span>
         <span class="pill subtle" id="audit-day-pill">Audit Day: -</span>
@@ -44,12 +42,17 @@
 
     <section class="layout">
       <div class="stack">
-        <article class="card">
-          <h2>Standup Brief</h2>
+        <article class="card standup-brief-card standup-brief-card--compact" id="standup-brief-card">
+          <div class="card-title-row standup-brief-title-row">
+            <h2>Standup Brief</h2>
+            <button class="pill subtle hidden" id="copy-brief" type="button" disabled aria-hidden="true" tabindex="-1">Copy Brief</button>
+          </div>
+          <div id="brief-copy-status" class="brief-copy-status hidden" role="status" aria-live="polite"></div>
           <div class="bullet-list standup-brief-panel" id="digest-list"></div>
         </article>
 
         <div id="execution-waves-host"></div>
+        <div id="release-groups-host"></div>
 
         <article class="card">
           <h2>Current Workstreams</h2>
@@ -119,15 +122,17 @@
   }
 })();
 </script>
-  <script src="compass-shared.v1.js?v=1775452526291093518"></script>
-  <script src="compass-state.v1.js?v=1775662362795095177"></script>
-  <script src="compass-summary.v1.js?v=1775593295371580936"></script>
-  <script src="compass-timeline.v1.js?v=1775452526292856815"></script>
-  <script src="compass-waves.v1.js?v=1775452526293304004"></script>
-  <script src="compass-workstreams.v1.js?v=1775452526293447928"></script>
-  <script src="compass-ui-runtime.v1.js?v=1775607013375620158"></script>
-  <script src="runtime/current.v1.js?v=1775665843579612937"></script>
-  <script id="compassShellData" src="compass-payload.v1.js?v=288622af8d78"></script>
-  <script src="compass-app.v1.js?v=288622af8d78"></script>
+  <script src="compass-shared.v1.js?v=1776615408115680319"></script>
+  <script src="compass-runtime-truth.v1.js?v=1776703704398400032"></script>
+  <script src="compass-state.v1.js?v=1776729153503288088"></script>
+  <script src="compass-summary.v1.js?v=1776011688254401375"></script>
+  <script src="compass-timeline.v1.js?v=1775792032862262699"></script>
+  <script src="compass-waves.v1.js?v=1776391005121987981"></script>
+  <script src="compass-releases.v1.js?v=1776036232099877511"></script>
+  <script src="compass-workstreams.v1.js?v=1776179478117071639"></script>
+  <script src="compass-ui-runtime.v1.js?v=1776043480288584435"></script>
+  <script src="runtime/current.v1.js?v=1777245290371906866"></script>
+  <script id="compassShellData" src="compass-payload.v1.js?v=fbbbd1841b94"></script>
+  <script src="compass-app.v1.js?v=fbbbd1841b94"></script>
 </body>
 </html>

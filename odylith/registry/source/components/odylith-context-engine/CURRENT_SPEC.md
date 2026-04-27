@@ -1,8 +1,24 @@
 # Odylith Context Engine
-Last updated: 2026-04-07
+
+## Odylith Discipline Contract
+- Context Engine owns the Attention facet. It supplies truth, ambiguity,
+  anchors, workstream/component refs, proof posture, cached priors, and compact
+  `discipline_summary` inputs when relevant.
+- Packet construction may use Tier 0 and bounded Tier 1 local evidence only.
+  It must not run the full discipline validator, call host/provider models,
+  spawn subagents, expand projections, run broad scans, or execute benchmarks
+  on packet hot paths.
+- Host and lane are compact summary fields, not a reason to widen packets:
+  Codex, Claude, dev, dogfood, and consumer posture must resolve from local
+  metadata or caller input, then flow into Odylith Discipline without model calls.
+- Benchmark packets for Guidance Behavior and Odylith Discipline carry
+  the B-110 workstream anchor when measuring the v0.1.11 Odylith Discipline program,
+  so Context/Execution adoption metrics can distinguish real ambiguity from a
+  missing program tag.
+Last updated: 2026-04-18
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-18
 
 ## Purpose
 Odylith Context Engine is the deterministic local grounding runtime for the
@@ -19,12 +35,31 @@ claims, and optionally materializes faster local and remote retrieval layers.
   `governance-slice`, `session-brief`, and `bootstrap-session`.
 - Optional local LanceDB + Tantivy materialization and optional Vespa sync.
 - Runtime optimization and evaluation snapshots derived from recent packets.
+- Structured turn-intake normalization for `turn_context`, lane-fenced
+  `target_resolution`, and `presentation_policy` fields carried through packet
+  assembly and compaction.
+- Compact packet summaries consumed by the visible intervention value engine.
+  The Context Engine supplies local source evidence and anchors; it does not
+  choose visible Odylith block labels or selector thresholds.
+- Compact Guidance Behavior summaries on relevant packets. The Context Engine
+  may attach corpus status, case counts, failed check ids, fingerprints, and
+  validator commands; it must not run full guidance validation on the live
+  packet hot path.
 
 ### The Context Engine does not own
 - Authoritative repo truth. It compiles truth; it does not replace it.
 - Surface rendering policy.
 - Delegation routing policy itself. It only provides grounding and packet data
   that router/orchestrator logic can consume.
+- Admissibility or next-action control. It provides grounded truth and packets,
+  but [Execution Engine](../execution-engine/CURRENT_SPEC.md) decides
+  which next move is admissible.
+- Historical execution component identifiers. Context packets must carry
+  `execution-engine` when the packet addresses the Execution Engine boundary;
+  stale execution identifiers fail closed rather than being translated.
+- Live intervention rendering policy. The Governance Intervention Engine
+  consumes Context Engine packet summaries as one evidence source inside the
+  proposition value engine.
 
 ## Developer Mental Model
 - `src/odylith/runtime/context_engine/odylith_context_engine.py` is the public
@@ -37,6 +72,10 @@ claims, and optionally materializes faster local and remote retrieval layers.
   a managed context-engine pack that is installed by default as part of the
   full-stack Odylith runtime, even though the base runtime and memory overlay
   travel as separate release assets.
+- The first-turn intake path is lane-aware: consumer turns may ground from
+  visible text and anchors without returning Odylith-owned write targets, while
+  maintainer mode can keep the same pipeline writable in the Odylith product
+  repo.
 - Packet builders and budgeting helpers are explicit modules, not incidental
   string assembly:
   `tooling_context_packet_builder.py`,
@@ -60,6 +99,41 @@ claims, and optionally materializes faster local and remote retrieval layers.
 ## Public Command Surface
 Public entrypoint: `odylith context-engine`
 
+## Execution Engine Handshake
+- Context Engine owns the evidence cone: canonical component identity,
+  workstream and plan grounding, packet kind, route readiness, turn context,
+  target resolution, presentation policy, and recommended validation.
+- Execution Engine owns the action contract: admissibility outcome, execution
+  mode, truthful next move, closure posture, wait/resume semantics, validation
+  archetype, host profile, and delegation or parallelism guards.
+- The handoff key for this component boundary is strictly `execution-engine`.
+  Context Engine registry detail lookup, packet readiness, and benchmark packet
+  construction must not resolve stale execution identifiers into the canonical
+  component.
+  This fail-closed behavior prevents old names from silently producing
+  route-ready packets.
+- The stable `execution_engine_handshake` packet shape is versioned as `v1`
+  and contains `component_id`, `canonical_component_id`, `identity_status`,
+  packet kind and state, expanded packet quality, `turn_context`,
+  `target_resolution`, `presentation_policy`, recommended validation, and
+  route readiness.
+- Packet builders call
+  `src/odylith/runtime/context_engine/execution_engine_handshake.py` to attach
+  that shape and build or reuse one compact Execution Engine snapshot. Packet
+  summaries, bootstrap packets, hot-path packets, context dossiers, and
+  runtime surfaces should consume that shared snapshot instead of locally
+  deriving policy posture.
+- When a packet is guidance-behavior-relevant, packet builders attach the
+  compact `guidance_behavior_summary` first and the handshake carries its
+  validator command as recommended validation. The summary remains a compact
+  evidence payload; full validation is explicit proof work, not automatic
+  packet construction.
+- Snapshot cost diagnostics are intentionally lightweight and comparative:
+  snapshot duration, snapshot token estimate, runtime-contract token estimate,
+  handshake token estimate, total payload token estimate, reuse status, and
+  handshake version travel with the compact summary for benchmark and
+  latency-budget analysis.
+
 ### Projection and daemon lifecycle
 - `warmup`
   Build or refresh local projections for `default`, `reasoning`, or `full`
@@ -78,11 +152,14 @@ Public entrypoint: `odylith context-engine`
 ### Packet and read APIs
 - `query`
   Search the local projection store and report when a raw repo scan is still
-  recommended.
+  recommended. Release selectors such as `current release`, `next release`,
+  `release:<id>`, exact version, exact tag, and unique exact release names
+  resolve through the same compiled projection truth.
 - `surface-read`
   Return pre-shaped payloads for dashboard and surface consumers.
 - `context`
-  Resolve a single entity or path into a dossier.
+  Resolve a single entity or path into a dossier, including first-class
+  release entities.
 - `impact`
   Build a path-scoped implementation impact packet.
 - `architecture`
@@ -94,6 +171,8 @@ Public entrypoint: `odylith context-engine`
 - `bootstrap-session`
   Build a compact fresh-session bootstrap packet with docs, commands, and test
   recommendations.
+  Both session packet forms carry structured turn context, lane-fenced target
+  resolution, and presentation policy.
 
 ### Snapshot, switch, and remote operations
 - `benchmark`
@@ -117,8 +196,38 @@ Operational guidance lives in
 - `odylith_context_engine_store.py`
   Projection compilation, packet assembly, session state, runtime timing,
   optimization snapshots, evaluation snapshots, and fallback behavior.
+- `odylith_context_engine_projection_query_runtime.py`
+  Query-facing projection composition and export wiring across entity,
+  backlog, bug, and registry read models.
+- `odylith_context_engine_projection_entity_runtime.py`
+  Exact entity resolution, release selector routing, and dossier shaping that
+  turns compiled projection truth into packet-safe context payloads.
+- `odylith_context_engine_projection_backlog_runtime.py`
+  Backlog, plan, and bug projection reads plus workstream detail loading.
+- `odylith_context_engine_projection_registry_runtime.py`
+  Component index, registry snapshot, and registry-detail projection reads.
+- `odylith_context_engine_packet_summary_runtime.py`
+  Packet-summary extraction and compact bootstrap-packet readback, including
+  turn-context, target-resolution, presentation-policy, and
+  guidance-behavior summary carry-through.
+- `odylith_context_engine_packet_session_runtime.py`
+  Session-brief and bootstrap packet assembly, including first-turn intake and
+  lane-aware target resolution.
+- `odylith_context_engine_packet_architecture_runtime.py`
+  Architecture-audit packet assembly.
+- `odylith_context_engine_packet_adaptive_runtime.py`
+  Adaptive packet escalation and daemon-reuse packet flows.
+- `odylith_context_engine_hot_path_packet_core_runtime.py`
+  Compact packet-quality, routing, and execution-profile shaping for hot-path
+  packets.
+- `odylith_context_engine_hot_path_packet_bootstrap_runtime.py`
+  Governance and proof-aware hot-path bootstrap packet compaction.
+- `odylith_context_engine_hot_path_packet_finalize_runtime.py`
+  Final compact packet shaping, prompt trimming, and workstream context
+  compaction.
 - `tooling_context_packet_builder.py`
-  Shared packet finalization and packet metrics.
+  Shared packet finalization, packet metrics, and relevant guidance-behavior
+  summary attachment.
 - `tooling_context_retrieval.py`
   Evidence retrieval and miss-recovery shaping.
 - `tooling_context_routing.py`
@@ -159,6 +268,10 @@ Operational guidance lives in
 - Benchmark-facing impact, governance-slice, session-brief, and
   bootstrap-session packets must pass family hints through finalization so
   retrieval and packet compaction can stay family-aware.
+- Session-brief and bootstrap-session packets must preserve structured
+  `turn_context`, lane-fenced `target_resolution`, and `presentation_policy`
+  so the router and chatter layers consume the same truth as the context
+  engine.
 - On already-grounded proof slices, `required_paths` are authoritative and
   family-aware ceilings must suppress support-doc spillover and miss recovery
   before prompt rendering.
@@ -205,6 +318,15 @@ Operational guidance lives in
   Recent bootstrap packets.
 - `.odylith/runtime/odylith-benchmarks/`
   Benchmark history and latest reports.
+
+## Turn Intake And Lane Fencing
+- The context engine's first-turn intake path should preserve structured
+  `turn_context` and quoted visible text separately from semantic intent so
+  consumer-lane packets can resolve diagnostic anchors without exposing
+  Odylith-owned writable targets.
+- Maintainer-authorized turns in the Odylith product repo may reuse the same
+  intake and resolution pipeline while keeping Odylith-owned targets writable
+  when lane policy permits mutations.
 
 ## Core Read Models
 ### [Odylith Projection Bundle](../odylith-projection-bundle/CURRENT_SPEC.md)
@@ -306,6 +428,13 @@ available local-assisted fallback.
 not require `watchdog`; when it is absent, Odylith still falls back to
 `git-fsmonitor` and then polling without changing the full-stack install
 contract.
+Surface watchers such as Compass should consume change notifications before
+they invent their own timers: the daemon now exposes a blocking
+`wait-projection-change` request keyed to the current projection fingerprint,
+and long-running local watch commands may reuse the same watcher stack directly
+when the daemon is absent. Tight heartbeat polling is not the intended product
+contract; coarse polling exists only as the last fallback on machines with no
+real watcher backend.
 
 ## Packet Families And Control Flow
 ### Governance slice
@@ -385,6 +514,11 @@ evidence is missing or drifting.
   update compilation in `odylith_context_engine_store.py`, include it in the
   snapshot or bundle if it is part of the public runtime contract, and then
   update any packets that consume it.
+- Release projection changes must evolve together:
+  - compiler/runtime tables and projection fingerprints
+  - exact-resolution aliases for `context` and `query`
+  - memory-backend release documents
+  - dependent surface or packet payloads that use active release labels
 - New packet family:
   add the packet builder logic, define its budget and trim behavior, and make
   the degraded or full-scan fallback explicit.
@@ -402,6 +536,10 @@ evidence is missing or drifting.
 - Missing grounded paths or ambiguous selection should return fallback scan
   guidance instead of a false-positive route recommendation.
 - Watcher failures should degrade to a weaker watcher or polling.
+- If a consumer still needs fresh local truth after watchers degrade all the
+  way to polling, the expensive work must remain outside the detection loop:
+  detect cheaply, rebuild locally only on fingerprint change, and keep provider
+  narration off the blocking path.
 - Repair and reset-local-state flows must stop a live daemon before deleting
   runtime files so recovery does not orphan background processes.
 - If Odylith is disabled through `odylith-switch`, snapshot APIs should return
@@ -427,6 +565,7 @@ evidence is missing or drifting.
 - `odylith context-engine --repo-root . doctor`
 - `pytest -q tests/unit/runtime/test_odylith_context_engine_daemon_hardening.py tests/unit/install/test_repair.py`
 - `python -m pytest -q tests/unit/runtime/test_tooling_guidance_catalog.py tests/unit/runtime/test_tooling_context_retrieval_guidance.py`
+- `odylith validate guidance-behavior --repo-root .`
 - `odylith context-engine --repo-root . benchmark --limit 5`
 - `odylith sync --repo-root . --check-only`
 
@@ -434,12 +573,24 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-23 · Decision:** Successor created: B-280 reopens B-279 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
-- **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
-- **2026-03-18 · Decision:** Successor created: B-220 reopens B-219 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
+- **2026-04-17 · Implementation:** B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate discipline and validate guidance-behavior passed, quick discipline report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.
+  - Scope: B-110
+  - Evidence: odylith/runtime/source/discipline-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md +3 more
+- **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
+  - Scope: B-110
+  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
+- **2026-04-17 · Implementation:** B-110 Odylith Discipline source-local proof landed: zero-credit validator, guidance-behavior validator, quick benchmark family selection, and Discipline quick benchmark are green; pinned dogfood runtime proof remains blocked by managed runtime drift.
+  - Scope: B-110, B-111, B-112, B-113
+  - Evidence: odylith/runtime/source/discipline-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md +2 more
+- **2026-04-16 · Implementation:** Context Engine and Execution Engine alignment hardened stale snapshot handling across packet summaries, router assessment, remediator execution, and benchmark proof with fail-closed canonical execution-engine identity checks; runtime, integration, registry, backlog, atlas, sync, and diff hygiene validation passed.
+  - Scope: B-099
+  - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py +3 more
+- **2026-04-16 · Implementation:** Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.
+  - Scope: B-099
+  - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/execution_engine/runtime_lane_policy.py
+- **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
+  - Scope: B-099, B-100
+  - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -447,3 +598,11 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-28: Added durable judgment memory, persisted it beside the local memory backend, and promoted the memory backend into a first-class Registry component so governed slice continuity can survive across sessions without polluting hot-path packets. (Plan: [B-010](odylith/radar/radar.html?view=plan&workstream=B-010))
 - 2026-04-05: Restored canonical benchmark guidance memory, passed family hints through packet finalization into retrieval, and documented the fail-closed boundedness contract that keeps weak-family proof slices deterministic across warm and cold cache posture. (Plan: [B-038](odylith/radar/radar.html?view=plan&workstream=B-038))
 - 2026-04-07: Promoted the hidden memory-substrate seams into governed sibling components so projection bundle, projection snapshot, remote retrieval, and packet contracts become explicit Registry truth instead of broad Context Engine footnotes. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
+- 2026-04-08: Added first-class release entities and selector resolution to the projection model so `context`, `query`, and governed read surfaces can resolve release ids, aliases, versions, tags, and unique exact names from one repo-local contract. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
+- 2026-04-09: Clarified the product boundary that Context Engine grounds repo truth and packets, while Execution Engine owns admissibility and next-action control. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
+- 2026-04-10: Added structured turn-intake carry-through so session packets can preserve `turn_context`, lane-fenced target resolution, and presentation policy across consumer and maintainer lanes. (Plan: [B-082](odylith/radar/radar.html?view=plan&workstream=B-082))
+- 2026-04-16: Added the Context Engine and Execution Engine alignment program and hard-cut the handoff to canonical `execution-engine` identity so stale execution identifiers fail closed before packet route readiness. (Plan: [B-099](odylith/radar/radar.html?view=plan&workstream=B-099), [B-100](odylith/radar/radar.html?view=plan&workstream=B-100))
+- 2026-04-16: Added handshake `v1`, shared compact snapshot reuse, Execution Engine cost diagnostics, and Codex/Claude semantic parity proof for the Context Engine to Execution Engine boundary. (Plan: [B-101](odylith/radar/radar.html?view=plan&workstream=B-101), [B-102](odylith/radar/radar.html?view=plan&workstream=B-102), [B-103](odylith/radar/radar.html?view=plan&workstream=B-103))
+- 2026-04-17: Added compact Guidance Behavior summary propagation for relevant packets and packet summaries, including validator-command handoff to the Execution Engine and preservation for the intervention value engine without running full guidance validation in live packet construction. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
+- 2026-04-17: Extended the compact Guidance Behavior packet summary with the platform end-to-end contract so Context Engine packets can carry benchmark/eval and host-lane mirror proof availability without repo-wide scans, provider calls, or full validation on the hot path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Added the Guidance Behavior `hot_path_efficiency` contract: deterministic validator summaries now prevent adaptive session/full-scan widening, skip runtime projection warmup, avoid projection-store opens for no-projection guidance packets, and keep unanchored proof-state resolution out of delivery-intelligence reads. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)

@@ -167,7 +167,7 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
         '<div class="welcome-prompt-copy">'
         '<div class="welcome-prompt-head">'
         '<p class="welcome-card-kicker">Copy this into your agent</p>'
-        '<p class="welcome-prompt-intro">Ground one path, then let Odylith open the first governed records around it.</p>'
+        '<p class="welcome-prompt-intro">Ask Odylith for the repo-aware tour, then choose the first useful path from there.</p>'
         "</div>"
         f"{steps_html}"
         '<div class="welcome-prompt-block">'
@@ -179,7 +179,7 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
         '<div class="welcome-action-row">'
         '<button id="welcomeCopyPrompt" type="button" class="welcome-button" '
         f'data-welcome-copy="true" data-copy-text="{html.escape(starter_prompt, quote=True)}" '
-        'data-copy-status="Starter prompt copied. Paste it into your agent.">Copy prompt</button>'
+        'data-copy-status="Prompt copied. Paste it into your agent.">Copy prompt</button>'
         "</div>"
         "</section>"
     )
