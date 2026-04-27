@@ -949,6 +949,46 @@ def test_dashboard_refresh_dry_run_accepts_shell_alias_without_running_commands(
     assert "tooling_shell" in output
 
 
+def test_dashboard_refresh_normalizes_legacy_radar_source_before_render(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo_root = _seed_sync_repo_with_legacy_backlog(tmp_path)
+    render_seen: dict[str, bool] = {}
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_use_runtime_fast_path", lambda _mode: False)
+    monkeypatch.setattr(
+        sync_workstream_artifacts.surface_refresh_fingerprint_dag,
+        "can_reuse_surface_refresh",
+        lambda **_: (False, {}),
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts.surface_refresh_fingerprint_dag,
+        "record_surface_refresh",
+        lambda **_: None,
+    )
+
+    def fake_run_command(**kwargs) -> int:  # noqa: ANN003
+        index_text = (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+        assert "impacted_lanes" not in index_text
+        render_seen["called"] = True
+        return 0
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_command", fake_run_command)
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=repo_root,
+        surfaces=("radar",),
+        runtime_mode="auto",
+        atlas_sync=False,
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert render_seen["called"] is True
+    assert "- radar preflight: normalized legacy Radar source before render" in output
+    assert "table_schema_updates: 3" in output
+
+
 def test_dashboard_refresh_plan_reports_included_excluded_surfaces_and_atlas_follow_up(
     tmp_path: Path, monkeypatch
 ) -> None:

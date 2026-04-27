@@ -2620,7 +2620,7 @@ def test_product_repo_upgrade_without_target_keeps_tracked_pin(tmp_path: Path, m
     assert summary.pinned_version == "1.2.3"
 
 
-def test_upgrade_same_version_requires_doctor_repair_when_full_stack_pack_is_missing(tmp_path: Path, monkeypatch) -> None:
+def test_upgrade_same_version_restages_missing_full_stack_pack(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _write_repo_root(repo_root)
@@ -2637,11 +2637,30 @@ def test_upgrade_same_version_requires_doctor_repair_when_full_stack_pack_is_mis
     monkeypatch.setattr(
         install_manager_module,
         "install_release_runtime",
-        lambda **kwargs: (_ for _ in ()).throw(AssertionError("same-version upgrade should fail closed before restaging")),
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("same-version upgrade should not restage the whole runtime")),
+    )
+    monkeypatch.setattr(
+        install_manager_module.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )
 
-    with pytest.raises(ValueError, match="doctor --repo-root \\. --repair"):
-        upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
+    def _fake_ensure_context_pack(**kwargs):  # noqa: ANN003
+        _write_fake_context_engine_pack(
+            repo_root,
+            target_root=current_runtime,
+            version="1.2.3",
+            feature_pack_sha256="pack-1.2.3",
+        )
+        return {"feature_pack_sha256": "pack-1.2.3"}
+
+    monkeypatch.setattr(install_manager_module, "_ensure_managed_context_engine_pack", _fake_ensure_context_pack)
+
+    summary = upgrade_install(repo_root=repo_root, release_repo="odylith/odylith")
+
+    assert summary.active_version == "1.2.3"
+    assert summary.pinned_version == "1.2.3"
+    assert (current_runtime / "runtime-feature-packs.v1.json").is_file()
 
 
 def test_reinstall_install_repairs_same_version_runtime_when_upgrade_requires_doctor(tmp_path: Path, monkeypatch) -> None:
