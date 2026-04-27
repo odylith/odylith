@@ -17,19 +17,19 @@ founder_override: yes
 promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
 execution_model: umbrella_waves
 workstream_type: umbrella
-workstream_parent:
+workstream_parent: 
 workstream_children: B-111, B-112, B-113, B-114, B-115, B-116, B-117
-workstream_depends_on:
-workstream_blocks:
+workstream_depends_on: 
+workstream_blocks: 
 related_diagram_ids: D-039
-workstream_reopens:
-workstream_reopened_by:
-workstream_split_from:
-workstream_split_into:
-workstream_merged_into:
-workstream_merged_from:
-supersedes:
-superseded_by:
+workstream_reopens: 
+workstream_reopened_by: 
+workstream_split_from: 
+workstream_split_into: 
+workstream_merged_into: 
+workstream_merged_from: 
+supersedes: 
+superseded_by: 
 ---
 ## Problem
 Odylith now gives agents more context, tools, delegation, memory, interventions, and benchmark surfaces, but those capabilities are not yet governed by one adaptive runtime model of engineering discipline under pressure. Guidance behavior is testable, but it is still too easy for discipline, memory, proof, host parity, latency, credit safety, and public accountability to land as adjacent checks instead of one operating loop.

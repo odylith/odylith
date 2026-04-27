@@ -2890,10 +2890,11 @@ def _resolve_benchmark_scenario_selection(
 
 @contextlib.contextmanager
 def _odylith_enabled_override(enabled: bool) -> Iterator[None]:
-    keys = ("ODYLITH_ENABLED", "ODYLITH_MODE")
+    keys = ("ODYLITH_ENABLED", "ODYLITH_ENABLED")
     prior = {key: os.environ.get(key) for key in keys}
-    os.environ["ODYLITH_ENABLED"] = "1" if enabled else "0"
-    os.environ["ODYLITH_MODE"] = "enabled" if enabled else "disabled"
+    token = "1" if enabled else "0"
+    for key in keys:
+        os.environ[key] = token
     try:
         yield
     finally:
@@ -3009,9 +3010,7 @@ def _build_packet_payload(
                 "reasons": [],
             },
         )
-    if not report_id:
-        store.clear_runtime_process_caches(repo_root=repo_root)
-    with _odylith_enabled_override(True), agent_runtime_contract.codex_host_runtime_environment_if_missing():
+    with _odylith_enabled_override(True):
         if requested_source == "governance_slice":
             payload = store.build_governance_slice(
                 repo_root=repo_root,
@@ -3959,9 +3958,11 @@ def _packet_result(
         before=timing_before,
         operations=("impact", "governance_slice", "session_brief", "bootstrap_session", "architecture"),
     )
-    with agent_runtime_contract.codex_host_runtime_environment_if_missing():
-        packet_summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+    packet_summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
     packet_summary["packet_source"] = packet_source
+    packet_summary = odylith_benchmark_execution_engine.enrich_packet_summary_for_execution_engine_family(
+        summary=packet_summary, scenario=scenario
+    )
     measurement_payload = dict(payload)
     supplemented_doc_count = 0
     if _mode_uses_odylith(normalized_mode):

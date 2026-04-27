@@ -36,20 +36,6 @@ def _force_codex_host_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("CODEX_SHELL", raising=False)
 
 
-def _clear_agent_host_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
-    for key in (
-        "CODEX_THREAD_ID",
-        "CODEX_SHELL",
-        "CODEX_CI",
-        "CODEX_INTERNAL_ORIGINATOR_OVERRIDE",
-        "__CFBundleIdentifier",
-        "CLAUDE_CODE",
-        "CLAUDE_CODE_SESSION_ID",
-        "CLAUDE_SESSION_ID",
-    ):
-        monkeypatch.delenv(key, raising=False)
-
-
 def _write_corpus(tmp_path: Path, payload: dict[str, object]) -> None:
     corpus_path = tmp_path / "odylith" / "runtime" / "source" / "optimization-evaluation-corpus.v1.json"
     corpus_path.parent.mkdir(parents=True, exist_ok=True)
@@ -6019,8 +6005,7 @@ def test_execution_engine_packet_expectations_hard_gate_identity_fields() -> Non
     assert details["expected_execution_engine_target_component_status"] == ["execution_engine"]
 
 
-def test_execution_engine_runtime_surface_packet_fixture_keeps_phase_truth(monkeypatch: pytest.MonkeyPatch) -> None:
-    _clear_agent_host_runtime(monkeypatch)
+def test_execution_engine_runtime_surface_packet_fixture_keeps_phase_truth() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(
         row
@@ -6048,6 +6033,46 @@ def test_execution_engine_runtime_surface_packet_fixture_keeps_phase_truth(monke
     assert packet["execution_engine_identity_status"] == "canonical"
     assert packet["execution_engine_target_component_status"] == "execution_engine"
     assert packet["execution_engine_snapshot_reuse_status"] == "built"
+
+
+def test_execution_engine_packet_fixture_overrides_stale_snapshot() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-engine-runtime-surface-phase-carry-through"
+    )
+    packet_source, payload, _adaptive = runner._build_packet_payload(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        existing_paths=scenario["changed_paths"],
+    )
+    payload["execution_engine"] = {
+        "host_family": "unknown",
+        "mode": "recover",
+        "component_id": "execution-runtime",
+    }
+    payload = runner._apply_packet_fixture(  # noqa: SLF001
+        payload=payload,
+        scenario=scenario,
+        packet_source=packet_source,
+    )
+
+    summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+    summary = runner.odylith_benchmark_execution_engine.enrich_packet_summary_for_execution_engine_family(
+        summary=summary,
+        scenario=scenario,
+    )
+    expectation_ok, details = store._packet_satisfies_evaluation_expectations(  # noqa: SLF001
+        summary,
+        dict(scenario["expect"]),
+    )
+
+    assert expectation_ok is True, details
+    assert summary["execution_engine_mode"] == "verify"
+    assert summary["execution_engine_host_family"] == "codex"
+    assert summary["execution_engine_component_id"] == "execution-engine"
 
 
 def test_execution_engine_governance_slice_ambiguity_uses_narrowing_lane() -> None:
@@ -8650,11 +8675,11 @@ def test_broad_scope_hot_path_keeps_fallback_recommendation_without_result_paths
     observed_paths = runner._observed_packet_paths(payload)  # noqa: SLF001
 
     assert packet_source == "impact"
-    fallback_scan = dict(payload["fallback_scan"])
-    assert fallback_scan["recommended"] is True
-    assert fallback_scan["reason"] == "adaptive_full_scan_fallback"
-    assert fallback_scan.get("performed") is True or fallback_scan.get("summary_only") is True
-    assert "results" not in fallback_scan
+    assert payload["fallback_scan"] == {
+        "recommended": True,
+        "reason": "adaptive_full_scan_fallback",
+        "performed": True,
+    }
     assert "docs/WHY_ODYLITH_CHANGES_OUTCOMES.md" not in observed_paths
     assert "odylith/technical-plans/CLAUDE.md" not in observed_paths
 
@@ -8672,11 +8697,11 @@ def test_ambiguous_session_brief_keeps_fallback_recommendation_without_bug_resul
     observed_paths = runner._observed_packet_paths(payload)  # noqa: SLF001
 
     assert packet_source == "session_brief"
-    fallback_scan = dict(payload["fallback_scan"])
-    assert fallback_scan["recommended"] is True
-    assert fallback_scan["reason"] == "adaptive_full_scan_fallback"
-    assert fallback_scan.get("performed") is True or fallback_scan.get("summary_only") is True
-    assert "results" not in fallback_scan
+    assert payload["fallback_scan"] == {
+        "recommended": True,
+        "reason": "adaptive_full_scan_fallback",
+        "performed": True,
+    }
     assert not any(path.startswith("odylith/casebook/bugs/") for path in observed_paths)
 
 

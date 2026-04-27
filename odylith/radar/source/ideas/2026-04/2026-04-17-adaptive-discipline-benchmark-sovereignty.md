@@ -36,29 +36,29 @@ workstream_type: child
 
 workstream_parent: B-110
 
-workstream_children:
+workstream_children: 
 
-workstream_depends_on:
+workstream_depends_on: 
 
-workstream_blocks:
+workstream_blocks: 
 
-related_diagram_ids:
+related_diagram_ids: 
 
-workstream_reopens:
+workstream_reopens: 
 
-workstream_reopened_by:
+workstream_reopened_by: 
 
-workstream_split_from:
+workstream_split_from: 
 
-workstream_split_into:
+workstream_split_into: 
 
-workstream_merged_into:
+workstream_merged_into: 
 
-workstream_merged_from:
+workstream_merged_from: 
 
-supersedes:
+supersedes: 
 
-superseded_by:
+superseded_by: 
 
 ## Problem
 B-110 needs explicit child execution slices so Odylith Discipline can land through governed waves instead of collapsing governance, runtime, learning, host parity, benchmarks, and release proof into one unbounded record.

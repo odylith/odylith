@@ -40,12 +40,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 155,
+    "explicit_event_count": 156,
     "mapped_workstream_evidence_count": 111,
     "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 155
+    "timeline_event_count": 156
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -54,6 +54,31 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 377,
+      "explicit_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "dashboard",
+        "odylith",
+        "odylith-context-engine"
+      ],
+      "meaningful": true,
+      "summary": "Activated Odylith runtime 0.1.11 for the current repository; repo pin is 0.1.11.",
+      "ts_iso": "2026-04-26T22:50:42-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "low",

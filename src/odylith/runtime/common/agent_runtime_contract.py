@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import contextlib
 import os
 from pathlib import Path
 import re
 from typing import Any
-from typing import Iterator
 from typing import Mapping
 
 from odylith.runtime.common import host_runtime as host_runtime_contract
@@ -145,52 +143,6 @@ def execution_profile_runtime_fields(
     if not bool(capabilities.get("supports_explicit_model_selection")):
         return "", reasoning_effort
     return model, reasoning_effort
-
-
-def execution_profile_runtime_fields_with_fallback(
-    value: Any,
-    *,
-    host_runtime: Any = "",
-    host_capabilities: Mapping[str, Any] | None = None,
-    fallback_host_runtime: Any = "codex_cli",
-) -> tuple[str, str]:
-    """Resolve runtime fields, then fill hostless gaps from an explicit fallback host."""
-
-    model, reasoning_effort = execution_profile_runtime_fields(
-        value,
-        host_runtime=host_runtime,
-        host_capabilities=host_capabilities,
-    )
-    if model and reasoning_effort:
-        return model, reasoning_effort
-    fallback_model, fallback_reasoning_effort = execution_profile_runtime_fields(
-        value,
-        host_runtime=fallback_host_runtime,
-    )
-    return model or fallback_model, reasoning_effort or fallback_reasoning_effort
-
-
-@contextlib.contextmanager
-def codex_host_runtime_environment_if_missing(
-    *,
-    session_id: str = "odylith-hostless-audit",
-) -> Iterator[None]:
-    """Temporarily give hostless audit code a Codex runtime identity."""
-
-    if host_runtime_contract.detect_host_runtime():
-        yield
-        return
-    prior = {key: os.environ.get(key) for key in ("CODEX_THREAD_ID", "CODEX_SHELL")}
-    os.environ["CODEX_THREAD_ID"] = session_id
-    os.environ["CODEX_SHELL"] = "1"
-    try:
-        yield
-    finally:
-        for key, value in prior.items():
-            if value is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = value
 
 
 def canonical_stream_token(value: Any) -> str:

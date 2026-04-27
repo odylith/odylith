@@ -36,29 +36,29 @@ workstream_type: child
 
 workstream_parent: B-025
 
-workstream_children:
+workstream_children: 
 
 workstream_depends_on: B-080,B-086
 
-workstream_blocks:
+workstream_blocks: 
 
 related_diagram_ids: D-005,D-009,D-036
 
-workstream_reopens:
+workstream_reopens: 
 
-workstream_reopened_by:
+workstream_reopened_by: 
 
-workstream_split_from:
+workstream_split_from: 
 
-workstream_split_into:
+workstream_split_into: 
 
-workstream_merged_into:
+workstream_merged_into: 
 
-workstream_merged_from:
+workstream_merged_from: 
 
-supersedes:
+supersedes: 
 
-superseded_by:
+superseded_by: 
 
 ## Problem
 `odylith sync` is still paying for a shared-nothing execution posture even when

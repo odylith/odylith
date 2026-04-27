@@ -931,10 +931,7 @@ def _intent_confidence_score(value: Any) -> int:
 def _profile_runtime_fields(profile_token: str) -> tuple[str, str, str]:
     """Expand a router profile token into model, reasoning effort, and agent role."""
     profile = _normalize_token(profile_token)
-    model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields_with_fallback(
-        profile,
-        fallback_host_runtime="codex_cli",
-    )
+    model, reasoning_effort = agent_runtime_contract.execution_profile_runtime_fields(profile)
     if profile in {
         leaf_router.RouterProfile.MINI_MEDIUM.value,
         leaf_router.RouterProfile.MINI_HIGH.value,
@@ -953,6 +950,16 @@ def _profile_runtime_fields(profile_token: str) -> tuple[str, str, str]:
     }:
         return model, reasoning_effort, "worker"
     return "", "", "main_thread"
+
+
+def _selected_execution_profile_payload(payload: Mapping[str, Any], reasoning_effort: str) -> dict[str, Any]:
+    """Return route metadata with selected reasoning normalized for host surfaces."""
+    profile = dict(payload)
+    selected_profile = _normalize_token(profile.get("selected_profile"))
+    if selected_profile and "selected_reasoning_effort" not in profile:
+        _default_model, default_reasoning_effort, _default_role = _profile_runtime_fields(selected_profile)
+        profile["selected_reasoning_effort"] = _normalize_string(reasoning_effort) or default_reasoning_effort
+    return profile
 
 
 def _subtask_odylith_execution_profile(

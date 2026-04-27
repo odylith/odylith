@@ -9,24 +9,6 @@ from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 from odylith.runtime.orchestration import subagent_router as router
 
 
-def _clear_agent_host_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
-    for key in (
-        "CODEX_THREAD_ID",
-        "CODEX_SHELL",
-        "CODEX_CI",
-        "CODEX_INTERNAL_ORIGINATOR_OVERRIDE",
-        "__CFBundleIdentifier",
-        "CLAUDE_CODE",
-        "CLAUDE_CODE_SESSION_ID",
-        "CLAUDE_SESSION_ID",
-    ):
-        monkeypatch.delenv(key, raising=False)
-
-
-def _profile_runtime_fields(profile: router.RouterProfile) -> tuple[str, str]:
-    return router.subagent_router_profile_support.profile_runtime_fields(profile)
-
-
 def _packet_quality(*, mode: str = "bounded_write") -> dict[str, object]:
     return {
         "evidence_quality": {"score": 4, "level": "high"},
@@ -963,14 +945,13 @@ def test_lifecycle_and_native_spawn_payloads_match_for_every_profile(profile: ro
         message="bounded delegated leaf",
     )
 
-    model, reasoning_effort = _profile_runtime_fields(profile)
     assert lifecycle.spawn_overrides["apply_parent_defaults"] is False
-    assert lifecycle.spawn_overrides["model"] == model
-    assert lifecycle.spawn_overrides["reasoning_effort"] == reasoning_effort
-    assert lifecycle.spawn_agent_overrides["model"] == model
-    assert lifecycle.spawn_agent_overrides["reasoning_effort"] == reasoning_effort
-    assert native_payload["model"] == model
-    assert native_payload["reasoning_effort"] == reasoning_effort
+    assert lifecycle.spawn_overrides["model"] == profile.model
+    assert lifecycle.spawn_overrides["reasoning_effort"] == profile.reasoning_effort
+    assert lifecycle.spawn_agent_overrides["model"] == profile.model
+    assert lifecycle.spawn_agent_overrides["reasoning_effort"] == profile.reasoning_effort
+    assert native_payload["model"] == profile.model
+    assert native_payload["reasoning_effort"] == profile.reasoning_effort
     assert native_payload["message"] == "bounded delegated leaf"
 
 
@@ -1115,7 +1096,7 @@ def test_subtask_execution_profile_promotes_critical_validation_to_gpt54_high() 
 
     assert profile["profile"] == router.RouterProfile.GPT54_HIGH.value
     assert profile["selection_mode"] == "deep_validation"
-    assert profile["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.GPT54_HIGH)[1]
+    assert profile["reasoning_effort"] == router.RouterProfile.GPT54_HIGH.reasoning_effort
 
 
 def test_subtask_execution_profile_routes_support_docs_to_spark_fast_lane() -> None:
@@ -1128,7 +1109,7 @@ def test_subtask_execution_profile_routes_support_docs_to_spark_fast_lane() -> N
 
     assert profile["profile"] == router.RouterProfile.SPARK_MEDIUM.value
     assert profile["selection_mode"] == "support_fast_lane"
-    assert profile["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.SPARK_MEDIUM)[1]
+    assert profile["reasoning_effort"] == router.RouterProfile.SPARK_MEDIUM.reasoning_effort
 
 
 @pytest.mark.parametrize(
@@ -1177,8 +1158,8 @@ def test_subtask_execution_profile_inherits_parent_profile_from_context_packet()
     )
 
     assert routed["profile"] == router.RouterProfile.GPT54_HIGH.value
-    assert routed["model"] == _profile_runtime_fields(router.RouterProfile.GPT54_HIGH)[0]
-    assert routed["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.GPT54_HIGH)[1]
+    assert routed["model"] == router.RouterProfile.GPT54_HIGH.model
+    assert routed["reasoning_effort"] == router.RouterProfile.GPT54_HIGH.reasoning_effort
 
 
 def test_subtask_execution_profile_inherits_parent_profile_from_optimization_snapshot() -> None:
@@ -1193,8 +1174,8 @@ def test_subtask_execution_profile_inherits_parent_profile_from_optimization_sna
     )
 
     assert routed["profile"] == router.RouterProfile.CODEX_HIGH.value
-    assert routed["model"] == _profile_runtime_fields(router.RouterProfile.CODEX_HIGH)[0]
-    assert routed["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.CODEX_HIGH)[1]
+    assert routed["model"] == router.RouterProfile.CODEX_HIGH.model
+    assert routed["reasoning_effort"] == router.RouterProfile.CODEX_HIGH.reasoning_effort
 
 
 def test_subtask_execution_profile_keeps_local_narrowing_even_with_strong_parent_profile() -> None:
@@ -1291,14 +1272,10 @@ def test_subtask_execution_profile_respects_high_risk_architecture_lane() -> Non
 
     assert profile["profile"] == router.RouterProfile.GPT54_HIGH.value
     assert profile["selection_mode"] == "architecture_grounding"
-    assert profile["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.GPT54_HIGH)[1]
+    assert profile["reasoning_effort"] == router.RouterProfile.GPT54_HIGH.reasoning_effort
 
 
-def test_orchestrator_leaf_payload_uses_routed_reasoning_without_parent_default_leakage(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    _clear_agent_host_runtime(monkeypatch)
+def test_orchestrator_leaf_payload_uses_routed_reasoning_without_parent_default_leakage(tmp_path: Path) -> None:
     request = orchestrator.orchestration_request_from_mapping(
         {
             "prompt": "Update the bounded implementation in src/odylith/runtime/orchestration/subagent_router.py.",

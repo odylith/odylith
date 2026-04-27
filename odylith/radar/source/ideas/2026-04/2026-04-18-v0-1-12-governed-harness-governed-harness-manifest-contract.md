@@ -28,37 +28,37 @@ confidence: high
 
 founder_override: no
 
-promoted_to_plan:
+promoted_to_plan: 
 
 execution_model: standard
 
 workstream_type: standalone
 
-workstream_parent:
+workstream_parent: 
 
-workstream_children:
+workstream_children: 
 
-workstream_depends_on:
+workstream_depends_on: 
 
-workstream_blocks:
+workstream_blocks: 
 
-related_diagram_ids:
+related_diagram_ids: 
 
-workstream_reopens:
+workstream_reopens: 
 
-workstream_reopened_by:
+workstream_reopened_by: 
 
-workstream_split_from:
+workstream_split_from: 
 
-workstream_split_into:
+workstream_split_into: 
 
-workstream_merged_into:
+workstream_merged_into: 
 
-workstream_merged_from:
+workstream_merged_from: 
 
-supersedes:
+supersedes: 
 
-superseded_by:
+superseded_by: 
 
 ## Problem
 Agent harnesses now provide execution primitives such as tools, approvals, guardrails, tracing, resumability, and sandboxed runs, but repos still need durable engineering judgment about the correct slice, component boundaries, admissible moves, proof obligations, bug memory, and artifacts that survive across sessions. Odylith needs a queued v0.1.12 strategy that captures this Governed Harness direction without disturbing the active v0.1.11 release lane.

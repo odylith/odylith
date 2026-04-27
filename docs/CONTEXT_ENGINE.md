@@ -10,29 +10,29 @@ agent reasons, plans, edits, or delegates.
 
 ## Pipeline
 
-1. **Take the strongest available anchor**
+1. **Take the strongest available anchor**  
    Start from the prompt, explicit paths, worktree state, known workstream
    ids, components, diagrams, or exact refs.
 
-2. **Choose the smallest fitting packet lane**
+2. **Choose the smallest fitting packet lane**  
    Prefer narrow, explicit packets over broad scans. New or ambiguous work
    starts from session grounding; explicit paths go straight to `impact` or
    `architecture`.
 
-3. **Assemble repo-local evidence**
+3. **Assemble repo-local evidence**  
    Pull from the component registry, plans, workstreams, bugs, diagrams,
    session state, code or test structure, and other local truth sources.
 
-4. **Score precision and ambiguity**
+4. **Score precision and ambiguity**  
    Mark whether the slice is explicit, inferred with confidence, ambiguous, or
    too weak to trust without widening.
 
-5. **Shape a grounded context packet**
+5. **Shape a grounded context packet**  
    Produce a bounded packet that carries the active slice, supporting
    evidence, ambiguity level, validation hints, and routing handoff needed by
    downstream systems.
 
-6. **Emit widen signals when coverage is weak**
+6. **Emit widen signals when coverage is weak**  
    If the packet cannot honestly bound the slice, emit signals such as
    `full_scan_recommended` instead of pretending the repo is fully covered.
 

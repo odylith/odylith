@@ -65,14 +65,6 @@ class RouterProfile(str, Enum):
         return reasoning_effort
 
 
-def profile_runtime_fields(profile: RouterProfile) -> tuple[str, str]:
-    """Resolve routed runtime fields for hostless CI and live host sessions."""
-
-    if profile is RouterProfile.MAIN_THREAD:
-        return "", ""
-    return agent_runtime_contract.execution_profile_runtime_fields_with_fallback(profile.value)
-
-
 def router_profile_from_token(value: Any) -> RouterProfile | None:
     """Map a canonical execution-profile token to a router profile enum."""
     token = agent_runtime_contract.canonical_execution_profile(_normalize_token(value))

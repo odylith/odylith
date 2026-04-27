@@ -480,30 +480,6 @@ def test_write_runtime_snapshots_deletes_days_older_than_retention_and_clears_le
     assert decoded_snapshot["history"]["archive"]["count"] == 0
 
 
-def test_embedded_history_payload_uses_stable_gzip_bytes(tmp_path: Path) -> None:
-    runtime_dir = tmp_path / "odylith" / "compass" / "runtime"
-    history_dir = runtime_dir / "history"
-    history_dir.mkdir(parents=True, exist_ok=True)
-
-    runtime._write_runtime_snapshots(
-        repo_root=tmp_path,
-        runtime_dir=runtime_dir,
-        payload=_payload(generated_utc="2026-03-20T12:00:00Z"),
-        retention_days=15,
-    )
-    first_raw = (history_dir / "embedded.v1.js").read_text(encoding="utf-8")
-
-    runtime._write_runtime_snapshots(
-        repo_root=tmp_path,
-        runtime_dir=runtime_dir,
-        payload=_payload(generated_utc="2026-03-20T12:00:00Z"),
-        retention_days=15,
-    )
-    second_raw = (history_dir / "embedded.v1.js").read_text(encoding="utf-8")
-
-    assert second_raw == first_raw
-
-
 def test_restore_archived_history_dates_is_no_longer_supported(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="deleted instead of archived"):
         runtime.restore_archived_history_dates(

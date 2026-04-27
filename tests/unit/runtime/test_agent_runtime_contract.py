@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-
 from odylith.runtime.common import agent_runtime_contract
 
 
@@ -182,29 +180,6 @@ def test_unknown_host_fails_closed_to_empty_model() -> None:
         host_runtime="unknown",
     )
     assert model == ""
-
-
-def test_runtime_field_fallback_fills_hostless_audit_payloads_explicitly() -> None:
-    fields = agent_runtime_contract.execution_profile_runtime_fields_with_fallback(
-        agent_runtime_contract.FRONTIER_HIGH_PROFILE,
-        host_runtime="unknown",
-        fallback_host_runtime="codex_cli",
-    )
-
-    assert fields == _CODEX_CANONICAL_PROFILE_LADDER[agent_runtime_contract.FRONTIER_HIGH_PROFILE]
-
-
-def test_codex_host_runtime_environment_if_missing_restores_environment(monkeypatch) -> None:
-    monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
-    monkeypatch.delenv("CODEX_SHELL", raising=False)
-    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
-
-    with agent_runtime_contract.codex_host_runtime_environment_if_missing(session_id="audit-session"):
-        assert os.environ["CODEX_THREAD_ID"] == "audit-session"
-        assert os.environ["CODEX_SHELL"] == "1"
-
-    assert "CODEX_THREAD_ID" not in os.environ
-    assert "CODEX_SHELL" not in os.environ
 
 
 def test_execution_profile_aliases_resolve_through_host_axis() -> None:

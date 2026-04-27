@@ -14,8 +14,6 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
-from odylith.runtime.context_engine import odylith_control_state
-
 playwright_sync = pytest.importorskip("playwright.sync_api")
 
 
@@ -38,13 +36,6 @@ _LOCAL_DETAIL_SHARD_JS_RE = re.compile(
 _EXTERNAL_MERMAID_CDN_REQUEST_RE = re.compile(
     r"^GET https://cdn\.jsdelivr\.net/npm/mermaid@11/dist/mermaid\.min\.js(?:\s+.*)?$"
 )
-_CONTEXT_ENGINE_STATE_JS_ROUTE = f"/.odylith/runtime/{odylith_control_state.STATE_JS_FILENAME}"
-_BROWSER_TEST_CONTEXT_ENGINE_STATE = {
-    "version": "v1",
-    "generated_utc": "2026-04-12T23:10:00Z",
-    "status": "unavailable",
-    "source": "browser_test_fallback",
-}
 
 
 @contextlib.contextmanager
@@ -52,23 +43,6 @@ def _static_server(*, root: Path) -> Iterator[str]:
     class _QuietHandler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):  # noqa: ANN002, ANN003
             super().__init__(*args, directory=str(root), **kwargs)
-
-        def do_GET(self) -> None:  # noqa: N802
-            route = str(self.path or "").split("?", 1)[0]
-            if route == _CONTEXT_ENGINE_STATE_JS_ROUTE and not (
-                Path(root) / ".odylith" / "runtime" / odylith_control_state.STATE_JS_FILENAME
-            ).is_file():
-                payload = odylith_control_state._render_state_js(  # noqa: SLF001
-                    payload=_BROWSER_TEST_CONTEXT_ENGINE_STATE
-                ).encode("utf-8")
-                self.send_response(200)
-                self.send_header("Content-Type", "application/javascript; charset=utf-8")
-                self.send_header("Content-Length", str(len(payload)))
-                self.end_headers()
-                with contextlib.suppress(BrokenPipeError, ConnectionResetError):
-                    self.wfile.write(payload)
-                return
-            super().do_GET()
 
         def copyfile(self, source, outputfile) -> None:  # noqa: ANN001
             with contextlib.suppress(BrokenPipeError, ConnectionResetError):
@@ -285,8 +259,6 @@ def _run_in_browser_thread(callback) -> None:  # noqa: ANN001
     def _worker() -> None:
         try:
             callback()
-        except pytest.skip.Exception as exc:  # pragma: no cover - environment-specific
-            error["skip"] = exc
         except BaseException as exc:  # pragma: no cover - assertion forwarding
             error["exc"] = exc
             error["traceback"] = traceback.format_exc()
@@ -296,9 +268,9 @@ def _run_in_browser_thread(callback) -> None:  # noqa: ANN001
     thread.join(timeout=60)
     if thread.is_alive():  # pragma: no cover - defensive timeout guard
         raise TimeoutError("browser proof thread did not finish within 60 seconds")
-    if "skip" in error:
-        pytest.skip(str(error["skip"]))
     if "exc" in error:
+        if isinstance(error["exc"], pytest.skip.Exception):
+            pytest.skip(str(error["exc"]))
         raise AssertionError(str(error.get("traceback") or error["exc"])) from error["exc"]
 
 

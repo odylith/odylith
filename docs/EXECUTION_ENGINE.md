@@ -10,12 +10,12 @@ cannot do.
 
 ## Pipeline
 
-1. **Detect the host**
+1. **Detect the host**  
    Determine whether the active host is Codex or Claude Code, including its
    delegation style, model family, and capabilities. This becomes
    `ExecutionHostProfile`.
 
-2. **Build the contract**
+2. **Build the contract**  
    From the grounded context packet, assemble a single `ExecutionContract`
    containing the objective, target scope, allowed and forbidden moves,
    success criteria, validation plan, external dependencies, and critical
@@ -27,35 +27,35 @@ cannot do.
    explicit historical execution targets fail closed before stale snapshot
    reuse or expensive runtime expansion.
 
-3. **Promote hard constraints**
+3. **Promote hard constraints**  
    User corrections such as "don't use X" or "only touch Y" are promoted into
    `HardConstraint` records so later heuristics cannot override them.
 
-4. **Detect contradictions**
+4. **Detect contradictions**  
    Compare the intended action against the contract, user instructions, docs,
    and live state. If the action conflicts with any of them, emit a
    `ContradictionRecord` with severity and a blocking flag.
 
-5. **Classify resource closure**
+5. **Classify resource closure**  
    Decide whether the requested scope is safe, incomplete because dependencies
    are missing, or destructive because it partially overlaps a destructive
    group. This stops the agent from editing half of a coupled set.
 
-6. **Normalize external dependencies**
+6. **Normalize external dependencies**  
    If there is an in-flight CI run, deploy, or callback, normalize its status
    and produce a `SemanticReceipt` with a resume token so the agent reattaches
    instead of starting over.
 
-7. **Shape the event stream**
+7. **Shape the event stream**  
    Contradictions, unsafe closures, active waits, history-rule pressure, and
    context pressure are shaped into an append-only `ExecutionEvent` stream.
 
-8. **Derive the frontier**
+8. **Derive the frontier**  
    Walk the event stream to produce `ExecutionFrontier`: the current phase,
    last successful phase, active blocker, in-flight external IDs, resume
    handles, and the truthful next move.
 
-9. **Evaluate admissibility**
+9. **Evaluate admissibility**  
    Screen the intended action against everything above. The outcome is one of:
    - `admit`: proceed
    - `deny`: the action is not allowed; return the nearest admissible
@@ -65,11 +65,11 @@ cannot do.
    The decision also carries violated preconditions, pressure signals,
    re-anchor requirements, and host-specific hints.
 
-10. **Synthesize validation matrix**
+10. **Synthesize validation matrix**  
     Derive the minimum set of checks, such as deploy, verify, recover, and
     CRUD, that the agent must pass before the work is done.
 
-11. **Guard delegation and parallelism**
+11. **Guard delegation and parallelism**  
     `LaneGovernanceGuard` consumes the compact governance summary and blocks
     delegation or parallel fan-out when the frontier says re-anchor, wait,
     verify or recover, unsafe closure, or the host cannot support it.

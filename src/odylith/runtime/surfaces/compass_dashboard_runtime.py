@@ -1408,7 +1408,7 @@ def _build_embedded_history_payload(
 
     def _encode_snapshot(snapshot: Mapping[str, Any]) -> dict[str, str]:
         raw = json.dumps(snapshot, separators=(",", ":")).encode("utf-8")
-        compressed = gzip.compress(raw, compresslevel=9, mtime=0)
+        compressed = gzip.compress(raw, compresslevel=9)
         return {
             "encoding": _EMBEDDED_HISTORY_SNAPSHOT_ENCODING,
             "payload": base64.b64encode(compressed).decode("ascii"),

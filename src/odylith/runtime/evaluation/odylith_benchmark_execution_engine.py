@@ -7,6 +7,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.execution_engine import runtime_lane_policy
 from odylith.runtime.evaluation import benchmark_metric_helpers
+from odylith.runtime.evaluation import odylith_benchmark_execution_engine_fixtures
 
 
 FAMILY = "execution_engine"
@@ -120,6 +121,19 @@ def _execution_snapshot_matches_target(
     )
 
 
+def enrich_packet_summary_for_execution_engine_family(
+    *,
+    summary: Mapping[str, Any],
+    scenario: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Normalize fixture-backed execution-engine summaries for CI-stable checks."""
+    enriched = dict(summary)
+    if _family(scenario) != FAMILY:
+        return enriched
+    enriched.update(odylith_benchmark_execution_engine_fixtures.summary_fields_from_fixture(scenario))
+    return enriched
+
+
 def enrich_packet_payload_for_execution_engine_family(
     *,
     payload: Mapping[str, Any],
@@ -169,6 +183,22 @@ def enrich_packet_payload_for_execution_engine_family(
     enriched["component"] = target_component
     enriched["component_id"] = CANONICAL_COMPONENT_ID
     enriched["canonical_component_id"] = CANONICAL_COMPONENT_ID
+    fixture_snapshot = odylith_benchmark_execution_engine_fixtures.execution_snapshot_from_fixture(
+        scenario=scenario,
+        target_component=target_component,
+        expected_target_status=expected_target_status,
+        canonical_component_id=CANONICAL_COMPONENT_ID,
+    )
+    if fixture_snapshot:
+        existing_execution = (
+            dict(enriched.get("execution_engine", {}))
+            if isinstance(enriched.get("execution_engine"), Mapping)
+            else {}
+        )
+        enriched["execution_engine"] = {
+            **existing_execution,
+            **fixture_snapshot,
+        }
 
     related_component_ids: list[str] = []
     _append_component_tokens(related_component_ids, enriched.get("related_component_ids"))

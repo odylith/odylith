@@ -28,35 +28,35 @@ confidence: medium
 
 founder_override: no
 
-promoted_to_plan:
+promoted_to_plan: 
 
 workstream_type: standalone
 
-workstream_parent:
+workstream_parent: 
 
-workstream_children:
+workstream_children: 
 
-workstream_depends_on:
+workstream_depends_on: 
 
-workstream_blocks:
+workstream_blocks: 
 
 related_diagram_ids: D-037
 
-workstream_reopens:
+workstream_reopens: 
 
-workstream_reopened_by:
+workstream_reopened_by: 
 
-workstream_split_from:
+workstream_split_from: 
 
-workstream_split_into:
+workstream_split_into: 
 
-workstream_merged_into:
+workstream_merged_into: 
 
-workstream_merged_from:
+workstream_merged_from: 
 
-supersedes:
+supersedes: 
 
-superseded_by:
+superseded_by: 
 
 execution_model: standard
 

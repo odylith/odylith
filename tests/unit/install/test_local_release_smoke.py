@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import errno
 import importlib.util
+import shutil
 import sys
 from pathlib import Path
 from urllib.error import HTTPError
@@ -51,30 +53,48 @@ def test_force_deterministic_reasoning_env_overrides_exported_provider() -> None
     assert env["ODYLITH_REASONING_PROVIDER"] == "auto-local"
 
 
-def test_release_smoke_temp_dir_ignores_cleanup_races(monkeypatch) -> None:  # noqa: ANN001
+def test_cleanup_smoke_temp_root_retries_enotempty(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
     module = _module()
-    seen: dict[str, object] = {}
+    target = tmp_path / "release-smoke"
+    (target / "upgrade-cycle" / ".odylith").mkdir(parents=True)
+    (target / "upgrade-cycle" / ".odylith" / "runtime.json").write_text("{}", encoding="utf-8")
+    calls: list[bool] = []
+    real_rmtree = shutil.rmtree
 
-    class _DummyTempDirectory:
-        def __init__(self, *args, **kwargs) -> None:  # noqa: ANN002,ANN003
-            seen["args"] = args
-            seen["kwargs"] = kwargs
+    def flaky_rmtree(path, *args, **kwargs):  # noqa: ANN001
+        calls.append(bool(kwargs.get("ignore_errors")))
+        if len(calls) == 1:
+            raise OSError(errno.ENOTEMPTY, "Directory not empty")
+        return real_rmtree(path, *args, **kwargs)
 
-        def __enter__(self) -> str:
-            return "/tmp/odylith-smoke"
+    monkeypatch.setattr(module.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(module.shutil, "rmtree", flaky_rmtree)
 
-        def __exit__(self, exc_type, exc, tb) -> None:  # noqa: ANN001
+    module._cleanup_smoke_temp_root(target)
+
+    assert not target.exists()
+    assert calls[0] is False
+    assert len(calls) >= 2
+
+
+def test_cleanup_smoke_temp_root_swallows_persistent_cleanup_noise(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    module = _module()
+    target = tmp_path / "release-smoke"
+    (target / "upgrade-cycle" / ".odylith").mkdir(parents=True)
+    calls: list[bool] = []
+
+    def always_fail(path, *args, **kwargs):  # noqa: ANN001
+        calls.append(bool(kwargs.get("ignore_errors")))
+        if kwargs.get("ignore_errors"):
             return None
+        raise OSError(errno.ENOTEMPTY, "Directory not empty")
 
-    monkeypatch.setattr(module.tempfile, "TemporaryDirectory", _DummyTempDirectory)
+    monkeypatch.setattr(module.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(module.shutil, "rmtree", always_fail)
 
-    with module._release_smoke_temp_dir():
-        pass
+    module._cleanup_smoke_temp_root(target)
 
-    assert seen["kwargs"] == {
-        "prefix": "odylith-release-smoke-",
-        "ignore_cleanup_errors": True,
-    }
+    assert calls[-1] is True
 
 
 def test_previous_release_is_published_treats_404_as_missing(monkeypatch) -> None:

@@ -34,31 +34,31 @@ execution_model: standard
 
 workstream_type: standalone
 
-workstream_parent:
+workstream_parent: 
 
-workstream_children:
+workstream_children: 
 
-workstream_depends_on:
+workstream_depends_on: 
 
-workstream_blocks:
+workstream_blocks: 
 
-related_diagram_ids:
+related_diagram_ids: 
 
-workstream_reopens:
+workstream_reopens: 
 
-workstream_reopened_by:
+workstream_reopened_by: 
 
-workstream_split_from:
+workstream_split_from: 
 
-workstream_split_into:
+workstream_split_into: 
 
-workstream_merged_into:
+workstream_merged_into: 
 
-workstream_merged_from:
+workstream_merged_from: 
 
-supersedes:
+supersedes: 
 
-superseded_by:
+superseded_by: 
 
 ## Problem
 Backlog authors can create queued workstreams and release planners can assign workstreams to a release, but today those are separate commands. That split creates avoidable friction and partial-write risk when a maintainer wants a new queued backlog record to be targeted at next or at an explicit release such as release-0-1-12 while preserving the workstream status as queued.

@@ -80,10 +80,6 @@ def _preferred_router_profile_from_execution_profile(profile: Mapping[str, Any])
     return candidate if isinstance(candidate, RouterProfile) else None
 
 
-def _profile_runtime_fields(profile: RouterProfile) -> tuple[str, str]:
-    return subagent_router_profile_support.profile_runtime_fields(profile)
-
-
 def _decision_odylith_execution_profile(
     *,
     assessment: TaskAssessment,
@@ -108,16 +104,11 @@ def _decision_odylith_execution_profile(
         },
     }
     if selected is not None and selected is not RouterProfile.MAIN_THREAD:
-        model, reasoning_effort = _profile_runtime_fields(selected)
-        selected_model = model or str(summary.get("odylith_execution_model", "")).strip()
-        selected_reasoning_effort = reasoning_effort or str(
-            summary.get("odylith_execution_reasoning_effort", "")
-        ).strip()
         payload.update(
             {
                 "selected_profile": selected.value,
-                "selected_model": selected_model,
-                "selected_reasoning_effort": selected_reasoning_effort,
+                "selected_model": selected.model,
+                "selected_reasoning_effort": selected.reasoning_effort,
                 "selected_agent_role": _agent_role_for_assessment(assessment, profile=selected),
             }
         )

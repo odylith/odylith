@@ -2583,6 +2583,15 @@ def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> N
     fixture_state_js = fixture_context_engine_dir / odylith_control_state.STATE_JS_FILENAME
     if source_state_js.is_file():
         shutil.copyfile(source_state_js, fixture_state_js)
+    else:
+        source_state_json = source_runtime_dir / odylith_control_state.STATE_FILENAME
+        payload = json.loads(source_state_json.read_text(encoding="utf-8")) if source_state_json.is_file() else {}
+        fixture_state_js.write_text(
+            odylith_control_state._render_state_js(  # noqa: SLF001
+                payload=payload
+            ),
+            encoding="utf-8",
+        )
 
     runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
     runtime_json_path = runtime_dir / "current.v1.json"

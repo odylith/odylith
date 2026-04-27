@@ -32,31 +32,31 @@ promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-
 
 workstream_type: standalone
 
-workstream_parent:
+workstream_parent: 
 
-workstream_children:
+workstream_children: 
 
-workstream_depends_on:
+workstream_depends_on: 
 
-workstream_blocks:
+workstream_blocks: 
 
-related_diagram_ids:
+related_diagram_ids: 
 
-workstream_reopens:
+workstream_reopens: 
 
-workstream_reopened_by:
+workstream_reopened_by: 
 
-workstream_split_from:
+workstream_split_from: 
 
-workstream_split_into:
+workstream_split_into: 
 
-workstream_merged_into:
+workstream_merged_into: 
 
-workstream_merged_from:
+workstream_merged_from: 
 
-supersedes:
+supersedes: 
 
-superseded_by:
+superseded_by: 
 
 ## Problem
 Claude already exposes a richer native host surface than Codex, but too much of

@@ -15,10 +15,10 @@
     "empty_reasons": [],
     "explicit_event_count": 105,
     "mapped_workstream_evidence_count": 94,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 106
+    "timeline_event_count": 105
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -51,22 +51,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifacts": [
-        "src/odylith/install/manager.py"
-      ],
-      "confidence": "high",
-      "event_index": 377,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "odylith-chatter"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: src/odylith/install/manager.py",
-      "ts_iso": "2026-04-27T00:39:07-07:00",
-      "workstreams": []
-    },
     {
       "artifacts": [],
       "confidence": "high",

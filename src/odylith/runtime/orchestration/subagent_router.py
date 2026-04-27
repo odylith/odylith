@@ -443,7 +443,18 @@ def _default_family_outcome_counts_map() -> dict[str, dict[str, dict[str, int]]]
 
 
 RouterProfile = subagent_router_profile_support.RouterProfile
-_router_profile_from_token = subagent_router_profile_support.router_profile_from_token
+
+
+def _router_profile_from_token(value: Any) -> RouterProfile | None:
+    """Parse a stored profile token back into a `RouterProfile` enum."""
+
+    return subagent_router_profile_support.router_profile_from_token(value)
+
+
+def _router_profile_from_runtime(model: Any, reasoning_effort: Any) -> RouterProfile | None:
+    """Infer the router profile that matches runtime model/effort fields."""
+
+    return subagent_router_profile_support.router_profile_from_runtime(model, reasoning_effort)
 
 
 class RouterInputError(ValueError):
@@ -992,9 +1003,8 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
     native_spawn_policy_status = _normalize_string(host_capabilities.get("native_spawn_policy_status"))
     native_spawn_effective = bool(host_capabilities.get("native_spawn_effective"))
     delegation_style = _delegation_style_for_assessment(assessment)
-    model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(profile)
-    requested_model = model if delegation_style == "routed_spawn" else ""
-    requested_reasoning_effort = reasoning_effort if delegation_style == "routed_spawn" else ""
+    requested_model = profile.model if delegation_style == "routed_spawn" else ""
+    requested_reasoning_effort = profile.reasoning_effort if delegation_style == "routed_spawn" else ""
     preferred_project_subagent = _preferred_project_subagent_name(assessment=assessment, agent_role=agent_role)
     if delegation_style == "task_tool_subagents":
         contract = {
@@ -1086,17 +1096,16 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
         return []
     banner_reason = _task_class_policy_for(assessment).rationale
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
-    model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(profile)
     host_runtime = _assessment_host_runtime(assessment) or "unknown"
     delegation_style = _delegation_style_for_assessment(assessment)
     host_capabilities = _assessment_host_capabilities(assessment)
     native_spawn_policy_status = _normalize_string(host_capabilities.get("native_spawn_policy_status"))
     if not _native_spawn_supported_for_assessment(assessment):
         return [
-            f"REQUESTED RUNTIME: {model} / {reasoning_effort}",
+            f"REQUESTED RUNTIME: {profile.model} / {profile.reasoning_effort}",
             f"WHY THIS TIER: {banner_reason}",
-            f"MODEL: {model}",
-            f"REASONING: {reasoning_effort}",
+            f"MODEL: {profile.model}",
+            f"REASONING: {profile.reasoning_effort}",
             f"AGENT ROLE: {agent_role}",
             (
                 "HOST NOTE: Native subagent spawn is not supported in this host "
@@ -1116,10 +1125,10 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
             lines.append(f"PREFERRED PROJECT SUBAGENT: {preferred_project_subagent}")
         return lines
     lines = [
-        f"REQUESTED RUNTIME: {model} / {reasoning_effort}",
+        f"REQUESTED RUNTIME: {profile.model} / {profile.reasoning_effort}",
         f"WHY THIS TIER: {banner_reason}",
-        f"MODEL: {model}",
-        f"REASONING: {reasoning_effort}",
+        f"MODEL: {profile.model}",
+        f"REASONING: {profile.reasoning_effort}",
         f"AGENT ROLE: {agent_role}",
         (
             "HOST NOTE: The current host UI may still show parent-thread model/reasoning controls in this "
@@ -1199,11 +1208,10 @@ def _task_class_policy_for(assessment: TaskAssessment) -> TaskClassPolicy:
 def _task_class_policy_lines(policy: TaskClassPolicy) -> list[str]:
     if policy.default_profile is RouterProfile.MAIN_THREAD:
         return [f"task-class policy `{policy.task_family}` stays local by default", policy.rationale]
-    model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(policy.default_profile)
     return [
         (
             f"task-class policy `{policy.task_family}` defaults to `{policy.default_profile.value}` "
-            f"({model} / {reasoning_effort})"
+            f"({policy.default_profile.model} / {policy.default_profile.reasoning_effort})"
         ),
         policy.rationale,
     ]
@@ -1225,12 +1233,11 @@ def _delegated_leaf_lifecycle_payload(
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
     termination_expectation = _termination_expectation(assessment)
     delegation_style = _delegation_style_for_assessment(assessment)
-    model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(profile)
     if delegation_style == "routed_spawn" and _native_spawn_supported_for_assessment(assessment):
         spawn_overrides = {
             "agent_role": agent_role,
-            "model": model,
-            "reasoning_effort": reasoning_effort,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
             "apply_parent_defaults": False,
             "close_after_result": True,
             "default_post_result_action": "close_agent",
@@ -1246,8 +1253,8 @@ def _delegated_leaf_lifecycle_payload(
         }
         spawn_agent_overrides = {
             "agent_type": agent_role,
-            "model": model,
-            "reasoning_effort": reasoning_effort,
+            "model": profile.model,
+            "reasoning_effort": profile.reasoning_effort,
         }
         close_agent_overrides = {
             "tool_name": "close_agent",
@@ -1324,7 +1331,6 @@ def _spawn_contract_lines(*, profile: RouterProfile, assessment: TaskAssessment)
     delegation_style = _delegation_style_for_assessment(assessment)
     if not lifecycle.spawn_overrides:
         host_runtime = _assessment_host_runtime(assessment) or "unknown"
-        model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(profile)
         return [
             (
                 "native delegated execution is not supported in the current host "
@@ -1332,7 +1338,7 @@ def _spawn_contract_lines(*, profile: RouterProfile, assessment: TaskAssessment)
             ),
             (
                 f"if this same bounded leaf runs in a native-spawn-capable host, request "
-                f"`model={model}` and `reasoning_effort={reasoning_effort}`"
+                f"`model={profile.model}` and `reasoning_effort={profile.reasoning_effort}`"
             ),
             f"termination expectation: {lifecycle.termination_expectation}",
         ]
@@ -2151,7 +2157,6 @@ def route_request(
     assessment = assess_request(request)
     task_class_policy = _task_class_policy_for(assessment)
     task_class_policy_lines = _task_class_policy_lines(task_class_policy)
-    task_class_model, task_class_reasoning_effort = subagent_router_profile_support.profile_runtime_fields(task_class_policy.default_profile)
     if assessment.hard_gate_hits:
         # Hard gates intentionally bypass every scoring or tuning hook so the
         # router cannot delegate around a safety or grounding contract.
@@ -2187,8 +2192,8 @@ def route_request(
             spawn_task_message="",
             native_spawn_payload={},
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_model,
-            task_class_reasoning_effort=task_class_reasoning_effort,
+            task_class_model=task_class_policy.default_profile.model,
+            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
             task_class_policy_lines=task_class_policy_lines,
             explanation_lines=[
                 f"task_family={assessment.task_family}",
@@ -2238,8 +2243,8 @@ def route_request(
             spawn_task_message="",
             native_spawn_payload={},
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_model,
-            task_class_reasoning_effort=task_class_reasoning_effort,
+            task_class_model=task_class_policy.default_profile.model,
+            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
             task_class_policy_lines=task_class_policy_lines,
             explanation_lines=[
                 f"task_family={assessment.task_family}",
@@ -2283,7 +2288,6 @@ def route_request(
         allow_xhigh=allow_xhigh,
     )
     selected, task_class_policy_lines = _apply_task_class_policy_floor(selected=selected, policy=task_class_policy)
-    selected_model, selected_reasoning_effort = subagent_router_profile_support.profile_runtime_fields(selected)
     score_margin = _score_margin(selected, scorecard)
     selected_score = float(scorecard.get(selected.value, 0.0) or 0.0)
     lifecycle = _delegated_leaf_lifecycle_payload(profile=selected, assessment=assessment)
@@ -2306,15 +2310,15 @@ def route_request(
         message=spawn_task_message,
     )
     why = (
-        f"delegated to `{selected.value}` ({selected_model} / {selected_reasoning_effort}) "
+        f"delegated to `{selected.value}` ({selected.model} / {selected.reasoning_effort}) "
         f"with raw score {selected_score}"
     )
     next_profile = _next_profile_for_escalation(
         RoutingDecision(
             delegate=True,
             profile=selected.value,
-            model=selected_model,
-            reasoning_effort=selected_reasoning_effort,
+            model=selected.model,
+            reasoning_effort=selected.reasoning_effort,
             agent_role=agent_role,
             close_after_result=True,
             idle_timeout_minutes=_DEFAULT_IDLE_TIMEOUT_MINUTES,
@@ -2345,8 +2349,8 @@ def route_request(
             idle_timeout_escalation=_DEFAULT_IDLE_TIMEOUT_ESCALATION,
             termination_expectation=termination_expectation,
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_model,
-            task_class_reasoning_effort=task_class_reasoning_effort,
+            task_class_model=task_class_policy.default_profile.model,
+            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
             task_class_policy_lines=list(task_class_policy_lines),
             odylith_execution_profile=_decision_odylith_execution_profile(assessment=assessment, selected=selected),
         ),
@@ -2356,8 +2360,8 @@ def route_request(
     return RoutingDecision(
         delegate=True,
         profile=selected.value,
-        model=selected_model,
-        reasoning_effort=selected_reasoning_effort,
+        model=selected.model,
+        reasoning_effort=selected.reasoning_effort,
         agent_role=agent_role,
         close_after_result=True,
         idle_timeout_minutes=_DEFAULT_IDLE_TIMEOUT_MINUTES,
@@ -2388,23 +2392,23 @@ def route_request(
         idle_timeout_escalation=_DEFAULT_IDLE_TIMEOUT_ESCALATION,
         termination_expectation=termination_expectation,
         task_class_profile=task_class_policy.default_profile.value,
-        task_class_model=task_class_model,
-        task_class_reasoning_effort=task_class_reasoning_effort,
+        task_class_model=task_class_policy.default_profile.model,
+        task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
         task_class_policy_lines=list(task_class_policy_lines),
-        explanation_lines=_top_score_lines(
-            selected=selected,
+            explanation_lines=_top_score_lines(
+                selected=selected,
+                scorecard=scorecard,
+                assessment=assessment,
+                task_class_policy_lines=task_class_policy_lines,
+                allow_xhigh=allow_xhigh,
+                routing_confidence=routing_confidence,
+                score_margin=score_margin,
+                backstop_lines=[*odylith_prior_lines, *backstop_lines, *reliability_lines, *odylith_lines],
+            ),
             scorecard=scorecard,
-            assessment=assessment,
-            task_class_policy_lines=task_class_policy_lines,
-            allow_xhigh=allow_xhigh,
-            routing_confidence=routing_confidence,
-            score_margin=score_margin,
-            backstop_lines=[*odylith_prior_lines, *backstop_lines, *reliability_lines, *odylith_lines],
-        ),
-        scorecard=scorecard,
-        assessment=assessment.as_dict(),
-        odylith_execution_profile=_decision_odylith_execution_profile(assessment=assessment, selected=selected),
-    )
+            assessment=assessment.as_dict(),
+            odylith_execution_profile=_decision_odylith_execution_profile(assessment=assessment, selected=selected),
+        )
 
 
 def escalate_routing_decision(
@@ -2429,7 +2433,6 @@ def escalate_routing_decision(
     )
     task_class_policy = _task_class_policy_for(assessed)
     task_class_policy_lines = _task_class_policy_lines(task_class_policy)
-    task_class_model, task_class_reasoning_effort = subagent_router_profile_support.profile_runtime_fields(task_class_policy.default_profile)
     refusal_reason = _escalation_refusal_reason(decision, assessed, outcome)
     if refusal_reason:
         why = f"kept local after `{decision.profile}` because {refusal_reason}"
@@ -2466,8 +2469,8 @@ def escalate_routing_decision(
             spawn_task_message="",
             native_spawn_payload={},
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_model,
-            task_class_reasoning_effort=task_class_reasoning_effort,
+            task_class_model=task_class_policy.default_profile.model,
+            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
             task_class_policy_lines=task_class_policy_lines,
             explanation_lines=[why, *prompt_delta],
             scorecard={},
@@ -2477,7 +2480,6 @@ def escalate_routing_decision(
     next_profile = _next_profile_for_escalation(decision, assessed, outcome)
     if next_profile is None:
         return None
-    next_model, next_reasoning_effort = subagent_router_profile_support.profile_runtime_fields(next_profile)
     why = (
         f"escalated from `{decision.profile}` to `{next_profile.value}` "
         f"because the first pass reported {', '.join(_outcome_labels(outcome))}"
@@ -2512,8 +2514,8 @@ def escalate_routing_decision(
         RoutingDecision(
             delegate=True,
             profile=next_profile.value,
-            model=next_model,
-            reasoning_effort=next_reasoning_effort,
+            model=next_profile.model,
+            reasoning_effort=next_profile.reasoning_effort,
             agent_role=next_agent_role,
             close_after_result=True,
             idle_timeout_minutes=_DEFAULT_IDLE_TIMEOUT_MINUTES,
@@ -2544,8 +2546,8 @@ def escalate_routing_decision(
             idle_timeout_escalation=_DEFAULT_IDLE_TIMEOUT_ESCALATION,
             termination_expectation=termination_expectation,
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_model,
-            task_class_reasoning_effort=task_class_reasoning_effort,
+            task_class_model=task_class_policy.default_profile.model,
+            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
             task_class_policy_lines=task_class_policy_lines,
             assessment=assessed.as_dict(),
             odylith_execution_profile=_decision_odylith_execution_profile(assessment=assessed, selected=next_profile),
@@ -2556,8 +2558,8 @@ def escalate_routing_decision(
     return RoutingDecision(
         delegate=True,
         profile=next_profile.value,
-        model=next_model,
-        reasoning_effort=next_reasoning_effort,
+        model=next_profile.model,
+        reasoning_effort=next_profile.reasoning_effort,
         agent_role=next_agent_role,
         close_after_result=True,
         idle_timeout_minutes=_DEFAULT_IDLE_TIMEOUT_MINUTES,
@@ -2588,8 +2590,8 @@ def escalate_routing_decision(
         idle_timeout_escalation=_DEFAULT_IDLE_TIMEOUT_ESCALATION,
         termination_expectation=termination_expectation,
         task_class_profile=task_class_policy.default_profile.value,
-        task_class_model=task_class_model,
-        task_class_reasoning_effort=task_class_reasoning_effort,
+        task_class_model=task_class_policy.default_profile.model,
+        task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
         task_class_policy_lines=task_class_policy_lines,
         explanation_lines=[
             why,

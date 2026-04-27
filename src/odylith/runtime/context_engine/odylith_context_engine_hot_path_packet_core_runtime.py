@@ -1075,14 +1075,14 @@ def _compact_hot_path_fallback_scan(
     context_packet: Mapping[str, Any],
     fallback_scan: Mapping[str, Any],
 ) -> dict[str, Any]:
-    performed = bool(fallback_scan.get("performed"))
-    recommended = (
-        performed
-        or bool(fallback_scan.get("recommended"))
-        or bool(fallback_scan.get("summary_only"))
-        or bool(str(full_scan_reason or "").strip())
+    fallback_receipt = bool(
+        fallback_scan.get("performed")
+        or fallback_scan.get("recommended")
+        or fallback_scan.get("summary_only")
+        or full_scan_reason
+        or fallback_scan.get("reason")
     )
-    if not recommended:
+    if not fallback_receipt:
         return {}
     route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), context_engine_store.Mapping) else {}
     packet_state = str(context_packet.get("packet_state", "")).strip()
@@ -1094,12 +1094,9 @@ def _compact_hot_path_fallback_scan(
     compact_fallback = {
         "recommended": True,
         "reason": str(full_scan_reason or "").strip() or str(fallback_scan.get("reason", "")).strip(),
+        "performed": True,
     }
-    if performed:
-        compact_fallback["performed"] = True
-    else:
-        compact_fallback["summary_only"] = True
-    if performed and not suppress_result_paths and isinstance(fallback_scan.get("results"), list):
+    if not suppress_result_paths and isinstance(fallback_scan.get("results"), list):
         results = [
             {
                 key: value
