@@ -22,7 +22,6 @@ class ToolingDashboardTemplateContext:
     shell_brand_icon_href: str
     style_css: str
     welcome_html: str
-    system_status_html: str
     maintainer_notes_html: str
     cheatsheet_html: str
     payload_json: str
@@ -33,7 +32,6 @@ def build_template_context(
     payload: Mapping[str, Any],
     *,
     welcome_html: str,
-    system_status_html: str,
     maintainer_notes_html: str,
     cheatsheet_html: str,
 ) -> ToolingDashboardTemplateContext:
@@ -68,7 +66,6 @@ def build_template_context(
         shell_brand_icon_href=str(payload.get("shell_brand_icon_href", "")).strip(),
         style_css=tooling_dashboard_frontend_contract.load_tooling_shell_style_css(),
         welcome_html=welcome_html,
-        system_status_html=system_status_html,
         maintainer_notes_html=maintainer_notes_html,
         cheatsheet_html=cheatsheet_html,
         payload_json=payload_json,

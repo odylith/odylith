@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import shutil
 
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.memory import odylith_memory_backend
+from odylith.runtime.memory import odylith_memory_backend_filesystem
 
 
 class _FakeAsyncConnection:
@@ -88,6 +91,40 @@ class _FakeLanceConnection:
                 "mode": mode,
             }
         )
+
+
+def test_replace_directory_tree_renames_live_target_before_cleanup(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    target_root = tmp_path / "tantivy"
+    target_root.mkdir()
+    (target_root / "old.segment").write_text("old", encoding="utf-8")
+    temp_root = tmp_path / "odylith-tantivy-build"
+    temp_root.mkdir()
+    (temp_root / "new.segment").write_text("new", encoding="utf-8")
+    real_rmtree = shutil.rmtree
+    rmtree_calls: list[Path] = []
+
+    def _fake_rmtree(path: object, *args: object, **kwargs: object) -> object:
+        candidate = Path(path)
+        rmtree_calls.append(candidate)
+        if candidate == target_root:
+            raise OSError(66, "Directory not empty", str(candidate))
+        return real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(odylith_memory_backend_filesystem.shutil, "rmtree", _fake_rmtree)
+
+    odylith_memory_backend_filesystem.replace_directory_tree(
+        temp_root=temp_root,
+        target_root=target_root,
+    )
+
+    assert not temp_root.exists()
+    assert (target_root / "new.segment").read_text(encoding="utf-8") == "new"
+    assert not (target_root / "old.segment").exists()
+    assert target_root not in rmtree_calls
+    assert not list(tmp_path.glob(".tantivy.old-*"))
 
 
 def test_create_lance_tables_closes_underlying_async_connection(monkeypatch, tmp_path: Path) -> None:
@@ -279,6 +316,14 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
     monkeypatch,
     tmp_path: Path,
 ) -> None:
+    provenance = derivation_provenance.build_derivation_provenance(
+        repo_root=tmp_path,
+        projection_scope="reasoning",
+        projection_fingerprint="fp-1",
+        sync_generation=0,
+        code_version="backend-v1",
+        flags={"backend_dependencies_available": True, "storage": "lance_local_columnar"},
+    )
     manifest_path = odylith_memory_backend.local_manifest_path(repo_root=tmp_path)
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(
@@ -287,6 +332,7 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
                 "version": "v1",
                 "projection_fingerprint": "fp-1",
                 "projection_scope": "reasoning",
+                "provenance": provenance,
                 "ready": True,
                 "status": "ready",
             }
@@ -302,6 +348,7 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
             repo_root=tmp_path,
             projection_fingerprint="fp-1",
             projection_scope="reasoning",
+            provenance=provenance,
         )
         is True
     )
@@ -310,6 +357,7 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
             repo_root=tmp_path,
             projection_fingerprint="fp-2",
             projection_scope="reasoning",
+            provenance=provenance,
         )
         is False
     )
@@ -318,6 +366,16 @@ def test_local_backend_ready_for_projection_requires_matching_scope_and_fingerpr
             repo_root=tmp_path,
             projection_fingerprint="fp-1",
             projection_scope="full",
+            provenance=provenance,
+        )
+        is False
+    )
+    assert (
+        odylith_memory_backend.local_backend_ready_for_projection(
+            repo_root=tmp_path,
+            projection_fingerprint="fp-1",
+            projection_scope="reasoning",
+            provenance={**provenance, "code_version": "backend-v2"},
         )
         is False
     )

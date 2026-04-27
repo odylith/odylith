@@ -22,20 +22,30 @@ from pathlib import Path
 import re
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.common.json_objects import load_json_object
 from odylith.runtime.governance import component_registry_intelligence as registry
+from odylith.runtime.governance.delivery import scope_signal_ladder
 from odylith.runtime.governance import operator_readout
+from odylith.runtime.governance import proof_state
 from odylith.runtime.reasoning import odylith_reasoning
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import stable_generated_utc
+from odylith.runtime.common import generated_refresh_guard
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.reasoning import tribunal_engine
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
+from odylith.runtime.governance.delivery_intelligence_support import current_local_head as _current_local_head
+from odylith.runtime.governance.delivery_intelligence_support import registry_delivery_watched_paths as _registry_delivery_watched_paths
 from odylith.runtime.governance import workstream_inference
 
 DEFAULT_OUTPUT_PATH = "odylith/runtime/delivery_intelligence.v4.json"
 DEFAULT_CONTROL_POSTURE_PATH = "odylith/runtime/control-posture.v4.json"
 DEFAULT_ODYLITH_REASONING_PATH = odylith_reasoning.DEFAULT_REASONING_PATH
 DEFAULT_MAX_REVIEW_AGE_DAYS = 21
+_DELIVERY_INTELLIGENCE_GUARD_NAMESPACE = "generated-refresh-guards"
+_DELIVERY_INTELLIGENCE_GUARD_KEY = "delivery-intelligence"
 _SCOPE_TYPE_ORDER: tuple[str, ...] = ("grid", "surface", "workstream", "component", "diagram")
 _CARD_KEYS: tuple[str, ...] = (
     "executive_thesis",
@@ -76,20 +86,13 @@ _EXCLUDED_WORKSTREAM_STATUSES: frozenset[str] = frozenset({"queued", "parked"})
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve one delivery-intelligence path token against the repo root."""
+
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        return {}
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return {}
-    return payload if isinstance(payload, dict) else {}
+    return load_json_object(path)
 
 
 def _normalize_event_artifacts(values: Iterable[str], *, repo_root: Path | None = None) -> list[str]:
@@ -177,16 +180,12 @@ def _surface_list_for_scope(
     *,
     workstreams: Sequence[str],
     diagrams: Sequence[str],
-    component_ids: Sequence[str],
-    include_operator_surface: bool = False,
 ) -> list[str]:
     rows = ["Registry"]
     if workstreams:
         rows.extend(["Radar", "Compass"])
     if diagrams:
         rows.append("Atlas")
-    if include_operator_surface:
-        rows.append("Shell")
     rows.append("Shell")
     deduped: list[str] = []
     seen: set[str] = set()
@@ -581,6 +580,7 @@ def _next_forcing_function(
 
 def _build_evidence_refs(
     *,
+    repo_root: Path | None,
     linked_workstreams: Sequence[str],
     linked_components: Sequence[str],
     linked_diagrams: Sequence[str],
@@ -594,7 +594,10 @@ def _build_evidence_refs(
     for token in linked_diagrams[:4]:
         rows.append({"kind": "diagram", "value": token, "label": token})
     for token in linked_paths[:6]:
-        rows.append({"kind": "path", "value": token, "label": token})
+        normalized = workstream_inference.normalize_repo_token(str(token).strip(), repo_root=repo_root)
+        if not normalized:
+            continue
+        rows.append({"kind": "path", "value": normalized, "label": normalized})
     return rows
 
 
@@ -635,6 +638,7 @@ def _snapshot_dict(
 def _load_workstream_contexts(*, ideas_root: Path) -> dict[str, dict[str, Any]]:
     specs, _errors = backlog_contract._validate_idea_specs(ideas_root)
     rows: dict[str, dict[str, Any]] = {}
+    repo_root = ideas_root.resolve().parents[3]
     for idea_id, spec in specs.items():
         token = registry.normalize_workstream_id(idea_id)
         if not token:
@@ -644,7 +648,7 @@ def _load_workstream_contexts(*, ideas_root: Path) -> dict[str, dict[str, Any]]:
             "idea_id": token,
             "title": str(spec.metadata.get("title", "")).strip() or token,
             "status": str(spec.metadata.get("status", "")).strip().lower(),
-            "idea_file": spec.path,
+            "idea_file": workstream_inference.normalize_repo_token(str(spec.path), repo_root=repo_root),
             "why_now": sections.get("Why Now", ""),
             "opportunity": sections.get("Opportunity", ""),
             "founder_pov": sections.get("Product View", sections.get("Founder POV", "")),
@@ -777,12 +781,6 @@ def _build_component_snapshot(
     linked_surfaces = _surface_list_for_scope(
         workstreams=linked_workstreams,
         diagrams=linked_diagrams,
-        component_ids=[component_id],
-        include_operator_surface=False,
-    )
-    linked_paths = _normalize_event_artifacts(
-        [*(event.artifacts for event in timeline)] if False else [],
-        repo_root=repo_root,
     )
     # Flatten event artifacts after stable dedupe.
     flattened_paths = _normalize_event_artifacts(
@@ -902,6 +900,7 @@ def _build_component_snapshot(
         evidence_context=evidence_context,
         explanation_facts=explanation_facts,
         evidence_refs=_build_evidence_refs(
+            repo_root=repo_root,
             linked_workstreams=linked_workstreams,
             linked_components=[component_id],
             linked_diagrams=linked_diagrams,
@@ -996,8 +995,6 @@ def _build_workstream_snapshot(
     linked_surfaces = _surface_list_for_scope(
         workstreams=[workstream_id],
         diagrams=related_diagrams,
-        component_ids=linked_components,
-        include_operator_surface=("shell" in linked_components),
     )
     trace = traceability_row.get("plan_traceability", {}) if isinstance(traceability_row.get("plan_traceability"), Mapping) else {}
     runbook_count = len(trace.get("runbooks", [])) if isinstance(trace.get("runbooks"), list) else 0
@@ -1131,6 +1128,7 @@ def _build_workstream_snapshot(
         evidence_context=evidence_context,
         explanation_facts=explanation_facts,
         evidence_refs=_build_evidence_refs(
+            repo_root=repo_root,
             linked_workstreams=[workstream_id],
             linked_components=linked_components,
             linked_diagrams=related_diagrams,
@@ -1173,6 +1171,7 @@ def _build_workstream_snapshot(
 
 def _build_diagram_snapshot(
     *,
+    repo_root: Path,
     row: Mapping[str, Any],
     components: Mapping[str, registry.ComponentEntry],
     mapped_events: Sequence[registry.MappedEvent],
@@ -1199,8 +1198,6 @@ def _build_diagram_snapshot(
     linked_surfaces = _surface_list_for_scope(
         workstreams=linked_workstreams,
         diagrams=[diagram_id],
-        component_ids=component_ids,
-        include_operator_surface=("shell" in component_ids),
     )
     explicit_events: list[registry.MappedEvent] = []
     synthetic_events: list[registry.MappedEvent] = []
@@ -1331,6 +1328,7 @@ def _build_diagram_snapshot(
         evidence_context=evidence_context,
         explanation_facts=explanation_facts,
         evidence_refs=_build_evidence_refs(
+            repo_root=repo_root,
             linked_workstreams=linked_workstreams,
             linked_components=component_ids,
             linked_diagrams=[diagram_id],
@@ -1544,6 +1542,7 @@ def _aggregate_scope(
             f"Linked surfaces: {_join_labels(linked_surfaces) or 'none'}.",
         ],
         evidence_refs=_build_evidence_refs(
+            repo_root=None,
             linked_workstreams=linked_workstreams,
             linked_components=linked_components,
             linked_diagrams=linked_diagrams,
@@ -1575,6 +1574,7 @@ def _aggregate_scope(
 def _scope_sort_tuple(snapshot: Mapping[str, Any]) -> tuple[int, int, int, int, int, int]:
     readout = snapshot.get("operator_readout", {}) if isinstance(snapshot.get("operator_readout"), Mapping) else {}
     scores = snapshot.get("scores", {}) if isinstance(snapshot.get("scores"), Mapping) else {}
+    scope_signal = snapshot.get("scope_signal", {}) if isinstance(snapshot.get("scope_signal"), Mapping) else {}
     latest_event = ""
     evidence = snapshot.get("evidence_context", {}) if isinstance(snapshot.get("evidence_context"), Mapping) else {}
     latest_event = str(evidence.get("latest_event_ts_iso", "")).strip()
@@ -1583,6 +1583,7 @@ def _scope_sort_tuple(snapshot: Mapping[str, Any]) -> tuple[int, int, int, int, 
     if parsed is not None:
         latest_sort = int(parsed.timestamp())
     return (
+        -scope_signal_ladder.scope_signal_rank(scope_signal),
         operator_readout.scenario_priority(str(readout.get("primary_scenario", ""))),
         operator_readout.severity_rank(str(readout.get("severity", ""))),
         -int(scores.get("decision_debt", 0) or 0),
@@ -1622,6 +1623,14 @@ def _linked_scope_keys(snapshot: Mapping[str, Any], scope_lookup: Mapping[str, M
 
 
 def _proof_routes_for_snapshot(snapshot: Mapping[str, Any], *, scenario: str) -> list[dict[str, str]]:
+    workstreams = _snapshot_workstreams(snapshot)
+    resolved_proof_state = snapshot.get("proof_state", {}) if isinstance(snapshot.get("proof_state"), Mapping) else {}
+    proof_routes = proof_state.build_proof_refs(
+        proof_state=resolved_proof_state,
+        scope_workstreams=workstreams,
+    )
+    if proof_routes:
+        return [operator_readout.normalize_proof_ref(row) for row in proof_routes if isinstance(row, Mapping)]
     evidence = snapshot.get("evidence_context", {}) if isinstance(snapshot.get("evidence_context"), Mapping) else {}
     workstreams = [str(token).strip() for token in evidence.get("linked_workstreams", []) if str(token).strip()]
     components = [str(token).strip() for token in evidence.get("linked_components", []) if str(token).strip()]
@@ -1863,12 +1872,15 @@ def _apply_operator_readouts(
 
 def _summary_scope(snapshot: Mapping[str, Any]) -> dict[str, str]:
     readout = snapshot.get("operator_readout", {}) if isinstance(snapshot.get("operator_readout"), Mapping) else {}
+    scope_signal = snapshot.get("scope_signal", {}) if isinstance(snapshot.get("scope_signal"), Mapping) else {}
     return {
         "scope_key": str(snapshot.get("scope_key", "")).strip(),
         "scope_label": str(snapshot.get("scope_label", snapshot.get("scope_id", ""))).strip(),
         "primary_scenario": str(readout.get("primary_scenario", "")).strip(),
         "severity": str(readout.get("severity", "")).strip(),
         "action": str(readout.get("action", "")).strip(),
+        "scope_signal_rung": str(scope_signal.get("rung", "")).strip(),
+        "scope_signal_token": str(scope_signal.get("token", "")).strip(),
     }
 
 
@@ -2184,6 +2196,10 @@ def _build_queue_proof_highlights(
     scope_lookup: Mapping[str, Mapping[str, Any]],
     control_posture: Mapping[str, Any],
 ) -> list[str]:
+    resolved_proof_state = snapshot.get("proof_state", {}) if isinstance(snapshot.get("proof_state"), Mapping) else {}
+    proof_rows = proof_state.proof_highlights(resolved_proof_state)
+    if proof_rows:
+        return proof_rows[:4]
     scenario = str(readout.get("primary_scenario", "")).strip()
     scope_label = str(snapshot.get("scope_label", snapshot.get("scope_id", "scope"))).strip() or "scope"
     diagnostics = snapshot.get("diagnostics", {}) if isinstance(snapshot.get("diagnostics"), Mapping) else {}
@@ -2275,6 +2291,8 @@ def _build_operator_queue(
                     for row in readout.get("proof_refs", [])
                     if isinstance(row, Mapping)
                 ],
+                "proof_state": dict(snapshot.get("proof_state", {})) if isinstance(snapshot.get("proof_state"), Mapping) else {},
+                "claim_guard": dict(snapshot.get("claim_guard", {})) if isinstance(snapshot.get("claim_guard"), Mapping) else {},
                 "requires_approval": bool(readout.get("requires_approval", True)),
                 "source": str(readout.get("source", "deterministic")).strip() or "deterministic",
                 "why_now": _build_queue_why_now(snapshot, readout, str(diagnostics.get("live_reason", "")).strip()),
@@ -2424,6 +2442,8 @@ def _validate_artifact_payload(payload: Mapping[str, Any]) -> list[str]:
             seen.add(scope_key)
         readout = snapshot.get("operator_readout", {}) if isinstance(snapshot.get("operator_readout"), Mapping) else {}
         errors.extend(f"{scope_key}: {error}" for error in operator_readout.validate_operator_readout(readout))
+        scope_signal = snapshot.get("scope_signal", {}) if isinstance(snapshot.get("scope_signal"), Mapping) else {}
+        errors.extend(f"{scope_key}: {error}" for error in scope_signal_ladder.validate_scope_signal(scope_signal))
     return errors
 
 
@@ -2524,6 +2544,7 @@ def build_delivery_intelligence_artifact(
             continue
         scopes.append(
             _build_diagram_snapshot(
+                repo_root=repo_root,
                 row=row,
                 components=report.components,
                 mapped_events=report.mapped_events,
@@ -2561,6 +2582,14 @@ def build_delivery_intelligence_artifact(
             child_snapshots=surface_snapshots,
             control_posture=control_posture,
         )
+    )
+    scopes = proof_state.annotate_scopes_with_proof_state(
+        repo_root=repo_root,
+        scopes=scopes,
+    )
+    scopes = scope_signal_ladder.annotate_delivery_scope_signals(
+        scopes=scopes,
+        control_posture=control_posture,
     )
 
     scopes = _apply_operator_readouts(
@@ -2771,6 +2800,34 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
     output_path = _resolve(repo_root, args.output)
+    if not args.check_only:
+        skip_rebuild, input_fingerprint, _cached = generated_refresh_guard.should_skip_rebuild(
+            repo_root=repo_root,
+            namespace=_DELIVERY_INTELLIGENCE_GUARD_NAMESPACE,
+            key=_DELIVERY_INTELLIGENCE_GUARD_KEY,
+            watched_paths=(
+                "odylith/radar/source",
+                "odylith/technical-plans",
+                "odylith/casebook/bugs",
+                *_registry_delivery_watched_paths(repo_root),
+                "odylith/atlas/source/catalog/diagrams.v1.json",
+                "odylith/radar/traceability-graph.v1.json",
+                *agent_runtime_contract.candidate_stream_tokens(),
+                DEFAULT_CONTROL_POSTURE_PATH,
+                DEFAULT_ODYLITH_REASONING_PATH,
+                "src/odylith/runtime/governance",
+                "src/odylith/runtime/reasoning",
+                "src/odylith/runtime/common",
+            ),
+            output_paths=(output_path,),
+            extra={
+                "max_review_age_days": int(args.max_review_age_days),
+                "local_head": _current_local_head(repo_root),
+            },
+        )
+        if skip_rebuild:
+            print("delivery intelligence artifact is current")
+            return 0
     payload = build_delivery_intelligence_artifact(
         repo_root=repo_root,
         max_review_age_days=int(args.max_review_age_days),
@@ -2804,8 +2861,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         content=rendered,
         lock_key=str(output_path),
     )
+    generated_refresh_guard.record_rebuild(
+        repo_root=repo_root,
+        namespace=_DELIVERY_INTELLIGENCE_GUARD_NAMESPACE,
+        key=_DELIVERY_INTELLIGENCE_GUARD_KEY,
+        input_fingerprint=input_fingerprint,
+        output_paths=(output_path,),
+        metadata={"generated_utc": str(payload.get("generated_utc", "")).strip()},
+    )
     if wrote_output:
-        print(f"wrote delivery intelligence artifact: {output_path.relative_to(repo_root)}")
+        print(
+            "wrote delivery intelligence artifact: "
+            f"{repo_path_resolver.display_repo_path(repo_root=repo_root, value=output_path)}"
+        )
     else:
         print("delivery intelligence artifact is current")
     return 0

@@ -28,3 +28,19 @@ def test_guidance_portability_ignores_historical_done_records(tmp_path: Path) ->
 
     assert errors == []
 
+
+def test_guidance_portability_ignores_claude_worktree_copies(tmp_path: Path) -> None:
+    tracked_claude = tmp_path / ".claude" / "CLAUDE.md"
+    tracked_claude.parent.mkdir(parents=True, exist_ok=True)
+    tracked_claude.write_text("Use `python -m pytest -q tests/unit/runtime`.\n", encoding="utf-8")
+
+    worktree_copy = tmp_path / ".claude" / "worktrees" / "scratch" / "CLAUDE.md"
+    worktree_copy.parent.mkdir(parents=True, exist_ok=True)
+    worktree_copy.write_text("Use `.venv/bin/pytest -q tests/unit/runtime`.\n", encoding="utf-8")
+
+    maintained_paths = validate_guidance_portability.maintained_guidance_paths(repo_root=tmp_path)
+    errors = validate_guidance_portability.find_portability_errors(repo_root=tmp_path)
+
+    assert tracked_claude.resolve() in maintained_paths
+    assert worktree_copy.resolve() not in maintained_paths
+    assert errors == []

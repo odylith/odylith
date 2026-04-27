@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-008
 
-title: Odylith Memory Areas and Operator Readout
+title: Memory Areas and Operator Readout
 
 date: 2026-03-28
 
@@ -14,9 +14,7 @@ product_impact: 5
 
 market_value: 4
 
-impacted_lanes: both
-
-impacted_parts: context-engine memory snapshot contract, runtime status output, shell telemetry drawer, and context-engine source truth
+impacted_parts: context-engine memory snapshot contract, runtime status output, operator readouts, and context-engine source truth
 
 sizing: M
 
@@ -80,14 +78,16 @@ strengths and gaps without pretending that planned collaboration and durable
 judgment memory already exist.
 
 ## Proposed Solution
-Add a first-class `memory_areas.v1` section to the runtime memory snapshot,
-surface it in `odylith context-engine status`, and render it in the shared
-shell telemetry drawer as a concise operator readout.
+Add a first-class `memory_areas.v1` section to the runtime memory snapshot and
+surface it in `odylith context-engine status` plus operator readouts. This
+record must not be read as permission to recreate a shell status drawer,
+cockpit, recorder, chart, or status slab in the dashboard.
 
 ## Scope
 - add explicit memory-area posture to `memory_snapshot.v1`
 - print concise memory-area posture in runtime status output
-- render memory-area strengths and gaps in the shell telemetry drawer
+- keep memory-area strengths and gaps in runtime/diagnostic readouts without
+  rendering status chrome into the dashboard shell
 - update the Odylith Context Engine source contract to describe the new readout
 
 ## Non-Goals
@@ -104,13 +104,14 @@ shell telemetry drawer as a concise operator readout.
 
 ## Dependencies
 - no hard prerequisite; this is a bounded product readout slice on top of
-  existing Context Engine, shell, and telemetry contracts
+  existing Context Engine, shell, and diagnostics contracts
 
 ## Success Metrics
 - `memory_snapshot.v1` includes named memory areas with live, cold, planned, or
   disabled posture
 - `odylith context-engine status` prints a concise memory-area summary
-- the shell telemetry drawer renders a human-readable memory-area section
+- runtime and diagnostic readouts expose a human-readable memory-area section
+  without reintroducing dashboard shell status UI
 - tests cover the new snapshot and rendering contract
 
 ## Validation
@@ -137,7 +138,8 @@ the missing areas just as plainly.
 ## Interface Changes
 - `memory_snapshot.v1` gains a `memory_areas` section
 - `odylith context-engine status` prints memory-area counts and headline
-- the shell telemetry drawer renders a dedicated memory-area card
+- dashboard product surfaces do not render memory posture as shell status
+  chrome; diagnostic readouts remain runtime-owned
 
 ## Migration/Compatibility
 - additive only; existing memory snapshot consumers keep the previous fields

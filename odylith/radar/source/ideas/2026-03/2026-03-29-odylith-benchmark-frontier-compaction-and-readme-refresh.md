@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-019
-title: Odylith Benchmark Frontier Compaction and README Refresh
+title: Benchmark Frontier Compaction and README Refresh
 date: 2026-03-29
 priority: P0
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: benchmark hot path, runtime contract payload, benchmark component boundary, Codex benchmark proof, README benchmark snapshot, and benchmark graph outputs
 sizing: M
 complexity: High

@@ -9,20 +9,26 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 from typing import Any, Mapping, Sequence
-from urllib.parse import quote
 
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.governance import casebook_source_validation
 from odylith.runtime.surfaces import brand_assets
+from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
+from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import surface_path_helpers
+from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.common import stable_generated_utc
+from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import odylith_context_engine_store
 
 _CASEBOOK_DETAIL_SHARD_SIZE = 32
+_CASEBOOK_REFRESH_GUARD_KEY = "casebook-dashboard-render"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -41,16 +47,17 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
-def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
+def _refresh_guard_watched_paths() -> tuple[str, ...]:
+    return (
+        "odylith/casebook/bugs",
+        "odylith/registry/source",
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        *agent_runtime_contract.candidate_stream_tokens(),
+        "src/odylith/runtime/common",
+        "src/odylith/runtime/context_engine",
+        "src/odylith/runtime/governance",
+        "src/odylith/runtime/surfaces",
+    )
 
 
 def _chunk_casebook_items(
@@ -106,6 +113,13 @@ def _build_casebook_summary_row(row: Mapping[str, Any]) -> dict[str, Any]:
         if isinstance(row.get("workstream_links"), list)
         else [],
         "intelligence_coverage": dict(coverage) if isinstance(coverage, Mapping) else {},
+        "proof_state": dict(row.get("proof_state", {})) if isinstance(row.get("proof_state"), Mapping) else {},
+        "proof_state_resolution": (
+            dict(row.get("proof_state_resolution", {}))
+            if isinstance(row.get("proof_state_resolution"), Mapping)
+            else {}
+        ),
+        "claim_guard": dict(row.get("claim_guard", {})) if isinstance(row.get("claim_guard"), Mapping) else {},
         "search_text": str(row.get("search_text", "")).strip(),
     }
 
@@ -151,26 +165,14 @@ def _build_payload(
         return deduped
 
     def _shell_href(tab: str, **params: str) -> str:
-        query = [f"tab={quote(str(tab).strip(), safe='')}"]
-        for key, value in params.items():
-            token = str(value or "").strip()
-            if token:
-                query.append(f"{quote(str(key).strip(), safe='')}={quote(token, safe='')}")
-        return "../index.html?" + "&".join(query)
+        return f"../index.html{dashboard_shell_links.shell_href(tab=tab, **params)}"
 
     def _path_links(paths: Sequence[Any]) -> list[dict[str, str]]:
-        links: list[dict[str, str]] = []
-        for raw in paths:
-            path = str(raw).strip()
-            if not path:
-                continue
-            target = _resolve(repo_root, path)
-            links.append(
-                {
-                    "path": path,
-                    "href": _as_href(output_path, target) if target.exists() else "",
-                }
-            )
+        links = surface_path_helpers.path_links(
+            repo_root=repo_root,
+            output_path=output_path,
+            values=[str(raw).strip() for raw in paths if str(raw).strip()],
+        )
         return _dedupe_rows_by_signature(
             rows=links,
             signature_fields=("path", "href"),
@@ -229,8 +231,12 @@ def _build_payload(
         bug_key = str(row.get("bug_key", "")).strip()
         source_href = ""
         if source_path:
-            source_target = _resolve(repo_root, source_path)
-            source_href = _as_href(output_path, source_target) if source_target.is_file() else ""
+            source_target = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_path)
+            source_href = (
+                surface_path_helpers.relative_href(output_path=output_path, target=source_target)
+                if source_target.is_file()
+                else ""
+            )
         workstreams = [str(token).strip() for token in row.get("workstreams", []) if str(token).strip()]
         deduped_workstreams: list[str] = []
         seen_workstreams: set[str] = set()
@@ -267,8 +273,12 @@ def _build_payload(
             spec_ref = str(match.get("spec_ref", "")).strip()
             spec_href = ""
             if spec_ref:
-                spec_target = _resolve(repo_root, spec_ref)
-                spec_href = _as_href(output_path, spec_target) if spec_target.is_file() else ""
+                spec_target = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=spec_ref)
+                spec_href = (
+                    surface_path_helpers.relative_href(output_path=output_path, target=spec_target)
+                    if spec_target.is_file()
+                    else ""
+                )
             component_links.append(
                 {
                     "component_id": component_id,
@@ -424,6 +434,13 @@ def _build_payload(
                     if isinstance(row.get("intelligence_coverage"), dict)
                     else {}
                 ),
+                "proof_state": dict(row.get("proof_state", {})) if isinstance(row.get("proof_state"), Mapping) else {},
+                "proof_state_resolution": (
+                    dict(row.get("proof_state_resolution", {}))
+                    if isinstance(row.get("proof_state_resolution"), Mapping)
+                    else {}
+                ),
+                "claim_guard": dict(row.get("claim_guard", {})) if isinstance(row.get("claim_guard"), Mapping) else {},
                 "search_text": str(row.get("search_text", "")).strip(),
             }
         )
@@ -451,6 +468,12 @@ def _build_payload(
 def _render_html(*, payload: dict[str, Any]) -> str:
     data_json = json.dumps(payload, sort_keys=True, ensure_ascii=False)
     page_body_css = dashboard_ui_primitives.page_body_typography_css(selector="body")
+    surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
+    surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
+        selector=".shell",
+        display="grid",
+        gap_px=12,
+    )
     header_typography_css = dashboard_ui_primitives.header_typography_css(
         kicker_selector=".kicker",
         title_selector=".hero-title",
@@ -477,7 +500,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     )
     sticky_filter_bar_css = dashboard_ui_primitives.sticky_filter_bar_css(
         container_selector=".filters-bar",
-        columns="repeat(3, minmax(0, 1fr))",
+        columns="repeat(4, minmax(0, 1fr))",
         field_selector=".filter-control",
         focus_selector=".filter-control:focus",
         top_px=10,
@@ -542,6 +565,23 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         )
     )
     detail_action_chip_css = dashboard_ui_primitives.detail_action_chip_css(selector=".action-chip")
+    identifier_typography_css = "\n\n".join(
+        (
+            dashboard_ui_primitives.surface_identifier_typography_css(
+                selector=".component-subtitle, .ref-meta",
+                color="var(--ink-muted)",
+                line_height=1.45,
+            ),
+            dashboard_ui_primitives.surface_identifier_typography_css(
+                selector=".bug-row-kicker",
+                color="var(--ink-muted)",
+                margin="0 0 4px",
+                line_height=1.2,
+                letter_spacing_em=0.08,
+                text_transform="uppercase",
+            ),
+        )
+    )
     tooltip_surface_css, tooltip_runtime_js = dashboard_ui_runtime_primitives.quick_tooltip_bundle(
         binding_guard_dataset_key="odylithCasebookTooltipBound",
         function_name="initCasebookQuickTooltips",
@@ -692,13 +732,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         linear-gradient(180deg, var(--bg-a), var(--bg-b));
     }}
     __CASEBOOK_PAGE_BODY__
-    .shell {{
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 22px 18px 34px;
-      display: grid;
-      gap: 12px;
-    }}
+    __CASEBOOK_SURFACE_SHELL_ROOT__
+    __CASEBOOK_SURFACE_SHELL__
     __CASEBOOK_HERO_PANEL__
     .hero {{
       display: grid;
@@ -729,6 +764,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     __CASEBOOK_CARD_TITLE__
     __CASEBOOK_COPY__
     __CASEBOOK_CODE_TYPOGRAPHY__
+    __CASEBOOK_IDENTIFIER_TYPOGRAPHY__
     .filters-shell {{
       min-width: 0;
       width: 100%;
@@ -894,6 +930,14 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       background: linear-gradient(180deg, #ffffff, #f5fbf8);
       box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
     }}
+    .detail-section-proof {{
+      margin-top: 16px;
+      padding: 14px 15px;
+      border: 1px solid rgba(219, 234, 254, 0.95);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+    }}
     .section-lede {{
       margin: 0;
       color: var(--ink-muted);
@@ -987,6 +1031,9 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       gap: 8px;
       min-width: 0;
     }}
+    .proof-resolution-note {{
+      margin: 0;
+    }}
     .agent-disclosure {{
       margin-top: 12px;
       padding-top: 12px;
@@ -1020,7 +1067,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .ref-meta {{
       margin: 0;
       color: var(--ink-muted);
-      font-size: 12px;
       line-height: 1.45;
     }}
     .link-group,
@@ -1068,9 +1114,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .detail-kicker {{
       margin: 0 0 4px;
       color: var(--ink-muted);
-      font-size: 11px;
       line-height: 1.2;
-      font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }}
@@ -1125,7 +1169,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     __CASEBOOK_TOOLTIP_SURFACE__
     @media (max-width: 1180px) {{
       .filters-bar {{
-        grid-template-columns: minmax(0, 1fr) repeat(2, minmax(150px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }}
     }}
     @media (max-width: 1000px) {{
@@ -1201,6 +1245,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           <span class="control-label">Status</span>
           <select id="statusFilter" class="filter-control"></select>
         </label>
+        <label class="control" for="sortFilter">
+          <span class="control-label">Sort</span>
+          <select id="sortFilter" class="filter-control"></select>
+        </label>
       </div>
     </section>
 
@@ -1231,6 +1279,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     const searchInput = document.getElementById("searchInput");
     const severityFilter = document.getElementById("severityFilter");
     const statusFilter = document.getElementById("statusFilter");
+    const sortFilter = document.getElementById("sortFilter");
     const bugList = document.getElementById("bugList");
     const detailPane = document.getElementById("detailPane");
     const listMeta = document.getElementById("listMeta");
@@ -1240,6 +1289,15 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     const kpiLatestCase = document.getElementById("kpiLatestCase");
     let detailRenderToken = 0;
     const BUG_ID_COMPACT_RE = /^(?:CB)?-?(\\d{{1,}})$/i;
+    const SORT_DEFAULT = "newest";
+    const SORT_OPTIONS = [
+      {{ value: "newest", label: "Newest" }},
+      {{ value: "oldest", label: "Oldest" }},
+      {{ value: "bug-id", label: "Bug ID" }},
+      {{ value: "priority", label: "Priority" }},
+      {{ value: "status", label: "Status" }},
+    ];
+    const SORT_TOKENS = new Set(SORT_OPTIONS.map((option) => option.value));
     const HUMAN_SIGNAL_FIELDS = [
       "Failure Signature",
       "Trigger Path",
@@ -1333,6 +1391,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return String(value || "").trim().toLowerCase();
     }}
 
+    function canonicalizeSortToken(value) {{
+      const token = String(value || "").trim().toLowerCase();
+      return SORT_TOKENS.has(token) ? token : SORT_DEFAULT;
+    }}
+
     function normalizeSearchToken(value) {{
       return String(value || "")
         .toLowerCase()
@@ -1393,6 +1456,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         bug: canonicalizeBugToken(params.get("bug") || ""),
         severity: canonicalizeFilterToken(params.get("severity") || ""),
         status: canonicalizeFilterToken(params.get("status") || ""),
+        sort: canonicalizeSortToken(params.get("sort") || SORT_DEFAULT),
       }};
     }}
 
@@ -1401,6 +1465,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       if (state.bug) query.set("bug", state.bug);
       if (state.severity) query.set("severity", state.severity);
       if (state.status) query.set("status", state.status);
+      if (canonicalizeSortToken(state.sort) !== SORT_DEFAULT) query.set("sort", canonicalizeSortToken(state.sort));
       const suffix = query.toString() ? `?${{query.toString()}}` : "";
       const next = `${{window.location.pathname}}${{suffix}}`;
       if (next !== `${{window.location.pathname}}${{window.location.search}}`) {{
@@ -1413,6 +1478,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
             bug: state.bug || "",
             severity: state.severity || "",
             status: state.status || "",
+            sort: canonicalizeSortToken(state.sort),
           }},
         }}, "*");
       }}
@@ -1426,6 +1492,13 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         );
       }}
       selectEl.innerHTML = rows.join("");
+    }}
+
+    function fillSortSelect(current) {{
+      const active = canonicalizeSortToken(current || SORT_DEFAULT);
+      sortFilter.innerHTML = SORT_OPTIONS.map((option) => (
+        `<option value="${{escapeHtml(option.value)}}"${{option.value === active ? " selected" : ""}}>${{escapeHtml(option.label)}}</option>`
+      )).join("");
     }}
 
     function renderRichText(text) {{
@@ -1587,7 +1660,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           const radarChips = includeWorkstreams ? renderActionChips(
             Array.isArray(item && item.workstream_links)
               ? item.workstream_links.map((row) => ({{
-                  label: `Radar ${{String(row && row.workstream || "").trim()}}`,
+                  label: String(row && row.workstream || "").trim(),
                   href: String(row && row.href || "").trim(),
                 }}))
               : []
@@ -1692,6 +1765,10 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
     function matchesSearch(row, term) {{
       if (!term) return true;
+      const canonicalBugId = canonicalizeBugIdToken(term);
+      if (canonicalBugId) {{
+        return bugExactMatch(row, term);
+      }}
       if (bugExactMatch(row, term)) return true;
       const searchText = bugSearchText(row);
       if (searchText.includes(term)) return true;
@@ -1706,8 +1783,96 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return true;
     }}
 
+    function compareText(left, right) {{
+      return String(left || "").localeCompare(String(right || ""), undefined, {{ numeric: true, sensitivity: "base" }});
+    }}
+
+    function compareDateDesc(left, right) {{
+      return compareText(right && right.date, left && left.date);
+    }}
+
+    function compareDateAsc(left, right) {{
+      return compareText(left && left.date, right && right.date);
+    }}
+
+    function bugIdNumber(row) {{
+      const canonical = canonicalizeBugIdToken(row && row.bug_id);
+      const match = canonical.match(/^CB-(\\d+)$/);
+      return match ? Number(match[1]) : 0;
+    }}
+
+    function severityRank(row) {{
+      const token = String(row && (row.severity_token || row.severity) || "").trim().toLowerCase();
+      const match = token.match(/^p(\\d+)$/);
+      return match ? Number(match[1]) : 99;
+    }}
+
+    function statusRank(row) {{
+      const token = normalizeSearchToken(row && (row.status_token || row.status) || "");
+      const ranks = {{
+        open: 0,
+        blocked: 1,
+        inprogress: 2,
+        resolved: 3,
+        closed: 4,
+      }};
+      return Object.prototype.hasOwnProperty.call(ranks, token) ? ranks[token] : 50;
+    }}
+
+    function compareBugIdDesc(left, right) {{
+      return bugIdNumber(right) - bugIdNumber(left);
+    }}
+
+    function compareBugIdAsc(left, right) {{
+      return bugIdNumber(left) - bugIdNumber(right);
+    }}
+
+    function compareTitleAsc(left, right) {{
+      return compareText(left && left.title, right && right.title);
+    }}
+
+    function firstNonZero(...values) {{
+      return values.find((value) => Number(value) !== 0) || 0;
+    }}
+
+    function sortRows(rows, sortToken) {{
+      const token = canonicalizeSortToken(sortToken);
+      const sorted = [...rows];
+      sorted.sort((left, right) => {{
+        if (token === "oldest") {{
+          return firstNonZero(compareDateAsc(left, right), compareBugIdAsc(left, right), compareTitleAsc(left, right));
+        }}
+        if (token === "bug-id") {{
+          return firstNonZero(compareBugIdDesc(left, right), compareDateDesc(left, right), compareTitleAsc(left, right));
+        }}
+        if (token === "priority") {{
+          return firstNonZero(
+            severityRank(left) - severityRank(right),
+            statusRank(left) - statusRank(right),
+            compareDateDesc(left, right),
+            compareBugIdDesc(left, right),
+            compareTitleAsc(left, right)
+          );
+        }}
+        if (token === "status") {{
+          return firstNonZero(
+            statusRank(left) - statusRank(right),
+            compareDateDesc(left, right),
+            severityRank(left) - severityRank(right),
+            compareBugIdDesc(left, right),
+            compareTitleAsc(left, right)
+          );
+        }}
+        return firstNonZero(compareDateDesc(left, right), compareBugIdDesc(left, right), compareTitleAsc(left, right));
+      }});
+      return sorted;
+    }}
+
     function visibleRows(state, searchTerm) {{
-      return bugSummaries.filter((row) => matchesFilters(row, state) && matchesSearch(row, searchTerm));
+      return sortRows(
+        bugSummaries.filter((row) => matchesFilters(row, state) && matchesSearch(row, searchTerm)),
+        state.sort
+      );
     }}
 
     function renderKpis() {{
@@ -1738,6 +1903,21 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       ].filter(([, value]) => String(value || "").trim() && String(value || "").trim() !== "-");
     }}
 
+    function proofResolutionMessage(resolution) {{
+      const value = resolution && typeof resolution === "object" ? resolution : {{}};
+      const state = String(value.state || "").trim().toLowerCase();
+      const laneIds = Array.isArray(value.lane_ids)
+        ? value.lane_ids.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      if (state === "ambiguous") {{
+        return `Proof state is ambiguous across multiple blocker lanes${{laneIds.length ? `: ${{laneIds.join(", ")}}` : ""}}.`;
+      }}
+      if (state === "none") {{
+        return "No dominant proof lane is resolved for this bug yet.";
+      }}
+      return "";
+    }}
+
     async function renderDetail(row) {{
       if (!row) {{
         detailRenderToken += 1;
@@ -1755,6 +1935,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         ? {{ ...row, ...loadedDetail }}
         : row;
       const fields = detail.fields && typeof detail.fields === "object" ? detail.fields : {{}};
+      const proofState = detail.proof_state && typeof detail.proof_state === "object" ? detail.proof_state : {{}};
+      const proofResolution = detail.proof_state_resolution && typeof detail.proof_state_resolution === "object"
+        ? detail.proof_state_resolution
+        : {{}};
+      const claimGuard = detail.claim_guard && typeof detail.claim_guard === "object" ? detail.claim_guard : {{}};
       const coverage = detail.intelligence_coverage && typeof detail.intelligence_coverage === "object" ? detail.intelligence_coverage : {{}};
       const capturedCount = Number(coverage.captured_count || 0);
       const totalFields = Number(coverage.total_fields || 0);
@@ -1765,7 +1950,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       const workstreamLinks = Array.isArray(detail.workstream_links)
         ? detail.workstream_links
             .map((item) => ({{
-              label: "Radar " + String(item && item.workstream || "").trim(),
+              label: String(item && item.workstream || "").trim(),
               href: String(item && item.href || "").trim(),
             }}))
             .filter((item) => item.label.trim() && item.href)
@@ -1862,6 +2047,87 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           </div>
         `)
         .join("");
+      const deploymentTruth = proofState.deployment_truth && typeof proofState.deployment_truth === "object"
+        ? proofState.deployment_truth
+        : {{}};
+      const deploymentTruthRows = [
+        ["Local HEAD", deploymentTruth.local_head],
+        ["Pushed HEAD", deploymentTruth.pushed_head],
+        ["Published source commit", deploymentTruth.published_source_commit],
+        ["Runner fingerprint", deploymentTruth.runner_fingerprint],
+        ["Last live failing commit", deploymentTruth.last_live_failing_commit],
+      ]
+        .filter(([, value]) => {{
+          const token = String(value || "").trim();
+          return token && token !== "unknown";
+        }})
+        .map(([label, value]) => ({{
+          label,
+          value: String(value || "").trim(),
+        }}));
+      const lastFalsification = proofState.last_falsification && typeof proofState.last_falsification === "object"
+        ? proofState.last_falsification
+        : {{}};
+      const lastFalsificationBits = [
+        String(lastFalsification.recorded_at || "").trim(),
+        String(lastFalsification.failure_fingerprint || "").trim(),
+        String(lastFalsification.frontier_phase || "").trim(),
+      ].filter(Boolean);
+      const proofRows = [
+        proofState.lane_id ? {{ label: "Proof lane", value: String(proofState.lane_id || "").trim() }} : null,
+        proofState.current_blocker ? {{ label: "Current blocker", value: String(proofState.current_blocker || "").trim() }} : null,
+        proofState.failure_fingerprint ? {{ label: "Failure fingerprint", value: String(proofState.failure_fingerprint || "").trim() }} : null,
+        proofState.first_failing_phase ? {{ label: "First failing phase", value: String(proofState.first_failing_phase || "").trim() }} : null,
+        proofState.frontier_phase ? {{ label: "Frontier", value: String(proofState.frontier_phase || "").trim() }} : null,
+        proofState.clearance_condition ? {{ label: "Clear only when", value: String(proofState.clearance_condition || "").trim() }} : null,
+        proofState.proof_status ? {{ label: "Proof status", value: String(proofState.proof_status || "").trim().replace(/_/g, " ") }} : null,
+        proofState.evidence_tier ? {{ label: "Evidence tier", value: String(proofState.evidence_tier || "").trim().replace(/_/g, " ") }} : null,
+        claimGuard.highest_truthful_claim ? {{ label: "Highest truthful claim", value: String(claimGuard.highest_truthful_claim || "").trim() }} : null,
+        lastFalsificationBits.length ? {{ label: "Last falsification", value: lastFalsificationBits.join(" / ") }} : null,
+      ].filter(Boolean);
+      const allowedNextWork = Array.isArray(proofState.allowed_next_work)
+        ? proofState.allowed_next_work.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const deprioritizedWork = Array.isArray(proofState.deprioritized_until_cleared)
+        ? proofState.deprioritized_until_cleared.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const proofWarnings = Array.isArray(proofState.warnings)
+        ? proofState.warnings.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      const proofResolutionText = proofResolutionMessage(proofResolution);
+      const proofContextRows = [
+        proofState.resolution_state === "inferred"
+          ? {{ label: "Resolution source", value: "Inferred from live proof memory because tracked truth did not pin a single lane." }}
+          : null,
+        allowedNextWork.length ? {{ label: "Allowed next work", value: allowedNextWork.join(" / ") }} : null,
+        deprioritizedWork.length ? {{ label: "Deprioritized until cleared", value: deprioritizedWork.join(" / ") }} : null,
+      ].filter(Boolean);
+      const proofOverview = renderLabeledNarratives(proofRows);
+      const proofContext = renderLabeledNarratives(proofContextRows);
+      const proofDeployment = renderLabeledNarratives(deploymentTruthRows);
+      const proofWarningsHtml = proofWarnings.length
+        ? `
+          <div class="agent-band-block">
+            <p class="agent-band-title">Proof drift warnings</p>
+            <div class="detail-copy">${{renderPlainList(proofWarnings)}}</div>
+          </div>
+        `
+        : "";
+      const proofSection = (proofResolutionText || proofOverview || proofContext || proofDeployment || proofWarningsHtml)
+        ? `
+          <article class="detail-section detail-section-proof">
+            <h2 class="section-heading">Proof Control Panel</h2>
+            <p class="section-lede">Pinned blocker, frontier, and proof tier for this bug lane.</p>
+            <div class="agent-band">
+              ${{proofResolutionText ? `<div class="agent-band-block"><p class="coverage-note proof-resolution-note">${{escapeHtml(proofResolutionText)}}</p></div>` : ""}}
+              ${{proofOverview ? `<div class="agent-band-block"><p class="agent-band-title">Primary blocker lane</p>${{proofOverview}}</div>` : ""}}
+              ${{proofContext ? `<div class="agent-band-block"><p class="agent-band-title">Proof discipline</p>${{proofContext}}</div>` : ""}}
+              ${{proofDeployment ? `<div class="agent-band-block"><p class="agent-band-title">Deployed vs local truth</p>${{proofDeployment}}</div>` : ""}}
+              ${{proofWarningsHtml}}
+            </div>
+          </article>
+        `
+        : "";
       const componentNarrative = detail.components && String(detail.components).trim() && String(detail.components).trim() !== "-"
         ? `
           <div class="narrative-row">
@@ -2015,12 +2281,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         : "";
       const sectionBlocks = [
         humanSection,
+        proofSection,
         agentSection,
       ].filter(Boolean).join("");
       detailPane.innerHTML = `
         <section class="detail-head">
           <div class="detail-headline">
-            ${{detail.bug_id ? `<p class="detail-kicker">${{escapeHtml(detail.bug_id)}}</p>` : ""}}
             <h1 class="detail-title">${{escapeHtml(detail.title || detail.bug_key || "Bug detail")}}</h1>
           </div>
           ${{summaryFacts ? `<div class="summary-facts" role="list">${{summaryFacts}}</div>` : ""}}
@@ -2123,14 +2389,22 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       readState().status,
       "All statuses"
     );
+    fillSortSelect(readState().sort);
     renderKpis();
     searchInput.addEventListener("input", () => render());
     severityFilter.addEventListener("change", () => {{
-      writeState({{ ...readState(), severity: canonicalizeFilterToken(severityFilter.value || ""), bug: readState().bug }});
+      const state = readState();
+      writeState({{ ...state, severity: canonicalizeFilterToken(severityFilter.value || ""), bug: state.bug }});
       render();
     }});
     statusFilter.addEventListener("change", () => {{
-      writeState({{ ...readState(), status: canonicalizeFilterToken(statusFilter.value || ""), bug: readState().bug }});
+      const state = readState();
+      writeState({{ ...state, status: canonicalizeFilterToken(statusFilter.value || ""), bug: state.bug }});
+      render();
+    }});
+    sortFilter.addEventListener("change", () => {{
+      const state = readState();
+      writeState({{ ...state, sort: canonicalizeSortToken(sortFilter.value || SORT_DEFAULT), bug: state.bug }});
       render();
     }});
     window.addEventListener("popstate", () => {{
@@ -2146,6 +2420,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         readState().status,
         "All statuses"
       );
+      fillSortSelect(readState().sort);
       render();
     }});
     render();
@@ -2153,21 +2428,42 @@ def _render_html(*, payload: dict[str, Any]) -> str:
   </script>
 </body>
 </html>
-""".replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip()).replace("__CASEBOOK_PAGE_BODY__", page_body_css).replace("__CASEBOOK_HERO_PANEL__", hero_panel_css).replace("__CASEBOOK_HEADER_TYPOGRAPHY__", header_typography_css).replace("__CASEBOOK_KPI_GRID__", kpi_grid_css).replace("__CASEBOOK_KPI_CARD__", kpi_card_surface_css).replace("__CASEBOOK_KPI_TYPOGRAPHY__", kpi_typography_css).replace("__CASEBOOK_FILTER_SHELL__", sticky_filter_shell_css).replace("__CASEBOOK_FILTER_BAR__", sticky_filter_bar_css).replace("__CASEBOOK_CONTROL_LABEL__", control_label_css).replace("__CASEBOOK_WORKSPACE__", workspace_layout_css).replace("__CASEBOOK_PANEL_SURFACE__", panel_surface_css).replace("__CASEBOOK_ROW_SURFACE__", row_surface_css).replace("__CASEBOOK_EMPTY_STATE_SURFACE__", narrative_section_surface_css).replace("__CASEBOOK_LABEL_SURFACE__", label_surface_css).replace("__CASEBOOK_LABEL_TYPOGRAPHY__", label_typography_css).replace("__CASEBOOK_LABEL_TONES__", label_tone_css).replace("__CASEBOOK_ACTION_CHIP__", detail_action_chip_css).replace("__CASEBOOK_SECTION_HEADING__", section_heading_css).replace("__CASEBOOK_SECONDARY_HEADINGS__", secondary_heading_css).replace("__CASEBOOK_COMPACT_FACT_TYPOGRAPHY__", compact_fact_css).replace("__CASEBOOK_INLINE_ROW_TYPOGRAPHY__", inline_row_css).replace("__CASEBOOK_CARD_TITLE__", card_title_css).replace("__CASEBOOK_COPY__", copy_css).replace("__CASEBOOK_TOOLTIP_SURFACE__", tooltip_surface_css).replace("__CASEBOOK_QUICK_TOOLTIP_RUNTIME__", tooltip_runtime_js).replace("__CASEBOOK_CODE_TYPOGRAPHY__", code_typography_css)
+""".replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip()).replace("__CASEBOOK_PAGE_BODY__", page_body_css).replace("__CASEBOOK_SURFACE_SHELL_ROOT__", surface_shell_root_css).replace("__CASEBOOK_SURFACE_SHELL__", surface_shell_css).replace("__CASEBOOK_HERO_PANEL__", hero_panel_css).replace("__CASEBOOK_HEADER_TYPOGRAPHY__", header_typography_css).replace("__CASEBOOK_KPI_GRID__", kpi_grid_css).replace("__CASEBOOK_KPI_CARD__", kpi_card_surface_css).replace("__CASEBOOK_KPI_TYPOGRAPHY__", kpi_typography_css).replace("__CASEBOOK_FILTER_SHELL__", sticky_filter_shell_css).replace("__CASEBOOK_FILTER_BAR__", sticky_filter_bar_css).replace("__CASEBOOK_CONTROL_LABEL__", control_label_css).replace("__CASEBOOK_WORKSPACE__", workspace_layout_css).replace("__CASEBOOK_PANEL_SURFACE__", panel_surface_css).replace("__CASEBOOK_ROW_SURFACE__", row_surface_css).replace("__CASEBOOK_EMPTY_STATE_SURFACE__", narrative_section_surface_css).replace("__CASEBOOK_LABEL_SURFACE__", label_surface_css).replace("__CASEBOOK_LABEL_TYPOGRAPHY__", label_typography_css).replace("__CASEBOOK_LABEL_TONES__", label_tone_css).replace("__CASEBOOK_ACTION_CHIP__", detail_action_chip_css).replace("__CASEBOOK_SECTION_HEADING__", section_heading_css).replace("__CASEBOOK_SECONDARY_HEADINGS__", secondary_heading_css).replace("__CASEBOOK_COMPACT_FACT_TYPOGRAPHY__", compact_fact_css).replace("__CASEBOOK_INLINE_ROW_TYPOGRAPHY__", inline_row_css).replace("__CASEBOOK_CARD_TITLE__", card_title_css).replace("__CASEBOOK_COPY__", copy_css).replace("__CASEBOOK_TOOLTIP_SURFACE__", tooltip_surface_css).replace("__CASEBOOK_QUICK_TOOLTIP_RUNTIME__", tooltip_runtime_js).replace("__CASEBOOK_CODE_TYPOGRAPHY__", code_typography_css).replace("__CASEBOOK_IDENTIFIER_TYPOGRAPHY__", identifier_typography_css)
     return html
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).resolve()
-    output_path = _resolve(repo_root, str(args.output))
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.output))
+    validation = casebook_source_validation.validate_casebook_sources(repo_root=repo_root)
+    if not validation.passed:
+        casebook_source_validation.print_casebook_source_validation_report(validation)
+        return 2
+    skip_rebuild, input_fingerprint, cached_metadata, bundle_paths, _output_paths = (
+        generated_surface_refresh_guards.should_skip_surface_rebuild(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="casebook",
+            key=_CASEBOOK_REFRESH_GUARD_KEY,
+            watched_paths=_refresh_guard_watched_paths(),
+            live_globs=("casebook-detail-shard-*.v1.js",),
+            extra={"runtime_mode": str(args.runtime_mode).strip().lower() or "auto"},
+        )
+    )
+    if skip_rebuild:
+        counts = dict(cached_metadata.get("counts", {})) if isinstance(cached_metadata, Mapping) else {}
+        print("casebook dashboard render passed")
+        print(f"- output: {output_path}")
+        print(f"- total_cases: {int(counts.get('total_cases', 0) or 0)}")
+        print(f"- open_total: {int(counts.get('open_total', 0) or 0)}")
+        return 0
     payload = _build_payload(
         repo_root=repo_root,
         output_path=output_path,
         runtime_mode=str(args.runtime_mode),
     )
     payload["brand_head_html"] = brand_assets.render_brand_head_html(repo_root=repo_root, output_path=output_path)
-    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="casebook")
     payload["generated_utc"] = stable_generated_utc.resolve_for_js_assignment_file(
         output_path=bundle_paths.payload_js_path,
         global_name="__ODYLITH_CASEBOOK_DATA__",
@@ -2217,21 +2513,39 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ("bug", ("bug",)),
                 ("severity", ("severity",)),
                 ("status", ("status",)),
+                ("sort", ("sort",)),
             ),
         ),
     )
-    output_path.write_text(bundled_html, encoding="utf-8")
-    bundle_paths.payload_js_path.write_text(payload_js, encoding="utf-8")
-    bundle_paths.control_js_path.write_text(control_js, encoding="utf-8")
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=output_path,
+        content=bundled_html,
+        lock_key=str(output_path),
+    )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=bundle_paths.payload_js_path,
+        content=payload_js,
+        lock_key=str(bundle_paths.payload_js_path),
+    )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=bundle_paths.control_js_path,
+        content=control_js,
+        lock_key=str(bundle_paths.control_js_path),
+    )
     active_detail_paths: set[Path] = set()
     for filename, shard_payload in detail_shards:
         shard_path = output_path.parent / filename
-        shard_path.write_text(
-            dashboard_surface_bundle.render_payload_merge_js(
+        odylith_context_cache.write_text_if_changed(
+            repo_root=repo_root,
+            path=shard_path,
+            content=dashboard_surface_bundle.render_payload_merge_js(
                 global_name="__ODYLITH_CASEBOOK_DETAIL_SHARDS__",
                 payload=shard_payload,
             ),
-            encoding="utf-8",
+            lock_key=str(shard_path),
         )
         active_detail_paths.add(shard_path.resolve())
     for stale_path in output_path.parent.glob("casebook-detail-shard-*.v1.js"):
@@ -2239,8 +2553,35 @@ def main(argv: Sequence[str] | None = None) -> int:
             continue
         if stale_path.is_file():
             stale_path.unlink()
-
+    source_bundle_mirror.sync_live_paths(
+        repo_root=repo_root,
+        live_paths=(output_path, bundle_paths.payload_js_path, bundle_paths.control_js_path),
+    )
+    source_bundle_mirror.sync_live_glob(
+        repo_root=repo_root,
+        live_dir=output_path.parent,
+        pattern="casebook-detail-shard-*.v1.js",
+    )
     counts = payload.get("counts", {}) if isinstance(payload, dict) else {}
+    if input_fingerprint:
+        _bundle_paths, current_output_paths = generated_surface_refresh_guards.surface_output_paths(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="casebook",
+            live_globs=("casebook-detail-shard-*.v1.js",),
+        )
+        generated_surface_refresh_guards.record_surface_rebuild(
+            repo_root=repo_root,
+            key=_CASEBOOK_REFRESH_GUARD_KEY,
+            input_fingerprint=input_fingerprint,
+            output_paths=current_output_paths,
+            metadata={
+                "counts": {
+                    "total_cases": int(counts.get("total_cases", 0) or 0),
+                    "open_total": int(counts.get("open_total", 0) or 0),
+                }
+            },
+        )
     print("casebook dashboard render passed")
     print(f"- output: {output_path}")
     print(f"- total_cases: {int(counts.get('total_cases', 0) or 0)}")

@@ -2,7 +2,7 @@ status: implementation
 
 idea_id: B-022
 
-title: Odylith Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof
+title: Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof
 
 date: 2026-03-29
 
@@ -13,8 +13,6 @@ commercial_value: 5
 product_impact: 5
 
 market_value: 5
-
-impacted_lanes: both
 
 impacted_parts: benchmark integrity, honest Odylith-on improvement, benchmark corpus realism, benchmark publication trust, README benchmark proof, and maintainer release discipline
 

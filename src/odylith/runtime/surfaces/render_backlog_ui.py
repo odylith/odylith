@@ -13,22 +13,29 @@ import argparse
 import datetime as dt
 import html
 import json
-import os
 from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 from urllib.parse import quote
 
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import derivation_provenance
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
+from odylith.runtime.surfaces import backlog_rich_text
+from odylith.runtime.surfaces import backlog_render_support
 from odylith.runtime.surfaces import backlog_detail_pages
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
+from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import render_backlog_ui_payload_runtime
 from odylith.runtime.surfaces import render_backlog_ui_html_runtime
+from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.governance import execution_wave_view_model
 from odylith.runtime.surfaces import generated_surface_cleanup
 from odylith.runtime.governance import plan_progress
@@ -45,87 +52,23 @@ _EXECUTION_SECTION_TITLES: tuple[str, ...] = (
 )
 _PARKED_SECTION_TITLE = contract._PARKED_SECTION_TITLE
 _FINISHED_SECTION_TITLE = "Finished (Linked to `odylith/technical-plans/done`)"
-_DATE_TOKEN_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-_PLAN_UPDATED_RE = re.compile(r"(?im)^Updated:\s*(\d{4}-\d{2}-\d{2})\s*$")
-_PLAN_CREATED_RE = re.compile(r"(?im)^Created:\s*(\d{4}-\d{2}-\d{2})\s*$")
-_PLAN_FILENAME_DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
-_CHECKBOX_LINE_RE = re.compile(r"^\[(?P<mark>[xX ])\]\s+(?P<body>.+)$")
-_TRACEABILITY_SECTION_NAME = "Traceability"
-_TRACEABILITY_BUCKETS: tuple[str, ...] = (
-    "Runbooks",
-    "Developer Docs",
-    "Code References",
-)
-_TRACEABILITY_PATH_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)\)")
-_TRACEABILITY_PATH_CODE_RE = re.compile(r"`([^`\n]+)`")
-_TRACEABILITY_CHECKBOX_PREFIX_RE = re.compile(r"^\[(?:x|X| )\]\s*")
-_INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
-_INLINE_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
+_DATE_TOKEN_RE = backlog_render_support._DATE_TOKEN_RE
+_PLAN_UPDATED_RE = backlog_render_support._PLAN_UPDATED_RE
+_PLAN_CREATED_RE = backlog_render_support._PLAN_CREATED_RE
+_PLAN_FILENAME_DATE_RE = backlog_render_support._PLAN_FILENAME_DATE_RE
+_TRACEABILITY_SECTION_NAME = render_backlog_ui_html_runtime._TRACEABILITY_SECTION_NAME
+_TRACEABILITY_BUCKETS = render_backlog_ui_html_runtime._TRACEABILITY_BUCKETS
 _SCRIPT_DIR = "scr" + "ipts"
 _TESTS_DIR = "te" + "sts"
-_RAW_REPO_ROOT_PATTERN = "|".join(("docs", _SCRIPT_DIR, _TESTS_DIR, "contracts", "plan", "odylith"))
-_RAW_REPO_TOKEN_RE = re.compile(
-    rf"(?P<token>(?:\./)?(?:{_RAW_REPO_ROOT_PATTERN})/[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*(?:/[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*)*)"
-)
-_RAW_LEGACY_TEST_COMMAND_RE = re.compile(
-    rf"pytest(?:\s+-q)?\s+{_TESTS_DIR}/{_SCRIPT_DIR}/test_(?P<module>[a-z0-9_]+)\.py"
-)
-_IDEA_ID_RE = re.compile(r"^B-\d{3,}$")
-_DIAGRAM_ID_RE = re.compile(r"^D-\d{3,}$")
+_IDEA_ID_RE = backlog_render_support._IDEA_ID_RE
+_DIAGRAM_ID_RE = backlog_render_support._DIAGRAM_ID_RE
 _DEFAULT_ACTIVE_WINDOW_MINUTES = 15
 _COMPASS_RUNTIME_PATH = "odylith/compass/runtime/current.v1.json"
 _BACKLOG_DETAIL_SHARD_SIZE = 48
 _BACKLOG_DOCUMENT_SHARD_SIZE = 32
-_BACKLOG_SUMMARY_HEAVY_FIELDS = frozenset(
-    {
-        "problem",
-        "customer",
-        "opportunity",
-        "founder_pov",
-        "success_metrics",
-        "impacted_parts",
-        "idea_file",
-        "idea_href",
-        "idea_ui_file",
-        "idea_ui_href",
-        "promoted_to_plan",
-        "promoted_to_plan_file",
-        "promoted_to_plan_href",
-        "promoted_to_plan_ui_file",
-        "promoted_to_plan_ui_href",
-        "registry_components",
-    }
-)
-_TRACEABILITY_INDEX_EDGE_TYPES = frozenset(
-    {
-        "parent_child",
-        "depends_on",
-        "blocks",
-        "reopens",
-        "split",
-        "merged",
-    }
-)
-_LEGACY_COMMAND_PREFIX_ALIASES: tuple[tuple[str, str], ...] = (
-    ("python -m " + "scr" + "ipts.sync_workstream_artifacts", "odylith sync"),
-    ("python -m " + "scr" + "ipts.sync_component_spec_requirements", "odylith governance sync-component-spec-requirements"),
-    ("python -m " + "scr" + "ipts.validate_backlog_contract", "odylith validate backlog-contract"),
-    ("python -m " + "scr" + "ipts.validate_component_registry_contract", "odylith validate component-registry"),
-    ("python -m " + "scr" + "ipts.validate_plan_risk_mitigation_contract", "odylith validate plan-risk-mitigation"),
-    ("python -m " + "scr" + "ipts.validate_plan_traceability_contract", "odylith validate plan-traceability"),
-    ("python -m " + "scr" + "ipts.validate_plan_workstream_binding", "odylith validate plan-workstream-binding"),
-    ("python -m " + "scr" + "ipts.odylith_context_engine", "odylith context-engine"),
-    ("python -m " + "scr" + "ipts.subagent_router", "odylith subagent-router"),
-    ("python -m " + "scr" + "ipts.subagent_orchestrator", "odylith subagent-orchestrator"),
-    ("python -m " + "scr" + "ipts.update_compass", "odylith compass update"),
-    ("python -m " + "scr" + "ipts.log_compass_timeline_event", "odylith compass log"),
-    ("python -m " + "scr" + "ipts.watch_prompt_transactions", "odylith compass watch-transactions"),
-    ("python -m " + "scr" + "ipts.render_mermaid_catalog", "odylith atlas render"),
-    (
-        "python -m " + "scr" + "ipts.run_clean_snapshot_strict_sync",
-        "odylith sync --check-only --check-clean --runtime-mode standalone",
-    ),
-)
+_BACKLOG_SUMMARY_HEAVY_FIELDS = backlog_render_support._BACKLOG_SUMMARY_HEAVY_FIELDS
+_TRACEABILITY_INDEX_EDGE_TYPES = backlog_render_support._TRACEABILITY_INDEX_EDGE_TYPES
+_BACKLOG_REFRESH_GUARD_KEY = "backlog-dashboard-render"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -147,33 +90,42 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _refresh_guard_watched_paths(*, index_path: Path) -> tuple[Path | str, ...]:
+    return (
+        index_path,
+        "odylith/radar/source/ideas",
+        "odylith/technical-plans",
+        "odylith/registry/source",
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        _COMPASS_RUNTIME_PATH,
+        *agent_runtime_contract.candidate_stream_tokens(),
+        "src/odylith/runtime/common",
+        "src/odylith/runtime/context_engine",
+        "src/odylith/runtime/governance",
+        "src/odylith/runtime/surfaces",
+    )
+
+
 def _resolve_path(*, repo_root: Path, value: str) -> Path:
-    token = str(value or "").strip()
-    path = Path(token)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Backward-compatible wrapper over the shared surface path resolver."""
+
+    return backlog_render_support._resolve_path(repo_root=repo_root, value=value)
 
 
 def _as_relative_href(*, output_path: Path, target: Path) -> str:
-    try:
-        rel = target.relative_to(output_path.parent)
-    except ValueError:
-        rel = Path(target)
-    return rel.as_posix()
+    """Backward-compatible wrapper over the shared relative href helper."""
+
+    return backlog_render_support._as_relative_href(output_path=output_path, target=target)
 
 
 def _as_portable_relative_href(*, output_path: Path, target: Path) -> str:
-    try:
-        rel = os.path.relpath(str(target), start=str(output_path.parent))
-        return Path(rel).as_posix()
-    except ValueError:
-        return str(target)
+    """Backward-compatible wrapper for backlog detail pages and payload helpers."""
+
+    return backlog_render_support._as_portable_relative_href(output_path=output_path, target=target)
 
 
 def _slug_token(value: str) -> str:
-    token = re.sub(r"[^a-z0-9]+", "-", str(value or "").lower()).strip("-")
-    return token or "idea"
+    return backlog_rich_text._slug_token(value)
 
 
 def _radar_route_href(
@@ -183,143 +135,28 @@ def _radar_route_href(
     workstream_id: str,
     view: str | None = None,
 ) -> str:
-    base_href = _as_portable_relative_href(output_path=source_output_path, target=target_output_path)
-    workstream = str(workstream_id or "").strip()
-    if not workstream:
-        return base_href
-    query_bits = [f"workstream={quote(workstream, safe='')}"]
-    if view:
-        query_bits.insert(0, f"view={quote(str(view).strip(), safe='')}")
-    return f"{base_href}?{'&'.join(query_bits)}"
+    return backlog_render_support._radar_route_href(
+        source_output_path=source_output_path,
+        target_output_path=target_output_path,
+        workstream_id=workstream_id,
+        view=view,
+    )
 
 
 def _extract_sections_with_body(path: Path) -> list[tuple[str, list[str]]]:
-    content = path.read_text(encoding="utf-8")
-    lines = content.splitlines()
-
-    sections: list[tuple[str, list[str]]] = []
-    current_title: str | None = None
-    current_lines: list[str] = []
-    for line in lines:
-        if line.startswith("## "):
-            if current_title is not None:
-                sections.append((current_title, current_lines))
-            current_title = line[3:].strip()
-            current_lines = []
-            continue
-        if current_title is not None:
-            current_lines.append(line)
-    if current_title is not None:
-        sections.append((current_title, current_lines))
-    return sections
-
-
-def _rewrite_legacy_inline_command(text: str) -> str:
-    command = str(text or "")
-    for legacy_prefix, replacement in _LEGACY_COMMAND_PREFIX_ALIASES:
-        if legacy_prefix in command:
-            command = command.replace(legacy_prefix, replacement)
-    return command
-
-
-def _legacy_test_command(module_name: str) -> str:
-    module = str(module_name or "").strip()
-    if not module:
-        return ""
-    specific: dict[str, str] = {
-        "render_backlog_ui": "odylith sync --repo-root . --check-only --runtime-mode standalone",
-        "validate_backlog_contract": "odylith validate backlog-contract --repo-root .",
-        "build_traceability_graph": "odylith validate plan-traceability --repo-root .",
-        "backfill_workstream_traceability": "odylith validate plan-traceability --repo-root .",
-        "reconcile_plan_workstream_binding": "odylith validate plan-workstream-binding --repo-root .",
-        "normalize_plan_risk_mitigation": "odylith validate plan-risk-mitigation --repo-root .",
-        "validate_plan_risk_mitigation_contract": "odylith validate plan-risk-mitigation --repo-root .",
-        "validate_plan_traceability_contract": "odylith validate plan-traceability --repo-root .",
-        "validate_plan_workstream_binding": "odylith validate plan-workstream-binding --repo-root .",
-        "component_registry_intelligence": "odylith validate component-registry --repo-root .",
-        "sync_component_spec_requirements": "odylith governance sync-component-spec-requirements --repo-root .",
-        "validate_component_registry_contract": "odylith validate component-registry --repo-root .",
-        "render_registry_dashboard": "odylith sync --repo-root . --check-only --runtime-mode standalone",
-        "render_mermaid_catalog": "odylith atlas render --repo-root .",
-        "auto_update_mermaid_diagrams": "odylith atlas render --repo-root .",
-        "install_mermaid_autosync_hook": "odylith atlas render --repo-root .",
-        "scaffold_mermaid_diagram": "odylith atlas render --repo-root .",
-        "render_compass_dashboard": "odylith dashboard refresh --repo-root . --surfaces compass",
-        "compass_dashboard_base": "odylith dashboard refresh --repo-root . --surfaces compass",
-        "compass_dashboard_runtime": "odylith dashboard refresh --repo-root . --surfaces compass",
-        "compass_dashboard_shell": "odylith dashboard refresh --repo-root . --surfaces compass",
-        "compass_standup_brief_narrator": "odylith dashboard refresh --repo-root . --surfaces compass",
-        "log_compass_timeline_event": "odylith compass log --repo-root . --help",
-        "watch_prompt_transactions": "odylith compass watch-transactions --repo-root . --once --runtime-mode standalone",
-        "odylith_context_engine": "odylith context-engine --repo-root . status",
-        "odylith_context_engine_store": "odylith context-engine --repo-root . status",
-        "odylith_context_cache": "odylith context-engine --repo-root . status",
-        "odylith_memory_backend": "odylith context-engine --repo-root . status",
-        "odylith_projection_bundle": "odylith context-engine --repo-root . status",
-        "odylith_projection_snapshot": "odylith context-engine --repo-root . status",
-        "odylith_remote_retrieval": "odylith context-engine --repo-root . status",
-        "tooling_context_budgeting": "odylith context-engine --repo-root . status",
-        "tooling_context_packet_builder": "odylith context-engine --repo-root . status",
-        "tooling_context_quality": "odylith context-engine --repo-root . status",
-        "tooling_context_retrieval": "odylith context-engine --repo-root . status",
-        "tooling_context_routing": "odylith context-engine --repo-root . status",
-        "tooling_memory_contracts": "odylith context-engine --repo-root . status",
-        "subagent_router": "odylith subagent-router --help",
-        "subagent_orchestrator": "odylith subagent-orchestrator --help",
-        "sync_workstream_artifacts": "odylith sync --repo-root . --check-only --runtime-mode standalone",
-        "update_compass": "odylith compass update --repo-root .",
-    }
-    return specific.get(module, "odylith sync --repo-root . --check-only --runtime-mode standalone")
-
-
-def _rewrite_plain_text_tokens(*, repo_root: Path, text: str) -> str:
-    rewritten = _rewrite_legacy_inline_command(text)
-
-    def _replace_pytest(match: re.Match[str]) -> str:
-        replacement = _legacy_test_command(str(match.group("module") or "").strip())
-        return replacement or match.group(0)
-
-    rewritten = _RAW_LEGACY_TEST_COMMAND_RE.sub(_replace_pytest, rewritten)
-
-    def _replace_token(match: re.Match[str]) -> str:
-        token = str(match.group("token") or "")
-        normalized = _normalize_inline_repo_token(repo_root=repo_root, token=token)
-        return normalized or token
-
-    return _RAW_REPO_TOKEN_RE.sub(_replace_token, rewritten)
+    return backlog_render_support._extract_sections_with_body(path)
 
 
 def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
-    return render_backlog_ui_html_runtime._normalize_inline_repo_token(
-        repo_root=repo_root,
-        token=token,
-    )
+    return backlog_rich_text._normalize_inline_repo_token(repo_root=repo_root, token=token)
 
 
 def _rewrite_section_text(*, repo_root: Path, text: str) -> str:
-    def _replace_code(match: re.Match[str]) -> str:
-        body = str(match.group(1) or "")
-        rewritten = _rewrite_plain_text_tokens(repo_root=repo_root, text=body)
-        return f"`{rewritten}`" if rewritten != body else match.group(0)
-
-    def _replace_link(match: re.Match[str]) -> str:
-        label = str(match.group(1) or "")
-        target = str(match.group(2) or "")
-        normalized = _normalize_inline_repo_token(repo_root=repo_root, token=target)
-        if normalized:
-            return f"[{label}]({normalized})"
-        return match.group(0)
-
-    rewritten = _INLINE_LINK_RE.sub(_replace_link, str(text or ""))
-    rewritten = _INLINE_CODE_RE.sub(_replace_code, rewritten)
-    return _rewrite_plain_text_tokens(repo_root=repo_root, text=rewritten)
+    return backlog_render_support._rewrite_section_text(repo_root=repo_root, text=text)
 
 
 def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
-    return render_backlog_ui_html_runtime._render_section_body(
-        repo_root=repo_root,
-        lines=lines,
-    )
+    return backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)
 
 
 def _extract_traceability_path_tokens(text: str) -> list[str]:
@@ -345,75 +182,19 @@ def _collect_plan_traceability_paths(
 
 
 def _as_repo_path(*, repo_root: Path, target: Path) -> str:
-    try:
-        rel = target.relative_to(repo_root)
-        return rel.as_posix()
-    except ValueError:
-        return str(target)
+    return backlog_render_support._as_repo_path(repo_root=repo_root, target=target)
 
 
 def _extract_sections_from_markdown(path: Path) -> dict[str, str]:
-    content = path.read_text(encoding="utf-8")
-    lines = content.splitlines()
-
-    sections: dict[str, list[str]] = {}
-    current: str | None = None
-    for line in lines:
-        if line.startswith("## "):
-            current = line[3:].strip()
-            sections.setdefault(current, [])
-            continue
-        if current is None:
-            continue
-        sections[current].append(line)
-
-    normalized: dict[str, str] = {}
-    for key, raw_lines in sections.items():
-        merged = " ".join(token.strip() for token in raw_lines if token.strip())
-        normalized[key] = merged.strip()
-    return normalized
+    return backlog_render_support._extract_sections_from_markdown(path)
 
 
 def _split_metadata_ids(*, value: str, pattern: re.Pattern[str]) -> list[str]:
-    values: list[str] = []
-    for raw in str(value or "").replace(";", ",").split(","):
-        token = raw.strip()
-        if not token:
-            continue
-        if not pattern.fullmatch(token):
-            continue
-        values.append(token)
-    return sorted(set(values))
+    return backlog_render_support._split_metadata_ids(value=value, pattern=pattern)
 
 
 def _extract_plan_dates(plan_path: Path) -> tuple[str, str, str]:
-    """Return `(created_date, updated_date, filename_date)` from plan metadata."""
-
-    filename_date = ""
-    filename_match = _PLAN_FILENAME_DATE_RE.search(plan_path.name)
-    if filename_match is not None:
-        token = str(filename_match.group(1)).strip()
-        if _DATE_TOKEN_RE.fullmatch(token):
-            filename_date = token
-
-    if not plan_path.is_file():
-        return "", "", filename_date
-
-    content = plan_path.read_text(encoding="utf-8")
-    created = ""
-    created_match = _PLAN_CREATED_RE.search(content)
-    if created_match is not None:
-        token = str(created_match.group(1)).strip()
-        if _DATE_TOKEN_RE.fullmatch(token):
-            created = token
-
-    updated_match = _PLAN_UPDATED_RE.search(content)
-    if updated_match is not None:
-        updated = str(updated_match.group(1)).strip()
-        if _DATE_TOKEN_RE.fullmatch(updated):
-            return created, updated, filename_date
-
-    return created, "", filename_date
+    return backlog_render_support._extract_plan_dates(plan_path)
 
 
 def _parse_iso_datetime(value: object) -> dt.datetime | None:
@@ -476,8 +257,12 @@ def _atlas_diagram_catalog_rows(*, repo_root: Path) -> list[dict[str, object]]:
 def _load_component_index(
     *,
     repo_root: Path,
+    runtime_mode: str = "auto",
 ) -> Mapping[str, component_registry.ComponentEntry]:
-    return render_backlog_ui_payload_runtime._load_component_index(repo_root=repo_root)
+    return render_backlog_ui_payload_runtime._load_component_index(
+        repo_root=repo_root,
+        runtime_mode=runtime_mode,
+    )
 
 
 def _attach_component_registry_links(
@@ -664,9 +449,37 @@ def _render_html(*, payload: dict[str, object]) -> str:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    index_path = _resolve_path(repo_root=repo_root, value=args.index)
-    output_path = _resolve_path(repo_root=repo_root, value=args.output)
-    standalone_pages_path = _resolve_path(repo_root=repo_root, value=args.standalone_pages)
+    index_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.index)
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
+    standalone_pages_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.standalone_pages)
+    skip_rebuild, input_fingerprint, cached_metadata, bundle_paths, _output_paths = (
+        generated_surface_refresh_guards.should_skip_surface_rebuild(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="backlog",
+            key=_BACKLOG_REFRESH_GUARD_KEY,
+            watched_paths=_refresh_guard_watched_paths(index_path=index_path),
+            extra_live_paths=(standalone_pages_path,),
+            live_globs=("backlog-detail-shard-*.v1.js", "backlog-document-shard-*.v1.js"),
+            extra={"runtime_mode": str(args.runtime_mode).strip().lower() or "auto"},
+        )
+    )
+    if skip_rebuild:
+        from odylith.runtime.governance import sync_session as governed_sync_session
+
+        session = governed_sync_session.active_sync_session()
+        if session is not None and session.repo_root == repo_root:
+            session.record_surface_decision(
+                surface="radar",
+                cache_hit=True,
+                built_from="refresh_guard_cache",
+                details={"input_fingerprint": input_fingerprint},
+            )
+        print("backlog ui render passed")
+        print(f"- output: {output_path}")
+        print(f"- standalone_pages: {standalone_pages_path}")
+        print(f"- ideas: {int(cached_metadata.get('idea_count', 0) or 0)}")
+        return 0
 
     errors: list[str] = []
     if not index_path.is_file():
@@ -805,9 +618,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"- {message}")
         return 2
 
-    component_index = _load_component_index(repo_root=repo_root)
+    component_index = _load_component_index(
+        repo_root=repo_root,
+        runtime_mode=str(args.runtime_mode),
+    )
     _attach_component_registry_links(entries=entries, component_index=component_index)
     _attach_execution_overlay(entries=entries, repo_root=repo_root)
+    render_backlog_ui_payload_runtime._attach_delivery_scope_signals(
+        entries=entries,
+        repo_root=repo_root,
+        runtime_mode=str(args.runtime_mode),
+    )
 
     detail_entries = {
         str(entry.get("idea_id", "")).strip(): _build_backlog_detail_entry(entry)
@@ -870,6 +691,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             "available_backends": ["runtime", "staticSnapshot"],
             "runtime_base_url": "",
         },
+        "runtime_contract": derivation_provenance.build_surface_runtime_contract(
+            repo_root=repo_root,
+            surface="radar",
+            runtime_mode=str(args.runtime_mode),
+            built_from="surface_render",
+            cache_hit=False,
+            output_path=output_path,
+            extra={"input_fingerprint": input_fingerprint},
+        ),
         "traceability_graph_file": (
             _as_repo_path(repo_root=repo_root, target=traceability_graph_path)
             if traceability_graph_path.is_file()
@@ -886,7 +716,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
     }
     html = _render_html(payload=data)
-    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="backlog")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     bundled_html, payload_js, control_js = dashboard_surface_bundle.externalize_surface_bundle(
         html_text=html,
@@ -968,6 +797,54 @@ def main(argv: Sequence[str] | None = None) -> int:
                 stale_path.unlink()
     if analytics_path.is_file():
         analytics_path.unlink()
+    source_bundle_mirror.sync_live_paths(
+        repo_root=repo_root,
+        live_paths=(
+            output_path,
+            bundle_paths.payload_js_path,
+            bundle_paths.control_js_path,
+            standalone_pages_path,
+        ),
+    )
+    source_bundle_mirror.sync_live_glob(
+        repo_root=repo_root,
+        live_dir=output_path.parent,
+        pattern="backlog-detail-shard-*.v1.js",
+    )
+    source_bundle_mirror.sync_live_glob(
+        repo_root=repo_root,
+        live_dir=output_path.parent,
+        pattern="backlog-document-shard-*.v1.js",
+    )
+    if input_fingerprint:
+        _bundle_paths, current_output_paths = generated_surface_refresh_guards.surface_output_paths(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="backlog",
+            extra_live_paths=(standalone_pages_path,),
+            live_globs=("backlog-detail-shard-*.v1.js", "backlog-document-shard-*.v1.js"),
+        )
+        generated_surface_refresh_guards.record_surface_rebuild(
+            repo_root=repo_root,
+            key=_BACKLOG_REFRESH_GUARD_KEY,
+            input_fingerprint=input_fingerprint,
+            output_paths=current_output_paths,
+            metadata={
+                "idea_count": len(entries),
+                "detail_shards": len(detail_shards),
+                "document_shards": len(document_shards),
+            },
+        )
+    from odylith.runtime.governance import sync_session as governed_sync_session
+
+    session = governed_sync_session.active_sync_session()
+    if session is not None and session.repo_root == repo_root:
+        session.record_surface_decision(
+            surface="radar",
+            cache_hit=False,
+            built_from="surface_render",
+            details={"input_fingerprint": input_fingerprint},
+        )
 
     legacy_ui_root = (repo_root / "backlog" / "ui").resolve()
     generated_surface_cleanup.remove_legacy_generated_paths(

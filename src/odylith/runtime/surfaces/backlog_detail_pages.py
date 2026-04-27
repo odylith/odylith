@@ -5,11 +5,11 @@ from __future__ import annotations
 import html
 from pathlib import Path
 
-
-def _host():
-    from odylith.runtime.surfaces import render_backlog_ui as host
-
-    return host
+from odylith.runtime.governance import validate_backlog_contract as contract
+from odylith.runtime.surfaces import backlog_rich_text
+from odylith.runtime.surfaces import backlog_render_support
+from odylith.runtime.surfaces import dashboard_ui_primitives
+from odylith.runtime.surfaces import render_backlog_ui_html_runtime
 
 
 def _render_idea_spec_html(
@@ -19,27 +19,20 @@ def _render_idea_spec_html(
     entry: dict[str, object],
     destination_output_path: Path | None = None,
 ) -> str:
-    host = _host()
-    _resolve_path = host._resolve_path
-    _as_portable_relative_href = host._as_portable_relative_href
-    _extract_sections_with_body = host._extract_sections_with_body
-    _radar_route_href = host._radar_route_href
-    _rewrite_section_text = host._rewrite_section_text
-    _render_section_body = host._render_section_body
-    dashboard_ui_primitives = host.dashboard_ui_primitives
-    contract = host.contract
-
     idea_file = str(entry.get("idea_file", "")).strip()
-    idea_path = _resolve_path(repo_root=repo_root, value=idea_file)
+    idea_path = backlog_render_support._resolve_path(repo_root=repo_root, value=idea_file)
     if not idea_path.is_file():
         raise FileNotFoundError(f"missing idea markdown: {idea_path}")
 
     idea_output_path = destination_output_path or index_output_path
-    index_href = _as_portable_relative_href(output_path=idea_output_path, target=index_output_path)
+    index_href = backlog_render_support._as_portable_relative_href(
+        output_path=idea_output_path,
+        target=index_output_path,
+    )
 
     spec = contract._parse_idea_spec(idea_path)
     metadata = spec.metadata
-    sections = _extract_sections_with_body(idea_path)
+    sections = backlog_render_support._extract_sections_with_body(idea_path)
     section_map: dict[str, list[str]] = {}
     for section_title, section_lines in sections:
         normalized_title = section_title.strip().lower()
@@ -49,7 +42,7 @@ def _render_idea_spec_html(
     promoted_to_plan_ui_file = str(entry.get("promoted_to_plan_ui_file", "")).strip()
     promoted_to_plan_ui_href = ""
     if promoted_to_plan_ui_file:
-        promoted_to_plan_ui_href = _radar_route_href(
+        promoted_to_plan_ui_href = backlog_render_support._radar_route_href(
             source_output_path=idea_output_path,
             target_output_path=index_output_path,
             workstream_id=str(entry.get("idea_id", "")).strip(),
@@ -65,7 +58,6 @@ def _render_idea_spec_html(
         ("Execution Start", entry.get("execution_start_date_display", entry.get("execution_start_date", ""))),
         ("Execution End", entry.get("execution_end_date_display", entry.get("execution_end_date", ""))),
         ("Execution Days", entry.get("execution_duration_days", entry.get("execution_age_days", ""))),
-        ("Impacted Lanes", metadata.get("impacted_lanes", "")),
         ("Sizing", metadata.get("sizing", "")),
         ("Complexity", metadata.get("complexity", "")),
         ("Ordering Score", metadata.get("ordering_score", "")),
@@ -94,42 +86,51 @@ def _render_idea_spec_html(
         if fallback:
             rationale_bullets = [fallback]
     if len(rationale_bullets) > 1:
-        rationale_html = (
-            "<ul>"
-            + "".join(
-                f"<li>{html.escape(_rewrite_section_text(repo_root=repo_root, text=item))}</li>"
-                for item in rationale_bullets
-            )
-            + "</ul>"
+        rationale_html = backlog_render_support._render_section_body(
+            repo_root=repo_root,
+            lines=[f"- {item}" for item in rationale_bullets],
         )
     elif len(rationale_bullets) == 1:
-        rationale_html = f"<p>{html.escape(_rewrite_section_text(repo_root=repo_root, text=rationale_bullets[0]))}</p>"
+        rationale_html = backlog_render_support._render_section_body(
+            repo_root=repo_root,
+            lines=[rationale_bullets[0]],
+        )
     else:
         rationale_html = "<p>No decision-basis bullets recorded.</p>"
     product_view_lines = section_map.get("product view", section_map.get("founder pov", []))
     product_view_html = (
-        _render_section_body(repo_root=repo_root, lines=product_view_lines)
+        backlog_render_support._render_section_body(repo_root=repo_root, lines=product_view_lines)
         if product_view_lines
         else "<p>Not captured in the idea spec yet.</p>"
     )
 
+    problem_section_html = "".join(
+        (
+            f"<section class=\"block\">"
+            f"<h2>{html.escape(title)}</h2>"
+            f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)}"
+            f"</section>"
+        )
+        for title, lines in sections
+        if title.strip().lower() == "problem"
+    )
     section_html = "".join(
         (
             f"<section class=\"block\">"
             f"<h2>{html.escape(title)}</h2>"
-            f"{_render_section_body(repo_root=repo_root, lines=lines)}"
+            f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)}"
             f"</section>"
         )
         for title, lines in sections
-        if title.strip().lower() not in {"product view", "founder pov"}
+        if title.strip().lower() not in {"product view", "founder pov", "problem"}
     )
-    if not section_html:
+    if not problem_section_html and not section_html:
         section_html = "<section class=\"block\"><h2>Content</h2><p>No markdown sections found.</p></section>"
 
     implemented_summary_html = (
         "<section class=\"block\">"
         "<h2>Implemented Summary</h2>"
-        f"<p>{html.escape(_rewrite_section_text(repo_root=repo_root, text=implemented_summary))}</p>"
+        f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=[implemented_summary])}"
         "</section>"
         if implemented_summary
         else ""
@@ -150,11 +151,15 @@ def _render_idea_spec_html(
     idea_id = html.escape(str(entry.get("idea_id", "")).strip())
     priority = html.escape(str(entry.get("priority", "")).strip())
     status = html.escape(str(entry.get("status", "")).strip())
-    lanes = html.escape(str(entry.get("impacted_lanes", "")).strip())
     score = html.escape(str(entry.get("ordering_score", "")).strip())
     page_body_css = dashboard_ui_primitives.page_body_typography_css(
         selector="body",
         color="var(--ink)",
+    )
+    surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
+    surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
+        selector=".shell",
+        padding="18px 14px 26px",
     )
     title_css = dashboard_ui_primitives.display_title_typography_css(
         title_selector="h1",
@@ -245,11 +250,8 @@ def _render_idea_spec_html(
       background: linear-gradient(180deg, #eef2ff, var(--bg));
     }}
     {page_body_css}
-    .shell {{
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 18px 14px 26px;
-    }}
+    {surface_shell_root_css}
+    {surface_shell_css}
     .back {{
       display: inline-block;
       margin-bottom: 12px;
@@ -336,6 +338,24 @@ def _render_idea_spec_html(
       margin: 0;
       padding-left: 20px;
     }}
+    .block code,
+    .meta-val code {{
+      font-family: {dashboard_ui_primitives.MONO_FONT_FAMILY};
+      font-size: 0.92em;
+      color: #1e3a8a;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      border-radius: 6px;
+      padding: 0.08em 0.38em;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }}
+    .block a,
+    .meta-val a {{
+      color: var(--brand);
+      text-decoration: none;
+      border-bottom: 1px solid #bfdbfe;
+    }}
     {body_copy_css}
     .checklist {{
       display: flex;
@@ -362,6 +382,13 @@ def _render_idea_spec_html(
       opacity: 1;
     }}
     .check-text {{
+      min-width: 0;
+    }}
+    .check-text > *:first-child {{
+      margin-top: 0;
+    }}
+    .check-text > *:last-child {{
+      margin-bottom: 0;
     }}
     .code {{
       margin: 0;
@@ -373,7 +400,9 @@ def _render_idea_spec_html(
     }}
     {code_css}
     .code code {{
-      white-space: pre;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }}
     .mermaid-wrap {{
       border: 1px solid var(--line);
@@ -407,7 +436,6 @@ def _render_idea_spec_html(
       <div class="chips">
         <span class="chip">{priority}</span>
         <span class="chip">{status}</span>
-        <span class="chip">{lanes}</span>
         <span class="chip">Score {score}</span>
       </div>
     </header>
@@ -423,6 +451,10 @@ def _render_idea_spec_html(
       </div>
     </section>
 
+    {implemented_summary_html}
+
+    {problem_section_html}
+
     <section class="founder-group">
       <article class="block founder-card">
         <h2>Product View</h2>
@@ -433,8 +465,6 @@ def _render_idea_spec_html(
         {rationale_html}
       </article>
     </section>
-
-    {implemented_summary_html}
 
     {section_html}
   </main>
@@ -479,31 +509,19 @@ def _render_plan_html(
     entry: dict[str, object],
     destination_output_path: Path | None = None,
 ) -> str:
-    host = _host()
-    _resolve_path = host._resolve_path
-    _as_portable_relative_href = host._as_portable_relative_href
-    _radar_route_href = host._radar_route_href
-    _extract_sections_with_body = host._extract_sections_with_body
-    _render_section_body = host._render_section_body
-    _rewrite_section_text = host._rewrite_section_text
-    _collect_plan_traceability_paths = host._collect_plan_traceability_paths
-    _TRACEABILITY_SECTION_NAME = host._TRACEABILITY_SECTION_NAME
-    _TRACEABILITY_BUCKETS = host._TRACEABILITY_BUCKETS
-    dashboard_ui_primitives = host.dashboard_ui_primitives
-
     plan_file = str(entry.get("promoted_to_plan_file", "")).strip()
     if not plan_file:
         raise FileNotFoundError("missing promoted_to_plan_file")
-    plan_path = _resolve_path(repo_root=repo_root, value=plan_file)
+    plan_path = backlog_render_support._resolve_path(repo_root=repo_root, value=plan_file)
     if not plan_path.is_file():
         raise FileNotFoundError(f"missing plan markdown: {plan_path}")
 
     plan_output_path = destination_output_path or index_output_path
 
-    index_href = _as_portable_relative_href(output_path=plan_output_path, target=index_output_path)
+    index_href = backlog_render_support._as_portable_relative_href(output_path=plan_output_path, target=index_output_path)
     idea_ui_href = ""
     if str(entry.get("idea_id", "")).strip():
-        idea_ui_href = _radar_route_href(
+        idea_ui_href = backlog_render_support._radar_route_href(
             source_output_path=plan_output_path,
             target_output_path=index_output_path,
             workstream_id=str(entry.get("idea_id", "")).strip(),
@@ -511,7 +529,7 @@ def _render_plan_html(
         )
 
     plan_meta = _extract_plan_metadata(plan_path)
-    sections = _extract_sections_with_body(plan_path)
+    sections = backlog_render_support._extract_sections_with_body(plan_path)
 
     meta_order = (
         "Status",
@@ -540,7 +558,7 @@ def _render_plan_html(
         (
             f"<div class=\"meta-item\">"
             f"<div class=\"meta-key\">{html.escape(label)}</div>"
-            f"<div class=\"meta-val\">{html.escape(_rewrite_section_text(repo_root=repo_root, text=value or '-'))}</div>"
+            f"<div class=\"meta-val\">{backlog_rich_text.render_inline_html(repo_root=repo_root, text=value or '-')}</div>"
             f"</div>"
         )
         for label, value in summary_pairs
@@ -549,7 +567,7 @@ def _render_plan_html(
         (
             f"<div class=\"meta-row\">"
             f"<div class=\"meta-row-key\">{html.escape(label)}</div>"
-            f"<div class=\"meta-row-val\">{html.escape(_rewrite_section_text(repo_root=repo_root, text=value or '-'))}</div>"
+            f"<div class=\"meta-row-val\">{backlog_render_support._render_section_body(repo_root=repo_root, lines=[value or '-'])}</div>"
             f"</div>"
         )
         for label, value in detail_pairs
@@ -560,11 +578,11 @@ def _render_plan_html(
         (
             f"<section class=\"block\">"
             f"<h2>{html.escape(title)}</h2>"
-            f"{_render_section_body(repo_root=repo_root, lines=lines)}"
+            f"{backlog_render_support._render_section_body(repo_root=repo_root, lines=lines)}"
             f"</section>"
         )
         for title, lines in sections
-        if title.strip().lower() != _TRACEABILITY_SECTION_NAME.lower()
+        if title.strip().lower() != render_backlog_ui_html_runtime._TRACEABILITY_SECTION_NAME.lower()
     )
     if not section_html:
         section_html = "<section class=\"block\"><h2>Content</h2><p>No markdown sections found.</p></section>"
@@ -579,9 +597,12 @@ def _render_plan_html(
         if idea_ui_href
         else "<span>No linked workstream page</span>"
     )
-    plan_traceability = _collect_plan_traceability_paths(repo_root=repo_root, sections=sections)
+    plan_traceability = render_backlog_ui_html_runtime._collect_plan_traceability_paths(
+        repo_root=repo_root,
+        sections=sections,
+    )
     traceability_group_html = ""
-    for label in _TRACEABILITY_BUCKETS:
+    for label in render_backlog_ui_html_runtime._TRACEABILITY_BUCKETS:
         paths = plan_traceability.get(label, [])
         if not paths:
             continue
@@ -591,7 +612,7 @@ def _render_plan_html(
             display = html.escape(rel_path)
             file_name = html.escape(Path(rel_path).name or rel_path)
             if target.exists():
-                href = _as_portable_relative_href(output_path=plan_output_path, target=target)
+                href = backlog_render_support._as_portable_relative_href(output_path=plan_output_path, target=target)
                 items.append(
                     (
                         f"<a class=\"trace-link\" href=\"{html.escape(href)}\" title=\"{display}\">"
@@ -627,6 +648,11 @@ def _render_plan_html(
     page_body_css = dashboard_ui_primitives.page_body_typography_css(
         selector="body",
         color="var(--ink)",
+    )
+    surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
+    surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
+        selector=".shell",
+        padding="18px 14px 28px",
     )
     title_css = dashboard_ui_primitives.display_title_typography_css(
         title_selector="h1",
@@ -684,7 +710,11 @@ def _render_plan_html(
             ".block p",
             ".block ul",
             ".block li",
+            ".meta-val",
             ".meta-row-val",
+            ".meta-row-val p",
+            ".meta-row-val ul",
+            ".meta-row-val li",
             ".check-text",
         ),
         color="#27445e",
@@ -755,11 +785,8 @@ def _render_plan_html(
       background: linear-gradient(180deg, #ecfeff, var(--bg));
     }}
     {page_body_css}
-    .shell {{
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 18px 14px 28px;
-    }}
+    {surface_shell_root_css}
+    {surface_shell_css}
     .back {{
       display: inline-block;
       margin-bottom: 12px;
@@ -859,6 +886,39 @@ def _render_plan_html(
       margin: 0;
       padding-left: 20px;
     }}
+    .block code,
+    .meta-val code,
+    .meta-row-val code {{
+      font-family: {dashboard_ui_primitives.MONO_FONT_FAMILY};
+      font-size: 0.92em;
+      color: #1e3a8a;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      border-radius: 6px;
+      padding: 0.08em 0.38em;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }}
+    .block a,
+    .meta-val a,
+    .meta-row-val a {{
+      color: var(--brand);
+      text-decoration: none;
+      border-bottom: 1px solid #bfdbfe;
+    }}
+    .meta-row-val > *:first-child {{
+      margin-top: 0;
+    }}
+    .meta-row-val > *:last-child {{
+      margin-bottom: 0;
+    }}
+    .meta-row-val p {{
+      margin: 0 0 8px;
+    }}
+    .meta-row-val ul {{
+      margin: 0;
+      padding-left: 20px;
+    }}
     {plan_body_copy_css}
     .checklist {{
       display: flex;
@@ -885,6 +945,13 @@ def _render_plan_html(
       opacity: 1;
     }}
     .check-text {{
+      min-width: 0;
+    }}
+    .check-text > *:first-child {{
+      margin-top: 0;
+    }}
+    .check-text > *:last-child {{
+      margin-bottom: 0;
     }}
     .code {{
       margin: 0;
@@ -896,7 +963,9 @@ def _render_plan_html(
     }}
     {code_css}
     .code code {{
-      white-space: pre;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }}
     .mermaid-wrap {{
       border: 1px solid var(--line);

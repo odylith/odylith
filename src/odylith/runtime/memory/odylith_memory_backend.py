@@ -13,14 +13,16 @@ import contextlib
 import hashlib
 import json
 import math
-import os
 from pathlib import Path
 import re
 import shutil
 import tempfile
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.memory import odylith_memory_backend_filesystem
 from odylith.runtime.memory import odylith_projection_bundle
 
 try:
@@ -100,6 +102,7 @@ def _manifest_matches_compiler(
     *,
     manifest: Mapping[str, Any],
     compiler_manifest: Mapping[str, Any],
+    require_generation: bool = False,
 ) -> bool:
     if not manifest:
         return False
@@ -113,6 +116,18 @@ def _manifest_matches_compiler(
     manifest_input = str(manifest.get("input_fingerprint", "")).strip()
     compiler_input = str(compiler_manifest.get("input_fingerprint", "")).strip()
     if manifest_input and compiler_input and manifest_input != compiler_input:
+        return False
+    compiler_provenance = derivation_provenance.extract_provenance(compiler_manifest)
+    manifest_compiler_provenance = (
+        dict(manifest.get("compiler_provenance", {}))
+        if isinstance(manifest.get("compiler_provenance"), Mapping)
+        else derivation_provenance.extract_provenance(manifest)
+    )
+    if compiler_provenance and not derivation_provenance.provenance_matches(
+        actual=manifest_compiler_provenance,
+        expected=compiler_provenance,
+        require_generation=require_generation,
+    ):
         return False
     return True
 
@@ -158,6 +173,7 @@ def _ready_manifest_payload(
     )
     if compiler_manifest:
         payload["compiler_manifest"] = dict(compiler_manifest)
+        payload["compiler_provenance"] = derivation_provenance.extract_provenance(compiler_manifest)
     return payload
 
 
@@ -171,7 +187,12 @@ def _restore_ready_manifest_if_possible(
     if not payload or not backend_dependencies_available() or not _local_backend_artifacts_present(repo_root=root):
         return payload
     compiler_manifest = odylith_projection_bundle.load_bundle_manifest(repo_root=root)
-    if not _manifest_matches_compiler(manifest=payload, compiler_manifest=compiler_manifest):
+    _generation, require_generation, _last_step = derivation_provenance.active_sync_generation(repo_root=root)
+    if not _manifest_matches_compiler(
+        manifest=payload,
+        compiler_manifest=compiler_manifest,
+        require_generation=require_generation,
+    ):
         return payload
     ready, _health_error = _backend_operational_check(repo_root=root)
     if not ready:
@@ -452,6 +473,41 @@ def _projection_documents_from_tables(*, connection: Any) -> list[dict[str, Any]
                 )
             )
 
+    if _table_exists(connection, "releases"):
+        for row in connection.execute(
+            """
+            SELECT release_id, display_label, version, tag, effective_name, aliases_json, active_workstreams_json, source_path, metadata_json
+            FROM releases
+            ORDER BY release_id
+            """
+        ).fetchall():
+            metadata = _json_dict(row["metadata_json"])
+            aliases = [str(item).strip() for item in _json_list(row["aliases_json"]) if str(item).strip()]
+            active_workstreams = [str(item).strip() for item in _json_list(row["active_workstreams_json"]) if str(item).strip()]
+            documents.append(
+                _document_record(
+                    {
+                        "kind": "release",
+                        "entity_id": str(row["release_id"]).strip(),
+                        "title": str(row["display_label"]).strip() or str(row["release_id"]).strip(),
+                        "content": "\n".join(
+                            token
+                            for token in (
+                                str(row["release_id"]).strip(),
+                                str(row["version"]).strip(),
+                                str(row["tag"]).strip(),
+                                str(row["effective_name"]).strip(),
+                                " ".join(aliases),
+                                " ".join(active_workstreams),
+                                str(metadata.get("notes", "")).strip(),
+                            )
+                            if token
+                        ),
+                        "path": str(row["source_path"]).strip(),
+                    }
+                )
+            )
+
     if _table_exists(connection, "plans"):
         for row in connection.execute(
             "SELECT plan_path, source_path, search_body FROM plans ORDER BY plan_path"
@@ -570,7 +626,7 @@ def _projection_documents_from_tables(*, connection: Any) -> list[dict[str, Any]
                             )
                             if token
                         ),
-                        "path": "odylith/compass/runtime/codex-stream.v1.jsonl",
+                        "path": agent_runtime_contract.AGENT_STREAM_PATH,
                     }
                 )
             )
@@ -669,6 +725,40 @@ def _projection_documents_from_projection_tables(
                     "content": "\n".join(
                         token
                         for token in (idea_id, str(row.get("search_body", "")).strip())
+                        if token
+                    ),
+                    "path": str(row.get("source_path", "")).strip(),
+                }
+            )
+        )
+
+    for row in tables.get("releases", []) if isinstance(tables.get("releases"), list) else []:
+        if not isinstance(row, Mapping):
+            continue
+        metadata = _json_dict(row.get("metadata_json"))
+        aliases = [str(item).strip() for item in _json_list(row.get("aliases_json")) if str(item).strip()]
+        active_workstreams = [
+            str(item).strip()
+            for item in _json_list(row.get("active_workstreams_json"))
+            if str(item).strip()
+        ]
+        documents.append(
+            _document_record(
+                {
+                    "kind": "release",
+                    "entity_id": str(row.get("release_id", "")).strip(),
+                    "title": str(row.get("display_label", "")).strip() or str(row.get("release_id", "")).strip(),
+                    "content": "\n".join(
+                        token
+                        for token in (
+                            str(row.get("release_id", "")).strip(),
+                            str(row.get("version", "")).strip(),
+                            str(row.get("tag", "")).strip(),
+                            str(row.get("effective_name", "")).strip(),
+                            " ".join(aliases),
+                            " ".join(active_workstreams),
+                            str(metadata.get("notes", "")).strip(),
+                        )
                         if token
                     ),
                     "path": str(row.get("source_path", "")).strip(),
@@ -785,7 +875,7 @@ def _projection_documents_from_projection_tables(
                         )
                         if token
                     ),
-                    "path": "odylith/compass/runtime/codex-stream.v1.jsonl",
+                    "path": agent_runtime_contract.AGENT_STREAM_PATH,
                 }
             )
         )
@@ -1064,13 +1154,24 @@ def local_backend_matches_projection(
     repo_root: Path,
     projection_fingerprint: str,
     projection_scope: str,
+    provenance: Mapping[str, Any] | None = None,
+    require_generation: bool = False,
 ) -> bool:
     manifest = load_manifest(repo_root=repo_root)
-    return (
+    matches = (
         bool(manifest)
         and str(manifest.get("projection_fingerprint", "")).strip() == str(projection_fingerprint).strip()
         and str(manifest.get("projection_scope", "")).strip() == str(projection_scope or "").strip().lower()
     )
+    if not matches:
+        return False
+    if provenance:
+        return derivation_provenance.provenance_matches(
+            actual=derivation_provenance.extract_provenance(manifest),
+            expected=provenance,
+            require_generation=require_generation,
+        )
+    return True
 
 
 def local_backend_ready_for_projection(
@@ -1078,11 +1179,15 @@ def local_backend_ready_for_projection(
     repo_root: Path,
     projection_fingerprint: str,
     projection_scope: str,
+    provenance: Mapping[str, Any] | None = None,
+    require_generation: bool = False,
 ) -> bool:
     return local_backend_ready(repo_root=repo_root) and local_backend_matches_projection(
         repo_root=repo_root,
         projection_fingerprint=projection_fingerprint,
         projection_scope=projection_scope,
+        provenance=provenance,
+        require_generation=require_generation,
     )
 
 
@@ -1220,18 +1325,17 @@ def _create_lance_tables(
     temp_root = Path(tempfile.mkdtemp(prefix="odylith-lance-", dir=str(local_backend_root(repo_root=repo_root))))
     target_root = local_lance_root(repo_root=repo_root)
     try:
-        with _lance_connection(lance_root=temp_root) as db:
-            if documents:
-                db.create_table(DOCUMENTS_TABLE, data=[dict(row) for row in documents], mode="overwrite")
-            else:
-                db.create_table(DOCUMENTS_TABLE, schema=_documents_schema(), mode="overwrite")
-            if edges:
-                db.create_table(EDGES_TABLE, data=[dict(row) for row in edges], mode="overwrite")
-            else:
-                db.create_table(EDGES_TABLE, schema=_edges_schema(), mode="overwrite")
-        if target_root.exists():
-            shutil.rmtree(target_root)
-        temp_root.rename(target_root)
+        with odylith_memory_backend_filesystem.suppress_expected_lance_bootstrap_warnings():
+            with _lance_connection(lance_root=temp_root) as db:
+                if documents:
+                    db.create_table(DOCUMENTS_TABLE, data=[dict(row) for row in documents], mode="overwrite")
+                else:
+                    db.create_table(DOCUMENTS_TABLE, schema=_documents_schema(), mode="overwrite")
+                if edges:
+                    db.create_table(EDGES_TABLE, data=[dict(row) for row in edges], mode="overwrite")
+                else:
+                    db.create_table(EDGES_TABLE, schema=_edges_schema(), mode="overwrite")
+        odylith_memory_backend_filesystem.replace_directory_tree(temp_root=temp_root, target_root=target_root)
     except Exception:
         shutil.rmtree(temp_root, ignore_errors=True)
         raise
@@ -1265,10 +1369,13 @@ def _create_tantivy_index(
                 )
             )
         writer.commit()
+        wait_for_merges = getattr(writer, "wait_merging_threads", None)
+        if callable(wait_for_merges):
+            wait_for_merges()
         index.reload()
-        if target_root.exists():
-            shutil.rmtree(target_root)
-        temp_root.rename(target_root)
+        del writer
+        del index
+        odylith_memory_backend_filesystem.replace_directory_tree(temp_root=temp_root, target_root=target_root)
     except Exception:
         shutil.rmtree(temp_root, ignore_errors=True)
         raise
@@ -1280,6 +1387,7 @@ def materialize_local_backend(
     connection: Any | None = None,
     projection_fingerprint: str,
     projection_scope: str,
+    provenance: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     backend_root = local_backend_root(repo_root=root)
@@ -1295,36 +1403,43 @@ def materialize_local_backend(
         reusable_backend, _ = _backend_operational_check(repo_root=root)
     requested_scope = str(projection_scope or "default").strip().lower() or "default"
     requested_fingerprint = str(projection_fingerprint).strip()
-    if (
-        backend_dependencies_available()
-        and manifest
-        and str(manifest.get("input_fingerprint", "")).strip() == inputs["input_fingerprint"]
-        and reusable_backend
-    ):
+    _generation, require_generation, _last_step = derivation_provenance.active_sync_generation(repo_root=root)
+    expected_provenance = dict(provenance) if isinstance(provenance, Mapping) else {}
+    if backend_dependencies_available() and manifest and reusable_backend:
+        manifest_matches_inputs = str(manifest.get("input_fingerprint", "")).strip() == inputs["input_fingerprint"]
         manifest_scope = str(manifest.get("projection_scope", "")).strip().lower()
         manifest_fingerprint = str(manifest.get("projection_fingerprint", "")).strip()
-        if manifest_fingerprint == requested_fingerprint and manifest_scope == requested_scope:
-            reused = dict(manifest)
-            reused["reused"] = True
-            reused["reused_projection_scope"] = manifest_scope
-            return reused
-        if projection_scope_satisfies(available_scope=manifest_scope, requested_scope=requested_scope):
-            try:
-                from odylith.runtime.context_engine import odylith_context_engine_store as store
-
-                compatible_fingerprint = store.projection_input_fingerprint(
-                    repo_root=root,
-                    scope=manifest_scope,
-                )
-            except Exception:
-                compatible_fingerprint = ""
-            if manifest_fingerprint and compatible_fingerprint and manifest_fingerprint == compatible_fingerprint:
+        provenance_matches = (
+            not expected_provenance
+            or derivation_provenance.provenance_matches(
+                actual=derivation_provenance.extract_provenance(manifest),
+                expected=expected_provenance,
+                require_generation=require_generation,
+            )
+        )
+        if manifest_matches_inputs and provenance_matches:
+            if manifest_fingerprint == requested_fingerprint and manifest_scope == requested_scope:
                 reused = dict(manifest)
                 reused["reused"] = True
                 reused["reused_projection_scope"] = manifest_scope
-                reused["requested_projection_scope"] = requested_scope
-                reused["requested_projection_fingerprint"] = requested_fingerprint
                 return reused
+            if projection_scope_satisfies(available_scope=manifest_scope, requested_scope=requested_scope):
+                try:
+                    from odylith.runtime.context_engine import odylith_context_engine_store as store
+
+                    compatible_fingerprint = store.projection_input_fingerprint(
+                        repo_root=root,
+                        scope=manifest_scope,
+                    )
+                except Exception:
+                    compatible_fingerprint = ""
+                if manifest_fingerprint and compatible_fingerprint and manifest_fingerprint == compatible_fingerprint:
+                    reused = dict(manifest)
+                    reused["reused"] = True
+                    reused["reused_projection_scope"] = manifest_scope
+                    reused["requested_projection_scope"] = requested_scope
+                    reused["requested_projection_fingerprint"] = requested_fingerprint
+                    return reused
 
     payload = {
         "version": BACKEND_VERSION,
@@ -1339,9 +1454,11 @@ def materialize_local_backend(
         "storage": "compiler_projection_snapshot" if not backend_dependencies_available() else "lance_local_columnar",
         "sparse_recall": "repo_scan_fallback",
         "compiler_source": "projection_bundle" if inputs.get("compiler_manifest") else "fallback_connection",
+        "provenance": expected_provenance,
     }
     if isinstance(inputs.get("compiler_manifest"), Mapping):
         payload["compiler_manifest"] = dict(inputs.get("compiler_manifest", {}))
+        payload["compiler_provenance"] = derivation_provenance.extract_provenance(inputs.get("compiler_manifest", {}))
     if not backend_dependencies_available():
         odylith_context_cache.write_json_if_changed(
             repo_root=root,
@@ -1351,41 +1468,63 @@ def materialize_local_backend(
         )
         return payload
 
-    try:
-        _create_lance_tables(
-            repo_root=root,
-            documents=inputs["documents"],
-            edges=inputs["edges"],
-        )
-        _create_tantivy_index(
-            repo_root=root,
-            documents=inputs["documents"],
-        )
-        payload.update(
-            {
-                "ready": True,
-                "status": "ready",
-                "storage": "lance_local_columnar",
-                "sparse_recall": "tantivy_sparse_recall",
-                "documents_table": DOCUMENTS_TABLE,
-                "edges_table": EDGES_TABLE,
-            }
-        )
-    except Exception as exc:
-        payload.update(
-            {
-                "ready": False,
-                "status": "error",
-                "error": f"{type(exc).__name__}: {exc}",
-            }
-        )
-    odylith_context_cache.write_json_if_changed(
-        repo_root=root,
-        path=local_manifest_path(repo_root=root),
-        payload=payload,
-        lock_key=str(local_manifest_path(repo_root=root)),
+    substrate_key = derivation_provenance.fingerprint_source_files(
+        [
+            local_manifest_path(repo_root=root),
+            Path(__file__),
+        ]
     )
-    return payload
+    lock_key = f"odylith-memory-backend:materialize:{expected_provenance.get('sync_generation', 0)}:{substrate_key}"
+    with odylith_context_cache.advisory_lock(repo_root=root, key=lock_key):
+        odylith_memory_backend_filesystem.cleanup_stale_backend_workdirs(backend_root=backend_root)
+        manifest = load_manifest(repo_root=root)
+        if backend_dependencies_available() and manifest and local_backend_ready(repo_root=root):
+            ready_reuse, _ = _backend_operational_check(repo_root=root)
+            if ready_reuse and str(manifest.get("input_fingerprint", "")).strip() == inputs["input_fingerprint"]:
+                if not expected_provenance or derivation_provenance.provenance_matches(
+                    actual=derivation_provenance.extract_provenance(manifest),
+                    expected=expected_provenance,
+                    require_generation=require_generation,
+                ):
+                    reused = dict(manifest)
+                    reused["reused"] = True
+                    reused["reused_projection_scope"] = str(manifest.get("projection_scope", "")).strip().lower()
+                    return reused
+        try:
+            _create_lance_tables(
+                repo_root=root,
+                documents=inputs["documents"],
+                edges=inputs["edges"],
+            )
+            _create_tantivy_index(
+                repo_root=root,
+                documents=inputs["documents"],
+            )
+            payload.update(
+                {
+                    "ready": True,
+                    "status": "ready",
+                    "storage": "lance_local_columnar",
+                    "sparse_recall": "tantivy_sparse_recall",
+                    "documents_table": DOCUMENTS_TABLE,
+                    "edges_table": EDGES_TABLE,
+                }
+            )
+        except Exception as exc:
+            payload.update(
+                {
+                    "ready": False,
+                    "status": "error",
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
+        odylith_context_cache.write_json_if_changed(
+            repo_root=root,
+            path=local_manifest_path(repo_root=root),
+            payload=payload,
+            lock_key=str(local_manifest_path(repo_root=root)),
+        )
+        return payload
 
 
 def _filter_result_kinds(

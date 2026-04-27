@@ -36,6 +36,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-board {
   display: grid;
   gap: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-section {
@@ -43,11 +45,15 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   border-radius: 16px;
   background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-program-stack {
   display: grid;
   gap: 24px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-section summary {
@@ -66,6 +72,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .execution-wave-section-summary-compass {
@@ -94,6 +101,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-section-line {
   color: #27445e;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-section-line-muted {
@@ -106,6 +115,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .execution-wave-section-toggle {
@@ -148,6 +158,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   padding: 16px 18px 18px;
   display: grid;
   gap: 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-focus {
@@ -155,6 +167,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   border-radius: 14px;
   background: linear-gradient(135deg, #f9fbff 0%, #ffffff 58%, #f3faf7 100%);
   padding: 16px 18px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-focus-grid {
@@ -162,6 +176,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
   align-items: start;
+  min-width: 0;
 }
 
 .execution-wave-focus-copy {
@@ -182,6 +197,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   color: #27445e;
   line-height: 1.6;
   max-width: 70ch;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-focus-line-muted {
@@ -199,6 +216,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-sequence {
   display: grid;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-card {
@@ -207,6 +226,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   border-radius: 14px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-card summary {
@@ -236,6 +257,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-card-summary {
   cursor: pointer;
   padding: 14px 16px;
+  min-width: 0;
 }
 
 .execution-wave-card-summary:hover {
@@ -265,6 +287,15 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
   align-items: start;
+  min-width: 0;
+}
+
+.execution-wave-card-shell-full-copy {
+  grid-template-areas:
+    "title meta"
+    "sub sub"
+    "compact compact";
+  row-gap: 8px;
 }
 
 .execution-wave-card-copy {
@@ -278,6 +309,12 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  min-width: 0;
+}
+
+.execution-wave-card-shell-full-copy .execution-wave-title-row {
+  grid-area: title;
+  min-width: 0;
 }
 
 .execution-wave-title {
@@ -286,12 +323,23 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.01em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-sub {
   color: #27445e;
   line-height: 1.6;
   max-width: 72ch;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.execution-wave-card-shell-full-copy .execution-wave-sub {
+  grid-area: sub;
+  max-width: none;
+  min-width: 0;
 }
 
 .execution-wave-compact {
@@ -299,6 +347,12 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   flex-wrap: wrap;
   gap: 8px 12px;
   align-items: center;
+  min-width: 0;
+}
+
+.execution-wave-card-shell-full-copy .execution-wave-compact {
+  grid-area: compact;
+  min-width: 0;
 }
 
 .execution-wave-compact-line {
@@ -324,6 +378,10 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   min-width: 180px;
 }
 
+.execution-wave-card-shell-full-copy .execution-wave-card-meta {
+  grid-area: meta;
+}
+
 .execution-wave-card-stat-rail {
   display: flex;
   flex-wrap: wrap;
@@ -341,11 +399,15 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   padding: 12px 16px 16px;
   display: grid;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-body-grid {
   display: grid;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .execution-wave-body-grid-top {
@@ -395,6 +457,8 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
 .execution-wave-highlight-copy {
   color: #27445e;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-highlight-copy-strong {
@@ -409,11 +473,13 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   align-items: flex-start;
   align-content: flex-start;
   min-height: 28px;
+  min-width: 0;
 }
 
 .execution-wave-gates {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .execution-wave-gate {
@@ -421,11 +487,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   border-radius: 11px;
   background: #ffffff;
   padding: 10px 11px;
+  min-width: 0;
 }
 
 .execution-wave-gate-label {
   color: #27445e;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .execution-wave-gate-meta {
@@ -454,6 +523,14 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .execution-wave-card-shell-full-copy {
+    grid-template-areas:
+      "title"
+      "meta"
+      "sub"
+      "compact";
+  }
+
   .execution-wave-body-grid-members {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -465,7 +542,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
   }
 
   .execution-wave-section-summary-compass {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .execution-wave-section-meta-bottom {
@@ -538,7 +615,7 @@ def execution_wave_component_css(*, section_header_variant: str = "") -> str:
                 border_color="#ddd6ae",
                 color="#6b5f2a",
             ),
-            dashboard_ui_primitives.detail_action_chip_css(
+            dashboard_ui_primitives.surface_workstream_button_chip_css(
                 selector=".execution-wave-chip-link",
             ),
             dashboard_ui_primitives.subtle_link_label_tone_css(
@@ -845,11 +922,6 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     if (waveSpan) contextChips.push(`<span class="label execution-wave-label wave-status-active">${escapeHtml(waveSpan)}</span>`);
     if (roleLabel) contextChips.push(`<span class="label execution-wave-label wave-role-chip">${escapeHtml(roleLabel)}</span>`);
     if (contextMeta.has_next_wave) contextChips.push('<span class="label execution-wave-label wave-status-planned">Next relevant</span>');
-  } else {
-    const waveCount = Number(program.wave_count || 0);
-    if (waveCount > 0) {
-      contextChips.push(`<span class="label execution-wave-label wave-chip-program">${escapeHtml(`${waveCount}-wave program`)}</span>`);
-    }
   }
 
   const cardsHtml = waves.map((wave) => {
@@ -876,8 +948,7 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     const sequenceChip = `${sequenceCount} of ${totalWaveCount}`;
     const waveProgress = executionWaveWaveProgress(wave, options);
     const progressChip = waveProgress.percent ? `${waveProgress.percent} progress` : "";
-    const openByDefault = Boolean(wave.default_open) || isSelectedMember;
-    const openAttr = openByDefault ? " open" : "";
+    const openAttr = "";
     const selectedNote = isSelectedMember ? String(selectedNoteBuilder(selectedWorkstream, contextMeta) || "").trim() : "";
     const supportBlocks = [];
     if (gatePreview) {
@@ -921,15 +992,11 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     return `
       <details class="${cardClassNames.join(" ")}"${openAttr}>
         <summary class="execution-wave-card-summary">
-          <div class="execution-wave-card-shell">
-            <div class="execution-wave-card-copy">
-              <div class="execution-wave-title-row">
-                <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
-                <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
-                ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
-              </div>
-              <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
-              ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
+          <div class="execution-wave-card-shell execution-wave-card-shell-full-copy">
+            <div class="execution-wave-title-row">
+              <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
+              <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
+              ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
             </div>
             <div class="execution-wave-card-meta">
               <div class="execution-wave-card-stat-rail">
@@ -940,6 +1007,8 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
                 ${isSelectedMember ? `<span class="label execution-wave-label wave-role-chip">${escapeHtml(selectedBadgeLabel)}</span>` : ""}
               </div>
             </div>
+            <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
+            ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
           </div>
         </summary>
         <div class="execution-wave-card-body">
@@ -972,7 +1041,7 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
             <div class="execution-wave-focus-line">${escapeHtml(contextLine)}</div>
             ${summaryLine ? `<div class="execution-wave-focus-line execution-wave-focus-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          <div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>
+          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
       <div class="execution-wave-sequence">${cardsHtml}</div>
@@ -1011,10 +1080,13 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   if (!boardsHtml) return "";
   const openAttr = section.openByDefault ? " open" : "";
   const sectionHeaderVariant = String(options.sectionHeaderVariant || "").trim().toLowerCase();
+  const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]
+    .filter(Boolean)
+    .join(" ");
   if (sectionHeaderVariant === "compass") {
     return `
       <section class="block">
-        <details class="execution-wave-section"${openAttr}>
+        <details class="${escapeHtml(sectionClassName)}"${openAttr}>
           <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
             <div class="execution-wave-section-copy">
               <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>
@@ -1032,7 +1104,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   }
   return `
     <section class="block">
-      <details class="execution-wave-section"${openAttr}>
+      <details class="${escapeHtml(sectionClassName)}"${openAttr}>
         <summary class="execution-wave-section-summary">
           <div class="execution-wave-section-copy">
             <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>

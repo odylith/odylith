@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-004
 
-title: Odylith Self-Hosting Posture Hardening
+title: Self-Hosting Posture Hardening
 
 date: 2026-03-27
 
@@ -13,8 +13,6 @@ commercial_value: 5
 product_impact: 5
 
 market_value: 4
-
-impacted_lanes: both
 
 impacted_parts: install/runtime posture modeling, product-repo dogfood validation, release gating, shell and Compass self-host readouts, and self-host evidence visibility
 

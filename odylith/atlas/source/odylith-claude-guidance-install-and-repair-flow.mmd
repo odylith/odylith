@@ -1,0 +1,48 @@
+%% Reviewed 2026-04-11 for B-083 to show how odylith install and repair detect CLAUDE.md as a first-class root guidance marker and materialize managed Claude companion surfaces alongside the canonical AGENTS.md contract.
+sequenceDiagram
+    participant Op as Operator
+    participant CLI as odylith CLI
+    participant Profile as repo profile
+    participant Detect as guidance detector
+    participant Toggle as guidance toggle
+    participant Installer as guidance installer
+    participant FS as repo filesystem
+    participant Proof as validation harness
+
+    Op->>CLI: odylith install | odylith reinstall | odylith doctor --repair
+
+    CLI->>Profile: resolve repo root
+    Profile->>Detect: scan for root guidance marker
+    Detect->>FS: probe AGENTS.md at repo root
+    Detect->>FS: probe CLAUDE.md at repo root
+    Note over Detect,FS: B-083: accept either as a valid root guidance marker<br/>A repo with only CLAUDE.md can now bootstrap correctly
+    Detect-->>Profile: root guidance marker confirmed
+
+    CLI->>Toggle: evaluate guidance-on or guidance-off toggle
+    Note over Toggle: guidance-on (default): materialize managed companion files<br/>guidance-off: skip companion materialization, leave repo files untouched
+    Toggle-->>CLI: toggle resolved
+
+    alt guidance-on
+        CLI->>Installer: materialize root CLAUDE.md companion
+        Installer->>FS: write or refresh CLAUDE.md at repo root
+        Note over Installer,FS: Additive — AGENTS.md is never replaced or modified
+        Installer->>FS: write or refresh odylith/CLAUDE.md companion
+        Note over Installer,FS: Scoped shim for Claude Code entry into the odylith/ subtree
+        CLI->>Installer: materialize governed odylith/ surface tree
+        Installer->>FS: write managed odylith/ governed files
+    else guidance-off
+        CLI->>FS: skip companion writes — no CLAUDE.md files materialized
+    end
+
+    CLI->>Profile: rebuild consumer profile including CLAUDE.md companion paths
+    Profile-->>CLI: profile updated
+
+    CLI->>Proof: validate guidance surface contract
+    Proof->>FS: confirm AGENTS.md present and untouched
+    Proof->>FS: confirm root CLAUDE.md companion materialized (guidance-on)
+    Proof->>FS: confirm odylith/CLAUDE.md companion materialized (guidance-on)
+    Proof->>FS: confirm companion files defer to AGENTS.md as canonical truth
+    Proof-->>CLI: accept only if companion surfaces and AGENTS.md contract are coherent
+
+    CLI-->>Op: install complete — CLAUDE.md is now a managed product surface
+    Note over CLI,Op: Existing installs gain companion files on next upgrade or repair<br/>No repo-owned guidance files are changed

@@ -31,6 +31,47 @@ def _clear_github_tokens(monkeypatch) -> None:  # noqa: ANN001
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
 
 
+def _full_matrix_release() -> release_assets.ReleaseInfo:
+    return release_assets.ReleaseInfo(
+        version="1.2.3",
+        tag="v1.2.3",
+        assets={
+            "release-manifest.json": release_assets.ReleaseAsset("release-manifest.json", "https://example.invalid/release-manifest.json"),
+            "release-manifest.json.sigstore.json": release_assets.ReleaseAsset("release-manifest.json.sigstore.json", "https://example.invalid/release-manifest.json.sigstore.json"),
+            "build-provenance.v1.json": release_assets.ReleaseAsset("build-provenance.v1.json", "https://example.invalid/build-provenance.v1.json"),
+            "build-provenance.v1.json.sigstore.json": release_assets.ReleaseAsset("build-provenance.v1.json.sigstore.json", "https://example.invalid/build-provenance.v1.json.sigstore.json"),
+            "odylith.sbom.spdx.json": release_assets.ReleaseAsset("odylith.sbom.spdx.json", "https://example.invalid/odylith.sbom.spdx.json"),
+            "odylith.sbom.spdx.json.sigstore.json": release_assets.ReleaseAsset("odylith.sbom.spdx.json.sigstore.json", "https://example.invalid/odylith.sbom.spdx.json.sigstore.json"),
+            "odylith-1.2.3-py3-none-any.whl": release_assets.ReleaseAsset("odylith-1.2.3-py3-none-any.whl", "https://example.invalid/odylith.whl"),
+            "odylith-1.2.3-py3-none-any.whl.sigstore.json": release_assets.ReleaseAsset("odylith-1.2.3-py3-none-any.whl.sigstore.json", "https://example.invalid/odylith.whl.sigstore.json"),
+            "odylith-runtime-darwin-arm64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-darwin-arm64.tar.gz", "https://example.invalid/odylith-runtime-darwin-arm64.tar.gz"),
+            "odylith-runtime-darwin-arm64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-darwin-arm64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-darwin-arm64.tar.gz.sigstore.json"),
+            "odylith-runtime-linux-arm64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-linux-arm64.tar.gz", "https://example.invalid/odylith-runtime-linux-arm64.tar.gz"),
+            "odylith-runtime-linux-arm64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-linux-arm64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-linux-arm64.tar.gz.sigstore.json"),
+            "odylith-runtime-linux-x86_64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-linux-x86_64.tar.gz", "https://example.invalid/odylith-runtime-linux-x86_64.tar.gz"),
+            "odylith-runtime-linux-x86_64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-linux-x86_64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-linux-x86_64.tar.gz.sigstore.json"),
+        },
+    )
+
+
+def _full_matrix_manifest() -> dict[str, object]:
+    return {
+        "schema_version": "odylith-release-manifest.v1",
+        "version": "1.2.3",
+        "tag": "v1.2.3",
+        "repo": "odylith/odylith",
+        "repo_schema_version": 1,
+        "migration_required": False,
+        "supported_platforms": ["darwin-arm64", "linux-arm64", "linux-x86_64"],
+        "assets": {
+            "odylith-1.2.3-py3-none-any.whl": {"sha256": "wheel"},
+            "odylith-runtime-darwin-arm64.tar.gz": {"sha256": "runtime"},
+            "odylith-runtime-linux-arm64.tar.gz": {"sha256": "runtime"},
+            "odylith-runtime-linux-x86_64.tar.gz": {"sha256": "runtime"},
+        },
+    }
+
+
 def test_fetch_release_returns_api_assets_without_manifest_checksums(monkeypatch) -> None:
     _clear_github_tokens(monkeypatch)
     api_payload = {
@@ -556,7 +597,7 @@ def test_download_verified_release_validates_manifest_and_signed_assets(monkeypa
     monkeypatch.setattr(release_assets, "_validate_runtime_bundle_archive", lambda **kwargs: None)
     monkeypatch.setattr(
         release_assets,
-        "detect_managed_runtime_platform",
+        "require_managed_runtime_platform",
         lambda: managed_runtime_platform_by_slug("darwin-arm64"),
     )
 
@@ -633,6 +674,10 @@ def test_validate_manifest_rejects_partial_supported_platform_matrix() -> None:
             "odylith-1.2.3-py3-none-any.whl.sigstore.json": release_assets.ReleaseAsset("odylith-1.2.3-py3-none-any.whl.sigstore.json", "https://example.invalid/odylith.whl.sigstore.json"),
             "odylith-runtime-darwin-arm64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-darwin-arm64.tar.gz", "https://example.invalid/odylith-runtime-darwin-arm64.tar.gz"),
             "odylith-runtime-darwin-arm64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-darwin-arm64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-darwin-arm64.tar.gz.sigstore.json"),
+            "odylith-runtime-linux-arm64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-linux-arm64.tar.gz", "https://example.invalid/odylith-runtime-linux-arm64.tar.gz"),
+            "odylith-runtime-linux-arm64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-linux-arm64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-linux-arm64.tar.gz.sigstore.json"),
+            "odylith-runtime-linux-x86_64.tar.gz": release_assets.ReleaseAsset("odylith-runtime-linux-x86_64.tar.gz", "https://example.invalid/odylith-runtime-linux-x86_64.tar.gz"),
+            "odylith-runtime-linux-x86_64.tar.gz.sigstore.json": release_assets.ReleaseAsset("odylith-runtime-linux-x86_64.tar.gz.sigstore.json", "https://example.invalid/odylith-runtime-linux-x86_64.tar.gz.sigstore.json"),
         },
     )
     manifest = {
@@ -726,6 +771,110 @@ def test_validate_manifest_rejects_missing_odylith_wheel_metadata() -> None:
         )
 
 
+def test_validate_manifest_rejects_unsupported_feature_pack_id() -> None:
+    release = _full_matrix_release()
+    manifest = _full_matrix_manifest()
+    manifest["feature_packs"] = {
+        "unsupported-pack": {
+            "assets": {
+                "darwin-arm64": "unsupported-pack-darwin-arm64.tar.gz",
+            }
+        }
+    }
+
+    with pytest.raises(ValueError, match="unsupported managed runtime feature pack"):
+        release_assets._validate_manifest(  # noqa: SLF001
+            manifest=manifest,
+            release=release,
+            repo="odylith/odylith",
+        )
+
+
+def test_validate_manifest_rejects_non_mapping_feature_pack_details() -> None:
+    release = _full_matrix_release()
+    manifest = _full_matrix_manifest()
+    manifest["feature_packs"] = {"odylith-context-engine-memory": []}
+
+    with pytest.raises(ValueError, match="feature pack details must be an object"):
+        release_assets._validate_manifest(  # noqa: SLF001
+            manifest=manifest,
+            release=release,
+            repo="odylith/odylith",
+        )
+
+
+def test_validate_manifest_rejects_feature_pack_assets_missing_signature() -> None:
+    release = _full_matrix_release()
+    release.assets.pop("odylith-context-engine-memory-darwin-arm64.tar.gz.sigstore.json", None)
+    release.assets["odylith-context-engine-memory-darwin-arm64.tar.gz"] = release_assets.ReleaseAsset(
+        "odylith-context-engine-memory-darwin-arm64.tar.gz",
+        "https://example.invalid/odylith-context-engine-memory-darwin-arm64.tar.gz",
+    )
+    manifest = _full_matrix_manifest()
+    manifest["assets"]["odylith-context-engine-memory-darwin-arm64.tar.gz"] = {"sha256": "feature-pack"}
+    manifest["feature_packs"] = {
+        "odylith-context-engine-memory": {
+            "assets": {
+                "darwin-arm64": "odylith-context-engine-memory-darwin-arm64.tar.gz",
+            }
+        }
+    }
+
+    with pytest.raises(ValueError, match="missing feature pack signature"):
+        release_assets._validate_manifest(  # noqa: SLF001
+            manifest=manifest,
+            release=release,
+            repo="odylith/odylith",
+        )
+
+
+def test_validate_manifest_rejects_feature_pack_assets_missing_sha256() -> None:
+    release = _full_matrix_release()
+    release.assets["odylith-context-engine-memory-darwin-arm64.tar.gz"] = release_assets.ReleaseAsset(
+        "odylith-context-engine-memory-darwin-arm64.tar.gz",
+        "https://example.invalid/odylith-context-engine-memory-darwin-arm64.tar.gz",
+    )
+    release.assets["odylith-context-engine-memory-darwin-arm64.tar.gz.sigstore.json"] = release_assets.ReleaseAsset(
+        "odylith-context-engine-memory-darwin-arm64.tar.gz.sigstore.json",
+        "https://example.invalid/odylith-context-engine-memory-darwin-arm64.tar.gz.sigstore.json",
+    )
+    manifest = _full_matrix_manifest()
+    manifest["feature_packs"] = {
+        "odylith-context-engine-memory": {
+            "assets": {
+                "darwin-arm64": "odylith-context-engine-memory-darwin-arm64.tar.gz",
+            }
+        }
+    }
+
+    with pytest.raises(ValueError, match="release manifest missing sha256 for feature pack asset"):
+        release_assets._validate_manifest(  # noqa: SLF001
+            manifest=manifest,
+            release=release,
+            repo="odylith/odylith",
+        )
+
+
+def test_download_verified_release_surfaces_platform_detection_failures(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(
+        release_assets,
+        "fetch_release",
+        lambda **_: _full_matrix_release(),
+    )
+    monkeypatch.setattr(
+        release_assets,
+        "require_managed_runtime_platform",
+        lambda: (_ for _ in ()).throw(ValueError("unsupported Odylith managed runtime platform; supported platforms: Demo")),
+    )
+
+    with pytest.raises(ValueError, match="unsupported Odylith managed runtime platform; supported platforms: Demo"):
+        release_assets.download_verified_release(
+            repo_root=tmp_path,
+            repo="odylith/odylith",
+            version="latest",
+        )
+
+
 def test_verify_sigstore_asset_scrubs_python_environment(monkeypatch, tmp_path: Path) -> None:
     asset_path = tmp_path / "asset.txt"
     bundle_path = tmp_path / "asset.txt.sigstore.json"
@@ -786,6 +935,75 @@ def test_verify_sigstore_asset_suppresses_expected_non_fatal_warnings(monkeypatc
 
     assert result.warnings_suppressed is True
     assert capsys.readouterr().err == ""
+
+
+def test_verify_sigstore_asset_suppresses_wrapped_trusted_root_warning(monkeypatch, tmp_path: Path, capsys) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": (
+                    "Failed to load a trusted root key: unsupported  trust.py:177\n"
+                    "                    key type: 7\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert capsys.readouterr().err == ""
+
+
+def test_verify_sigstore_asset_preserves_unexpected_warning_alongside_wrapped_benign_warning(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": (
+                    "Failed to load a trusted root key: unsupported  trust.py:177\n"
+                    "                    key type: 7\n"
+                    "warning: unexpected verifier chatter\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is False
+    assert "unexpected verifier chatter" in capsys.readouterr().err
 
 
 def test_emit_sigstore_success_notice_reports_suppressed_warning_streams(capsys) -> None:  # noqa: ANN001

@@ -1,0 +1,74 @@
+%% Reviewed 2026-04-10 for B-025 to make the governed Compass refresh and brief contract substrate-first, delta-first, daemon-backed, and zero-foreground-provider.
+flowchart TB
+  subgraph Entry["1. Operator Entry"]
+    CLI["odylith compass refresh<br/>odylith compass watch-transactions"]
+    OneLane["One bounded Compass contract only<br/>no second deep lane"]
+  end
+
+  subgraph Detect["2. Change Detection"]
+    Push["Preferred: daemon waits on projection change"]
+    LocalWatch["Fallback: local watcher"]
+    Coarse["Last resort: coarse poll only when no real watcher exists"]
+    Fingerprint{"Projection fingerprint changed?"}
+    NoChange["No change -> return current daemon-held payload"]
+  end
+
+  subgraph Runtime["3. Local Runtime Thinking"]
+    HotReuse{"Daemon already has matching runtime payload?"}
+    Hot["Hot path reuse<br/>in-memory payload -> current snapshot"]
+    Cold["Cold local rebuild"]
+    DAG["Incremental runtime DAG<br/>projection inputs -> activity -> execution projection -> window facts -> runtime payload"]
+    NoProvider["Blocking path provider spend = 0"]
+  end
+
+  subgraph Substrate["4. Narration Substrate"]
+    Build["Build deterministic narration substrate per entry"]
+    Budget["Hard local budgets<br/>global 8-12 facts<br/>scoped 3-4 facts"]
+    Delta["Compute delta vs previous accepted substrate"]
+    Worth{"Worth calling provider?"}
+    CacheHit["Exact substrate cache replay"]
+    Skip["Skip provider explicitly<br/>skipped_not_worth_calling"]
+  end
+
+  subgraph Provider["5. Background Narration"]
+    Enqueue["Enqueue one packet-level bundle"]
+    Bundle["One provider bundle<br/>global + verified scoped entries together"]
+    Repair["One subset repair max"]
+    Salvage["Persist valid entries immediately<br/>salvage partial good output"]
+    Diagnostics["Bound provider diagnostics<br/>explicit state and debug artifacts"]
+    Backoff["Budget/capacity/provider failures -> slow retry lane"]
+    Patch{"Runtime fingerprint still current?"}
+    PatchYes["Patch warmed provider/cache results into live runtime"]
+    PatchNo["Do not patch newer truth"]
+  end
+
+  subgraph Guardrails["6. Product Guardrails"]
+    Truth["LLM writes, local code thinks"]
+    Rules["No raw-packet prompting<br/>no per-scope provider fanout<br/>no fuzzy/non-exact replay<br/>no synthetic fallback narration"]
+    Targets["Targets<br/>hot daemon refresh < 50ms median<br/>cold shell-safe refresh < 1s median"]
+  end
+
+  CLI --> OneLane --> Push
+  OneLane --> LocalWatch
+  OneLane --> Coarse
+  Push --> Fingerprint
+  LocalWatch --> Fingerprint
+  Coarse --> Fingerprint
+  Fingerprint -->|No| NoChange --> HotReuse
+  Fingerprint -->|Yes| HotReuse
+  HotReuse -->|Yes| Hot --> NoProvider
+  HotReuse -->|No| Cold --> DAG --> NoProvider
+  NoProvider --> Build --> Budget --> Delta --> Worth
+  Worth -->|Exact match| CacheHit
+  Worth -->|No winner change| Skip
+  Worth -->|Meaningful change| Enqueue --> Bundle --> Repair --> Salvage --> Diagnostics --> Backoff --> Patch
+  Patch -->|Yes| PatchYes
+  Patch -->|No| PatchNo
+  CacheHit --> PatchYes
+  Skip --> PatchYes
+
+  OneLane --> Truth
+  OneLane --> Rules
+  OneLane --> Targets
+
+  classDef note fill:#f5f9ff,stroke:#7aa0d6,color:#1f355f

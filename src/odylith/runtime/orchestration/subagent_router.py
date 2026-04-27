@@ -1,4 +1,4 @@
-"""Accuracy-first subagent routing for bounded Codex delegation.
+"""Accuracy-first subagent routing for bounded host-aware delegation.
 
 This module provides one centralized contract for deciding whether a bounded
 task should stay in the main thread or be delegated to a subagent with an
@@ -6,7 +6,7 @@ explicit model and reasoning-effort profile.
 
 Invariants:
 - Hard main-thread refusal gates always win over weighted scoring.
-- `gpt-5.4` `xhigh` remains a gated tier and is never the default score winner
+- `frontier_xhigh` remains a gated tier and is never the default score winner
   unless a critical-risk gate or explicit escalation unlocks it.
 - Adaptive tuning only shifts soft profile bias in local gitignored state under
   `.odylith/`; it never changes hard-gate semantics.
@@ -30,21 +30,26 @@ import sys
 from typing import Any, Mapping, Sequence
 import uuid
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import host_runtime as host_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as compass_timeline
-from odylith.runtime.context_engine import governance_signal_codec
-from odylith.runtime.context_engine import packet_quality_codec
+from odylith.runtime.common.value_coercion import bool_value as _normalize_bool
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.evaluation import odylith_evaluation_ledger
-from odylith.runtime.memory import tooling_memory_contracts
-from odylith.runtime.orchestration import subagent_router_assessment_runtime
+from odylith.runtime.orchestration import subagent_router_context_support
+from odylith.runtime.orchestration import subagent_router_host_policy
+from odylith.runtime.orchestration import subagent_router_profile_support
 from odylith.runtime.orchestration import subagent_router_runtime_policy
+from odylith.runtime.orchestration import subagent_tuning_surface
 
 
 _SCORE_MIN = 0
 _SCORE_MAX = 4
 _TUNING_VERSION = "v1"
 DEFAULT_TUNING_PATH = ".odylith/subagent_router/tuning.v1.json"
-DEFAULT_STREAM_PATH = "odylith/compass/runtime/codex-stream.v1.jsonl"
+DEFAULT_STREAM_PATH = agent_runtime_contract.AGENT_STREAM_PATH
 DEFAULT_COMPONENT_ID = "subagent-router"
 _PROFILE_BIAS_LIMIT = 0.75
 _DEFAULT_BIAS_DELTA = 0.05
@@ -57,24 +62,33 @@ _DEFAULT_WAITING_POLICY = "send_input_or_close"
 _DEFAULT_IDLE_TIMEOUT_ACTION = "close_agent"
 _DEFAULT_IDLE_TIMEOUT_ESCALATION = "resume_main_thread_or_reroute_fresh_slice"
 _HOST_SUPPORTED_AGENT_TYPES: tuple[str, ...] = ("default", "explorer", "worker")
+_CLAUDE_TASK_TOOL_AGENT_TYPES: tuple[str, ...] = (
+    "general-purpose",
+    "Explore",
+    "Plan",
+    "statusline-setup",
+    "claude-code-guide",
+)
 _HOST_UI_VISIBILITY_NOTE = (
-    "Codex desktop may still show parent-thread model/reasoning controls in the delegated thread UI "
+    "Some host UIs may still show parent-thread model/reasoning controls in the delegated thread UI "
     "for some combinations even when explicit spawn overrides are passed."
 )
 _HOST_CUSTOM_AGENT_TYPE_NOTE = (
-    "The current native `spawn_agent` tool accepts only built-in `agent_type` values "
-    "(`default`, `explorer`, `worker`), so named custom agents from `.codex/agents/` "
-    "are not selectable through this host tool."
+    "Codex CLI supports repo-scoped custom project agents under `.codex/agents/*.toml`, "
+    "but the current native `spawn_agent` tool in this host integration still accepts only "
+    "built-in `agent_type` values (`default`, `explorer`, `worker`). Treat the checked-in "
+    "Codex project agents as host-native project assets, not as routed `spawn_agent` types, "
+    "until this integration proves named-agent selection end to end."
 )
 _PROFILE_PRIORITY: dict[str, int] = {
     "main_thread": 0,
-    "mini_medium": 1,
-    "mini_high": 2,
-    "spark_medium": 3,
-    "codex_medium": 4,
-    "codex_high": 5,
-    "gpt54_high": 6,
-    "gpt54_xhigh": 7,
+    agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE: 1,
+    agent_runtime_contract.ANALYSIS_HIGH_PROFILE: 2,
+    agent_runtime_contract.FAST_WORKER_PROFILE: 3,
+    agent_runtime_contract.WRITE_MEDIUM_PROFILE: 4,
+    agent_runtime_contract.WRITE_HIGH_PROFILE: 5,
+    agent_runtime_contract.FRONTIER_HIGH_PROFILE: 6,
+    agent_runtime_contract.FRONTIER_XHIGH_PROFILE: 7,
 }
 _RUNTIME_EARNED_DEPTH_SELECTION_MODES: frozenset[str] = frozenset(
     {
@@ -306,6 +320,7 @@ _EXPLICIT_ROOT_FILES: frozenset[str] = frozenset(
     {
         ".gitignore",
         "AGENTS.md",
+        "CLAUDE.md",
         "Makefile",
         "README.md",
         "hatch.toml",
@@ -390,95 +405,45 @@ _ODYLITH_DOC_SURFACE_SEGMENTS: frozenset[str] = frozenset(
 
 
 def _delegated_profile_values() -> tuple[str, ...]:
+    """Return the routed profiles that participate in delegated scoring."""
+
     return (
-        RouterProfile.MINI_MEDIUM.value,
-        RouterProfile.MINI_HIGH.value,
-        RouterProfile.SPARK_MEDIUM.value,
-        RouterProfile.CODEX_MEDIUM.value,
-        RouterProfile.CODEX_HIGH.value,
-        RouterProfile.GPT54_HIGH.value,
-        RouterProfile.GPT54_XHIGH.value,
+        RouterProfile.ANALYSIS_MEDIUM.value,
+        RouterProfile.ANALYSIS_HIGH.value,
+        RouterProfile.FAST_WORKER.value,
+        RouterProfile.WRITE_MEDIUM.value,
+        RouterProfile.WRITE_HIGH.value,
+        RouterProfile.FRONTIER_HIGH.value,
+        RouterProfile.FRONTIER_XHIGH.value,
     )
 
 
 def _default_profile_bias_map() -> dict[str, float]:
+    """Initialize zeroed per-profile tuning bias for delegated tiers."""
+
     return {profile: 0.0 for profile in _delegated_profile_values()}
 
 
 def _default_outcome_counts_map() -> dict[str, dict[str, int]]:
+    """Initialize empty outcome counters for delegated profiles."""
+
     return {profile: {} for profile in _delegated_profile_values()}
 
 
 def _default_family_profile_bias_map() -> dict[str, dict[str, float]]:
+    """Initialize family-specific bias maps for every known task family."""
+
     return {family: _default_profile_bias_map() for family in _KNOWN_TASK_FAMILIES}
 
 
 def _default_family_outcome_counts_map() -> dict[str, dict[str, dict[str, int]]]:
+    """Initialize family-specific outcome counters for every task family."""
+
     return {family: _default_outcome_counts_map() for family in _KNOWN_TASK_FAMILIES}
 
 
-class RouterProfile(str, Enum):
-    MAIN_THREAD = "main_thread"
-    MINI_MEDIUM = "mini_medium"
-    MINI_HIGH = "mini_high"
-    SPARK_MEDIUM = "spark_medium"
-    CODEX_MEDIUM = "codex_medium"
-    CODEX_HIGH = "codex_high"
-    GPT54_HIGH = "gpt54_high"
-    GPT54_XHIGH = "gpt54_xhigh"
-
-    @property
-    def model(self) -> str:
-        if self in {RouterProfile.MINI_MEDIUM, RouterProfile.MINI_HIGH}:
-            return "gpt-5.4-mini"
-        if self is RouterProfile.SPARK_MEDIUM:
-            return "gpt-5.3-codex-spark"
-        if self in {RouterProfile.CODEX_MEDIUM, RouterProfile.CODEX_HIGH}:
-            return "gpt-5.3-codex"
-        if self is RouterProfile.MAIN_THREAD:
-            return ""
-        return "gpt-5.4"
-
-    @property
-    def reasoning_effort(self) -> str:
-        if self in {RouterProfile.MINI_MEDIUM, RouterProfile.SPARK_MEDIUM, RouterProfile.CODEX_MEDIUM}:
-            return "medium"
-        if self is RouterProfile.GPT54_XHIGH:
-            return "xhigh"
-        if self is RouterProfile.MAIN_THREAD:
-            return ""
-        return "high"
-
-
-def _router_profile_from_token(value: Any) -> RouterProfile | None:
-    token = _normalize_token(value)
-    try:
-        return RouterProfile(token)
-    except ValueError:
-        return None
-
-
-def _router_profile_from_runtime(model: Any, reasoning_effort: Any) -> RouterProfile | None:
-    runtime_model = _normalize_string(model)
-    runtime_reasoning = _normalize_token(reasoning_effort)
-    if runtime_model == "gpt-5.4-mini":
-        if runtime_reasoning == "high":
-            return RouterProfile.MINI_HIGH
-        if runtime_reasoning == "medium":
-            return RouterProfile.MINI_MEDIUM
-    if runtime_model == "gpt-5.3-codex-spark" and runtime_reasoning == "medium":
-        return RouterProfile.SPARK_MEDIUM
-    if runtime_model == "gpt-5.3-codex":
-        if runtime_reasoning == "high":
-            return RouterProfile.CODEX_HIGH
-        if runtime_reasoning == "medium":
-            return RouterProfile.CODEX_MEDIUM
-    if runtime_model == "gpt-5.4":
-        if runtime_reasoning == "xhigh":
-            return RouterProfile.GPT54_XHIGH
-        if runtime_reasoning == "high":
-            return RouterProfile.GPT54_HIGH
-    return None
+RouterProfile = subagent_router_profile_support.RouterProfile
+_router_profile_from_token = subagent_router_profile_support.router_profile_from_token
 
 
 class RouterInputError(ValueError):
@@ -700,14 +665,14 @@ _TASK_CLASS_POLICIES: dict[str, TaskClassPolicy] = {
         default_profile=RouterProfile.CODEX_MEDIUM,
         minimum_profile=RouterProfile.CODEX_MEDIUM,
         default_agent_role="worker",
-        rationale="Bounded understood fixes default to Codex medium so code-writing leaves use a coding-optimized tier before promoting deeper.",
+        rationale="Bounded understood fixes default to the write-medium tier so code-writing leaves use a coding-optimized tier before promoting deeper.",
     ),
     "bounded_feature": TaskClassPolicy(
         task_family="bounded_feature",
         default_profile=RouterProfile.CODEX_HIGH,
         minimum_profile=RouterProfile.CODEX_MEDIUM,
         default_agent_role="worker",
-        rationale="New bounded write behavior defaults to Codex high, with GPT-5.4 reserved for the riskier or more architecture-heavy cases.",
+        rationale="New bounded write behavior defaults to the write-high tier, with GPT-5.4 reserved for the riskier or more architecture-heavy cases.",
     ),
     "analysis_review": TaskClassPolicy(
         task_family="analysis_review",
@@ -731,37 +696,13 @@ _TASK_CLASS_POLICIES: dict[str, TaskClassPolicy] = {
         rationale="Coordination-heavy work should stay local and be re-scoped before any delegated retry.",
     ),
 }
-
-
-def _normalize_string(value: Any) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-
 def _normalize_multiline_string(value: Any) -> str:
     text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
     return "\n".join(line.rstrip() for line in text.split("\n")).strip()
 
 
-def _normalize_token(value: Any) -> str:
-    return _normalize_string(value).lower().replace("-", "_").replace(" ", "_")
-
-
-def _normalize_bool(value: Any, *, default: bool = False) -> bool:
-    if isinstance(value, bool):
-        return value
-    token = _normalize_token(value)
-    if token in {"1", "true", "yes", "y", "on"}:
-        return True
-    if token in {"0", "false", "no", "n", "off"}:
-        return False
-    return default
-
-
 def _normalize_list(value: Any) -> list[str]:
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return [_normalize_string(item) for item in value if _normalize_string(item)]
-    token = _normalize_string(value)
-    return [token] if token else []
+    return subagent_router_context_support._normalize_list(value)
 
 
 def _assessment_host_runtime(assessment: TaskAssessment) -> str:
@@ -779,32 +720,31 @@ def _native_spawn_supported_for_assessment(assessment: TaskAssessment) -> bool:
     )
 
 
+def _assessment_host_capabilities(assessment: TaskAssessment) -> dict[str, Any]:
+    return host_runtime_contract.resolve_host_capabilities(
+        _assessment_host_runtime(assessment),
+        repo_root=Path.cwd(),
+    )
+
+
+def _delegation_style_for_assessment(assessment: TaskAssessment) -> str:
+    return str(_assessment_host_capabilities(assessment).get("delegation_style", "")).strip() or "none"
+
+
 def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
-    value = _mapping_value(payload, list_key)
-    return max(
-        len(value) if isinstance(value, list) else len(_normalize_list(value)),
-        _int_value(_mapping_value(payload, count_key)),
+    return subagent_router_context_support._count_or_list_len(
+        payload,
+        list_key=list_key,
+        count_key=count_key,
     )
 
 
 def _normalize_context_signals(value: Any) -> dict[str, Any]:
-    if not isinstance(value, Mapping):
-        return {}
-    return {_normalize_string(key): raw for key, raw in value.items() if _normalize_string(key)}
+    return subagent_router_context_support._normalize_context_signals(value)
 
 
 def _embedded_governance_signal(context_packet: Mapping[str, Any]) -> dict[str, Any]:
-    route = _mapping_value(context_packet, "route")
-    if not isinstance(route, Mapping):
-        return {}
-    governance = _mapping_value(route, "governance")
-    if not isinstance(governance, Mapping):
-        return {}
-    return {
-        _normalize_string(key): raw
-        for key, raw in governance_signal_codec.expand_governance_signal(governance).items()
-        if _normalize_string(key) and raw not in ("", [], {}, None, False)
-    }
+    return subagent_router_context_support._embedded_governance_signal(context_packet)
 
 
 def _validation_bundle_from_context(
@@ -812,21 +752,10 @@ def _validation_bundle_from_context(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
-    validation_bundle = _mapping_value(context_signals, "validation_bundle")
-    if isinstance(validation_bundle, Mapping):
-        return dict(validation_bundle)
-    governance = _embedded_governance_signal(context_packet)
-    compact: dict[str, Any] = {}
-    for key in (
-        "recommended_command_count",
-        "strict_gate_command_count",
-        "plan_binding_required",
-        "governed_surface_sync_required",
-    ):
-        value = _mapping_value(governance, key)
-        if value not in ("", [], {}, None, False):
-            compact[key] = value
-    return compact
+    return subagent_router_context_support._validation_bundle_from_context(
+        context_signals,
+        context_packet=context_packet,
+    )
 
 
 def _governance_obligations_from_context(
@@ -834,25 +763,10 @@ def _governance_obligations_from_context(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
-    governance_obligations = _mapping_value(context_signals, "governance_obligations")
-    if isinstance(governance_obligations, Mapping):
-        return dict(governance_obligations)
-    governance = _embedded_governance_signal(context_packet)
-    compact: dict[str, Any] = {}
-    for key in (
-        "touched_workstream_count",
-        "primary_workstream_id",
-        "touched_component_count",
-        "primary_component_id",
-        "required_diagram_count",
-        "linked_bug_count",
-        "closeout_doc_count",
-        "workstream_state_action_count",
-    ):
-        value = _mapping_value(governance, key)
-        if value not in ("", [], {}, None, False):
-            compact[key] = value
-    return compact
+    return subagent_router_context_support._governance_obligations_from_context(
+        context_signals,
+        context_packet=context_packet,
+    )
 
 
 def _surface_refs_from_context(
@@ -860,16 +774,10 @@ def _surface_refs_from_context(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
-    surface_refs = _mapping_value(context_signals, "surface_refs")
-    if isinstance(surface_refs, Mapping):
-        return dict(surface_refs)
-    governance = _embedded_governance_signal(context_packet)
-    compact: dict[str, Any] = {}
-    for key in ("surface_count", "reason_group_count"):
-        value = _mapping_value(governance, key)
-        if value not in ("", [], {}, None, False):
-            compact[key] = value
-    return compact
+    return subagent_router_context_support._surface_refs_from_context(
+        context_signals,
+        context_packet=context_packet,
+    )
 
 
 def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -899,44 +807,15 @@ def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, An
 
 
 def _mapping_value(payload: Mapping[str, Any], key: str) -> Any:
-    wanted = _normalize_token(key)
-    for raw_key, raw_value in payload.items():
-        if _normalize_token(raw_key) == wanted:
-            return raw_value
-    alias = {
-        "parallelism_hint": "p",
-        "reasoning_bias": "b",
-        "routing_confidence": "rc",
-        "intent_family": "i",
-        "intent_mode": "m",
-        "intent_critical_path": "cp",
-        "intent_confidence": "ic",
-        "intent_explicit": "ix",
-        "context_richness": "cr",
-        "accuracy_posture": "ap",
-        "utility_score": "us",
-        "context_density_level": "cd",
-        "reasoning_readiness_level": "rr",
-    }.get(wanted, "")
-    if alias:
-        for raw_key, raw_value in payload.items():
-            if _normalize_token(raw_key) == alias:
-                return raw_value
-    return None
+    return subagent_router_context_support._mapping_value(payload, key)
 
 
 def _context_signal_root(context_signals: Mapping[str, Any]) -> Mapping[str, Any]:
-    nested = _mapping_value(context_signals, "routing_handoff")
-    return nested if isinstance(nested, Mapping) else context_signals
+    return subagent_router_context_support._context_signal_root(context_signals)
 
 
 def _context_lookup(payload: Mapping[str, Any], *path: str) -> Any:
-    current: Any = payload
-    for key in path:
-        if not isinstance(current, Mapping):
-            return None
-        current = _mapping_value(current, key)
-    return current
+    return subagent_router_context_support._context_lookup(payload, *path)
 
 
 def _selected_counts_mapping(value: Any) -> dict[str, int]:
@@ -965,235 +844,50 @@ def _selected_counts_mapping(value: Any) -> dict[str, int]:
 
 
 def _context_signal_score(value: Any) -> int:
-    if isinstance(value, bool):
-        return _SCORE_MAX if value else _SCORE_MIN
-    if isinstance(value, (int, float)):
-        return _clamp_score(value)
-    if isinstance(value, Mapping):
-        for key in ("score", "level", "confidence", "rating", "value"):
-            nested = _mapping_value(value, key)
-            if nested is not None:
-                return _context_signal_score(nested)
-        return _SCORE_MIN
-    token = _normalize_token(value)
-    if token in {"none", "unknown", "false", "unready", "blocked"}:
-        return 0
-    if token in {"low", "weak", "light", "minimal"}:
-        return 1
-    if token in {"medium", "moderate", "partial"}:
-        return 2
-    if token in {"high", "strong", "grounded", "actionable", "ready"}:
-        return 3
-    if token in {"very_high", "max", "maximum", "full"}:
-        return 4
-    return 0
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
+    return subagent_router_context_support._context_signal_score(value)
 
 
 def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    rows: list[str] = []
-    for value in values:
-        token = str(value or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
-
-
-_USER_FACING_CHATTER_REPLACEMENTS: tuple[tuple[str, str], ...] = (
-    ("The current runtime handoff", "The current slice"),
-    ("the current runtime handoff", "the current slice"),
-    ("The retained runtime handoff", "The current slice"),
-    ("the retained runtime handoff", "the current slice"),
-    ("The retained context packet", "The current slice"),
-    ("the retained context packet", "the current slice"),
-    ("The current retained packet", "The current slice"),
-    ("the current retained packet", "the current slice"),
-    ("The retained packet", "The current slice"),
-    ("the retained packet", "the current slice"),
-    ("runtime handoff", "current slice"),
-    ("runtime context packet", "current slice"),
-    ("Control advisories", "Recent execution evidence"),
-    ("control advisories", "recent execution evidence"),
-    ("advisory loop", "recent execution evidence"),
-    ("packetizer alignment", "execution fit"),
-    ("runtime-backed", "measured"),
-    ("native-spawn-ready", "delegation-ready"),
-    ("route-ready", "ready for delegation"),
-    ("hold-local", "local-first"),
-    ("runtime memory contracts", "grounded evidence"),
-    ("runtime contracts", "grounded contracts"),
-    ("runtime optimization posture", "recent execution posture"),
-    ("retained evidence pack", "current evidence set"),
-)
+    return subagent_router_context_support._dedupe_strings(values)
 
 
 def _sanitize_user_facing_text(value: Any) -> str:
-    text = str(value or "").strip()
-    if not text:
-        return ""
-    for needle, replacement in _USER_FACING_CHATTER_REPLACEMENTS:
-        text = text.replace(needle, replacement)
-    return re.sub(r"\s+", " ", text).strip()
+    return subagent_router_profile_support.sanitize_user_facing_text(value)
 
 
 def _sanitize_user_facing_lines(values: Sequence[str]) -> list[str]:
-    return _dedupe_strings(_sanitize_user_facing_text(value) for value in values)
+    return subagent_router_profile_support.sanitize_user_facing_lines(values)
 
 
 def _context_signal_bool(value: Any) -> bool:
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)):
-        return float(value) > 0
-    if isinstance(value, Mapping):
-        for key in ("enabled", "ready", "supported", "allowed", "active", "value"):
-            nested = _mapping_value(value, key)
-            if nested is not None:
-                return _context_signal_bool(nested)
-    token = _normalize_token(value)
-    return token in {"1", "true", "yes", "y", "on", "ready", "supported", "primary", "support"}
+    return subagent_router_context_support._context_signal_bool(value)
 
 
 def _context_signal_level(score: int) -> str:
-    value = _clamp_score(score)
-    if value >= 4:
-        return "high"
-    if value >= 2:
-        return "medium"
-    if value >= 1:
-        return "low"
-    return "none"
+    return subagent_router_context_support._context_signal_level(score)
 
 
 def _scaled_numeric_signal(value: Any) -> int:
-    if isinstance(value, (int, float)):
-        numeric = float(value)
-        if 0.0 <= numeric <= 1.0:
-            return _clamp_score(round(numeric * _SCORE_MAX))
-        if numeric > _SCORE_MAX:
-            return _clamp_score(round(numeric / 25.0))
-        return _clamp_score(numeric)
-    return _context_signal_score(value)
+    return subagent_router_context_support._scaled_numeric_signal(value)
 
 
 def _normalized_rate(value: Any) -> float:
-    if isinstance(value, bool):
-        return 1.0 if value else 0.0
-    try:
-        numeric = float(value or 0.0)
-    except (TypeError, ValueError):
-        return 0.0
-    if numeric > 1.0:
-        numeric = numeric / 100.0 if numeric <= 100.0 else 1.0
-    return max(0.0, min(1.0, numeric))
+    return subagent_router_context_support._normalized_rate(value)
 
 
 def _latency_pressure_signal(value: Any) -> int:
-    try:
-        numeric = float(value or 0.0)
-    except (TypeError, ValueError):
-        return 0
-    if numeric >= 12000.0:
-        return 4
-    if numeric >= 6000.0:
-        return 3
-    if numeric >= 2500.0:
-        return 2
-    if numeric >= 1000.0:
-        return 1
-    return 0
+    return subagent_router_context_support._latency_pressure_signal(value)
 
 
 def _execution_profile_candidate(value: Any) -> dict[str, Any]:
-    return tooling_memory_contracts.execution_profile_mapping(value)
+    return subagent_router_context_support._execution_profile_candidate(value)
 
 
 def _synthesized_execution_profile_candidate(
     *,
     context_packet: Mapping[str, Any],
 ) -> dict[str, Any]:
-    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), Mapping) else {}
-    if not bool(route.get("route_ready")) or bool(route.get("narrowing_required")):
-        return {}
-    packet_quality = packet_quality_codec.expand_packet_quality(
-        dict(context_packet.get("packet_quality", {}))
-        if isinstance(context_packet.get("packet_quality"), Mapping)
-        else {}
-    )
-    retrieval_plan = (
-        dict(context_packet.get("retrieval_plan", {}))
-        if isinstance(context_packet.get("retrieval_plan"), Mapping)
-        else {}
-    )
-    selected_counts = _selected_counts_mapping(retrieval_plan.get("selected_counts"))
-    governance = governance_signal_codec.expand_governance_signal(
-        dict(route.get("governance", {})) if isinstance(route.get("governance"), Mapping) else {}
-    )
-    family = _normalize_token(packet_quality.get("intent_family"))
-    confidence = _normalize_token(packet_quality.get("routing_confidence"))
-    validation_count = _int_value(selected_counts.get("tests")) + _int_value(selected_counts.get("commands"))
-    guidance_count = _int_value(selected_counts.get("guidance"))
-    governance_contract = any(
-        (
-            _int_value(governance.get("closeout_doc_count")) > 0,
-            _int_value(governance.get("strict_gate_command_count")) > 0,
-            _normalize_bool(governance.get("plan_binding_required")),
-            _normalize_bool(governance.get("governed_surface_sync_required")),
-        )
-    )
-    profile = "mini_medium"
-    model = "gpt-5.4-mini"
-    reasoning_effort = "medium"
-    agent_role = "explorer"
-    selection_mode = "analysis_scout"
-    if family in {"implementation", "write", "bugfix"}:
-        if governance_contract and _int_value(governance.get("strict_gate_command_count")) > 0:
-            profile = "gpt54_high"
-            model = "gpt-5.4"
-            reasoning_effort = "high"
-            selection_mode = "deep_validation"
-        else:
-            profile = "codex_high" if confidence == "high" and (validation_count > 0 or guidance_count >= 2) else "codex_medium"
-            model = "gpt-5.3-codex"
-            reasoning_effort = "high" if profile == "codex_high" else "medium"
-            selection_mode = "bounded_write"
-        agent_role = "worker"
-    elif family == "validation":
-        profile = "codex_high" if confidence == "high" or validation_count >= 2 else "codex_medium"
-        model = "gpt-5.3-codex"
-        reasoning_effort = "high" if profile == "codex_high" else "medium"
-        agent_role = "worker"
-        selection_mode = "validation_focused"
-    elif family in {"docs", "governance"}:
-        profile = "spark_medium" if governance_contract else "mini_medium"
-        model = "gpt-5.3-codex-spark" if profile == "spark_medium" else "gpt-5.4-mini"
-        reasoning_effort = "medium"
-        agent_role = "worker" if profile == "spark_medium" else "explorer"
-        selection_mode = "support_fast_lane" if profile == "spark_medium" else "analysis_scout"
-    elif family in {"analysis", "review", "diagnosis"}:
-        profile = "mini_high" if confidence == "high" or governance_contract or validation_count > 0 or guidance_count > 0 else "mini_medium"
-        model = "gpt-5.4-mini"
-        reasoning_effort = "high" if profile == "mini_high" else "medium"
-        agent_role = "explorer"
-        selection_mode = "analysis_synthesis" if profile == "mini_high" else "analysis_scout"
-    return {
-        "profile": profile,
-        "model": model,
-        "reasoning_effort": reasoning_effort,
-        "agent_role": agent_role,
-        "selection_mode": selection_mode,
-        "delegate_preference": "delegate",
-        "source": "context_packet_route",
-    }
+    return subagent_router_context_support._synthesized_execution_profile_candidate(context_packet=context_packet)
 
 
 def _execution_profile_mapping(
@@ -1203,12 +897,18 @@ def _execution_profile_mapping(
     evidence_pack: Mapping[str, Any],
     optimization_snapshot: Mapping[str, Any],
 ) -> dict[str, Any]:
-    return subagent_router_runtime_policy._execution_profile_mapping(root=root, context_packet=context_packet, evidence_pack=evidence_pack, optimization_snapshot=optimization_snapshot)
+    return subagent_router_context_support._execution_profile_mapping(
+        root=root,
+        context_packet=context_packet,
+        evidence_pack=evidence_pack,
+        optimization_snapshot=optimization_snapshot,
+    )
 
 
 
 def _preferred_router_profile_from_execution_profile(profile: Mapping[str, Any]) -> RouterProfile | None:
-    return subagent_router_runtime_policy._preferred_router_profile_from_execution_profile(profile=profile)
+    candidate = subagent_router_context_support._preferred_router_profile_from_execution_profile(profile)
+    return candidate if isinstance(candidate, RouterProfile) else None
 
 
 
@@ -1246,7 +946,7 @@ def _build_host_message(*sections: Sequence[str]) -> str:
 
 
 def _clamp_score(value: int | float) -> int:
-    return max(_SCORE_MIN, min(_SCORE_MAX, int(round(float(value)))))
+    return subagent_router_profile_support.clamp_score(value)
 
 
 def _clamp_bias(value: float) -> float:
@@ -1258,28 +958,81 @@ def _agent_role_for_assessment(
     *,
     profile: RouterProfile | None = None,
 ) -> str:
-    if assessment.needs_write:
-        return "worker"
-    summary = dict(assessment.context_signal_summary or {})
-    recommended_role = _normalize_token(summary.get("odylith_execution_agent_role", ""))
-    confidence = _clamp_score(summary.get("odylith_execution_confidence_score", 0) or 0)
-    if recommended_role in {"explorer", "worker"} and confidence >= 3:
-        return recommended_role
-    if profile in {RouterProfile.MINI_MEDIUM, RouterProfile.MINI_HIGH} and assessment.task_family == "analysis_review":
-        return "explorer"
-    if not assessment.needs_write and assessment.task_family == "analysis_review":
-        return "explorer"
-    return "worker"
+    return subagent_router_profile_support.agent_role_for_assessment(assessment, profile=profile)
+
+
+def _task_tool_subagent_type(*, assessment: TaskAssessment, agent_role: str) -> str:
+    if not assessment.needs_write and assessment.task_family in {"analysis_review", "triage_diagnosis"}:
+        return "Explore"
+    if assessment.task_family in {"architecture_review", "governance_closeout"} and not assessment.needs_write:
+        return "Plan"
+    return "general-purpose" if agent_role == "worker" else "Explore"
+
+
+def _preferred_project_subagent_name(*, assessment: TaskAssessment, agent_role: str) -> str:
+    if not assessment.needs_write and assessment.task_family in {"analysis_review", "triage_diagnosis"}:
+        return "odylith-reviewer"
+    if agent_role == "worker":
+        return "odylith-workstream"
+    return ""
 
 
 def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -> dict[str, Any]:
     if profile is RouterProfile.MAIN_THREAD:
         return {}
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
-    host_runtime = _assessment_host_runtime(assessment)
+    host_runtime = _assessment_host_runtime(assessment) or "unknown"
     native_spawn_supported = _native_spawn_supported_for_assessment(assessment)
+    host_capabilities = _assessment_host_capabilities(assessment)
+    native_spawn_transport_supported = bool(
+        host_capabilities.get("native_spawn_transport_supported")
+        or host_capabilities.get("supports_native_spawn")
+    )
+    native_spawn_policy = _normalize_string(host_capabilities.get("native_spawn_policy"))
+    native_spawn_policy_status = _normalize_string(host_capabilities.get("native_spawn_policy_status"))
+    native_spawn_effective = bool(host_capabilities.get("native_spawn_effective"))
+    delegation_style = _delegation_style_for_assessment(assessment)
+    model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(profile)
+    requested_model = model if delegation_style == "routed_spawn" else ""
+    requested_reasoning_effort = reasoning_effort if delegation_style == "routed_spawn" else ""
+    preferred_project_subagent = _preferred_project_subagent_name(assessment=assessment, agent_role=agent_role)
+    if delegation_style == "task_tool_subagents":
+        contract = {
+            "tool_name": "Task",
+            "delegation_style": delegation_style,
+            "built_in_agent_types_only": False,
+            "supported_agent_types": list(_CLAUDE_TASK_TOOL_AGENT_TYPES),
+            "named_custom_agent_type_supported": True,
+            "ui_controls_authoritative_for_requested_runtime": False,
+            "requested_runtime_source_fields": [
+                "native_spawn_payload",
+                "runtime_banner_lines",
+                "spawn_overrides",
+            ],
+            "visibility_notice": (
+                "Treat the structured Task payload and routed runtime banner as the authoritative delegated "
+                "contract for this leaf. Claude-host model selection remains host-managed unless a project "
+                "subagent frontmatter pins it."
+            ),
+            "custom_agent_type_note": (
+                "Project subagents in `.claude/agents/*.md` may be selected when they match the routed role; "
+                "otherwise use the closest built-in `subagent_type`."
+            ),
+            "agent_role": agent_role,
+            "host_runtime": host_runtime,
+            "native_spawn_supported": native_spawn_supported,
+            "native_spawn_transport_supported": native_spawn_transport_supported,
+            "native_spawn_policy": native_spawn_policy,
+            "native_spawn_policy_status": native_spawn_policy_status,
+            "native_spawn_effective": native_spawn_effective,
+            "preferred_subagent_type": _task_tool_subagent_type(assessment=assessment, agent_role=agent_role),
+        }
+        if preferred_project_subagent:
+            contract["preferred_project_subagent"] = preferred_project_subagent
+        return contract
     contract = {
         "tool_name": "spawn_agent",
+        "delegation_style": delegation_style,
         "built_in_agent_types_only": True,
         "supported_agent_types": list(_HOST_SUPPORTED_AGENT_TYPES),
         "named_custom_agent_type_supported": False,
@@ -1300,15 +1053,30 @@ def _host_tool_contract(*, profile: RouterProfile, assessment: TaskAssessment) -
         ),
         "custom_agent_type_note": _HOST_CUSTOM_AGENT_TYPE_NOTE,
         "agent_role": agent_role,
-        "requested_model": profile.model,
-        "requested_reasoning_effort": profile.reasoning_effort,
-        "host_runtime": host_runtime or "unknown",
+        "requested_model": requested_model,
+        "requested_reasoning_effort": requested_reasoning_effort,
+        "host_runtime": host_runtime,
         "native_spawn_supported": native_spawn_supported,
+        "native_spawn_transport_supported": native_spawn_transport_supported,
+        "native_spawn_policy": native_spawn_policy,
+        "native_spawn_policy_status": native_spawn_policy_status,
+        "native_spawn_effective": native_spawn_effective,
     }
+    if native_spawn_policy_status and native_spawn_policy_status != "assumed_available":
+        contract["host_policy_note"] = (
+            "Native delegation transport is present, but actual spawn execution remains subject to "
+            f"the active host policy (`{native_spawn_policy_status}`)."
+        )
+    project_assets_note = subagent_router_host_policy.project_assets_activation_note(
+        host_runtime=host_runtime,
+        host_capabilities=host_capabilities,
+    )
+    if project_assets_note:
+        contract["project_assets_activation_note"] = project_assets_note
     if not native_spawn_supported:
         contract["local_guidance_only"] = True
         contract["unsupported_reason"] = (
-            "Native subagent spawn is validated only in Codex today; keep this routed runtime as local execution guidance in the current host."
+            "Native delegated execution is not available in the current host/runtime, so keep this routed runtime as local execution guidance only."
         )
     return contract
 
@@ -1318,31 +1086,59 @@ def _runtime_banner_lines(*, profile: RouterProfile, assessment: TaskAssessment)
         return []
     banner_reason = _task_class_policy_for(assessment).rationale
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
+    model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(profile)
     host_runtime = _assessment_host_runtime(assessment) or "unknown"
+    delegation_style = _delegation_style_for_assessment(assessment)
+    host_capabilities = _assessment_host_capabilities(assessment)
+    native_spawn_policy_status = _normalize_string(host_capabilities.get("native_spawn_policy_status"))
     if not _native_spawn_supported_for_assessment(assessment):
         return [
-            f"REQUESTED RUNTIME: {profile.model} / {profile.reasoning_effort}",
+            f"REQUESTED RUNTIME: {model} / {reasoning_effort}",
             f"WHY THIS TIER: {banner_reason}",
-            f"MODEL: {profile.model}",
-            f"REASONING: {profile.reasoning_effort}",
+            f"MODEL: {model}",
+            f"REASONING: {reasoning_effort}",
             f"AGENT ROLE: {agent_role}",
             (
                 "HOST NOTE: Native subagent spawn is not supported in this host "
                 f"(`{host_runtime}`); treat this routed runtime as local execution guidance only."
             ),
         ]
-    return [
-        f"REQUESTED RUNTIME: {profile.model} / {profile.reasoning_effort}",
+    if delegation_style == "task_tool_subagents":
+        preferred_project_subagent = _preferred_project_subagent_name(assessment=assessment, agent_role=agent_role)
+        lines = [
+            f"REQUESTED EXECUTION PROFILE: {profile.value}",
+            f"WHY THIS TIER: {banner_reason}",
+            f"AGENT ROLE: {agent_role}",
+            f"PREFERRED SUBAGENT TYPE: {_task_tool_subagent_type(assessment=assessment, agent_role=agent_role)}",
+            "HOST NOTE: Use the routed Task payload as the authoritative delegated contract for this leaf.",
+        ]
+        if preferred_project_subagent:
+            lines.append(f"PREFERRED PROJECT SUBAGENT: {preferred_project_subagent}")
+        return lines
+    lines = [
+        f"REQUESTED RUNTIME: {model} / {reasoning_effort}",
         f"WHY THIS TIER: {banner_reason}",
-        f"MODEL: {profile.model}",
-        f"REASONING: {profile.reasoning_effort}",
+        f"MODEL: {model}",
+        f"REASONING: {reasoning_effort}",
         f"AGENT ROLE: {agent_role}",
         (
-            "HOST NOTE: Codex desktop may still show parent-thread model/reasoning controls in this "
+            "HOST NOTE: The current host UI may still show parent-thread model/reasoning controls in this "
             "delegated thread UI for some combinations. Treat this banner and the structured spawn payload as the authoritative "
             "requested runtime for this leaf."
         ),
     ]
+    if native_spawn_policy_status and native_spawn_policy_status != "assumed_available":
+        lines.append(
+            "HOST POLICY: Native delegation transport is present, but actual spawn execution remains subject "
+            f"to the active host policy (`{native_spawn_policy_status}`)."
+        )
+    host_capability_line = subagent_router_host_policy.host_capability_banner_line(
+        host_runtime=host_runtime,
+        host_capabilities=host_capabilities,
+    )
+    if host_capability_line:
+        lines.append(host_capability_line)
+    return lines
 
 
 def _spawn_task_message(
@@ -1370,6 +1166,22 @@ def _spawn_task_message(
 def _native_spawn_payload(*, profile: RouterProfile, assessment: TaskAssessment, message: str) -> dict[str, Any]:
     if profile is RouterProfile.MAIN_THREAD or not _native_spawn_supported_for_assessment(assessment):
         return {}
+    delegation_style = _delegation_style_for_assessment(assessment)
+    agent_role = _agent_role_for_assessment(assessment, profile=profile)
+    if delegation_style == "task_tool_subagents":
+        payload = {
+            "tool_name": "Task",
+            "subagent_type": _task_tool_subagent_type(assessment=assessment, agent_role=agent_role),
+            "description": f"Bounded {agent_role} leaf for `{assessment.task_family}`",
+            "prompt": message,
+            "run_in_background": False,
+        }
+        if assessment.needs_write:
+            payload["isolation"] = "worktree"
+        preferred_project_subagent = _preferred_project_subagent_name(assessment=assessment, agent_role=agent_role)
+        if preferred_project_subagent:
+            payload["preferred_project_subagent"] = preferred_project_subagent
+        return payload
     spawn_agent_overrides = _spawn_agent_overrides(profile=profile, assessment=assessment)
     return {
         "tool_name": "spawn_agent",
@@ -1387,10 +1199,11 @@ def _task_class_policy_for(assessment: TaskAssessment) -> TaskClassPolicy:
 def _task_class_policy_lines(policy: TaskClassPolicy) -> list[str]:
     if policy.default_profile is RouterProfile.MAIN_THREAD:
         return [f"task-class policy `{policy.task_family}` stays local by default", policy.rationale]
+    model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(policy.default_profile)
     return [
         (
             f"task-class policy `{policy.task_family}` defaults to `{policy.default_profile.value}` "
-            f"({policy.default_profile.model} / {policy.default_profile.reasoning_effort})"
+            f"({model} / {reasoning_effort})"
         ),
         policy.rationale,
     ]
@@ -1411,11 +1224,13 @@ def _delegated_leaf_lifecycle_payload(
 ) -> DelegatedLeafLifecyclePayload:
     agent_role = _agent_role_for_assessment(assessment, profile=profile)
     termination_expectation = _termination_expectation(assessment)
-    if _native_spawn_supported_for_assessment(assessment):
+    delegation_style = _delegation_style_for_assessment(assessment)
+    model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(profile)
+    if delegation_style == "routed_spawn" and _native_spawn_supported_for_assessment(assessment):
         spawn_overrides = {
             "agent_role": agent_role,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
+            "model": model,
+            "reasoning_effort": reasoning_effort,
             "apply_parent_defaults": False,
             "close_after_result": True,
             "default_post_result_action": "close_agent",
@@ -1431,8 +1246,8 @@ def _delegated_leaf_lifecycle_payload(
         }
         spawn_agent_overrides = {
             "agent_type": agent_role,
-            "model": profile.model,
-            "reasoning_effort": profile.reasoning_effort,
+            "model": model,
+            "reasoning_effort": reasoning_effort,
         }
         close_agent_overrides = {
             "tool_name": "close_agent",
@@ -1451,6 +1266,30 @@ def _delegated_leaf_lifecycle_payload(
             "waiting_policy": _DEFAULT_WAITING_POLICY,
             "termination_expectation": termination_expectation,
         }
+    elif delegation_style == "task_tool_subagents" and _native_spawn_supported_for_assessment(assessment):
+        spawn_overrides = {
+            "agent_role": agent_role,
+            "subagent_type": _task_tool_subagent_type(assessment=assessment, agent_role=agent_role),
+            "preferred_project_subagent": _preferred_project_subagent_name(
+                assessment=assessment,
+                agent_role=agent_role,
+            ),
+            "run_in_background": False,
+            "isolation": "worktree" if assessment.needs_write else "inherit",
+            "close_after_result": True,
+            "default_post_result_action": "return_result",
+            "queued_followup_required_for_reuse": True,
+            "allow_prequeue_same_scope_reuse_claim": True,
+            "prequeue_same_scope_reuse_claim_minutes": _DEFAULT_PREQUEUE_SAME_SCOPE_REUSE_CLAIM_MINUTES,
+            "idle_timeout_minutes": _DEFAULT_IDLE_TIMEOUT_MINUTES,
+            "idle_timeout_action": _DEFAULT_IDLE_TIMEOUT_ACTION,
+            "idle_timeout_escalation": _DEFAULT_IDLE_TIMEOUT_ESCALATION,
+            "reuse_window": _DEFAULT_REUSE_WINDOW,
+            "waiting_policy": _DEFAULT_WAITING_POLICY,
+            "termination_expectation": termination_expectation,
+        }
+        spawn_agent_overrides = {}
+        close_agent_overrides = {}
     else:
         spawn_overrides = {}
         spawn_agent_overrides = {}
@@ -1482,22 +1321,58 @@ def _close_agent_overrides(*, profile: RouterProfile, assessment: TaskAssessment
 
 def _spawn_contract_lines(*, profile: RouterProfile, assessment: TaskAssessment) -> list[str]:
     lifecycle = _delegated_leaf_lifecycle_payload(profile=profile, assessment=assessment)
+    delegation_style = _delegation_style_for_assessment(assessment)
     if not lifecycle.spawn_overrides:
         host_runtime = _assessment_host_runtime(assessment) or "unknown"
+        model, reasoning_effort = subagent_router_profile_support.profile_runtime_fields(profile)
         return [
             (
-                "native `spawn_agent` is not supported in the current host "
+                "native delegated execution is not supported in the current host "
                 f"(`{host_runtime}`), so keep this routed runtime as local execution guidance only"
             ),
             (
-                f"if this same bounded leaf runs in a Codex-compatible host, request "
-                f"`model={profile.model}` and `reasoning_effort={profile.reasoning_effort}`"
+                f"if this same bounded leaf runs in a native-spawn-capable host, request "
+                f"`model={model}` and `reasoning_effort={reasoning_effort}`"
             ),
             f"termination expectation: {lifecycle.termination_expectation}",
         ]
     spawn_overrides = lifecycle.spawn_overrides
     spawn_agent_overrides = lifecycle.spawn_agent_overrides
     close_agent_overrides = lifecycle.close_agent_overrides
+    if delegation_style == "task_tool_subagents":
+        preferred_project_subagent = str(spawn_overrides.get("preferred_project_subagent", "")).strip()
+        preferred_subagent_line = (
+            f"prefer the project subagent `{preferred_project_subagent}` when it matches this slice"
+            if preferred_project_subagent
+            else "use the closest built-in Claude subagent type for this bounded leaf"
+        )
+        return [
+            (
+                f"spawn one `{spawn_overrides['agent_role']}` leaf through Claude Code `Task` with "
+                f"`subagent_type={spawn_overrides['subagent_type']}`"
+            ),
+            preferred_subagent_line,
+            "use the emitted `route_native_spawn_payload` directly for the Task tool call instead of rebuilding it",
+            (
+                "do not treat parent-thread model or reasoning controls as authoritative for Claude-host delegated "
+                "leaves; the routed task payload and project subagent frontmatter own that decision"
+            ),
+            (
+                f"if the leaf edits files, request `isolation={spawn_overrides['isolation']}` so the delegated "
+                "slice stays bounded"
+            ),
+            (
+                f"if the delegated leaf remains `waiting on instruction` for "
+                f"`{_DEFAULT_IDLE_TIMEOUT_MINUTES}` minutes or longer, `{_DEFAULT_IDLE_TIMEOUT_ACTION}` "
+                f"and `{_DEFAULT_IDLE_TIMEOUT_ESCALATION}`"
+            ),
+            (
+                f"if the main thread has a real immediate same-scope reuse case but has not queued the next prompt yet, "
+                f"it may record a bounded reuse claim for up to `{_DEFAULT_PREQUEUE_SAME_SCOPE_REUSE_CLAIM_MINUTES}` "
+                "minutes before either queuing that follow-up or closing the leaf"
+            ),
+            f"termination expectation: {spawn_overrides['termination_expectation']}",
+        ]
     return [
         (
             f"spawn one `{spawn_overrides['agent_role']}` subagent and override parent defaults with "
@@ -1677,6 +1552,8 @@ def route_outcome_from_mapping(payload: Mapping[str, Any]) -> RouteOutcome:
 
 
 def _context_signal_summary(request: RouteRequest) -> dict[str, Any]:
+    from odylith.runtime.orchestration import subagent_router_assessment_runtime
+
     return subagent_router_assessment_runtime._context_signal_summary(request)
 
 
@@ -1979,10 +1856,21 @@ def _classify_task_family(
 
 
 def assess_request(request: RouteRequest) -> TaskAssessment:
+    """Assess one bounded request using the runtime scoring implementation."""
+
+    from odylith.runtime.orchestration import subagent_router_assessment_runtime
+
     return subagent_router_assessment_runtime.assess_request(request)
 
 
 def _allow_xhigh_by_gate(assessment: TaskAssessment) -> bool:
+    """Decide whether the router may even consider the `frontier_xhigh` tier.
+
+    `frontier_xhigh` is not part of the normal score race. The gate only opens
+    for slices that combine strong accuracy pressure with meaningful ambiguity,
+    blast radius, reversibility risk, or unusually low confidence.
+    """
+
     if assessment.correctness_critical and assessment.feature_implementation and max(
         assessment.ambiguity,
         assessment.blast_radius,
@@ -2015,105 +1903,35 @@ def _allow_xhigh_by_gate(assessment: TaskAssessment) -> bool:
     return False
 
 
-def _reliability_bias(counts: Mapping[str, int]) -> float:
-    successes = int(counts.get("accepted", 0) or 0)
-    failures = sum(
-        int(counts.get(label, 0) or 0)
-        for label in ("blocked", "ambiguous", "artifact_missing", "quality_too_weak", "broader_coordination")
-    )
-    total = successes + failures
-    if total < 3:
-        return 0.0
-    return max(-0.25, min(0.25, ((successes - failures) / total) * 0.25))
-
-
-def _count_total_labels(counts: Mapping[str, int], labels: Sequence[str]) -> int:
-    return sum(int(counts.get(label, 0) or 0) for label in labels)
-
-
-def _combined_counts(*rows: Mapping[str, int]) -> dict[str, int]:
-    combined: dict[str, int] = {}
-    for row in rows:
-        if not isinstance(row, Mapping):
-            continue
-        for key, value in row.items():
-            token = _normalize_token(key)
-            if not token:
-                continue
-            combined[token] = int(combined.get(token, 0) or 0) + max(0, int(value or 0))
-    return combined
-
-
 def _profile_reliability_summary(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> dict[str, Any]:
-    global_counts = dict(tuning.outcome_counts.get(profile.value, {}))
-    family_counts = dict(tuning.family_outcome_counts.get(assessment.task_family, {}).get(profile.value, {}))
-    family_total = _count_total_labels(
-        family_counts,
-        (
-            "accepted",
-            "blocked",
-            "ambiguous",
-            "artifact_missing",
-            "quality_too_weak",
-            "broader_coordination",
-            "escalated",
-            "token_efficient",
-        ),
-    )
-    counts = family_counts if family_total >= 2 else _combined_counts(global_counts, family_counts)
-    accepted = int(counts.get("accepted", 0) or 0)
-    blocked = int(counts.get("blocked", 0) or 0)
-    ambiguous = int(counts.get("ambiguous", 0) or 0)
-    artifact_missing = int(counts.get("artifact_missing", 0) or 0)
-    quality_too_weak = int(counts.get("quality_too_weak", 0) or 0)
-    broader_coordination = int(counts.get("broader_coordination", 0) or 0)
-    token_efficient = int(counts.get("token_efficient", 0) or 0)
-    failures = blocked + ambiguous + artifact_missing + quality_too_weak + broader_coordination
-    severe_failures = blocked + ambiguous + quality_too_weak
-    total = accepted + failures
-    if total < 2:
-        posture = "unknown"
-    elif failures == 0 and accepted >= 3:
-        posture = "strong"
-    elif severe_failures >= 2 or failures > accepted:
-        posture = "weak"
-    else:
-        posture = "mixed"
-    return {
-        "source": "family" if family_total >= 2 else "combined",
-        "posture": posture,
-        "accepted": accepted,
-        "failures": failures,
-        "severe_failures": severe_failures,
-        "token_efficient": token_efficient,
-        "total": total,
-    }
+    """Expose the shared profile reliability summary from the support module."""
+
+    return subagent_router_profile_support.profile_reliability_summary(profile, assessment, tuning)
 
 
 def _tuning_bias_for_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> float:
-    profile_bias = float(tuning.profile_bias.get(profile.value, 0.0) or 0.0)
-    family_bias = float(
-        tuning.family_profile_bias.get(assessment.task_family, {}).get(profile.value, 0.0) or 0.0
-    )
-    return (
-        profile_bias
-        + family_bias
-        + _reliability_bias(tuning.outcome_counts.get(profile.value, {}))
-        + _reliability_bias(tuning.family_outcome_counts.get(assessment.task_family, {}).get(profile.value, {}))
-    )
+    """Expose the bounded local tuning bias for one profile and task family."""
+
+    return subagent_router_profile_support.tuning_bias_for_profile(profile, assessment, tuning)
 
 
 def _score_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> float:
+    """Delegate profile scoring to the runtime-policy module."""
+
     return subagent_router_runtime_policy._score_profile(profile=profile, assessment=assessment, tuning=tuning)
 
 
 
 def _score_margin(selected: RouterProfile, scorecard: Mapping[str, float]) -> float:
+    """Compute the selected profile's lead over the nearest competitor."""
+
     return subagent_router_runtime_policy._score_margin(selected=selected, scorecard=scorecard)
 
 
 
 def _routing_confidence(selected: RouterProfile, assessment: TaskAssessment, scorecard: Mapping[str, float]) -> int:
+    """Collapse the scorecard and assessment into a bounded routing confidence."""
+
     return subagent_router_runtime_policy._routing_confidence(selected=selected, assessment=assessment, scorecard=scorecard)
 
 
@@ -2124,11 +1942,15 @@ def _apply_accuracy_backstop(
     assessment: TaskAssessment,
     scorecard: Mapping[str, float],
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Raise the selected profile when accuracy pressure outruns the score win."""
+
     return subagent_router_runtime_policy._apply_accuracy_backstop(selected=selected, assessment=assessment, scorecard=scorecard)
 
 
 
 def _next_stronger_profile(profile: RouterProfile, assessment: TaskAssessment) -> RouterProfile:
+    """Return the next stronger profile for this assessment's task shape."""
+
     return subagent_router_runtime_policy._next_stronger_profile(profile=profile, assessment=assessment)
 
 
@@ -2140,6 +1962,8 @@ def _apply_reliability_backstop(
     tuning: TuningState,
     routing_confidence: int,
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Adjust the winner when recent local reliability evidence warrants it."""
+
     return subagent_router_runtime_policy._apply_reliability_backstop(selected=selected, assessment=assessment, tuning=tuning, routing_confidence=routing_confidence)
 
 
@@ -2152,6 +1976,8 @@ def _apply_odylith_execution_alignment(
     routing_confidence: int,
     allow_xhigh: bool,
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Align the chosen profile with Odylith execution-lane constraints."""
+
     return subagent_router_runtime_policy._apply_odylith_execution_alignment(selected=selected, assessment=assessment, scorecard=scorecard, routing_confidence=routing_confidence, allow_xhigh=allow_xhigh)
 
 
@@ -2167,6 +1993,8 @@ def _top_score_lines(
     score_margin: float,
     backstop_lines: Sequence[str],
 ) -> list[str]:
+    """Render the human-readable explanation for the score and backstop outcome."""
+
     return subagent_router_runtime_policy._top_score_lines(selected=selected, scorecard=scorecard, assessment=assessment, task_class_policy_lines=task_class_policy_lines, allow_xhigh=allow_xhigh, routing_confidence=routing_confidence, score_margin=score_margin, backstop_lines=backstop_lines)
 
 
@@ -2177,6 +2005,14 @@ def _select_profile(
     tuning: TuningState,
     allow_xhigh: bool,
 ) -> tuple[RouterProfile, dict[str, float]]:
+    """Score the eligible profiles and return the winner plus the scorecard.
+
+    Candidate selection is intentionally narrower for read-only analysis slices
+    so lightweight profiles can win cleanly. Write-capable and higher-risk work
+    expands the candidate set, and the gate-controlled xhigh tier is appended
+    only when the assessment has already earned that cost.
+    """
+
     if not assessment.needs_write and assessment.task_family == "analysis_review":
         candidates = [
             RouterProfile.MINI_MEDIUM,
@@ -2195,6 +2031,8 @@ def _select_profile(
     if allow_xhigh:
         candidates.append(RouterProfile.GPT54_XHIGH)
     scorecard = {profile.value: round(_score_profile(profile, assessment, tuning), 3) for profile in candidates}
+    # Priority breaks near-ties deterministically so higher-trust profiles win
+    # equal score races instead of depending on enum or dict ordering.
     selected = max(
         candidates,
         key=lambda profile: (scorecard[profile.value], _PROFILE_PRIORITY.get(profile.value, 0)),
@@ -2207,6 +2045,13 @@ def _next_profile_for_escalation(
     assessment: TaskAssessment,
     outcome: RouteOutcome,
 ) -> RouterProfile | None:
+    """Pick the next stronger profile after a delegated pass failed to settle.
+
+    Escalation is monotonic and bounded: the router only moves upward, skips
+    tiers that do not match the slice shape, and refuses to escalate when the
+    outcome indicates local rescoping is the real fix.
+    """
+
     profile = _validated_profile(decision)
     if profile is RouterProfile.MAIN_THREAD or profile is RouterProfile.GPT54_XHIGH:
         return None
@@ -2237,6 +2082,8 @@ def _next_profile_for_escalation(
 
 
 def _escalation_refusal_reason(decision: RoutingDecision, assessment: TaskAssessment, outcome: RouteOutcome) -> str:
+    """Explain why escalation should stop and return to the main thread."""
+
     profile = _validated_profile(decision)
     if not (outcome.blocked or outcome.ambiguous or outcome.artifact_missing or outcome.quality_too_weak or outcome.broader_coordination):
         return "no escalation trigger was present"
@@ -2256,6 +2103,8 @@ def _escalation_refusal_reason(decision: RoutingDecision, assessment: TaskAssess
 
 
 def _prompt_wrapper_delta(*, outcome: RouteOutcome, assessment: TaskAssessment) -> list[str]:
+    """Generate retry guidance lines for a follow-up delegated attempt."""
+
     lines: list[str] = []
     if outcome.blocked:
         lines.append("Call out the exact blocker and the expected unblock artifact in the respawn prompt.")
@@ -2277,14 +2126,22 @@ def _prompt_wrapper_delta(*, outcome: RouteOutcome, assessment: TaskAssessment) 
         lines.append("Restate the accuracy-first bias so the next pass optimizes for correctness over speed.")
     return lines
 
-subagent_router_runtime_policy.bind(sys.modules[__name__])
-
-
 def route_request(
     request: RouteRequest,
     *,
     repo_root: Path | None = None,
 ) -> RoutingDecision:
+    """Route one bounded request to the main thread or a concrete agent profile.
+
+    The router applies consumer-lane write policy, computes a task assessment,
+    rejects any hard-gated slice immediately, then scores the eligible profiles
+    and wraps the winner in the host/runtime contract needed for actual spawn
+    execution. All later backstops refine the winner; none of them can overturn
+    a hard main-thread refusal.
+    """
+
+    from odylith.runtime.orchestration import subagent_router_assessment_runtime
+
     _ensure_valid_route_request(request)
     request = subagent_router_assessment_runtime.request_with_consumer_write_policy(
         request,
@@ -2294,7 +2151,10 @@ def route_request(
     assessment = assess_request(request)
     task_class_policy = _task_class_policy_for(assessment)
     task_class_policy_lines = _task_class_policy_lines(task_class_policy)
+    task_class_model, task_class_reasoning_effort = subagent_router_profile_support.profile_runtime_fields(task_class_policy.default_profile)
     if assessment.hard_gate_hits:
+        # Hard gates intentionally bypass every scoring or tuning hook so the
+        # router cannot delegate around a safety or grounding contract.
         why = f"kept local because {', '.join(assessment.hard_gate_hits)}"
         return RoutingDecision(
             delegate=False,
@@ -2327,8 +2187,8 @@ def route_request(
             spawn_task_message="",
             native_spawn_payload={},
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_policy.default_profile.model,
-            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
+            task_class_model=task_class_model,
+            task_class_reasoning_effort=task_class_reasoning_effort,
             task_class_policy_lines=task_class_policy_lines,
             explanation_lines=[
                 f"task_family={assessment.task_family}",
@@ -2378,8 +2238,8 @@ def route_request(
             spawn_task_message="",
             native_spawn_payload={},
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_policy.default_profile.model,
-            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
+            task_class_model=task_class_model,
+            task_class_reasoning_effort=task_class_reasoning_effort,
             task_class_policy_lines=task_class_policy_lines,
             explanation_lines=[
                 f"task_family={assessment.task_family}",
@@ -2423,6 +2283,7 @@ def route_request(
         allow_xhigh=allow_xhigh,
     )
     selected, task_class_policy_lines = _apply_task_class_policy_floor(selected=selected, policy=task_class_policy)
+    selected_model, selected_reasoning_effort = subagent_router_profile_support.profile_runtime_fields(selected)
     score_margin = _score_margin(selected, scorecard)
     selected_score = float(scorecard.get(selected.value, 0.0) or 0.0)
     lifecycle = _delegated_leaf_lifecycle_payload(profile=selected, assessment=assessment)
@@ -2445,15 +2306,15 @@ def route_request(
         message=spawn_task_message,
     )
     why = (
-        f"delegated to `{selected.value}` ({selected.model} / {selected.reasoning_effort}) "
+        f"delegated to `{selected.value}` ({selected_model} / {selected_reasoning_effort}) "
         f"with raw score {selected_score}"
     )
     next_profile = _next_profile_for_escalation(
         RoutingDecision(
             delegate=True,
             profile=selected.value,
-            model=selected.model,
-            reasoning_effort=selected.reasoning_effort,
+            model=selected_model,
+            reasoning_effort=selected_reasoning_effort,
             agent_role=agent_role,
             close_after_result=True,
             idle_timeout_minutes=_DEFAULT_IDLE_TIMEOUT_MINUTES,
@@ -2484,8 +2345,8 @@ def route_request(
             idle_timeout_escalation=_DEFAULT_IDLE_TIMEOUT_ESCALATION,
             termination_expectation=termination_expectation,
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_policy.default_profile.model,
-            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
+            task_class_model=task_class_model,
+            task_class_reasoning_effort=task_class_reasoning_effort,
             task_class_policy_lines=list(task_class_policy_lines),
             odylith_execution_profile=_decision_odylith_execution_profile(assessment=assessment, selected=selected),
         ),
@@ -2495,8 +2356,8 @@ def route_request(
     return RoutingDecision(
         delegate=True,
         profile=selected.value,
-        model=selected.model,
-        reasoning_effort=selected.reasoning_effort,
+        model=selected_model,
+        reasoning_effort=selected_reasoning_effort,
         agent_role=agent_role,
         close_after_result=True,
         idle_timeout_minutes=_DEFAULT_IDLE_TIMEOUT_MINUTES,
@@ -2527,23 +2388,23 @@ def route_request(
         idle_timeout_escalation=_DEFAULT_IDLE_TIMEOUT_ESCALATION,
         termination_expectation=termination_expectation,
         task_class_profile=task_class_policy.default_profile.value,
-        task_class_model=task_class_policy.default_profile.model,
-        task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
+        task_class_model=task_class_model,
+        task_class_reasoning_effort=task_class_reasoning_effort,
         task_class_policy_lines=list(task_class_policy_lines),
-            explanation_lines=_top_score_lines(
-                selected=selected,
-                scorecard=scorecard,
-                assessment=assessment,
-                task_class_policy_lines=task_class_policy_lines,
-                allow_xhigh=allow_xhigh,
-                routing_confidence=routing_confidence,
-                score_margin=score_margin,
-                backstop_lines=[*odylith_prior_lines, *backstop_lines, *reliability_lines, *odylith_lines],
-            ),
+        explanation_lines=_top_score_lines(
+            selected=selected,
             scorecard=scorecard,
-            assessment=assessment.as_dict(),
-            odylith_execution_profile=_decision_odylith_execution_profile(assessment=assessment, selected=selected),
-        )
+            assessment=assessment,
+            task_class_policy_lines=task_class_policy_lines,
+            allow_xhigh=allow_xhigh,
+            routing_confidence=routing_confidence,
+            score_margin=score_margin,
+            backstop_lines=[*odylith_prior_lines, *backstop_lines, *reliability_lines, *odylith_lines],
+        ),
+        scorecard=scorecard,
+        assessment=assessment.as_dict(),
+        odylith_execution_profile=_decision_odylith_execution_profile(assessment=assessment, selected=selected),
+    )
 
 
 def escalate_routing_decision(
@@ -2553,6 +2414,13 @@ def escalate_routing_decision(
     request: RouteRequest | None = None,
     assessment: TaskAssessment | None = None,
 ) -> RoutingDecision | None:
+    """Escalate a previous delegated decision after an unsatisfactory outcome.
+
+    This function reuses the original assessment context, decides whether the
+    failure signals justify another delegated attempt, and if so emits a new
+    routing decision with a stronger profile and a tighter retry contract.
+    """
+
     assessed = _assessment_for_followup(
         decision=decision,
         request=request,
@@ -2561,6 +2429,7 @@ def escalate_routing_decision(
     )
     task_class_policy = _task_class_policy_for(assessed)
     task_class_policy_lines = _task_class_policy_lines(task_class_policy)
+    task_class_model, task_class_reasoning_effort = subagent_router_profile_support.profile_runtime_fields(task_class_policy.default_profile)
     refusal_reason = _escalation_refusal_reason(decision, assessed, outcome)
     if refusal_reason:
         why = f"kept local after `{decision.profile}` because {refusal_reason}"
@@ -2597,8 +2466,8 @@ def escalate_routing_decision(
             spawn_task_message="",
             native_spawn_payload={},
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_policy.default_profile.model,
-            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
+            task_class_model=task_class_model,
+            task_class_reasoning_effort=task_class_reasoning_effort,
             task_class_policy_lines=task_class_policy_lines,
             explanation_lines=[why, *prompt_delta],
             scorecard={},
@@ -2608,6 +2477,7 @@ def escalate_routing_decision(
     next_profile = _next_profile_for_escalation(decision, assessed, outcome)
     if next_profile is None:
         return None
+    next_model, next_reasoning_effort = subagent_router_profile_support.profile_runtime_fields(next_profile)
     why = (
         f"escalated from `{decision.profile}` to `{next_profile.value}` "
         f"because the first pass reported {', '.join(_outcome_labels(outcome))}"
@@ -2636,12 +2506,14 @@ def escalate_routing_decision(
         if request is not None
         else {}
     )
+    # Precompute the profile after `next_profile` so the escalated decision can
+    # advertise whether there is still another stronger step available.
     next_step = _next_profile_for_escalation(
         RoutingDecision(
             delegate=True,
             profile=next_profile.value,
-            model=next_profile.model,
-            reasoning_effort=next_profile.reasoning_effort,
+            model=next_model,
+            reasoning_effort=next_reasoning_effort,
             agent_role=next_agent_role,
             close_after_result=True,
             idle_timeout_minutes=_DEFAULT_IDLE_TIMEOUT_MINUTES,
@@ -2672,8 +2544,8 @@ def escalate_routing_decision(
             idle_timeout_escalation=_DEFAULT_IDLE_TIMEOUT_ESCALATION,
             termination_expectation=termination_expectation,
             task_class_profile=task_class_policy.default_profile.value,
-            task_class_model=task_class_policy.default_profile.model,
-            task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
+            task_class_model=task_class_model,
+            task_class_reasoning_effort=task_class_reasoning_effort,
             task_class_policy_lines=task_class_policy_lines,
             assessment=assessed.as_dict(),
             odylith_execution_profile=_decision_odylith_execution_profile(assessment=assessed, selected=next_profile),
@@ -2684,8 +2556,8 @@ def escalate_routing_decision(
     return RoutingDecision(
         delegate=True,
         profile=next_profile.value,
-        model=next_profile.model,
-        reasoning_effort=next_profile.reasoning_effort,
+        model=next_model,
+        reasoning_effort=next_reasoning_effort,
         agent_role=next_agent_role,
         close_after_result=True,
         idle_timeout_minutes=_DEFAULT_IDLE_TIMEOUT_MINUTES,
@@ -2716,8 +2588,8 @@ def escalate_routing_decision(
         idle_timeout_escalation=_DEFAULT_IDLE_TIMEOUT_ESCALATION,
         termination_expectation=termination_expectation,
         task_class_profile=task_class_policy.default_profile.value,
-        task_class_model=task_class_policy.default_profile.model,
-        task_class_reasoning_effort=task_class_policy.default_profile.reasoning_effort,
+        task_class_model=task_class_model,
+        task_class_reasoning_effort=task_class_reasoning_effort,
         task_class_policy_lines=task_class_policy_lines,
         explanation_lines=[
             why,
@@ -2730,6 +2602,8 @@ def escalate_routing_decision(
 
 
 def _outcome_labels(outcome: RouteOutcome) -> list[str]:
+    """Flatten the boolean outcome flags into stable ledger/audit labels."""
+
     labels: list[str] = []
     if outcome.accepted:
         labels.append("accepted")
@@ -2755,6 +2629,14 @@ def record_outcome(
     outcome: RouteOutcome,
     request: RouteRequest | None = None,
 ) -> dict[str, Any]:
+    """Record routing outcome feedback into adaptive local tuning state.
+
+    The router only learns from concrete outcome flags. This function dedupes
+    replayed outcome identities, updates per-profile and per-family counters,
+    nudges local bias values within bounded limits, and writes a companion event
+    into the evaluation ledger for later analysis.
+    """
+
     _validated_profile(decision)
     state = load_tuning_state(repo_root=repo_root)
     profile = decision.profile
@@ -2818,6 +2700,9 @@ def record_outcome(
             float(state.family_profile_bias[task_family].get(profile, 0.0) or 0.0) + family_bias_delta
         )
         if family_bias_delta < 0 and assessed is not None:
+            # When one profile underperforms on a task family, give part of that
+            # penalty back to the likely successor so later score races can move
+            # upward more readily for the same family.
             successor = _next_profile_for_escalation(decision, assessed, outcome)
             if successor is not None:
                 successor_family_bias_delta = round(abs(family_bias_delta) / 2.0, 3)
@@ -2863,6 +2748,8 @@ def append_route_audit(
     outcome: RouteOutcome | None = None,
     stream_path: Path | None = None,
 ) -> dict[str, Any]:
+    """Emit a Compass timeline audit event for routing or routing feedback."""
+
     stream = stream_path or (Path(repo_root).resolve() / DEFAULT_STREAM_PATH).resolve()
     artifacts = list(request.artifacts or request.allowed_paths or [])
     if not artifacts:
@@ -3088,7 +2975,7 @@ def _emit_error(error: RouterInputError, *, as_json: bool) -> None:
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith subagent-router",
-        description="Route bounded Codex subtasks to the right subagent profile.",
+        description="Route bounded subtasks to the right subagent profile.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -3218,13 +3105,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                     decision=decision,
                     outcome=outcome,
                     stream_path=_resolve(repo_root, str(args.stream)),
-                )
+            )
             _emit_payload(payload, as_json=bool(args.json))
             return 0
-
         if args.command == "show-tuning":
             state = load_tuning_state(repo_root=repo_root)
-            _emit_payload(state.as_dict(), as_json=bool(args.json))
+            payload = subagent_tuning_surface.router_surface(repo_root=repo_root, state=state.as_dict())
+            _emit_payload(payload, as_json=bool(args.json))
             return 0
     except RouterInputError as error:
         _emit_error(error, as_json=bool(getattr(args, "json", False)))

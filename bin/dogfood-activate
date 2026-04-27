@@ -6,6 +6,23 @@ if [[ ! -x "$odylith_launcher" ]]; then
   odylith_cli doctor --repo-root . --repair
 fi
 
-launcher_cli upgrade --repo-root .
+source_version="$(current_source_version)"
+version_status="$(launcher_cli version --repo-root .)"
+active_version="$(printf '%s\n' "$version_status" | sed -n 's/^Active: //p' | head -n 1)"
+pinned_version="$(printf '%s\n' "$version_status" | sed -n 's/^Pinned: //p' | head -n 1)"
+
+# Cross-release activation must use the current source helper so the upgrade
+# path understands the next release's repo truth before the new pinned runtime
+# takes over.
+if [[ -n "$source_version" && -n "$active_version" && "$source_version" != "$active_version" ]]; then
+  odylith_cli upgrade --repo-root . --to "$source_version" --write-pin
+elif [[ -n "$source_version" && -n "$pinned_version" && "$source_version" == "$active_version" && "$source_version" == "$pinned_version" ]]; then
+  # Settled pinned dogfood should refresh locally instead of re-fetching the
+  # exact same release from GitHub.
+  launcher_cli dashboard refresh --repo-root .
+else
+  launcher_cli upgrade --repo-root .
+fi
+
 launcher_cli version --repo-root .
 launcher_cli validate self-host-posture --repo-root . --mode local-runtime

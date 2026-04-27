@@ -4,6 +4,7 @@ import json
 import re
 from pathlib import Path
 import subprocess
+import time
 
 from odylith.runtime.evaluation import odylith_ablation
 from odylith.runtime.surfaces import dashboard_time
@@ -202,7 +203,6 @@ def _seed_repo(tmp_path: Path) -> None:
             "commercial_value: 5\n\n"
             "product_impact: 5\n\n"
             "market_value: 5\n\n"
-            "impacted_lanes: both\n\n"
             "impacted_parts: x\n\n"
             "sizing: L\n\n"
             "complexity: VeryHigh\n\n"
@@ -225,19 +225,19 @@ def _seed_repo(tmp_path: Path) -> None:
             "workstream_merged_from:\n\n"
             "supersedes:\n\n"
             "superseded_by:\n\n"
-            "## Problem\nBody\n\n"
-            "## Customer\nBody\n\n"
-            "## Opportunity\nBody\n\n"
+            "## Problem\nRegistry render fixtures need meaningful Radar detail.\n\n"
+            "## Customer\nMaintainers validating Registry dashboard fixture rendering.\n\n"
+            "## Opportunity\nMeaningful fixture prose keeps Registry rendering aligned with validation.\n\n"
             "## Proposed Solution\nBody\n\n"
             "## Scope\nBody\n\n"
             "## Non-Goals\nBody\n\n"
             "## Risks\nBody\n\n"
             "## Dependencies\nBody\n\n"
-            "## Success Metrics\nBody\n\n"
+            "## Success Metrics\n- Registry fixture records validate cleanly.\n- Dashboard rendering remains deterministic.\n\n"
             "## Validation\nBody\n\n"
             "## Rollout\nBody\n\n"
             "## Why Now\nBody\n\n"
-            "## Product View\nBody\n\n"
+            "## Product View\nRegistry should reject weak ideas without breaking valid render fixtures.\n\n"
             "## Impacted Components\n`Radar`\n\n"
             "## Interface Changes\nBody\n\n"
             "## Migration/Compatibility\nBody\n\n"
@@ -304,6 +304,9 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     html = _bundle_registry_text(tmp_path)
     payload = _load_registry_payload(tmp_path)
     assert payload["data_source"]["available_backends"] == ["runtime", "staticSnapshot"]
+    assert payload["runtime_contract"]["surface"] == "registry"
+    assert payload["runtime_contract"]["cache_hit"] is False
+    assert payload["runtime_contract"]["built_from"] == "surface_render"
     assert "odylith_runtime" in payload
     assert "advisory_depth" in payload["odylith_runtime"]
     assert "evaluation_benchmark_satisfaction_rate" in payload["odylith_runtime"]
@@ -426,18 +429,37 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert "function extractTriggerPhrases(markdown, triggerTiers)" in html
     assert "function normalizeTriggerTierRows(value)" not in html
     assert "component-token" not in html
-    assert re.search(r"\.trigger-list,\s*\.trigger-list li,\s*\.spec-doc p,\s*\.spec-doc ul,\s*\.spec-doc li,\s*\.event-summary\s*\{[^}]*font-size:\s*15px;[^}]*line-height:\s*1\.55;[^}]*color:\s*#27445e;", html, flags=re.S)
+    assert re.search(r"\.trigger-list,\s*\.trigger-list li,\s*\.spec-doc p,\s*\.spec-doc ul,\s*\.spec-doc li\s*\{[^}]*font-size:\s*15px;[^}]*line-height:\s*1\.55;[^}]*color:\s*#27445e;", html, flags=re.S)
     assert re.search(r"\.summary-row\s*\{[^}]*font-size:\s*15px;[^}]*line-height:\s*1\.55;[^}]*color:\s*#27445e;[^}]*font-weight:\s*400;", html, flags=re.S)
     assert re.search(r"\.summary-row strong\s*\{[^}]*font-size:\s*inherit;[^}]*line-height:\s*inherit;[^}]*color:\s*#22496f;[^}]*font-weight:\s*700;", html, flags=re.S)
     assert ".detail-disclosure-title {" in html
     assert re.search(r"\.detail-disclosure-title\s*\{[^}]*color:\s*#22496f;[^}]*font-size:\s*15px;[^}]*line-height:\s*1\.55;[^}]*letter-spacing:\s*0em;[^}]*font-weight:\s*700;", html, flags=re.S)
     assert 'class="context-k context-toggle-label"' not in html
+    assert '<div class="context-head">\n              <span class="detail-disclosure-title context-toggle-label">Topology</span>\n            </div>' in html
+    assert 'class="detail-chip-label' not in html
     assert re.search(r"\.label\s*\{[^}]*border:\s*1px solid var\(--label-border\);[^}]*border-radius:\s*4px;[^}]*padding:\s*4px 10px;", html, flags=re.S)
-    assert re.search(r"\.action-chip\s*\{[^}]*--chip-link-border:\s*var\(--action-border\);[^}]*--chip-link-bg:\s*var\(--action-bg\);[^}]*--chip-link-text:\s*var\(--action-text\);[^}]*min-height:\s*0px;[^}]*padding:\s*4px 12px;[^}]*border-radius:\s*999px;[^}]*border:\s*1px solid var\(--chip-link-border\);[^}]*background:\s*var\(--chip-link-bg\);[^}]*color:\s*var\(--chip-link-text\);", html, flags=re.S)
-    assert re.search(r"\.action-chip\s*\{[^}]*font-size:\s*11px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*700;", html, flags=re.S)
-    assert re.search(r"\.detail-action-chip\s*\{[^}]*min-height:\s*0px;[^}]*padding:\s*4px 12px;[^}]*border-radius:\s*999px;[^}]*border:\s*1px solid var\(--chip-link-border\);", html, flags=re.S)
-    assert re.search(r"\.detail-action-chip\s*\{[^}]*font-size:\s*11px;[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*700;", html, flags=re.S)
-    assert re.search(r"\.detail-chip-label\s*\{[^}]*border:\s*1px solid var\(--label-border\);[^}]*border-radius:\s*4px;[^}]*min-height:\s*0px;[^}]*padding:\s*4px 10px;", html, flags=re.S)
+    assert re.search(
+        r"\.action-chip\s*\{[^}]*--chip-link-border:\s*var\(--action-border\);[^}]*--chip-link-bg:\s*var\(--action-bg\);[^}]*--chip-link-text:\s*var\(--action-text\);[^}]*min-height:\s*0px;[^}]*padding:\s*var\(--surface-deep-link-button-padding,\s*4px 12px\);[^}]*border-radius:\s*999px;[^}]*border:\s*1px solid var\(--chip-link-border\);[^}]*background:\s*var\(--chip-link-bg\);[^}]*color:\s*var\(--chip-link-text\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.action-chip\s*\{[^}]*font-size:\s*var\(--surface-deep-link-button-font-size,\s*11px\);[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*var\(--surface-deep-link-button-font-weight,\s*700\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.detail-action-chip\s*\{[^}]*min-height:\s*0px;[^}]*padding:\s*var\(--surface-deep-link-button-padding,\s*4px 12px\);[^}]*border-radius:\s*999px;[^}]*border:\s*1px solid var\(--chip-link-border\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.detail-action-chip\s*\{[^}]*font-size:\s*var\(--surface-deep-link-button-font-size,\s*11px\);[^}]*line-height:\s*1;[^}]*letter-spacing:\s*0\.01em;[^}]*font-weight:\s*var\(--surface-deep-link-button-font-weight,\s*700\);",
+        html,
+        flags=re.S,
+    )
+    assert ".detail-chip-label {" not in html
+    assert ".detail-chip-label.tone-gov {" not in html
     assert re.search(r"\.action-chip\.active\s*\{[^}]*border-color:\s*#1d4a8f;[^}]*background:\s*#deebff;[^}]*color:\s*#1d4ed8;", html, flags=re.S)
     assert not re.search(r"\.action-chip\.active\s*\{[^}]*box-shadow:", html, flags=re.S)
     assert re.search(r"\.component-btn\.active\s*\{[^}]*border-color:\s*var\(--line-strong\);[^}]*background:\s*#eaf3ff;", html, flags=re.S)
@@ -451,6 +473,181 @@ def test_render_registry_dashboard_happy_path(tmp_path: Path) -> None:
     assert not re.search(r"\.timeline\s*\{[^}]*overflow:\s*auto;", html, flags=re.S)
     component_button_html = re.findall(r'<button type="button" class="component-btn[^"]*"[^>]*>', html)
     assert component_button_html
+
+
+def test_render_registry_dashboard_forensic_evidence_uses_digest_first_contract(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    stream_path = tmp_path / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"
+    stream_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "intervention_card",
+                "summary": "Radar already has a governed slice for B-901.",
+                "ts_iso": "2026-04-01T00:00:00Z",
+                "workstreams": ["B-901", "B-902", "B-903", "B-904", "B-905", "B-906"],
+                "artifacts": [
+                    "src/odylith/runtime/surfaces/render_backlog_ui.py",
+                    "odylith/registry/source/components/radar/CURRENT_SPEC.md",
+                    "odylith/technical-plans/in-progress/2026-03-04-example.md",
+                ],
+                "components": ["radar"],
+                "confidence": "high",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+    assert rc == 0
+
+    payload = _load_registry_payload(tmp_path)
+    detail_row = _extract_window_merge_payload(
+        tmp_path / "odylith" / "registry" / payload["detail_manifest"]["radar"]
+    )["radar"]
+    raw_event = next(row for row in detail_row["timeline"] if row["kind"] == "intervention_card")
+    assert len(raw_event["workstreams"]) == 6
+    assert len(raw_event["artifacts"]) == 3
+
+    html = _bundle_registry_text(tmp_path)
+    assert '<section id="timeline" class="timeline" aria-live="polite"></section>' in html
+    assert "const FORENSIC_DIGEST_WORKSTREAM_LIMIT = 4;" in html
+    assert "const FORENSIC_DIGEST_ARTIFACT_LIMIT = 2;" in html
+    assert "function forensicNewestEvent(events)" in html
+    assert "const latestEvent = forensicNewestEvent(events);" in html
+    assert "function forensicLimitedWorkstreams(workstreams, limit = FORENSIC_DIGEST_WORKSTREAM_LIMIT)" in html
+    assert "function forensicLimitedArtifacts(artifacts, limit = FORENSIC_DIGEST_ARTIFACT_LIMIT)" in html
+    assert 'forensicOverflowLabel(overflow, "workstream")' in html
+    assert "function forensicArtifactOverflowDisclosure(items, overflow)" in html
+    assert "forensicArtifactOverflowDisclosure(hidden, overflow)" in html
+    assert "forensic-token-link" not in html
+    assert "forensic-overflow" not in html
+    assert '<a class="forensic-workstream-chip"' in html
+    assert re.search(
+        r"\.forensic-workstream-chip\s*\{[^}]*--chip-link-border:\s*#b9c7db;[^}]*--chip-link-bg:\s*#f3f6fb;[^}]*--chip-link-text:\s*#334155;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-workstream-chip\s*\{[^}]*padding:\s*var\(--surface-workstream-button-padding,\s*1px 8px\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-workstream-chip\s*\{[^}]*font-size:\s*var\(--surface-workstream-button-font-size,\s*12px\);[^}]*font-weight:\s*var\(--surface-workstream-button-font-weight,\s*500\);",
+        html,
+        flags=re.S,
+    )
+    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#8cb8f4", html, flags=re.S)
+    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#eaf3ff", html, flags=re.S)
+    assert not re.search(r"\.forensic-workstream-chip\s*\{[^}]*#1f4795", html, flags=re.S)
+    assert re.search(
+        r"\.artifact\s*\{[^}]*--chip-link-border:\s*#cbd5e1;[^}]*--chip-link-bg:\s*#f8fafc;[^}]*--chip-link-text:\s*#334155;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.artifact\s*\{[^}]*padding:\s*var\(--surface-deep-link-button-padding,\s*4px 12px\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.artifact\s*\{[^}]*font-size:\s*var\(--surface-deep-link-button-font-size,\s*11px\);[^}]*font-weight:\s*var\(--surface-deep-link-button-font-weight,\s*700\);",
+        html,
+        flags=re.S,
+    )
+    assert '<details class="forensic-artifact-disclosure">' in html
+    assert '<summary class="forensic-artifact-overflow-summary"' in html
+    assert '<div class="forensic-artifact-disclosure-panel artifact-list">' in html
+    assert re.search(
+        r"\.forensic-artifact-overflow-summary\s*\{[^}]*--chip-link-border:\s*#cbd5e1;[^}]*--chip-link-bg:\s*#f8fafc;[^}]*--chip-link-text:\s*#334155;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-artifact-overflow-summary\s*\{[^}]*padding:\s*var\(--surface-deep-link-button-padding,\s*4px 12px\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-artifact-overflow-summary\s*\{[^}]*font-size:\s*var\(--surface-deep-link-button-font-size,\s*11px\);[^}]*font-weight:\s*var\(--surface-deep-link-button-font-weight,\s*700\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-artifact-disclosure:not\(\[open\]\)\s*\.forensic-artifact-disclosure-panel\s*\{[^}]*display:\s*none;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-artifact-disclosure\[open\]\s*\.forensic-artifact-disclosure-panel\s*\{[^}]*display:\s*flex;",
+        html,
+        flags=re.S,
+    )
+    assert not re.search(r"\.artifact\s*\{[^}]*border:\s*1px solid #d4e2f7;", html, flags=re.S)
+    assert re.search(
+        r"\.forensic-coverage-strip\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(150px,\s*1fr\)\);",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-stat\s*\{[^}]*border:\s*1px solid #dbeafe;[^}]*border-radius:\s*12px;[^}]*background:\s*#ffffff;[^}]*grid-template-rows:\s*2\.35em auto;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-stat-label\s*\{[^}]*font-size:\s*12px;[^}]*text-transform:\s*uppercase;",
+        html,
+        flags=re.S,
+    )
+    assert re.search(
+        r"\.forensic-stat-value\s*\{[^}]*font-size:\s*23px;[^}]*font-weight:\s*700;",
+        html,
+        flags=re.S,
+    )
+    assert not re.search(r"\.forensic-stat\s*\{[^}]*border:\s*1px solid #d7e4f6;", html, flags=re.S)
+    assert not re.search(r"\.forensic-stat\s*\{[^}]*background:\s*#f8fbff;", html, flags=re.S)
+    assert not re.search(r"\.forensic-stat\s*\{[^}]*padding:\s*8px 9px;", html, flags=re.S)
+    assert "renderForensicRawEvent" not in html
+    assert "renderForensicRawLog" not in html
+    assert "forensic-raw-log" not in html
+    assert "forensic-raw-events" not in html
+    assert "Raw event log" not in html
+    assert "No scope" not in html
+    assert "No artifacts" not in html
+    assert "event-summary" not in html
+    assert "event-top" not in html
+
+    latest_match = re.search(
+        r"function renderForensicLatestEvent\(event\)(?P<body>.*?)function renderForensicGroups",
+        html,
+        flags=re.S,
+    )
+    assert latest_match is not None
+    latest_body = latest_match.group("body")
+    assert "No scope" not in latest_body
+    assert "No artifacts" not in latest_body
+
+    groups_match = re.search(
+        r"function renderForensicGroups\(events\)(?P<body>.*?)function renderTimeline",
+        html,
+        flags=re.S,
+    )
+    assert groups_match is not None
+    groups_body = groups_match.group("body")
+    assert "No scope" not in groups_body
+    assert "No artifacts" not in groups_body
+
+    assert re.search(
+        r"\.forensic-latest,\s*\.forensic-group-row\s*\{[^}]*border-radius:\s*8px;",
+        html,
+        flags=re.S,
+    )
+    assert not re.search(
+        r"\.forensic-(?:latest|group-row)[^{]*\{[^}]*border-radius:\s*(?:9|1[0-9]|[2-9][0-9])px",
+        html,
+    )
 
 
 def test_render_registry_dashboard_uses_consumer_registry_truth_root_when_profile_overrides_manifest(tmp_path: Path) -> None:
@@ -551,21 +748,44 @@ def test_render_registry_dashboard_compacts_delivery_intelligence_payload(
     _seed_repo(tmp_path)
 
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **_kwargs: {
             "summary": {"headline": "unused"},
             "workstreams": {"B-901": {"unused": True}},
-            "components": {
-                "radar": {
-                    "confidence": "high",
-                    "operator_readout": {"headline": "Radar is converging."},
-                    "posture_mode": "converging",
-                    "trajectory": "steady",
-                    "diagnostics": ["unused"],
-                    "evidence_refs": [{"surface": "radar", "value": "B-901"}],
-                }
-            },
+                "components": {
+                    "radar": {
+                        "confidence": "high",
+                        "operator_readout": {"headline": "Radar is converging."},
+                        "posture_mode": "converging",
+                        "proof_state": {
+                            "lane_id": "proof-state-control-plane",
+                            "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                            "proof_status": "fixed_in_code",
+                        },
+                        "proof_state_resolution": {
+                            "state": "resolved",
+                            "lane_ids": ["proof-state-control-plane"],
+                        },
+                        "claim_guard": {
+                            "highest_truthful_claim": "fixed in code",
+                            "blocked_terms": ["fixed", "cleared", "resolved"],
+                        },
+                        "scope_signal": {
+                            "rank": 4,
+                            "rung": "R4",
+                            "token": "actionable_priority",
+                            "label": "Actionable priority",
+                            "reasons": ["An open warning or operator recommendation is still unresolved."],
+                            "caps": [],
+                            "promoted_default": True,
+                            "budget_class": "escalated_reasoning",
+                        },
+                        "trajectory": "steady",
+                        "diagnostics": ["unused"],
+                        "evidence_refs": [{"surface": "radar", "value": "B-901"}],
+                    }
+                },
         },
     )
 
@@ -577,12 +797,82 @@ def test_render_registry_dashboard_compacts_delivery_intelligence_payload(
         "components": {
             "radar": {
                 "confidence": "high",
+                "claim_guard": {
+                    "blocked_terms": ["fixed", "cleared", "resolved"],
+                    "highest_truthful_claim": "fixed in code",
+                },
                 "operator_readout": {"headline": "Radar is converging."},
                 "posture_mode": "converging",
+                "proof_state": {
+                    "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                    "lane_id": "proof-state-control-plane",
+                    "proof_status": "fixed_in_code",
+                },
+                "proof_state_resolution": {
+                    "state": "resolved",
+                    "lane_ids": ["proof-state-control-plane"],
+                },
+                "scope_signal": {
+                    "rank": 4,
+                    "rung": "R4",
+                    "token": "actionable_priority",
+                    "label": "Actionable priority",
+                    "reasons": ["An open warning or operator recommendation is still unresolved."],
+                    "caps": [],
+                    "promoted_default": True,
+                    "budget_class": "escalated_reasoning",
+                },
                 "trajectory": "steady",
             }
         }
     }
+    html = _bundle_registry_text(tmp_path)
+    assert "Live Status" not in html
+    assert "Product Summary" not in html
+    assert "Current live risk is still centered on " not in html
+    assert "Safest current claim: " not in html
+    assert "Proof Control" not in html
+    assert "Live Blocker" not in html
+    assert "Current blocker:" not in html
+    assert "Fingerprint:" not in html
+    assert "Frontier:" not in html
+    assert "Evidence tier:" not in html
+    assert "Truthful claim:" not in html
+    assert "Deployment truth:" not in html
+
+
+def test_render_registry_dashboard_surfaces_proof_resolution_when_no_dominant_lane(tmp_path: Path, monkeypatch) -> None:
+    _seed_repo(tmp_path)
+
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **_kwargs: {
+            "components": {
+                "radar": {
+                    "operator_readout": {"headline": "Radar needs a tighter blocker read."},
+                    "proof_state": {},
+                    "proof_state_resolution": {
+                        "state": "ambiguous",
+                        "lane_ids": ["lane-a", "lane-b"],
+                    },
+                    "claim_guard": {},
+                }
+            }
+        },
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+
+    assert rc == 0
+    payload = _load_registry_payload(tmp_path)
+    assert payload["delivery_intelligence"]["components"]["radar"]["proof_state_resolution"] == {
+        "state": "ambiguous",
+        "lane_ids": ["lane-a", "lane-b"],
+    }
+    html = _bundle_registry_text(tmp_path)
+    assert "Current live risk is still split across more than one blocker path for this component." not in html
+    assert "No dominant proof lane is resolved for this component." not in html
 
 
 def test_render_registry_dashboard_surfaces_baseline_forensic_only_components(tmp_path: Path) -> None:
@@ -697,6 +987,28 @@ def test_render_registry_dashboard_generated_utc_stable_when_payload_unchanged(t
     assert first_generated == second_generated
 
 
+def test_render_registry_dashboard_skips_noop_writes_when_bundle_is_unchanged(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+    assert rc == 0
+
+    tracked_paths = [
+        tmp_path / "odylith" / "registry" / "registry.html",
+        tmp_path / "odylith" / "registry" / "registry-payload.v1.js",
+        tmp_path / "odylith" / "registry" / "registry-app.v1.js",
+        *sorted((tmp_path / "odylith" / "registry").glob("registry-detail-shard-*.v1.js")),
+    ]
+    first_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+
+    time.sleep(0.01)
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+    assert rc == 0
+
+    second_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+    assert second_mtimes == first_mtimes
+
+
 def test_render_registry_dashboard_supports_odylith_chatter_component_contract(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
 
@@ -712,7 +1024,8 @@ def test_render_registry_dashboard_supports_odylith_chatter_component_contract(t
             "- `Odylith Assist:` stays final-only.\n"
             "- Prefer `**Odylith Assist:**` when Markdown formatting is available.\n"
             "- Lead with the user win, not Odylith mechanics.\n"
-            "- Link updated governance ids inline when they were actually changed.\n"
+            "- Link updated governance IDs inline only when they actually changed.\n"
+            "- Name affected governance-contract IDs when no governed file moved.\n"
             "- Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it.\n"
             "- Keep it crisp, authentic, clear, simple, insightful, soulful, friendly, free-flowing, human, and factual.\n"
             "- Use observed counts, measured deltas, or validation outcomes.\n\n"
@@ -763,7 +1076,8 @@ def test_render_registry_dashboard_supports_odylith_chatter_component_contract(t
     assert "**Odylith Assist:**" in chatter_detail["spec_markdown"]
     assert "Odylith Insight:" in chatter_detail["spec_markdown"]
     assert "Lead with the user win" in chatter_detail["spec_markdown"]
-    assert "Link updated governance ids inline when they were actually changed." in chatter_detail["spec_markdown"]
+    assert "Link updated governance IDs inline only when they actually changed." in chatter_detail["spec_markdown"]
+    assert "Name affected governance-contract IDs when no governed file moved." in chatter_detail["spec_markdown"]
     assert "broader unguided path" in chatter_detail["spec_markdown"]
     assert "crisp, authentic, clear, simple, insightful" in chatter_detail["spec_markdown"]
 
@@ -859,3 +1173,21 @@ def test_render_registry_dashboard_maps_source_owned_bundle_mirror_activity_to_c
     assert tribunal_detail["forensic_coverage"]["explicit_event_count"] == 0
     assert tribunal_detail["forensic_coverage"]["recent_path_match_count"] == 1
     assert any(event["kind"] == "workspace_activity" for event in tribunal_detail["timeline"])
+
+
+def test_render_registry_dashboard_skips_cached_rebuild_before_payload_builder(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_repo(tmp_path)
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+    assert rc == 0
+
+    def _boom(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("registry payload should be skipped on a cache hit")
+
+    monkeypatch.setattr(renderer, "_build_payload", _boom)
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/registry/registry.html"])
+    assert rc == 0

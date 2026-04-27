@@ -2,43 +2,108 @@
 
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
 import datetime as dt
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
+from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
+from odylith.runtime.context_engine import odylith_context_engine_store
+from odylith.runtime.governance import agent_governance_intelligence as governance
+from odylith.runtime.governance.delivery import scope_signal_ladder
+from odylith.runtime.governance import proof_state as proof_state_runtime
+from odylith.runtime.reasoning import odylith_reasoning
+from odylith.runtime.intervention_engine import stream_state as intervention_stream_state
+from odylith.runtime.governance import workstream_progress as workstream_progress_runtime
+from odylith.runtime.surfaces import compass_governance_source_runtime
 from odylith.runtime.surfaces import compass_refresh_contract
 from odylith.runtime.surfaces import compass_execution_focus_runtime
+from odylith.runtime.surfaces import compass_standup_brief_narrator
+from odylith.runtime.surfaces import compass_standup_brief_maintenance
+from odylith.runtime.surfaces import compass_standup_runtime_reuse
+from odylith.runtime.surfaces import compass_window_summary_support
 
 
-def _host():
-    from odylith.runtime.surfaces import compass_dashboard_runtime as host
+def _emit_refresh_progress(
+    progress_callback: Any | None,
+    *,
+    stage: str,
+    message: str,
+) -> None:
+    if not callable(progress_callback):
+        return
+    progress_callback(stage, {"message": str(message).strip()})
 
-    return host
+
+def _brief_source_counts(briefs: Mapping[str, Mapping[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for brief in briefs.values():
+        if not isinstance(brief, Mapping):
+            continue
+        source = str(brief.get("source", "")).strip().lower() or "unknown"
+        counts[source] = int(counts.get(source, 0) or 0) + 1
+    return counts
 
 
-def _scoped_brief_provider_allowed(*, refresh_profile: str) -> bool:
-    return compass_refresh_contract.full_refresh_requested(refresh_profile)
+def _format_brief_source_counts(counts: Mapping[str, int]) -> str:
+    ordered = [
+        ("provider", "provider"),
+        ("cache", "cache"),
+        ("unavailable", "inactive"),
+        ("unknown", "unknown"),
+    ]
+    parts = [
+        f"{label}={int(counts.get(source, 0) or 0)}"
+        for source, label in ordered
+        if int(counts.get(source, 0) or 0) > 0
+    ]
+    return ", ".join(parts) if parts else "no scoped briefs"
 
 
-def _assert_full_refresh_brief_ready(
+def _reusable_brief_sections_for_fact_packet(
     *,
     brief: Mapping[str, Any],
-    window_hours: int,
-    scope_label: str,
-) -> None:
-    if compass_refresh_contract.brief_satisfies_full_refresh(brief):
-        return
-    status = str(brief.get("status", "")).strip().lower() or "unknown"
-    source = str(brief.get("source", "")).strip().lower() or "unknown"
-    diagnostics = brief.get("diagnostics")
-    reason = str(diagnostics.get("reason", "")).strip().lower() if isinstance(diagnostics, Mapping) else ""
-    detail = f"status={status}, source={source}"
-    if reason:
-        detail += f", reason={reason}"
-    raise RuntimeError(
-        f"Compass full refresh requires current brief truth for {scope_label} {int(window_hours)}h window; got {detail}."
+    fact_packet: Mapping[str, Any],
+) -> list[dict[str, Any]] | None:
+    if not compass_standup_runtime_reuse.brief_ready_without_notice(brief):
+        return None
+    raw_sections = brief.get("sections")
+    if not isinstance(raw_sections, Sequence) or not raw_sections:
+        return None
+    return compass_standup_brief_narrator._validated_cached_sections(  # noqa: SLF001
+        raw_sections=raw_sections,
+        fact_packet=fact_packet,
+        cached_evidence_lookup=brief.get("evidence_lookup", {}),
     )
+
+
+def _brief_with_known_failure_state(
+    *,
+    repo_root: Path,
+    window_key: str,
+    fact_packet: Mapping[str, Any],
+    generated_utc: str,
+    brief: Mapping[str, Any],
+    scope_id: str = "",
+) -> dict[str, Any]:
+    if not isinstance(brief, Mapping):
+        return dict(brief)
+    if str(brief.get("status", "")).strip().lower() != "unavailable":
+        return dict(brief)
+    if str(brief.get("source", "")).strip().lower() != "unavailable":
+        return dict(brief)
+    diagnostics = brief.get("diagnostics") if isinstance(brief.get("diagnostics"), Mapping) else {}
+    reason = str(diagnostics.get("reason", "")).strip().lower()
+    if reason not in {"provider_deferred", "provider_unavailable"}:
+        return dict(brief)
+    known_failure = compass_standup_brief_maintenance.failure_brief_for_fact_packet(
+        repo_root=repo_root,
+        window_key=window_key,
+        fact_packet=fact_packet,
+        generated_utc=generated_utc,
+        scope_id=scope_id,
+    )
+    return dict(known_failure) if isinstance(known_failure, Mapping) else dict(brief)
 
 
 def _is_default_traceability_warning(row: Mapping[str, Any]) -> bool:
@@ -51,6 +116,349 @@ def _is_default_traceability_warning(row: Mapping[str, Any]) -> bool:
         else:
             surface_visibility = "default"
     return audience != "maintainer" and surface_visibility == "default" and severity in {"warning", "error"}
+
+
+def _window_row_has_workstream(*, row: Mapping[str, Any], ws_id: str) -> bool:
+    token = str(ws_id).strip()
+    if not token:
+        return False
+    workstreams = row.get("workstreams")
+    if not isinstance(workstreams, list):
+        return False
+    return any(str(item).strip() == token for item in workstreams)
+
+
+_SCOPED_VERIFIED_MAX_FANOUT = scope_signal_ladder.SCOPED_FANOUT_CAP
+_SCOPED_GOVERNANCE_ONLY_PREFIXES = scope_signal_ladder.GOVERNANCE_ONLY_PREFIXES
+
+
+def _window_row_workstreams(row: Mapping[str, Any]) -> list[str]:
+    workstreams = row.get("workstreams")
+    if not isinstance(workstreams, list):
+        return []
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for item in workstreams:
+        token = str(item).strip()
+        if not token or token in seen:
+            continue
+        seen.add(token)
+        deduped.append(token)
+    return deduped
+
+
+def _window_row_files(row: Mapping[str, Any]) -> list[str]:
+    files = row.get("files")
+    if not isinstance(files, list):
+        return []
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for item in files:
+        token = str(item).strip()
+        if not token or token in seen:
+            continue
+        seen.add(token)
+        deduped.append(token)
+    return deduped
+
+
+def _is_scoped_governance_only_file(file_path: str) -> bool:
+    token = str(file_path).strip()
+    if not token:
+        return False
+    return any(token.startswith(prefix) for prefix in _SCOPED_GOVERNANCE_ONLY_PREFIXES)
+
+
+def _row_is_governance_only_local_change(row: Mapping[str, Any]) -> bool:
+    files = _window_row_files(row)
+    if not files:
+        return False
+    if str(row.get("kind", "")).strip() == "local_change":
+        return all(_is_scoped_governance_only_file(item) for item in files)
+    raw_events = row.get("events")
+    event_kinds = {
+        str(item.get("kind", "")).strip()
+        for item in (raw_events if isinstance(raw_events, list) else [])
+        if isinstance(item, Mapping) and str(item.get("kind", "")).strip()
+    }
+    if event_kinds and any(kind != "local_change" for kind in event_kinds):
+        return False
+    return all(_is_scoped_governance_only_file(item) for item in files)
+
+
+def _row_is_verified_scoped_signal(row: Mapping[str, Any]) -> bool:
+    workstreams = _window_row_workstreams(row)
+    if not workstreams:
+        return False
+    if len(workstreams) > _SCOPED_VERIFIED_MAX_FANOUT:
+        return False
+    if _row_is_governance_only_local_change(row):
+        return False
+    return True
+
+
+def _verified_scoped_window_ids(
+    *,
+    known_ids: set[str],
+    recent_completed: Sequence[Mapping[str, Any]],
+    window_events: Sequence[Mapping[str, Any]],
+    window_transactions: Sequence[Mapping[str, Any]],
+) -> set[str]:
+    verified: set[str] = set()
+    for item in recent_completed:
+        token = str(item.get("backlog", "")).strip()
+        if token and token in known_ids:
+            verified.add(token)
+    for rows in (window_events, window_transactions):
+        for row in rows:
+            if not isinstance(row, Mapping) or not _row_is_verified_scoped_signal(row):
+                continue
+            for token in _window_row_workstreams(row):
+                if token in known_ids:
+                    verified.add(token)
+    return verified
+
+
+def _workstream_has_window_activity(
+    *,
+    ws_id: str,
+    recent_completed: list[dict[str, str]],
+    window_events: list[dict[str, Any]],
+    window_transactions: list[dict[str, Any]],
+) -> bool:
+    token = str(ws_id).strip()
+    if not token:
+        return False
+    if any(str(item.get("backlog", "")).strip() == token for item in recent_completed):
+        return True
+    if any(_window_row_has_workstream(row=row, ws_id=token) for row in window_events if isinstance(row, Mapping)):
+        return True
+    return any(
+        _window_row_has_workstream(row=row, ws_id=token)
+        for row in window_transactions
+        if isinstance(row, Mapping)
+    )
+
+
+def _inactive_scoped_standup_brief(
+    *,
+    ws_id: str,
+    window_hours: int,
+    generated_utc: str,
+) -> dict[str, Any]:
+    return {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": "",
+        "generated_utc": generated_utc,
+        "diagnostics": {
+            "reason": "scoped_window_inactive",
+            "title": "Nothing moved in this window",
+            "message": (
+                f"{str(ws_id).strip() or 'This scope'} was quiet in the last {int(window_hours)} hours, "
+                "so Compass has nothing new to brief for that scope."
+            ),
+        },
+        "sections": [],
+        "evidence_lookup": {},
+    }
+
+
+def _brief_section_bullets(*, brief: Mapping[str, Any], section_key: str) -> list[str]:
+    raw_sections = brief.get("sections")
+    if not isinstance(raw_sections, list):
+        return []
+    for row in raw_sections:
+        if not isinstance(row, Mapping) or str(row.get("key", "")).strip() != section_key:
+            continue
+        raw_bullets = row.get("bullets")
+        if not isinstance(raw_bullets, list):
+            return []
+        return [str(item.get("text", "")).strip() for item in raw_bullets if isinstance(item, Mapping) and str(item.get("text", "")).strip()]
+    return []
+
+
+def _fact_packet_section_facts(*, fact_packet: Mapping[str, Any], section_key: str) -> list[dict[str, Any]]:
+    raw_sections = fact_packet.get("sections")
+    if not isinstance(raw_sections, list):
+        return []
+    for row in raw_sections:
+        if not isinstance(row, Mapping) or str(row.get("key", "")).strip() != section_key:
+            continue
+        raw_facts = row.get("facts")
+        if not isinstance(raw_facts, list):
+            return []
+        return [dict(item) for item in raw_facts if isinstance(item, Mapping)]
+    return []
+
+
+def _compose_global_fact_packet_from_scoped_briefs(
+    *,
+    base_fact_packet: Mapping[str, Any],
+    scoped_briefs_by_scope: Mapping[str, Mapping[str, Any]],
+    ordered_scope_ids: list[str],
+) -> dict[str, Any]:
+    section_specs = compass_standup_brief_narrator.STANDUP_BRIEF_SECTIONS
+    section_rows: dict[str, list[dict[str, Any]]] = {key: [] for key, _label in section_specs}
+    facts: list[dict[str, Any]] = []
+    fact_counter = 1
+    seen_text: dict[str, set[str]] = {key: set() for key, _label in section_specs}
+
+    def _append_fact(
+        *,
+        section_key: str,
+        text: str,
+        source: str,
+        kind: str,
+        workstreams: list[str] | None = None,
+        voice_hint: str = "operator",
+    ) -> None:
+        nonlocal fact_counter
+        normalized_text = str(text).strip()
+        if not normalized_text or normalized_text.lower() in seen_text[section_key]:
+            return
+        seen_text[section_key].add(normalized_text.lower())
+        fact = {
+            "id": f"F-{fact_counter:03d}",
+            "section_key": section_key,
+            "voice_hint": voice_hint,
+            "priority": 100 - fact_counter,
+            "text": normalized_text,
+            "source": source,
+            "kind": kind,
+            "workstreams": [token for token in (workstreams or []) if str(token).strip()],
+        }
+        fact_counter += 1
+        facts.append(fact)
+        section_rows[section_key].append(fact)
+
+    ready_scope_ids = [
+        ws_id
+        for ws_id in ordered_scope_ids
+        if isinstance(scoped_briefs_by_scope.get(ws_id), Mapping)
+        and str(scoped_briefs_by_scope[ws_id].get("status", "")).strip().lower() == "ready"
+    ]
+    if not ready_scope_ids:
+        return dict(base_fact_packet)
+
+    for ws_id in ready_scope_ids[:2]:
+        bullets = _brief_section_bullets(brief=scoped_briefs_by_scope[ws_id], section_key="completed")
+        if bullets:
+            _append_fact(
+                section_key="completed",
+                text=bullets[0],
+                source="scoped_brief",
+                kind="scoped_completed",
+                workstreams=[ws_id],
+            )
+
+    for ws_id in ready_scope_ids[:3]:
+        bullets = _brief_section_bullets(brief=scoped_briefs_by_scope[ws_id], section_key="current_execution")
+        if bullets:
+            _append_fact(
+                section_key="current_execution",
+                text=bullets[0],
+                source="scoped_brief",
+                kind="scoped_current_execution",
+                workstreams=[ws_id],
+            )
+
+    coverage_facts = [
+        fact
+        for fact in _fact_packet_section_facts(fact_packet=base_fact_packet, section_key="current_execution")
+        if str(fact.get("kind", "")).strip().lower() == "window_coverage"
+    ]
+    if coverage_facts:
+        coverage = coverage_facts[0]
+        _append_fact(
+            section_key="current_execution",
+            text=str(coverage.get("text", "")).strip(),
+            source="portfolio",
+            kind="window_coverage",
+            workstreams=[str(token).strip() for token in coverage.get("workstreams", []) if str(token).strip()],
+        )
+
+    for ws_id in ready_scope_ids[:2]:
+        bullets = _brief_section_bullets(brief=scoped_briefs_by_scope[ws_id], section_key="next_planned")
+        if bullets:
+            _append_fact(
+                section_key="next_planned",
+                text=bullets[0],
+                source="scoped_brief",
+                kind="scoped_next_planned",
+                workstreams=[ws_id],
+            )
+
+    for ws_id in ready_scope_ids[:3]:
+        bullets = _brief_section_bullets(brief=scoped_briefs_by_scope[ws_id], section_key="risks_to_watch")
+        if bullets:
+            _append_fact(
+                section_key="risks_to_watch",
+                text=bullets[0],
+                source="scoped_brief",
+                kind="scoped_risk",
+                workstreams=[ws_id],
+            )
+
+    for section_key, _label in section_specs:
+        if section_rows[section_key]:
+            continue
+        for fact in _fact_packet_section_facts(fact_packet=base_fact_packet, section_key=section_key)[:2]:
+            _append_fact(
+                section_key=section_key,
+                text=str(fact.get("text", "")).strip(),
+                source=str(fact.get("source", "")).strip() or "fact_packet",
+                kind=str(fact.get("kind", "")).strip() or "fallback",
+                workstreams=[str(token).strip() for token in fact.get("workstreams", []) if str(token).strip()],
+                voice_hint=str(fact.get("voice_hint", "")).strip().lower() or "operator",
+            )
+
+    sections = [
+        {
+            "key": key,
+            "label": label,
+            "facts": section_rows[key][:6],
+        }
+        for key, label in section_specs
+    ]
+    return {
+        "version": str(base_fact_packet.get("version", "")).strip()
+        or compass_standup_brief_narrator.STANDUP_BRIEF_SCHEMA_VERSION,
+        "window": str(base_fact_packet.get("window", "")).strip(),
+        "scope": dict(base_fact_packet.get("scope", {})) if isinstance(base_fact_packet.get("scope", {}), Mapping) else {},
+        "summary": dict(base_fact_packet.get("summary", {})) if isinstance(base_fact_packet.get("summary", {}), Mapping) else {},
+        "sections": sections,
+        "facts": facts,
+    }
+
+
+def _current_runtime_payload(repo_root: Path) -> dict[str, Any]:
+    payload = odylith_context_cache.read_json_object(
+        Path(repo_root).resolve() / "odylith" / "compass" / "runtime" / "current.v1.json"
+    )
+    return dict(payload) if isinstance(payload, Mapping) else {}
+
+
+def _cached_governance_summary_for_shell_safe(
+    *,
+    repo_root: Path,
+    refresh_profile: str,
+) -> dict[str, Any] | None:
+    del refresh_profile
+    payload = _current_runtime_payload(repo_root)
+    governance_summary = payload.get("governance")
+    return dict(governance_summary) if isinstance(governance_summary, Mapping) else None
+
+
+def _cached_odylith_runtime_summary_for_shell_safe(
+    *,
+    repo_root: Path,
+    refresh_profile: str,
+) -> dict[str, Any] | None:
+    del refresh_profile
+    payload = _current_runtime_payload(repo_root)
+    runtime_summary = payload.get("odylith_runtime")
+    return dict(runtime_summary) if isinstance(runtime_summary, Mapping) else None
 
 
 def _build_runtime_payload(
@@ -66,74 +474,88 @@ def _build_runtime_payload(
     active_window_minutes: int,
     runtime_mode: str,
     refresh_profile: str = "shell-safe",
+    progress_callback: Any | None = None,
 ) -> dict[str, Any]:
-    host = _host()
-    _load_json = host._load_json
-    execution_wave_view_model = host.execution_wave_view_model
-    _load_component_index_runtime = host._load_component_index_runtime
-    _parse_backlog_rows = host._parse_backlog_rows
-    _parse_plan_active_rows = host._parse_plan_active_rows
-    _parse_bugs_rows = host._parse_bugs_rows
-    _COMPASS_TZ = host._COMPASS_TZ
-    _git_identity = host._git_identity
-    _collect_git_commits = host._collect_git_commits
-    _collect_git_local_changes = host._collect_git_local_changes
-    _collect_workstream_path_index = host._collect_workstream_path_index
-    _map_paths_to_workstreams = host._map_paths_to_workstreams
-    _safe_iso = host._safe_iso
-    _local_change_event_ts = host._local_change_event_ts
-    _local_change_summary = host._local_change_summary
-    _build_plan_timeline_events = host._build_plan_timeline_events
-    _build_bug_timeline_events = host._build_bug_timeline_events
-    _load_codex_stream_events = host._load_codex_stream_events
-    _normalize_repo_token = host._normalize_repo_token
-    _resolve = host._resolve
-    _parse_markdown_metadata_and_sections = host._parse_markdown_metadata_and_sections
-    _collect_plan_progress = host._collect_plan_progress
-    _build_window_activity = host._build_window_activity
-    _DATE_RE = host._DATE_RE
-    _timeline_projection = host._timeline_projection
-    _split_workstream_ids = host._split_workstream_ids
-    _cost_base_index = host._cost_base_index
-    _cost_with_activity = host._cost_with_activity
-    _component_rows_for_workstream = host._component_rows_for_workstream
-    _select_timeline_source_events = host._select_timeline_source_events
-    _event_public_payload = host._event_public_payload
-    _build_prompt_transactions = host._build_prompt_transactions
-    _extract_link_target = host._extract_link_target
-    _select_current_workstream_rows = host._select_current_workstream_rows
-    _filter_execution_wave_payload_for_current_context = host._filter_execution_wave_payload_for_current_context
-    _resolve_index_link_to_repo_path = host._resolve_index_link_to_repo_path
-    _extract_workstream_tokens_from_text = host._extract_workstream_tokens_from_text
-    _parse_date = host._parse_date
-    _WORKSTREAM_ID_RE = host._WORKSTREAM_ID_RE
-    _collect_recent_completed_plan_rows = host._collect_recent_completed_plan_rows
-    _is_bug_date_within_window = host._is_bug_date_within_window
-    _self_host_snapshot = host._self_host_snapshot
-    _self_host_risk_rows = host._self_host_risk_rows
-    _build_window_event_counts = host._build_window_event_counts
-    _filter_transactions_by_window = host._filter_transactions_by_window
-    _is_generated_only_local_change_event = host._is_generated_only_local_change_event
-    _is_generated_only_transaction = host._is_generated_only_transaction
-    _build_risk_posture_summary = host._build_risk_posture_summary
-    _scope_risk_rows = host._scope_risk_rows
-    _build_global_standup_fact_packet = host._build_global_standup_fact_packet
-    _global_brief_provider_allowed = host._global_brief_provider_allowed
-    _build_scoped_standup_fact_packet = host._build_scoped_standup_fact_packet
-    _as_repo_path = host._as_repo_path
-    _COMPASS_TIMEZONE = host._COMPASS_TIMEZONE
-    _compact_odylith_runtime_summary = host._compact_odylith_runtime_summary
-    _TIMELINE_EVENT_LOOKBACK_HOURS = host._TIMELINE_EVENT_LOOKBACK_HOURS
-    _TIMELINE_EVENT_MAX_ROWS = host._TIMELINE_EVENT_MAX_ROWS
-    _DEFAULT_RECENT_FOCUS_WINDOW_MINUTES = host._DEFAULT_RECENT_FOCUS_WINDOW_MINUTES
-    governance = host.governance
-    odylith_reasoning = host.odylith_reasoning
-    compass_standup_brief_narrator = host.compass_standup_brief_narrator
-    odylith_context_engine_store = host.odylith_context_engine_store
+    from odylith.runtime.surfaces import compass_dashboard_runtime
+
+    _load_json = compass_dashboard_runtime._load_json
+    _load_component_index_runtime = compass_dashboard_runtime._load_component_index_runtime
+    _parse_backlog_rows = compass_dashboard_runtime._parse_backlog_rows
+    _parse_plan_active_rows = compass_dashboard_runtime._parse_plan_active_rows
+    _parse_bugs_rows = compass_dashboard_runtime._parse_bugs_rows
+    _COMPASS_TZ = compass_dashboard_runtime._COMPASS_TZ
+    _git_identity = compass_dashboard_runtime._git_identity
+    _collect_git_commits = compass_dashboard_runtime._collect_git_commits
+    _collect_git_local_changes = compass_dashboard_runtime._collect_git_local_changes
+    _collect_workstream_path_index = compass_dashboard_runtime._collect_workstream_path_index
+    _map_paths_to_workstreams = compass_dashboard_runtime._map_paths_to_workstreams
+    _safe_iso = compass_dashboard_runtime._safe_iso
+    _local_change_event_ts = compass_dashboard_runtime._local_change_event_ts
+    _local_change_summary = compass_dashboard_runtime._local_change_summary
+    _build_plan_timeline_events = compass_dashboard_runtime._build_plan_timeline_events
+    _build_bug_timeline_events = compass_dashboard_runtime._build_bug_timeline_events
+    _load_codex_stream_events = compass_dashboard_runtime._load_codex_stream_events
+    _normalize_repo_token = compass_dashboard_runtime._normalize_repo_token
+    _resolve = compass_dashboard_runtime._resolve
+    _parse_markdown_metadata_and_sections = compass_dashboard_runtime._parse_markdown_metadata_and_sections
+    _collect_plan_progress = compass_dashboard_runtime._collect_plan_progress
+    _build_window_activity = compass_dashboard_runtime._build_window_activity
+    _DATE_RE = compass_dashboard_runtime._DATE_RE
+    _timeline_projection = compass_dashboard_runtime._timeline_projection
+    _split_workstream_ids = compass_dashboard_runtime._split_workstream_ids
+    _cost_base_index = compass_dashboard_runtime._cost_base_index
+    _cost_with_activity = compass_dashboard_runtime._cost_with_activity
+    _component_rows_for_workstream = compass_dashboard_runtime._component_rows_for_workstream
+    _select_timeline_source_events = compass_dashboard_runtime._select_timeline_source_events
+    _event_public_payload = compass_dashboard_runtime._event_public_payload
+    _build_prompt_transactions = compass_dashboard_runtime._build_prompt_transactions
+    _extract_link_target = compass_dashboard_runtime._extract_link_target
+    _select_current_workstream_rows = compass_dashboard_runtime._select_current_workstream_rows
+    _filter_execution_wave_payload_for_current_context = (
+        compass_dashboard_runtime._filter_execution_wave_payload_for_current_context
+    )
+    _resolve_index_link_to_repo_path = compass_dashboard_runtime._resolve_index_link_to_repo_path
+    _extract_workstream_tokens_from_text = compass_dashboard_runtime._extract_workstream_tokens_from_text
+    _parse_date = compass_dashboard_runtime._parse_date
+    _WORKSTREAM_ID_RE = compass_dashboard_runtime._WORKSTREAM_ID_RE
+    _collect_recent_completed_plan_rows = compass_dashboard_runtime._collect_recent_completed_plan_rows
+    _is_bug_date_within_window = compass_dashboard_runtime._is_bug_date_within_window
+    _self_host_snapshot = compass_dashboard_runtime._self_host_snapshot
+    _self_host_risk_rows = compass_dashboard_runtime._self_host_risk_rows
+    _build_window_event_counts = compass_dashboard_runtime._build_window_event_counts
+    _filter_transactions_by_window = compass_dashboard_runtime._filter_transactions_by_window
+    _is_generated_only_local_change_event = compass_dashboard_runtime._is_generated_only_local_change_event
+    _is_generated_only_transaction = compass_dashboard_runtime._is_generated_only_transaction
+    _build_risk_posture_summary = compass_dashboard_runtime._build_risk_posture_summary
+    _scope_risk_rows = compass_dashboard_runtime._scope_risk_rows
+    _build_global_standup_fact_packet = compass_dashboard_runtime._build_global_standup_fact_packet
+    _build_scoped_standup_fact_packet = compass_dashboard_runtime._build_scoped_standup_fact_packet
+    _as_repo_path = compass_dashboard_runtime._as_repo_path
+    _COMPASS_TIMEZONE = compass_dashboard_runtime._COMPASS_TIMEZONE
+    _compact_odylith_runtime_summary = compass_dashboard_runtime._compact_odylith_runtime_summary
+    _TIMELINE_EVENT_LOOKBACK_HOURS = compass_dashboard_runtime._TIMELINE_EVENT_LOOKBACK_HOURS
+    _TIMELINE_EVENT_MAX_ROWS = compass_dashboard_runtime._TIMELINE_EVENT_MAX_ROWS
+    _DEFAULT_RECENT_FOCUS_WINDOW_MINUTES = compass_dashboard_runtime._DEFAULT_RECENT_FOCUS_WINDOW_MINUTES
     _build_execution_focus_payload = compass_execution_focus_runtime._build_execution_focus_payload
     traceability_graph = _load_json(traceability_graph_path)
-    execution_waves_all = execution_wave_view_model.build_execution_wave_view_payload(traceability_graph)
+    governance_context = compass_governance_source_runtime.build_live_governance_context(
+        repo_root=repo_root,
+        traceability_graph=traceability_graph,
+        traceability_signature=odylith_context_cache.fingerprint_paths([traceability_graph_path]),
+    )
+    live_traceability_graph = (
+        dict(governance_context.get("traceability_graph", {}))
+        if isinstance(governance_context.get("traceability_graph"), Mapping)
+        else dict(traceability_graph)
+    )
+    execution_waves_all = (
+        dict(governance_context.get("execution_waves", {}))
+        if isinstance(governance_context.get("execution_waves"), Mapping)
+        else {}
+    )
     mermaid_catalog = _load_json(mermaid_catalog_path)
+    workstream_rows = governance_context.get("workstream_rows", [])
+    diagram_rows = mermaid_catalog.get("diagrams", []) if isinstance(mermaid_catalog.get("diagrams"), list) else []
     component_index = _load_component_index_runtime(
         repo_root=repo_root,
         runtime_mode=runtime_mode,
@@ -154,6 +576,14 @@ def _build_runtime_payload(
         index_path=bugs_index_path,
         runtime_mode=runtime_mode,
     )
+    _emit_refresh_progress(
+        progress_callback,
+        stage="projection_inputs_loaded",
+        message=(
+            f"loaded {len(workstream_rows) if isinstance(workstream_rows, list) else 0} workstreams, "
+            f"{len(active_plan_rows)} active plans, {len(bug_rows)} bugs, and {len(diagram_rows)} diagrams"
+        ),
+    )
 
     now = dt.datetime.now(tz=_COMPASS_TZ)
     now_utc = dt.datetime.now(tz=dt.timezone.utc)
@@ -170,7 +600,7 @@ def _build_runtime_payload(
 
     ws_path_index = _collect_workstream_path_index(
         repo_root=repo_root,
-        traceability_graph=traceability_graph,
+        traceability_graph=live_traceability_graph,
         mermaid_catalog=mermaid_catalog,
     )
 
@@ -247,8 +677,22 @@ def _build_runtime_payload(
     )
 
     events.sort(key=lambda item: item.get("ts", now), reverse=True)
+    _emit_refresh_progress(
+        progress_callback,
+        stage="activity_events_collected",
+        message=f"collected {len(commits)} commits, {len(local_changes)} local changes, and {len(events)} timeline events",
+    )
 
-    workstream_rows = traceability_graph.get("workstreams", [])
+    release_workstream_rows = (
+        dict(governance_context.get("release_workstreams", {}))
+        if isinstance(governance_context.get("release_workstreams"), Mapping)
+        else {}
+    )
+    release_summary = (
+        dict(governance_context.get("release_summary", {}))
+        if isinstance(governance_context.get("release_summary"), Mapping)
+        else {}
+    )
     ws_payloads: list[dict[str, Any]] = []
 
     active_plan_map: dict[str, str] = {}
@@ -258,12 +702,42 @@ def _build_runtime_payload(
         if backlog_token:
             active_plan_map[backlog_token] = plan_token
 
+    delivery_surface_payload = delivery_surface_payload_runtime.load_delivery_surface_payload(
+        repo_root=repo_root,
+        surface="compass",
+        runtime_mode=runtime_mode,
+        buckets=("workstreams",),
+        include_shell_snapshots=False,
+    )
+    delivery_workstreams = (
+        dict(delivery_surface_payload.get("workstreams", {}))
+        if isinstance(delivery_surface_payload.get("workstreams"), Mapping)
+        else {}
+    )
+
     for row in workstream_rows if isinstance(workstream_rows, list) else []:
         if not isinstance(row, Mapping):
             continue
         idea_id = str(row.get("idea_id", "")).strip()
         if not idea_id:
             continue
+        release_row = (
+            dict(release_workstream_rows.get(idea_id, {}))
+            if isinstance(release_workstream_rows.get(idea_id), Mapping)
+            else {}
+        )
+        active_release = (
+            dict(release_row.get("active_release", {}))
+            if isinstance(release_row.get("active_release"), Mapping)
+            else {}
+        )
+        execution_wave_programs = execution_waves_all.get("workstreams", {}).get(idea_id, [])
+        if not execution_wave_programs and isinstance(execution_waves_all.get("programs"), list):
+            execution_wave_programs = [
+                dict(program)
+                for program in execution_waves_all.get("programs", [])
+                if isinstance(program, Mapping) and str(program.get("umbrella_id", "")).strip() == idea_id
+            ]
 
         idea_file = _normalize_repo_token(str(row.get("idea_file", "")), repo_root=repo_root)
         idea_path = _resolve(repo_root, idea_file) if idea_file else None
@@ -330,12 +804,35 @@ def _build_runtime_payload(
         )
         cost_24, band_24 = _cost_with_activity(base_cost, commit_count=commit_24, local_count=local_24)
         cost_48, band_48 = _cost_with_activity(base_cost, commit_count=commit_48, local_count=local_48)
+        workstream_status = str(row.get("status", "")).strip() or str(metadata.get("status", "")).strip()
+        workstream_progress = workstream_progress_runtime.derive_workstream_progress(
+            status=workstream_status,
+            plan=plan_progress,
+        )
+        delivery_snapshot = (
+            dict(delivery_workstreams.get(idea_id, {}))
+            if isinstance(delivery_workstreams.get(idea_id), Mapping)
+            else {}
+        )
+        delivery_readout = (
+            dict(delivery_snapshot.get("operator_readout", {}))
+            if isinstance(delivery_snapshot.get("operator_readout"), Mapping)
+            else {}
+        )
+        delivery_proof_state = proof_state_runtime.normalize_proof_state(
+            delivery_snapshot.get("proof_state", {})
+        )
+        delivery_claim_guard = (
+            dict(delivery_snapshot.get("claim_guard", {}))
+            if isinstance(delivery_snapshot.get("claim_guard"), Mapping)
+            else {}
+        )
 
         ws_payloads.append(
             {
                 "idea_id": idea_id,
                 "title": str(row.get("title", "")).strip() or str(metadata.get("title", "")).strip() or idea_id,
-                "status": str(row.get("status", "")).strip() or str(metadata.get("status", "")).strip(),
+                "status": workstream_status,
                 "priority": str(metadata.get("priority", "")).strip(),
                 "sizing": str(metadata.get("sizing", "")).strip(),
                 "complexity": str(metadata.get("complexity", "")).strip(),
@@ -357,13 +854,27 @@ def _build_runtime_payload(
                     component_index=component_index,
                     workstream_id=idea_id,
                 ),
-                "execution_wave_programs": execution_waves_all.get("workstreams", {}).get(idea_id, []),
+                "execution_wave_programs": [
+                    dict(item)
+                    for item in execution_wave_programs
+                    if isinstance(item, Mapping)
+                ],
+                "release": active_release,
+                "release_history_summary": str(row.get("release_history_summary", "")).strip(),
                 "plan": {
                     "created": str(plan_progress.get("created", "")).strip(),
                     "updated": str(plan_progress.get("updated", "")).strip(),
+                    "all_total_tasks": int(plan_progress.get("all_total_tasks", 0) or 0),
+                    "all_done_tasks": int(plan_progress.get("all_done_tasks", 0) or 0),
                     "total_tasks": int(plan_progress.get("total_tasks", 0) or 0),
                     "done_tasks": int(plan_progress.get("done_tasks", 0) or 0),
                     "progress_ratio": float(plan_progress.get("progress_ratio", 0.0) or 0.0),
+                    "progress_basis": str(plan_progress.get("progress_basis", "")).strip(),
+                    "display_progress_ratio": workstream_progress.get("display_progress_ratio"),
+                    "display_progress_label": str(workstream_progress.get("display_progress_label", "")).strip(),
+                    "display_progress_state": str(workstream_progress.get("display_progress_state", "")).strip(),
+                    "progress_classification": str(workstream_progress.get("classification", "")).strip(),
+                    "checklist_label": str(workstream_progress.get("checklist_label", "")).strip(),
                     "next_tasks": [str(item) for item in plan_progress.get("next_tasks", [])],
                 },
                 "activity": {
@@ -391,6 +902,28 @@ def _build_runtime_payload(
                     "24h": {"index": cost_24, "band": band_24},
                     "48h": {"index": cost_48, "band": band_48},
                 },
+                "proof_state": delivery_proof_state,
+                "claim_guard": delivery_claim_guard,
+                "proof_state_resolution": (
+                    dict(delivery_snapshot.get("proof_state_resolution", {}))
+                    if isinstance(delivery_snapshot.get("proof_state_resolution"), Mapping)
+                    else {}
+                ),
+                "scope_signal": (
+                    dict(delivery_snapshot.get("scope_signal", {}))
+                    if isinstance(delivery_snapshot.get("scope_signal"), Mapping)
+                    else {}
+                ),
+                "proof_refs": [
+                    dict(item)
+                    for item in delivery_readout.get("proof_refs", [])
+                    if isinstance(item, Mapping)
+                ] if isinstance(delivery_readout.get("proof_refs"), list) else [],
+                "proof_summary_lines": proof_state_runtime.proof_preview_lines(
+                    delivery_proof_state,
+                    compact=False,
+                    limit=6,
+                ),
             }
         )
 
@@ -524,12 +1057,19 @@ def _build_runtime_payload(
         recent_completed_rows_by_hours[hours] = built
         return built
 
-    recent_completed_rows_48h = _recent_completed_rows(48)
-    ws_payloads = _select_current_workstream_rows(
-        all_rows=all_ws_payloads,
-        window_events_48h=_window_events(48),
-        recent_completed_rows_48h=recent_completed_rows_48h,
-    )
+    current_workstreams_by_window = {
+        "24h": _select_current_workstream_rows(
+            all_rows=all_ws_payloads,
+            window_events=_window_events(24),
+            recent_completed_rows=_recent_completed_rows(24),
+        ),
+        "48h": _select_current_workstream_rows(
+            all_rows=all_ws_payloads,
+            window_events=_window_events(48),
+            recent_completed_rows=_recent_completed_rows(48),
+        ),
+    }
+    ws_payloads = list(current_workstreams_by_window["48h"])
     execution_waves = _filter_execution_wave_payload_for_current_context(
         payload=execution_waves_all,
         current_workstream_rows=ws_payloads,
@@ -569,7 +1109,7 @@ def _build_runtime_payload(
             }
         )
 
-    warnings = traceability_graph.get("warning_items", [])
+    warnings = live_traceability_graph.get("warning_items", [])
     traceability_risks: list[dict[str, str]] = []
     traceability_critical: list[dict[str, str]] = []
     traceability_warnings: list[dict[str, str]] = []
@@ -595,9 +1135,8 @@ def _build_runtime_payload(
                 traceability_warnings.append(entry)
 
     stale_diagrams: list[dict[str, Any]] = []
-    diagrams = mermaid_catalog.get("diagrams", [])
-    if isinstance(diagrams, list):
-        for row in diagrams:
+    if isinstance(diagram_rows, list):
+        for row in diagram_rows:
             if not isinstance(row, Mapping):
                 continue
             reviewed = _parse_date(str(row.get("last_reviewed_utc", "")).strip())
@@ -628,234 +1167,81 @@ def _build_runtime_payload(
     ]
     generated_utc = now_utc.replace(microsecond=0).isoformat().replace("+00:00", "Z")
     reasoning_config = odylith_reasoning.reasoning_config_from_env(repo_root=repo_root)
-    reasoning_provider = odylith_reasoning.provider_from_config(
-        reasoning_config,
-        repo_root=repo_root,
-        require_auto_mode=False,
-        allow_implicit_local_provider=True,
+    prior_runtime_state = compass_standup_runtime_reuse.prior_runtime_state(
+        payload=_current_runtime_payload(repo_root),
+    )
+    self_host = _self_host_snapshot(repo_root=repo_root, refresh_profile=refresh_profile)
+    self_host_risks = _self_host_risk_rows(snapshot=self_host, local_date=now.date().isoformat())
+    _emit_refresh_progress(
+        progress_callback,
+        stage="execution_projection_built",
+        message=(
+            f"projected {len(all_ws_payloads)} workstreams, {len(ws_payloads)} current rows, "
+            f"{len(timeline_transactions)} transactions, and {len(next_actions)} next actions"
+        ),
     )
 
-    self_host = _self_host_snapshot(repo_root=repo_root)
-    self_host_risks = _self_host_risk_rows(snapshot=self_host, local_date=now.date().isoformat())
+    window_context = compass_window_summary_support.CompassWindowSummaryContext(
+        repo_root=repo_root,
+        plan_index_path=plan_index_path,
+        now=now,
+        all_ws_payloads=all_ws_payloads,
+        ws_payloads=ws_payloads,
+        active_ws_rows=active_ws_rows,
+        ws_index=ws_index,
+        events=events,
+        timeline_transactions=timeline_transactions,
+        next_actions=next_actions,
+        bug_items=bug_items,
+        traceability_risks=traceability_risks,
+        traceability_critical=traceability_critical,
+        stale_diagrams=stale_diagrams,
+        self_host=self_host,
+        self_host_risks=self_host_risks,
+        generated_utc=generated_utc,
+        reasoning_config=reasoning_config,
+        prior_runtime_state=prior_runtime_state,
+        delivery_workstreams=delivery_workstreams,
+        progress_callback=progress_callback,
+        build_window_activity=_build_window_activity,
+        filter_transactions_by_window=_filter_transactions_by_window,
+        collect_recent_completed_plan_rows=_collect_recent_completed_plan_rows,
+        build_window_event_counts=_build_window_event_counts,
+        build_risk_posture_summary=_build_risk_posture_summary,
+        scope_risk_rows=_scope_risk_rows,
+        build_global_standup_fact_packet=_build_global_standup_fact_packet,
+        build_scoped_standup_fact_packet=_build_scoped_standup_fact_packet,
+        reusable_brief_sections_for_fact_packet=_reusable_brief_sections_for_fact_packet,
+        brief_with_known_failure_state=_brief_with_known_failure_state,
+        inactive_scoped_standup_brief=_inactive_scoped_standup_brief,
+        verified_scoped_window_ids=_verified_scoped_window_ids,
+        window_row_has_workstream=_window_row_has_workstream,
+        row_is_verified_scoped_signal=_row_is_verified_scoped_signal,
+        row_is_governance_only_local_change=_row_is_governance_only_local_change,
+        window_row_workstreams=_window_row_workstreams,
+        is_generated_only_local_change_event=_is_generated_only_local_change_event,
+        is_generated_only_transaction=_is_generated_only_transaction,
+        is_bug_date_within_window=_is_bug_date_within_window,
+        scoped_verified_max_fanout=_SCOPED_VERIFIED_MAX_FANOUT,
+        window_events_by_hours=window_events_by_hours,
+        window_transactions_by_hours=window_transactions_by_hours,
+        recent_completed_rows_by_hours=recent_completed_rows_by_hours,
+    )
 
-    def _summarize_window(hours: int) -> tuple[dict[str, int], dict[str, Any], dict[str, dict[str, Any]]]:
-        window_events = _window_events(hours)
-        window_transactions = _window_transactions(hours)
-        commits_count = sum(1 for event in window_events if event.get("kind") == "commit")
-        local_count = sum(1 for event in window_events if event.get("kind") == "local_change")
-        event_counts_by_ws = _build_window_event_counts(window_events)
-        touched_ws = [
-            ws_id
-            for ws_id, _ in sorted(
-                event_counts_by_ws.items(),
-                key=lambda item: (-int(item[1]), item[0]),
-            )
-            if ws_id
-        ]
-        touched_ws_set = set(touched_ws)
-        recent_completed_rows = _recent_completed_rows(hours)
-        active_ws = len(active_ws_rows)
-        touched_active_ws = (
-            len(
-                {
-                    str(row.get("idea_id", "")).strip()
-                    for row in active_ws_rows
-                    if str(row.get("idea_id", "")).strip() in touched_ws_set
-                }
-            )
-            if active_ws_rows
-            else 0
-        )
-        window_open_critical = sum(
-            1
-            for row in bug_items
-            if bool(row.get("is_open_critical"))
-            and _is_bug_date_within_window(
-                date_token=str(row.get("date", "")).strip(),
-                now=now,
-                hours=hours,
-            )
-        )
-        risk_posture_window = _build_risk_posture_summary(
-            open_critical=window_open_critical,
-            traceability_risks=traceability_risks,
-            stale_diagrams=stale_diagrams,
-        )
-        global_risk_rows = _scope_risk_rows(
-            ws_id=None,
-            bug_items=bug_items,
-            traceability_risks=traceability_risks,
-            stale_diagrams=stale_diagrams,
-        )
-        kpis = {
-            "commits": commits_count,
-            "local_changes": local_count,
-            "touched_workstreams": len(touched_ws_set),
-            "active_workstreams": active_ws,
-            "critical_risks": window_open_critical + len(traceability_critical) + len(stale_diagrams),
-            "recent_completed_plans": len(recent_completed_rows),
-            "active_touched_workstreams": touched_active_ws,
-        }
-
-        recent_completed: list[dict[str, str]] = []
-        for item in recent_completed_rows:
-            normalized: dict[str, str] = dict(item)
-            backlog = str(item.get("backlog", "")).strip()
-            ws = ws_index.get(backlog)
-            if ws is not None:
-                normalized["title"] = str(ws.get("title", "")).strip()
-            recent_completed.append(normalized)
-
-        focus_rows: list[dict[str, Any]] = []
-        seen_focus_ids: set[str] = set()
-        active_ids = {
-            str(row.get("idea_id", "")).strip()
-            for row in active_ws_rows
-            if str(row.get("idea_id", "")).strip()
-        }
-
-        def _append_focus_row(ws_id: str) -> None:
-            token = str(ws_id).strip()
-            if not token or token in seen_focus_ids:
-                return
-            ws = ws_index.get(token)
-            if ws is None:
-                return
-            seen_focus_ids.add(token)
-            focus_rows.append(ws)
-
-        for ws_id in touched_ws:
-            if ws_id in active_ids:
-                _append_focus_row(ws_id)
-            if len(focus_rows) >= 2:
-                break
-        for ws_id in touched_ws:
-            _append_focus_row(ws_id)
-            if len(focus_rows) >= 2:
-                break
-        for item in recent_completed:
-            _append_focus_row(str(item.get("backlog", "")).strip())
-            if len(focus_rows) >= 2:
-                break
-        for row in active_ws_rows:
-            _append_focus_row(str(row.get("idea_id", "")).strip())
-            if len(focus_rows) >= 2:
-                break
-        for row in ws_payloads:
-            _append_focus_row(str(row.get("idea_id", "")).strip())
-            if len(focus_rows) >= 2:
-                break
-
-        focus_ids = {str(item.get("idea_id", "")).strip() for item in focus_rows if str(item.get("idea_id", "")).strip()}
-        focus_actions = [item for item in next_actions if str(item.get("idea_id", "")).strip() in focus_ids]
-        window_kpis = dict(kpis)
-        if self_host_risks:
-            window_kpis["critical_risks"] = int(window_kpis.get("critical_risks", 0) or 0) + len(self_host_risks)
-        global_fact_packet = _build_global_standup_fact_packet(
-            ws_rows=focus_rows,
-            ws_index=ws_index,
-            active_ws_rows=active_ws_rows,
-            event_counts_by_ws=event_counts_by_ws,
-            next_actions=focus_actions or next_actions,
-            recent_completed=recent_completed,
-            window_events=window_events,
-            window_transactions=window_transactions,
-            window_hours=hours,
-            risk_rows=global_risk_rows,
-            risk_summary=risk_posture_window,
-            kpis=window_kpis,
-            self_host_snapshot=self_host,
-            self_host_risks=self_host_risks,
-            now=now,
-        )
-        global_allow_provider = _global_brief_provider_allowed(
-            repo_root=repo_root,
-            fact_packet=global_fact_packet,
-            window_hours=hours,
-            refresh_profile=refresh_profile,
-        )
-        standup_global = compass_standup_brief_narrator.build_standup_brief(
-            repo_root=repo_root,
-            fact_packet=global_fact_packet,
-            generated_utc=generated_utc,
-            config=reasoning_config,
-            provider=reasoning_provider,
-            allow_provider=global_allow_provider,
-            prefer_provider=compass_refresh_contract.prefer_live_provider(refresh_profile),
-            allow_cache_recovery=compass_refresh_contract.allow_stale_cache_recovery(refresh_profile),
-            allow_deterministic_fallback=compass_refresh_contract.allow_deterministic_fallback(refresh_profile),
-        )
-        if compass_refresh_contract.full_refresh_requested(refresh_profile):
-            _assert_full_refresh_brief_ready(brief=standup_global, window_hours=hours, scope_label="global")
-        standup_scoped: dict[str, dict[str, Any]] = {}
-        scoped_packets: list[tuple[str, dict[str, Any]]] = []
-        # Scoped dashboard refresh stays bounded in shell-safe mode. Full
-        # refresh can regenerate scoped provider briefs, but the work is fanned
-        # out with a small worker pool so the shell path does not block on a
-        # fully serial provider walk.
-        scoped_allow_provider = _scoped_brief_provider_allowed(refresh_profile=refresh_profile)
-        for ws in ws_payloads:
-            ws_id = str(ws.get("idea_id", "")).strip()
-            if not ws_id:
-                continue
-            scoped_risk_rows = _scope_risk_rows(
-                ws_id=ws_id,
-                bug_items=bug_items,
-                traceability_risks=traceability_risks,
-                stale_diagrams=stale_diagrams,
-            )
-            scoped_risk_summary = _build_risk_posture_summary(
-                open_critical=len(scoped_risk_rows.get("bugs", [])),
-                traceability_risks=scoped_risk_rows.get("traceability", []),
-                stale_diagrams=scoped_risk_rows.get("stale_diagrams", []),
-            )
-            scoped_fact_packet = _build_scoped_standup_fact_packet(
-                row=ws,
-                next_actions=next_actions,
-                recent_completed=recent_completed,
-                window_events=window_events,
-                window_transactions=window_transactions,
-                window_hours=hours,
-                risk_rows=scoped_risk_rows,
-                risk_summary=scoped_risk_summary,
-                self_host_snapshot=self_host,
-                now=now,
-            )
-            scoped_packets.append((ws_id, scoped_fact_packet))
-
-        def _build_scoped_brief(entry: tuple[str, dict[str, Any]]) -> tuple[str, dict[str, Any]]:
-            ws_id, scoped_fact_packet = entry
-            brief = compass_standup_brief_narrator.build_standup_brief(
-                repo_root=repo_root,
-                fact_packet=scoped_fact_packet,
-                generated_utc=generated_utc,
-                config=reasoning_config,
-                provider=None,
-                allow_provider=scoped_allow_provider,
-                prefer_provider=compass_refresh_contract.prefer_live_provider(refresh_profile),
-                allow_cache_recovery=compass_refresh_contract.allow_stale_cache_recovery(refresh_profile),
-                allow_deterministic_fallback=compass_refresh_contract.allow_deterministic_fallback(refresh_profile),
-            )
-            if compass_refresh_contract.full_refresh_requested(refresh_profile):
-                _assert_full_refresh_brief_ready(brief=brief, window_hours=hours, scope_label=ws_id)
-            return ws_id, brief
-        if scoped_allow_provider and len(scoped_packets) > 1:
-            max_workers = compass_refresh_contract.scoped_provider_max_workers(
-                refresh_profile,
-                scoped_packets=len(scoped_packets),
-            )
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                for ws_id, brief in executor.map(_build_scoped_brief, scoped_packets):
-                    standup_scoped[ws_id] = brief
-        else:
-            for ws_id, scoped_fact_packet in scoped_packets:
-                built_ws_id, brief = _build_scoped_brief((ws_id, scoped_fact_packet))
-                standup_scoped[built_ws_id] = brief
-
-        return window_kpis, standup_global, standup_scoped
-
-    kpi_24h, standup_brief_24h, standup_brief_scoped_24h = _summarize_window(24)
-    kpi_48h, standup_brief_48h, standup_brief_scoped_48h = _summarize_window(48)
+    summary_24h = compass_window_summary_support.summarize_window(context=window_context, hours=24)
+    summary_48h = compass_window_summary_support.summarize_window(context=window_context, hours=48)
+    kpi_24h = summary_24h.kpis
+    standup_brief_24h = summary_24h.global_brief
+    standup_brief_scoped_24h = summary_24h.scoped_briefs
+    scoped_packets_24h = summary_24h.scoped_packets
+    standup_runtime_24h = summary_24h.runtime_window
+    global_packet_24h = summary_24h.global_fact_packet
+    kpi_48h = summary_48h.kpis
+    standup_brief_48h = summary_48h.global_brief
+    standup_brief_scoped_48h = summary_48h.scoped_briefs
+    scoped_packets_48h = summary_48h.scoped_packets
+    standup_runtime_48h = summary_48h.runtime_window
+    global_packet_48h = summary_48h.global_fact_packet
     digest_24h = compass_standup_brief_narrator.brief_to_digest_lines(standup_brief_24h)
     digest_48h = compass_standup_brief_narrator.brief_to_digest_lines(standup_brief_48h)
     digest_scoped_24h = {
@@ -866,13 +1252,44 @@ def _build_runtime_payload(
         ws_id: compass_standup_brief_narrator.brief_to_digest_lines(brief)
         for ws_id, brief in standup_brief_scoped_48h.items()
     }
-    governance_summary = governance.build_governance_summary(
+    if str(refresh_profile).strip().lower() == compass_refresh_contract.DEFAULT_REFRESH_PROFILE:
+        compass_standup_brief_maintenance.enqueue_request(
+            repo_root=repo_root,
+            generated_utc=generated_utc,
+            runtime_input_fingerprint="",
+            global_fact_packets={
+                "24h": global_packet_24h,
+                "48h": global_packet_48h,
+            },
+            global_briefs={
+                "24h": standup_brief_24h,
+                "48h": standup_brief_48h,
+            },
+            scoped_fact_packets={
+                "24h": scoped_packets_24h,
+                "48h": scoped_packets_48h,
+            },
+            scoped_briefs={
+                "24h": standup_brief_scoped_24h,
+                "48h": standup_brief_scoped_48h,
+            },
+            scope_signals={
+                "24h": standup_runtime_24h.get("scope_signals", {}),
+                "48h": standup_runtime_48h.get("scope_signals", {}),
+            },
+        )
+    governance_summary = _cached_governance_summary_for_shell_safe(
         repo_root=repo_root,
-        changed_paths=governance.collect_git_changed_paths(repo_root=repo_root),
-        force=False,
-        impact_mode="selective",
-        stream_path=codex_stream_path,
+        refresh_profile=refresh_profile,
     )
+    if governance_summary is None:
+        governance_summary = governance.build_governance_summary(
+            repo_root=repo_root,
+            changed_paths=governance.collect_git_changed_paths(repo_root=repo_root),
+            force=False,
+            impact_mode="selective",
+            stream_path=codex_stream_path,
+        )
     payload: dict[str, Any] = {
         "version": "v1",
         "generated_utc": generated_utc,
@@ -892,6 +1309,7 @@ def _build_runtime_payload(
             "bugs_index": _as_repo_path(repo_root, bugs_index_path),
             "traceability_graph": _as_repo_path(repo_root, traceability_graph_path),
             "mermaid_catalog": _as_repo_path(repo_root, mermaid_catalog_path),
+            "agent_stream": _as_repo_path(repo_root, codex_stream_path),
             "codex_stream": _as_repo_path(repo_root, codex_stream_path),
         },
         "kpis": {
@@ -914,12 +1332,44 @@ def _build_runtime_payload(
             "24h": standup_brief_scoped_24h,
             "48h": standup_brief_scoped_48h,
         },
-        "odylith_runtime": _compact_odylith_runtime_summary(repo_root=repo_root),
+        "standup_runtime": {
+            "24h": standup_runtime_24h,
+            "48h": standup_runtime_48h,
+        },
+        "verified_scoped_workstreams": {
+            "24h": list(standup_runtime_24h.get("verified_scope_ids", [])),
+            "48h": list(standup_runtime_48h.get("verified_scope_ids", [])),
+        },
+        "promoted_scoped_workstreams": {
+            "24h": list(standup_runtime_24h.get("promoted_scope_ids", [])),
+            "48h": list(standup_runtime_48h.get("promoted_scope_ids", [])),
+        },
+        "window_scope_signals": {
+            "24h": dict(standup_runtime_24h.get("scope_signals", {})),
+            "48h": dict(standup_runtime_48h.get("scope_signals", {})),
+        },
+        "odylith_runtime": (
+            _cached_odylith_runtime_summary_for_shell_safe(
+                repo_root=repo_root,
+                refresh_profile=refresh_profile,
+            )
+            or _compact_odylith_runtime_summary(repo_root=repo_root)
+        ),
         "self_host": self_host,
         "governance": governance_summary,
+        "interventions": {
+            "pending_proposals": intervention_stream_state.pending_proposal_state(
+                repo_root=repo_root,
+            ),
+        },
         "workstream_catalog": all_ws_payloads,
+        "current_workstreams_by_window": {
+            "24h": current_workstreams_by_window["24h"],
+            "48h": current_workstreams_by_window["48h"],
+        },
         "current_workstreams": ws_payloads,
         "execution_waves": execution_waves,
+        "release_summary": release_summary,
         "next_actions": next_actions,
         "timeline_events": timeline_events,
         "timeline_transactions": timeline_transactions,

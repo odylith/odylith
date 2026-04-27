@@ -1,16 +1,10 @@
-"""Subtask assembly helpers extracted from the subagent orchestrator."""
+"""Assemble bounded subtask slices and task-contract text for delegated leaves."""
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
 from typing import Sequence
-
-
-def _host():
-    from odylith.runtime.orchestration import subagent_orchestrator as host
-
-    return host
 
 
 def _slice_prompt(
@@ -22,16 +16,16 @@ def _slice_prompt(
     role: str,
     include_coordination: bool,
 ) -> str:
-    host = _host()
-    OrchestrationMode = host.OrchestrationMode
+    """Build the worker-facing prompt for one bounded slice of orchestration work."""
+    from odylith.runtime.orchestration import subagent_orchestrator
 
     scope = ", ".join(paths) if paths else "the grounded bounded scope"
     route_time = not include_coordination
     coordination_note = ""
     if include_coordination:
         coordination_note = {
-            OrchestrationMode.PARALLEL_BATCH: "This slice is parallel-safe and disjoint from the other leaves.",
-            OrchestrationMode.SERIAL_BATCH: "This slice is ordered; wait for its dependencies before integrating results.",
+            subagent_orchestrator.OrchestrationMode.PARALLEL_BATCH: "This slice is parallel-safe and disjoint from the other leaves.",
+            subagent_orchestrator.OrchestrationMode.SERIAL_BATCH: "This slice is ordered; wait for its dependencies before integrating results.",
         }.get(mode, "Keep the work strictly bounded to this slice.")
     if not needs_write:
         body = f"Review only {scope} for this request: {request.prompt}"
@@ -81,6 +75,7 @@ def _slice_deliverables(
     needs_write: bool,
     role: str,
 ) -> list[str]:
+    """Return the concrete handoff items the leaf is expected to produce."""
     scope = ", ".join(paths) if paths else "the bounded scope"
     if not needs_write:
         return [f"Provide findings only for {scope}"]
@@ -106,6 +101,7 @@ def _relevant_acceptance_criteria(
     paths: Sequence[str],
     all_paths: Sequence[str] | None = None,
 ) -> list[str]:
+    """Keep the acceptance criteria most relevant to the current owned slice."""
     normalized_paths = [str(path).strip() for path in paths if str(path).strip()]
     if not criteria:
         return []
@@ -131,6 +127,8 @@ def _relevant_acceptance_criteria(
         if not text:
             continue
         lowered = text.lower()
+        # Prefer criteria that explicitly mention this slice, then keep one shared
+        # guardrail so the leaf still sees the most important cross-cutting constraint.
         if any(token and token in lowered for token in path_tokens):
             if text not in seen:
                 path_specific.append(text)
@@ -160,6 +158,7 @@ def _relevant_acceptance_criteria(
 
 
 def _slice_owner(*, paths: Sequence[str], needs_write: bool) -> str:
+    """Describe the scope ownership contract for a delegated leaf."""
     scope = ", ".join(paths) if paths else "the bounded scope"
     if not needs_write:
         return f"Own only the read-only analysis of {scope}; do not edit files outside that scope."
@@ -173,6 +172,7 @@ def _slice_goal(
     role: str,
     needs_write: bool,
 ) -> str:
+    """Summarize the outcome the leaf should optimize for within its scope."""
     scope = ", ".join(paths) if paths else "the bounded scope"
     if not needs_write:
         return f"Produce the bounded analysis requested by the main prompt for {scope}."
@@ -188,6 +188,7 @@ def _slice_goal(
 
 
 def _slice_expected_output(deliverables: Sequence[str]) -> str:
+    """Flatten deliverables into the contract line used by spawn messages."""
     if not deliverables:
         return "Hand back the bounded result for the owned scope."
     return "; ".join(deliverables)
@@ -198,6 +199,7 @@ def _termination_condition_for_leaf(
     subtask: SubtaskSlice,
     decision: leaf_router.RoutingDecision,
 ) -> str:
+    """Translate router closeout policy into the leaf termination contract."""
     if decision.close_after_result:
         close_rule = "Stop after the bounded handoff and let the main thread integrate the result, then close the agent."
     else:
@@ -212,6 +214,7 @@ def _termination_condition_for_leaf(
 
 
 def _prompt_contract_lines(subtask: SubtaskSlice) -> list[str]:
+    """Render the stable contract block injected into every spawned task."""
     return [
         "TASK CONTRACT",
         f"OWNER: {subtask.owner}",
@@ -222,18 +225,18 @@ def _prompt_contract_lines(subtask: SubtaskSlice) -> list[str]:
 
 
 def _spawn_task_message(subtask: SubtaskSlice, *, task_prompt: str) -> str:
-    host = _host()
-    _normalize_multiline_string = host._normalize_multiline_string
-    leaf_router = host.leaf_router
+    """Wrap the route banner, contract, and task prompt into the host message."""
+    from odylith.runtime.orchestration import subagent_orchestrator
 
-    return leaf_router._build_host_message(  # noqa: SLF001
+    return subagent_orchestrator.leaf_router._build_host_message(  # noqa: SLF001
         subtask.route_runtime_banner_lines,
         subtask.prompt_contract_lines,
-        ["TASK", _normalize_multiline_string(task_prompt)],
+        ["TASK", subagent_orchestrator._normalize_multiline_string(task_prompt)],  # noqa: SLF001
     )
 
 
 def _completion_closeout_overrides(subtasks: Sequence[SubtaskSlice]) -> dict[str, Any]:
+    """Build the closeout override that closes delegated leaves as one batch."""
     delegated = [subtask for subtask in subtasks if subtask.route_close_agent_overrides]
     if not delegated:
         return {}
@@ -250,6 +253,7 @@ def _completion_closeout_overrides(subtasks: Sequence[SubtaskSlice]) -> dict[str
 
 
 def _slice_task_kind(request: OrchestrationRequest, *, role: str) -> str:
+    """Choose the subtask task kind without over-promoting support leaves."""
     if not request.needs_write:
         return request.task_kind or "analysis"
     if role in {"validation", "docs", "governance"}:
@@ -260,6 +264,7 @@ def _slice_task_kind(request: OrchestrationRequest, *, role: str) -> str:
 
 
 def _slice_phase(request: OrchestrationRequest, *, role: str) -> str:
+    """Choose the leaf phase while keeping support work in implementation time."""
     if not request.needs_write:
         return request.phase or "analysis"
     if role in {"validation", "docs", "governance"}:
@@ -268,24 +273,28 @@ def _slice_phase(request: OrchestrationRequest, *, role: str) -> str:
 
 
 def _slice_correctness_critical(request: OrchestrationRequest, *, role: str) -> bool:
+    """Downgrade support leaves so docs and governance do not inherit write-critical posture."""
     if role in {"validation", "docs", "governance"}:
         return False
     return request.correctness_critical
 
 
 def _slice_latency_sensitive(request: OrchestrationRequest, *, role: str) -> bool:
+    """Bias support leaves toward fast follow-up once primary work is in flight."""
     if role in {"validation", "docs", "governance"}:
         return True
     return request.latency_sensitive
 
 
 def _slice_accuracy_preference(request: OrchestrationRequest, *, role: str) -> str:
+    """Keep support leaves accuracy-biased even when the parent request is looser."""
     if role in {"validation", "docs", "governance"}:
         return "accuracy"
     return request.accuracy_preference
 
 
 def _slice_validation_commands(request: OrchestrationRequest, *, role: str) -> list[str]:
+    """Expose validation commands only to roles that can act on them directly."""
     if role in {"implementation", "contract", "validation", "mixed"}:
         return list(request.validation_commands)
     return []
@@ -297,25 +306,31 @@ def _build_subtasks(
     mode: OrchestrationMode,
     groups: Sequence[Sequence[str]],
 ) -> list[SubtaskSlice]:
-    host = _host()
-    OrchestrationMode = host.OrchestrationMode
-    SubtaskSlice = host.SubtaskSlice
-    _new_slice_id = host._new_slice_id
-    _scope_role = host._scope_role
-    _execution_group_kind = host._execution_group_kind
+    """Materialize ordered subtask slices with dependency and contract metadata."""
+    from odylith.runtime.orchestration import subagent_orchestrator
 
     ordered_groups = [list(group) for group in groups if group or request.prompt]
     subtasks: list[SubtaskSlice] = []
     planned_ids: list[tuple[str, str]] = []
     previous_id = ""
     for index, paths in enumerate(ordered_groups, start=1):
-        slice_id = _new_slice_id(index)
-        role = _scope_role(paths, needs_write=request.needs_write)
-        execution_group_kind = _execution_group_kind(paths, needs_write=request.needs_write)
+        slice_id = subagent_orchestrator._new_slice_id(index)  # noqa: SLF001
+        role = subagent_orchestrator._scope_role(paths, needs_write=request.needs_write)  # noqa: SLF001
+        execution_group_kind = subagent_orchestrator._execution_group_kind(  # noqa: SLF001
+            paths,
+            needs_write=request.needs_write,
+        )
         dependency_ids: list[str] = []
-        if mode is OrchestrationMode.SERIAL_BATCH and previous_id:
+        if mode is subagent_orchestrator.OrchestrationMode.SERIAL_BATCH and previous_id:
             dependency_ids = [previous_id]
-        elif mode is OrchestrationMode.PARALLEL_BATCH and request.needs_write and execution_group_kind == "support":
+        elif (
+            mode is subagent_orchestrator.OrchestrationMode.PARALLEL_BATCH
+            and request.needs_write
+            and execution_group_kind == "support"
+        ):
+            # Support leaves in a parallel write batch still wait on the primary
+            # implementation leaves so docs, validation, or governance do not race
+            # ahead of the owned runtime change they describe or verify.
             primary_ids = [planned_id for planned_id, group_kind in planned_ids if group_kind == "primary"]
             if primary_ids:
                 dependency_ids = list(primary_ids)
@@ -329,7 +344,7 @@ def _build_subtasks(
         planned_ids.append((slice_id, execution_group_kind))
         deliverables = _slice_deliverables(request, paths=paths, needs_write=request.needs_write, role=role)
         subtasks.append(
-            SubtaskSlice(
+            subagent_orchestrator.SubtaskSlice(
                 id=slice_id,
                 prompt=_slice_prompt(
                     request,
@@ -366,19 +381,27 @@ def _build_subtasks(
                 escalation_allowed=True,
             )
         )
-    default_role = _scope_role(request.candidate_paths, needs_write=request.needs_write)
+    default_role = subagent_orchestrator._scope_role(  # noqa: SLF001
+        request.candidate_paths,
+        needs_write=request.needs_write,
+    )
     deliverables = _slice_deliverables(
         request,
         paths=request.candidate_paths,
         needs_write=request.needs_write,
         role=default_role,
     )
+    # A no-group fallback still carries the same contract fields so the rest of
+    # orchestration can treat it like any other leaf.
     return subtasks or [
-        SubtaskSlice(
-            id=_new_slice_id(1),
+        subagent_orchestrator.SubtaskSlice(
+            id=subagent_orchestrator._new_slice_id(1),  # noqa: SLF001
             prompt=request.prompt,
             route_prompt=request.prompt,
-            execution_group_kind=_execution_group_kind(request.candidate_paths, needs_write=request.needs_write),
+            execution_group_kind=subagent_orchestrator._execution_group_kind(  # noqa: SLF001
+                request.candidate_paths,
+                needs_write=request.needs_write,
+            ),
             scope_role=default_role,
             task_kind=_slice_task_kind(request, role=default_role),
             phase=_slice_phase(request, role=default_role),

@@ -1,11 +1,97 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-08
+Last updated (UTC): 2026-04-26
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-126 | 2026-04-25 | Benchmark tree identity fix regrows oversized runner hotfile failure | P2 | benchmark | Open | [2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md](2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md) |
+| CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Resolved | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
+| CB-120 | 2026-04-16 | Dashboard shell diagnostic cockpit leaked into product render | P1 | dashboard | Resolved | [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md) |
+| CB-119 | 2026-04-16 | Benchmark live proof conflates support paths write targets and read only sandbox | P1 | benchmark | Open | [2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md](2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md) |
+| CB-114 | 2026-04-15 | Bug capture can publish placeholder tbd records before the maintainer has enough | P0 | `src/odylith/runtime/governance/bug_authoring.py`,
+  `src/odylith/runtime/intervention_engine/apply.py`,
+  `src/odylith/runtime/intervention_engine/engine.py`,
+  `src/odylith/runtime/analysis_engine/show_capabilities.py`,
+  `odylith/skills/odylith-casebook-bug-capture/SKILL.md`,
+  `odylith/skills/odylith-casebook-bug-preflight/SKILL.md`,
+  and the shared Casebook bug-authoring contract. | Open | [2026-04-15-bug-capture-can-publish-placeholder-tbd-records-before-the-maintainer-has-enough.md](2026-04-15-bug-capture-can-publish-placeholder-tbd-records-before-the-maintainer-has-enough.md) |
+| CB-113 | 2026-04-15 | Benchmark sharded proof can lose final shard artifacts and authoritative active | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
+  benchmark shard progress lifecycle, active-run ledger maintenance, shard
+  teardown/finalization, benchmark publication proof. | Open | [2026-04-15-benchmark-sharded-proof-can-lose-final-shard-artifacts-and-authoritative-active-.md](2026-04-15-benchmark-sharded-proof-can-lose-final-shard-artifacts-and-authoritative-active-.md) |
+| CB-117 | 2026-04-15 | Benchmark proof shards treat shell hangup as terminal interrupt | P1 | benchmark | Open | [2026-04-15-benchmark-proof-shards-treat-shell-hangup-as-terminal-interrupt.md](2026-04-15-benchmark-proof-shards-treat-shell-hangup-as-terminal-interrupt.md) |
+| CB-118 | 2026-04-15 | Benchmark live proof auth preflight only checks ambient home codex auth | P1 | benchmark | Open | [2026-04-15-benchmark-live-proof-auth-preflight-only-checks-ambient-home-codex-auth.md](2026-04-15-benchmark-live-proof-auth-preflight-only-checks-ambient-home-codex-auth.md) |
+| CB-116 | 2026-04-15 | Benchmark compare and publication can treat stale proof aliases as current head  2 | P1 | benchmark | Open | [2026-04-15-benchmark-compare-and-publication-can-treat-stale-proof-aliases-as-current-head--2.md](2026-04-15-benchmark-compare-and-publication-can-treat-stale-proof-aliases-as-current-head--2.md) |
+| CB-112 | 2026-04-14 | Routine authoring commands can leave owned surfaces stale and selective sync can | P1 | odylith | Open | [2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md](2026-04-14-routine-authoring-commands-can-leave-owned-surfaces-stale-and-selective-sync-can.md) |
+| CB-105 | 2026-04-12 | Sync performance engineering from 30s to sub 6s with session hoisting and incremental derivation | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py` (22-step
+  pipeline executor, `_execute_plan`, `_run_callable_with_heartbeat`,
+  `build_sync_execution_plan`),
+  `src/odylith/runtime/governance/sync_session.py` (new: `GovernedSyncSession`,
+  `get_or_compute`, generation-scoped invalidation),
+  `src/odylith/runtime/governance/workstream_inference.py`
+  (`normalize_repo_token`, `_normalize_repo_token_cached`),
+  `src/odylith/runtime/common/consumer_profile.py`
+  (`_consumer_profile_cache_signature`, `load_consumer_profile`,
+  `truth_root_path`),
+  `src/odylith/runtime/governance/validate_backlog_contract.py`
+  (`_validate_idea_specs`, `_parse_idea_spec`),
+  `src/odylith/runtime/governance/component_registry_intelligence.py`
+  (`_path_matches_prefix`, `build_component_registry_report`,
+  `_build_component_registry_report_from_fingerprint`),
+  `src/odylith/runtime/governance/delivery_intelligence_engine.py`
+  (`build_delivery_intelligence_artifact`),
+  `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`
+  (`warm_projections`, `projection_input_fingerprint`). | Resolved | [2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md](2026-04-12-sync-performance-engineering-from-30s-to-sub-6s-with-session-hoisting-and-incremental-derivation.md) |
+| CB-106 | 2026-04-12 | Benchmark live preflight evidence is only injected for odylith on without a declared comparison contract | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, benchmark
+  publication contract, benchmark component spec, README benchmark framing. | Open | [2026-04-12-benchmark-live-preflight-evidence-is-only-injected-for-odylith-on-without-a-declared-comparison-contract.md](2026-04-12-benchmark-live-preflight-evidence-is-only-injected-for-odylith-on-without-a-declared-comparison-contract.md) |
+| CB-107 | 2026-04-12 | Benchmark live observed path scoring credits odylith prompt surfaces but not equivalent raw prompt anchors | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, benchmark
+  required-path scoring contract, proof fairness interpretation. | Open | [2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md](2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md) |
+| CB-102 | 2026-04-11 | Odylith start returns no candidates when dirty path set is dominated by bundle asset mirrors | P1 | `src/odylith/runtime/governance/agent_governance_intelligence.py`
+  (`_changed_path_aliases`, `normalize_changed_paths`,
+  `collect_git_changed_paths`),
+  `src/odylith/runtime/common/consumer_profile.py`
+  (`_legacy_product_token_alias`),
+  `./.odylith/bin/odylith start` command, and every downstream consumer
+  of `normalize_repo_token` and the changed-path fan-out pipeline. | Resolved | [2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md](2026-04-11-odylith-start-returns-no-candidates-when-dirty-path-set-is-dominated-by-bundle-asset-mirrors.md) |
+| CB-103 | 2026-04-11 | Claude host profile blanks execution model via supports explicit model selection flag | P0 | `src/odylith/runtime/execution_engine/contract.py`,
+  `src/odylith/runtime/common/host_runtime.py`,
+  `src/odylith/runtime/common/agent_runtime_contract.py`,
+  `src/odylith/runtime/orchestration/subagent_router.py`,
+  `src/odylith/runtime/orchestration/subagent_orchestrator.py`,
+  `src/odylith/runtime/context_engine/tooling_context_routing.py`,
+  `.claude/agents/*.md`, and the `execution-governance` Registry component. | In progress | [2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md](2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md) |
+| CB-104 | 2026-04-11 | Agents hand edited governed truth when odylith cli commands existed | P1 | `agent-governance policy` (cross-cutting guidance
+  contract), `odylith/agents-guidelines/CLI_FIRST_POLICY.md`,
+  `odylith/agents-guidelines/*.md` (9 canonical guidance files),
+  `odylith/skills/*/SKILL.md` (16 shared skills),
+  `odylith/AGENTS.md`, `odylith/CLAUDE.md`, `AGENTS.md`, `CLAUDE.md`,
+  and the shared Odylith CLI surface anchored at `./.odylith/bin/odylith`. | In progress | [2026-04-11-agents-hand-edited-governed-truth-when-odylith-cli-commands-existed.md](2026-04-11-agents-hand-edited-governed-truth-when-odylith-cli-commands-existed.md) |
+| CB-090 | 2026-04-09 | Low signal governance churn can outrank real execution across governance surfaces | P1 | `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
+  `src/odylith/runtime/governance/delivery/scope_signal_ladder.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/render_registry_dashboard.py`,
+  `src/odylith/runtime/surfaces/render_mermaid_catalog.py`,
+  related specs and governance-surface guidance. | Open | [2026-04-09-low-signal-governance-churn-can-outrank-real-execution-across-governance-surfaces.md](2026-04-09-low-signal-governance-churn-can-outrank-real-execution-across-governance-surfaces.md) |
+| CB-091 | 2026-04-09 | Compass bounded refresh still misses release bar after ready briefs return to narrated cache | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_standup_runtime_reuse.py`,
+  `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,
+  Compass component spec, `B-025`, `B-071`, and the `v0.1.11` release note. | Open | [2026-04-09-compass-bounded-refresh-still-misses-release-bar-after-ready-briefs-return-to-narrated-cache.md](2026-04-09-compass-bounded-refresh-still-misses-release-bar-after-ready-briefs-return-to-narrated-cache.md) |
+| CB-089 | 2026-04-09 | Benchmark live proof reports still emit codex branded canonical fields | P1 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
+  `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`,
+  benchmark docs under `docs/benchmarks/`, benchmark component truth, and
+  benchmark regression tests. | Open | [2026-04-09-benchmark-live-proof-reports-still-emit-codex-branded-canonical-fields.md](2026-04-09-benchmark-live-proof-reports-still-emit-codex-branded-canonical-fields.md) |
+| CB-100 | 2026-04-09 | Atlas real render lane still misses sub second bar after review only fast path | P1 | `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`,
+  `src/odylith/runtime/surfaces/mermaid_worker_session.py`,
+  `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`,
+  Mermaid CLI integration, and `B-080`. | Open | [2026-04-09-atlas-real-render-lane-still-misses-sub-second-bar-after-review-only-fast-path.md](2026-04-09-atlas-real-render-lane-still-misses-sub-second-bar-after-review-only-fast-path.md) |
 | CB-069 | 2026-04-08 | Pinned dogfood proof benchmark can wedge mid corpus and block release proof | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   benchmark progress finalization, benchmark cleanup/interruption handling,
@@ -110,11 +196,169 @@ Last updated (UTC): 2026-04-08
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-127 | 2026-04-25 | Cli help stdout can trigger out of context odylith observation | P1 | governance-intervention-engine | Closed | [2026-04-25-cli-help-stdout-can-trigger-out-of-context-odylith-observation.md](2026-04-25-cli-help-stdout-can-trigger-out-of-context-odylith-observation.md) |
+| CB-125 | 2026-04-25 | Benchmark proof identity includes mutable ignored runtime aliases | P1 | benchmark | Closed | [2026-04-25-benchmark-proof-identity-includes-mutable-ignored-runtime-aliases.md](2026-04-25-benchmark-proof-identity-includes-mutable-ignored-runtime-aliases.md) |
+| CB-124 | 2026-04-24 | Benchmark disposable worktrees resolve validators against a non benchmark ready | P1 | benchmark | Closed | [2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md](2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md) |
+| CB-122 | 2026-04-17 | Intervention hooks report ready while chat sees zero visible odylith beats | P0 | governance-intervention-engine | Closed | [2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md](2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md) |
+| CB-123 | 2026-04-17 | Bootstrap signal corpus can be mistaken for calibrated ml quality | P1 | governance-intervention-engine, benchmark, odylith-context-engine | Closed | [2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md](2026-04-17-bootstrap-signal-corpus-can-be-mistaken-for-calibrated-ml-quality.md) |
+| CB-110 | 2026-04-14 | Forwarded cli help hides backend flags and selective sync stays too wide for gov | P1 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/bug_authoring.py`,
+  `src/odylith/runtime/governance/sync_casebook_bug_index.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  `tests/unit/test_cli.py`,
+  `tests/unit/runtime/test_sync_cli_compat.py`, and governed-sync operator
+  contract under `B-091`. | Closed | [2026-04-14-forwarded-cli-help-hides-backend-flags-and-selective-sync-stays-too-wide-for-gov.md](2026-04-14-forwarded-cli-help-hides-backend-flags-and-selective-sync-stays-too-wide-for-gov.md) |
+| CB-111 | 2026-04-14 | Consumer lane routine governance ux can leak shim plumbing instead of direct cli | P2 | `src/odylith/runtime/surfaces/scaffold_mermaid_diagram.py`,
+  `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`,
+  `src/odylith/runtime/surfaces/render_mermaid_catalog.py`,
+  `src/odylith/runtime/surfaces/render_mermaid_catalog_refresh.py`,
+  `src/odylith/runtime/surfaces/install_mermaid_autosync_hook.py`,
+  `tests/unit/test_cli.py`, and consumer-lane CLI help UX under `B-088`. | Closed | [2026-04-14-consumer-lane-routine-governance-ux-can-leak-shim-plumbing-instead-of-direct-cli.md](2026-04-14-consumer-lane-routine-governance-ux-can-leak-shim-plumbing-instead-of-direct-cli.md) |
+| CB-109 | 2026-04-14 | Compass rolling timeline audit can hide prior day window activity behind selecte | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
+  `odylith/compass/compass-workstreams.v1.js`,
+  `src/odylith/bundle/assets/odylith/compass/compass-workstreams.v1.js`,
+  `tests/integration/runtime/test_surface_browser_deep.py`,
+  `tests/integration/runtime/test_surface_browser_filter_audit.py`,
+  Compass component spec, and `B-025` governance memory. | Closed | [2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md](2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md) |
+| CB-108 | 2026-04-12 | Compass programs can regrow a redundant nested inner card | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-shared.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-waves.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-execution-waves.v1.css`,
+  `tests/integration/runtime/test_surface_browser_layout_audit.py`,
+  `tests/unit/runtime/test_compass_dashboard_shell.py`,
+  live checked-in Compass shell assets, bundled Compass shell mirrors, and the
+  `B-025` UX/browser-hardening plan. | Closed | [2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md](2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md) |
+| CB-101 | 2026-04-10 | Dashboard and upgrade can queue compass behind a command the activated launcher does not expose | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  `src/odylith/runtime/governance/dashboard_refresh_contract.py`,
+  `tests/unit/runtime/test_sync_cli_compat.py`, Compass component spec, and
+  active Compass hardening governance under `B-025`. | Closed | [2026-04-10-dashboard-and-upgrade-can-queue-compass-behind-a-command-the-activated-launcher-does-not-expose.md](2026-04-10-dashboard-and-upgrade-can-queue-compass-behind-a-command-the-activated-launcher-does-not-expose.md) |
+| CB-087 | 2026-04-09 | Workstream progress badges can treat raw checklist zero as zero percent execution progress | P1 | `src/odylith/runtime/governance/plan_progress.py`,
+  `src/odylith/runtime/governance/workstream_progress.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-waves.v1.js`,
+  `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_outcome_digest_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_standup_runtime_reuse.py`,
+  `src/odylith/runtime/surfaces/compass_standup_fact_packets.py`,
+  Compass and Radar component specs, and `B-068` plan truth. | Closed | [2026-04-09-workstream-progress-badges-can-treat-raw-checklist-zero-as-zero-percent-execution-progress.md](2026-04-09-workstream-progress-badges-can-treat-raw-checklist-zero-as-zero-percent-execution-progress.md) |
+| CB-079 | 2026-04-09 | Shell runtime status repeats compass in frame refresh warning | P1 | `src/odylith/runtime/surfaces/tooling_dashboard_surface_status.py`,
+  tooling shell runtime-status contract, Compass failed-refresh disclosure
+  policy, `tests/unit/runtime/test_render_tooling_dashboard.py`,
+  `tests/integration/runtime/test_surface_browser_deep.py`. | Closed | [2026-04-09-shell-runtime-status-repeats-compass-in-frame-refresh-warning.md](2026-04-09-shell-runtime-status-repeats-compass-in-frame-refresh-warning.md) |
+| CB-080 | 2026-04-09 | Shared surface contract drift reopens workstream button and release layout regressions | P1 | `src/odylith/runtime/surfaces/dashboard_ui_primitives.py`,
+  `src/odylith/runtime/surfaces/compass_dashboard_frontend_contract.py`,
+  `src/odylith/runtime/surfaces/execution_wave_ui_runtime_primitives.py`,
+  `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
+  `src/odylith/runtime/surfaces/render_mermaid_catalog.py`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-base.v1.css`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-execution-waves.v1.css`,
+  Compass live and bundled shell mirrors,
+  Radar and Atlas workstream-link styling,
+  cross-surface browser proof. | Closed | [2026-04-09-shared-surface-contract-drift-reopens-workstream-button-and-release-layout-regressions.md](2026-04-09-shared-surface-contract-drift-reopens-workstream-button-and-release-layout-regressions.md) |
+| CB-085 | 2026-04-09 | Shared shell kpi contract drift reopens release card and summary tile regressions | P1 | `src/odylith/runtime/surfaces/compass_dashboard_frontend_contract.py`,
+  `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
+  `src/odylith/runtime/surfaces/render_registry_dashboard.py`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-base.v1.css`,
+  `src/odylith/runtime/surfaces/dashboard_ui_primitives.py`,
+  `tests/unit/runtime/test_compass_dashboard_shell.py`,
+  `tests/unit/runtime/test_surface_shell_contracts.py`,
+  `tests/integration/runtime/test_surface_browser_layout_audit.py`,
+  `tests/integration/runtime/test_surface_browser_smoke.py`,
+  live and bundled Compass/Radar/Registry/Casebook shell assets. | Closed | [2026-04-09-shared-shell-kpi-contract-drift-reopens-release-card-and-summary-tile-regressions.md](2026-04-09-shared-shell-kpi-contract-drift-reopens-release-card-and-summary-tile-regressions.md) |
+| CB-082 | 2026-04-09 | Release add cannot attach finished workstreams as completed members | P2 | `src/odylith/runtime/governance/release_planning_authoring.py`,
+  `src/odylith/runtime/governance/release_planning_view_model.py`,
+  release-planning CLI authoring, current-release completed-membership views. | Closed | [2026-04-09-release-add-cannot-attach-finished-workstreams-as-completed-members.md](2026-04-09-release-add-cannot-attach-finished-workstreams-as-completed-members.md) |
+| CB-084 | 2026-04-09 | Host contract drift leaks codex only policy into claude and shared runtime surfaces | P1 | `src/odylith/contracts/host_adapter.py`,
+  `src/odylith/runtime/common/host_runtime.py`,
+  `src/odylith/runtime/orchestration/subagent_router.py`,
+  `src/odylith/runtime/orchestration/subagent_orchestrator.py`,
+  `src/odylith/runtime/context_engine/tooling_context_routing.py`,
+  `src/odylith/runtime/context_engine/odylith_context_engine_store.py`,
+  `src/odylith/runtime/memory/tooling_memory_contracts.py`,
+  `src/odylith/runtime/common/log_compass_timeline_event.py`,
+  `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`,
+  shared reasoning defaults, Compass runtime artifacts, CLI/install guidance,
+  Registry specs, Atlas diagrams, benchmark reports, and bundled mirrors. | Closed | [2026-04-09-host-contract-drift-leaks-codex-only-policy-into-claude-and-shared-runtime-surfaces.md](2026-04-09-host-contract-drift-leaks-codex-only-policy-into-claude-and-shared-runtime-surfaces.md) |
+| CB-083 | 2026-04-09 | Cross surface workstream buttons can reopen local scope instead of radar | P1 | `src/odylith/runtime/surfaces/dashboard_shell_links.py`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-shared.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-waves.v1.js`,
+  `src/odylith/runtime/surfaces/render_casebook_dashboard.py`,
+  `src/odylith/runtime/surfaces/render_mermaid_catalog.py`,
+  and the cross-surface browser route-proof lane. | Closed | [2026-04-09-cross-surface-workstream-buttons-can-reopen-local-scope-instead-of-radar.md](2026-04-09-cross-surface-workstream-buttons-can-reopen-local-scope-instead-of-radar.md) |
+| CB-092 | 2026-04-09 | Compass timeline audit cards can hide their own anchor workstream in visible chip row | P1 | `src/odylith/runtime/surfaces/compass_transaction_runtime.py`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-timeline.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
+  `tests/unit/runtime/test_compass_transaction_runtime.py`,
+  `tests/integration/runtime/test_surface_browser_deep.py`, Compass component
+  spec, `B-025`, and `B-071`. | Closed | [2026-04-09-compass-timeline-audit-cards-can-hide-their-own-anchor-workstream-in-visible-chip-row.md](2026-04-09-compass-timeline-audit-cards-can-hide-their-own-anchor-workstream-in-visible-chip-row.md) |
+| CB-088 | 2026-04-09 | Compass scoped selector can advertise unverified window activity and leak global audit cards | P1 | `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-state.v1.js`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
+  `tests/unit/runtime/test_compass_dashboard_runtime.py`,
+  `tests/integration/runtime/test_surface_browser_deep.py`, Compass component
+  spec, and `B-025` governance memory. | Closed | [2026-04-09-compass-scoped-selector-can-advertise-unverified-window-activity-and-leak-global-audit-cards.md](2026-04-09-compass-scoped-selector-can-advertise-unverified-window-activity-and-leak-global-audit-cards.md) |
+| CB-093 | 2026-04-09 | Compass runtime reuse can ignore live release and program source changes | P0 | `src/odylith/runtime/context_engine/surface_projection_fingerprint.py`,
+  `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_governance_source_runtime.py`,
+  Compass runtime reuse, live release-target truth, execution-wave source
+  overlay, and `B-072`. | Closed | [2026-04-09-compass-runtime-reuse-can-ignore-live-release-and-program-source-changes.md](2026-04-09-compass-runtime-reuse-can-ignore-live-release-and-program-source-changes.md) |
+| CB-081 | 2026-04-09 | Compass release targets can pin closed workstreams until runtime refresh | P1 | `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_dashboard_frontend_contract.py`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/`,
+  `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
+  `src/odylith/runtime/surfaces/tooling_dashboard_surface_status.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
+  Compass release-target rendering, Compass execution-wave chips, Radar
+  execution-wave summaries, shell runtime-status disclosure. | Closed | [2026-04-09-compass-release-targets-can-pin-closed-workstreams-until-runtime-refresh.md](2026-04-09-compass-release-targets-can-pin-closed-workstreams-until-runtime-refresh.md) |
+| CB-078 | 2026-04-09 | Compass release target layout regresses to unauthorized multi column board | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-base.v1.css`,
+  `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js`,
+  bundled Compass shell mirrors,
+  `tests/unit/runtime/test_compass_dashboard_shell.py`,
+  `tests/unit/runtime/test_surface_shell_contracts.py`,
+  Compass release-target layout contract. | Closed | [2026-04-09-compass-release-target-layout-regresses-to-unauthorized-multi-column-board.md](2026-04-09-compass-release-target-layout-regresses-to-unauthorized-multi-column-board.md) |
+| CB-086 | 2026-04-09 | Compass minute scale full refresh lane remained in product after bounded contract | P1 | `src/odylith/runtime/surfaces/compass_refresh_contract.py`,
+  `src/odylith/runtime/surfaces/render_compass_dashboard.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  Compass release notes, Compass and Dashboard current specs, B-025 and B-060
+  governed workstream memory, browser and runtime regression tests. | Closed | [2026-04-09-compass-minute-scale-full-refresh-lane-remained-in-product-after-bounded-contract.md](2026-04-09-compass-minute-scale-full-refresh-lane-remained-in-product-after-bounded-contract.md) |
+| CB-095 | 2026-04-09 | Compass current workstreams can duplicate governed lanes already visible in programs or release targets | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-workstreams.v1.js`,
+  `odylith/compass/compass-workstreams.v1.js`,
+  `src/odylith/bundle/assets/odylith/compass/compass-workstreams.v1.js`,
+  Compass `Current Workstreams`, release-target coexistence, and execution-wave
+  coexistence in the visible UI. | Closed | [2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md](2026-04-09-compass-current-workstreams-can-duplicate-governed-lanes-already-visible-in-programs-or-release-targets.md) |
+| CB-094 | 2026-04-09 | Compass current workstream ranking can hide active release and wave lanes | P1 | `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_current_workstreams_runtime.py`,
+  `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
+  current-workstream ranking, release-target visibility, and execution-wave
+  promotion inside Compass. | Closed | [2026-04-09-compass-current-workstream-ranking-can-hide-active-release-and-wave-lanes.md](2026-04-09-compass-current-workstream-ranking-can-hide-active-release-and-wave-lanes.md) |
+| CB-096 | 2026-04-09 | Compass browser source truth fallback can accept unusable snapshots and preserve stale scope state | P1 | `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-runtime-truth.v1.js`,
+  `odylith/compass/compass-runtime-truth.v1.js`,
+  `src/odylith/bundle/assets/odylith/compass/compass-runtime-truth.v1.js`,
+  source-truth reconciliation, traceability fallback, and scoped-workstream
+  runtime metadata in Compass. | Closed | [2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md](2026-04-09-compass-browser-source-truth-fallback-can-accept-unusable-snapshots-and-preserve-stale-scope-state.md) |
+| CB-097 | 2026-04-09 | Atlas watch freshness can mark diagrams stale on mtime only churn | P1 | `src/odylith/runtime/common/diagram_freshness.py`,
+  `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`,
+  `src/odylith/runtime/surfaces/render_mermaid_catalog.py`,
+  Atlas freshness contract, and `B-080`. | Closed | [2026-04-09-atlas-watch-freshness-can-mark-diagrams-stale-on-mtime-only-churn.md](2026-04-09-atlas-watch-freshness-can-mark-diagrams-stale-on-mtime-only-churn.md) |
+| CB-099 | 2026-04-09 | Atlas persistent mermaid worker bootstrap can fail real render jobs | P1 | `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`,
+  `src/odylith/runtime/surfaces/mermaid_worker_session.py`,
+  Atlas Mermaid render path, and `B-080`. | Closed | [2026-04-09-atlas-persistent-mermaid-worker-bootstrap-can-fail-real-render-jobs.md](2026-04-09-atlas-persistent-mermaid-worker-bootstrap-can-fail-real-render-jobs.md) |
+| CB-098 | 2026-04-09 | Atlas auto update plan can claim render work for review only sync | P2 | `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`,
+  Atlas CLI plan output, and `B-080`. | Closed | [2026-04-09-atlas-auto-update-plan-can-claim-render-work-for-review-only-sync.md](2026-04-09-atlas-auto-update-plan-can-claim-render-work-for-review-only-sync.md) |
 | CB-067 | 2026-04-08 | Tooling shell refresh can look fresh while compass child runtime stays stale | P1 | `src/odylith/runtime/surfaces/render_tooling_dashboard.py`,
   `src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, tooling shell
   refresh contract, Compass child-runtime freshness projection, shell runtime
   status messaging. | Closed | [2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md](2026-04-08-tooling-shell-refresh-can-look-fresh-while-compass-child-runtime-stays-stale.md) |
+| CB-076 | 2026-04-08 | Successful pinned runtime verification still prints scary trusted root key warning noise | P1 | pinned-runtime release verification messaging,
+  `src/odylith/install/release_assets.py`, shipped-runtime trust bootstrap
+  output, `make dogfood-activate`, `make consumer-rehearsal`,
+  `make ga-gate`, release component contract. | Closed | [2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md](2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md) |
 | CB-071 | 2026-04-08 | Release workflows still pin first party actions on node 20 runtime | P1 | `.github/workflows/release.yml`,
   `.github/workflows/release-candidate.yml`, `.github/workflows/test.yml`,
   maintainer release workflow pin policy, release component contract. | Closed | [2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md](2026-04-08-release-workflows-still-pin-first-party-actions-on-node-20-runtime.md) |
@@ -125,6 +369,16 @@ Last updated (UTC): 2026-04-08
 | CB-070 | 2026-04-08 | Release identity guard still depends on github generated committer metadata | P0 | maintainer release identity validator,
   `tests/unit/test_validate_git_identity.py`, release workflow identity guard,
   maintainer release contract. | Closed | [2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md](2026-04-08-release-identity-guard-still-depends-on-github-generated-committer-metadata.md) |
+| CB-077 | 2026-04-08 | Live proof lanes do not pin the primary blocker frontier or falsification memory | P1 | `src/odylith/runtime/governance/delivery_intelligence_engine.py`,
+  `src/odylith/runtime/reasoning/tribunal_engine.py`,
+  `src/odylith/runtime/context_engine/odylith_context_engine_store.py`,
+  `src/odylith/runtime/context_engine/odylith_context_engine_session_packet_runtime.py`,
+  `src/odylith/runtime/surfaces/dashboard_shell_links.py`,
+  `src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py`,
+  `src/odylith/runtime/surfaces/compass_dashboard_runtime.py`,
+  `src/odylith/runtime/orchestration/odylith_chatter_runtime.py`, Casebook
+  bug metadata parsing, shared operator readouts, and the runtime proof-surfaces
+  ledger. | Closed | [2026-04-08-live-proof-lanes-do-not-pin-the-primary-blocker-frontier-or-falsification-memory.md](2026-04-08-live-proof-lanes-do-not-pin-the-primary-blocker-frontier-or-falsification-memory.md) |
 | CB-074 | 2026-04-08 | Hosted install script uses hidden pin alignment flag that older shipped runtimes do not understand | P0 | release asset publisher, local release smoke harness,
   generated `install.sh`, hosted installer upgrade compatibility, release
   component contract. | Closed | [2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md](2026-04-08-hosted-install-script-uses-hidden-pin-alignment-flag-that-older-shipped-runtimes-do-not-understand.md) |

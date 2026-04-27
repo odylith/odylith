@@ -29,7 +29,7 @@ def test_evaluation_ledger_summarizes_good_recent_events(tmp_path: Path) -> None
                 "evidence_diversity_score": 3,
                 "density_per_1k_tokens": 21.0,
                 "estimated_tokens": 2100,
-                "odylith_execution_profile": "codex_high",
+                "odylith_execution_profile": "write_high",
                 "odylith_execution_model": "gpt-5.3-codex",
                 "odylith_execution_reasoning_effort": "high",
                 "odylith_execution_delegate_preference": "delegate",
@@ -133,7 +133,7 @@ def test_evaluation_ledger_degrades_confidence_for_stale_and_conflicted_history(
                 "reasoning_readiness_score": 3,
                 "deep_reasoning_ready": True,
                 "evidence_diversity_score": 3,
-                "odylith_execution_profile": "codex_high",
+                "odylith_execution_profile": "write_high",
             },
             benchmark_summary={
                 "matched_case_count": 1,
@@ -186,7 +186,7 @@ def test_optimization_snapshot_exposes_learning_loop(tmp_path: Path) -> None:
                 "evidence_diversity_score": 2,
                 "density_per_1k_tokens": 2.1,
                 "estimated_tokens": 1800,
-                "odylith_execution_profile": "codex_high",
+                "odylith_execution_profile": "write_high",
             },
             benchmark_summary={
                 "matched_case_count": 1,
@@ -622,7 +622,7 @@ def test_router_promotes_grounded_bounded_write_when_depth_is_earned(tmp_path: P
                         "parallelism_hint": "serial_preferred",
                     },
                     "odylith_execution_profile": {
-                        "profile": "codex_high",
+                        "profile": "write_high",
                         "model": "gpt-5.3-codex",
                         "reasoning_effort": "high",
                         "agent_role": "worker",
@@ -872,11 +872,11 @@ def test_coordination_heavy_write_requires_route_ready_runtime_before_decomposit
 
 
 def test_odylith_consumer_paths_do_not_collapse_into_governance_followups() -> None:
-    assert orchestrator._scope_role(["odylith/skills/subagent-router/SKILL.md"], needs_write=True) == "contract"  # noqa: SLF001
+    assert orchestrator._scope_role(["odylith/skills/odylith-subagent-router/SKILL.md"], needs_write=True) == "contract"  # noqa: SLF001
     assert orchestrator._scope_role(["odylith/runtime/SUBAGENT_OPERATIONS.md"], needs_write=True) == "contract"  # noqa: SLF001
     assert orchestrator._scope_role(["odylith/index.html"], needs_write=True) == "implementation"  # noqa: SLF001
 
-    assert orchestrator._is_host_local_governance_path("odylith/skills/subagent-router/SKILL.md") is False  # noqa: SLF001
+    assert orchestrator._is_host_local_governance_path("odylith/skills/odylith-subagent-router/SKILL.md") is False  # noqa: SLF001
     assert orchestrator._is_host_local_governance_path("odylith/runtime/SUBAGENT_OPERATIONS.md") is False  # noqa: SLF001
     assert orchestrator._is_host_local_governance_path("odylith/index.html") is False  # noqa: SLF001
     assert orchestrator._is_host_local_governance_path("odylith/radar/source/INDEX.md") is True  # noqa: SLF001

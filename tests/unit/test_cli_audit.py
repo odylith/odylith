@@ -7,6 +7,7 @@ import pytest
 
 from odylith import cli
 from odylith.runtime.common import command_surface
+from odylith.runtime.evaluation import benchmark_compare as _real_benchmark_compare
 
 
 def _parser_nodes(parser: argparse.ArgumentParser, prefix: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
@@ -123,7 +124,30 @@ _HANDLER_CASES = [
         "path": ("dashboard", "refresh"),
         "argv": lambda root: ["dashboard", "refresh", f"--repo-root={root}"],
         "handler": "_cmd_dashboard_refresh",
-        "check": lambda args, root: getattr(args, "repo_root", "") == str(root) and getattr(args, "dashboard_command", "") == "refresh",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
+    },
+    {
+        "path": ("compass", "refresh"),
+        "argv": lambda root: ["compass", "refresh", f"--repo-root={root}", "--status"],
+        "handler": "_cmd_compass_refresh",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "compass_command", "") == "refresh"
+        and bool(getattr(args, "status", False)),
+    },
+    {
+        "path": ("compass", "deep-refresh"),
+        "argv": lambda root: ["compass", "deep-refresh", f"--repo-root={root}", "--force-brief"],
+        "handler": "_cmd_compass_deep_refresh",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "compass_command", "") == "deep-refresh"
+        and bool(getattr(args, "force_brief", False)),
+    },
+    {
+        "path": ("atlas", "refresh"),
+        "argv": lambda root: ["atlas", "refresh", f"--repo-root={root}", "--dry-run"],
+        "handler": "_cmd_atlas_refresh",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and bool(getattr(args, "dry_run", False)),
     },
     {
         "path": ("backlog", "create"),
@@ -132,9 +156,92 @@ _HANDLER_CASES = [
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root) and getattr(args, "backlog_command", "") == "create",
     },
     {
+        "path": ("show",),
+        "argv": lambda root: ["show", f"--repo-root={root}", "--json"],
+        "handler": "_cmd_show",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and list(getattr(args, "forwarded", [])) == ["--json"],
+    },
+    {
+        "path": ("component", "register"),
+        "argv": lambda root: ["component", "register", f"--repo-root={root}", "--id", "registry-refresh"],
+        "handler": "_cmd_component",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "component_command", "") == "register"
+        and list(getattr(args, "forwarded", [])) == ["--id", "registry-refresh"],
+    },
+    {
+        "path": ("bug", "capture"),
+        "argv": lambda root: ["bug", "capture", f"--repo-root={root}", "--title", "Fixture bug"],
+        "handler": "_cmd_bug",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "bug_command", "") == "capture"
+        and list(getattr(args, "forwarded", [])) == ["--title", "Fixture bug"],
+    },
+    {
+        "path": ("release", "list"),
+        "argv": lambda root: ["release", "list", f"--repo-root={root}"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root) and getattr(args, "release_command", "") == "list",
+    },
+    {
+        "path": ("release", "show"),
+        "argv": lambda root: ["release", "show", f"--repo-root={root}", "current"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "show"
+        and list(getattr(args, "forwarded", [])) == ["current"],
+    },
+    {
+        "path": ("release", "create"),
+        "argv": lambda root: ["release", "create", f"--repo-root={root}", "release-0-1-11"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "create"
+        and list(getattr(args, "forwarded", [])) == ["release-0-1-11"],
+    },
+    {
+        "path": ("release", "update"),
+        "argv": lambda root: ["release", "update", f"--repo-root={root}", "current", "--name", "Launch"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "update"
+        and list(getattr(args, "forwarded", [])) == ["current", "--name", "Launch"],
+    },
+    {
+        "path": ("release", "add"),
+        "argv": lambda root: ["release", "add", f"--repo-root={root}", "B-101", "current"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "add"
+        and list(getattr(args, "forwarded", [])) == ["B-101", "current"],
+    },
+    {
+        "path": ("release", "remove"),
+        "argv": lambda root: ["release", "remove", f"--repo-root={root}", "B-101", "current"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "remove"
+        and list(getattr(args, "forwarded", [])) == ["B-101", "current"],
+    },
+    {
+        "path": ("release", "move"),
+        "argv": lambda root: ["release", "move", f"--repo-root={root}", "B-101", "next", "--from-release", "current"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "move"
+        and list(getattr(args, "forwarded", [])) == ["B-101", "next", "--from-release", "current"],
+    },
+    {
         "path": ("compass", "log"),
         "argv": lambda root: ["compass", "log", f"--repo-root={root}"],
         "handler": "_cmd_compass_log",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
+    },
+    {
+        "path": ("compass", "refresh"),
+        "argv": lambda root: ["compass", "refresh", f"--repo-root={root}"],
+        "handler": "_cmd_compass_refresh",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
     },
     {
@@ -188,8 +295,11 @@ for governance_command in (
     "auto-promote-workstream-phase",
     "sync-component-spec-requirements",
     "version-truth",
+    "validate-guidance-behavior",
     "validate-guidance-portability",
     "validate-plan-traceability",
+    "intervention-preview",
+    "capture-apply",
 ):
     _HANDLER_CASES.append(
         {
@@ -200,6 +310,112 @@ for governance_command in (
             and getattr(args, "governance_command", "") == command,
         }
     )
+
+
+for program_command in (
+    "create",
+    "update",
+    "list",
+    "show",
+    "status",
+    "next",
+):
+    _HANDLER_CASES.append(
+        {
+            "path": ("program", program_command),
+            "argv": lambda root, command=program_command: ["program", command, f"--repo-root={root}"],
+            "handler": "_cmd_program",
+            "check": lambda args, root, command=program_command: getattr(args, "repo_root", "") == str(root)
+            and getattr(args, "program_command", "") == command,
+        }
+    )
+
+
+for wave_command in (
+    "create",
+    "update",
+    "assign",
+    "unassign",
+    "gate-add",
+    "gate-remove",
+    "status",
+):
+    _HANDLER_CASES.append(
+        {
+            "path": ("wave", wave_command),
+            "argv": lambda root, command=wave_command: ["wave", command, f"--repo-root={root}"],
+            "handler": "_cmd_wave",
+            "check": lambda args, root, command=wave_command: getattr(args, "repo_root", "") == str(root)
+            and getattr(args, "wave_command", "") == command,
+        }
+    )
+
+
+for codex_command in (
+    "bash-guard",
+    "compatibility",
+    "intervention-status",
+    "post-bash-checkpoint",
+    "prompt-context",
+    "session-start-ground",
+    "stop-summary",
+    "visible-intervention",
+):
+    _HANDLER_CASES.append(
+        {
+            "path": ("codex", codex_command),
+            "argv": lambda root, command=codex_command: ["codex", command, f"--repo-root={root}"],
+            "handler": "_cmd_codex_host_command",
+            "check": lambda args, root, command=codex_command: getattr(args, "repo_root", "") == str(root)
+            and getattr(args, "codex_command", "") == command,
+        }
+    )
+
+
+for claude_command in (
+    "bash-guard",
+    "compatibility",
+    "intervention-status",
+    "post-bash-checkpoint",
+    "post-edit-checkpoint",
+    "pre-compact-snapshot",
+    "prompt-context",
+    "prompt-teaser",
+    "session-start",
+    "statusline",
+    "stop-summary",
+    "subagent-start",
+    "subagent-stop",
+    "visible-intervention",
+):
+    _HANDLER_CASES.append(
+        {
+            "path": ("claude", claude_command),
+            "argv": lambda root, command=claude_command: ["claude", command, f"--repo-root={root}"],
+            "handler": "_cmd_claude_host_command",
+            "check": lambda args, root, command=claude_command: getattr(args, "repo_root", "") == str(root)
+            and getattr(args, "claude_command", "") == command,
+        }
+    )
+
+
+_OWNED_SURFACE_REFRESH_CASES = [
+    {
+        "path": ("radar", "refresh"),
+        "argv": lambda root: ["radar", "refresh", f"--repo-root={root}", "--dry-run"],
+        "surface": "radar",
+    },
+    {
+        "path": ("registry", "refresh"),
+        "argv": lambda root: ["registry", "refresh", f"--repo-root={root}", "--dry-run"],
+        "surface": "registry",
+    },
+    {
+        "path": ("casebook", "refresh"),
+        "argv": lambda root: ["casebook", "refresh", f"--repo-root={root}", "--dry-run"],
+        "surface": "casebook",
+    },
+]
 
 
 @pytest.mark.parametrize("case", _HANDLER_CASES, ids=lambda case: " ".join(case["path"]))
@@ -217,6 +433,27 @@ def test_cli_handler_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str
     assert rc == 91
     assert "args" in captured
     assert case["check"](captured["args"], tmp_path)
+
+
+@pytest.mark.parametrize("case", _OWNED_SURFACE_REFRESH_CASES, ids=lambda case: " ".join(case["path"]))
+def test_cli_owned_surface_refresh_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str, object]) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_owned_refresh(args: argparse.Namespace, *, surface: str) -> int:
+        captured["args"] = args
+        captured["surface"] = surface
+        return 94
+
+    monkeypatch.setattr(cli, "_cmd_owned_surface_refresh", fake_owned_refresh)
+
+    rc = cli.main(case["argv"](tmp_path))
+
+    assert rc == 94
+    assert "args" in captured
+    assert captured["surface"] == case["surface"]
+    args = captured["args"]
+    assert getattr(args, "repo_root", "") == str(tmp_path)
+    assert bool(getattr(args, "dry_run", False))
 
 
 _SHORTCUT_CASES = [
@@ -265,6 +502,25 @@ _SHORTCUT_CASES = [
 ]
 
 
+_DISCIPLINE_SHORTCUT_CASES = [
+    {
+        "path": ("discipline", "status"),
+        "argv": lambda root: ["discipline", "status", f"--repo-root={root}"],
+        "expected_argv": lambda root: ["--repo-root", str(root), "status"],
+    },
+    {
+        "path": ("discipline", "check"),
+        "argv": lambda root: ["discipline", "check", f"--repo-root={root}", "--intent-file", "intent.txt"],
+        "expected_argv": lambda root: ["--repo-root", str(root), "check", "--intent-file", "intent.txt", "--lane", "dev"],
+    },
+    {
+        "path": ("discipline", "explain"),
+        "argv": lambda root: ["discipline", "explain", f"--repo-root={root}", "--decision-id", "discipline:fixture"],
+        "expected_argv": lambda root: ["--repo-root", str(root), "explain", "--decision-id", "discipline:fixture"],
+    },
+]
+
+
 @pytest.mark.parametrize("case", _SHORTCUT_CASES, ids=lambda case: " ".join(case["path"]))
 def test_cli_context_shortcut_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str, object]) -> None:
     captured: dict[str, object] = {}
@@ -285,6 +541,28 @@ def test_cli_context_shortcut_dispatch_matrix(monkeypatch, tmp_path: Path, case:
     assert captured["forwarded"] == case["forwarded"]
 
 
+@pytest.mark.parametrize("case", _DISCIPLINE_SHORTCUT_CASES, ids=lambda case: " ".join(case["path"]))
+def test_cli_discipline_shortcut_dispatch_matrix(monkeypatch, tmp_path: Path, case: dict[str, object]) -> None:
+    captured: dict[str, object] = {}
+    real_module_attr = cli._module_attr  # noqa: SLF001
+
+    def fake_run_discipline(argv: list[str]) -> int:
+        captured["argv"] = list(argv)
+        return 96
+
+    def fake_module_attr(module_name: str, attribute_name: str):  # noqa: ANN001
+        if module_name == cli._DISCIPLINE_CLI_MODULE and attribute_name == "run_discipline":  # noqa: SLF001
+            return fake_run_discipline
+        return real_module_attr(module_name, attribute_name)
+
+    monkeypatch.setattr(cli, "_module_attr", fake_module_attr)
+
+    rc = cli.main(case["argv"](tmp_path))
+
+    assert rc == 96
+    assert captured["argv"] == case["expected_argv"](tmp_path)
+
+
 _DOWNSTREAM_ARGV_CASES = [
     {
         "path": ("lane", "status"),
@@ -297,6 +575,20 @@ _DOWNSTREAM_ARGV_CASES = [
         "path": ("validate", "backlog-contract"),
         "argv": lambda root: ["validate", "backlog-contract", f"--repo-root={root}"],
         "target_obj": cli.validate_backlog_contract,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
+        "path": ("casebook", "validate"),
+        "argv": lambda root: ["casebook", "validate", f"--repo-root={root}", "--json"],
+        "target_obj": cli.casebook_source_validation,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root), "--json"],
+    },
+    {
+        "path": ("validate", "casebook-source"),
+        "argv": lambda root: ["validate", "casebook-source", f"--repo-root={root}"],
+        "target_obj": cli.casebook_source_validation,
         "target_attr": "main",
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
@@ -315,9 +607,30 @@ _DOWNSTREAM_ARGV_CASES = [
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
     {
+        "path": ("validate", "discipline"),
+        "argv": lambda root: ["validate", "discipline", f"--repo-root={root}"],
+        "target_obj": cli.validate_discipline,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
+        "path": ("validate", "guidance-behavior"),
+        "argv": lambda root: ["validate", "guidance-behavior", f"--repo-root={root}"],
+        "target_obj": cli.validate_guidance_behavior,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
         "path": ("validate", "guidance-portability"),
         "argv": lambda root: ["validate", "guidance-portability", f"--repo-root={root}"],
         "target_obj": cli.validate_guidance_portability,
+        "target_attr": "main",
+        "expected_argv": lambda root: ["--repo-root", str(root)],
+    },
+    {
+        "path": ("validate", "discipline"),
+        "argv": lambda root: ["validate", "discipline", f"--repo-root={root}"],
+        "target_obj": cli.validate_discipline,
         "target_attr": "main",
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
@@ -420,11 +733,11 @@ def test_cli_benchmark_compare_dispatch_and_json(monkeypatch, tmp_path: Path, ca
             return {"status": "pass", "baseline": "golden"}
 
     monkeypatch.setattr(
-        cli.benchmark_compare,
+        _real_benchmark_compare,
         "compare_latest_to_baseline",
         lambda *, repo_root, baseline: captured.update({"repo_root": repo_root, "baseline": baseline}) or _FakeResult(),
     )
-    monkeypatch.setattr(cli.benchmark_compare, "render_compare_text", lambda result: "compare text")
+    monkeypatch.setattr(_real_benchmark_compare, "render_compare_text", lambda result: "compare text")
 
     rc = cli.main(["benchmark", f"--repo-root={tmp_path}", "compare", "--baseline", "golden", "--json"])
     output = capsys.readouterr().out
@@ -439,7 +752,9 @@ def test_cli_dispatch_matrix_covers_every_parser_leaf() -> None:
     parser = cli.build_parser()
     leaf_paths = _parser_leaf_paths(parser)
     covered_paths = {tuple(case["path"]) for case in _HANDLER_CASES}
+    covered_paths.update(tuple(case["path"]) for case in _OWNED_SURFACE_REFRESH_CASES)
     covered_paths.update(tuple(case["path"]) for case in _SHORTCUT_CASES)
+    covered_paths.update(tuple(case["path"]) for case in _DISCIPLINE_SHORTCUT_CASES)
     covered_paths.update(tuple(case["path"]) for case in _DOWNSTREAM_ARGV_CASES)
 
     assert leaf_paths == covered_paths

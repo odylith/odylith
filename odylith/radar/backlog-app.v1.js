@@ -264,9 +264,10 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
       query: "",
       section: "all",
       phase: "all",
+      type: "all",
       activity: "all",
-      lane: "all",
       priority: "all",
+      release: "all",
       sort: "rank",
       mixBy: "complexity",
       selectedIdeaId: ""
@@ -275,11 +276,13 @@ const __ODYLITH_SHELL_REDIRECT_IN_PROGRESS__ = (function enforceShellOwnedSurfac
     const el = {
       stats: document.getElementById("stats"),
       query: document.getElementById("query"),
-      section: document.getElementById("section"),
+      section: document.getElementById("lane"),
+      legacySection: document.getElementById("section"),
       phase: document.getElementById("phase"),
+      type: document.getElementById("type"),
       activity: document.getElementById("activity"),
-      lane: document.getElementById("lane"),
       priority: document.getElementById("priority"),
+      release: document.getElementById("release"),
       sort: document.getElementById("sort"),
       meta: document.getElementById("meta"),
       analyticsPanel: document.getElementById("analytics-panel"),
@@ -511,6 +514,7 @@ initSharedQuickTooltips();
         if (row.section !== "execution") return false;
         if (stageLabel(row.status) !== state.phase) return false;
       }
+      if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) return false;
       if (state.activity !== "all") {
         if (row.section !== "execution") return false;
         const stateToken = normalizeExecutionState(row.execution_state);
@@ -520,8 +524,8 @@ initSharedQuickTooltips();
         ) ? "active" : "quiet";
         if (activity !== state.activity) return false;
       }
-      if (state.lane !== "all" && row.impacted_lanes !== state.lane) return false;
       if (state.priority !== "all" && row.priority !== state.priority) return false;
+      if (state.release !== "all" && workstreamActiveReleaseId(row) !== state.release) return false;
       return rowMatchesQuery(row, query, exactIdeaQuery);
     }
 
@@ -545,15 +549,6 @@ initSharedQuickTooltips();
       } catch (_error) {
         // Ignore parent-shell sync failures; local radar interactions must still work.
       }
-    }
-
-    function laneLabel(value) {
-      const token = String(value || "").trim().toLowerCase();
-      if (!token) return "-";
-      if (token === "both") return "Cross-lane (Platform + Service)";
-      if (token === "platform") return "Platform only";
-      if (token === "service" || token === "services") return "Service only";
-      return prettyLabel(token);
     }
 
     function formatCompactTimestamp(value) {
@@ -590,16 +585,27 @@ initSharedQuickTooltips();
       });
     }
 
-    seedSelect(el.lane, uniqueValues("impacted_lanes"), (value) => laneLabel(value));
     seedSelect(el.priority, uniqueValues("priority"));
+    seedSelect(
+      el.release,
+      releaseCatalog()
+        .map((row) => String(row && row.release_id ? row.release_id : "").trim())
+        .filter(Boolean),
+      (value) => {
+        const release = releaseCatalog().find((row) => String(row && row.release_id ? row.release_id : "").trim() === value) || {};
+        return releaseLabel(release) || value;
+      },
+    );
 
     function syncFilterControls() {
       el.query.value = state.query;
       el.section.value = state.section;
+      if (el.legacySection) el.legacySection.value = state.section;
       el.phase.value = state.phase;
+      el.type.value = state.type;
       el.activity.value = state.activity;
-      el.lane.value = state.lane;
       el.priority.value = state.priority;
+      el.release.value = state.release;
     }
 
     // Explicit deep-link navigation must reveal the requested workstream instead of
@@ -631,8 +637,8 @@ initSharedQuickTooltips();
             state.activity = "all";
           }
         }
-        if (state.lane !== "all" && row.impacted_lanes !== state.lane) {
-          state.lane = "all";
+        if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) {
+          state.type = "all";
         }
         if (state.priority !== "all" && row.priority !== state.priority) {
           state.priority = "all";
@@ -774,8 +780,11 @@ initSharedQuickTooltips();
       syncAnalyticsToggleHint();
     }
 
-    function statBlock(label, value) {
-      return `<div class="stat"><div class="label">${escapeHtml(label)}</div><div class="value">${escapeHtml(value)}</div></div>`;
+    function statBlock(label, value, options = {}) {
+      const releaseOnly = Boolean(options && options.releaseOnly);
+      const classes = releaseOnly ? "stat stat-release-only" : "stat";
+      const labelHtml = label ? `<div class="label">${escapeHtml(label)}</div>` : "";
+      return `<div class="${classes}">${labelHtml}<div class="value">${escapeHtml(value)}</div></div>`;
     }
 
     function summarizeVisibleSections(rows) {
@@ -810,6 +819,10 @@ initSharedQuickTooltips();
       const counts = summarizeVisibleSections(rows);
       const wavePrograms = Number(waveSummary && waveSummary.program_count ? waveSummary.program_count : 0);
       const activeWaves = Number(waveSummary && waveSummary.active_wave_count ? waveSummary.active_wave_count : 0);
+      const traceability = traceabilityPayload();
+      const currentRelease = traceability && traceability.current_release && typeof traceability.current_release === "object"
+        ? traceability.current_release
+        : {};
       const statRows = [
         statBlock("Index Updated", DATA.index_updated_display || "-"),
         statBlock("Queued", counts.queued),
@@ -818,8 +831,10 @@ initSharedQuickTooltips();
         statBlock("Finished", counts.finished),
       ];
       if (wavePrograms > 0) {
-        statRows.push(statBlock("Wave Programs", wavePrograms));
         statRows.push(statBlock("Active Waves", activeWaves));
+      }
+      if (releaseCardLabel(currentRelease)) {
+        statRows.push(statBlock("Target Release", releaseCardLabel(currentRelease), { releaseOnly: true }));
       }
       return statRows;
     }
@@ -1287,6 +1302,16 @@ initSharedQuickTooltips();
       return all.filter((row) => rowMatchesFilters(row, { query: q, exactIdeaQuery }));
     }
 
+    function scopeSignalRank(row) {
+      const signal = row && typeof row.scope_signal === "object" ? row.scope_signal : {};
+      const numeric = Number(signal.rank);
+      if (Number.isFinite(numeric)) return numeric;
+      const rung = String(signal.rung || "").trim().toUpperCase();
+      if (/^R\d+$/.test(rung)) return Number.parseInt(rung.slice(1), 10);
+      const direct = Number(row && row.scope_signal_rank);
+      return Number.isFinite(direct) ? direct : 0;
+    }
+
     function sortRows(rows) {
       const sectionOrder = { execution: 0, parked: 1, active: 2, finished: 3 };
       const executionStatusOrder = { implementation: 0, planning: 1 };
@@ -1300,6 +1325,10 @@ initSharedQuickTooltips();
       const copy = [...rows];
       copy.sort((a, b) => {
         if (a.section !== b.section) return (sectionOrder[a.section] ?? 99) - (sectionOrder[b.section] ?? 99);
+        if (a.section !== "finished") {
+          const rankDelta = scopeSignalRank(b) - scopeSignalRank(a);
+          if (rankDelta !== 0) return rankDelta;
+        }
         if (a.section === "execution") {
           const leftState = executionStateOrder[normalizeExecutionState(a.execution_state)] ?? 99;
           const rightState = executionStateOrder[normalizeExecutionState(b.execution_state)] ?? 99;
@@ -1421,13 +1450,22 @@ initSharedQuickTooltips();
       return "";
     }
 
+    function sectionBadgeInfo(row) {
+      const section = String(row && row.section ? row.section : "").trim().toLowerCase();
+      if (section === "execution") {
+        return { label: "Pipeline", chipClassName: "rank-chip-execution", kpiClassName: "kpi-section-execution" };
+      }
+      if (section === "finished") {
+        return { label: "Finished", chipClassName: "rank-chip-finished", kpiClassName: "kpi-section-finished" };
+      }
+      if (section === "parked") {
+        return { label: "Parked", chipClassName: "rank-chip-parked", kpiClassName: "kpi-section-parked" };
+      }
+      return { label: `Rank #${row.rank}`, chipClassName: "rank-chip-active", kpiClassName: "kpi-section-active" };
+    }
+
     function rowHtml(row) {
-      const rankLabel = row.section === "execution"
-        ? "Pipeline"
-        : (row.section === "finished" ? "Finished" : (row.section === "parked" ? "Parked" : `Rank #${row.rank}`));
-      const rankChipClass = row.section === "execution"
-        ? "rank-chip-execution"
-        : (row.section === "finished" ? "rank-chip-finished" : (row.section === "parked" ? "rank-chip-parked" : "rank-chip-active"));
+      const sectionBadge = sectionBadgeInfo(row);
       const activeClass = row.idea_id === state.selectedIdeaId ? "active" : "";
       const ageRaw = String(row.idea_age_days || "-");
       const ageLabel = /^\d+$/.test(ageRaw) ? `${ageRaw}d` : ageRaw;
@@ -1461,21 +1499,26 @@ initSharedQuickTooltips();
       const executionChip = row.section === "execution"
         ? `<span class="chip execution-chip ${escapeHtml(executionStateClass(executionState))}" data-tooltip="${escapeHtml(executionSignalTooltip(row.status, executionState, activeWindowMinutes))}">${escapeHtml(executionStateLabel(executionState))}</span>`
         : "";
+      const releaseChip = workstreamActiveReleaseLabel(row)
+        ? `<span class="chip" data-tooltip="Active target release for this workstream.">${escapeHtml(workstreamActiveReleaseLabel(row))}</span>`
+        : "";
       const waveChips = executionWaveRoleChips(row);
+      const footerChips = `${waveChips}${typeChips}${stageChip}${executionChip}${releaseChip}`;
       return `
         <button class="row ${activeClass}" data-idea-id="${escapeHtml(row.idea_id)}">
           <div class="row-top">
-            <span class="rank-chip ${escapeHtml(rankChipClass)}">${escapeHtml(rankLabel)}</span>
+            <span class="rank-chip ${escapeHtml(sectionBadge.chipClassName)}">${escapeHtml(sectionBadge.label)}</span>
             <strong class="row-title">${escapeHtml(row.title)}</strong>
           </div>
           <div class="row-meta">
             <p class="row-id">${escapeHtml(row.idea_id)}</p>
-            <div class="row-chips">${typeChips}${stageChip}${executionChip}</div>
+            <div class="row-chips row-chips-end">
+              <span class="chip">Age ${escapeHtml(ageLabel)}</span>
+              <span class="chip">Exec ${escapeHtml(executionDays)}</span>
+            </div>
           </div>
-          <div class="row-chips">
-            ${waveChips}
-            <span class="chip">Age ${escapeHtml(ageLabel)}</span>
-            <span class="chip">Exec ${escapeHtml(executionDays)}</span>
+          <div class="row-foot">
+            ${footerChips ? `<div class="row-chips row-chips-end">${footerChips}</div>` : ""}
           </div>
         </button>
       `;
@@ -1688,6 +1731,10 @@ initSharedQuickTooltips();
     }
 
     function successMetricsHtml(row) {
+      const renderedHtml = String(row && row.success_metrics_html || "").trim();
+      if (renderedHtml) {
+        return `<div class="detail-copy">${renderedHtml}</div>`;
+      }
       const explicitMetrics = Array.isArray(row.success_metrics_items)
         ? row.success_metrics_items.map((token) => String(token || "").trim()).filter(Boolean)
         : [];
@@ -1698,18 +1745,22 @@ initSharedQuickTooltips();
         || metrics.length > 1
         || (metrics.length === 1 && raw.startsWith("- "));
       if (shouldRenderList) {
-        return `<ul class="bullets">${metrics.map((metric) => `<li>${escapeHtml(metric)}</li>`).join("")}</ul>`;
+        return `<div class="detail-copy"><ul class="bullets">${metrics.map((metric) => `<li>${escapeHtml(metric)}</li>`).join("")}</ul></div>`;
       }
-      return `<p>${escapeHtml(raw || "Not captured in the idea spec yet.")}</p>`;
+      return `<div class="detail-copy"><p>${escapeHtml(raw || "Not captured in the idea spec yet.")}</p></div>`;
     }
 
-    function summarySectionHtml(value, fallback) {
+    function summarySectionHtml(value, fallback, renderedHtml = "") {
+      const rich = String(renderedHtml || "").trim();
+      if (rich) {
+        return `<div class="detail-copy">${rich}</div>`;
+      }
       const raw = String(value || "").trim();
       const bullets = splitInlineBulletText(raw);
       if (bullets.length) {
-        return `<ul class="bullets">${bullets.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>`;
+        return `<div class="detail-copy"><ul class="bullets">${bullets.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul></div>`;
       }
-      return `<p>${escapeHtml(raw || fallback || "Not captured in the idea spec yet.")}</p>`;
+      return `<div class="detail-copy"><p>${escapeHtml(raw || fallback || "Not captured in the idea spec yet.")}</p></div>`;
     }
 
     function normalizeIdList(values) {
@@ -1742,6 +1793,43 @@ initSharedQuickTooltips();
       const payload = traceabilityPayload();
       const rows = Array.isArray(payload.workstreams) ? payload.workstreams : [];
       return rows.find((row) => row.idea_id === ideaId) || null;
+    }
+
+    function releaseCatalog() {
+      const payload = traceabilityPayload();
+      return Array.isArray(payload.releases) ? payload.releases : [];
+    }
+
+    function releaseLabel(row) {
+      const release = row && typeof row === "object" ? row : {};
+      const nameLabel = String(release.effective_name || release.name || "").trim();
+      if (nameLabel) return nameLabel;
+      const versionLabel = String(release.version || release.display_label || "").trim();
+      if (versionLabel) return /^v\d/.test(versionLabel) ? versionLabel.slice(1) : versionLabel;
+      const tagLabel = String(release.tag || "").trim();
+      if (tagLabel) return /^v\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;
+      return String(release.release_id || "").trim();
+    }
+
+    function releaseCardLabel(row) {
+      return releaseLabel(row);
+    }
+
+    function workstreamActiveRelease(row) {
+      const trace = workstreamTrace(row.idea_id) || {};
+      return trace && trace.active_release && typeof trace.active_release === "object"
+        ? trace.active_release
+        : {};
+    }
+
+    function workstreamActiveReleaseId(row) {
+      const trace = workstreamTrace(row.idea_id) || {};
+      const activeRelease = workstreamActiveRelease(row);
+      return String(trace.active_release_id || activeRelease.release_id || "").trim();
+    }
+
+    function workstreamActiveReleaseLabel(row) {
+      return releaseLabel(workstreamActiveRelease(row));
     }
 
     function executionWavePayload() {
@@ -2042,11 +2130,6 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     if (waveSpan) contextChips.push(`<span class="label execution-wave-label wave-status-active">${escapeHtml(waveSpan)}</span>`);
     if (roleLabel) contextChips.push(`<span class="label execution-wave-label wave-role-chip">${escapeHtml(roleLabel)}</span>`);
     if (contextMeta.has_next_wave) contextChips.push('<span class="label execution-wave-label wave-status-planned">Next relevant</span>');
-  } else {
-    const waveCount = Number(program.wave_count || 0);
-    if (waveCount > 0) {
-      contextChips.push(`<span class="label execution-wave-label wave-chip-program">${escapeHtml(`${waveCount}-wave program`)}</span>`);
-    }
   }
 
   const cardsHtml = waves.map((wave) => {
@@ -2073,8 +2156,7 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     const sequenceChip = `${sequenceCount} of ${totalWaveCount}`;
     const waveProgress = executionWaveWaveProgress(wave, options);
     const progressChip = waveProgress.percent ? `${waveProgress.percent} progress` : "";
-    const openByDefault = Boolean(wave.default_open) || isSelectedMember;
-    const openAttr = openByDefault ? " open" : "";
+    const openAttr = "";
     const selectedNote = isSelectedMember ? String(selectedNoteBuilder(selectedWorkstream, contextMeta) || "").trim() : "";
     const supportBlocks = [];
     if (gatePreview) {
@@ -2118,15 +2200,11 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
     return `
       <details class="${cardClassNames.join(" ")}"${openAttr}>
         <summary class="execution-wave-card-summary">
-          <div class="execution-wave-card-shell">
-            <div class="execution-wave-card-copy">
-              <div class="execution-wave-title-row">
-                <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
-                <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
-                ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
-              </div>
-              <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
-              ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
+          <div class="execution-wave-card-shell execution-wave-card-shell-full-copy">
+            <div class="execution-wave-title-row">
+              <div class="execution-wave-title">${escapeHtml(waveLabel)}</div>
+              <span class="label execution-wave-label wave-chip-program">${escapeHtml(sequenceChip)}</span>
+              ${progressChip ? `<span class="label execution-wave-label wave-progress-chip">${escapeHtml(progressChip)}</span>` : ""}
             </div>
             <div class="execution-wave-card-meta">
               <div class="execution-wave-card-stat-rail">
@@ -2137,6 +2215,8 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
                 ${isSelectedMember ? `<span class="label execution-wave-label wave-role-chip">${escapeHtml(selectedBadgeLabel)}</span>` : ""}
               </div>
             </div>
+            <div class="execution-wave-sub">${escapeHtml(summary || "No wave summary recorded.")}</div>
+            ${compactSummaryLine ? `<div class="execution-wave-compact"><div class="execution-wave-compact-line execution-wave-compact-line-strong">${escapeHtml(compactSummaryLine)}</div></div>` : ""}
           </div>
         </summary>
         <div class="execution-wave-card-body">
@@ -2169,7 +2249,7 @@ function renderExecutionWaveProgram(program, selectedWorkstreamId, context, opti
             <div class="execution-wave-focus-line">${escapeHtml(contextLine)}</div>
             ${summaryLine ? `<div class="execution-wave-focus-line execution-wave-focus-line-muted">${escapeHtml(summaryLine)}</div>` : ""}
           </div>
-          <div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>
+          ${contextChips.length ? `<div class="execution-wave-focus-stat-rail">${contextChips.join("")}</div>` : ""}
         </div>
       </div>
       <div class="execution-wave-sequence">${cardsHtml}</div>
@@ -2208,10 +2288,13 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   if (!boardsHtml) return "";
   const openAttr = section.openByDefault ? " open" : "";
   const sectionHeaderVariant = String(options.sectionHeaderVariant || "").trim().toLowerCase();
+  const sectionClassName = ["execution-wave-section", String(options.sectionClassName || "").trim()]
+    .filter(Boolean)
+    .join(" ");
   if (sectionHeaderVariant === "compass") {
     return `
       <section class="block">
-        <details class="execution-wave-section"${openAttr}>
+        <details class="${escapeHtml(sectionClassName)}"${openAttr}>
           <summary class="execution-wave-section-summary execution-wave-section-summary-compass">
             <div class="execution-wave-section-copy">
               <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>
@@ -2229,7 +2312,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
   }
   return `
     <section class="block">
-      <details class="execution-wave-section"${openAttr}>
+      <details class="${escapeHtml(sectionClassName)}"${openAttr}>
         <summary class="execution-wave-section-summary">
           <div class="execution-wave-section-copy">
             <div class="execution-wave-section-title">${escapeHtml(sectionTitle)}</div>
@@ -2358,7 +2441,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       const token = String(ideaId || "").trim();
       if (!token) return "";
       const tooltip = workstreamTooltip(token);
-      return `<button type="button" class="chip chip-link ${escapeHtml(tone)}" data-link-idea="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">${escapeHtml(token)}</button>`;
+      return `<button type="button" class="chip chip-link entity-id-chip ${escapeHtml(tone)}" data-link-idea="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">${escapeHtml(token)}</button>`;
     }
 
     function renderWorkstreamLinkSet(items, tone = "") {
@@ -2374,7 +2457,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         .map((diagramId) => {
           const href = atlasDiagramHref(diagramId, selectedIdeaId);
           const tooltip = diagramTooltip(diagramId);
-          return `<a class="chip chip-link chip-topology-diagram" href="${escapeHtml(href)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}" target="_top">${escapeHtml(diagramId)}</a>`;
+          return `<a class="chip chip-link entity-id-chip chip-topology-diagram" href="${escapeHtml(href)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}" target="_top">${escapeHtml(diagramId)}</a>`;
         })
         .join("");
     }
@@ -2555,10 +2638,6 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
 
       return `
         <div class="topology-board">
-          <div class="topology-focus">
-            <span class="topology-focus-title">Selected</span>
-            ${workstreamLinkChip(selectedIdeaId, "chip-topology-source")}
-          </div>
           ${visibleRelationItems.length ? `
             <details class="topology-relations-panel">
               <summary>
@@ -2677,7 +2756,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       if (!token) return "";
       const tooltip = workstreamTooltip(token);
       const tone = options && options.selected ? " wave-member-selected" : "";
-      return `<button type="button" class="chip chip-link execution-wave-chip-link${tone}" data-link-idea="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">${escapeHtml(token)}</button>`;
+      return `<button type="button" class="chip chip-link entity-id-chip execution-wave-chip-link${tone}" data-link-idea="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">${escapeHtml(token)}</button>`;
     }
 
     function renderExecutionWaveDetailSection(selected) {
@@ -2704,6 +2783,11 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
       const contextLine = primaryContext
         ? `This workstream participates across ${String(primaryContext.wave_span_label || "").trim() || "the program"} as ${String(primaryContext.role_label || "").trim() || "a member"}.`
         : "Umbrella-owned execution waves for this program.";
+      const numericProgressOrNull = (value) => {
+        if (value === null || value === undefined || value === "") return null;
+        const numericValue = Number(value);
+        return Number.isFinite(numericValue) ? numericValue : null;
+      };
       const workstreamStatusById = new Map(
         (Array.isArray(DATA.entries) ? DATA.entries : [])
           .map((row) => {
@@ -2718,8 +2802,12 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
           .map((row) => {
             const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
             const plan = row && typeof row.plan === "object" ? row.plan : {};
-            const progressRatio = Number(plan && plan.progress_ratio);
-            return [ideaId, Number.isFinite(progressRatio) ? progressRatio : null];
+            const progressRatio = numericProgressOrNull(
+              Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")
+                ? plan.display_progress_ratio
+                : (Object.prototype.hasOwnProperty.call(plan, "progress_ratio") ? plan.progress_ratio : null)
+            );
+            return [ideaId, progressRatio];
           })
           .filter(([ideaId]) => ideaId)
       );
@@ -2797,12 +2885,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         ? { ...selectedSummary, ...loadedDetail }
         : selectedSummary;
 
-      const rankLabel = selected.section === "execution"
-        ? "Pipeline"
-        : (selected.section === "finished" ? "Finished" : (selected.section === "parked" ? "Parked" : `Rank #${selected.rank}`));
-      const rankChipClass = selected.section === "execution"
-        ? "rank-chip-execution"
-        : (selected.section === "finished" ? "rank-chip-finished" : (selected.section === "parked" ? "rank-chip-parked" : "rank-chip-active"));
+      const sectionBadge = sectionBadgeInfo(selected);
       const rankingClass = selected.founder_override === "yes" ? "founder-override" : "score-ordered";
       const rankingText = selected.founder_override === "yes" ? "Priority Override" : "Score Ordered";
       const scoreWidth = Math.max(3, Math.min(100, selected.ordering_score));
@@ -2819,6 +2902,8 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         ? `<span class="chip execution-chip ${escapeHtml(executionStateClass(executionState))}" data-tooltip="${escapeHtml(executionSignalTooltip(selected.status, executionState, activeWindowMinutes))}">${escapeHtml(executionStateLabel(executionState))}</span>`
         : "";
       const trace = workstreamTrace(selected.idea_id) || {};
+      const activeRelease = workstreamActiveRelease(selected);
+      const activeReleaseLabel = releaseLabel(activeRelease);
       const fallbackTopology = {
         parents: trace.workstream_parent || selected.workstream_parent || "",
         children: Array.isArray(trace.workstream_children) ? trace.workstream_children : (Array.isArray(selected.workstream_children) ? selected.workstream_children : []),
@@ -2897,16 +2982,16 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         ? `
         <section class="block">
           <h3>Implemented Summary</h3>
-          ${summarySectionHtml(implementedSummary, "Not captured in the idea spec yet.")}
+          ${summarySectionHtml(implementedSummary, "Not captured in the idea spec yet.", selected.implemented_summary_html)}
         </section>
       `
         : "";
       el.detail.innerHTML = `
         <header class="detail-header">
-          <span class="rank-chip ${escapeHtml(rankChipClass)}">${escapeHtml(rankLabel)}</span>
           <h2 class="detail-title">${escapeHtml(selected.title)}</h2>
           <div class="kpis">
             <div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>
+            <div class="kpi kpi-section ${escapeHtml(sectionBadge.kpiClassName)}" data-kpi="workstream-placement"><div class="k">Placement</div><div class="v">${escapeHtml(sectionBadge.label)}</div></div>
             <div class="kpi"><div class="k">Ordering Score</div><div class="v">${escapeHtml(selected.ordering_score)}</div></div>
             <div class="kpi"><div class="k">Created Date</div><div class="v">${escapeHtml(selected.idea_date_display || selected.idea_date || "-")}</div></div>
             <div class="kpi"><div class="k">Age (days)</div><div class="v">${escapeHtml(selected.idea_age_days || "-")}</div></div>
@@ -2920,7 +3005,7 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
             <span class="chip chip-priority">${escapeHtml(selected.priority)}</span>
             <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
             ${executionSignalChip}
-            <span class="chip chip-lane">${escapeHtml(laneLabel(selected.impacted_lanes))}</span>
+            ${activeReleaseLabel ? `<span class="chip">${escapeHtml(activeReleaseLabel)}</span>` : ""}
             <span class="chip chip-sizing">${escapeHtml(selected.sizing)} / ${escapeHtml(selected.complexity)}</span>
             <span class="chip ${rankingClass}">${rankingText}</span>
           </div>
@@ -2935,15 +3020,16 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
         <section class="block">
           <h3>Traceability</h3>
           <div class="links">
-            <a href="${escapeHtml(compassScopeHref(selected.idea_id))}" target="_top">Compass Scope</a>
-            <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
             <a href="${escapeHtml(selected.idea_ui_href || selected.idea_href)}">Workstream Spec</a>
             ${
               selected.promoted_to_plan_ui_href
                 ? `<a href="${escapeHtml(selected.promoted_to_plan_ui_href)}">Technical Implementation Plan</a>`
                 : ""
             }
+            <a href="${escapeHtml(compassScopeHref(selected.idea_id))}" target="_top">Compass Scope</a>
+            <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
           </div>
+          ${activeReleaseLabel ? `<p class="trace-subhead">Release Target</p><p>${escapeHtml(activeReleaseLabel)}</p>` : ""}
           ${registryComponents.length ? `
             <p class="trace-subhead">Registry Components</p>
             <div class="topology-rel-body">${registryComponentLinksHtml}</div>
@@ -2961,32 +3047,32 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
 
         ${implementedSummaryHtml}
 
-        <section class="block">
+        <section class="block block-problem">
           <h3>Problem</h3>
-          ${summarySectionHtml(selected.problem, "Not captured in the idea spec yet.")}
-        </section>
-
-        <section class="block">
-          <h3>Customer</h3>
-          ${summarySectionHtml(selected.customer, "Not captured in the idea spec yet.")}
-        </section>
-
-        <section class="block">
-          <h3>Opportunity</h3>
-          ${summarySectionHtml(selected.opportunity, "Not captured in the idea spec yet.")}
+          ${summarySectionHtml(selected.problem, "Not captured in the idea spec yet.", selected.problem_html)}
         </section>
 
         <section class="block">
           <div class="split-grid">
             <article class="split-card">
               <h3>Product View</h3>
-              ${summarySectionHtml(selected.founder_pov, "Not captured in the idea spec yet.")}
+              ${summarySectionHtml(selected.founder_pov, "Not captured in the idea spec yet.", selected.founder_pov_html)}
             </article>
             <article class="split-card">
               <h3>Decision Basis</h3>
               ${toBulletHtml(selected)}
             </article>
           </div>
+        </section>
+
+        <section class="block">
+          <h3>Customer</h3>
+          ${summarySectionHtml(selected.customer, "Not captured in the idea spec yet.", selected.customer_html)}
+        </section>
+
+        <section class="block">
+          <h3>Opportunity</h3>
+          ${summarySectionHtml(selected.opportunity, "Not captured in the idea spec yet.", selected.opportunity_html)}
         </section>
 
         <section class="block">
@@ -3040,10 +3126,12 @@ function renderExecutionWaveSection(sectionModel, options = {}) {
 
     bind(el.query, "query");
     bind(el.section, "section");
+    bind(el.legacySection, "section");
     bind(el.phase, "phase");
+    bind(el.type, "type");
     bind(el.activity, "activity");
-    bind(el.lane, "lane");
     bind(el.priority, "priority");
+    bind(el.release, "release");
     bind(el.sort, "sort");
 
     el.mixByComplexity.addEventListener("click", () => {

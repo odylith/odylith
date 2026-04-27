@@ -1,3 +1,5 @@
+"""Release asset discovery, verification, and download helpers."""
+
 from __future__ import annotations
 
 import hashlib
@@ -17,6 +19,8 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from typing import Any
 
+from odylith.common.json_objects import JsonObjectLoadError, read_json_object
+from odylith.common.release_text import normalize_release_text
 from odylith.install.archive_safety import validate_archive_members
 from odylith.install.fs import fsync_directory
 from odylith.install.managed_runtime import (
@@ -25,11 +29,11 @@ from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_ROOT_NAME,
     MANAGED_RUNTIME_SCHEMA_VERSION,
     ManagedRuntimePlatform,
-    detect_managed_runtime_platform,
     managed_runtime_feature_pack_by_id,
     managed_runtime_platform_by_slug,
-    supported_managed_runtime_feature_packs,
-    supported_managed_runtime_platforms,
+    require_managed_runtime_platform,
+    supported_feature_pack_ids,
+    supported_platform_slugs,
 )
 from odylith.install.paths import repo_runtime_paths
 from odylith.install.python_env import scrubbed_python_env
@@ -58,7 +62,7 @@ _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_RETRY_ATTEMPTS = 3
 _DOWNLOAD_RETRYABLE_HTTP_CODES = {408, 429, 500, 502, 503, 504}
 _BENIGN_SIGSTORE_WARNING_PATTERNS = (
-    re.compile(r"unsupported key type:\s*7", re.IGNORECASE),
+    re.compile(r"unsupported(?:\s+\S+:\d+)?\s+key type:\s*7", re.IGNORECASE),
     re.compile(r"\btuf\b.*\boffline\b", re.IGNORECASE),
     re.compile(r"\boffline\b.*\btuf\b", re.IGNORECASE),
 )
@@ -123,7 +127,7 @@ def _release_highlights(*, explicit: Any = None, body: str = "", limit: int = 3)
     highlights: list[str] = []
     if isinstance(explicit, (list, tuple)):
         for item in explicit:
-            token = _normalize_release_highlight(item)
+            token = normalize_release_text(item, limit=180, strip_html=False)
             if token and token not in highlights:
                 highlights.append(token)
             if len(highlights) >= limit:
@@ -141,7 +145,7 @@ def _release_highlights(*, explicit: Any = None, body: str = "", limit: int = 3)
             numbered = re.match(r"^\d+\.\s+(?P<text>.+)$", line)
             if numbered:
                 line = str(numbered.group("text") or "").strip()
-        token = _normalize_release_highlight(line)
+        token = normalize_release_text(line, limit=180, strip_html=False)
         if token and token not in highlights:
             highlights.append(token)
         if len(highlights) >= limit:
@@ -150,24 +154,12 @@ def _release_highlights(*, explicit: Any = None, body: str = "", limit: int = 3)
         return tuple(highlights[:limit])
     paragraphs = [segment.strip() for segment in re.split(r"\n\s*\n", body_text) if segment.strip()]
     for paragraph in paragraphs:
-        token = _normalize_release_highlight(paragraph)
+        token = normalize_release_text(paragraph, limit=180, strip_html=False)
         if token and token not in highlights:
             highlights.append(token)
         if len(highlights) >= limit:
             break
     return tuple(highlights[:limit])
-
-
-def _normalize_release_highlight(value: Any) -> str:
-    token = str(value or "").strip()
-    if not token:
-        return ""
-    token = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", token)
-    token = re.sub(r"[*_`#>]", "", token)
-    token = re.sub(r"\s+", " ", token).strip(" -:")
-    if len(token) > 180:
-        token = token[:177].rstrip() + "..."
-    return token
 
 
 def _is_product_repo(repo_root: str | Path) -> bool:
@@ -270,10 +262,7 @@ def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") 
 
 def download_verified_release(*, repo_root: str | Path, repo: str, version: str = "latest") -> VerifiedRelease:
     release = fetch_release(repo_root=repo_root, repo=repo, version=version)
-    runtime_platform = detect_managed_runtime_platform()
-    if runtime_platform is None:
-        supported = ", ".join(candidate.display_name for candidate in supported_managed_runtime_platforms())
-        raise ValueError(f"unsupported Odylith managed runtime platform; supported platforms: {supported}")
+    runtime_platform = require_managed_runtime_platform()
     cache_dir = release_cache_dir(repo_root=repo_root, version=release.version)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -417,10 +406,7 @@ def download_verified_feature_pack(
     pack_id: str = CONTEXT_ENGINE_FEATURE_PACK_ID,
 ) -> VerifiedFeaturePack:
     release = fetch_release(repo_root=repo_root, repo=repo, version=version)
-    runtime_platform = detect_managed_runtime_platform()
-    if runtime_platform is None:
-        supported = ", ".join(candidate.display_name for candidate in supported_managed_runtime_platforms())
-        raise ValueError(f"unsupported Odylith managed runtime platform; supported platforms: {supported}")
+    runtime_platform = require_managed_runtime_platform()
     cache_dir = release_cache_dir(repo_root=repo_root, version=release.version)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -568,15 +554,28 @@ def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_pat
     stderr = completed.stderr.strip()
     if not stderr:
         return SigstoreVerificationResult(warnings_suppressed=False)
-    stderr_lines = [line.strip() for line in stderr.splitlines() if line.strip()]
+    stderr_lines = _fold_sigstore_warning_lines(stderr)
     if all(_is_benign_sigstore_warning(line) for line in stderr_lines):
         return SigstoreVerificationResult(warnings_suppressed=True)
     print(stderr, file=sys.stderr)
     return SigstoreVerificationResult(warnings_suppressed=False)
 
 
+def _fold_sigstore_warning_lines(stderr: str) -> list[str]:
+    folded: list[str] = []
+    for raw_line in str(stderr or "").splitlines():
+        stripped = raw_line.strip()
+        if not stripped:
+            continue
+        if folded and raw_line[:1].isspace():
+            folded[-1] = f"{folded[-1]} {stripped}"
+            continue
+        folded.append(stripped)
+    return folded
+
+
 def _is_benign_sigstore_warning(line: str) -> bool:
-    normalized = str(line or "").strip()
+    normalized = re.sub(r"\s+", " ", str(line or "").strip())
     return any(pattern.search(normalized) is not None for pattern in _BENIGN_SIGSTORE_WARNING_PATTERNS)
 
 
@@ -787,10 +786,10 @@ def _assets_from_manifest(*, release: ReleaseInfo, manifest: dict[str, Any]) -> 
 
 
 def _load_json(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ValueError(f"{path.name} must be a JSON object")
-    return payload
+    try:
+        return read_json_object(path)
+    except JsonObjectLoadError as exc:
+        raise ValueError(f"{path.name} must be a JSON object") from exc
 
 
 def _validate_manifest(*, manifest: dict[str, Any], release: ReleaseInfo, repo: str) -> None:
@@ -831,7 +830,7 @@ def _validate_manifest(*, manifest: dict[str, Any], release: ReleaseInfo, repo: 
     supported_platforms = manifest.get("supported_platforms")
     if not isinstance(supported_platforms, list) or not supported_platforms:
         raise ValueError("release manifest supported_platforms must be a non-empty array")
-    expected_supported_platforms = {candidate.slug for candidate in supported_managed_runtime_platforms()}
+    expected_supported_platforms = set(supported_platform_slugs())
     observed_supported_platforms = {str(platform_slug or "").strip() for platform_slug in supported_platforms}
     if observed_supported_platforms != expected_supported_platforms:
         raise ValueError(
@@ -849,7 +848,7 @@ def _validate_manifest(*, manifest: dict[str, Any], release: ReleaseInfo, repo: 
     if feature_packs and not isinstance(feature_packs, dict):
         raise ValueError("release manifest feature_packs must be an object")
     if isinstance(feature_packs, dict):
-        supported_pack_ids = {candidate.pack_id for candidate in supported_managed_runtime_feature_packs()}
+        supported_pack_ids = set(supported_feature_pack_ids())
         for pack_id, details in feature_packs.items():
             resolved_pack_id = str(pack_id or "").strip()
             if resolved_pack_id not in supported_pack_ids:

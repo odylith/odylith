@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 from collections.abc import Callable, Mapping
@@ -18,8 +19,26 @@ from odylith.install.manager import (
 )
 
 
-def self_host_snapshot(*, repo_root: Path) -> dict[str, Any]:
+def _cached_self_host_snapshot(*, repo_root: Path) -> dict[str, Any]:
+    current_path = (Path(repo_root).resolve() / "odylith" / "compass" / "runtime" / "current.v1.json").resolve()
+    if not current_path.is_file():
+        return {}
+    try:
+        payload = json.loads(current_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    if not isinstance(payload, Mapping):
+        return {}
+    snapshot = payload.get("self_host")
+    return dict(snapshot) if isinstance(snapshot, Mapping) else {}
+
+
+def self_host_snapshot(*, repo_root: Path, prefer_cached: bool = False) -> dict[str, Any]:
     launcher_path = (Path(repo_root).resolve() / ".odylith" / "bin" / "odylith").resolve()
+    if prefer_cached:
+        cached_snapshot = _cached_self_host_snapshot(repo_root=repo_root)
+        if cached_snapshot:
+            return cached_snapshot
     try:
         status = version_status(repo_root=repo_root)
     except Exception:

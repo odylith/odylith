@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_prompt_payloads as prompt_payloads
 
 
@@ -20,7 +21,7 @@ def test_supplement_live_prompt_payload_adds_component_implementation_anchor(
             component_id="subagent-router",
             path_prefixes=[
                 "src/odylith/runtime/orchestration/subagent_router.py",
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
             ],
         ),
         "odylith-chatter": SimpleNamespace(
@@ -31,7 +32,7 @@ def test_supplement_live_prompt_payload_adds_component_implementation_anchor(
                 "docs/benchmarks/README.md",
                 "docs/benchmarks/REVIEWER_GUIDE.md",
                 "odylith/AGENTS.md",
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
                 "odylith/maintainer/AGENTS.md",
                 "src/odylith/runtime/orchestration/subagent_router_runtime_policy.py",
             ],
@@ -49,7 +50,7 @@ def test_supplement_live_prompt_payload_adds_component_implementation_anchor(
         scenario={"family": "validation_heavy_fix", "intent": "implementation benchmark"},
         prompt_payload={"docs": ["odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"]},
         packet_source="impact",
-        changed_paths=["odylith/skills/subagent-router/SKILL.md"],
+        changed_paths=["odylith/skills/odylith-subagent-router/SKILL.md"],
         full_payload={"components": [{"entity_id": "odylith-chatter"}, {"entity_id": "subagent-router"}]},
     )
 
@@ -81,13 +82,13 @@ def test_supplement_live_prompt_payload_suppresses_support_reads_for_strict_boun
     payload = prompt_payloads.supplement_live_prompt_payload(
         repo_root=repo_root,
         scenario={
-            "changed_paths": ["odylith/skills/subagent-router/SKILL.md"],
-            "required_paths": ["odylith/skills/subagent-router/SKILL.md"],
-            "acceptance_criteria": ["Keep the slice bounded to odylith/skills/subagent-router/SKILL.md."],
+            "changed_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
+            "required_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
+            "acceptance_criteria": ["Keep the slice bounded to odylith/skills/odylith-subagent-router/SKILL.md."],
         },
         prompt_payload={},
         packet_source="impact",
-        changed_paths=["odylith/skills/subagent-router/SKILL.md"],
+        changed_paths=["odylith/skills/odylith-subagent-router/SKILL.md"],
         full_payload={"components": [{"entity_id": "subagent-router"}]},
     )
 
@@ -708,14 +709,14 @@ def test_merge_heavy_change_adds_bounded_noop_closeout_boundary_hint(tmp_path: P
             "family": "merge_heavy_change",
             "allow_noop_completion": True,
             "required_paths": [
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
                 "odylith/runtime/SUBAGENT_OPERATIONS.md",
             ],
         },
         prompt_payload={},
         packet_source="governance_slice",
         changed_paths=[
-            "odylith/skills/subagent-router/SKILL.md",
+            "odylith/skills/odylith-subagent-router/SKILL.md",
             "odylith/runtime/SUBAGENT_OPERATIONS.md",
         ],
         full_payload={},
@@ -725,6 +726,39 @@ def test_merge_heavy_change_adds_bounded_noop_closeout_boundary_hint(tmp_path: P
     assert any("not a blocker for this bounded closeout" in hint for hint in payload["boundary_hints"])
 
 
+def test_merge_heavy_change_skips_weak_casebook_support_docs(tmp_path: Path) -> None:
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=tmp_path,
+        scenario={
+            "family": "merge_heavy_change",
+            "component": "execution-engine",
+            "required_paths": [
+                "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+                "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+                "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+            ],
+        },
+        prompt_payload={},
+        packet_source="impact",
+        changed_paths=[
+            "src/odylith/runtime/execution_engine/runtime_lane_policy.py",
+            "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+        ],
+        full_payload={
+            "docs": [
+                "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+                "odylith/casebook/bugs/2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md",
+                "odylith/casebook/bugs/2026-04-11-claude-host-profile-blanks-execution-model-via-supports-explicit-model-selection-flag.md",
+            ]
+        },
+    )
+
+    assert payload["docs"] == [
+        "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+    ]
+    assert any("historical bug records" in hint for hint in payload["boundary_hints"])
+
+
 def test_merge_heavy_change_keeps_changed_docs_in_focus_payload(tmp_path: Path) -> None:
     payload = prompt_payloads.supplement_live_prompt_payload(
         repo_root=tmp_path,
@@ -732,27 +766,156 @@ def test_merge_heavy_change_keeps_changed_docs_in_focus_payload(tmp_path: Path) 
             "family": "merge_heavy_change",
             "allow_noop_completion": True,
             "required_paths": [
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
                 "odylith/runtime/SUBAGENT_OPERATIONS.md",
             ],
         },
         prompt_payload={},
         packet_source="governance_slice",
         changed_paths=[
-            "odylith/skills/subagent-router/SKILL.md",
+            "odylith/skills/odylith-subagent-router/SKILL.md",
             "odylith/runtime/SUBAGENT_OPERATIONS.md",
         ],
         full_payload={},
     )
 
     assert payload["docs"] == [
-        "odylith/skills/subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md",
         "odylith/runtime/SUBAGENT_OPERATIONS.md",
     ]
     assert payload["context_packet"]["anchors"]["explicit_paths"] == [
-        "odylith/skills/subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-router/SKILL.md",
         "odylith/runtime/SUBAGENT_OPERATIONS.md",
     ]
+
+
+def test_cross_file_feature_strict_slice_keeps_all_bounded_skill_anchors(tmp_path: Path) -> None:
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=tmp_path,
+        scenario={
+            "family": "cross_file_feature",
+            "changed_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+            ],
+            "required_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+            ],
+        },
+        prompt_payload={
+            "context_packet": {
+                "anchors": {
+                    "explicit_paths": [
+                        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+                    ]
+                }
+            }
+        },
+        packet_source="governance_slice",
+        changed_paths=[
+            "odylith/skills/odylith-subagent-router/SKILL.md",
+            "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+        ],
+        full_payload={},
+    )
+
+    assert payload["strict_boundary"] is True
+    assert set(payload["context_packet"]["anchors"]["explicit_paths"]) == {
+        "odylith/skills/odylith-subagent-router/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+    }
+    assert any("implementation-heavy cross-file feature slices" in hint for hint in payload["boundary_hints"])
+
+
+def test_cross_file_feature_adds_implementation_first_boundary_hints(tmp_path: Path) -> None:
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=tmp_path,
+        scenario={
+            "family": "cross_file_feature",
+            "component": "benchmark",
+            "required_paths": [
+                "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+                "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+                "tests/unit/runtime/test_odylith_benchmark_graphs.py",
+                "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+            ],
+        },
+        prompt_payload={},
+        packet_source="governance_slice",
+        changed_paths=[
+            "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
+            "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+        ],
+        full_payload={
+            "docs": ["odylith/registry/source/components/benchmark/CURRENT_SPEC.md"],
+        },
+    )
+
+    assert any("implementation-heavy cross-file feature slices" in hint for hint in payload["boundary_hints"])
+    assert any("validator-test anchors" in hint for hint in payload["boundary_hints"])
+
+
+def test_validation_heavy_fix_strict_slice_keeps_boundary_hints(tmp_path: Path) -> None:
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=tmp_path,
+        scenario={
+            "family": "validation_heavy_fix",
+            "changed_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/runtime/SUBAGENT_OPERATIONS.md",
+            ],
+            "required_paths": [
+                "odylith/skills/odylith-subagent-router/SKILL.md",
+                "odylith/runtime/SUBAGENT_OPERATIONS.md",
+            ],
+        },
+        prompt_payload={},
+        packet_source="governance_slice",
+        changed_paths=[
+            "odylith/skills/odylith-subagent-router/SKILL.md",
+            "odylith/runtime/SUBAGENT_OPERATIONS.md",
+        ],
+        full_payload={},
+    )
+
+    assert payload["strict_boundary"] is True
+    assert payload["context_packet"]["anchors"]["explicit_paths"] == [
+        "odylith/skills/odylith-subagent-router/SKILL.md",
+        "odylith/runtime/SUBAGENT_OPERATIONS.md",
+    ]
+    assert any("keep writable changes on the listed runtime and test anchors" in hint for hint in payload["boundary_hints"])
+
+
+def test_destructive_scope_control_keeps_only_required_guidance_doc(tmp_path: Path) -> None:
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=tmp_path,
+        scenario={
+            "family": "destructive_scope_control",
+            "required_paths": [
+                "src/odylith/runtime/surfaces/codex_host_bash_guard.py",
+                "tests/unit/runtime/test_codex_host_bash_guard.py",
+                "odylith/AGENTS.md",
+            ],
+        },
+        prompt_payload={},
+        packet_source="impact",
+        changed_paths=[
+            "src/odylith/runtime/surfaces/codex_host_bash_guard.py",
+            "tests/unit/runtime/test_codex_host_bash_guard.py",
+        ],
+        full_payload={
+            "docs": [
+                "odylith/AGENTS.md",
+                "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+                "odylith/agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md",
+            ]
+        },
+    )
+
+    assert payload["docs"] == ["odylith/AGENTS.md"]
+    assert any("destructive scope-control fixes" in hint for hint in payload["boundary_hints"])
+    assert any("authority for any expansion" in hint for hint in payload["boundary_hints"])
 
 
 def test_component_governance_adds_catalog_sync_boundary_hint(tmp_path: Path) -> None:
@@ -1022,6 +1185,247 @@ def test_browser_surface_reliability_avoids_component_spec_support_doc_noise(
     assert any("fake sync or dashboard-refresh hooks" in hint for hint in payload["boundary_hints"])
 
 
+def test_cli_contract_regression_avoids_component_spec_support_doc_noise(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo_root = tmp_path
+    install_runbook = repo_root / "odylith" / "INSTALL_AND_UPGRADE_RUNBOOK.md"
+    index_html = repo_root / "odylith" / "index.html"
+    compass_spec = repo_root / "odylith" / "registry" / "source" / "components" / "compass" / "CURRENT_SPEC.md"
+    for path in (install_runbook, index_html, compass_spec):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# doc\n", encoding="utf-8")
+    monkeypatch.setattr(
+        prompt_payloads.store,
+        "load_component_index",
+        lambda repo_root, runtime_mode="local": {
+            "compass": SimpleNamespace(
+                component_id="compass",
+                path_prefixes=[
+                    "src/odylith/runtime/surfaces/compass_dashboard_shell.py",
+                ],
+            )
+        },
+    )
+
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=repo_root,
+        scenario={
+            "family": "cli_contract_regression",
+            "required_paths": [
+                "src/odylith/cli.py",
+                "src/odylith/runtime/surfaces/shell_onboarding.py",
+                "tests/unit/test_cli.py",
+                "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+                "odylith/index.html",
+            ],
+        },
+        prompt_payload={},
+        packet_source="impact",
+        changed_paths=[],
+        full_payload={"components": [{"entity_id": "compass"}]},
+    )
+
+    assert payload["docs"] == [
+        "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+        "odylith/index.html",
+    ]
+
+
+def test_api_contract_evolution_keeps_contract_docs_and_changed_runtime_anchors_bounded(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo_root = tmp_path
+    runner_path = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py"
+    graphs_path = repo_root / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_graphs.py"
+    benchmark_spec = (
+        repo_root / "odylith" / "registry" / "source" / "components" / "benchmark" / "CURRENT_SPEC.md"
+    )
+    docs_readme = repo_root / "docs" / "benchmarks" / "README.md"
+    metrics_doc = repo_root / "docs" / "benchmarks" / "METRICS_AND_PRIORITIES.md"
+    release_guidance = repo_root / "odylith" / "maintainer" / "agents-guidelines" / "RELEASE_BENCHMARKS.md"
+    root_readme = repo_root / "README.md"
+    repo_agents = repo_root / "AGENTS.md"
+    for path in (
+        runner_path,
+        graphs_path,
+        benchmark_spec,
+        docs_readme,
+        metrics_doc,
+        release_guidance,
+        root_readme,
+        repo_agents,
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# file\n", encoding="utf-8")
+    monkeypatch.setattr(
+        prompt_payloads.store,
+        "load_component_index",
+        lambda repo_root, runtime_mode="local": {
+            "benchmark": SimpleNamespace(
+                component_id="benchmark",
+                path_prefixes=[
+                    "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+                    "src/odylith/runtime/evaluation/odylith_benchmark_graphs.py",
+                    "AGENTS.md",
+                ],
+            )
+        },
+    )
+
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=repo_root,
+        scenario={
+            "family": "api_contract_evolution",
+            "component": "benchmark",
+            "allow_noop_completion": True,
+            "changed_paths": [
+                "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+                "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+                "docs/benchmarks/README.md",
+                "README.md",
+            ],
+            "required_paths": [
+                "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+                "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+                "docs/benchmarks/README.md",
+                "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+                "README.md",
+                "tests/unit/runtime/test_odylith_benchmark_runner.py",
+                "tests/unit/runtime/test_odylith_benchmark_graphs.py",
+            ],
+        },
+        prompt_payload={
+            "context_packet": {
+                "packet_state": "compact",
+                "selection_state": "x:B-093",
+                "retrieval_plan": {"selected_counts": "c5g3"},
+            }
+        },
+        packet_source="governance_slice",
+        changed_paths=[
+            "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+            "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+            "docs/benchmarks/README.md",
+            "README.md",
+        ],
+        full_payload={
+            "components": [{"entity_id": "benchmark"}],
+            "docs": [
+                "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+                "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md",
+            ],
+        },
+    )
+
+    assert payload["implementation_anchors"] == [
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+        "tests/unit/runtime/test_odylith_benchmark_runner.py",
+        "tests/unit/runtime/test_odylith_benchmark_graphs.py",
+    ]
+    assert payload["docs"] == ["docs/benchmarks/METRICS_AND_PRIORITIES.md"]
+    observed_paths = odylith_benchmark_live_diagnostics.prompt_payload_observed_paths(prompt_payload=payload)
+    assert observed_paths == [
+        "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "docs/benchmarks/README.md",
+        "README.md",
+        "docs/benchmarks/METRICS_AND_PRIORITIES.md",
+        "tests/unit/runtime/test_odylith_benchmark_runner.py",
+        "tests/unit/runtime/test_odylith_benchmark_graphs.py",
+    ]
+
+
+def test_cli_contract_regression_filters_component_spec_noise_without_explicit_component(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path
+    install_runbook = repo_root / "odylith" / "INSTALL_AND_UPGRADE_RUNBOOK.md"
+    index_html = repo_root / "odylith" / "index.html"
+    compass_spec = repo_root / "odylith" / "registry" / "source" / "components" / "compass" / "CURRENT_SPEC.md"
+    for path in (install_runbook, index_html, compass_spec):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# doc\n", encoding="utf-8")
+
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=repo_root,
+        scenario={
+            "family": "cli_contract_regression",
+            "required_paths": [
+                "src/odylith/cli.py",
+                "src/odylith/runtime/surfaces/shell_onboarding.py",
+                "tests/unit/test_cli.py",
+                "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+                "odylith/index.html",
+            ],
+        },
+        prompt_payload={},
+        packet_source="impact",
+        changed_paths=[
+            "src/odylith/cli.py",
+            "src/odylith/runtime/surfaces/shell_onboarding.py",
+            "tests/unit/test_cli.py",
+        ],
+        full_payload={
+            "docs": [
+                "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+                "odylith/index.html",
+                "odylith/registry/source/components/compass/CURRENT_SPEC.md",
+            ]
+        },
+    )
+
+    assert payload["docs"] == [
+        "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
+        "odylith/index.html",
+    ]
+
+
+def test_governed_surface_sync_doc_only_noop_avoids_component_code_anchor_noise(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    repo_root = tmp_path
+    render_backlog_ui = repo_root / "src" / "odylith" / "runtime" / "surfaces" / "render_backlog_ui.py"
+    render_backlog_ui.parent.mkdir(parents=True, exist_ok=True)
+    render_backlog_ui.write_text("def render():\n    return None\n", encoding="utf-8")
+    monkeypatch.setattr(
+        prompt_payloads.store,
+        "load_component_index",
+        lambda repo_root, runtime_mode="local": {
+            "benchmark": SimpleNamespace(
+                component_id="benchmark",
+                path_prefixes=["src/odylith/runtime/surfaces/render_backlog_ui.py"],
+            )
+        },
+    )
+
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=repo_root,
+        scenario={
+            "family": "governed_surface_sync",
+            "allow_noop_completion": True,
+            "required_paths": [
+                "odylith/surfaces/GOVERNANCE_SURFACES.md",
+                "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+                "odylith/radar/source/INDEX.md",
+            ],
+        },
+        prompt_payload={},
+        packet_source="governance_slice",
+        changed_paths=[
+            "odylith/surfaces/GOVERNANCE_SURFACES.md",
+            "odylith/runtime/CONTEXT_ENGINE_OPERATIONS.md",
+            "odylith/radar/source/INDEX.md",
+        ],
+        full_payload={"components": [{"entity_id": "benchmark"}]},
+    )
+
+    assert "implementation_anchors" not in payload
+
+
 def test_release_publication_support_docs_prioritize_baselines_specs_and_readmes(tmp_path: Path) -> None:
     payload = prompt_payloads.supplement_live_prompt_payload(
         repo_root=tmp_path,
@@ -1233,3 +1637,49 @@ def test_validation_heavy_fix_keeps_docs_read_only_and_runner_bounded(
 
     assert any("keep writable changes on the listed runtime and test anchors" in hint for hint in payload["boundary_hints"])
     assert any("Do not rewrite benchmark expectation literals" in hint for hint in payload["boundary_hints"])
+
+
+def test_supplement_live_prompt_payload_preserves_full_explicit_changed_paths() -> None:
+    payload = prompt_payloads.supplement_live_prompt_payload(
+        repo_root=Path("."),
+        scenario={
+            "family": "guidance_behavior",
+            "required_paths": [
+                "AGENTS.md",
+                "odylith/AGENTS.md",
+                "odylith/agents-guidelines/CLI_FIRST_POLICY.md",
+                "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+                "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json",
+            ],
+        },
+        prompt_payload={
+            "context_packet": {
+                "anchors": {
+                    "changed_paths": [
+                        "AGENTS.md",
+                        "odylith/AGENTS.md",
+                        "odylith/agents-guidelines/CLI_FIRST_POLICY.md",
+                    ]
+                }
+            }
+        },
+        packet_source="impact",
+        changed_paths=[
+            "AGENTS.md",
+            "odylith/AGENTS.md",
+            "odylith/agents-guidelines/CLI_FIRST_POLICY.md",
+            "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+        ],
+        full_payload={"components": [], "docs": []},
+    )
+
+    assert payload["changed_paths"] == [
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+        "odylith/agents-guidelines/CLI_FIRST_POLICY.md",
+        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md",
+    ]
+    assert (
+        "odylith/agents-guidelines/VALIDATION_AND_TESTING.md"
+        in odylith_benchmark_live_diagnostics.prompt_payload_observed_paths(prompt_payload=payload)
+    )

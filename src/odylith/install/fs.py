@@ -1,3 +1,5 @@
+"""Filesystem helpers shared across Odylith install and repair paths."""
+
 from __future__ import annotations
 
 import os
@@ -38,6 +40,15 @@ def atomic_write_text(path: Path, text: str, *, encoding: str = "utf-8") -> Path
         temp_path.unlink(missing_ok=True)
         raise
     return destination
+
+
+def display_path(*, repo_root: Path, path: Path) -> str:
+    """Render a path relative to the repo root when possible."""
+    candidate = Path(path)
+    try:
+        return candidate.relative_to(repo_root).as_posix()
+    except ValueError:
+        return candidate.as_posix()
 
 
 def remove_path(path: Path) -> None:

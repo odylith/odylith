@@ -18,14 +18,20 @@ from odylith.install import version_status
 from odylith.install.state import load_install_state, load_version_pin
 from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.product_assets import resolve_product_path
+from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_delivery_surface_payload_runtime as delivery_surface_payload_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store
-from odylith.runtime.evaluation import benchmark_compare
+from odylith.runtime.context_engine import odylith_context_engine_runtime_artifacts
+from odylith.runtime.context_engine import odylith_control_state
 from odylith.runtime.governance import agent_governance_intelligence
 from odylith.runtime.governance import workstream_inference as ws_inference
 from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import dashboard_shell_links
 from odylith.runtime.surfaces import dashboard_surface_bundle
+from odylith.runtime.surfaces import generated_surface_refresh_guards
 from odylith.runtime.surfaces import shell_onboarding
+from odylith.runtime.surfaces import source_bundle_mirror
+from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces import tooling_dashboard_surface_status
 from odylith.runtime.surfaces import tooling_dashboard_runtime_builder
 from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
@@ -49,6 +55,7 @@ _LIVE_REFRESH_POLICY_ALIASES = {
     "proof": _LIVE_REFRESH_POLICY_PROOF_FROZEN,
     "proof_frozen": _LIVE_REFRESH_POLICY_PROOF_FROZEN,
 }
+_TOOLING_REFRESH_GUARD_KEY = "tooling-dashboard-render"
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -72,17 +79,29 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _resolve(repo_root: Path, value: str) -> Path:
-    raw = str(value or "").strip()
-    path = Path(raw)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
-def _as_href(output_path: Path, target: Path) -> str:
-    rel = os.path.relpath(str(target), start=str(output_path.parent))
-    return Path(rel).as_posix()
+def _refresh_guard_watched_paths(
+    *,
+    surface_paths: tooling_dashboard_runtime_builder.ToolingDashboardSurfacePaths,
+) -> tuple[Path | str, ...]:
+    return (
+        _SHELL_SOURCE_PATH,
+        "odylith/runtime/source/product-version.v1.json",
+        "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/compass/runtime/current.v1.json",
+        ".odylith/install.json",
+        ".odylith/runtime/release-upgrade-spotlight.v1.json",
+        ".odylith/runtime/odylith-benchmarks",
+        surface_paths.radar_path,
+        surface_paths.atlas_path,
+        surface_paths.compass_path,
+        surface_paths.registry_path,
+        surface_paths.casebook_path,
+        "src/odylith/install",
+        "src/odylith/runtime/common",
+        "src/odylith/runtime/context_engine",
+        "src/odylith/runtime/evaluation",
+        "src/odylith/runtime/surfaces",
+    )
 
 
 def _humanize_repo_name(name: str) -> str:
@@ -349,15 +368,15 @@ def _build_live_refresh_payload(
         "It still never runs sync, never starts provider-backed brief generation, and never mutates tracked Odylith truth."
     )
     return {
-        "enabled": True,
-        "mode": "passive_runtime_probe",
-        "policy_id": policy_id,
-        "state_href": _as_href(
-            output_path=output_path,
-            target=odylith_context_engine_store.state_js_path(repo_root=repo_root),
-        ),
-        "state_global_name": odylith_context_engine_store.STATE_JS_GLOBAL_NAME,
-        "poll_interval_ms": poll_interval_ms,
+            "enabled": True,
+            "mode": "passive_runtime_probe",
+            "policy_id": policy_id,
+            "state_href": surface_path_helpers.relative_href(
+                output_path=output_path,
+                target=odylith_context_engine_runtime_artifacts.state_js_path(repo_root=repo_root),
+            ),
+            "state_global_name": odylith_control_state.STATE_JS_GLOBAL_NAME,
+            "poll_interval_ms": poll_interval_ms,
         "auto_reload_idle_debounce_ms": 3000,
         "auto_reload_min_interval_ms": 45000,
         "reloadable_tabs": reloadable_tabs,
@@ -375,12 +394,12 @@ def _build_live_refresh_payload(
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    output_path = _resolve(repo_root, args.output)
-    radar_path = _resolve(repo_root, args.radar)
-    atlas_path = _resolve(repo_root, args.atlas)
-    compass_path = _resolve(repo_root, args.compass)
-    registry_path = _resolve(repo_root, args.registry)
-    casebook_path = _resolve(repo_root, args.casebook)
+    output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.output)
+    radar_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.radar)
+    atlas_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.atlas)
+    compass_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.compass)
+    registry_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.registry)
+    casebook_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.casebook)
     surface_paths = tooling_dashboard_runtime_builder.ToolingDashboardSurfacePaths(
         output_path=output_path,
         radar_path=radar_path,
@@ -389,6 +408,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         registry_path=registry_path,
         casebook_path=casebook_path,
     )
+    skip_rebuild, input_fingerprint, _cached_metadata, bundle_paths, output_paths = (
+        generated_surface_refresh_guards.should_skip_surface_rebuild(
+            repo_root=repo_root,
+            output_path=output_path,
+            asset_prefix="tooling",
+            key=_TOOLING_REFRESH_GUARD_KEY,
+            watched_paths=_refresh_guard_watched_paths(surface_paths=surface_paths),
+            extra={"runtime_mode": str(args.runtime_mode).strip().lower() or "auto"},
+        )
+    )
+    if skip_rebuild:
+        print("tooling dashboard render passed")
+        print(f"- output: {output_path}")
+        return 0
 
     errors = tooling_dashboard_runtime_builder.validate_surface_paths(surface_paths)
     if errors:
@@ -403,25 +436,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     main_brand_payload = brand_assets.tooling_shell_brand_payload(repo_root=repo_root, output_path=output_path)
     self_host_payload = _build_self_host_payload(repo_root=repo_root)
     shell_source_payload = _build_shell_source_payload(repo_root=repo_root)
-    benchmark_story = (
-        benchmark_compare.build_benchmark_story(repo_root=repo_root)
-        if str(self_host_payload.get("repo_role", "")).strip() == "product_repo"
-        else {}
-    )
-    shell_payload = odylith_context_engine_store.load_delivery_surface_payload(
-        repo_root=repo_root,
-        surface="shell",
-        runtime_mode=args.runtime_mode,
-        include_shell_snapshots=True,
-    )
     build_result = tooling_dashboard_runtime_builder.build_runtime_payload(
         repo_root=repo_root,
         surface_paths=surface_paths,
-        shell_payload=dict(shell_payload) if isinstance(shell_payload, dict) else {},
         welcome_state=shell_onboarding.build_welcome_state(repo_root=repo_root),
         release_spotlight=release_spotlight,
         version_story=version_story,
-        benchmark_story=benchmark_story,
         shell_source_payload=shell_source_payload,
         self_host_payload=self_host_payload,
         brand_payload=main_brand_payload,
@@ -443,10 +463,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         shell_rendered_utc=tooling_dashboard_surface_status.now_utc(),
     )
     if bool(runtime_payload["live_refresh"].get("enabled")):
-        odylith_context_engine_store.ensure_state_js_probe_asset(repo_root=repo_root)
+        odylith_context_engine_runtime_artifacts.ensure_state_js_probe_asset(repo_root=repo_root)
     _prune_release_note_pages(output_path=output_path)
-    runtime_payload["odylith_drawer"] = tooling_dashboard_shell_presenter.build_odylith_drawer_payload(runtime_payload)
-    bundle_paths = dashboard_surface_bundle.build_paths(output_path=output_path, asset_prefix="tooling")
     runtime_payload["generated_utc"] = stable_generated_utc.resolve_for_js_assignment_file(
         output_path=bundle_paths.payload_js_path,
         global_name="__ODYLITH_TOOLING_DATA__",
@@ -467,9 +485,36 @@ def main(argv: Sequence[str] | None = None) -> int:
             bootstrap_binding_name="payload",
         ),
     )
-    output_path.write_text(bundled_html, encoding="utf-8")
-    bundle_paths.payload_js_path.write_text(payload_js, encoding="utf-8")
-    bundle_paths.control_js_path.write_text(control_js, encoding="utf-8")
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=output_path,
+        content=bundled_html,
+        lock_key=str(output_path),
+    )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=bundle_paths.payload_js_path,
+        content=payload_js,
+        lock_key=str(bundle_paths.payload_js_path),
+    )
+    odylith_context_cache.write_text_if_changed(
+        repo_root=repo_root,
+        path=bundle_paths.control_js_path,
+        content=control_js,
+        lock_key=str(bundle_paths.control_js_path),
+    )
+    source_bundle_mirror.sync_live_paths(
+        repo_root=repo_root,
+        live_paths=(output_path, bundle_paths.payload_js_path, bundle_paths.control_js_path),
+    )
+    if input_fingerprint:
+        generated_surface_refresh_guards.record_surface_rebuild(
+            repo_root=repo_root,
+            key=_TOOLING_REFRESH_GUARD_KEY,
+            input_fingerprint=input_fingerprint,
+            output_paths=output_paths,
+            metadata={"generated_utc": str(runtime_payload.get("generated_utc", "")).strip()},
+        )
     print("tooling dashboard render passed")
     print(f"- output: {output_path}")
     return 0

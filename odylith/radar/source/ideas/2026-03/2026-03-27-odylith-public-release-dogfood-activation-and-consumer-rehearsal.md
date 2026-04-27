@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-005
 
-title: Odylith Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof
+title: Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof
 
 date: 2026-03-27
 
@@ -13,8 +13,6 @@ commercial_value: 5
 product_impact: 5
 
 market_value: 5
-
-impacted_lanes: both
 
 impacted_parts: canonical release lane, hosted install and upgrade contract, full-stack managed runtime packaging, runtime/cache retention, product-repo dogfood posture, release evidence, and first consumer proof
 

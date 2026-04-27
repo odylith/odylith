@@ -5,6 +5,11 @@ Scope: Odylith product maintainers in `/Users/freedom/code/odylith` only.
 Do not treat this as consumer guidance. Consumer repos should not own or
 execute the Odylith release benchmark publishing lane.
 
+Maintainer-side coding, validation-design, generated-artifact authoring,
+benchmark harness implementation, graph contract, and branch/write safety
+rules live in [CODING_STANDARDS.md](./CODING_STANDARDS.md). This document owns
+the release-proof metrics, publication flow, and benchmark narrative.
+
 ## Core Rule
 - Every Odylith release candidate must refresh the Codex benchmark report,
   regenerate the benchmark SVGs, and update the repo-root `README.md`
@@ -39,7 +44,14 @@ execute the Odylith release benchmark publishing lane.
 - Benchmark changes are only valid when they make the workload more realistic,
   the scoring more conservative, or the proof more reproducible.
 - The honest public pair is `odylith_on` versus `odylith_off`, where both
-  lanes run through the same live Codex CLI model and reasoning contract.
+  lanes run through the same live host CLI model and reasoning contract.
+  Current published release proof remains Codex-host-scoped until another host
+  clears the same publication lane.
+- That public pair now means `full_product_assistance_vs_raw_agent`, not a
+  narrower grounding-only claim. If Odylith uses selected docs,
+  execution-governance hints, focused-check shaping, or logged disposable-
+  workspace preflight evidence by design, the report and docs must declare
+  that explicitly.
 
 ## Metric Order
 Evaluate Odylith benchmark outcomes in this order:
@@ -89,70 +101,24 @@ The benchmark itself must also stay representative:
 - include small, medium, and large or complex repo work
 - include single-file, cross-file, and cross-surface changes
 - include critical correctness and recovery-sensitive cases
+- include external-wait or resume cases and destructive-scope fail-closed cases
 - keep the published proof conservative across warm and cold profiles
+- keep the tracked corpus above the seriousness floor:
+  `60` implementation scenarios, `35` write-plus-validator scenarios,
+  `12` correctness-critical scenarios, mechanism-heavy implementation share at
+  or below `40%`, and explicit family coverage for API evolution, stateful
+  recovery, external dependency recovery, and destructive-scope control
 
 ## Working Posture
-- Use Odylith-first maintainer workflows when inspecting release readiness,
-  dogfood posture, benchmark outputs, and runtime state: prefer `status`,
-  `doctor`, `benchmark`, and `validate self-host-posture` before ad-hoc repo
-  search.
-- Maintainer benchmark work never happens directly on `main`. If the slice
-  needs code, docs, or any other tracked repo edits while the current branch
-  is `main`, create and switch to a fresh branch before the first edit. If
-  work is already on a non-`main` branch, keep using that branch and return to
-  canonical `origin/main` only for read-only inspection or release proof.
-- Maintainer benchmark work follows the same source-file size discipline as the
-  rest of the product repo: `800` LOC soft limit, `1200` LOC explicit
-  exception and decomposition-plan trigger, `2000+` red-zone exception only,
-  and a `1500` LOC ceiling for tests.
-- If benchmark or release work touches a hand-maintained source file already
-  beyond those thresholds, treat the change as refactor-first work: split it
-  into multiple focused files or modules with robustness, reliability, and
-  reusability as explicit goals instead of continuing to grow the oversized
-  file in place.
 - For release and benchmark publication, pinned dogfood is the authoritative
   proof lane. Detached `source-local` may help with source work, but it does
   not substitute for shipped-runtime proof.
 - Post-run adoption-proof sampling is supplementary. It must be bounded and
   degrade cleanly on timeout or transport loss instead of blocking persistence
   of a completed full proof report.
-- The raw Codex CLI lane must not inherit repo-authored or user-authored
-  guidance by accident. The live benchmark runner should use a temporary
-  Codex home that keeps auth plus the pinned model/reasoning contract while
-  dropping local developer instructions, plugins, MCP config, and project-doc
-  fallback, and the disposable workspace should strip auto-consumed
-  instruction entrypoints such as `AGENTS.md`, `CLAUDE.md`, `.cursor/`,
-  `.windsurf/`, and `.codex/` while preserving truth-bearing repo docs for
-  explicit reads.
-- Runtime optimizations must stay isolation-safe. The only approved benchmark
-  batching is the isolated same-scenario public live pair after request
-  preparation. Packet-building and other global-state-sensitive phases stay
-  serial.
-- On strict bounded proof slices, keep Odylith's live handoff equally strict:
-  if the truthful required surface is already the listed anchor set, or the
-  family is an exact-path ambiguity probe, suppress supplemental docs,
-  implementation anchors, and retrieval-plan doc spillover instead of letting
-  `odylith_on` widen by accident.
-- On those strict bounded proof slices, validator-only tests and generated or
-  rendered artifacts are coverage evidence, not approved first-pass reads,
-  unless a focused contradiction points directly at them.
 - Because the public live pair may run concurrently, maintainer writeups must
   label published timing as benchmark time to valid outcome, not as claimable
   solo-user latency.
-- Benchmark-story work still runs through Odylith's governance loop: search the
-  active workstream, bound plan, related bugs, related components, related
-  diagrams, and recent Compass/session context first; extend or reopen existing
-  truth before creating new records.
-- If the benchmark slice is genuinely new, create the missing workstream and
-  bound plan before non-trivial publishing changes; if the work spans corpus,
-  graphs, and release communication simultaneously, split it with child
-  workstreams or execution waves instead of flattening it into one note.
-- When benchmark work exposes a new failure mode, stale diagram, or thin
-  component boundary, update Casebook, Atlas, Registry, and Compass in the same
-  slice instead of leaving that bookkeeping for later.
-- Use direct `rg`, source reads, or generator inspection only when Odylith
-  reports ambiguity or fallback, or when you need to verify a runtime-generated
-  claim against tracked source truth.
 - This matches the benchmark contract: recall, accuracy, precision, and
   validation are the hard floor, so speed or token wins do not justify
   bypassing Odylith's own narrowing and proof surfaces.
@@ -163,18 +129,34 @@ The benchmark itself must also stay representative:
   [Odylith Chatter](../../registry/source/components/odylith-chatter/CURRENT_SPEC.md)
   instead of restating the full branding rubric here. It is a summary aid, not
   the headline proof.
+- If a release note, benchmark writeup, or maintainer demo needs to show the
+  conversation-observation experience itself, preserve the shipped
+  `**Odylith Observation**` / `**Odylith Proposal**` labels, the fixed
+  confirmation text, and the human default voice. Do not benchmark or publish
+  a colder mechanical placeholder just because the lane is maintainer-facing.
+- Those maintainer-facing examples must also stay prompt-rooted. Do not stage
+  demo or benchmark artifacts that reconstruct the experience from terse
+  `Odylith Proposal pending.`-style summaries when the richer markdown and
+  human prompt context are available.
 
 ## Canonical Inputs
 - Machine-readable report:
   `.odylith/runtime/odylith-benchmarks/latest.v1.json`
+- Publication snapshot writer:
+  `src/odylith/runtime/evaluation/odylith_benchmark_publication.py`
 - Graph generator:
   `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`
 - Published README benchmark section:
   repo-root `README.md`
 - Published SVG outputs:
-  - `docs/benchmarks/odylith-benchmark-family-heatmap.svg`
-  - `docs/benchmarks/odylith-benchmark-operating-posture.svg`
-  - `docs/benchmarks/odylith-benchmark-frontier.svg`
+  - `docs/benchmarks/proof/odylith-benchmark-family-heatmap.svg`
+  - `docs/benchmarks/proof/odylith-benchmark-quality-frontier.svg`
+  - `docs/benchmarks/proof/odylith-benchmark-frontier.svg`
+  - `docs/benchmarks/proof/odylith-benchmark-operating-posture.svg`
+  - `docs/benchmarks/diagnostic/odylith-benchmark-family-heatmap.svg`
+  - `docs/benchmarks/diagnostic/odylith-benchmark-quality-frontier.svg`
+  - `docs/benchmarks/diagnostic/odylith-benchmark-frontier.svg`
+  - `docs/benchmarks/diagnostic/odylith-benchmark-operating-posture.svg`
 
 ## Required Maintainer Flow
 1. Run the current Codex benchmark corpus:
@@ -185,10 +167,25 @@ The benchmark itself must also stay representative:
    extra control lanes are internal tuning surfaces, not the publication
    contract.
    When the full proof is too large for one local sitting, split it with
-   `--family` and/or `--shard-count ... --shard-index ...`, then only publish
-   from a completed full proof run.
-2. Regenerate the README SVG assets from the latest report:
-   `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --report .odylith/runtime/odylith-benchmarks/latest.v1.json --out-dir docs/benchmarks`
+   `--family` and/or `--shard-count ... --shard-index ...`, then rebuild one
+   completed full proof report before publication. For full-corpus shard
+   splits, merge the shard history reports with
+   `PYTHONPATH=src python3 -m odylith.runtime.evaluation.odylith_benchmark_shard_merge --repo-root . <report-id>...`
+   so `latest.v1.json` still comes from one complete proof artifact rather than
+   a partial shard snapshot.
+2. Refresh the benchmark snapshot docs, tracked summary, and README-linked
+   `proof/` and `diagnostic/` SVG assets from that same selected report set:
+   `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_publication --repo-root .`
+   This refreshes:
+   - `docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md`
+   - `docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md`
+   - `docs/benchmarks/BENCHMARK_TABLES.md`
+   - `docs/benchmarks/latest-summary.v1.json`
+   - `docs/benchmarks/proof/*.svg`
+   - `docs/benchmarks/diagnostic/*.svg`
+   The lower-level graph renderer remains available for explicit graph-only or
+   single-report refreshes:
+   `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --repo-root . --out-dir docs/benchmarks --profiles proof diagnostic`
 3. Update the repo-root `README.md` benchmark snapshot from that same
    `latest.v1.json` report.
    README numbers and wording must describe the conservative published view,
@@ -212,12 +209,15 @@ The benchmark itself must also stay representative:
   proof obligation or the first shipped release-baseline requirement.
 - The public comparison must stay conservative across the selected cache
   profiles.
+- The public comparison must also stay fairness-clean: no undeclared Odylith
+  lane affordances, no missing raw prompt-visible path credit, and no report
+  that hides comparison-contract or preflight-evidence state.
 - README and graph wording must keep the measurement basis explicit:
   conservative same-scenario warm/cold publication, time to valid outcome,
   live agent runtime, validator overhead, and full-session token spend are
   distinct metrics.
 - `odylith_off` is the reviewer-facing and README-facing name for the raw
-  Codex CLI lane. `raw_agent_baseline` is only the internal report alias.
+  host CLI lane. `raw_agent_baseline` is only the internal report alias.
 - The primary honest benchmark comparison is `odylith_on` versus
   `odylith_off`.
 - If Odylith is named in benchmark prose beyond lane labels, keep that to one
@@ -232,26 +232,10 @@ The benchmark itself must also stay representative:
 - Do not publish `primary_comparison` or a warm-only green report in README
   when the conservative published view is weaker.
 
-## Graph Contract
-- Do not hand-edit the SVGs in `docs/benchmarks/`.
-- Preserve the current three-graph set and filenames.
-- Preserve the current visual tone and chart semantics from
-  `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`:
-  - warm paper background and panel styling
-  - red baseline marks for Odylith-off / `raw_agent_baseline`
-  - teal Odylith marks for Odylith-on
-  - family heatmap for per-family deltas
-  - operating-posture view for packet, readiness, and runtime posture
-  - frontier view for time to valid outcome vs live session input
-- Preserve the repo-root `README.md` graph block order exactly:
-  1. `odylith-benchmark-family-heatmap.svg`
-  2. `odylith-benchmark-operating-posture.svg`
-  3. `odylith-benchmark-frontier.svg`
-- Preserve the current Codex framing in graph titles, subtitles, legends, and
-  README copy unless the benchmark harness itself changes.
-- If the graph style ever changes intentionally, update the generator, the
-  README section, and `tests/unit/runtime/test_odylith_benchmark_graphs.py` in
-  the same change so the new style becomes the maintained contract.
+## Graph And Generated Asset Editing
+- Generator, SVG, README-coupling, and graph-test maintenance rules live in
+  [CODING_STANDARDS.md](./CODING_STANDARDS.md). Keep this file focused on the
+  release benchmark proof and publication contract.
 
 ## Separation Rule
 - This maintainer release-benchmark lane belongs only to the Odylith product

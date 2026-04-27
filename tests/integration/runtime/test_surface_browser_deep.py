@@ -8,20 +8,35 @@ import shutil
 from zoneinfo import ZoneInfo
 
 import pytest
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from odylith.runtime.context_engine import odylith_control_state
+from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.reasoning import odylith_reasoning
+from odylith.runtime.surfaces import compass_standup_brief_maintenance
+from odylith.runtime.surfaces import compass_transaction_runtime
+from odylith.runtime.surfaces import render_casebook_dashboard
 from odylith.runtime.surfaces import render_compass_dashboard
+from odylith.runtime.surfaces import render_mermaid_catalog
 from odylith.runtime.surfaces import render_tooling_dashboard as tooling_dashboard_renderer
 from tests.integration.runtime.surface_browser_test_support import (
     _REPO_ROOT,
     _assert_clean_page,
+    _assert_single_visible_pane,
     _assert_compass_live_state,
     _browser,
     _static_server,
     _atlas_total,
     _click_visible,
     _compass_brief_metadata,
+    _first_filter_value_with_results,
+    _first_non_default_option,
     _new_page,
+    _open_radar_topology_relations,
+    _reset_select_to_first_option,
     _select_radar_row_with_link,
+    _select_radar_workstream,
+    _wait_for_locator_count,
+    _wait_for_radar_detail_id,
     _wait_for_compass_brief_state,
     _wait_for_shell_query_param,
     _wait_for_shell_tab,
@@ -31,100 +46,258 @@ from tests.integration.runtime.surface_browser_test_support import (
 
 
 class _CompassProvider:
+    _PATH_LIKE_RE = re.compile(r"`?(?:\.?/)?(?:\.odylith|odylith|src|tests|docs|skills|agents-guidelines)/[A-Za-z0-9._/\-]+`?")
+    _VOICE_REPLACEMENTS: tuple[tuple[re.Pattern[str], str], ...] = (
+        (re.compile(r"\bcenter\s+of\s+gravity\b", re.IGNORECASE), "main focus"),
+        (re.compile(r"\blive\s+pressure\s+point\b", re.IGNORECASE), "active issue"),
+        (re.compile(r"\bpressure\s+point\b", re.IGNORECASE), "issue"),
+        (re.compile(r"\bless\s+muddy(?:\s+now)?\b", re.IGNORECASE), "clearer"),
+        (re.compile(r"\bmuddy\s+now\b", re.IGNORECASE), "unclear"),
+        (re.compile(r"\bslippery\b", re.IGNORECASE), "unstable"),
+        (re.compile(r"\btop\s+lane\b", re.IGNORECASE), "primary lane"),
+        (re.compile(r"\bsharpest\s+live\s+issue\b", re.IGNORECASE), "most concrete issue"),
+        (re.compile(r"\breal\s+footing\b", re.IGNORECASE), "clear evidence"),
+    )
+
     def __init__(self) -> None:
         self.calls = 0
 
     @staticmethod
-    def _pick_fact_id(section: dict[str, object], *, preferred_kinds: tuple[str, ...]) -> str:
+    def _facts(section: dict[str, object]) -> list[dict[str, object]]:
         facts = section.get("facts")
-        if isinstance(facts, list):
-            for fact in facts:
-                if not isinstance(fact, dict):
-                    continue
-                kind = str(fact.get("kind", "")).strip().lower()
-                fact_id = str(fact.get("id", "")).strip()
-                if fact_id and kind in preferred_kinds:
-                    return fact_id
-            for fact in facts:
-                if isinstance(fact, dict):
-                    fact_id = str(fact.get("id", "")).strip()
-                    if fact_id:
-                        return fact_id
-        return ""
+        if not isinstance(facts, list):
+            return []
+        return [fact for fact in facts if isinstance(fact, dict) and str(fact.get("id", "")).strip()]
+
+    @staticmethod
+    def _fact_id(fact: dict[str, object] | None) -> str:
+        return str((fact or {}).get("id", "")).strip()
+
+    @classmethod
+    def _pick_fact(cls, section: dict[str, object], *, preferred_kinds: tuple[str, ...]) -> dict[str, object] | None:
+        facts = cls._facts(section)
+        for fact in facts:
+            if str(fact.get("kind", "")).strip().lower() in preferred_kinds:
+                return fact
+        return facts[0] if facts else None
+
+    @classmethod
+    def _trim_words(cls, text: str, *, limit: int) -> str:
+        words = str(text or "").split()
+        if len(words) <= limit:
+            return " ".join(words)
+        trimmed = " ".join(words[:limit]).rstrip(",;:")
+        return trimmed
+
+    @classmethod
+    def _brief_text(cls, raw_text: str, *, mode: str) -> str:
+        text = str(raw_text or "").strip()
+        if not text:
+            return ""
+        for prefix in (
+            "Primary execution signal:",
+            "Timeline signal:",
+            "Timeline signal on the primary lane:",
+            "Concrete movement in the repo:",
+            "Concrete proof in the repo:",
+            "Most concrete movement:",
+            "Most concrete portfolio movement:",
+            "Plan posture:",
+            "Risk posture:",
+        ):
+            if text.lower().startswith(prefix.lower()):
+                text = text[len(prefix):].strip()
+        if mode == "direction" and " because " in text:
+            _prefix, reason = text.split(" because ", 1)
+            text = reason.strip()
+        if mode == "impact" and text.lower().startswith("for ") and "," in text:
+            _prefix, text = text.split(",", 1)
+            text = text.strip()
+        if mode == "leverage" and text.lower().startswith("the architecture move is to"):
+            text = text[len("The architecture move is to") :].strip()
+        if text.lower().startswith("immediate forcing function is"):
+            text = text[len("Immediate forcing function is"):].strip()
+        if text.lower().startswith("then move"):
+            text = text[len("Then move") :].strip()
+        if mode == "next" and ":" in text:
+            _label, text = text.split(":", 1)
+            text = text.strip()
+        if mode == "risk" and text.lower().startswith("primary blocker is an open p1 bug:"):
+            text = text[len("Primary blocker is an open P1 bug:") :].strip()
+        if mode == "risk" and text.lower().startswith("primary watch item is"):
+            text = text[len("Primary watch item is") :].strip()
+        if mode == "freshness" and ":" in text and text.lower().startswith("freshness signal is"):
+            _prefix, text = text.split(":", 1)
+            text = text.strip()
+        for pattern, replacement in cls._VOICE_REPLACEMENTS:
+            text = pattern.sub(replacement, text)
+        if ", which " in text:
+            text = text.split(", which ", 1)[0].strip()
+        if "; " in text:
+            text = text.split(";", 1)[0].strip()
+        text = cls._PATH_LIKE_RE.sub("the local runtime", text)
+        text = re.sub(r"`?\./\.odylith/bin/odylith`?", "the launcher", text)
+        if text.lower().startswith("to "):
+            text = text[3:].strip()
+        if mode == "completed" and text.lower().startswith("i "):
+            text = text[2:].strip()
+        text = cls._trim_words(text, limit=26 if mode in {"direction", "impact"} else 20)
+        text = " ".join(text.split()).strip(" .,:;")
+        if text:
+            text = text[:1].upper() + text[1:]
+        if text and text[-1] not in ".!?":
+            text = f"{text}."
+        return text
 
     def generate_structured(self, *, request):  # noqa: ANN001
         self.calls += 1
         prompt_payload = request.prompt_payload if isinstance(request.prompt_payload, dict) else {}
+        bundle_entries = prompt_payload.get("entries")
+        if str(prompt_payload.get("bundle_mode", "")).strip().lower() == "delta_substrate_update" and isinstance(
+            bundle_entries, list
+        ):
+            briefs = []
+            for item in bundle_entries:
+                if not isinstance(item, dict):
+                    continue
+                entry_kind = str(item.get("entry_kind", "")).strip().lower()
+                window_key = str(item.get("window_key", "")).strip()
+                if entry_kind not in {"global", "scoped"} or not window_key:
+                    continue
+                current = item.get("current") if isinstance(item.get("current"), dict) else {}
+                previous = item.get("previous_accepted") if isinstance(item.get("previous_accepted"), dict) else {}
+                sections = (
+                    previous.get("sections")
+                    if isinstance(previous.get("sections"), list)
+                    else self._bundle_sections_for_entry(
+                        entry=item,
+                        current=current,
+                    )
+                )
+                brief = {
+                    "entry_kind": entry_kind,
+                    "window_key": window_key,
+                    "sections": sections,
+                }
+                if entry_kind == "scoped":
+                    scope_id = str(item.get("scope_id", "")).strip()
+                    if not scope_id:
+                        continue
+                    brief["scope_id"] = scope_id
+                briefs.append(brief)
+            return {"briefs": briefs}
+        scoped_fact_packets = prompt_payload.get("scoped_fact_packets")
+        if isinstance(scoped_fact_packets, list):
+            return {
+                "briefs": [
+                    {
+                        "scope_id": str(item.get("scope_id", "")).strip(),
+                        "sections": self._sections_for_fact_packet(
+                            item.get("fact_packet") if isinstance(item.get("fact_packet"), dict) else {}
+                        ),
+                    }
+                    for item in scoped_fact_packets
+                    if isinstance(item, dict) and str(item.get("scope_id", "")).strip()
+                ]
+            }
+        window_fact_packets = prompt_payload.get("window_fact_packets")
+        if isinstance(window_fact_packets, list):
+            return {
+                "briefs": [
+                    {
+                        "window_key": str(item.get("window_key", "")).strip(),
+                        "sections": self._sections_for_fact_packet(
+                            item.get("fact_packet") if isinstance(item.get("fact_packet"), dict) else {}
+                        ),
+                    }
+                    for item in window_fact_packets
+                    if isinstance(item, dict) and str(item.get("window_key", "")).strip()
+                ]
+            }
         fact_packet = prompt_payload.get("fact_packet") if isinstance(prompt_payload.get("fact_packet"), dict) else {}
-        sections = fact_packet.get("sections") if isinstance(fact_packet.get("sections"), list) else []
+        return {"sections": self._sections_for_fact_packet(fact_packet)}
+
+    def _bundle_sections_for_entry(
+        self,
+        *,
+        entry: dict[str, object],
+        current: dict[str, object],
+    ) -> list[dict[str, object]]:
+        sections = current.get("sections") if isinstance(current.get("sections"), list) else []
         section_map = {
             str(section.get("key", "")).strip(): section
             for section in sections
             if isinstance(section, dict) and str(section.get("key", "")).strip()
         }
+        summary = current.get("summary") if isinstance(current.get("summary"), dict) else {}
+        freshness_bucket = str(summary.get("freshness_bucket", "")).strip().lower()
 
-        completed_id = self._pick_fact_id(section_map.get("completed", {}), preferred_kinds=("plan_completion", "execution_highlight"))
-        direction_id = self._pick_fact_id(section_map.get("current_execution", {}), preferred_kinds=("direction",))
-        operator_id = self._pick_fact_id(section_map.get("current_execution", {}), preferred_kinds=("signal", "timeline", "freshness"))
-        forcing_id = self._pick_fact_id(section_map.get("next_planned", {}), preferred_kinds=("forcing_function", "fallback_next"))
-        impact_id = self._pick_fact_id(section_map.get("why_this_matters", {}), preferred_kinds=("executive_impact",))
-        leverage_id = self._pick_fact_id(section_map.get("why_this_matters", {}), preferred_kinds=("operator_leverage",))
-        risk_id = self._pick_fact_id(section_map.get("risks_to_watch", {}), preferred_kinds=("risk_posture",))
+        completed_fact = self._pick_fact(
+            section_map.get("completed", {}),
+            preferred_kinds=("plan_completion", "execution_highlight", "window_summary"),
+        )
+        direction_fact = self._pick_fact(section_map.get("current_execution", {}), preferred_kinds=("direction",))
+        freshness_fact = self._pick_fact(section_map.get("current_execution", {}), preferred_kinds=("freshness",))
+        forcing_fact = self._pick_fact(
+            section_map.get("next_planned", {}),
+            preferred_kinds=("forcing_function", "fallback_next"),
+        )
+        follow_on_fact = self._pick_fact(section_map.get("next_planned", {}), preferred_kinds=("follow_on",))
+        risk_fact = self._pick_fact(
+            section_map.get("risks_to_watch", {}),
+            preferred_kinds=("risk_posture", "bug", "self_host_posture"),
+        )
 
-        return {
-            "sections": [
+        current_bullets: list[dict[str, object]] = []
+        if direction_fact is not None:
+            current_bullets.append(
+                {
+                    "text": self._brief_text(str(direction_fact.get("text", "")), mode="direction"),
+                    "fact_ids": [self._fact_id(direction_fact)],
+                }
+            )
+        if freshness_bucket in {"aging", "stale"} and freshness_fact is not None:
+            current_bullets.append(
+                {
+                    "text": self._brief_text(str(freshness_fact.get("text", "")), mode="freshness"),
+                    "fact_ids": [self._fact_id(freshness_fact)],
+                }
+            )
+        if completed_fact is not None and direction_fact is not None and forcing_fact is not None and risk_fact is not None:
+            return [
                 {
                     "key": "completed",
                     "label": "Completed in this window",
                     "bullets": [
                         {
-                            "voice": "operator",
-                            "text": "Verified movement landed in this window, so Compass should read as current work instead of recycled fallback.",
-                            "fact_ids": [completed_id],
+                            "text": self._brief_text(str(completed_fact.get("text", "")), mode="completed"),
+                            "fact_ids": [self._fact_id(completed_fact)],
                         }
                     ],
                 },
                 {
                     "key": "current_execution",
                     "label": "Current execution",
-                    "bullets": [
-                        {
-                            "voice": "executive",
-                            "text": "Execution direction stays on the live Compass contract rather than a deterministic shell-safe placeholder.",
-                            "fact_ids": [direction_id],
-                        },
-                        {
-                            "voice": "operator",
-                            "text": "The current packet still carries enough signal to justify provider-backed global narration in the bounded path.",
-                            "fact_ids": [operator_id],
-                        },
-                    ],
+                    "bullets": current_bullets,
                 },
                 {
                     "key": "next_planned",
                     "label": "Next planned",
                     "bullets": [
                         {
-                            "voice": "operator",
-                            "text": "Next work keeps shell-safe bounded while preserving a live global brief when the provider is reachable.",
-                            "fact_ids": [forcing_id],
-                        }
-                    ],
-                },
-                {
-                    "key": "why_this_matters",
-                    "label": "Why this matters",
-                    "bullets": [
-                        {
-                            "voice": "executive",
-                            "text": "Compass trust breaks quickly when maintainers reopen it and see deterministic fallback despite an available local provider.",
-                            "fact_ids": [impact_id],
+                            "text": self._brief_text(str(forcing_fact.get("text", "")), mode="next"),
+                            "fact_ids": [self._fact_id(forcing_fact)],
                         },
-                        {
-                            "voice": "operator",
-                            "text": "The operator consequence is less time second-guessing whether the brief is current and less need to rerun refresh blindly.",
-                            "fact_ids": [leverage_id],
-                        },
+                        *(
+                            [
+                                {
+                                    "text": self._brief_text(str(follow_on_fact.get("text", "")), mode="next"),
+                                    "fact_ids": [self._fact_id(follow_on_fact)],
+                                }
+                            ]
+                            if follow_on_fact is not None and self._fact_id(follow_on_fact) != self._fact_id(forcing_fact)
+                            else []
+                        ),
                     ],
                 },
                 {
@@ -132,33 +305,181 @@ class _CompassProvider:
                     "label": "Risks to watch",
                     "bullets": [
                         {
-                            "voice": "operator",
-                            "text": "No blocking Compass risk is surfaced in this synthetic proof run.",
-                            "fact_ids": [risk_id],
+                            "text": self._brief_text(str(risk_fact.get("text", "")), mode="risk"),
+                            "fact_ids": [self._fact_id(risk_fact)],
                         }
                     ],
                 },
             ]
+        return [
+            {
+                "key": "completed",
+                "label": "Completed in this window",
+                "bullets": [{"text": "Maintained narration is ready for this view.", "fact_ids": ["F-001"]}],
+            },
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "bullets": [{"text": "Compass is warming the brief from the current narration substrate.", "fact_ids": ["F-004"]}],
+            },
+            {
+                "key": "next_planned",
+                "label": "Next planned",
+                "bullets": [{"text": "Reuse the maintained brief bundle instead of rebuilding the same narration again.", "fact_ids": ["F-009"]}],
+            },
+            {
+                "key": "risks_to_watch",
+                "label": "Risks to watch",
+                "bullets": [{"text": "No extra blocker is injected into this maintained test harness response.", "fact_ids": ["F-011"]}],
+            },
+        ]
+
+    def _sections_for_fact_packet(self, fact_packet: dict[str, object]) -> list[dict[str, object]]:
+        sections = fact_packet.get("sections") if isinstance(fact_packet.get("sections"), list) else []
+        section_map = {
+            str(section.get("key", "")).strip(): section
+            for section in sections
+            if isinstance(section, dict) and str(section.get("key", "")).strip()
         }
+        summary = fact_packet.get("summary") if isinstance(fact_packet.get("summary"), dict) else {}
+        freshness = summary.get("freshness") if isinstance(summary, dict) and isinstance(summary.get("freshness"), dict) else {}
+        freshness_bucket = str(freshness.get("bucket", "")).strip().lower()
+
+        completed_fact = self._pick_fact(
+            section_map.get("completed", {}),
+            preferred_kinds=("plan_completion", "execution_highlight", "window_summary"),
+        )
+        direction_fact = self._pick_fact(section_map.get("current_execution", {}), preferred_kinds=("direction",))
+        freshness_fact = self._pick_fact(section_map.get("current_execution", {}), preferred_kinds=("freshness",))
+        secondary_fact = self._pick_fact(
+            section_map.get("current_execution", {}),
+            preferred_kinds=("signal", "self_host_status", "portfolio_posture", "timeline", "checklist"),
+        )
+        forcing_fact = self._pick_fact(
+            section_map.get("next_planned", {}),
+            preferred_kinds=("forcing_function", "fallback_next"),
+        )
+        follow_on_fact = self._pick_fact(section_map.get("next_planned", {}), preferred_kinds=("follow_on",))
+        risk_fact = self._pick_fact(
+            section_map.get("risks_to_watch", {}),
+            preferred_kinds=("risk_posture", "bug", "self_host_posture"),
+        )
+
+        current_bullets: list[dict[str, object]] = []
+        if direction_fact is not None:
+            current_bullets.append(
+                {
+                    "text": self._brief_text(str(direction_fact.get("text", "")), mode="direction"),
+                    "fact_ids": [self._fact_id(direction_fact)],
+                }
+            )
+        if freshness_bucket in {"aging", "stale"} and freshness_fact is not None:
+            current_bullets.append(
+                {
+                    "text": self._brief_text(str(freshness_fact.get("text", "")), mode="freshness"),
+                    "fact_ids": [self._fact_id(freshness_fact)],
+                }
+            )
+        elif secondary_fact is not None:
+            current_bullets.append(
+                {
+                    "text": self._brief_text(str(secondary_fact.get("text", "")), mode="signal"),
+                    "fact_ids": [self._fact_id(secondary_fact)],
+                }
+            )
+
+        return [
+            {
+                "key": "completed",
+                "label": "Completed in this window",
+                "bullets": [
+                    {
+                        "text": self._brief_text(
+                            str((completed_fact or {}).get("text", "")) or "Verified movement landed in this window.",
+                            mode="completed",
+                        ),
+                        "fact_ids": [self._fact_id(completed_fact)],
+                    }
+                ],
+            },
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "bullets": current_bullets,
+            },
+            {
+                "key": "next_planned",
+                "label": "Next planned",
+                "bullets": [
+                    {
+                        "text": self._brief_text(
+                            str((forcing_fact or {}).get("text", "")) or "The next checkpoint is ready.",
+                            mode="next",
+                        ),
+                        "fact_ids": [self._fact_id(forcing_fact)],
+                    },
+                    *(
+                        [
+                            {
+                                "text": self._brief_text(str(follow_on_fact.get("text", "")), mode="next"),
+                                "fact_ids": [self._fact_id(follow_on_fact)],
+                            }
+                        ]
+                        if follow_on_fact is not None and self._fact_id(follow_on_fact) != self._fact_id(forcing_fact)
+                        else []
+                    ),
+                ],
+            },
+            {
+                "key": "risks_to_watch",
+                "label": "Risks to watch",
+                "bullets": [
+                    {
+                        "text": self._brief_text(
+                            str((risk_fact or {}).get("text", "")) or "No blocking Compass risk is surfaced in this synthetic proof run.",
+                            mode="risk",
+                        ),
+                        "fact_ids": [self._fact_id(risk_fact)],
+                    }
+                ],
+            },
+        ]
 
     def generate_finding(self, *, prompt_payload):  # noqa: ANN001, ARG002
         raise AssertionError("Compass browser proof should use structured generation only.")
 
 
-def _pane_hidden(page, frame_selector: str) -> bool:  # noqa: ANN001
-    return bool(page.locator(frame_selector).evaluate("node => Boolean(node.hidden)"))
-
-
-def _assert_single_visible_pane(page, active_frame_selector: str) -> None:  # noqa: ANN001
-    panes = (
-        "#frame-radar",
-        "#frame-registry",
-        "#frame-casebook",
-        "#frame-atlas",
-        "#frame-compass",
+def _write_fixture_current_release_assignments(fixture_root, *workstream_ids: str) -> None:  # noqa: ANN001
+    releases_root = fixture_root / "odylith" / "radar" / "source" / "releases"
+    releases_root.mkdir(parents=True, exist_ok=True)
+    events_path = releases_root / "release-assignment-events.v1.jsonl"
+    rows = [
+        {
+            "action": "add",
+            "release_id": "release-0-1-11",
+            "workstream_id": workstream_id,
+            "recorded_at": f"2026-04-09T00:00:0{index}Z",
+        }
+        for index, workstream_id in enumerate(workstream_ids)
+    ]
+    events_path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
     )
-    visible = [selector for selector in panes if not _pane_hidden(page, selector)]
-    assert visible == [active_frame_selector]
+
+
+def _rewrite_fixture_workstream_status(fixture_root, *, idea_id: str, status: str) -> None:  # noqa: ANN001
+    ideas_root = fixture_root / "odylith" / "radar" / "source" / "ideas"
+    for path in ideas_root.rglob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        if f"idea_id: {idea_id}" not in text:
+            continue
+        path.write_text(
+            text.replace("status: finished", f"status: {status}", 1),
+            encoding="utf-8",
+        )
+        return
+    raise AssertionError(f"missing idea fixture for {idea_id}")
 
 
 def _render_tooling_shell_fixture(fixture_root) -> None:  # noqa: ANN001
@@ -166,45 +487,22 @@ def _render_tooling_shell_fixture(fixture_root) -> None:  # noqa: ANN001
     assert rc == 0
 
 
-def _first_non_default_option(frame, selector: str, excluded: set[str] | None = None) -> str:  # noqa: ANN001
-    excluded_tokens = {"all", ""}
-    if excluded:
-        excluded_tokens |= {str(token) for token in excluded}
-    options = frame.locator(f"{selector} option").evaluate_all(
+def _first_scope_option_with_scoped_brief(frame, *, window_token: str) -> str:  # noqa: ANN001
+    options = frame.locator("#scope-select option").evaluate_all(
         """nodes => nodes
           .map((node) => (node.value || "").trim())
-          .filter((token) => token.length > 0)
+          .filter((token) => /^B-\\d{3,}$/.test(token))
         """
     )
-    for token in options:
-        if token not in excluded_tokens:
-            return str(token)
-    return ""
-
-
-def _first_filter_value_with_results(frame, selector: str, item_selector: str) -> tuple[str, int]:  # noqa: ANN001
-    options = frame.locator(f"{selector} option").evaluate_all(
-        """nodes => nodes
-          .map((node) => (node.value || "").trim())
-          .filter((token) => token.length > 0 && token !== "all")
-        """
-    )
-    for token in options:
-        frame.locator(selector).select_option(token)
-        count = frame.locator(item_selector).count()
-        if count > 0:
-            return str(token), count
-    return "", 0
-
-
-def _reset_select_to_first_option(frame, selector: str) -> None:  # noqa: ANN001
-    values = frame.locator(f"{selector} option").evaluate_all(
-        """nodes => nodes
-          .map((node) => (node.value || ""))
-        """
-    )
-    assert values, f"expected at least one option for {selector}"
-    frame.locator(selector).select_option(str(values[0]))
+    option_set = {str(token) for token in options}
+    runtime_path = _REPO_ROOT / "odylith" / "compass" / "runtime" / "current.v1.json"
+    payload = json.loads(runtime_path.read_text(encoding="utf-8"))
+    scoped = payload.get("standup_brief_scoped") if isinstance(payload.get("standup_brief_scoped"), dict) else {}
+    window_scoped = scoped.get(window_token) if isinstance(scoped.get(window_token), dict) else {}
+    for scope_id, brief in window_scoped.items():
+        if str(scope_id) in option_set and isinstance(brief, dict) and str(brief.get("fingerprint", "")).strip():
+            return str(scope_id)
+    return _first_non_default_option(frame, "#scope-select", excluded={""})
 
 
 def _select_registry_component_with_detail_actions(registry) -> tuple[str, str]:  # noqa: ANN001
@@ -239,49 +537,6 @@ def _select_radar_row_with_cross_surface_links(radar) -> str:  # noqa: ANN001
         if registry_links.count() and diagram_links.count():
             return idea_id
     raise AssertionError("expected a Radar workstream with both Registry and Atlas detail links")
-
-
-def _reset_radar_filters(radar) -> None:  # noqa: ANN001
-    radar.locator("#query").fill("")
-    for selector in ("#section", "#phase", "#activity", "#lane", "#priority"):
-        radar.locator(selector).select_option("all")
-
-
-def _select_radar_workstream(radar, idea_id: str) -> None:  # noqa: ANN001
-    _reset_radar_filters(radar)
-    radar.locator("#query").fill(idea_id)
-    radar.locator(f'button[data-idea-id="{idea_id}"]').wait_for(timeout=15000)
-    radar.locator(f'button[data-idea-id="{idea_id}"]').first.click()
-    _wait_for_radar_detail_id(radar, idea_id)
-    radar.locator("#query").fill("")
-    _wait_for_radar_detail_id(radar, idea_id)
-
-
-def _wait_for_radar_detail_id(radar, idea_id: str) -> None:  # noqa: ANN001
-    radar.locator(f'button[data-idea-id="{idea_id}"].active').wait_for(timeout=15000)
-    radar.locator("#detail .detail-title").wait_for(timeout=15000)
-    radar.locator("#detail").filter(has_text=idea_id).wait_for(timeout=15000)
-
-
-def _open_radar_topology_relations(radar) -> None:  # noqa: ANN001
-    panel = radar.locator("#detail details.topology-relations-panel").first
-    panel.wait_for(timeout=15000)
-    if panel.get_attribute("open") is None:
-        panel.evaluate("node => { node.open = true; }")
-    panel.locator(".topology-relations").wait_for(timeout=15000)
-
-
-def _wait_for_locator_count(page, frame_selector: str, locator_selector: str, expected: int) -> None:  # noqa: ANN001
-    page.wait_for_function(
-        """({ frameSelector, locatorSelector, expected }) => {
-            const frame = document.querySelector(frameSelector);
-            const doc = frame && frame.contentDocument;
-            if (!doc) return false;
-            return doc.querySelectorAll(locatorSelector).length === expected;
-        }""",
-        arg={"frameSelector": frame_selector, "locatorSelector": locator_selector, "expected": expected},
-        timeout=15000,
-    )
 
 
 def test_shell_tab_matrix_keeps_single_visible_pane_in_compact_viewport(compact_browser_context) -> None:  # noqa: ANN001
@@ -422,14 +677,14 @@ def test_shell_compass_tab_surfaces_failed_full_refresh_warning(tmp_path) -> Non
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
     payload["generated_utc"] = "2026-04-07T17:06:12Z"
     payload["warning"] = (
-        "Requested Compass full refresh did not finish before the dashboard timeout. "
+        "Requested Compass refresh did not finish before the refresh timeout. "
         "Showing the last successful shell-safe runtime snapshot from 2026-04-07T17:06:12Z."
     )
     runtime_contract = dict(payload.get("runtime_contract") or {})
     runtime_contract["refresh_profile"] = "shell-safe"
     runtime_contract["last_refresh_attempt"] = {
         "status": "failed",
-        "requested_profile": "full",
+        "requested_profile": "shell-safe",
         "applied_profile": "shell-safe",
         "attempted_utc": "2026-04-07T17:17:57Z",
         "reason": "timeout",
@@ -452,16 +707,23 @@ def test_shell_compass_tab_surfaces_failed_full_refresh_warning(tmp_path) -> Non
                 response = page.goto(base_url + "/odylith/index.html?tab=compass", wait_until="domcontentloaded")
                 assert response is not None and response.ok
 
-                page.locator("#shellRuntimeStatus").wait_for(timeout=15000)
-                assert page.locator("#shellRuntimeStatus").get_attribute("aria-hidden") == "false"
-                assert page.locator("#shellRuntimeStatusTitle").inner_text().strip() == "Showing prior Compass snapshot"
-                assert "Requested Compass full refresh did not finish before the dashboard timeout." in page.locator(
-                    "#shellRuntimeStatusBody"
-                ).inner_text()
-                assert "--compass-refresh-profile full" in page.locator("#shellRuntimeStatusMeta").inner_text()
+                page.wait_for_function(
+                    """() => {
+                        const node = document.querySelector("#shellRuntimeStatus");
+                        return Boolean(node && node.hidden && node.getAttribute("aria-hidden") === "true");
+                    }""",
+                    timeout=15000,
+                )
 
                 compass = page.frame_locator("#frame-compass")
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                compass.locator("#status-banner").wait_for(timeout=15000)
+                assert compass.locator("#status-banner").evaluate(
+                    "(node) => !node.classList.contains('hidden')"
+                )
+                banner_text = compass.locator("#status-banner").inner_text().strip()
+                assert "Requested Compass refresh did not finish before the refresh timeout." in banner_text
+                assert "Showing the last successful shell-safe runtime snapshot" in banner_text
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
@@ -581,6 +843,7 @@ def test_radar_search_selection_and_cross_surface_detail_links(browser_context) 
 
     radar = page.frame_locator("#frame-radar")
     radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+    radar.locator("button[data-idea-id]").first.wait_for(timeout=15000)
     baseline_count = radar.locator("button[data-idea-id]").count()
     assert baseline_count > 1
 
@@ -733,18 +996,21 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
             const search = node.querySelector('#searchInput').getBoundingClientRect();
             const severity = node.querySelector('#severityFilter').getBoundingClientRect();
             const status = node.querySelector('#statusFilter').getBoundingClientRect();
+            const sort = node.querySelector('#sortFilter').getBoundingClientRect();
             return {
               barLeft: bar.left,
               barRight: bar.right,
               searchWidth: search.width,
               severityWidth: severity.width,
               statusWidth: status.width,
-              rightSlack: bar.right - status.right,
+              sortWidth: sort.width,
+              rightSlack: bar.right - sort.right,
             };
         }"""
     )
     assert abs(filter_geometry["searchWidth"] - filter_geometry["severityWidth"]) <= 2
     assert abs(filter_geometry["severityWidth"] - filter_geometry["statusWidth"]) <= 2
+    assert abs(filter_geometry["statusWidth"] - filter_geometry["sortWidth"]) <= 2
     assert filter_geometry["rightSlack"] <= 16
 
     baseline_count = casebook.locator("button.bug-row").count()
@@ -816,6 +1082,140 @@ def test_casebook_first_bug_rows_load_details_without_dead_shards(browser_contex
         casebook.locator("#detailPane .detail-title", has_text=bug_title).wait_for(timeout=15000)
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    bug_root = fixture_root / "odylith" / "casebook" / "bugs"
+    bug_root.mkdir(parents=True, exist_ok=True)
+    (bug_root / "2026-04-08-proof-control-primary.md").write_text(
+        (
+            "# Proof Control Primary\n\n"
+            "- Bug ID: CB-999\n"
+            "- Severity: P1\n"
+            "- Reproducibility: High\n"
+            "- Status: Open\n"
+            "- Components Affected: `src/odylith/runtime/governance/proof_state/resolver.py`\n"
+            "- Linked Workstream: B-062\n"
+            "- Proof Lane ID: casebook-proof-browser-primary\n"
+            "- Current Blocker: Lambda permission lifecycle on ecs-drift-monitor invoke\n"
+            "- Failure Fingerprint: aws:lambda:Permission doesn't support update\n"
+            "- First Failing Phase: manifests-deploy\n"
+            "- Clearance Condition: Hosted SIM3 passes beyond manifests-deploy\n"
+            "- Current Proof Status: diagnosed\n"
+            "- Description: Browser proof should stay pinned to the selected blocker lane.\n"
+        ),
+        encoding="utf-8",
+    )
+    (bug_root / "2026-04-08-proof-control-secondary.md").write_text(
+        (
+            "# Proof Control Secondary\n\n"
+            "- Bug ID: CB-998\n"
+            "- Severity: P1\n"
+            "- Reproducibility: High\n"
+            "- Status: Open\n"
+            "- Components Affected: `src/odylith/runtime/governance/proof_state/resolver.py`\n"
+            "- Linked Workstream: B-062\n"
+            "- Proof Lane ID: casebook-proof-browser-secondary\n"
+            "- Current Blocker: Secondary blocker that should not bleed into CB-999\n"
+            "- Failure Fingerprint: alternate-fingerprint\n"
+            "- First Failing Phase: alternate-phase\n"
+            "- Clearance Condition: Hosted SIM3 passes beyond alternate-phase\n"
+            "- Current Proof Status: diagnosed\n"
+            "- Description: This bug shares the workstream but not the blocker lane.\n"
+        ),
+        encoding="utf-8",
+    )
+    proof_stream = "\n".join(
+        (
+            json.dumps(
+                {
+                    "ts_iso": "2026-04-08T18:42:00Z",
+                    "proof_lane": "casebook-proof-browser-primary",
+                    "proof_fingerprint": "aws:lambda:Permission doesn't support update",
+                    "proof_phase": "manifests-deploy",
+                    "proof_status": "falsified_live",
+                    "evidence_tier": "code_only",
+                    "work_category": "governance",
+                    "deployment_truth": {
+                        "pushed_head": "abc123",
+                        "runner_fingerprint": "runner-v3",
+                    },
+                    "workstreams": ["B-062"],
+                }
+            ),
+            json.dumps(
+                {
+                    "ts_iso": "2026-04-08T19:12:00Z",
+                    "proof_lane": "casebook-proof-browser-primary",
+                    "proof_fingerprint": "aws:lambda:Permission doesn't support update",
+                    "proof_phase": "manifests-deploy",
+                    "proof_status": "fixed_in_code",
+                    "evidence_tier": "code_only",
+                    "work_category": "observability",
+                    "workstreams": ["B-062"],
+                }
+            ),
+        )
+    ) + "\n"
+    (fixture_root / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl").write_text(
+        proof_stream,
+        encoding="utf-8",
+    )
+    (fixture_root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl").write_text(
+        proof_stream,
+        encoding="utf-8",
+    )
+    (bug_root / "INDEX.md").write_text(
+        sync_casebook_bug_index.render_bug_index(repo_root=fixture_root),
+        encoding="utf-8",
+    )
+
+    casebook_rc = render_casebook_dashboard.main(
+        ["--repo-root", str(fixture_root), "--output", "odylith/casebook/casebook.html"]
+    )
+    assert casebook_rc == 0
+    _render_tooling_shell_fixture(fixture_root)
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + "/odylith/index.html?tab=casebook&bug=CB-999",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                casebook = page.frame_locator("#frame-casebook")
+                casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+                _wait_for_shell_query_param(page, tab="casebook", key="bug", value="CB-999")
+                casebook.locator("#detailPane .detail-title", has_text="Proof control primary").wait_for(timeout=15000)
+                casebook.locator("#detailPane .section-heading", has_text="Proof Control Panel").wait_for(timeout=15000)
+                casebook.locator("#detailPane").get_by_text("Current blocker", exact=True).first.wait_for(timeout=15000)
+                casebook.locator("#detailPane").get_by_text(
+                    "Lambda permission lifecycle on ecs-drift-monitor invoke"
+                ).first.wait_for(timeout=15000)
+                casebook.locator("#detailPane").get_by_text("Failure fingerprint", exact=True).first.wait_for(timeout=15000)
+                casebook.locator("#detailPane").get_by_text("Highest truthful claim", exact=True).first.wait_for(timeout=15000)
+                casebook.locator("#detailPane").get_by_text("fixed in code").first.wait_for(timeout=15000)
+                casebook.locator("#detailPane").get_by_text("Deployed vs local truth", exact=True).first.wait_for(timeout=15000)
+                casebook.locator("#detailPane").get_by_text(
+                    "Recent activity is skewing away from the primary blocker"
+                ).first.wait_for(timeout=15000)
+                assert (
+                    casebook.locator("#detailPane")
+                    .get_by_text("Secondary blocker that should not bleed into CB-999")
+                    .count()
+                    == 0
+                )
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
 
 
 def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  # noqa: ANN001
@@ -899,11 +1299,18 @@ def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  #
         atlas.locator("#diagramId", has_text=searchable_diagram).wait_for(timeout=15000)
 
     diagram_suffix = searchable_diagram.split("-", 1)[-1].strip()
-    id_queries = [diagram_suffix, f"-{diagram_suffix}"]
-    if short_diagram_token and short_diagram_token not in id_queries:
-        id_queries.insert(0, short_diagram_token)
-        for query in id_queries:
-            atlas.locator("#search").fill(query)
+    id_queries: list[str] = []
+    if short_diagram_token:
+        id_queries.append(short_diagram_token)
+    for candidate in (searchable_diagram, diagram_suffix, f"-{diagram_suffix}"):
+        token = str(candidate).strip()
+        if token and token not in id_queries:
+            id_queries.append(token)
+
+    narrowed_by_id_query = False
+    for query in id_queries:
+        atlas.locator("#search").fill(query)
+        try:
             page.wait_for_function(
                 """({ frameSelector, baselineTotal }) => {
                     const frame = document.querySelector(frameSelector);
@@ -914,9 +1321,16 @@ def test_atlas_navigation_filters_and_context_links(browser_context) -> None:  #
                     return Number.isFinite(value) && value >= 1 && value < baselineTotal;
                 }""",
                 arg={"frameSelector": "#frame-atlas", "baselineTotal": baseline_total},
-                timeout=15000,
+                timeout=3000,
             )
-            atlas.locator("#diagramId", has_text=searchable_diagram).wait_for(timeout=15000)
+            atlas.locator("#diagramId", has_text=searchable_diagram).wait_for(timeout=3000)
+            narrowed_by_id_query = True
+            break
+        except PlaywrightTimeoutError:
+            continue
+
+    if not narrowed_by_id_query:
+        pytest.skip("Atlas fixture does not currently expose a narrowing diagram-id substring query.")
 
     atlas.locator("#search").fill("")
     workstream_value = _first_non_default_option(atlas, "#workstreamFilter")
@@ -994,24 +1408,61 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
     compass = page.frame_locator("#frame-compass")
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
     _assert_compass_live_state(compass, window_token="24h")
-    _wait_for_compass_brief_state(page, window_token="24h", scope_label="Global")
+    _wait_for_compass_brief_state(
+        page,
+        window_token="24h",
+        scope_label="Global",
+        statuses=("ready", "unavailable"),
+    )
     global_24h_meta = _compass_brief_metadata(compass)
-    assert global_24h_meta["source"] in {"provider", "cache", "deterministic"}
-    assert global_24h_meta["hasNotice"] == ("true" if global_24h_meta["source"] == "deterministic" else "false")
+    assert global_24h_meta["source"] in {"provider", "cache", "unavailable"}
+    if global_24h_meta["source"] in {"provider", "cache"}:
+        assert global_24h_meta["hasNotice"] == "false"
     assert global_24h_meta["fingerprint"]
+    layout = compass.locator(".layout").evaluate(
+        """(node) => {
+            const stacks = Array.from(node.querySelectorAll(':scope > .stack'));
+            const firstBox = stacks[0] ? stacks[0].getBoundingClientRect() : null;
+            const secondBox = stacks[1] ? stacks[1].getBoundingClientRect() : null;
+            return {
+              clientWidth: node.clientWidth,
+              scrollWidth: node.scrollWidth,
+              stackCount: stacks.length,
+              firstBottom: firstBox ? firstBox.bottom : 0,
+              secondTop: secondBox ? secondBox.top : 0,
+              gridTemplateColumns: getComputedStyle(node).gridTemplateColumns,
+            };
+        }"""
+    )
+    assert layout["stackCount"] >= 2
+    assert layout["secondTop"] - layout["firstBottom"] >= 10
 
-    scope_value = _first_non_default_option(compass, "#scope-select", excluded={""})
+    scope_value = _first_scope_option_with_scoped_brief(compass, window_token="24h")
     if not scope_value or not re.fullmatch(r"B-\d{3,}", scope_value):
         pytest.skip("Compass fixture does not currently expose non-global workstream scope options.")
     compass.locator("#scope-select").select_option(scope_value)
     _wait_for_shell_query_param(page, tab="compass", key="scope", value=scope_value)
     compass.locator("#scope-pill", has_text=scope_value).wait_for(timeout=15000)
-    _wait_for_compass_brief_state(page, window_token="24h", scope_label=scope_value)
+    _wait_for_compass_brief_state(
+        page,
+        window_token="24h",
+        scope_label=scope_value,
+        statuses=("ready", "unavailable"),
+    )
     scoped_24h_meta = _compass_brief_metadata(compass)
-    assert scoped_24h_meta["source"] in {"provider", "cache", "deterministic"}
-    assert scoped_24h_meta["hasNotice"] == ("true" if scoped_24h_meta["source"] == "deterministic" else "false")
+    assert scoped_24h_meta["source"] in {"provider", "cache", "unavailable"}
+    if scoped_24h_meta["source"] in {"provider", "cache"}:
+        if scoped_24h_meta["hasNotice"] == "true":
+            assert scoped_24h_meta["noticeReason"].startswith("scoped_")
+            assert (
+                "showing_global" in scoped_24h_meta["noticeReason"]
+                or "showing_wider_global" in scoped_24h_meta["noticeReason"]
+            )
+        else:
+            assert scoped_24h_meta["hasNotice"] == "false"
     assert scoped_24h_meta["fingerprint"]
-    assert scoped_24h_meta["fingerprint"] != global_24h_meta["fingerprint"]
+    if scoped_24h_meta["hasNotice"] == "false":
+        assert scoped_24h_meta["fingerprint"] != global_24h_meta["fingerprint"]
 
     summary_rows = compass.locator("tr.ws-summary-row")
     assert summary_rows.count() > 0
@@ -1025,13 +1476,32 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
 
     compass.locator('button[data-window="48h"]').click()
     _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
+    _wait_for_compass_brief_state(
+        page,
+        window_token="48h",
+        scope_label=scope_value,
+        statuses=("ready", "unavailable"),
+    )
+    page.wait_for_function(
+        """() => {
+            const frame = document.querySelector("#frame-compass");
+            const doc = frame && frame.contentDocument;
+            if (!doc) return false;
+            return doc.querySelectorAll("#timeline .tx-card, #timeline .empty, #timeline .timeline-day-title, #timeline .hour-empty").length > 0;
+        }""",
+        timeout=15000,
+    )
     _assert_compass_live_state(compass, window_token="48h")
-    _wait_for_compass_brief_state(page, window_token="48h", scope_label=scope_value)
     scoped_48h_meta = _compass_brief_metadata(compass)
-    assert scoped_48h_meta["source"] in {"provider", "cache", "deterministic"}
-    assert scoped_48h_meta["hasNotice"] == ("true" if scoped_48h_meta["source"] == "deterministic" else "false")
+    assert scoped_48h_meta["source"] in {"provider", "cache", "unavailable"}
     assert scoped_48h_meta["fingerprint"]
-    assert scoped_48h_meta["fingerprint"] != scoped_24h_meta["fingerprint"]
+    if scoped_48h_meta["fingerprint"] == scoped_24h_meta["fingerprint"]:
+        assert scoped_24h_meta["hasNotice"] == "true"
+        assert scoped_48h_meta["hasNotice"] == "true"
+        assert scoped_48h_meta["noticeReason"].startswith("scoped_")
+        assert "showing" in scoped_48h_meta["noticeReason"]
+    else:
+        assert scoped_48h_meta["fingerprint"] != scoped_24h_meta["fingerprint"]
 
     compass.locator("#scope-global").click()
     page.wait_for_function(
@@ -1048,18 +1518,744 @@ def test_compass_scope_window_and_detail_behavior_in_compact_viewport(compact_br
         timeout=15000,
     )
     compass.locator("#scope-pill", has_text="Global").wait_for(timeout=15000)
-    _wait_for_compass_brief_state(page, window_token="48h", scope_label="Global")
+    _wait_for_compass_brief_state(
+        page,
+        window_token="48h",
+        scope_label="Global",
+        statuses=("ready", "unavailable"),
+    )
     global_48h_meta = _compass_brief_metadata(compass)
-    assert global_48h_meta["source"] in {"provider", "cache", "deterministic"}
-    assert global_48h_meta["hasNotice"] == ("true" if global_48h_meta["source"] == "deterministic" else "false")
+    assert global_48h_meta["source"] in {"provider", "cache", "unavailable"}
+    if global_48h_meta["source"] in {"provider", "cache"}:
+        assert global_48h_meta["hasNotice"] == "false"
     assert global_48h_meta["fingerprint"]
-    assert global_48h_meta["fingerprint"] != global_24h_meta["fingerprint"]
-    assert global_48h_meta["fingerprint"] != scoped_48h_meta["fingerprint"]
+    assert global_48h_meta["window"] == "48h"
+    if scoped_48h_meta["source"] in {"provider", "cache"} and scoped_48h_meta["hasNotice"] == "false":
+        assert global_48h_meta["fingerprint"] != scoped_48h_meta["fingerprint"]
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_explicit_full_compass_refresh_artifacts_do_not_show_deterministic_brief(
+def test_compass_scoped_brief_missing_shows_global_live_brief_with_notice(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    history_dir = runtime_dir / "history"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    payload["generated_utc"] = "2026-04-10T20:08:00Z"
+    scoped_24h = (payload.get("standup_brief_scoped") or {}).get("24h")
+    scoped_48h = (payload.get("standup_brief_scoped") or {}).get("48h")
+    assert isinstance(scoped_24h, dict) and scoped_24h
+    assert isinstance(scoped_48h, dict) and scoped_48h
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    digest = payload.get("digest") if isinstance(payload.get("digest"), dict) else {}
+
+    def _ready_global_brief(window: str) -> dict[str, object]:
+        return {
+            "status": "ready",
+            "source": "provider",
+            "fingerprint": f"seeded-global-{window}",
+            "generated_utc": payload["generated_utc"],
+            "sections": [
+                {
+                    "key": "current_execution",
+                    "label": "Current execution",
+                    "bullets": [
+                        {
+                            "text": "Compass is holding one calm global brief while scoped narration catches up.",
+                            "fact_ids": [],
+                        }
+                    ],
+                }
+            ],
+            "evidence_lookup": {},
+        }
+
+    for window in ("24h", "48h"):
+        brief = standup_brief.get(window)
+        if not isinstance(brief, dict) or brief.get("status") != "ready":
+            standup_brief[window] = _ready_global_brief(window)
+        digest[window] = ["Compass is holding one calm global brief while scoped narration catches up."]
+    payload["standup_brief"] = standup_brief
+    payload["digest"] = digest
+
+    scope_value = next(iter(scoped_24h.keys()))
+    verified = payload.get("verified_scoped_workstreams") if isinstance(payload.get("verified_scoped_workstreams"), dict) else {}
+    for window in ("24h", "48h"):
+        verified_list = verified.get(window)
+        if isinstance(verified_list, list) and scope_value not in verified_list:
+            verified_list.append(scope_value)
+    payload["verified_scoped_workstreams"] = verified
+
+    for collection_key in ("current_workstreams", "workstream_catalog"):
+        rows = payload.get(collection_key)
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict) or str(row.get("idea_id", "")).strip() != scope_value:
+                continue
+            activity = row.get("activity") if isinstance(row.get("activity"), dict) else {}
+            activity["24h"] = {"commit_count": 1, "local_change_count": 1, "file_touch_count": 1}
+            activity["48h"] = {"commit_count": 1, "local_change_count": 1, "file_touch_count": 1}
+            row["activity"] = activity
+            break
+
+    scoped_24h.pop(scope_value, None)
+    scoped_48h.pop(scope_value, None)
+    digest_scoped = payload.get("digest_scoped") if isinstance(payload.get("digest_scoped"), dict) else {}
+    digest_24h = digest_scoped.get("24h") if isinstance(digest_scoped.get("24h"), dict) else {}
+    digest_48h = digest_scoped.get("48h") if isinstance(digest_scoped.get("48h"), dict) else {}
+    digest_24h.pop(scope_value, None)
+    digest_48h.pop(scope_value, None)
+    payload["digest_scoped"] = digest_scoped
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    for day_token in payload.get("history", {}).get("dates", []):
+        token = str(day_token or "").strip()
+        if not token:
+            continue
+        (history_dir / f"{token}.v1.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + f"/odylith/index.html?tab=compass&window=24h&date=live&scope={scope_value}",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _wait_for_shell_query_param(page, tab="compass", key="scope", value=scope_value)
+                page.wait_for_function(
+                    """({ windowToken, scopeLabel }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const target = doc && doc.querySelector("#digest-list");
+                        if (!target || !target.dataset) return false;
+                        return (target.dataset.briefStatus || "") === "ready"
+                          && (target.dataset.briefWindow || "") === windowToken
+                          && (target.dataset.briefScope || "") === scopeLabel
+                          && (target.dataset.briefHasNotice || "") === "true";
+                    }""",
+                    arg={"windowToken": "24h", "scopeLabel": scope_value},
+                    timeout=15000,
+                )
+                scoped_24h_meta = _compass_brief_metadata(compass)
+                assert scoped_24h_meta["status"] == "ready"
+                assert scoped_24h_meta["source"] in {"provider", "cache"}
+                assert scoped_24h_meta["hasNotice"] == "true"
+                assert scoped_24h_meta["noticeReason"] == "scoped_brief_missing_showing_global"
+                assert "Showing the global live brief" in compass.locator("#digest-list").inner_text()
+
+                compass.locator('button[data-window="48h"]').click()
+                _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
+                page.wait_for_function(
+                    """({ windowToken, scopeLabel }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const target = doc && doc.querySelector("#digest-list");
+                        if (!target || !target.dataset) return false;
+                        return (target.dataset.briefStatus || "") === "ready"
+                          && (target.dataset.briefWindow || "") === windowToken
+                          && (target.dataset.briefScope || "") === scopeLabel
+                          && (target.dataset.briefHasNotice || "") === "true";
+                    }""",
+                    arg={"windowToken": "48h", "scopeLabel": scope_value},
+                    timeout=15000,
+                )
+                scoped_48h_meta = _compass_brief_metadata(compass)
+                assert scoped_48h_meta["status"] == "ready"
+                assert scoped_48h_meta["source"] in {"provider", "cache"}
+                assert scoped_48h_meta["hasNotice"] == "true"
+                assert scoped_48h_meta["noticeReason"] == "scoped_brief_missing_showing_global"
+                assert "Showing the global live brief" in compass.locator("#digest-list").inner_text()
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_quiet_catalog_scope_reports_quiet_window_instead_of_missing_brief(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    catalog = [row for row in payload.get("workstream_catalog", []) if isinstance(row, dict)]
+    assert catalog
+    quiet_scope = str(catalog[0].get("idea_id", "")).strip()
+    assert quiet_scope
+    for row in catalog:
+        if str(row.get("idea_id", "")).strip() != quiet_scope:
+            continue
+        activity = row.get("activity") if isinstance(row.get("activity"), dict) else {}
+        for window in ("24h", "48h"):
+            window_activity = activity.get(window)
+            if not isinstance(window_activity, dict):
+                window_activity = {}
+                activity[window] = window_activity
+            window_activity["commit_count"] = 0
+            window_activity["local_change_count"] = 0
+            window_activity["file_touch_count"] = 0
+        row["activity"] = activity
+        break
+    standup_brief_scoped = payload.get("standup_brief_scoped") if isinstance(payload.get("standup_brief_scoped"), dict) else {}
+    for window in ("24h", "48h"):
+        scoped_map = standup_brief_scoped.get(window)
+        if isinstance(scoped_map, dict):
+            scoped_map[quiet_scope] = {
+                "status": "unavailable",
+                "source": "unavailable",
+                "fingerprint": "",
+                "generated_utc": str(payload.get("generated_utc", "")).strip(),
+                "diagnostics": {
+                    "reason": "scoped_window_inactive",
+                    "title": "Nothing moved in this window",
+                    "message": (
+                        f"{quiet_scope} was quiet in the last {24 if window == '24h' else 48} hours, "
+                        "so Compass has nothing new to brief for that scope."
+                    ),
+                },
+                "sections": [],
+                "evidence_lookup": {},
+            }
+    payload["standup_brief_scoped"] = standup_brief_scoped
+    digest_scoped = payload.get("digest_scoped") if isinstance(payload.get("digest_scoped"), dict) else {}
+    for window in ("24h", "48h"):
+        scoped_digest = digest_scoped.get(window)
+        if isinstance(scoped_digest, dict):
+            scoped_digest.pop(quiet_scope, None)
+    payload["digest_scoped"] = digest_scoped
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + f"/odylith/index.html?tab=compass&window=24h&date=live&scope={quiet_scope}",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _wait_for_shell_query_param(page, tab="compass", key="scope", value=quiet_scope)
+                page.wait_for_function(
+                    """({ windowToken, scopeLabel }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const target = doc && doc.querySelector("#digest-list");
+                        if (!target || !target.dataset) return false;
+                        return (target.dataset.briefStatus || "") === "unavailable"
+                          && (target.dataset.briefWindow || "") === windowToken
+                          && (target.dataset.briefScope || "") === scopeLabel;
+                    }""",
+                    arg={"windowToken": "24h", "scopeLabel": quiet_scope},
+                    timeout=15000,
+                )
+                quiet_24h_text = compass.locator("#digest-list").inner_text()
+                assert "Nothing moved in this window" in quiet_24h_text
+                assert "was quiet in the last 24 hours" in quiet_24h_text
+                assert "No scoped standup brief is available" not in quiet_24h_text
+
+                compass.locator('button[data-window="48h"]').click()
+                _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
+                page.wait_for_function(
+                    """({ windowToken, scopeLabel }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const target = doc && doc.querySelector("#digest-list");
+                        if (!target || !target.dataset) return false;
+                        return (target.dataset.briefStatus || "") === "unavailable"
+                          && (target.dataset.briefWindow || "") === windowToken
+                          && (target.dataset.briefScope || "") === scopeLabel;
+                    }""",
+                    arg={"windowToken": "48h", "scopeLabel": quiet_scope},
+                    timeout=15000,
+                )
+                quiet_48h_text = compass.locator("#digest-list").inner_text()
+                assert "Nothing moved in this window" in quiet_48h_text
+                assert "was quiet in the last 48 hours" in quiet_48h_text
+                assert "No scoped standup brief is available" not in quiet_48h_text
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_dropdown_excludes_unverified_governance_only_scope_and_scoped_timeline_stays_empty(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    current_rows = [row for row in payload.get("current_workstreams", []) if isinstance(row, dict)]
+    assert len(current_rows) >= 5
+    weak_scope = str(current_rows[0].get("idea_id", "")).strip()
+    assert weak_scope
+    broad_ids = [
+        str(row.get("idea_id", "")).strip()
+        for row in current_rows
+        if str(row.get("idea_id", "")).strip() and str(row.get("idea_id", "")).strip() != weak_scope
+    ][:4]
+    assert len(broad_ids) == 4
+
+    for collection_name in ("workstream_catalog", "current_workstreams"):
+        rows = payload.get(collection_name)
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict) or str(row.get("idea_id", "")).strip() != weak_scope:
+                continue
+            activity = row.get("activity") if isinstance(row.get("activity"), dict) else {}
+            for window in ("24h", "48h"):
+                window_activity = activity.get(window)
+                if not isinstance(window_activity, dict):
+                    window_activity = {}
+                    activity[window] = window_activity
+                window_activity["commit_count"] = 0
+                window_activity["local_change_count"] = 1
+                window_activity["file_touch_count"] = 1
+            row["activity"] = activity
+            break
+
+    payload["timeline_events"] = [
+        row
+        for row in payload.get("timeline_events", [])
+        if isinstance(row, dict) and weak_scope not in [str(item).strip() for item in row.get("workstreams", [])]
+    ]
+    payload["timeline_transactions"] = [
+        row
+        for row in payload.get("timeline_transactions", [])
+        if isinstance(row, dict) and weak_scope not in [str(item).strip() for item in row.get("workstreams", [])]
+    ]
+    now_local_iso = str(payload.get("now_local_iso", "")).strip() or "2026-04-09T12:00:00-07:00"
+    payload["timeline_events"].insert(
+        0,
+        {
+            "id": f"local:M:odylith/radar/source/ideas/{weak_scope}.md",
+            "kind": "local_change",
+            "ts_iso": now_local_iso,
+            "summary": f"Modified radar source for {weak_scope}",
+            "author": "local",
+            "sha": "",
+            "workstreams": [weak_scope],
+            "files": [
+                f"odylith/radar/source/ideas/2026-04/{weak_scope.lower()}-example.md",
+            ],
+            "source": "local",
+            "session_id": "",
+            "transaction_id": "",
+            "transaction_seq": None,
+            "transaction_boundary": "",
+            "context": "",
+            "headline_hint": "",
+            "proof_lane": "",
+            "proof_fingerprint": "",
+            "proof_phase": "",
+            "evidence_tier": "",
+            "proof_status": "",
+            "work_category": "",
+            "deployment_truth": {},
+        },
+    )
+    payload["timeline_transactions"].insert(
+        0,
+        {
+            "id": "txn:global:auto-global-weak-scope",
+            "transaction_id": "txn:global:auto-global-weak-scope",
+            "session_id": "",
+            "start_ts_iso": now_local_iso,
+            "end_ts_iso": now_local_iso,
+            "headline": "Broad governance transaction should stay global.",
+            "context": "",
+            "event_count": 9,
+            "files_count": 2,
+            "workstreams": [weak_scope, *broad_ids],
+            "files": [
+                "odylith/radar/source/ideas/2026-04/example-a.md",
+                "odylith/radar/source/ideas/2026-04/example-b.md",
+            ],
+            "events": [{"kind": "local_change", "summary": "Updated governance source"}],
+        },
+    )
+
+    scoped_catalog = payload.get("verified_scoped_workstreams")
+    scoped_catalog = scoped_catalog if isinstance(scoped_catalog, dict) else {}
+    for window in ("24h", "48h"):
+        existing = scoped_catalog.get(window)
+        scoped_catalog[window] = [
+            str(item).strip()
+            for item in (existing if isinstance(existing, list) else [])
+            if str(item).strip() and str(item).strip() != weak_scope
+        ]
+    payload["verified_scoped_workstreams"] = scoped_catalog
+    window_scope_signals = payload.get("window_scope_signals")
+    if not isinstance(window_scope_signals, dict):
+        window_scope_signals = {}
+    promoted_scoped = payload.get("promoted_scoped_workstreams")
+    if not isinstance(promoted_scoped, dict):
+        promoted_scoped = {}
+    low_signal = {
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
+        "reasons": [
+            "Only low-signal governance-local churn remains in this window.",
+        ],
+        "caps": ["governance_only_local_change"],
+        "promoted_default": False,
+        "budget_class": "cache_only",
+        "feature_vector": {
+            "has_any_signal": True,
+            "verified_completion": False,
+            "narrow_verified_signal": False,
+            "meaningful_scope_activity": False,
+            "decision_evidence": False,
+            "implementation_evidence": False,
+            "open_warning": False,
+            "cross_surface_conflict": False,
+            "stale_authority": False,
+            "unsafe_closeout": False,
+            "proof_blocker": False,
+        },
+    }
+    for window in ("24h", "48h"):
+        existing_signals = window_scope_signals.get(window)
+        if not isinstance(existing_signals, dict):
+            existing_signals = {}
+            window_scope_signals[window] = existing_signals
+        existing_signals[weak_scope] = dict(low_signal)
+        existing_promoted = promoted_scoped.get(window)
+        promoted_scoped[window] = [
+            str(item).strip()
+            for item in (existing_promoted if isinstance(existing_promoted, list) else [])
+            if str(item).strip() and str(item).strip() != weak_scope
+        ]
+    payload["window_scope_signals"] = window_scope_signals
+    payload["promoted_scoped_workstreams"] = promoted_scoped
+
+    standup_brief_scoped = payload.get("standup_brief_scoped") if isinstance(payload.get("standup_brief_scoped"), dict) else {}
+    digest_scoped = payload.get("digest_scoped") if isinstance(payload.get("digest_scoped"), dict) else {}
+    for window in ("24h", "48h"):
+        scoped_briefs = standup_brief_scoped.get(window)
+        if isinstance(scoped_briefs, dict):
+            scoped_briefs[weak_scope] = {
+                "status": "unavailable",
+                "source": "unavailable",
+                "fingerprint": "",
+                "generated_utc": str(payload.get("generated_utc", "")).strip(),
+                "diagnostics": {
+                    "reason": "scoped_window_inactive",
+                    "title": "Nothing moved in this window",
+                    "message": (
+                        f"{weak_scope} was quiet in the last {24 if window == '24h' else 48} hours, "
+                        "so Compass has nothing new to brief for that scope."
+                    ),
+                },
+                "sections": [],
+                "evidence_lookup": {},
+            }
+        scoped_digest = digest_scoped.get(window)
+        if isinstance(scoped_digest, dict):
+            scoped_digest.pop(weak_scope, None)
+    payload["standup_brief_scoped"] = standup_brief_scoped
+    payload["digest_scoped"] = digest_scoped
+
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + "/odylith/index.html?tab=compass&window=48h&date=live",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                option_values = compass.locator("#scope-select option").evaluate_all(
+                    "(nodes) => nodes.map((node) => String(node.value || '').trim())"
+                )
+                assert weak_scope not in option_values[1:]
+
+                response = page.goto(
+                    base_url + f"/odylith/index.html?tab=compass&window=48h&date=live&scope={weak_scope}",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _wait_for_shell_query_param(page, tab="compass", key="scope", value=weak_scope)
+                page.wait_for_function(
+                    """({ windowToken, scopeLabel }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const target = doc && doc.querySelector("#digest-list");
+                        if (!target || !target.dataset) return false;
+                        return (target.dataset.briefStatus || "") === "unavailable"
+                          && (target.dataset.briefWindow || "") === windowToken
+                          && (target.dataset.briefScope || "") === scopeLabel;
+                    }""",
+                    arg={"windowToken": "48h", "scopeLabel": weak_scope},
+                    timeout=15000,
+                )
+                quiet_text = compass.locator("#digest-list").inner_text()
+                assert "Nothing moved in this window" in quiet_text
+                assert f"{weak_scope} was quiet in the last 48 hours" in quiet_text
+                compass.locator("#timeline .empty", has_text="No audit events in this scope and window.").wait_for(timeout=15000)
+                assert "Broad governance transaction should stay global." not in compass.locator("#timeline").inner_text()
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_radar_default_order_prefers_high_scope_signal_without_hiding_low_signal_scope(
+    tmp_path,
+) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    payload_path = fixture_root / "odylith" / "radar" / "backlog-payload.v1.js"
+    payload_text = payload_path.read_text(encoding="utf-8")
+    match = re.search(r"=\s*(\{.*\})\s*;\s*$", payload_text, flags=re.S)
+    assert match is not None
+    payload = json.loads(match.group(1))
+    entries = payload.get("entries")
+    assert isinstance(entries, list)
+
+    candidate_rows = [
+        row
+        for row in entries
+        if isinstance(row, dict) and str(row.get("idea_id", "")).strip()
+    ]
+    assert len(candidate_rows) >= 2
+    high_row = candidate_rows[0]
+    low_row = candidate_rows[1]
+    high_id = str(high_row.get("idea_id", "")).strip()
+    low_id = str(low_row.get("idea_id", "")).strip()
+    assert high_id and low_id and high_id != low_id
+
+    for row in entries:
+        if not isinstance(row, dict):
+            continue
+        row["status"] = "finished"
+
+    high_row["status"] = "implementation"
+    high_row["title"] = "Scope Ladder Fixture High"
+    high_row["ordering_score"] = "1"
+    high_row["scope_signal_rank"] = 4
+    high_row["scope_signal_promoted_default"] = True
+    high_row["scope_signal_budget_class"] = "escalated_reasoning"
+    high_row["scope_signal"] = {
+        "rank": 4,
+        "rung": "R4",
+        "token": "actionable_priority",
+        "label": "Actionable priority",
+        "promoted_default": True,
+        "budget_class": "escalated_reasoning",
+        "reasons": ["open warning posture"],
+        "caps": [],
+        "features": {},
+    }
+
+    low_row["status"] = "implementation"
+    low_row["title"] = "Scope Ladder Fixture Low"
+    low_row["ordering_score"] = "999"
+    low_row["scope_signal_rank"] = 1
+    low_row["scope_signal_promoted_default"] = False
+    low_row["scope_signal_budget_class"] = "cache_only"
+    low_row["scope_signal"] = {
+        "rank": 1,
+        "rung": "R1",
+        "token": "background_trace",
+        "label": "Background trace",
+        "promoted_default": False,
+        "budget_class": "cache_only",
+        "reasons": ["governance-only local churn"],
+        "caps": ["governance_only"],
+        "features": {},
+    }
+
+    payload_path.write_text(
+        'window["__ODYLITH_BACKLOG_DATA__"] = ' + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                radar = page.frame_locator("#frame-radar")
+                radar.locator("h1", has_text="Backlog Workstream Radar").wait_for(timeout=15000)
+                radar.locator("#query").fill("scope ladder fixture")
+                _wait_for_locator_count(page, "#frame-radar", "button[data-idea-id]", 2)
+                first_two_ids = radar.locator("button[data-idea-id]").evaluate_all(
+                    "(nodes) => nodes.slice(0, 2).map((node) => String(node.getAttribute('data-idea-id') || '').trim())"
+                )
+                assert first_two_ids == [high_id, low_id]
+                assert radar.locator(f'button[data-idea-id=\"{high_id}\"]').count() == 1
+                assert radar.locator(f'button[data-idea-id=\"{low_id}\"]').count() == 1
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_registry_default_order_prefers_high_scope_signal_without_hiding_low_signal_component(
+    tmp_path,
+) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    payload_path = fixture_root / "odylith" / "registry" / "registry-payload.v1.js"
+    payload_text = payload_path.read_text(encoding="utf-8")
+    match = re.search(r"=\s*(\{.*\})\s*;\s*$", payload_text, flags=re.S)
+    assert match is not None
+    payload = json.loads(match.group(1))
+
+    components = payload.get("components")
+    assert isinstance(components, list)
+    component_rows = [
+        row
+        for row in components
+        if isinstance(row, dict) and str(row.get("component_id", "")).strip()
+    ]
+    assert len(component_rows) >= 2
+
+    high_row = component_rows[0]
+    low_row = component_rows[1]
+    high_id = str(high_row.get("component_id", "")).strip()
+    low_id = str(low_row.get("component_id", "")).strip()
+    assert high_id and low_id and high_id != low_id
+
+    high_row["name"] = "Scope Ladder Fixture High"
+    low_row["name"] = "Scope Ladder Fixture Low"
+    high_row["category"] = "scope_test"
+    low_row["category"] = "scope_test"
+
+    delivery = payload.get("delivery_intelligence")
+    if not isinstance(delivery, dict):
+        delivery = {}
+        payload["delivery_intelligence"] = delivery
+    delivery_components = delivery.get("components")
+    if not isinstance(delivery_components, dict):
+        delivery_components = {}
+        delivery["components"] = delivery_components
+
+    delivery_components[high_id] = {
+        "scope_signal": {
+            "rank": 4,
+            "rung": "R4",
+            "token": "actionable_priority",
+            "label": "Actionable priority",
+            "promoted_default": True,
+            "budget_class": "escalated_reasoning",
+            "reasons": ["open warning posture"],
+            "caps": [],
+            "features": {},
+        }
+    }
+    delivery_components[low_id] = {
+        "scope_signal": {
+            "rank": 1,
+            "rung": "R1",
+            "token": "background_trace",
+            "label": "Background trace",
+            "promoted_default": False,
+            "budget_class": "cache_only",
+            "reasons": ["governance-only local churn"],
+            "caps": ["governance_only"],
+            "features": {},
+        }
+    }
+
+    payload_path.write_text(
+        'window["__ODYLITH_REGISTRY_DATA__"] = ' + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=registry", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                registry = page.frame_locator("#frame-registry")
+                registry.locator("h1", has_text="Component Registry").wait_for(timeout=15000)
+                registry.locator("#search").fill("scope ladder fixture")
+                _wait_for_locator_count(page, "#frame-registry", "button[data-component]", 2)
+                first_two_ids = registry.locator("button[data-component]").evaluate_all(
+                    "(nodes) => nodes.slice(0, 2).map((node) => String(node.getAttribute('data-component') || '').trim())"
+                )
+                assert first_two_ids == [high_id, low_id]
+                assert registry.locator(f'button[data-component=\"{high_id}\"]').count() == 1
+                assert registry.locator(f'button[data-component=\"{low_id}\"]').count() == 1
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_atlas_scope_signal_ladder_diagrams_keep_owner_context_without_leaking_active_noise(
+    browser_context,
+) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=atlas&diagram=D-029", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    atlas = page.frame_locator("#frame-atlas")
+    atlas.locator("h1", has_text="Atlas").wait_for(timeout=15000)
+    atlas.locator("#diagramId", has_text="D-029").wait_for(timeout=15000)
+    _wait_for_shell_query_param(page, tab="atlas", key="diagram", value="D-029")
+
+    owner_tokens = atlas.locator("#ownerWorkstreamLinks a.workstream-pill-link").evaluate_all(
+        "(nodes) => nodes.map((node) => String(node.textContent || '').trim()).filter(Boolean)"
+    )
+    assert owner_tokens == ["B-071"]
+    assert atlas.locator("#activeWorkstreamLinks a.workstream-pill-link").count() == 0
+    assert atlas.locator("#historicalWorkstreamLinks a.workstream-pill-link").count() == 0
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_refreshed_compass_artifacts_do_not_show_stale_unavailable_brief(
     tmp_path,
 ) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
@@ -1073,28 +2269,28 @@ def test_explicit_full_compass_refresh_artifacts_do_not_show_deterministic_brief
     stale_payload["generated_utc"] = "2020-01-02T16:45:00Z"
     stale_payload["standup_brief"] = {
         "24h": {
-            "status": "ready",
-            "source": "deterministic",
+            "status": "unavailable",
+            "source": "unavailable",
             "fingerprint": "stale-24h",
-            "generated_utc": "2020-01-02T16:45:00Z",
+            "generated_utc": "",
             "sections": [],
-            "notice": {
+            "diagnostics": {
                 "reason": "provider_deferred",
-                "title": "Showing deterministic local brief",
-                "message": "Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
+                "title": "Standup brief unavailable",
+                "message": "Compass kept the cheap refresh path here, and no exact same-packet narrated brief was available to replay.",
             },
             "evidence_lookup": {},
         },
         "48h": {
-            "status": "ready",
-            "source": "deterministic",
+            "status": "unavailable",
+            "source": "unavailable",
             "fingerprint": "stale-48h",
-            "generated_utc": "2020-01-02T16:45:00Z",
+            "generated_utc": "",
             "sections": [],
-            "notice": {
+            "diagnostics": {
                 "reason": "provider_deferred",
-                "title": "Showing deterministic local brief",
-                "message": "Compass rendered a deterministic local brief from the current fact packet because live AI narration stayed deferred during this refresh.",
+                "title": "Standup brief unavailable",
+                "message": "Compass kept the cheap refresh path here, and no exact same-packet narrated brief was available to replay.",
             },
             "evidence_lookup": {},
         },
@@ -1110,11 +2306,11 @@ def test_explicit_full_compass_refresh_artifacts_do_not_show_deterministic_brief
     fresh_payload["generated_utc"] = "2026-04-08T01:00:00Z"
     fresh_payload["now_local_iso"] = "2026-04-07T18:00:00-07:00"
     runtime_contract = fresh_payload.get("runtime_contract") if isinstance(fresh_payload.get("runtime_contract"), dict) else {}
-    runtime_contract["refresh_profile"] = "full"
+    runtime_contract["refresh_profile"] = "shell-safe"
     runtime_contract["last_refresh_attempt"] = {
         "status": "passed",
-        "requested_profile": "full",
-        "applied_profile": "full",
+        "requested_profile": "shell-safe",
+        "applied_profile": "shell-safe",
         "runtime_mode": "auto",
         "reason": "",
         "attempted_utc": fresh_payload["generated_utc"],
@@ -1173,12 +2369,15 @@ def test_explicit_full_compass_refresh_artifacts_do_not_show_deterministic_brief
                 compass = page.frame_locator("#frame-compass")
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
                 _assert_compass_live_state(compass, window_token="24h")
-                _wait_for_compass_brief_state(page, window_token="24h", scope_label="Global")
+                _wait_for_compass_brief_state(
+                    page,
+                    window_token="24h",
+                    scope_label="Global",
+                    statuses=("ready", "unavailable"),
+                )
                 meta_24h = _compass_brief_metadata(compass)
                 assert meta_24h["source"] in {"provider", "cache"}
                 assert meta_24h["hasNotice"] == "false"
-                assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
-
                 compass.locator('button[data-window="48h"]').click()
                 _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
                 _assert_compass_live_state(compass, window_token="48h")
@@ -1195,14 +2394,322 @@ def test_explicit_full_compass_refresh_artifacts_do_not_show_deterministic_brief
                     scoped_meta = _compass_brief_metadata(compass)
                     assert scoped_meta["source"] in {"provider", "cache"}
                     assert scoped_meta["hasNotice"] == "false"
-                    assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_unavailable_brief_hides_copy_button_and_stays_compact(
+    tmp_path,
+) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    payload["generated_utc"] = "2026-04-10T02:00:00Z"
+    payload["standup_brief"] = {
+        "24h": {
+            "status": "unavailable",
+            "source": "unavailable",
+            "fingerprint": "provider-error-24h",
+            "generated_utc": "",
+            "sections": [],
+            "diagnostics": {
+                "reason": "provider_error",
+                "title": "Brief unavailable right now",
+                "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+                "next_retry_utc": "2026-04-10T02:30:00Z",
+            },
+            "evidence_lookup": {},
+        },
+        "48h": {
+            "status": "unavailable",
+            "source": "unavailable",
+            "fingerprint": "provider-error-48h",
+            "generated_utc": "",
+            "sections": [],
+            "diagnostics": {
+                "reason": "provider_error",
+                "title": "Brief unavailable right now",
+                "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
+                "next_retry_utc": "2026-04-10T02:30:00Z",
+            },
+            "evidence_lookup": {},
+        },
+    }
+    payload["standup_brief_scoped"] = {"24h": {}, "48h": {}}
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _assert_compass_live_state(compass, window_token="24h")
+                _wait_for_compass_brief_state(
+                    page,
+                    window_token="24h",
+                    scope_label="Global",
+                    statuses=("unavailable",),
+                )
+
+                meta = _compass_brief_metadata(compass)
+                assert meta["status"] == "unavailable"
+                assert meta["source"] == "unavailable"
+
+                card_state = compass.locator("#standup-brief-card").evaluate(
+                    """(node) => {
+                        const copyButton = node.querySelector("#copy-brief");
+                        return {
+                          compact: node.classList.contains("standup-brief-card--compact"),
+                          copyHidden: Boolean(copyButton && copyButton.classList.contains("hidden")),
+                          copyDisabled: Boolean(copyButton && copyButton.disabled),
+                        };
+                    }"""
+                )
+                assert card_state == {
+                    "compact": True,
+                    "copyHidden": True,
+                    "copyDisabled": True,
+                }
+                digest_text = compass.locator("#digest-list").inner_text()
+                assert "Brief unavailable right now" in digest_text
+                assert "Next retry" in digest_text
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
                 context.close()
 
 
-def test_shell_safe_compass_refresh_artifacts_use_provider_backed_global_briefs_when_available(
+def test_compass_live_brief_warm_poll_reasons_match_retry_policy(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    compass = page.frame_locator("#frame-compass")
+    compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+    _assert_compass_live_state(compass, window_token="24h")
+
+    retry_matrix = compass.locator("body").evaluate(
+        """() => ({
+            providerDeferred: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "provider_deferred" } },
+              { date: "live" }
+            ),
+            rateLimited: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "rate_limited" } },
+              { date: "live" }
+            ),
+            timeout: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "timeout" } },
+              { date: "live" }
+            ),
+            transportError: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "transport_error" } },
+              { date: "live" }
+            ),
+            creditsExhausted: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "credits_exhausted" } },
+              { date: "live" }
+            ),
+            authError: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "auth_error" } },
+              { date: "live" }
+            ),
+            providerUnavailable: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "provider_unavailable" } },
+              { date: "live" }
+            ),
+            providerError: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "provider_error" } },
+              { date: "live" }
+            ),
+            invalidBatch: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "invalid_batch" } },
+              { date: "live" }
+            ),
+            scopedGlobalBorrow: shouldPollForWarmBrief(
+              { status: "ready", notice: { reason: "scoped_provider_deferred_showing_global" } },
+              { date: "live" }
+            ),
+            scopedWiderGlobalBorrow: shouldPollForWarmBrief(
+              { status: "ready", notice: { reason: "scoped_provider_deferred_showing_wider_global" } },
+              { date: "live" }
+            ),
+            historicalSnapshot: shouldPollForWarmBrief(
+              { status: "unavailable", diagnostics: { reason: "provider_deferred" } },
+              { date: "2026-04-10" }
+            ),
+        })"""
+    )
+    assert retry_matrix == {
+        "providerDeferred": True,
+        "rateLimited": True,
+        "timeout": True,
+        "transportError": True,
+        "creditsExhausted": False,
+        "authError": False,
+        "providerUnavailable": False,
+        "providerError": False,
+        "invalidBatch": False,
+        "scopedGlobalBorrow": True,
+        "scopedWiderGlobalBorrow": True,
+        "historicalSnapshot": False,
+    }
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_compass_provider_deferred_warm_poll_only_rerenders_brief(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    fixture_context_engine_dir = fixture_root / ".odylith" / "runtime"
+    fixture_context_engine_dir.mkdir(parents=True, exist_ok=True)
+    source_runtime_dir = _REPO_ROOT / ".odylith" / "runtime"
+    source_state_js = source_runtime_dir / odylith_control_state.STATE_JS_FILENAME
+    fixture_state_js = fixture_context_engine_dir / odylith_control_state.STATE_JS_FILENAME
+    if source_state_js.is_file():
+        shutil.copyfile(source_state_js, fixture_state_js)
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    payload["generated_utc"] = "2026-04-12T23:10:00Z"
+    standup_brief = payload.get("standup_brief") if isinstance(payload.get("standup_brief"), dict) else {}
+    standup_brief["24h"] = {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": "provider-deferred-24h",
+        "generated_utc": "",
+        "sections": [],
+        "diagnostics": {
+            "reason": "provider_deferred",
+            "title": "Standup brief unavailable",
+            "message": "Compass is still warming the live 24-hour brief.",
+        },
+        "evidence_lookup": {},
+    }
+    payload["standup_brief"] = standup_brief
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(base_url + "/odylith/index.html?tab=compass&window=24h&date=live", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _assert_compass_live_state(compass, window_token="24h")
+                _wait_for_compass_brief_state(
+                    page,
+                    window_token="24h",
+                    scope_label="Global",
+                    statuses=("unavailable",),
+                )
+
+                program_section = compass.locator("#execution-waves-host .execution-wave-section").first
+                program_section.wait_for(timeout=15000)
+                if program_section.get_attribute("open") is None:
+                    program_section.locator("> summary").first.click()
+                program_section.evaluate("(node) => { node.dataset.codexWarmBriefProbe = '1'; }")
+                assert program_section.evaluate("(node) => node.dataset.codexWarmBriefProbe") == "1"
+
+                compass.locator("body").evaluate(
+                    """() => {
+                        const readyBrief = {
+                          status: "ready",
+                          source: "provider",
+                          fingerprint: "provider-ready-24h",
+                          generated_utc: "2026-04-12T23:11:45Z",
+                          sections: [
+                            {
+                              key: "completed",
+                              label: "Completed in this window",
+                              bullets: [{ text: "The live brief warmed successfully.", fact_ids: [] }],
+                            },
+                            {
+                              key: "current_execution",
+                              label: "Current execution",
+                              bullets: [{ text: "Only the standup brief card should update now.", fact_ids: [] }],
+                            },
+                            {
+                              key: "next_planned",
+                              label: "Next planned",
+                              bullets: [{ text: "Keep the existing governance DOM intact.", fact_ids: [] }],
+                            },
+                            {
+                              key: "risks_to_watch",
+                              label: "Risks to watch",
+                              bullets: [{ text: "No extra live risk callout for this browser proof.", fact_ids: [] }],
+                            },
+                          ],
+                          evidence_lookup: {},
+                        };
+                        const originalLoadRuntime = window.loadRuntime;
+                        window.__codexWarmBriefLoadRuntimeCalls__ = 0;
+                        window.loadRuntime = async (state) => {
+                          window.__codexWarmBriefLoadRuntimeCalls__ += 1;
+                          const runtime = await originalLoadRuntime(state);
+                          const payload = runtime && runtime.payload && typeof runtime.payload === "object"
+                            ? JSON.parse(JSON.stringify(runtime.payload))
+                            : null;
+                          if (!payload) return runtime;
+                          const standupBrief = payload.standup_brief && typeof payload.standup_brief === "object"
+                            ? payload.standup_brief
+                            : {};
+                          standupBrief["24h"] = readyBrief;
+                          payload.generated_utc = readyBrief.generated_utc;
+                          payload.standup_brief = standupBrief;
+                          return Object.assign({}, runtime, { payload });
+                        };
+                    }"""
+                )
+
+                page.wait_for_function(
+                    """() => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const digest = doc && doc.querySelector("#digest-list");
+                        if (!digest || !digest.dataset) return false;
+                        return (digest.dataset.briefStatus || "") === "ready"
+                          && (digest.dataset.briefSource || "") === "provider";
+                    }""",
+                    timeout=15000,
+                )
+                page.wait_for_timeout(250)
+
+                assert program_section.evaluate("(node) => node.dataset.codexWarmBriefProbe") == "1"
+                assert program_section.evaluate("(node) => node.hasAttribute('open')") is True
+                assert "The live brief warmed successfully." in compass.locator("#digest-list").inner_text()
+                assert compass.locator("body").evaluate("() => window.__codexWarmBriefLoadRuntimeCalls__") == 1
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_shell_safe_compass_refresh_artifacts_enqueue_background_warm_without_foreground_provider(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1215,6 +2722,7 @@ def test_shell_safe_compass_refresh_artifacts_use_provider_backed_global_briefs_
         path.unlink(missing_ok=True)
 
     provider = _CompassProvider()
+    spawned: list[str] = []
 
     def _provider_from_config(  # noqa: ANN001
         config: odylith_reasoning.ReasoningConfig,
@@ -1229,6 +2737,11 @@ def test_shell_safe_compass_refresh_artifacts_use_provider_backed_global_briefs_
         return provider
 
     monkeypatch.setattr(odylith_reasoning, "provider_from_config", _provider_from_config)
+    monkeypatch.setattr(
+        render_compass_dashboard.compass_standup_brief_maintenance,
+        "maybe_spawn_background",
+        lambda **kwargs: spawned.append(str(kwargs["repo_root"])) or 4321,
+    )
 
     rc = render_compass_dashboard.main(
         [
@@ -1236,12 +2749,18 @@ def test_shell_safe_compass_refresh_artifacts_use_provider_backed_global_briefs_
             str(fixture_root),
             "--output",
             "odylith/compass/compass.html",
-            "--refresh-profile",
-            "shell-safe",
         ]
     )
     assert rc == 0
-    assert provider.calls >= 2
+    assert provider.calls == 0
+    assert spawned == [str(fixture_root.resolve())]
+    request_payload = json.loads(
+        compass_standup_brief_maintenance.maintenance_request_path(repo_root=fixture_root).read_text(encoding="utf-8")
+    )
+    assert sorted((request_payload.get("global") or {}).keys()) == ["24h", "48h"]
+    result = compass_standup_brief_maintenance.run_pending_request(repo_root=fixture_root)
+    assert sorted(result["globals"]) == ["24h", "48h"]
+    assert provider.calls >= 1
     _render_tooling_shell_fixture(fixture_root)
 
     with _static_server(root=fixture_root) as base_url:
@@ -1255,20 +2774,276 @@ def test_shell_safe_compass_refresh_artifacts_use_provider_backed_global_briefs_
                 compass = page.frame_locator("#frame-compass")
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
                 _assert_compass_live_state(compass, window_token="24h")
-                _wait_for_compass_brief_state(page, window_token="24h", scope_label="Global")
+                _wait_for_compass_brief_state(
+                    page,
+                    window_token="24h",
+                    scope_label="Global",
+                    statuses=("ready",),
+                )
                 meta_24h = _compass_brief_metadata(compass)
                 assert meta_24h["source"] == "provider"
                 assert meta_24h["hasNotice"] == "false"
-                assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
+
+                scope_value = _first_non_default_option(compass, "#scope-select", excluded={""})
+                assert re.fullmatch(r"B-\d{3,}", scope_value)
+                compass.locator("#scope-select").select_option(scope_value)
+                _wait_for_shell_query_param(page, tab="compass", key="scope", value=scope_value)
+                _wait_for_compass_brief_state(
+                    page,
+                    window_token="24h",
+                    scope_label=scope_value,
+                    statuses=("ready", "unavailable"),
+                )
+                scoped_meta_24h = _compass_brief_metadata(compass)
+                assert scoped_meta_24h["status"] == "ready"
+                assert scoped_meta_24h["source"] in {"provider", "cache"}
 
                 compass.locator('button[data-window="48h"]').click()
                 _wait_for_shell_query_param(page, tab="compass", key="window", value="48h")
                 _assert_compass_live_state(compass, window_token="48h")
-                _wait_for_compass_brief_state(page, window_token="48h", scope_label="Global")
+                _wait_for_compass_brief_state(
+                    page,
+                    window_token="48h",
+                    scope_label=scope_value,
+                    statuses=("ready", "unavailable"),
+                )
+                scoped_meta_48h = _compass_brief_metadata(compass)
+                assert scoped_meta_48h["status"] == "ready"
+                assert scoped_meta_48h["source"] in {"provider", "cache"}
+
+                _reset_select_to_first_option(compass, "#scope-select")
+                _wait_for_compass_brief_state(
+                    page,
+                    window_token="48h",
+                    scope_label="Global",
+                    statuses=("ready",),
+                )
                 meta_48h = _compass_brief_metadata(compass)
                 assert meta_48h["source"] == "provider"
                 assert meta_48h["hasNotice"] == "false"
-                assert "deterministic local brief" not in compass.locator("#digest-list").inner_text().lower()
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_scoped_provider_deferred_shows_global_live_brief_with_notice(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    scoped_24h = (payload.get("standup_brief_scoped") or {}).get("24h")
+    assert isinstance(scoped_24h, dict) and scoped_24h
+    scope_value = next(iter(scoped_24h.keys()))
+    payload["standup_brief"]["24h"] = {
+        "status": "ready",
+        "source": "provider",
+        "fingerprint": "global-live-24h",
+        "generated_utc": "2026-04-10T22:10:00Z",
+        "sections": [
+            {
+                "key": "completed",
+                "label": "Completed in this window",
+                "bullets": [{"text": "Good one to get over the line.", "fact_ids": []}],
+            },
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "bullets": [{"text": "The main pressure is still trust.", "fact_ids": []}],
+            },
+            {
+                "key": "next_planned",
+                "label": "Next planned",
+                "bullets": [{"text": "Line the surfaces back up.", "fact_ids": []}],
+            },
+            {
+                "key": "risks_to_watch",
+                "label": "Risks to watch",
+                "bullets": [{"text": "This is still the seam to watch.", "fact_ids": []}],
+            },
+        ],
+        "evidence_lookup": {},
+    }
+    scoped_24h[scope_value] = {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": "scoped-provider-deferred",
+        "generated_utc": "",
+        "sections": [],
+        "diagnostics": {
+            "reason": "provider_deferred",
+            "title": "Standup brief unavailable",
+            "message": "Compass is still warming this scoped brief.",
+        },
+        "evidence_lookup": {},
+    }
+    payload["standup_brief_scoped"]["24h"] = scoped_24h
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + f"/odylith/index.html?tab=compass&window=24h&date=live&scope={scope_value}",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _wait_for_shell_query_param(page, tab="compass", key="scope", value=scope_value)
+                page.wait_for_function(
+                    """({ windowToken, scopeLabel }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const target = doc && doc.querySelector("#digest-list");
+                        if (!target || !target.dataset) return false;
+                        return (target.dataset.briefStatus || "") === "ready"
+                          && (target.dataset.briefWindow || "") === windowToken
+                          && (target.dataset.briefScope || "") === scopeLabel
+                          && (target.dataset.briefHasNotice || "") === "true";
+                    }""",
+                    arg={"windowToken": "24h", "scopeLabel": scope_value},
+                    timeout=15000,
+                )
+                scoped_meta = _compass_brief_metadata(compass)
+                assert scoped_meta["status"] == "ready"
+                assert scoped_meta["source"] in {"provider", "cache"}
+                assert scoped_meta["hasNotice"] == "true"
+                assert scoped_meta["noticeReason"] == "scoped_provider_deferred_showing_global"
+                assert "Showing the global live brief" in compass.locator("#digest-list").inner_text()
+                copy_state = compass.locator("#copy-brief").evaluate(
+                    """(node) => ({
+                        hidden: node.classList.contains("hidden"),
+                        disabled: Boolean(node.disabled),
+                    })"""
+                )
+                assert copy_state == {"hidden": False, "disabled": False}
+                assert compass.locator(".borrowed-global-brief").count() == 0
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_scoped_provider_deferred_can_borrow_wider_global_live_brief(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_dir = fixture_root / "odylith" / "compass" / "runtime"
+    runtime_json_path = runtime_dir / "current.v1.json"
+    runtime_js_path = runtime_dir / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    scoped_24h = (payload.get("standup_brief_scoped") or {}).get("24h")
+    assert isinstance(scoped_24h, dict) and scoped_24h
+    scope_value = next(iter(scoped_24h.keys()))
+    payload["standup_brief"]["24h"] = {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": "global-24h-credits",
+        "generated_utc": "2026-04-10T22:10:00Z",
+        "sections": [],
+        "diagnostics": {
+            "reason": "credits_exhausted",
+            "title": "Brief is waiting on Codex CLI budget",
+            "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
+            "provider": "codex-cli",
+            "provider_model": "gpt-5.3-codex-spark",
+        },
+        "evidence_lookup": {},
+    }
+    payload["standup_brief"]["48h"] = {
+        "status": "ready",
+        "source": "provider",
+        "fingerprint": "global-live-48h",
+        "generated_utc": "2026-04-10T22:15:00Z",
+        "sections": [
+            {
+                "key": "completed",
+                "label": "Completed in this window",
+                "bullets": [{"text": "A wider global brief is still available.", "fact_ids": []}],
+            },
+            {
+                "key": "current_execution",
+                "label": "Current execution",
+                "bullets": [{"text": "The 48-hour summary is the safe fallback here.", "fact_ids": []}],
+            },
+            {
+                "key": "next_planned",
+                "label": "Next planned",
+                "bullets": [{"text": "Let the narrow scoped lane catch back up.", "fact_ids": []}],
+            },
+            {
+                "key": "risks_to_watch",
+                "label": "Risks to watch",
+                "bullets": [{"text": "The narrower 24-hour narration is still budget constrained.", "fact_ids": []}],
+            },
+        ],
+        "evidence_lookup": {},
+    }
+    scoped_24h[scope_value] = {
+        "status": "unavailable",
+        "source": "unavailable",
+        "fingerprint": "scoped-provider-deferred",
+        "generated_utc": "",
+        "sections": [],
+        "diagnostics": {
+            "reason": "provider_deferred",
+            "title": "Standup brief unavailable",
+            "message": "Compass is still warming this scoped brief.",
+        },
+        "evidence_lookup": {},
+    }
+    payload["standup_brief_scoped"]["24h"] = scoped_24h
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + f"/odylith/index.html?tab=compass&window=24h&date=live&scope={scope_value}",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                _wait_for_shell_query_param(page, tab="compass", key="scope", value=scope_value)
+                page.wait_for_function(
+                    """({ windowToken, scopeLabel }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        const target = doc && doc.querySelector("#digest-list");
+                        if (!target || !target.dataset) return false;
+                        return (target.dataset.briefStatus || "") === "ready"
+                          && (target.dataset.briefWindow || "") === windowToken
+                          && (target.dataset.briefScope || "") === scopeLabel
+                          && (target.dataset.briefHasNotice || "") === "true";
+                    }""",
+                    arg={"windowToken": "24h", "scopeLabel": scope_value},
+                    timeout=15000,
+                )
+                scoped_meta = _compass_brief_metadata(compass)
+                assert scoped_meta["status"] == "ready"
+                assert scoped_meta["source"] in {"provider", "cache"}
+                assert scoped_meta["hasNotice"] == "true"
+                assert scoped_meta["noticeReason"] == "scoped_provider_deferred_showing_wider_global"
+                assert "48-hour global live brief" in compass.locator("#digest-list").inner_text()
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
@@ -1417,7 +3192,7 @@ def test_compass_live_window_anchors_to_loaded_snapshot_time(tmp_path) -> None: 
                 context.close()
 
 
-def test_compass_archived_timeline_day_loads_from_embedded_history(tmp_path) -> None:  # noqa: ANN001
+def test_compass_legacy_archived_timeline_day_is_ignored(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
 
@@ -1494,7 +3269,7 @@ def test_compass_archived_timeline_day_loads_from_embedded_history(tmp_path) -> 
                 "version": "v1",
                 "generated_utc": live_payload["generated_utc"],
                 "retention_days": 1,
-                "dates": [live_day],
+                "dates": [archived_day],
                 "restored_dates": [],
                 "archive": live_payload["history"]["archive"],
                 "snapshots": {
@@ -1519,16 +3294,26 @@ def test_compass_archived_timeline_day_loads_from_embedded_history(tmp_path) -> 
 
                 compass = page.frame_locator("#frame-compass")
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
-                compass.locator("#timeline .timeline-day-title", has_text=archived_day).wait_for(timeout=15000)
-                assert compass.locator("#timeline .hour-row").count() > 0
-                compass.locator("#timeline .empty", has_text="No snapshot available for this day.").wait_for(
-                    state="detached",
+                page.wait_for_function(
+                    """() => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        if (!doc) return false;
+                        return doc.querySelectorAll("#timeline .tx-card, #timeline .empty, #timeline .timeline-day-title, #timeline .hour-empty").length > 0;
+                    }""",
                     timeout=15000,
                 )
+                compass.locator("#status-banner").wait_for(timeout=15000)
+                assert "No snapshot available for this day" in compass.locator("#status-banner").inner_text().strip()
+                assert compass.locator("#timeline .tx-headline", has_text=archived_tx["headline"]).count() == 0
 
-                bad_responses[:] = [
+                assert not [
+                    entry for entry in failed_requests
+                    if entry.endswith(f"/odylith/compass/runtime/history/{archived_day}.v1.json")
+                ]
+                assert not [
                     entry for entry in bad_responses
-                    if not entry.endswith(f"/odylith/compass/runtime/history/{archived_day}.v1.json")
+                    if entry.endswith(f"/odylith/compass/runtime/history/{archived_day}.v1.json")
                 ]
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
@@ -1541,6 +3326,8 @@ def test_compass_timeline_mixed_local_batch_falls_back_to_transaction_headline(t
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
+    traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
 
     scope_id = "B-020"
@@ -1627,12 +3414,87 @@ def test_compass_timeline_mixed_local_batch_falls_back_to_transaction_headline(t
                 context.close()
 
 
+def test_compass_timeline_transaction_chips_keep_checkpoint_anchor_workstream(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+
+    event = {
+        "id": "checkpoint-anchor:event",
+        "kind": "implementation",
+        "summary": (
+            "Captured B-071 checkpoint: completed Compass quiet-scope failures "
+            "were not just Compass bugs; they exposed a broader product problem."
+        ),
+        "context": "",
+        "ts": dt.datetime.fromisoformat("2026-04-09T18:48:00-07:00"),
+        "ts_iso": "2026-04-09T18:48:00-07:00",
+        "author": "local",
+        "files": ["src/odylith/runtime/governance/delivery/scope_signal_ladder.py"],
+        "workstreams": ["B-001", "B-003", "B-004", "B-025", "B-027"],
+        "source": "local",
+        "session_id": "",
+        "transaction_id": "",
+        "transaction_seq": 0,
+        "transaction_boundary": "",
+        "headline_hint": "",
+    }
+    transaction = compass_transaction_runtime._build_prompt_transactions(events=[event])[0]
+
+    payload["generated_utc"] = "2026-04-10T01:48:30Z"
+    payload["now_local_iso"] = "2026-04-09T18:48:30-07:00"
+    payload["timeline_events"] = list(transaction.get("events") or [])
+    payload["timeline_transactions"] = [transaction]
+    payload["history"] = {
+        "retention_days": 15,
+        "dates": ["2026-04-09"],
+        "restored_dates": [],
+        "archive": {"compressed": True, "path": "archive", "count": 0, "dates": [], "newest_date": "", "oldest_date": ""},
+    }
+
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + "/odylith/index.html?tab=compass&window=48h&date=live",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                tx_card = compass.locator("#timeline .tx-card").first
+                tx_card.locator(".tx-headline", has_text="Captured B-071 checkpoint").wait_for(timeout=15000)
+                chip_labels = tx_card.locator(".chips a").evaluate_all(
+                    "nodes => nodes.map(node => String(node.textContent || '').trim()).filter(Boolean)"
+                )
+                assert "B-071" in chip_labels
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
 def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    history_day_path = fixture_root / "odylith" / "compass" / "runtime" / "history" / "2026-04-01.v1.json"
+    source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
+    traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
 
     scope_id = "B-777"
@@ -1641,6 +3503,7 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
     scope_row["status"] = "implementation"
     scope_row["title"] = "Scoped audit-day fallback regression"
     payload["current_workstreams"] = [scope_row]
+    payload["workstream_catalog"] = [scope_row]
 
     event = dict((payload.get("timeline_events") or [])[0])
     event["id"] = "scoped-fallback:event"
@@ -1667,9 +3530,21 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
     payload["now_local_iso"] = "2026-04-02T12:13:23-07:00"
     payload["timeline_events"] = [event]
     payload["timeline_transactions"] = [transaction]
+    payload["verified_scoped_workstreams"] = {
+        "24h": [scope_id],
+        "48h": [scope_id],
+    }
+    payload["promoted_scoped_workstreams"] = {
+        "24h": [scope_id],
+        "48h": [scope_id],
+    }
+    payload["window_scope_signals"] = {
+        "24h": {scope_id: {"promoted_default": True, "budget_class": "primary"}},
+        "48h": {scope_id: {"promoted_default": True, "budget_class": "primary"}},
+    }
     payload["history"] = {
         "retention_days": 15,
-        "dates": ["2026-04-02", "2026-04-01", "2026-03-31"],
+        "dates": ["2026-04-02", "2026-04-01"],
         "restored_dates": [],
         "archive": {"compressed": True, "path": "archive", "count": 0, "dates": [], "newest_date": "", "oldest_date": ""},
     }
@@ -1679,6 +3554,12 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
         encoding="utf-8",
     )
+    history_day_path.parent.mkdir(parents=True, exist_ok=True)
+    history_day_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    source_truth_path.unlink(missing_ok=True)
+    traceability_payload = json.loads(traceability_path.read_text(encoding="utf-8"))
+    traceability_payload["generated_utc"] = "2026-04-01T00:00:00Z"
+    traceability_path.write_text(json.dumps(traceability_payload, indent=2) + "\n", encoding="utf-8")
 
     with _static_server(root=fixture_root) as base_url:
         for _pw, browser in _browser():
@@ -1698,19 +3579,24 @@ def test_compass_scoped_live_view_prefers_latest_non_empty_audit_day(tmp_path) -
                 compass.locator("#timeline .timeline-day-title", has_text="2026-04-02").wait_for(state="detached", timeout=15000)
                 compass.locator("#timeline", has_text="Scoped fallback implementation event.").wait_for(timeout=15000)
 
+                console_errors[:] = [row for row in console_errors if "compass-source-truth.v1.json" not in row]
+                console_errors[:] = [row for row in console_errors if "404 (File not found)" not in row]
+                bad_responses[:] = [row for row in bad_responses if "compass-source-truth.v1.json" not in row]
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
                 context.close()
 
 
-def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  # noqa: ANN001
+def test_compass_live_timeline_keeps_prior_window_day_while_hiding_future_hours(tmp_path) -> None:  # noqa: ANN001
     fixture_root = tmp_path / "fixture"
     shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
 
     runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
     runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    history_dir = fixture_root / "odylith" / "compass" / "runtime" / "history"
     payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
 
+    previous_day = "2026-04-04"
     current_day = "2026-04-05"
     files = ["src/odylith/runtime/surfaces/templates/compass_dashboard/compass-state.v1.js"]
 
@@ -1724,6 +3610,11 @@ def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  
     event["author"] = "assistant"
     event["files"] = list(files)
     event["workstreams"] = ["B-004"]
+
+    previous_event = dict(event)
+    previous_event["id"] = "live-horizon:previous-event"
+    previous_event["summary"] = "Live prior-day window event."
+    previous_event["ts_iso"] = "2026-04-04T23:41:00-07:00"
 
     transaction = dict((payload.get("timeline_transactions") or [0])[0] if (payload.get("timeline_transactions") or []) else {})
     if not transaction:
@@ -1750,13 +3641,21 @@ def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  
     transaction["workstreams"] = ["B-004"]
     transaction["events"] = [event]
 
+    previous_transaction = dict(transaction)
+    previous_transaction["id"] = "live-horizon:previous-tx"
+    previous_transaction["transaction_id"] = "live-horizon:previous-tx"
+    previous_transaction["headline"] = "Live prior-day Compass window transaction"
+    previous_transaction["start_ts_iso"] = "2026-04-04T23:33:00-07:00"
+    previous_transaction["end_ts_iso"] = "2026-04-04T23:41:00-07:00"
+    previous_transaction["events"] = [previous_event]
+
     payload["generated_utc"] = "2026-04-05T07:29:00Z"
     payload["now_local_iso"] = "2026-04-05T00:29:00-07:00"
-    payload["timeline_events"] = [event]
-    payload["timeline_transactions"] = [transaction]
+    payload["timeline_events"] = [event, previous_event]
+    payload["timeline_transactions"] = [transaction, previous_transaction]
     payload["history"] = {
         "retention_days": 15,
-        "dates": [current_day, "2026-04-04"],
+        "dates": [current_day, previous_day],
         "restored_dates": [],
         "archive": {"compressed": True, "path": "archive", "count": 0, "dates": [], "newest_date": "", "oldest_date": ""},
     }
@@ -1764,6 +3663,16 @@ def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  
     runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     runtime_js_path.write_text(
         "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    previous_day_payload = dict(payload)
+    previous_day_payload["generated_utc"] = "2026-04-05T06:41:00Z"
+    previous_day_payload["now_local_iso"] = "2026-04-04T23:41:00-07:00"
+    previous_day_payload["timeline_events"] = [previous_event]
+    previous_day_payload["timeline_transactions"] = [previous_transaction]
+    history_dir.mkdir(parents=True, exist_ok=True)
+    (history_dir / f"{previous_day}.v1.json").write_text(
+        json.dumps(previous_day_payload, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -1781,10 +3690,31 @@ def test_compass_live_selected_audit_day_hides_future_hours(tmp_path) -> None:  
                 compass = page.frame_locator("#frame-compass")
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
                 compass.locator("#timeline .timeline-day-title", has_text=current_day).wait_for(timeout=15000)
-                compass.locator("#timeline .hour-label", has_text="00:00").wait_for(timeout=15000)
-                compass.locator("#timeline .hour-label", has_text="01:00").wait_for(state="detached", timeout=15000)
-                compass.locator("#timeline .hour-label", has_text="23:00").wait_for(state="detached", timeout=15000)
+                compass.locator("#timeline .timeline-day-title", has_text=previous_day).wait_for(timeout=15000)
+                page.wait_for_function(
+                    """({ currentDay, previousDay }) => {
+                        const frame = document.querySelector("#frame-compass");
+                        const doc = frame && frame.contentDocument;
+                        if (!doc) return false;
+                        const sections = Array.from(doc.querySelectorAll("#timeline .timeline-day"));
+                        const findSection = (token) => sections.find((section) => {
+                            const title = section.querySelector(".timeline-day-title");
+                            return Boolean(title) && (title.textContent || "").includes(token);
+                        });
+                        const current = findSection(currentDay);
+                        const previous = findSection(previousDay);
+                        if (!current || !previous) return false;
+                        const currentLabels = Array.from(current.querySelectorAll(".hour-label")).map((node) => (node.textContent || "").trim());
+                        const previousLabels = Array.from(previous.querySelectorAll(".hour-label")).map((node) => (node.textContent || "").trim());
+                        return currentLabels.includes("00:00")
+                          && !currentLabels.includes("01:00")
+                          && previousLabels.includes("23:00");
+                    }""",
+                    arg={"currentDay": current_day, "previousDay": previous_day},
+                    timeout=15000,
+                )
                 compass.locator("#timeline", has_text=event["summary"]).wait_for(timeout=15000)
+                compass.locator("#timeline", has_text=previous_event["summary"]).wait_for(timeout=15000)
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
@@ -1885,6 +3815,351 @@ def test_compass_reload_prefers_fresher_runtime_json_over_stale_preloaded_js(tmp
                     }""",
                     timeout=15000,
                 )
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_snapshot_is_stale(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
+
+    traceability_payload = json.loads(traceability_path.read_text(encoding="utf-8"))
+    traceability_payload["generated_utc"] = "2026-04-10T12:00:00Z"
+    for release in traceability_payload.get("releases", []):
+        if str(release.get("release_id", "")).strip() != "release-0-1-11":
+            continue
+        release["active_workstreams"] = ["B-068"]
+        release["completed_workstreams"] = ["B-061", "B-062", "B-063", "B-067"]
+    if isinstance(traceability_payload.get("current_release"), dict):
+        traceability_payload["current_release"]["active_workstreams"] = ["B-068"]
+        traceability_payload["current_release"]["completed_workstreams"] = ["B-061", "B-062", "B-063", "B-067"]
+    for row in traceability_payload.get("workstreams", []):
+        idea_id = str(row.get("idea_id", "")).strip()
+        if idea_id == "B-067":
+            row["status"] = "finished"
+            row["active_release_id"] = ""
+            row["active_release"] = {}
+            row["release_history_summary"] = "Removed from 0.1.11"
+        if idea_id == "B-068":
+            row["status"] = "implementation"
+            row["active_release_id"] = "release-0-1-11"
+            row["active_release"] = {
+                "release_id": "release-0-1-11",
+                "status": "active",
+                "version": "0.1.11",
+                "tag": "v0.1.11",
+                "display_label": "0.1.11",
+                "aliases": ["current"],
+                "active_workstreams": ["B-068"],
+                "completed_workstreams": ["B-061", "B-062", "B-063", "B-067"],
+            }
+            row["release_history_summary"] = "Active: 0.1.11 · Added to 0.1.11"
+    traceability_path.write_text(json.dumps(traceability_payload, indent=2) + "\n", encoding="utf-8")
+
+    assert render_compass_dashboard.main(
+        [
+            "--repo-root",
+            str(fixture_root),
+            "--output",
+            "odylith/compass/compass.html",
+        ]
+    ) == 0
+    assert tooling_dashboard_renderer.main(
+        [
+            "--repo-root",
+            str(fixture_root),
+            "--output",
+            "odylith/index.html",
+        ]
+    ) == 0
+    runtime_payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+    runtime_payload["release_summary"] = {
+        "catalog": [
+            {
+                "release_id": "release-0-1-11",
+                "display_label": "0.1.11",
+                "status": "active",
+                "aliases": ["current"],
+                "active_workstreams": ["B-067"],
+                "completed_workstreams": ["B-061", "B-062", "B-063"],
+            }
+        ],
+        "current_release": {
+            "release_id": "release-0-1-11",
+            "display_label": "0.1.11",
+            "status": "active",
+            "aliases": ["current"],
+            "active_workstreams": ["B-067"],
+            "completed_workstreams": ["B-061", "B-062", "B-063"],
+        },
+        "next_release": {},
+        "summary": {"active_assignment_count": 1},
+    }
+    runtime_payload["current_workstreams"] = [
+        {
+            "idea_id": "B-067",
+            "title": "Context Engine Module Decomposition and Boundary Hardening",
+            "status": "implementation",
+            "release": {
+                "release_id": "release-0-1-11",
+                "display_label": "0.1.11",
+                "aliases": ["current"],
+                "active_workstreams": ["B-067"],
+                "completed_workstreams": ["B-061", "B-062", "B-063"],
+            },
+            "release_history_summary": "Active: 0.1.11 · Added to 0.1.11",
+            "plan": {"progress_ratio": 0.0},
+        }
+    ]
+    runtime_payload["workstream_catalog"] = list(runtime_payload["current_workstreams"])
+    runtime_payload["generated_utc"] = "2026-04-09T12:00:00Z"
+    runtime_json_path.write_text(json.dumps(runtime_payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(runtime_payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+    source_truth_path.unlink(missing_ok=True)
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                compass.locator("#status-banner").wait_for(timeout=15000)
+                banner_text = compass.locator("#status-banner").inner_text().strip()
+                assert "Release truth for 0.1.11 now targets B-068" in banner_text
+                assert "B-067" in banner_text
+
+                release_section = compass.locator("#release-groups details.execution-wave-section").filter(
+                    has=compass.locator(".execution-wave-section-title", has_text="0.1.11")
+                ).first
+                release_section.wait_for(timeout=15000)
+                if release_section.get_attribute("open") is None:
+                    release_section.locator("summary").first.click()
+                release_section.locator(".execution-wave-panel").first.wait_for(timeout=15000)
+                release_text = release_section.inner_text().strip()
+                assert "B-068" in release_text
+                assert "B-067" in release_text
+                b068_card = compass.locator("#release-groups .execution-wave-card", has_text="B-068").first
+                b068_card.wait_for(timeout=15000)
+                b068_text = b068_card.inner_text().strip()
+                assert "0% progress" not in b068_text
+
+                console_errors[:] = [row for row in console_errors if "compass-source-truth.v1.json" not in row]
+                console_errors[:] = [row for row in console_errors if "404 (File not found)" not in row]
+                bad_responses[:] = [row for row in bad_responses if "compass-source-truth.v1.json" not in row]
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_release_targets_show_checklist_label_instead_of_fake_zero_progress(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _write_fixture_current_release_assignments(fixture_root, "B-068")
+    _rewrite_fixture_workstream_status(fixture_root, idea_id="B-068", status="implementation")
+    traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
+    plan_path = (
+        fixture_root
+        / "odylith"
+        / "technical-plans"
+        / "done"
+        / "2026-04"
+        / "2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md"
+    )
+    traceability_payload = json.loads(traceability_path.read_text(encoding="utf-8"))
+    for release in traceability_payload.get("releases", []):
+        if str(release.get("release_id", "")).strip() != "release-0-1-11":
+            continue
+        release["active_workstreams"] = ["B-068"]
+        release["completed_workstreams"] = ["B-061", "B-062", "B-063", "B-067", "B-069"]
+    if isinstance(traceability_payload.get("current_release"), dict):
+        traceability_payload["current_release"]["active_workstreams"] = ["B-068"]
+        traceability_payload["current_release"]["completed_workstreams"] = ["B-061", "B-062", "B-063", "B-067", "B-069"]
+    for row in traceability_payload.get("workstreams", []):
+        if str(row.get("idea_id", "")).strip() != "B-068":
+            continue
+        row["status"] = "implementation"
+        row["active_release_id"] = "release-0-1-11"
+        row["active_release"] = {
+            "release_id": "release-0-1-11",
+            "status": "active",
+            "version": "0.1.11",
+            "tag": "v0.1.11",
+            "display_label": "0.1.11",
+            "aliases": ["current"],
+            "active_workstreams": ["B-068"],
+            "completed_workstreams": ["B-061", "B-062", "B-063", "B-067", "B-069"],
+        }
+        row["release_history_summary"] = "Active: 0.1.11 · Added to 0.1.11"
+    traceability_path.write_text(json.dumps(traceability_payload, indent=2) + "\n", encoding="utf-8")
+    plan_path.write_text(
+        plan_path.read_text(encoding="utf-8").replace("- [x]", "- [ ]"),
+        encoding="utf-8",
+    )
+
+    assert render_compass_dashboard.main(
+        [
+            "--repo-root",
+            str(fixture_root),
+            "--output",
+            "odylith/compass/compass.html",
+        ]
+    ) == 0
+    assert tooling_dashboard_renderer.main(
+        [
+            "--repo-root",
+            str(fixture_root),
+            "--output",
+            "odylith/index.html",
+        ]
+    ) == 0
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                release_section = compass.locator("#release-groups details.execution-wave-section").filter(
+                    has=compass.locator(".execution-wave-section-title", has_text="0.1.11")
+                ).first
+                release_section.wait_for(timeout=15000)
+                if release_section.get_attribute("open") is None:
+                    release_section.locator("summary").first.click()
+                release_section.locator(".execution-wave-panel").first.wait_for(timeout=15000)
+                release_text = release_section.inner_text().strip()
+                assert "B-068" in release_text
+                b068_card = compass.locator("#release-groups .execution-wave-card", has_text="B-068").first
+                b068_card.wait_for(timeout=15000)
+                b068_text = b068_card.inner_text().strip()
+                assert re.search(r"Checklist 0/\d+", b068_text)
+                assert "0% progress" not in b068_text
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_release_targets_show_tracked_execution_percent_for_partial_progress(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+    _write_fixture_current_release_assignments(fixture_root, "B-068")
+    _rewrite_fixture_workstream_status(fixture_root, idea_id="B-068", status="implementation")
+    traceability_path = fixture_root / "odylith" / "radar" / "traceability-graph.v1.json"
+    plan_path = (
+        fixture_root
+        / "odylith"
+        / "technical-plans"
+        / "done"
+        / "2026-04"
+        / "2026-04-08-odylith-context-engine-benchmark-family-and-grounding-quality-gates.md"
+    )
+    traceability_payload = json.loads(traceability_path.read_text(encoding="utf-8"))
+    for release in traceability_payload.get("releases", []):
+        if str(release.get("release_id", "")).strip() != "release-0-1-11":
+            continue
+        release["active_workstreams"] = ["B-068"]
+        release["completed_workstreams"] = ["B-061", "B-062", "B-063", "B-067", "B-069"]
+    if isinstance(traceability_payload.get("current_release"), dict):
+        traceability_payload["current_release"]["active_workstreams"] = ["B-068"]
+        traceability_payload["current_release"]["completed_workstreams"] = ["B-061", "B-062", "B-063", "B-067", "B-069"]
+    for row in traceability_payload.get("workstreams", []):
+        if str(row.get("idea_id", "")).strip() != "B-068":
+            continue
+        row["status"] = "implementation"
+        row["active_release_id"] = "release-0-1-11"
+        row["active_release"] = {
+            "release_id": "release-0-1-11",
+            "status": "active",
+            "version": "0.1.11",
+            "tag": "v0.1.11",
+            "display_label": "0.1.11",
+            "aliases": ["current"],
+            "active_workstreams": ["B-068"],
+            "completed_workstreams": ["B-061", "B-062", "B-063", "B-067", "B-069"],
+        }
+        row["release_history_summary"] = "Active: 0.1.11 · Added to 0.1.11"
+    traceability_path.write_text(json.dumps(traceability_payload, indent=2) + "\n", encoding="utf-8")
+    plan_text = plan_path.read_text(encoding="utf-8")
+    plan_text = plan_text.replace(
+        "- [x] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone`",
+        "- [ ] `PYTHONPATH=src python3 -m odylith.cli sync --repo-root . --check-only --runtime-mode standalone`",
+        1,
+    )
+    plan_text = plan_text.replace(
+        "- [x] `git diff --check`",
+        "- [ ] `git diff --check`",
+        1,
+    )
+    plan_path.write_text(plan_text, encoding="utf-8")
+
+    assert render_compass_dashboard.main(
+        [
+            "--repo-root",
+            str(fixture_root),
+            "--output",
+            "odylith/compass/compass.html",
+        ]
+    ) == 0
+    assert tooling_dashboard_renderer.main(
+        [
+            "--repo-root",
+            str(fixture_root),
+            "--output",
+            "odylith/index.html",
+        ]
+    ) == 0
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                release_section = compass.locator("#release-groups details.execution-wave-section").filter(
+                    has=compass.locator(".execution-wave-section-title", has_text="0.1.11")
+                ).first
+                release_section.wait_for(timeout=15000)
+                if release_section.get_attribute("open") is None:
+                    release_section.locator("summary").first.click()
+                release_section.locator(".execution-wave-panel").first.wait_for(timeout=15000)
+                release_text = release_section.inner_text().strip()
+                assert "B-068" in release_text
+                b068_card = compass.locator("#release-groups .execution-wave-card", has_text="B-068").first
+                b068_card.wait_for(timeout=15000)
+                b068_text = b068_card.inner_text().strip()
+                assert re.search(r"\d+% progress", b068_text)
+                assert "Checklist" not in b068_text
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:

@@ -1,4 +1,4 @@
-"""Benchmark Odylith against honest live Codex CLI baseline modes.
+"""Benchmark Odylith against honest live host-CLI baseline modes.
 
 This module keeps the benchmark harness local-first and non-destructive:
 
@@ -17,7 +17,10 @@ import ast
 import concurrent.futures
 import contextlib
 import datetime as dt
+import errno
+import fcntl
 import hashlib
+import inspect
 import json
 import multiprocessing
 import os
@@ -29,20 +32,41 @@ import shutil
 import signal
 import statistics
 import subprocess
+import sys
 import tempfile
 import time
 import tomllib
 from typing import Any, Iterator, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping
+from odylith.runtime.common.python_source_parse import (
+    parse_python_source_for_static_analysis,
+)
 from odylith.runtime.evaluation import benchmark_group_summaries
+from odylith.runtime.evaluation import benchmark_metric_helpers
+from odylith.runtime.evaluation import odylith_benchmark_snapshot_paths
+from odylith.runtime.evaluation.odylith_benchmark_tree_identity import stable_snapshot_overlay_paths
+from odylith.runtime.evaluation import odylith_benchmark_acceptance
+from odylith.runtime.evaluation import odylith_benchmark_mode
+from odylith.runtime.evaluation import odylith_benchmark_isolation
+from odylith.runtime.evaluation import odylith_benchmark_context_engine
+from odylith.runtime.evaluation import odylith_benchmark_execution_engine
 from odylith.runtime.evaluation import odylith_benchmark_guardrails
+from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.evaluation import odylith_benchmark_live_execution
+from odylith.runtime.evaluation import odylith_benchmark_proof_discipline
 from odylith.runtime.evaluation import odylith_benchmark_prompt_payloads
+from odylith.runtime.evaluation import odylith_benchmark_runtime_posture_runtime as benchmark_runtime_posture_runtime
 from odylith.runtime.common import odylith_benchmark_contract
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import governance_signal_codec
+from odylith.runtime.context_engine import odylith_context_engine_packet_adaptive_runtime as packet_adaptive_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.context_engine import path_bundle_codec
+from odylith.runtime.discipline import runtime as discipline_runtime
+from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.orchestration import subagent_orchestrator
 from odylith.runtime.orchestration import subagent_router as leaf_router
 
@@ -50,6 +74,11 @@ REPORT_CONTRACT = "odylith_benchmark_report.v1"
 REPORT_VERSION = "v1"
 PROGRESS_CONTRACT = "odylith_benchmark_progress.v1"
 PROGRESS_VERSION = "v1"
+ACTIVE_RUNS_CONTRACT = "odylith_benchmark_active_runs.v1"
+ACTIVE_RUNS_VERSION = "v1"
+LIVE_COMPARISON_CONTRACT = "full_product_assistance_vs_raw_agent"
+LEGACY_LIVE_COMPARISON_CONTRACT = "live_end_to_end"
+DIAGNOSTIC_COMPARISON_CONTRACT = "internal_packet_prompt_diagnostic"
 BENCHMARK_PROFILE_QUICK = "quick"
 BENCHMARK_PROFILE_PROOF = "proof"
 BENCHMARK_PROFILE_DIAGNOSTIC = "diagnostic"
@@ -91,17 +120,28 @@ _MODE_ALIASES = {
 _VALID_MODES = frozenset((*DEFAULT_MODES, *DIAGNOSTIC_CONTROL_MODES, *_MODE_ALIASES.keys()))
 DEFAULT_CACHE_PROFILES: tuple[str, ...] = ("warm", "cold")
 _VALID_CACHE_PROFILES = frozenset({"warm", "cold"})
-_VALID_PACKET_SOURCES = frozenset({"impact", "governance_slice", "session_brief", "bootstrap_session"})
+_FAMILY_ALIASES = {
+    "discipline": "discipline",
+    "odylith-discipline": "discipline",
+    "odylith_discipline": "discipline",
+}
+_LOCAL_ONLY_QUICK_FAMILIES = frozenset({"guidance_behavior", "discipline"})
+_MIN_BENCHMARK_RUNTIME_FREE_BYTES = 256 * 1024 * 1024
+_VALID_PACKET_SOURCES = frozenset({"adaptive", "impact", "governance_slice", "session_brief", "bootstrap_session"})
 _ANALYSIS_FAMILIES = frozenset({"analysis", "architecture", "broad_shared_scope"})
 _WRITE_FAMILIES = frozenset(
     {
+        "api_contract_evolution",
         "cross_file_feature",
+        "destructive_scope_control",
         "docs_code_closeout",
         "exact_anchor_recall",
+        "external_dependency_recovery",
         "explicit_workstream",
         "merge_heavy_change",
         "orchestration_feedback",
         "orchestration_intelligence",
+        "stateful_bug_recovery",
         "validation_heavy_fix",
     }
 )
@@ -116,15 +156,86 @@ _GOVERNANCE_SLICE_FAMILIES = frozenset(
         "component_governance",
         "agent_activation",
         "cross_surface_governance_sync",
+        "execution_engine",
+        "live_proof_discipline",
     }
 )
-_CORRECTNESS_CRITICAL_FAMILIES = frozenset({"validation_heavy_fix", "merge_heavy_change"})
+_CORRECTNESS_CRITICAL_FAMILIES = frozenset(
+    {
+        "destructive_scope_control",
+        "external_dependency_recovery",
+        "merge_heavy_change",
+        "stateful_bug_recovery",
+        "validation_heavy_fix",
+    }
+)
+_MECHANISM_HEAVY_IMPLEMENTATION_FAMILIES = frozenset(
+    {
+        "broad_shared_scope",
+        "context_engine_grounding",
+        "execution_engine",
+        "exact_anchor_recall",
+        "exact_path_ambiguity",
+        "explicit_workstream",
+        "orchestration_feedback",
+        "orchestration_intelligence",
+        "retrieval_miss_recovery",
+    }
+)
+_SERIOUS_IMPLEMENTATION_SCENARIO_MIN = 60
+_SERIOUS_WRITE_PLUS_VALIDATOR_SCENARIO_MIN = 35
+_SERIOUS_CORRECTNESS_CRITICAL_SCENARIO_MIN = 12
+_SERIOUS_MECHANISM_HEAVY_IMPLEMENTATION_MAX_RATIO = 0.40
+_SERIOUS_REQUIRED_FAMILIES = frozenset(
+    {
+        "api_contract_evolution",
+        "stateful_bug_recovery",
+        "external_dependency_recovery",
+        "destructive_scope_control",
+    }
+)
 _REPORT_FILENAME = "latest.v1.json"
+_RETIRED_LATEST_REPORT_FILENAMES = ("odylith-benchmark.json",)
 _PROGRESS_FILENAME = "in-progress.v1.json"
-_BENCHMARK_WARM_CACHE_SECONDS = 30.0
+_ACTIVE_RUNS_FILENAME = "active-runs.v1.json"
 _BENCHMARK_ADOPTION_PROOF_SAMPLE_TIMEOUT_SECONDS = 60.0
 _BENCHMARK_ADOPTION_PROOF_TERMINATION_GRACE_SECONDS = 1.0
 _BENCHMARK_LOCK_KEY = "odylith-benchmark-runner"
+
+
+class BenchmarkRunInterrupted(RuntimeError):
+    """Raised when a benchmark run receives a termination-style interrupt."""
+
+
+@contextlib.contextmanager
+def _benchmark_interrupt_guard() -> Iterator[None]:
+    handlers: list[tuple[int, Any]] = []
+
+    def _handler(signum: int, _frame: Any) -> None:
+        signal_name = getattr(signal.Signals(signum), "name", str(signum))
+        raise BenchmarkRunInterrupted(f"received {signal_name}")
+
+    if multiprocessing.current_process().name == "MainProcess":
+        for signum in (signal.SIGTERM, signal.SIGINT):
+            if any(existing == signum for existing, _ in handlers):
+                continue
+            with contextlib.suppress(OSError, RuntimeError, ValueError):
+                previous = signal.getsignal(signum)
+                signal.signal(signum, _handler)
+                handlers.append((signum, previous))
+        sighup = getattr(signal, "SIGHUP", None)
+        if sighup is not None and not any(existing == sighup for existing, _ in handlers):
+            with contextlib.suppress(OSError, RuntimeError, ValueError):
+                previous = signal.getsignal(sighup)
+                signal.signal(sighup, signal.SIG_IGN)
+                handlers.append((sighup, previous))
+    try:
+        yield
+    finally:
+        for signum, previous in reversed(handlers):
+            with contextlib.suppress(OSError, RuntimeError, ValueError):
+                signal.signal(signum, previous)
+
 _PROMPT_PAYLOAD_KEYS = frozenset({"context_packet", "narrowing_guidance", "docs", "relevant_docs"})
 _RUNTIME_CONTRACT_KEYS = frozenset(
     {
@@ -166,6 +277,9 @@ _LOWER_BETTER_SUMMARY_FIELDS = frozenset(
         "odylith_requires_widening_rate",
         "odylith_mixed_local_fallback_rate",
         "unnecessary_widening_rate",
+        *odylith_benchmark_proof_discipline.LOWER_BETTER_SUMMARY_FIELDS,
+        *odylith_benchmark_context_engine.LOWER_BETTER_SUMMARY_FIELDS,
+        *odylith_benchmark_execution_engine.LOWER_BETTER_SUMMARY_FIELDS,
     }
 )
 _HIGHER_BETTER_SUMMARY_FIELDS = frozenset(
@@ -185,6 +299,9 @@ _HIGHER_BETTER_SUMMARY_FIELDS = frozenset(
         "critical_required_path_recall_rate",
         "critical_validation_success_rate",
         "write_surface_precision_rate",
+        *odylith_benchmark_proof_discipline.HIGHER_BETTER_SUMMARY_FIELDS,
+        *odylith_benchmark_context_engine.HIGHER_BETTER_SUMMARY_FIELDS,
+        *odylith_benchmark_execution_engine.HIGHER_BETTER_SUMMARY_FIELDS,
     }
 )
 _LOWER_BETTER_RESULT_FIELDS = frozenset(
@@ -195,6 +312,7 @@ _LOWER_BETTER_RESULT_FIELDS = frozenset(
         "uninstrumented_overhead_ms",
         "initial_prompt_estimated_tokens",
         "effective_estimated_tokens",
+        "host_prompt_estimated_tokens",
         "codex_prompt_estimated_tokens",
         "total_payload_estimated_tokens",
         "runtime_contract_estimated_tokens",
@@ -226,13 +344,14 @@ _SENSITIVE_SINGLETON_FAMILY_LATENCY_MAX_SPREAD_MS = 8.0
 _PUBLISHED_PROFILE_LATENCY_TIE_TOLERANCE_MS = 0.4
 _PUBLISHED_PROFILE_PROMPT_TIE_TOLERANCE = 8.0
 _PUBLISHED_PROFILE_TOTAL_PAYLOAD_TIE_TOLERANCE = 16.0
-_QUICK_PROFILE_MAX_SCENARIOS = 16
+_QUICK_PROFILE_MAX_SCENARIOS = 4
+_QUICK_PROFILE_SENTINEL_CASE_IDS = (
+    "benchmark-live-comparison-contract-and-report-schema",
+    "execution-engine-contract-verify-closure-discipline",
+    "claude-bash-guard-destructive-command-blocking",
+    "context-engine-broad-scope-fail-closed",
+)
 _LIVE_MATCHED_PAIR_MAX_WORKERS = 2
-_SECONDARY_LATENCY_GUARDRAIL_MAX_DELTA_MS = 15.0
-_SECONDARY_ARCHITECTURE_LATENCY_GUARDRAIL_MAX_DELTA_MS = 15.0
-_SECONDARY_PROMPT_TOKEN_GUARDRAIL_MAX_DELTA = 64.0
-_SECONDARY_TOTAL_PAYLOAD_TOKEN_GUARDRAIL_MAX_DELTA = 96.0
-_SECONDARY_WITHIN_BUDGET_RATE_MIN = 0.8
 _BENCHMARK_TEMP_MARKER = "odylith-benchmark-"
 _BENCHMARK_LIVE_WORKTREE_MARKER = "odylith-benchmark-live-"
 _BENCHMARK_RUNTIME_TEMP_DIRECTORY_PREFIXES: tuple[str, ...] = (
@@ -255,35 +374,6 @@ _VALIDATION_COMPANION_FILE_SUFFIXES = frozenset(
         ".txt",
     }
 )
-_ACCEPTANCE_CHECK_LABELS = {
-    "memory_backend_standardized": "runtime memory backend is not standardized on the LanceDB/Tantivy contract",
-    "memory_backed_retrieval_ready": "benchmark ran without an active local LanceDB/Tantivy retrieval substrate",
-    "required_path_recall_not_worse": "grounding recall fell below the raw baseline",
-    "required_path_precision_not_worse": "grounding precision fell below the raw baseline",
-    "hallucinated_surface_not_worse": "observed-surface drift is worse than the raw baseline",
-    "validation_success_not_worse": "validation success fell below the raw baseline",
-    "write_surface_precision_not_worse": "write-surface precision fell below the raw baseline",
-    "unnecessary_widening_not_worse": "unnecessary write-surface widening is worse than the raw baseline",
-    "critical_required_path_recall_not_worse": "critical-path recall fell below the raw baseline",
-    "critical_validation_success_not_worse": "critical validation success fell below the raw baseline",
-    "live_execution_contract_match": "odylith_on and odylith_off did not use the same Codex CLI model and reasoning contract",
-    "expectation_success_not_worse": "execution fit fell below the raw baseline",
-    "candidate_expectation_success_positive": "odylith_on did not finish any sampled live task successfully",
-    "candidate_validation_success_positive": "odylith_on did not reach any validator-backed successful outcome on sampled validation-backed work",
-    "candidate_critical_required_path_recall_positive": "odylith_on missed every critical required path on sampled critical work",
-    "candidate_critical_validation_success_positive": "odylith_on did not reach any successful critical validator-backed outcome",
-    "explicit_workstream_expectation_positive": "explicit workstream scenarios lost expectation coverage",
-    "critical_metric_coverage_complete": "critical metric coverage is incomplete",
-    "selected_cache_profiles_clear_gate": "selected cache profiles do not all clear the hard quality gate",
-    "latency_within_guardrail": "median latency exceeds the +15 ms guardrail",
-    "prompt_delta_within_guardrail": "median prompt cost exceeds the +64-token guardrail",
-    "total_payload_delta_within_guardrail": "median total payload exceeds the +96-token guardrail",
-    "bootstrap_payload_delta_within_guardrail": "median bootstrap payload exceeds the +96-token guardrail",
-    "tight_budget_behavior_healthy": "tighter-budget behavior fell below the 0.80 success floor",
-    "architecture_latency_within_guardrail": "architecture latency exceeds the +15 ms guardrail",
-    "widening_rate_healthy": "widening frequency exceeds the advisory threshold",
-    "governance_packet_coverage_complete": "governance-family packet coverage is incomplete",
-}
 _PUBLIC_MODE_NAMES = {
     _ODYLITH_ON_MODE: _ODYLITH_ON_MODE,
     _ODYLITH_ON_NO_FANOUT_MODE: _ODYLITH_ON_NO_FANOUT_MODE,
@@ -299,16 +389,16 @@ _BENCHMARK_PROFILE_LABELS = {
 }
 _BENCHMARK_PROFILE_DESCRIPTIONS = {
     BENCHMARK_PROFILE_QUICK: (
-        "Fast inner-loop signal: Odylith ON versus raw Codex CLI, warm cache only, "
-        "and a representative family-smoke subset unless the operator narrows explicitly."
+        "Fast inner-loop signal: Odylith ON versus raw host CLI, warm cache only, "
+        "and a bounded sentinel smoke subset unless the operator narrows explicitly."
     ),
     BENCHMARK_PROFILE_PROOF: (
         "Strict publication proof: the full benchmark corpus, warm and cold cache profiles, "
-        "and the live end-to-end Odylith ON versus raw Codex CLI pair unless the operator narrows explicitly."
+        "and the live end-to-end Odylith ON versus raw host CLI pair unless the operator narrows explicitly."
     ),
     BENCHMARK_PROFILE_DIAGNOSTIC: (
-        "Internal tuning diagnostic: isolate Odylith packet and prompt creation versus the raw Codex CLI prompt bundle "
-        "without running the live end-to-end Codex comparison."
+        "Internal tuning diagnostic: isolate Odylith packet and prompt creation versus the raw host CLI prompt bundle "
+        "without running the live end-to-end host comparison."
     ),
 }
 _PROFILE_DEFAULT_MODES = {
@@ -325,17 +415,17 @@ _MODE_ROLES = {
     _ODYLITH_ON_MODE: "primary candidate",
     _ODYLITH_ON_NO_FANOUT_MODE: "fanout-clamped Odylith",
     _REPO_SCAN_BASELINE_MODE: "repo-scan scaffold control",
-    _RAW_AGENT_BASELINE_MODE: "odylith_off / raw Codex CLI honest baseline",
+    _RAW_AGENT_BASELINE_MODE: "odylith_off / raw host CLI honest baseline",
 }
 _PUBLISHED_TABLE_WHY_IT_MATTERS = {
-    "lane_role": "Keeps the public claim honest: full Odylith scaffold versus raw Codex CLI on the same task.",
+    "lane_role": "Keeps the public claim honest: full Odylith scaffold versus raw host CLI on the same task.",
     "scenario_count": "Both lanes run the exact same corpus, so the comparison stays apples-to-apples.",
     "median_latency_ms": "Shows matched-pair benchmark time to valid outcome for the live run plus the harness validator, not interactive product latency.",
     "avg_latency_ms": "Shows the mean matched-pair benchmark time to valid outcome so long-tail slow cases stay visible.",
     "p95_latency_ms": "Shows the tail completion time for the slowest benchmark cases instead of letting the median hide them.",
-    "median_instrumented_reasoning_duration_ms": "Shows time spent inside the live Codex CLI session itself.",
-    "median_uninstrumented_overhead_ms": "Shows harness validator overhead added after the live Codex session completes.",
-    "median_effective_tokens": "Shows full live Codex session input across the multi-turn run, not just the first prompt.",
+    "median_instrumented_reasoning_duration_ms": "Shows time spent inside the live host CLI session itself.",
+    "median_uninstrumented_overhead_ms": "Shows harness validator overhead added after the live host session completes.",
+    "median_effective_tokens": "Shows full live host session input across the multi-turn run, not just the first prompt.",
     "median_total_payload_tokens": "Shows total live model-token spend across the multi-turn session.",
     "required_path_recall_rate": "Higher means Odylith finds more of the repo surfaces the task truly depends on.",
     "required_path_precision_rate": "Higher means Odylith keeps the evidence cone tighter and more relevant.",
@@ -348,7 +438,7 @@ _PUBLISHED_TABLE_WHY_IT_MATTERS = {
 
 
 def _comparison_contract_label_bundle(comparison_contract: str) -> dict[str, str]:
-    live = str(comparison_contract or "").strip() == "live_end_to_end"
+    live = _is_live_comparison_contract(comparison_contract)
     if live:
         return {
             "lane_role_why": _PUBLISHED_TABLE_WHY_IT_MATTERS["lane_role"],
@@ -375,7 +465,7 @@ def _comparison_contract_label_bundle(comparison_contract: str) -> dict[str, str
             "expectation_why": _PUBLISHED_TABLE_WHY_IT_MATTERS["expectation_success_rate"],
         }
     return {
-        "lane_role_why": "Keeps the Grounding Benchmark honest: full Odylith packet and prompt construction versus the raw Codex CLI prompt bundle on the same task.",
+        "lane_role_why": "Keeps the internal diagnostic benchmark honest: full Odylith packet and prompt construction versus the raw host CLI prompt bundle on the same task.",
         "scenario_count_why": _PUBLISHED_TABLE_WHY_IT_MATTERS["scenario_count"],
         "latency_median": "Median packet time",
         "latency_avg": "Mean packet time",
@@ -387,21 +477,21 @@ def _comparison_contract_label_bundle(comparison_contract: str) -> dict[str, str
         "validation_label": "Validation-success proxy rate",
         "critical_validation_label": "Critical validation-success proxy rate",
         "expectation_label": "Expectation-success proxy rate",
-        "latency_why": "Shows the packet construction time on the Grounding Benchmark before any live Codex session begins.",
+        "latency_why": "Shows the packet construction time on the internal diagnostic benchmark before any live Codex session begins.",
         "latency_avg_why": "Shows the mean packet time so slow prompt-build cases stay visible.",
         "latency_p95_why": "Shows the long-tail packet time instead of hiding it behind the median.",
-        "instrumented_why": "Shows time spent inside Odylith packet construction and prompt shaping on the Grounding Benchmark.",
+        "instrumented_why": "Shows time spent inside Odylith packet construction and prompt shaping on the internal diagnostic benchmark.",
         "overhead_why": "Shows post-build grounding harness overhead such as validation and accounting.",
-        "effective_tokens_why": "Shows the model-facing prompt-bundle input size on the Grounding Benchmark.",
+        "effective_tokens_why": "Shows the model-facing prompt-bundle input size on the internal diagnostic benchmark.",
         "total_payload_tokens_why": "Shows the full grounding payload size across prompt, runtime contract, and operator diagnostics.",
-        "validation_why": "Higher means the Grounding Benchmark more often satisfies the benchmark validator proxy before any live Codex session begins.",
+        "validation_why": "Higher means the internal diagnostic benchmark more often satisfies the benchmark validator proxy before any live Codex session begins.",
         "critical_validation_why": "Protects critical grounding cases from missing packet-level validator proxy truth.",
-        "expectation_why": "Higher means more scenarios satisfy the stated task contract on the Grounding Benchmark before model execution begins.",
+        "expectation_why": "Higher means more scenarios satisfy the stated task contract on the internal diagnostic benchmark before model execution begins.",
     }
 
 
 def _normalize_mode(mode: str) -> str:
-    token = str(mode or "").strip()
+    token = odylith_benchmark_mode.normalize_public_mode(mode)
     return _MODE_ALIASES.get(token, token)
 
 
@@ -431,23 +521,11 @@ def _table_header_mode_name(mode: str) -> str:
 
 
 def _acceptance_hard_quality_gate_cleared(acceptance: Mapping[str, Any] | None) -> bool:
-    if not isinstance(acceptance, Mapping):
-        return False
-    if "hard_quality_gate_cleared" in acceptance:
-        return bool(acceptance.get("hard_quality_gate_cleared"))
-    return str(acceptance.get("status", "")).strip() == "provisional_pass"
+    return odylith_benchmark_acceptance.acceptance_hard_quality_gate_cleared(acceptance)
 
 
 def _acceptance_failure_labels(tokens: Sequence[str]) -> list[str]:
-    labels: list[str] = []
-    for token in tokens:
-        key = str(token).strip()
-        if not key:
-            continue
-        label = _ACCEPTANCE_CHECK_LABELS.get(key, key.replace("_", " "))
-        if label not in labels:
-            labels.append(label)
-    return labels
+    return odylith_benchmark_acceptance.acceptance_failure_labels(tokens)
 
 
 def _is_repo_scan_baseline_mode(mode: str) -> bool:
@@ -507,33 +585,50 @@ _PROMPT_VISIBLE_PATH_PATTERN = re.compile(
 )
 
 
-def _looks_like_prompt_visible_repo_path(token: str) -> bool:
-    normalized = str(token or "").strip().strip("`'\"()[]{}<>.,:;")
-    if not normalized or "://" in normalized or normalized.startswith("--"):
-        return False
-    if "/" in normalized:
-        return True
-    if normalized in {"AGENTS.md", "README.md", "Makefile", "Dockerfile"}:
-        return True
-    return Path(normalized).suffix.lower() in _VALIDATION_COMPANION_FILE_SUFFIXES
-
-
 def _raw_prompt_visible_paths(*, repo_root: Path, raw_prompt: Mapping[str, Any]) -> list[str]:
-    texts: list[str] = []
-    prompt = str(raw_prompt.get("prompt", "")).strip()
-    if prompt:
-        texts.append(prompt)
-    acceptance = raw_prompt.get("acceptance_criteria", [])
-    if isinstance(acceptance, list):
-        texts.extend(str(token).strip() for token in acceptance if str(token).strip())
-    candidates: list[str] = []
-    for text in texts:
-        for match in _PROMPT_VISIBLE_PATH_PATTERN.finditer(text):
-            token = str(match.group(1) or match.group(2) or "").strip().strip("`'\"()[]{}<>.,:;")
-            if not _looks_like_prompt_visible_repo_path(token):
-                continue
-            candidates.append(token.replace("\\", "/").lstrip("./"))
-    return _existing_repo_paths(repo_root=repo_root, paths=_dedupe_strings(candidates))
+    return odylith_benchmark_live_diagnostics.raw_prompt_visible_paths(
+        repo_root=repo_root,
+        raw_prompt=raw_prompt,
+    )
+
+
+def _is_live_comparison_contract(comparison_contract: str) -> bool:
+    token = str(comparison_contract or "").strip()
+    return token in {LIVE_COMPARISON_CONTRACT, LEGACY_LIVE_COMPARISON_CONTRACT}
+
+
+def _comparison_contract_details(comparison_contract: str) -> dict[str, Any]:
+    if _is_live_comparison_contract(comparison_contract):
+        return {
+            "primary_claim": LIVE_COMPARISON_CONTRACT,
+            "odylith_on_affordances": [
+                "grounding_packet",
+                "selected_docs_and_repo_anchors",
+                "execution_engine_posture_and_truthful_next_move",
+                "scenario_declared_focused_local_checks",
+                "preflight_focused_check_results_when_executed_in_disposable_workspace",
+                "bounded_orchestration_and_recovery_policy",
+            ],
+            "raw_agent_affordances": [
+                "same_host_cli_model",
+                "same_reasoning_effort",
+                "same_sandbox_and_approval_contract",
+                "same_disposable_workspace_shape",
+                "same_validation_commands",
+                "raw_prompt_visible_repo_anchors_only",
+            ],
+        }
+    return {
+        "primary_claim": DIAGNOSTIC_COMPARISON_CONTRACT,
+        "odylith_on_affordances": [
+            "packet_and_prompt_construction",
+            "selected_docs_and_repo_anchors",
+            "bounded_packet_scaffold",
+        ],
+        "raw_agent_affordances": [
+            "raw_prompt_bundle",
+        ],
+    }
 
 
 def _raw_agent_orchestration_summary() -> dict[str, Any]:
@@ -570,6 +665,11 @@ def latest_report_path(*, repo_root: Path, benchmark_profile: str | None = None)
     return (benchmark_root(repo_root=repo_root) / _REPORT_FILENAME).resolve()
 
 
+def retired_latest_report_paths(*, repo_root: Path) -> list[Path]:
+    root = benchmark_root(repo_root=repo_root)
+    return [(root / filename).resolve() for filename in _RETIRED_LATEST_REPORT_FILENAMES]
+
+
 def history_report_path(*, repo_root: Path, report_id: str) -> Path:
     token = str(report_id or "").strip() or "odylith-benchmark"
     return (benchmark_root(repo_root=repo_root) / f"{token}.json").resolve()
@@ -577,6 +677,627 @@ def history_report_path(*, repo_root: Path, report_id: str) -> Path:
 
 def progress_report_path(*, repo_root: Path) -> Path:
     return (benchmark_root(repo_root=repo_root) / _PROGRESS_FILENAME).resolve()
+
+
+def active_runs_path(*, repo_root: Path) -> Path:
+    return (benchmark_root(repo_root=repo_root) / _ACTIVE_RUNS_FILENAME).resolve()
+
+
+def _benchmark_runtime_lock_path(*, repo_root: Path, target: Path) -> Path:
+    token = hashlib.sha256(str(target.resolve()).encode("utf-8")).hexdigest()[:24]
+    return (benchmark_root(repo_root=repo_root) / ".locks" / f"{token}.lock").resolve()
+
+
+def _human_bytes_label(value: float) -> str:
+    amount = max(0.0, float(value or 0.0))
+    units = ("B", "KiB", "MiB", "GiB", "TiB")
+    index = 0
+    while amount >= 1024.0 and index < len(units) - 1:
+        amount /= 1024.0
+        index += 1
+    if index == 0:
+        return f"{int(amount)} {units[index]}"
+    return f"{amount:.1f} {units[index]}"
+
+
+def _benchmark_runtime_storage_status(*, repo_root: Path) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    target = benchmark_root(repo_root=root)
+    usage_root = target if target.exists() else root
+    usage = shutil.disk_usage(str(usage_root))
+    return {
+        "path": str(usage_root),
+        "free_bytes": int(usage.free),
+        "used_bytes": int(usage.used),
+        "total_bytes": int(usage.total),
+    }
+
+
+def _benchmark_runtime_storage_error(*, repo_root: Path) -> RuntimeError:
+    status = _benchmark_runtime_storage_status(repo_root=repo_root)
+    benchmark_path = benchmark_root(repo_root=Path(repo_root).resolve())
+    free_label = _human_bytes_label(status.get("free_bytes", 0))
+    minimum_label = _human_bytes_label(_MIN_BENCHMARK_RUNTIME_FREE_BYTES)
+    return RuntimeError(
+        "benchmark runtime free space is too low to create progress, lock, and disposable workspace artifacts: "
+        f"{free_label} available at `{status.get('path', '')}`; need at least {minimum_label}. "
+        f"Clear stale benchmark runtime history under `{benchmark_path}` or reclaim local cache/runtime space before rerunning."
+    )
+
+
+def _require_benchmark_runtime_space(*, repo_root: Path) -> dict[str, Any]:
+    status = _benchmark_runtime_storage_status(repo_root=repo_root)
+    if int(status.get("free_bytes", 0) or 0) < _MIN_BENCHMARK_RUNTIME_FREE_BYTES:
+        raise _benchmark_runtime_storage_error(repo_root=repo_root)
+    return status
+
+
+@contextlib.contextmanager
+def _benchmark_runtime_file_lock(*, repo_root: Path, target: Path) -> Iterator[Path]:
+    lock_path = _benchmark_runtime_lock_path(repo_root=repo_root, target=target)
+    try:
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        with lock_path.open("a+", encoding="utf-8") as handle:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield lock_path
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    except OSError as exc:
+        if exc.errno == errno.ENOSPC:
+            raise _benchmark_runtime_storage_error(repo_root=repo_root) from exc
+        raise
+
+
+def _benchmark_runtime_write_json_if_changed(
+    *,
+    repo_root: Path,
+    path: Path,
+    payload: Any,
+) -> bool:
+    target = Path(path).resolve()
+    rendered = json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    try:
+        with _benchmark_runtime_file_lock(repo_root=repo_root, target=target):
+            existing = None
+            if target.is_file():
+                with contextlib.suppress(OSError):
+                    existing = target.read_text(encoding="utf-8")
+            if existing == rendered:
+                return False
+            target.parent.mkdir(parents=True, exist_ok=True)
+            fd, temp_name = tempfile.mkstemp(prefix=f".{target.name}.", dir=str(target.parent))
+            temp_path = Path(temp_name)
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                    handle.write(rendered)
+                os.replace(temp_path, target)
+            finally:
+                if temp_path.exists():
+                    with contextlib.suppress(OSError):
+                        temp_path.unlink()
+            return True
+    except OSError as exc:
+        if exc.errno == errno.ENOSPC:
+            raise _benchmark_runtime_storage_error(repo_root=repo_root) from exc
+        raise
+
+
+def _benchmark_runtime_remove_file(*, repo_root: Path, path: Path) -> bool:
+    target = Path(path).resolve()
+    with _benchmark_runtime_file_lock(repo_root=repo_root, target=target):
+        if not target.exists():
+            return False
+        with contextlib.suppress(OSError):
+            target.unlink()
+        return not target.exists()
+
+
+def remove_retired_latest_reports(*, repo_root: Path) -> list[str]:
+    root = Path(repo_root).resolve()
+    removed_paths: list[str] = []
+    for path in retired_latest_report_paths(repo_root=root):
+        if _benchmark_runtime_remove_file(repo_root=root, path=path):
+            removed_paths.append(str(path))
+    return removed_paths
+
+
+def _active_run_token(value: Any, *, fallback: str) -> str:
+    token = re.sub(r"[^A-Za-z0-9._-]+", "-", str(value or "").strip()).strip("-.")
+    return token or fallback
+
+
+def _active_run_progress_path(
+    *,
+    repo_root: Path,
+    report_id: str,
+    benchmark_profile: str,
+    shard_index: int,
+    shard_count: int,
+    owning_pid: int,
+) -> Path:
+    filename = (
+        f"progress-{_active_run_token(report_id, fallback='benchmark')}"
+        f"-{_active_run_token(benchmark_profile, fallback='proof')}"
+        f"-s{max(1, int(shard_index)):02d}-of-{max(1, int(shard_count)):02d}"
+        f"-pid{max(0, int(owning_pid))}.v1.json"
+    )
+    return (benchmark_root(repo_root=repo_root) / filename).resolve()
+
+
+def _active_run_identity(progress: Mapping[str, Any]) -> tuple[str, str, int, int, int]:
+    return (
+        str(progress.get("report_id", "")).strip(),
+        _normalize_benchmark_profile(str(progress.get("benchmark_profile", "")).strip()),
+        max(1, int(progress.get("shard_index", 1) or 1)),
+        max(1, int(progress.get("shard_count", 1) or 1)),
+        max(0, int(progress.get("owning_pid", 0) or 0)),
+    )
+
+
+def _history_report_for_progress(*, repo_root: Path, progress: Mapping[str, Any]) -> Path:
+    return history_report_path(
+        repo_root=Path(repo_root).resolve(),
+        report_id=str(progress.get("report_id", "")).strip(),
+    )
+
+
+def _history_report_exists_for_progress(*, repo_root: Path, progress: Mapping[str, Any]) -> bool:
+    explicit_path = Path(str(progress.get("history_report_path", "")).strip()) if str(progress.get("history_report_path", "")).strip() else None
+    if explicit_path is not None and explicit_path.is_file():
+        return True
+    return _history_report_for_progress(repo_root=repo_root, progress=progress).is_file()
+
+
+def _progress_requires_persisted_report(progress: Mapping[str, Any]) -> bool:
+    raw = progress.get("write_report")
+    if raw is None:
+        return True
+    if isinstance(raw, str):
+        normalized = raw.strip().lower()
+        if normalized in {"0", "false", "no", "off"}:
+            return False
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+    return bool(raw)
+
+
+def _active_run_entry(*, repo_root: Path, progress: Mapping[str, Any]) -> dict[str, Any]:
+    report_id, benchmark_profile, shard_index, shard_count, owning_pid = _active_run_identity(progress)
+    progress_path = _active_run_progress_path(
+        repo_root=repo_root,
+        report_id=report_id,
+        benchmark_profile=benchmark_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+        owning_pid=owning_pid,
+    )
+    return {
+        "report_id": report_id,
+        "benchmark_profile": benchmark_profile,
+        "comparison_contract": str(progress.get("comparison_contract", "")).strip(),
+        "repo_root": str(Path(repo_root).resolve()),
+        "started_utc": str(progress.get("started_utc", "")).strip(),
+        "updated_utc": str(progress.get("updated_utc", "")).strip(),
+        "status": str(progress.get("status", "")).strip() or "running",
+        "shard_index": shard_index,
+        "shard_count": shard_count,
+        "owning_pid": owning_pid,
+        "write_report": _progress_requires_persisted_report(progress),
+        "progress_path": str(progress_path),
+    }
+
+
+def _load_active_runs(repo_root: Path) -> list[dict[str, Any]]:
+    payload = odylith_context_cache.read_json_object(active_runs_path(repo_root=repo_root))
+    rows = payload.get("runs") if isinstance(payload.get("runs"), list) else []
+    normalized_rows = [dict(row) for row in rows if isinstance(row, Mapping)]
+    if normalized_rows:
+        return normalized_rows
+    root = Path(repo_root).resolve()
+    benchmark_runtime_present = bool(
+        _benchmark_owned_codex_process_ids()
+        or _benchmark_temp_worktrees(repo_root=root)
+        or _benchmark_temp_directories(repo_root=root)
+    )
+    recovered: dict[tuple[str, str, int, int, int], dict[str, Any]] = {}
+    benchmark_dir = benchmark_root(repo_root=root)
+    if not benchmark_dir.is_dir():
+        return []
+    with contextlib.suppress(OSError):
+        for progress_path in sorted(benchmark_dir.glob("progress-*.json")):
+            payload = odylith_context_cache.read_json_object(progress_path)
+            if not isinstance(payload, Mapping):
+                continue
+            progress = dict(payload)
+            status = str(progress.get("status", "")).strip() or "running"
+            if status != "running":
+                continue
+            identity = _active_run_identity(progress)
+            owning_pid = identity[-1]
+            if owning_pid > 0:
+                if not _process_exists(owning_pid):
+                    continue
+            elif not benchmark_runtime_present:
+                continue
+            entry = _active_run_entry(repo_root=root, progress=progress)
+            entry["progress_path"] = str(progress_path.resolve())
+            recovered[identity] = entry
+    return sorted(
+        recovered.values(),
+        key=lambda row: (
+            str(row.get("updated_utc", "")).strip(),
+            str(row.get("report_id", "")).strip(),
+            int(row.get("shard_index", 1) or 1),
+        ),
+        reverse=True,
+    )
+
+
+def _write_active_runs(*, repo_root: Path, runs: Sequence[Mapping[str, Any]]) -> None:
+    path = active_runs_path(repo_root=repo_root)
+    normalized_runs = [
+        dict(row)
+        for row in runs
+        if isinstance(row, Mapping) and str(row.get("report_id", "")).strip()
+    ]
+    if not normalized_runs:
+        _benchmark_runtime_remove_file(repo_root=repo_root, path=path)
+        return
+    payload = {
+        "contract": ACTIVE_RUNS_CONTRACT,
+        "version": ACTIVE_RUNS_VERSION,
+        "repo_root": str(Path(repo_root).resolve()),
+        "updated_utc": _utc_now(),
+        "runs": normalized_runs,
+    }
+    _benchmark_runtime_write_json_if_changed(
+        repo_root=repo_root,
+        path=path,
+        payload=payload,
+    )
+
+
+def _sync_active_run_progress(
+    *,
+    repo_root: Path,
+    payload: Mapping[str, Any],
+) -> None:
+    root = Path(repo_root).resolve()
+    report_id, benchmark_profile, shard_index, shard_count, owning_pid = _active_run_identity(payload)
+    progress_path = _active_run_progress_path(
+        repo_root=root,
+        report_id=report_id,
+        benchmark_profile=benchmark_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+        owning_pid=owning_pid,
+    )
+    _benchmark_runtime_write_json_if_changed(
+        repo_root=root,
+        path=progress_path,
+        payload=dict(payload),
+    )
+    status = str(payload.get("status", "")).strip() or "running"
+    active_runs_file = active_runs_path(repo_root=root)
+    with odylith_context_cache.advisory_lock(repo_root=root, key=str(active_runs_file)):
+        runs = [
+            row
+            for row in _load_active_runs(root)
+            if (
+                str(row.get("report_id", "")).strip(),
+                _normalize_benchmark_profile(str(row.get("benchmark_profile", "")).strip()),
+                max(1, int(row.get("shard_index", 1) or 1)),
+                max(1, int(row.get("shard_count", 1) or 1)),
+                max(0, int(row.get("owning_pid", 0) or 0)),
+            )
+            != (report_id, benchmark_profile, shard_index, shard_count, owning_pid)
+        ]
+        if status == "running":
+            runs.append(_active_run_entry(repo_root=root, progress=payload))
+        runs.sort(
+            key=lambda row: (
+                str(row.get("updated_utc", "")).strip(),
+                str(row.get("report_id", "")).strip(),
+                int(row.get("shard_index", 1) or 1),
+            ),
+            reverse=True,
+        )
+        _write_active_runs(repo_root=root, runs=runs)
+
+
+def _clear_active_run_progress(
+    *,
+    repo_root: Path,
+    payload: Mapping[str, Any],
+) -> None:
+    root = Path(repo_root).resolve()
+    report_id, benchmark_profile, shard_index, shard_count, owning_pid = _active_run_identity(payload)
+    progress_path = _active_run_progress_path(
+        repo_root=root,
+        report_id=report_id,
+        benchmark_profile=benchmark_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+        owning_pid=owning_pid,
+    )
+    if (
+        not _progress_requires_persisted_report(payload)
+        or _history_report_exists_for_progress(repo_root=root, progress=payload)
+    ):
+        _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
+    else:
+        _benchmark_runtime_write_json_if_changed(
+            repo_root=root,
+            path=progress_path,
+            payload=dict(payload),
+        )
+    active_runs_file = active_runs_path(repo_root=root)
+    with odylith_context_cache.advisory_lock(repo_root=root, key=str(active_runs_file)):
+        runs = [
+            row
+            for row in _load_active_runs(root)
+            if (
+                str(row.get("report_id", "")).strip(),
+                _normalize_benchmark_profile(str(row.get("benchmark_profile", "")).strip()),
+                max(1, int(row.get("shard_index", 1) or 1)),
+                max(1, int(row.get("shard_count", 1) or 1)),
+                max(0, int(row.get("owning_pid", 0) or 0)),
+            )
+            != (report_id, benchmark_profile, shard_index, shard_count, owning_pid)
+        ]
+        _write_active_runs(repo_root=root, runs=runs)
+
+
+def _tree_identity_from_progress_payload(*, repo_root: Path, progress_payload: Mapping[str, Any]) -> dict[str, Any]:
+    selection = (
+        dict(progress_payload.get("selection", {}))
+        if isinstance(progress_payload.get("selection"), Mapping)
+        else {}
+    )
+    current = benchmark_tree_identity(repo_root=repo_root, selection=selection)
+    return {
+        "git_branch": str(progress_payload.get("git_branch", "")).strip() or str(current.get("git_branch", "")).strip(),
+        "git_commit": str(progress_payload.get("git_commit", "")).strip() or str(current.get("git_commit", "")).strip(),
+        "git_dirty": bool(progress_payload.get("git_dirty", current.get("git_dirty"))),
+        "repo_dirty_paths": [
+            str(token).strip()
+            for token in progress_payload.get("repo_dirty_paths", current.get("repo_dirty_paths", []))
+            if isinstance(progress_payload.get("repo_dirty_paths", current.get("repo_dirty_paths", [])), list)
+            and str(token).strip()
+        ],
+        "selection_fingerprint": str(progress_payload.get("selection_fingerprint", "")).strip()
+        or str(current.get("selection_fingerprint", "")).strip(),
+        "corpus_fingerprint": str(progress_payload.get("corpus_fingerprint", "")).strip()
+        or str(current.get("corpus_fingerprint", "")).strip(),
+        "snapshot_overlay_fingerprint": str(progress_payload.get("snapshot_overlay_fingerprint", "")).strip()
+        or str(current.get("snapshot_overlay_fingerprint", "")).strip(),
+        "source_posture": str(progress_payload.get("source_posture", "")).strip()
+        or str(current.get("source_posture", "")).strip(),
+    }
+
+
+def _reconstruct_progress_selection(
+    *,
+    repo_root: Path,
+    progress_payload: Mapping[str, Any],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], Mapping[str, Any]]:
+    selection = (
+        dict(progress_payload.get("selection", {}))
+        if isinstance(progress_payload.get("selection"), Mapping)
+        else {}
+    )
+    benchmark_profile = str(progress_payload.get("benchmark_profile", "")).strip() or str(
+        selection.get("benchmark_profile", "")
+    ).strip()
+    case_ids = [
+        str(token).strip()
+        for token in selection.get("case_ids", selection.get("scenario_ids", []))
+        if isinstance(selection.get("case_ids", selection.get("scenario_ids", [])), list) and str(token).strip()
+    ]
+    families = [
+        str(token).strip()
+        for token in selection.get("family_filters", [])
+        if isinstance(selection.get("family_filters"), list) and str(token).strip()
+    ]
+    shard_count = max(
+        1,
+        int(progress_payload.get("shard_count", selection.get("shard_count", 1)) or 1),
+    )
+    shard_index = max(
+        1,
+        int(progress_payload.get("shard_index", selection.get("shard_index", 1)) or 1),
+    )
+    limit = max(0, int(selection.get("limit", 0) or 0))
+    all_scenarios = load_benchmark_scenarios(repo_root=repo_root)
+    selection_state = _resolve_benchmark_scenario_selection(
+        all_scenarios=all_scenarios,
+        benchmark_profile=benchmark_profile,
+        case_ids=case_ids,
+        families=families,
+        shard_count=shard_count,
+        shard_index=shard_index,
+        limit=limit,
+    )
+    return (
+        [dict(row) for row in selection_state.get("scenarios", [])],
+        [dict(row) for row in selection_state.get("all_scenarios", [])],
+        selection_state,
+    )
+
+
+def _persist_orphaned_progress_failed_report(
+    *,
+    repo_root: Path,
+    progress_payload: Mapping[str, Any],
+    error: BaseException | str,
+) -> bool:
+    if not _progress_requires_persisted_report(progress_payload):
+        return False
+    root = Path(repo_root).resolve()
+    history_path = _history_report_for_progress(repo_root=root, progress=progress_payload)
+    if history_path.is_file():
+        return False
+    corpus = odylith_context_cache.read_json_object(store.optimization_evaluation_corpus_path(repo_root=root))
+    corpus_contract = odylith_benchmark_contract.benchmark_corpus_contract(corpus)
+    scenarios, all_scenarios, selection_state = _reconstruct_progress_selection(
+        repo_root=root,
+        progress_payload=progress_payload,
+    )
+    payload = dict(progress_payload)
+    payload.update(
+        {
+            "updated_utc": _utc_now(),
+            "status": "failed",
+            "phase": "orphaned_progress_recovery",
+            "error": _benchmark_exception_text(error),
+            "selection_strategy": str(progress_payload.get("selection_strategy", "")).strip()
+            or str(selection_state.get("selection_strategy", "")).strip()
+            or "manual_selection",
+        }
+    )
+    tree_identity = _tree_identity_from_progress_payload(repo_root=root, progress_payload=payload)
+    report = _failed_benchmark_report(
+        repo_root=root,
+        report_id=str(payload.get("report_id", "")).strip(),
+        benchmark_profile=str(payload.get("benchmark_profile", "")).strip(),
+        comparison_contract=str(payload.get("comparison_contract", "")).strip(),
+        modes=[
+            str(token).strip()
+            for token in payload.get("modes", [])
+            if isinstance(payload.get("modes"), list) and str(token).strip()
+        ],
+        cache_profiles=[
+            str(token).strip()
+            for token in payload.get("cache_profiles", [])
+            if isinstance(payload.get("cache_profiles"), list) and str(token).strip()
+        ],
+        primary_cache_profile=str(payload.get("primary_cache_profile", "")).strip(),
+        scenarios=scenarios,
+        all_scenarios=all_scenarios,
+        progress_payload=payload,
+        selection_strategy=str(payload.get("selection_strategy", "")).strip() or "manual_selection",
+        latest_eligible=bool(payload.get("latest_eligible")),
+        startup_hygiene={},
+        corpus_contract=corpus_contract,
+        tree_identity=tree_identity,
+        error=error,
+    )
+    odylith_context_cache.write_json_if_changed(
+        repo_root=root,
+        path=history_path,
+        payload=report,
+        lock_key=str(history_path),
+    )
+    return True
+
+
+def _fingerprint_json_payload(payload: Mapping[str, Any]) -> str:
+    return hashlib.sha256(json.dumps(dict(payload), sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
+
+
+def _call_with_supported_kwargs(function: Any, /, **kwargs: Any) -> Any:
+    try:
+        signature = inspect.signature(function)
+    except (TypeError, ValueError):
+        return function(**kwargs)
+    if any(parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in signature.parameters.values()):
+        return function(**kwargs)
+    supported = {
+        key: value
+        for key, value in kwargs.items()
+        if key in signature.parameters
+    }
+    return function(**supported)
+
+
+def _selection_fingerprint(selection: Mapping[str, Any]) -> str:
+    return _fingerprint_json_payload(selection)
+
+
+def _safe_resolve_path(path: Path) -> Path | None:
+    with contextlib.suppress(OSError, RuntimeError):
+        return Path(path).resolve()
+    return None
+
+
+def _snapshot_overlay_fingerprint(*, repo_root: Path, snapshot_paths: Sequence[str]) -> str:
+    normalized_paths = _dedupe_path_strings(stable_snapshot_overlay_paths(snapshot_paths))
+    if not normalized_paths:
+        return ""
+    existing_paths = [
+        str(path)
+        for path in (
+            _safe_resolve_path(Path(repo_root).resolve() / token)
+            for token in normalized_paths
+        )
+        if path is not None and path.exists()
+    ]
+    if not existing_paths:
+        return ""
+    return odylith_context_cache.fingerprint_paths(existing_paths)
+
+
+def _benchmark_source_posture(*, repo_root: Path) -> str:
+    with contextlib.suppress(Exception):
+        from odylith.install.manager import version_status
+
+        status = version_status(repo_root=repo_root)
+        posture = str(getattr(status, "posture", "") or "").strip()
+        runtime_source = str(getattr(status, "runtime_source", "") or "").strip()
+        if posture and runtime_source:
+            return f"{posture}:{runtime_source}"
+        if posture:
+            return posture
+        if runtime_source:
+            return runtime_source
+    return "unknown"
+
+
+def benchmark_tree_identity(
+    *,
+    repo_root: Path,
+    selection: Mapping[str, Any],
+    snapshot_paths: Sequence[str] = (),
+) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    return {
+        "git_branch": str(store._git_branch_name(repo_root=root) or "").strip(),  # noqa: SLF001
+        "git_commit": str(store._git_head_oid(repo_root=root) or "").strip(),  # noqa: SLF001
+        "git_dirty": bool(_dirty_repo_paths(root)),
+        "repo_dirty_paths": _dirty_repo_paths(root),
+        "selection_fingerprint": _selection_fingerprint(selection),
+        "corpus_fingerprint": odylith_context_cache.fingerprint_paths(
+            [store.optimization_evaluation_corpus_path(repo_root=root)]
+        ),
+        "snapshot_overlay_fingerprint": _snapshot_overlay_fingerprint(repo_root=root, snapshot_paths=snapshot_paths),
+        "source_posture": _benchmark_source_posture(repo_root=root),
+    }
+
+
+def benchmark_report_matches_current_tree(*, repo_root: Path, report: Mapping[str, Any]) -> bool:
+    if not isinstance(report, Mapping):
+        return False
+    selection = dict(report.get("selection", {})) if isinstance(report.get("selection"), Mapping) else {}
+    snapshot_paths = (
+        [str(token).strip() for token in report.get("snapshot_overlay_paths", []) if str(token).strip()]
+        if isinstance(report.get("snapshot_overlay_paths"), list)
+        else []
+    )
+    current = benchmark_tree_identity(repo_root=repo_root, selection=selection, snapshot_paths=snapshot_paths)
+    for key in (
+        "git_branch",
+        "git_commit",
+        "git_dirty",
+        "repo_dirty_paths",
+        "selection_fingerprint",
+        "corpus_fingerprint",
+        "snapshot_overlay_fingerprint",
+        "source_posture",
+    ):
+        if report.get(key) != current.get(key):
+            return False
+    return True
 
 
 def load_latest_benchmark_report(*, repo_root: Path, benchmark_profile: str | None = None) -> dict[str, Any]:
@@ -600,8 +1321,207 @@ def load_latest_benchmark_report(*, repo_root: Path, benchmark_profile: str | No
     return canonical_report
 
 
+def _runtime_latest_report_candidates(*, repo_root: Path) -> list[dict[str, Any]]:
+    root = Path(repo_root).resolve()
+    candidates: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for profile in (None, BENCHMARK_PROFILE_PROOF, BENCHMARK_PROFILE_QUICK, BENCHMARK_PROFILE_DIAGNOSTIC):
+        report = odylith_context_cache.read_json_object(latest_report_path(repo_root=root, benchmark_profile=profile))
+        if not report:
+            continue
+        dedupe_key = (
+            str(report.get("report_id", "")).strip(),
+            _normalize_benchmark_profile(str(report.get("benchmark_profile", "")).strip()),
+            str(report.get("generated_utc", "")).strip(),
+        )
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        candidates.append(report)
+    return candidates
+
+
+def _runtime_latest_report_sort_key(report: Mapping[str, Any]) -> tuple[str, int, int, str]:
+    profile_rank = {
+        BENCHMARK_PROFILE_PROOF: 3,
+        BENCHMARK_PROFILE_QUICK: 2,
+        BENCHMARK_PROFILE_DIAGNOSTIC: 1,
+    }
+    normalized_profile = _normalize_benchmark_profile(str(report.get("benchmark_profile", "")).strip())
+    return (
+        str(report.get("generated_utc", "")).strip(),
+        1 if bool(report.get("latest_eligible")) else 0,
+        profile_rank.get(normalized_profile, 0),
+        str(report.get("report_id", "")).strip(),
+    )
+
+
+def load_latest_runtime_benchmark_report(*, repo_root: Path) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    candidates = _runtime_latest_report_candidates(repo_root=root)
+    if not candidates:
+        return {}
+    current_tree_candidates = [
+        report for report in candidates if benchmark_report_matches_current_tree(repo_root=root, report=report)
+    ]
+    selected_pool = current_tree_candidates or candidates
+    return dict(max(selected_pool, key=_runtime_latest_report_sort_key))
+
+
 def load_benchmark_progress(*, repo_root: Path) -> dict[str, Any]:
-    return odylith_context_cache.read_json_object(progress_report_path(repo_root=repo_root))
+    root = Path(repo_root).resolve()
+    _prune_stale_benchmark_progress(repo_root=root, clear_shared_progress=False)
+    active_entries = _load_active_runs(root)
+    if active_entries:
+        grouped_payloads: dict[str, list[dict[str, Any]]] = {}
+        for entry in active_entries:
+            progress_path = Path(str(entry.get("progress_path", "")).strip())
+            if not progress_path.is_file():
+                continue
+            payload = odylith_context_cache.read_json_object(progress_path)
+            if not payload:
+                continue
+            grouped_payloads.setdefault(str(payload.get("report_id", "")).strip(), []).append(payload)
+        if grouped_payloads:
+            selected_group = max(
+                grouped_payloads.values(),
+                key=lambda rows: max(str(row.get("updated_utc", "")).strip() for row in rows),
+            )
+            latest_payload = max(selected_group, key=lambda row: str(row.get("updated_utc", "")).strip())
+            return {
+                **dict(latest_payload),
+                "aggregate_source": "active_runs",
+                "active_shard_count": len(selected_group),
+                "active_shard_indices": sorted(
+                    {max(1, int(row.get("shard_index", 1) or 1)) for row in selected_group}
+                ),
+                "scenario_count": sum(int(row.get("scenario_count", 0) or 0) for row in selected_group),
+                "total_results": sum(int(row.get("total_results", 0) or 0) for row in selected_group),
+                "completed_cache_profiles": sum(int(row.get("completed_cache_profiles", 0) or 0) for row in selected_group),
+                "completed_scenarios": sum(int(row.get("completed_scenarios", 0) or 0) for row in selected_group),
+                "completed_results": sum(int(row.get("completed_results", 0) or 0) for row in selected_group),
+                "started_utc": min(str(row.get("started_utc", "")).strip() for row in selected_group),
+                "updated_utc": max(str(row.get("updated_utc", "")).strip() for row in selected_group),
+            }
+    shared_payload = odylith_context_cache.read_json_object(progress_report_path(repo_root=root))
+    return shared_payload if isinstance(shared_payload, Mapping) else {}
+
+
+def _benchmark_exception_text(exc: BaseException | str) -> str:
+    if isinstance(exc, BaseException):
+        return f"{type(exc).__name__}: {exc}"
+    return str(exc).strip() or "benchmark runner exception"
+
+
+def _scenario_exception_result(
+    *,
+    scenario: Mapping[str, Any],
+    mode: str,
+    error: BaseException | str,
+    live_runner: bool = False,
+    packet_source: str = "",
+) -> dict[str, Any]:
+    normalized_mode = _normalize_mode(mode)
+    required_paths = [str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()]
+    supporting_paths = _scenario_supporting_paths(scenario)
+    critical_paths = [str(token).strip() for token in scenario.get("critical_paths", []) if str(token).strip()]
+    expected_write_paths = _scenario_expected_write_paths(scenario)
+    command_count = len([str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()])
+    error_text = _benchmark_exception_text(error)
+    resolved_packet_source = (
+        str(packet_source).strip()
+        or ("raw_host_cli" if normalized_mode == _RAW_AGENT_BASELINE_MODE else "benchmark_exception")
+    )
+    result: dict[str, Any] = {
+        "kind": str(scenario.get("kind", "")).strip() or "packet",
+        "mode": normalized_mode,
+        "packet_source": resolved_packet_source,
+        "latency_ms": 0.0,
+        "packet": {
+            "within_budget": False,
+            "route_ready": False,
+            "live_status": "failed",
+        }
+        if live_runner or _is_live_public_mode(normalized_mode)
+        else {"within_budget": False, "route_ready": False},
+        "expectation_ok": False,
+        "expectation_details": {
+            "live_runner": bool(live_runner or _is_live_public_mode(normalized_mode)),
+            "host_status": "failed" if live_runner or _is_live_public_mode(normalized_mode) else "not_applicable",
+            "codex_status": "failed" if live_runner or _is_live_public_mode(normalized_mode) else "not_applicable",
+            "validator_status": "failed",
+            "validator_status_basis": "benchmark_exception",
+            "structured_summary": error_text,
+            "validator_backed_noop_completion": False,
+            "validator_backed_completion": False,
+            "benchmark_exception": error_text,
+        },
+        "required_path_recall": 1.0 if not required_paths else 0.0,
+        "required_path_misses": required_paths,
+        "critical_path_misses": critical_paths,
+        "observed_paths": [],
+        "observed_path_sources": [],
+        "observed_path_count": 0,
+        "supporting_path_count": len(supporting_paths),
+        "supporting_path_hits": [],
+        "required_path_precision_basis": "required_plus_supporting_paths" if supporting_paths else "required_paths",
+        "required_path_precision": 1.0 if not required_paths and not supporting_paths else 0.0,
+        "hallucinated_surface_count": 0,
+        "hallucinated_surface_rate": 0.0,
+        "hallucinated_surfaces": [],
+        "expected_write_path_count": len(expected_write_paths),
+        "candidate_write_path_count": 0,
+        "candidate_write_paths": [],
+        "write_surface_precision": 1.0 if not expected_write_paths else 0.0,
+        "unnecessary_widening_count": 0,
+        "unnecessary_widening_rate": 0.0,
+        "unnecessary_widening_paths": [],
+        "selected_doc_count": 0,
+        "selected_test_count": 0,
+        "selected_command_count": 0,
+        "strict_gate_command_count": command_count,
+        "effective_estimated_tokens": 0,
+        "total_payload_estimated_tokens": 0,
+        "validation_success_proxy": 0.0,
+        "validation_results": {
+            "status": "failed",
+            "status_basis": "benchmark_exception",
+            "duration_ms": 0.0,
+            "results": [],
+            "summary": error_text,
+        },
+        "preflight_evidence_mode": "none",
+        "preflight_evidence_commands": [],
+        "preflight_evidence_result_status": "not_applicable",
+        "full_scan": {},
+        "orchestration": {"leaf_count": 0},
+        "benchmark_exception": error_text,
+    }
+    if live_runner or _is_live_public_mode(normalized_mode):
+        result["live_execution"] = {
+            "exit_code": 1,
+            "structured_output": {
+                "status": "failed",
+                "summary": error_text,
+                "changed_files": [],
+                "validation_commands_run": [],
+                "validation_summary": "benchmark_exception",
+                "notes": [],
+            },
+            "stdout_tail": "",
+            "stderr_tail": error_text,
+            "preflight_evidence_mode": "none",
+            "preflight_evidence_commands": [],
+            "preflight_evidence_result_status": "not_applicable",
+            "observed_path_sources": [],
+            "failure_artifacts": {
+                "tracked_paths": [*required_paths, *expected_write_paths],
+                "workspace_state_post_codex": {},
+                "workspace_state_pre_validator": {},
+            },
+            "benchmark_exception": error_text,
+        }
+    return result
 
 
 def _benchmark_owned_codex_process_ids() -> list[int]:
@@ -681,6 +1601,8 @@ def _is_benchmark_temp_worktree(path: Path) -> bool:
 
 
 def _benchmark_temp_worktrees(*, repo_root: Path) -> list[Path]:
+    rows: list[Path] = []
+    seen: set[Path] = set()
     with contextlib.suppress(OSError, subprocess.SubprocessError):
         completed = subprocess.run(
             ["git", "worktree", "list", "--porcelain"],
@@ -689,17 +1611,29 @@ def _benchmark_temp_worktrees(*, repo_root: Path) -> list[Path]:
             capture_output=True,
             check=False,
         )
-        if int(completed.returncode or 0) != 0:
-            return []
-        rows: list[Path] = []
-        for raw in str(completed.stdout or "").splitlines():
-            if not raw.startswith("worktree "):
-                continue
-            candidate = Path(raw.split(" ", 1)[1].strip())
-            if _is_benchmark_temp_worktree(candidate):
-                rows.append(candidate.resolve())
-        return rows
-    return []
+        if int(completed.returncode or 0) == 0:
+            for raw in str(completed.stdout or "").splitlines():
+                if not raw.startswith("worktree "):
+                    continue
+                candidate = Path(raw.split(" ", 1)[1].strip()).resolve()
+                if candidate not in seen and _is_benchmark_temp_worktree(candidate):
+                    seen.add(candidate)
+                    rows.append(candidate)
+    clone_parent = odylith_benchmark_isolation.benchmark_workspace_parent(
+        repo_root=Path(repo_root).resolve(),
+        create=False,
+    )
+    if clone_parent.is_dir():
+        with contextlib.suppress(OSError):
+            for child in clone_parent.iterdir():
+                if not child.is_dir() or not child.name.startswith(_BENCHMARK_LIVE_WORKTREE_MARKER):
+                    continue
+                resolved = child.resolve()
+                if resolved in seen:
+                    continue
+                seen.add(resolved)
+                rows.append(resolved)
+    return sorted(rows)
 
 
 def _cleanup_benchmark_worktrees(*, repo_root: Path) -> dict[str, Any]:
@@ -707,6 +1641,14 @@ def _cleanup_benchmark_worktrees(*, repo_root: Path) -> dict[str, Any]:
     removed: list[str] = []
     failed: list[str] = []
     for worktree in _benchmark_temp_worktrees(repo_root=root):
+        detached_clone_workspace = (worktree / "workspace").resolve()
+        if detached_clone_workspace.exists():
+            odylith_benchmark_isolation.cleanup_temporary_directory(worktree)
+            if not worktree.exists():
+                removed.append(str(worktree))
+            else:
+                failed.append(str(worktree))
+            continue
         completed = subprocess.run(
             ["git", "worktree", "remove", "--force", str(worktree)],
             cwd=str(root),
@@ -733,33 +1675,23 @@ def _cleanup_benchmark_worktrees(*, repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _benchmark_temp_directory_roots() -> list[Path]:
-    rows: list[Path] = []
-    candidates = [
-        tempfile.gettempdir(),
-        os.environ.get("TMPDIR", ""),
-        os.environ.get("TMP", ""),
-        os.environ.get("TEMP", ""),
-        os.environ.get("TEMPDIR", ""),
-    ]
-    seen: set[Path] = set()
-    for raw in candidates:
-        token = str(raw or "").strip()
-        if not token:
-            continue
-        with contextlib.suppress(OSError, RuntimeError):
-            candidate = Path(token).expanduser().resolve()
-            if candidate in seen:
-                continue
-            seen.add(candidate)
-            rows.append(candidate)
-    return rows
+def _benchmark_runtime_temp_root(*, repo_root: Path) -> Path:
+    return (
+        Path(repo_root).resolve()
+        / ".odylith"
+        / "runtime"
+        / "odylith-benchmark-temp"
+    ).resolve()
 
 
-def _benchmark_temp_directories() -> list[Path]:
+def _benchmark_temp_directory_roots(*, repo_root: Path) -> list[Path]:
+    return [_benchmark_runtime_temp_root(repo_root=repo_root)]
+
+
+def _benchmark_temp_directories(*, repo_root: Path) -> list[Path]:
     rows: list[Path] = []
     seen: set[Path] = set()
-    for root in _benchmark_temp_directory_roots():
+    for root in _benchmark_temp_directory_roots(repo_root=repo_root):
         if not root.is_dir():
             continue
         with contextlib.suppress(OSError):
@@ -776,10 +1708,149 @@ def _benchmark_temp_directories() -> list[Path]:
     return sorted(rows)
 
 
-def _cleanup_benchmark_temp_directories() -> dict[str, Any]:
+def _prune_stale_benchmark_progress(*, repo_root: Path, clear_shared_progress: bool) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    active_runs_file = active_runs_path(repo_root=root)
+    with odylith_context_cache.advisory_lock(repo_root=root, key=str(active_runs_file)):
+        active_entries = _load_active_runs(root)
+        active_runtime_present = bool(
+            _benchmark_owned_codex_process_ids()
+            or _benchmark_temp_worktrees(repo_root=root)
+            or _benchmark_temp_directories(repo_root=root)
+        )
+        stale_entries: list[dict[str, Any]] = []
+        retained_entries: list[dict[str, Any]] = []
+        synthesized_failed_reports: list[str] = []
+        processed_progress_paths: set[Path] = set()
+        for entry in active_entries:
+            status = str(entry.get("status", "")).strip() or "running"
+            owning_pid = max(0, int(entry.get("owning_pid", 0) or 0))
+            progress_path = Path(str(entry.get("progress_path", "")).strip())
+            progress_payload = (
+                odylith_context_cache.read_json_object(progress_path)
+                if progress_path and progress_path.exists()
+                else {}
+            )
+            if progress_path:
+                processed_progress_paths.add(progress_path.resolve())
+            progress_reference = progress_payload if isinstance(progress_payload, Mapping) and progress_payload else entry
+            if status != "running":
+                if not _history_report_exists_for_progress(
+                    repo_root=root,
+                    progress=progress_reference,
+                ):
+                    if _persist_orphaned_progress_failed_report(
+                        repo_root=root,
+                        progress_payload=progress_reference,
+                        error=BenchmarkRunInterrupted("benchmark shard entered teardown without a persisted final report"),
+                    ):
+                        synthesized_failed_reports.append(str(entry.get("report_id", "")).strip())
+                stale_entries.append(entry)
+                continue
+            if progress_path and not progress_path.exists():
+                if not _history_report_exists_for_progress(repo_root=root, progress=entry):
+                    if _persist_orphaned_progress_failed_report(
+                        repo_root=root,
+                        progress_payload=entry,
+                        error=BenchmarkRunInterrupted("process lost progress state before persisting final report"),
+                    ):
+                        synthesized_failed_reports.append(str(entry.get("report_id", "")).strip())
+                stale_entries.append(entry)
+                continue
+            if owning_pid > 0 and _process_exists(owning_pid):
+                retained_entries.append(entry)
+                continue
+            if owning_pid <= 0 and active_runtime_present:
+                retained_entries.append(entry)
+                continue
+            if not _history_report_exists_for_progress(
+                repo_root=root,
+                progress=progress_reference,
+            ):
+                if _persist_orphaned_progress_failed_report(
+                    repo_root=root,
+                    progress_payload=progress_reference,
+                    error=BenchmarkRunInterrupted("benchmark process exited before persisting final report"),
+                ):
+                    synthesized_failed_reports.append(str(entry.get("report_id", "")).strip())
+            stale_entries.append(entry)
+        benchmark_dir = benchmark_root(repo_root=root)
+        if benchmark_dir.is_dir():
+            with contextlib.suppress(OSError):
+                for progress_path in benchmark_dir.glob("progress-*.json"):
+                    resolved_progress_path = progress_path.resolve()
+                    if resolved_progress_path in processed_progress_paths:
+                        continue
+                    progress_payload = odylith_context_cache.read_json_object(progress_path)
+                    if not isinstance(progress_payload, Mapping):
+                        continue
+                    status = str(progress_payload.get("status", "")).strip() or "running"
+                    owning_pid = max(0, int(progress_payload.get("owning_pid", 0) or 0))
+                    running = status == "running" and ((owning_pid > 0 and _process_exists(owning_pid)) or (owning_pid <= 0 and active_runtime_present))
+                    if running:
+                        continue
+                    if not _history_report_exists_for_progress(repo_root=root, progress=progress_payload):
+                        if _persist_orphaned_progress_failed_report(
+                            repo_root=root,
+                            progress_payload=progress_payload,
+                            error=BenchmarkRunInterrupted("benchmark process exited before persisting final report"),
+                        ):
+                            synthesized_failed_reports.append(str(progress_payload.get("report_id", "")).strip())
+                    if (
+                        _history_report_exists_for_progress(repo_root=root, progress=progress_payload)
+                        or not _progress_requires_persisted_report(progress_payload)
+                    ):
+                        _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
+        if stale_entries:
+            for entry in stale_entries:
+                progress_path = Path(str(entry.get("progress_path", "")).strip())
+                progress_reference: Mapping[str, Any] = entry
+                if progress_path.exists():
+                    stored_progress = odylith_context_cache.read_json_object(progress_path)
+                    if isinstance(stored_progress, Mapping) and stored_progress:
+                        progress_reference = stored_progress
+                if progress_path.exists() and (
+                    _history_report_exists_for_progress(repo_root=root, progress=progress_reference)
+                    or not _progress_requires_persisted_report(progress_reference)
+                ):
+                    _benchmark_runtime_remove_file(repo_root=root, path=progress_path)
+            _write_active_runs(repo_root=root, runs=retained_entries)
+    shared_progress_path = progress_report_path(repo_root=root)
+    stale_shared_progress_cleared = False
+    shared_payload = odylith_context_cache.read_json_object(shared_progress_path)
+    shared_pid = max(0, int(shared_payload.get("owning_pid", 0) or 0)) if isinstance(shared_payload, Mapping) else 0
+    shared_running = bool(isinstance(shared_payload, Mapping) and str(shared_payload.get("status", "")).strip() == "running")
+    shared_stale = bool(
+        clear_shared_progress
+        or (shared_running and shared_pid > 0 and not _process_exists(shared_pid) and not active_runtime_present)
+        or (shared_running and shared_pid <= 0 and not active_runtime_present)
+    )
+    if shared_stale and isinstance(shared_payload, Mapping) and not _history_report_exists_for_progress(repo_root=root, progress=shared_payload):
+        _persist_orphaned_progress_failed_report(
+            repo_root=root,
+            progress_payload=shared_payload,
+            error=BenchmarkRunInterrupted("benchmark process exited before persisting final report"),
+        )
+    if shared_stale and shared_progress_path.exists():
+        with odylith_context_cache.advisory_lock(repo_root=root, key=str(shared_progress_path)):
+            if shared_progress_path.exists():
+                shared_progress_path.unlink()
+                stale_shared_progress_cleared = True
+    return {
+        "removed_active_run_count": len(stale_entries),
+        "removed_active_runs": stale_entries,
+        "stale_shared_progress_cleared": stale_shared_progress_cleared,
+        "active_run_count": len(retained_entries),
+        "active_runtime_present": active_runtime_present,
+        "synthesized_failed_report_count": len(synthesized_failed_reports),
+        "synthesized_failed_reports": synthesized_failed_reports,
+    }
+
+
+def _cleanup_benchmark_temp_directories(*, repo_root: Path) -> dict[str, Any]:
     removed: list[str] = []
     failed: list[str] = []
-    for directory in _benchmark_temp_directories():
+    for directory in _benchmark_temp_directories(repo_root=repo_root):
         with contextlib.suppress(OSError):
             shutil.rmtree(directory)
             removed.append(str(directory))
@@ -793,46 +1864,157 @@ def _cleanup_benchmark_temp_directories() -> dict[str, Any]:
     }
 
 
-def _cleanup_stale_benchmark_state(*, repo_root: Path, clear_progress: bool) -> dict[str, Any]:
+def _cleanup_stale_benchmark_state(
+    *,
+    repo_root: Path,
+    clear_progress: bool,
+    allow_destructive_runtime_cleanup: bool = True,
+    ignore_progress: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     root = Path(repo_root).resolve()
-    progress_path = progress_report_path(repo_root=root)
-    stale_progress_cleared = False
-    if clear_progress and progress_path.exists():
-        with contextlib.suppress(OSError):
-            progress_path.unlink()
-            stale_progress_cleared = True
+    progress_cleanup = _prune_stale_benchmark_progress(repo_root=root, clear_shared_progress=clear_progress)
+    blocking_active_run_count = int(progress_cleanup.get("active_run_count", 0) or 0)
+    if isinstance(ignore_progress, Mapping):
+        blocking_active_run_count = int(
+            _benchmark_runtime_hygiene_snapshot(repo_root=root, ignore_progress=ignore_progress).get(
+                "active_run_count",
+                blocking_active_run_count,
+            )
+            or 0
+        )
+    if blocking_active_run_count > 0:
+        return {
+            "stale_progress_cleared": bool(progress_cleanup.get("stale_shared_progress_cleared")),
+            "progress_cleanup": {**progress_cleanup, "blocking_active_run_count": blocking_active_run_count},
+            "process_cleanup": {
+                "requested_pid_count": 0,
+                "terminated_pid_count": 0,
+                "forced_pid_count": 0,
+                "remaining_pid_count": 0,
+                "terminated_pids": [],
+                "forced_pids": [],
+                "remaining_pids": [],
+                "skipped_due_to_active_runs": True,
+            },
+            "worktree_cleanup": {
+                "removed_worktree_count": 0,
+                "failed_worktree_count": 0,
+                "removed_worktrees": [],
+                "failed_worktrees": [],
+                "skipped_due_to_active_runs": True,
+            },
+            "temp_directory_cleanup": {
+                "removed_temp_directory_count": 0,
+                "failed_temp_directory_count": 0,
+                "removed_temp_directories": [],
+                "failed_temp_directories": [],
+                "skipped_due_to_active_runs": True,
+            },
+        }
+    if bool(progress_cleanup.get("active_runtime_present")) and not allow_destructive_runtime_cleanup:
+        return {
+            "stale_progress_cleared": bool(progress_cleanup.get("stale_shared_progress_cleared")),
+            "progress_cleanup": progress_cleanup,
+            "process_cleanup": {
+                "requested_pid_count": 0,
+                "terminated_pid_count": 0,
+                "forced_pid_count": 0,
+                "remaining_pid_count": 0,
+                "terminated_pids": [],
+                "forced_pids": [],
+                "remaining_pids": [],
+                "skipped_due_to_unowned_sharded_runtime": True,
+            },
+            "worktree_cleanup": {
+                "removed_worktree_count": 0,
+                "failed_worktree_count": 0,
+                "removed_worktrees": [],
+                "failed_worktrees": [],
+                "skipped_due_to_unowned_sharded_runtime": True,
+            },
+            "temp_directory_cleanup": {
+                "removed_temp_directory_count": 0,
+                "failed_temp_directory_count": 0,
+                "removed_temp_directories": [],
+                "failed_temp_directories": [],
+                "skipped_due_to_unowned_sharded_runtime": True,
+            },
+        }
     process_cleanup = _terminate_processes(pids=_benchmark_owned_codex_process_ids())
     worktree_cleanup = _cleanup_benchmark_worktrees(repo_root=root)
-    temp_directory_cleanup = _cleanup_benchmark_temp_directories()
+    temp_directory_cleanup = _cleanup_benchmark_temp_directories(repo_root=root)
     return {
-        "stale_progress_cleared": stale_progress_cleared,
+        "stale_progress_cleared": bool(progress_cleanup.get("stale_shared_progress_cleared")),
+        "progress_cleanup": progress_cleanup,
         "process_cleanup": process_cleanup,
         "worktree_cleanup": worktree_cleanup,
         "temp_directory_cleanup": temp_directory_cleanup,
     }
 
 
-def _benchmark_runtime_hygiene_snapshot(*, repo_root: Path) -> dict[str, Any]:
+def _benchmark_runtime_hygiene_snapshot(
+    *,
+    repo_root: Path,
+    ignore_progress: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     root = Path(repo_root).resolve()
     owned_process_ids = _benchmark_owned_codex_process_ids()
     temp_worktrees = [str(path) for path in _benchmark_temp_worktrees(repo_root=root)]
+    temp_directories = [str(path) for path in _benchmark_temp_directories(repo_root=root)]
+    active_runs = _load_active_runs(root)
+    ignored_active_run_count = 0
+    if isinstance(ignore_progress, Mapping):
+        ignored_identity = _active_run_identity(ignore_progress)
+        filtered_active_runs: list[dict[str, Any]] = []
+        for entry in active_runs:
+            entry_identity = (
+                str(entry.get("report_id", "")).strip(),
+                _normalize_benchmark_profile(str(entry.get("benchmark_profile", "")).strip()),
+                max(1, int(entry.get("shard_index", 1) or 1)),
+                max(1, int(entry.get("shard_count", 1) or 1)),
+                max(0, int(entry.get("owning_pid", 0) or 0)),
+            )
+            if entry_identity == ignored_identity:
+                ignored_active_run_count += 1
+                continue
+            filtered_active_runs.append(entry)
+        active_runs = filtered_active_runs
     return {
         "owned_codex_process_count": len(owned_process_ids),
         "owned_codex_process_ids": owned_process_ids,
         "temp_worktree_count": len(temp_worktrees),
         "temp_worktrees": temp_worktrees,
+        "temp_directory_count": len(temp_directories),
+        "temp_directories": temp_directories,
+        "active_run_count": len(active_runs),
+        "ignored_active_run_count": ignored_active_run_count,
     }
 
 
-def _enforce_diagnostic_runtime_hygiene(*, repo_root: Path) -> dict[str, Any]:
-    hygiene = _benchmark_runtime_hygiene_snapshot(repo_root=repo_root)
-    if not hygiene["owned_codex_process_count"] and not hygiene["temp_worktree_count"]:
+def _enforce_diagnostic_runtime_hygiene(
+    *,
+    repo_root: Path,
+    ignore_progress: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    hygiene = _benchmark_runtime_hygiene_snapshot(repo_root=repo_root, ignore_progress=ignore_progress)
+    if (
+        not hygiene["owned_codex_process_count"]
+        and not hygiene["temp_worktree_count"]
+        and not hygiene["temp_directory_count"]
+        and not hygiene["active_run_count"]
+    ):
         return hygiene
-    cleanup = _cleanup_stale_benchmark_state(repo_root=repo_root, clear_progress=False)
+    cleanup = _cleanup_stale_benchmark_state(
+        repo_root=repo_root,
+        clear_progress=False,
+        ignore_progress=ignore_progress,
+    )
     raise RuntimeError(
         "diagnostic benchmark contamination detected: "
         f"owned_codex_process_count={hygiene['owned_codex_process_count']} "
         f"temp_worktree_count={hygiene['temp_worktree_count']} "
+        f"temp_directory_count={hygiene['temp_directory_count']} "
+        f"active_run_count={hygiene['active_run_count']} "
         f"cleanup={json.dumps(cleanup, sort_keys=True)}"
     )
 
@@ -842,6 +2024,14 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         return {}
     stored_summary = dict(report.get("published_summary", {})) if isinstance(report.get("published_summary"), Mapping) else {}
     acceptance = dict(report.get("acceptance", {})) if isinstance(report.get("acceptance"), Mapping) else {}
+    comparison_contract = str(report.get("comparison_contract", "")).strip()
+    comparison_contract_details = (
+        dict(report.get("comparison_contract_details", {}))
+        if isinstance(report.get("comparison_contract_details"), Mapping)
+        else _comparison_contract_details(comparison_contract)
+        if comparison_contract
+        else {}
+    )
     comparison = (
         dict(report.get("published_comparison", {}))
         if isinstance(report.get("published_comparison"), Mapping)
@@ -868,7 +2058,27 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
     adoption_proof = dict(report.get("adoption_proof", {})) if isinstance(report.get("adoption_proof"), Mapping) else {}
     robustness = dict(report.get("robustness_summary", {})) if isinstance(report.get("robustness_summary"), Mapping) else {}
     corpus_contract = dict(report.get("corpus_contract", {})) if isinstance(report.get("corpus_contract"), Mapping) else {}
+    corpus_composition = (
+        dict(report.get("corpus_composition", {}))
+        if isinstance(report.get("corpus_composition"), Mapping)
+        else {}
+    )
     selection = dict(report.get("selection", {})) if isinstance(report.get("selection"), Mapping) else {}
+    fairness_findings = [
+        str(token).strip()
+        for token in report.get("fairness_findings", [])
+        if isinstance(report.get("fairness_findings"), list) and str(token).strip()
+    ]
+    observed_path_sources = [
+        str(token).strip()
+        for token in report.get("observed_path_sources", [])
+        if isinstance(report.get("observed_path_sources"), list) and str(token).strip()
+    ]
+    preflight_evidence_modes = [
+        str(token).strip()
+        for token in report.get("preflight_evidence_modes", [])
+        if isinstance(report.get("preflight_evidence_modes"), list) and str(token).strip()
+    ]
     adoption_proof_sample_size = int(adoption_proof.get("sample_size", 0) or 0)
     adoption_proof_auto_grounded_rate = float(adoption_proof.get("auto_grounded_rate", 0.0) or 0.0)
     adoption_proof_requires_widening_rate = float(adoption_proof.get("requires_widening_rate", 0.0) or 0.0)
@@ -911,6 +2121,16 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         "report_id": str(report.get("report_id", "")).strip(),
         "benchmark_profile": _normalize_benchmark_profile(str(report.get("benchmark_profile", "")).strip()),
         "benchmark_profile_label": _benchmark_profile_label(str(report.get("benchmark_profile", "")).strip()),
+        "git_branch": str(report.get("git_branch", "")).strip(),
+        "git_commit": str(report.get("git_commit", "")).strip(),
+        "git_dirty": bool(report.get("git_dirty")),
+        "source_posture": str(report.get("source_posture", "")).strip(),
+        "current_tree_identity_match": benchmark_report_matches_current_tree(
+            repo_root=Path(str(report.get("repo_root", "")).strip() or "."),
+            report=report,
+        )
+        if str(report.get("repo_root", "")).strip()
+        else False,
         "selection_strategy": str(report.get("selection_strategy", "")).strip()
         or str(selection.get("selection_strategy", "")).strip()
         or "manual_selection",
@@ -931,6 +2151,8 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         ]
         if isinstance(report.get("published_cache_profiles"), list)
         else [],
+        "comparison_contract": comparison_contract,
+        "comparison_primary_claim": str(comparison_contract_details.get("primary_claim", "")).strip(),
         "candidate_mode": _public_mode_name(str(comparison.get("candidate_mode", "")).strip()),
         "baseline_mode": _public_mode_name(str(comparison.get("baseline_mode", "")).strip()),
         "latency_delta_ms": float(comparison.get("median_latency_delta_ms", 0.0) or 0.0),
@@ -1096,6 +2318,25 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         "corpus_contract_status": str(corpus_contract.get("status", "")).strip(),
         "corpus_packet_scenario_key": str(corpus_contract.get("packet_scenario_key", "")).strip(),
         "corpus_architecture_scenario_key": str(corpus_contract.get("architecture_scenario_key", "")).strip(),
+        "fairness_contract_passed": bool(report.get("fairness_contract_passed")),
+        "fairness_finding_count": len(fairness_findings),
+        "fairness_findings": fairness_findings[:4],
+        "observed_path_sources": observed_path_sources,
+        "preflight_evidence_mode": str(report.get("preflight_evidence_mode", "")).strip(),
+        "preflight_evidence_modes": preflight_evidence_modes,
+        "corpus_seriousness_floor_passed": bool(corpus_composition.get("seriousness_floor_passed")),
+        "corpus_full_coverage_rate": float(corpus_composition.get("full_corpus_coverage_rate", 0.0) or 0.0),
+        "corpus_full_selected": bool(corpus_composition.get("full_corpus_selected")),
+        "corpus_implementation_scenario_count": int(corpus_composition.get("implementation_scenario_count", 0) or 0),
+        "corpus_write_plus_validator_scenario_count": int(
+            corpus_composition.get("write_plus_validator_scenario_count", 0) or 0
+        ),
+        "corpus_correctness_critical_scenario_count": int(
+            corpus_composition.get("correctness_critical_scenario_count", 0) or 0
+        ),
+        "corpus_mechanism_heavy_implementation_ratio": float(
+            corpus_composition.get("mechanism_heavy_implementation_ratio", 0.0) or 0.0
+        ),
         "weak_families": [
             str(token).strip()
             for token in acceptance.get("weak_families", [])
@@ -1241,6 +2482,80 @@ def _dedupe_strings(values: Sequence[Any]) -> list[str]:
     return rows
 
 
+def _deep_merge_mapping(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for raw_key, overlay_value in overlay.items():
+        key = str(raw_key).strip()
+        if not key:
+            continue
+        base_value = merged.get(key)
+        if isinstance(base_value, Mapping) and isinstance(overlay_value, Mapping):
+            merged[key] = _deep_merge_mapping(base_value, overlay_value)
+            continue
+        merged[key] = overlay_value
+    return merged
+
+
+_PACKET_FIXTURE_ALLOWED_KEYS = frozenset(
+    {
+        "agent_stream_state",
+        "context_packet",
+        "docs",
+        "execution_stream_state",
+        "external_dependency",
+        "github_actions",
+        "host_candidates",
+        "host_runtime",
+        "presentation_policy",
+        "proof_state",
+        "relevant_docs",
+        "routing_handoff",
+        "session",
+        "target_resolution",
+        "turn_context",
+    }
+)
+
+
+def _scenario_packet_fixture(scenario: Mapping[str, Any]) -> dict[str, Any]:
+    fixture = _mapping(scenario.get("packet_fixture"))
+    if not fixture:
+        return {}
+    return {
+        key: value
+        for key, value in fixture.items()
+        if str(key).strip() in _PACKET_FIXTURE_ALLOWED_KEYS and value not in ("", [], {}, None)
+    }
+
+
+def _apply_packet_fixture(
+    *,
+    payload: Mapping[str, Any],
+    scenario: Mapping[str, Any],
+    packet_source: str,
+) -> dict[str, Any]:
+    fixture = _scenario_packet_fixture(scenario)
+    merged = dict(payload)
+    if packet_source in {"impact", "governance_slice"} and not str(merged.get("packet_kind", "")).strip():
+        merged["packet_kind"] = packet_source
+    if fixture:
+        merged = _deep_merge_mapping(merged, fixture)
+    if not fixture and "packet_kind" not in merged:
+        return odylith_benchmark_execution_engine.enrich_packet_payload_for_execution_engine_family(
+            payload=merged,
+            scenario=scenario,
+        )
+    merged.pop("execution_engine", None)
+    context_packet = _mapping(merged.get("context_packet"))
+    if context_packet:
+        context_packet.pop("execution_engine", None)
+        merged["context_packet"] = context_packet
+    return odylith_benchmark_execution_engine.enrich_packet_payload_for_execution_engine_family(
+        payload=merged,
+        scenario=scenario,
+    )
+
+
 def _scenario_priority_rank(priority: str) -> int:
     return {"critical": 0, "high": 1, "medium": 2, "low": 3}.get(str(priority or "").strip().lower(), 9)
 
@@ -1253,8 +2568,16 @@ def _scenario_selection_sort_key(scenario: Mapping[str, Any]) -> tuple[int, str,
     )
 
 
+def _normalize_family_filter(value: str) -> str:
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    alias = token.lower().replace(" ", "_")
+    return _FAMILY_ALIASES.get(token, _FAMILY_ALIASES.get(alias, _FAMILY_ALIASES.get(alias.replace("_", "-"), token)))
+
+
 def _normalize_family_filters(families: Sequence[str]) -> list[str]:
-    return _dedupe_strings([str(token).strip() for token in families if str(token).strip()])
+    return _dedupe_strings([_normalize_family_filter(str(token)) for token in families if str(token).strip()])
 
 
 def _representative_family_smoke_scenarios(*, scenarios: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -1271,18 +2594,45 @@ def _representative_family_smoke_scenarios(*, scenarios: Sequence[Mapping[str, A
     return [dict(row) for row in selected[:_QUICK_PROFILE_MAX_SCENARIOS]]
 
 
+def _quick_profile_smoke_scenarios(*, scenarios: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """Keep the default live smoke bounded while still covering current-head risk seams."""
+    by_id = {
+        str(row.get("scenario_id", "")).strip(): dict(row)
+        for row in scenarios
+        if str(row.get("scenario_id", "")).strip()
+    }
+    selected: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for scenario_id in _QUICK_PROFILE_SENTINEL_CASE_IDS:
+        row = by_id.get(scenario_id)
+        if row is None:
+            continue
+        selected.append(dict(row))
+        seen.add(scenario_id)
+    if len(selected) < _QUICK_PROFILE_MAX_SCENARIOS:
+        for row in _representative_family_smoke_scenarios(scenarios=scenarios):
+            scenario_id = str(row.get("scenario_id", "")).strip()
+            if not scenario_id or scenario_id in seen:
+                continue
+            selected.append(dict(row))
+            seen.add(scenario_id)
+            if len(selected) >= _QUICK_PROFILE_MAX_SCENARIOS:
+                break
+    return selected[:_QUICK_PROFILE_MAX_SCENARIOS]
+
+
 def _apply_scenario_shard(
     *,
     scenarios: Sequence[Mapping[str, Any]],
     shard_count: int,
     shard_index: int,
 ) -> list[dict[str, Any]]:
-    if shard_count <= 1:
-        return [dict(row) for row in scenarios]
     if shard_count < 1:
         raise ValueError("`shard_count` must be at least 1.")
     if shard_index < 1 or shard_index > shard_count:
         raise ValueError("`shard_index` must be between 1 and `shard_count` inclusive.")
+    if shard_count <= 1:
+        return [dict(row) for row in scenarios]
     selected: list[dict[str, Any]] = []
     for index, raw in enumerate(scenarios, start=1):
         if ((index - 1) % shard_count) + 1 != shard_index:
@@ -1348,6 +2698,16 @@ def _scenario_from_case(*, case: Mapping[str, Any], architecture: bool) -> dict[
         if isinstance(benchmark_spec.get("validation_commands"), list)
         else []
     )
+    explicit_expected_write_paths = (
+        _dedupe_strings(benchmark_spec.get("expected_write_paths", []))
+        if isinstance(benchmark_spec.get("expected_write_paths"), list)
+        else []
+    )
+    supporting_paths = (
+        _dedupe_strings(benchmark_spec.get("supporting_paths", []))
+        if isinstance(benchmark_spec.get("supporting_paths"), list)
+        else []
+    )
     focused_local_checks = (
         _dedupe_strings(benchmark_spec.get("focused_local_checks", []))
         if isinstance(benchmark_spec.get("focused_local_checks"), list)
@@ -1370,6 +2730,9 @@ def _scenario_from_case(*, case: Mapping[str, Any], architecture: bool) -> dict[
             *changed_paths,
         ]
     )
+    expected_write_paths = explicit_expected_write_paths if needs_write else []
+    if needs_write and not expected_write_paths:
+        expected_write_paths = list(changed_paths)
     critical_paths = _dedupe_strings(
         [
             *(
@@ -1385,6 +2748,7 @@ def _scenario_from_case(*, case: Mapping[str, Any], architecture: bool) -> dict[
         with contextlib.suppress(TypeError, ValueError):
             live_timeout_seconds = max(0.0, float(benchmark_spec.get("live_timeout_seconds") or 0.0))
     allow_noop_completion = bool(benchmark_spec.get("allow_noop_completion"))
+    packet_fixture = _mapping(benchmark_spec.get("packet_fixture"))
     return {
         "scenario_id": str(case.get("case_id", "")).strip() or hashlib.sha256(
             json.dumps(case, sort_keys=True, ensure_ascii=False).encode("utf-8")
@@ -1412,12 +2776,15 @@ def _scenario_from_case(*, case: Mapping[str, Any], architecture: bool) -> dict[
         "validation_commands": validation_commands,
         "focused_local_checks": focused_local_checks,
         "required_paths": required_paths,
+        "supporting_paths": supporting_paths,
+        "expected_write_paths": expected_write_paths,
         "critical_paths": critical_paths,
         "needs_write": needs_write,
         "allow_noop_completion": allow_noop_completion,
         "correctness_critical": correctness_critical,
         "live_timeout_seconds": live_timeout_seconds,
         "packet_source": str(benchmark_spec.get("packet_source", "")).strip(),
+        "packet_fixture": packet_fixture,
         "expect": dict(case.get("expect", {})) if isinstance(case.get("expect"), Mapping) else {},
         "match": match_spec,
     }
@@ -1452,13 +2819,81 @@ def load_benchmark_scenarios(
     return scenarios
 
 
+def _resolve_benchmark_scenario_selection(
+    *,
+    all_scenarios: Sequence[Mapping[str, Any]],
+    benchmark_profile: str,
+    case_ids: Sequence[str] = (),
+    families: Sequence[str] = (),
+    shard_count: int = 1,
+    shard_index: int = 1,
+    limit: int = 0,
+) -> dict[str, Any]:
+    normalized_profile = _normalize_benchmark_profile(benchmark_profile)
+    normalized_shard_count = int(1 if shard_count is None else shard_count)
+    normalized_shard_index = int(1 if shard_index is None else shard_index)
+    selected_case_ids = {str(token).strip() for token in case_ids if str(token).strip()}
+    selected_families = set(_normalize_family_filters(families))
+    all_case_ids = {
+        str(row.get("scenario_id", "")).strip()
+        for row in all_scenarios
+        if str(row.get("scenario_id", "")).strip()
+    }
+    base_scenarios = [
+        dict(row)
+        for row in all_scenarios
+        if (not selected_case_ids or str(row.get("scenario_id", "")).strip() in selected_case_ids)
+        and (not selected_families or str(row.get("family", "")).strip() in selected_families)
+    ]
+    profile_default_narrowing = ""
+    if (
+        normalized_profile == BENCHMARK_PROFILE_QUICK
+        and not selected_case_ids
+        and not selected_families
+        and int(limit) <= 0
+        and normalized_shard_count <= 1
+    ):
+        scenarios = _quick_profile_smoke_scenarios(scenarios=base_scenarios)
+        profile_default_narrowing = "quick_sentinel_smoke"
+    else:
+        scenarios = [dict(row) for row in base_scenarios]
+    scenarios = _apply_scenario_shard(
+        scenarios=scenarios,
+        shard_count=normalized_shard_count,
+        shard_index=normalized_shard_index,
+    )
+    if limit > 0:
+        scenarios = scenarios[: max(1, int(limit))]
+    explicit_full_selection = bool(selected_case_ids) and selected_case_ids == all_case_ids and not selected_families
+    full_corpus_selected = bool(
+        not profile_default_narrowing
+        and int(limit) <= 0
+        and normalized_shard_count <= 1
+        and ((not selected_case_ids and not selected_families and len(scenarios) == len(all_scenarios)) or explicit_full_selection)
+    )
+    selection_strategy = "full_corpus"
+    if profile_default_narrowing:
+        selection_strategy = profile_default_narrowing
+    elif selected_case_ids or selected_families or normalized_shard_count > 1 or int(limit) > 0:
+        selection_strategy = "manual_selection"
+    return {
+        "all_case_ids": all_case_ids,
+        "selected_case_ids": selected_case_ids,
+        "selected_families": selected_families,
+        "profile_default_narrowing": profile_default_narrowing,
+        "full_corpus_selected": full_corpus_selected,
+        "selection_strategy": selection_strategy,
+        "scenarios": scenarios,
+        "all_scenarios": [dict(row) for row in all_scenarios],
+    }
+
+
 @contextlib.contextmanager
 def _odylith_enabled_override(enabled: bool) -> Iterator[None]:
-    keys = ("ODYLITH_ENABLED", "ODYLITH_ENABLED")
+    keys = ("ODYLITH_ENABLED", "ODYLITH_MODE")
     prior = {key: os.environ.get(key) for key in keys}
-    token = "1" if enabled else "0"
-    for key in keys:
-        os.environ[key] = token
+    os.environ["ODYLITH_ENABLED"] = "1" if enabled else "0"
+    os.environ["ODYLITH_MODE"] = "enabled" if enabled else "disabled"
     try:
         yield
     finally:
@@ -1514,10 +2949,29 @@ def _packet_source_for_scenario(scenario: Mapping[str, Any]) -> str:
     explicit_source = str(scenario.get("packet_source", "")).strip()
     if explicit_source in _VALID_PACKET_SOURCES:
         return explicit_source
-    family = str(scenario.get("family", "")).strip()
+    family = str(scenario.get("family", "")).strip().replace("-", "_")
     if family in _GOVERNANCE_SLICE_FAMILIES:
         return "governance_slice"
     return "impact"
+
+
+def _benchmark_session_namespace(
+    *,
+    scenario: Mapping[str, Any],
+    mode: str,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
+) -> str:
+    normalized_mode = _normalize_mode(mode)
+    return (
+        f"benchmark-{_active_run_token(report_id, fallback='report')}"
+        f"-s{max(1, int(shard_index))}-of-{max(1, int(shard_count))}"
+        f"-{_active_run_token(cache_profile, fallback='warm')}"
+        f"-{_active_run_token(str(scenario.get('scenario_id', '')).strip(), fallback='scenario')}"
+        f"-{_active_run_token(normalized_mode, fallback='mode')}"
+    )
 
 
 def _build_packet_payload(
@@ -1526,9 +2980,22 @@ def _build_packet_payload(
     scenario: Mapping[str, Any],
     mode: str,
     existing_paths: Sequence[str],
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> tuple[str, dict[str, Any], dict[str, Any]]:
     normalized_mode = _normalize_mode(mode)
     requested_source = _packet_source_for_scenario(scenario)
+    benchmark_session_id = _benchmark_session_namespace(
+        scenario=scenario,
+        mode=normalized_mode,
+        report_id=report_id,
+        cache_profile=cache_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+    )
+    claimed_paths = list(existing_paths)
     if not _mode_uses_odylith(normalized_mode):
         stage = "repo_scan_baseline" if _is_repo_scan_baseline_mode(normalized_mode) else "raw_agent_baseline"
         return (
@@ -1542,15 +3009,21 @@ def _build_packet_payload(
                 "reasons": [],
             },
         )
-    with _odylith_enabled_override(True):
+    if not report_id:
+        store.clear_runtime_process_caches(repo_root=repo_root)
+    with _odylith_enabled_override(True), agent_runtime_contract.codex_host_runtime_environment_if_missing():
         if requested_source == "governance_slice":
             payload = store.build_governance_slice(
                 repo_root=repo_root,
                 changed_paths=existing_paths,
                 workstream=str(scenario.get("workstream", "")).strip(),
                 component=str(scenario.get("component", "")).strip(),
+                use_working_tree=False,
+                working_tree_scope="session",
+                session_id=benchmark_session_id,
+                claimed_paths=[],
                 runtime_mode="local",
-                delivery_profile="codex_hot_path",
+                delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
                 family_hint=str(scenario.get("family", "")).strip(),
                 intent=str(scenario.get("intent", "")).strip(),
                 validation_command_hints=[
@@ -1568,17 +3041,18 @@ def _build_packet_payload(
             }
             packet_source = "governance_slice"
         elif requested_source == "session_brief":
-            payload = store.build_session_brief(
+            payload = packet_session_runtime.build_session_brief(
                 repo_root=repo_root,
                 changed_paths=existing_paths,
                 use_working_tree=False,
                 working_tree_scope="session",
                 runtime_mode="local",
-                session_id=f"benchmark-{str(scenario.get('scenario_id', '')).strip()}-{normalized_mode}",
+                session_id=benchmark_session_id,
                 workstream=str(scenario.get("workstream", "")).strip(),
                 intent=str(scenario.get("intent", "")).strip(),
-                delivery_profile="codex_hot_path",
+                delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
                 family_hint=str(scenario.get("family", "")).strip(),
+                claimed_paths=claimed_paths,
                 validation_command_hints=[
                     str(token).strip()
                     for token in scenario.get("validation_commands", [])
@@ -1596,17 +3070,18 @@ def _build_packet_payload(
             }
             packet_source = "session_brief"
         elif requested_source == "bootstrap_session":
-            payload = store.build_session_bootstrap(
+            payload = packet_session_runtime.build_session_bootstrap(
                 repo_root=repo_root,
                 changed_paths=existing_paths,
                 use_working_tree=False,
                 working_tree_scope="session",
                 runtime_mode="local",
-                session_id=f"benchmark-{str(scenario.get('scenario_id', '')).strip()}-{normalized_mode}",
+                session_id=benchmark_session_id,
                 workstream=str(scenario.get("workstream", "")).strip(),
                 intent=str(scenario.get("intent", "")).strip(),
-                delivery_profile="codex_hot_path",
+                delivery_profile=agent_runtime_contract.AGENT_HOT_PATH_PROFILE,
                 family_hint=str(scenario.get("family", "")).strip(),
+                claimed_paths=claimed_paths,
                 validation_command_hints=[
                     str(token).strip()
                     for token in scenario.get("validation_commands", [])
@@ -1624,9 +3099,12 @@ def _build_packet_payload(
             }
             packet_source = "bootstrap_session"
         else:
-            adaptive = store.build_adaptive_coding_packet(
+            adaptive = packet_adaptive_runtime.build_adaptive_coding_packet(
                 repo_root=repo_root,
                 changed_paths=existing_paths,
+                working_tree_scope="session",
+                session_id=benchmark_session_id,
+                claimed_paths=claimed_paths,
                 runtime_mode="local",
                 intent=str(scenario.get("intent", "")).strip(),
                 family_hint=str(scenario.get("family", "")).strip(),
@@ -1667,7 +3145,8 @@ def _packet_token_breakdown(
         prompt_tokens = _estimate_json_tokens(full_scan)
         return {
             "effective_estimated_tokens": prompt_tokens,
-            "effective_token_basis": "codex_prompt_bundle",
+            "effective_token_basis": "host_prompt_bundle",
+            "host_prompt_estimated_tokens": prompt_tokens,
             "codex_prompt_estimated_tokens": prompt_tokens,
             "total_payload_estimated_tokens": prompt_tokens,
             "runtime_contract_estimated_tokens": 0,
@@ -1682,7 +3161,8 @@ def _packet_token_breakdown(
         prompt_tokens = _estimate_json_tokens(raw_prompt_payload)
         return {
             "effective_estimated_tokens": prompt_tokens,
-            "effective_token_basis": "codex_prompt_bundle",
+            "effective_token_basis": "host_prompt_bundle",
+            "host_prompt_estimated_tokens": prompt_tokens,
             "codex_prompt_estimated_tokens": prompt_tokens,
             "total_payload_estimated_tokens": prompt_tokens,
             "runtime_contract_estimated_tokens": 0,
@@ -1709,7 +3189,8 @@ def _packet_token_breakdown(
     operator_diag_artifacts = _artifact_token_map(payload, keys=sorted(operator_keys))
     return {
         "effective_estimated_tokens": prompt_tokens,
-        "effective_token_basis": "codex_prompt_bundle",
+        "effective_token_basis": "host_prompt_bundle",
+        "host_prompt_estimated_tokens": prompt_tokens,
         "codex_prompt_estimated_tokens": prompt_tokens,
         "total_payload_estimated_tokens": _estimate_json_tokens(payload),
         "runtime_contract_estimated_tokens": _estimate_json_tokens(runtime_payload),
@@ -1879,6 +3360,7 @@ def _orchestration_request_payload(
     packet_payload: Mapping[str, Any],
 ) -> dict[str, Any]:
     context_packet = dict(packet_payload.get("context_packet", {})) if isinstance(packet_payload.get("context_packet"), Mapping) else {}
+    session_payload = dict(packet_payload.get("session", {})) if isinstance(packet_payload.get("session"), Mapping) else {}
     impact_summary = dict(packet_payload.get("impact_summary", {})) if isinstance(packet_payload.get("impact_summary"), Mapping) else {}
     top_level_components = [
         str(row.get("component_id", "")).strip()
@@ -1915,9 +3397,14 @@ def _orchestration_request_payload(
     correctness_critical = bool(scenario.get("correctness_critical")) and bool(recommended_commands)
     family = str(scenario.get("family", "")).strip()
     analysis_task = str(scenario.get("kind", "")).strip() == "architecture" or family in _ANALYSIS_FAMILIES or not bool(scenario.get("needs_write"))
+    scope_paths = _scenario_expected_write_paths(scenario) if bool(scenario.get("needs_write")) else [
+        str(token).strip()
+        for token in scenario.get("changed_paths", [])
+        if str(token).strip()
+    ]
     candidate_paths = _dedupe_strings(
         [
-            *(str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()),
+            *scope_paths,
             *_governance_candidate_paths(packet_payload),
         ]
     )
@@ -1945,10 +3432,12 @@ def _orchestration_request_payload(
             or context_packet.get("full_scan_recommended")
         ),
     }
-    for key in ("routing_handoff", "context_packet", "evidence_pack", "optimization_snapshot", "architecture_audit"):
+    for key in ("routing_handoff", "context_packet", "evidence_pack", "optimization_snapshot", "architecture_audit", "session"):
         value = packet_payload.get(key)
         if isinstance(value, Mapping) and value:
             request_payload[key] = dict(value)
+    if session_payload and "session" not in request_payload:
+        request_payload["session"] = session_payload
     return request_payload
 
 
@@ -1992,6 +3481,11 @@ def _request_payload_odylith_adoption(request_payload: Mapping[str, Any]) -> dic
         if isinstance(request_payload.get("context_packet"), Mapping)
         else {}
     )
+    session_payload = (
+        dict(request_payload.get("session", {}))
+        if isinstance(request_payload.get("session"), Mapping)
+        else {}
+    )
     architecture_audit = (
         dict(request_payload.get("architecture_audit", {}))
         if isinstance(request_payload.get("architecture_audit"), Mapping)
@@ -2026,6 +3520,11 @@ def _request_payload_odylith_adoption(request_payload: Mapping[str, Any]) -> dic
     routing_confidence = (
         str(routing_handoff.get("routing_confidence", "")).strip()
         or str(packet_quality.get("routing_confidence", "")).strip()
+    )
+    session_namespace = (
+        str(session_payload.get("session_namespace", "")).strip()
+        or str(session_payload.get("session_id", "")).strip()
+        or str(context_packet.get("session_id", "")).strip()
     )
     route_ready = bool(routing_handoff.get("route_ready") or route.get("route_ready"))
     native_spawn_ready = bool(routing_handoff.get("native_spawn_ready") or route.get("native_spawn_ready"))
@@ -2069,7 +3568,8 @@ def _request_payload_odylith_adoption(request_payload: Mapping[str, Any]) -> dic
         "runtime_source": "none",
         "runtime_transport": "none",
         "workspace_daemon_reused": False,
-        "session_namespaced": False,
+        "session_namespace": session_namespace,
+        "session_namespaced": bool(session_namespace),
         "mixed_local_fallback": False,
     }
 
@@ -2170,6 +3670,12 @@ def _terminate_process_group(*, pid: int) -> None:
     time.sleep(_BENCHMARK_ADOPTION_PROOF_TERMINATION_GRACE_SECONDS)
 
 
+def _spawn_safe_main_module_available() -> bool:
+    main_module = sys.modules.get("__main__")
+    main_file = str(getattr(main_module, "__file__", "") or "").strip()
+    return bool(main_file and Path(main_file).is_file())
+
+
 def _bounded_orchestration_summary(
     *,
     request_payload: Mapping[str, Any],
@@ -2182,7 +3688,7 @@ def _bounded_orchestration_summary(
         if timeout_seconds is None
         else max(0.0, float(timeout_seconds))
     )
-    if timeout <= 0:
+    if timeout <= 0 or not _spawn_safe_main_module_available():
         return _safe_orchestration_summary(
             request_payload=request_payload,
             repo_root=repo_root,
@@ -2244,6 +3750,28 @@ def _observed_packet_paths(payload: Mapping[str, Any]) -> list[str]:
         if isinstance(value, list):
             rows.extend(path_bundle_codec.expand_path_rows(value))
     context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
+    guidance_behavior_summary = guidance_behavior_runtime.summary_from_sources(payload, context_packet, limit=6)
+    discipline_summary = discipline_runtime.summary_from_sources(payload, context_packet, limit=6)
+    if guidance_behavior_summary:
+        related_refs = guidance_behavior_summary.get("related_guidance_refs", [])
+        if isinstance(related_refs, list):
+            rows.extend(path_bundle_codec.expand_path_rows(related_refs))
+    discipline_source_refs = (
+        discipline_summary.get("source_refs", [])
+        if isinstance(discipline_summary.get("source_refs", []), list)
+        else []
+    )
+    discipline_runtime_contract_present = bool(
+        guidance_behavior_summary
+        or discipline_summary
+        or any(
+            "discipline-evaluation-corpus.v1.json" in str(token)
+            for token in discipline_source_refs
+        )
+    )
+    # Guidance and discipline summary source refs are runtime diagnostics, not
+    # prompt-visible task evidence. Keep the discipline runtime contract live
+    # for validator proof, but do not count those refs as observed paths.
     anchors = dict(context_packet.get("anchors", {})) if isinstance(context_packet.get("anchors"), Mapping) else {}
     for key in ("changed_paths", "explicit_paths"):
         value = anchors.get(key, [])
@@ -2308,25 +3836,55 @@ def _path_recall(
     return round((len(required) - len(misses)) / max(1, len(required)), 3), misses
 
 
+def _scenario_supporting_paths(scenario: Mapping[str, Any]) -> list[str]:
+    raw_paths = scenario.get("supporting_paths", [])
+    if not isinstance(raw_paths, list):
+        return []
+    return _dedupe_strings([str(token).strip() for token in raw_paths if str(token).strip()])
+
+
+def _scenario_expected_write_paths(scenario: Mapping[str, Any]) -> list[str]:
+    if not bool(scenario.get("needs_write")):
+        return []
+    raw_expected = scenario.get("expected_write_paths", [])
+    explicit = _dedupe_strings(
+        [str(token).strip() for token in raw_expected if str(token).strip()]
+        if isinstance(raw_expected, list)
+        else []
+    )
+    if explicit:
+        return explicit
+    raw_changed = scenario.get("changed_paths", [])
+    if not isinstance(raw_changed, list):
+        return []
+    return _dedupe_strings(
+        [str(token).strip() for token in raw_changed if str(token).strip()]
+    )
+
+
 def _precision_metrics(
     *,
     required_paths: Sequence[str],
+    supporting_paths: Sequence[str] = (),
     observed_paths: Sequence[str],
     expected_write_paths: Sequence[str],
     candidate_write_paths: Sequence[str],
 ) -> dict[str, Any]:
     required = {str(token).strip() for token in required_paths if str(token).strip()}
+    supporting = {str(token).strip() for token in supporting_paths if str(token).strip()}
+    relevant = required.union(supporting)
     observed = {str(token).strip() for token in observed_paths if str(token).strip()}
     expected_write = {str(token).strip() for token in expected_write_paths if str(token).strip()}
     candidate_write = {str(token).strip() for token in candidate_write_paths if str(token).strip()}
 
-    observed_required = sorted(required.intersection(observed))
-    hallucinated_surfaces = sorted(observed.difference(required))
+    observed_supporting = sorted(supporting.intersection(observed))
+    observed_relevant = sorted(relevant.intersection(observed))
+    hallucinated_surfaces = sorted(observed.difference(relevant))
     required_path_precision = (
-        round(len(observed_required) / max(1, len(observed)), 3)
+        round(len(observed_relevant) / max(1, len(observed)), 3)
         if observed
         else 1.0
-        if not required
+        if not relevant
         else 0.0
     )
     hallucinated_surface_rate = (
@@ -2352,6 +3910,9 @@ def _precision_metrics(
 
     return {
         "observed_path_count": len(observed),
+        "supporting_path_count": len(supporting),
+        "supporting_path_hits": observed_supporting[:12],
+        "required_path_precision_basis": "required_plus_supporting_paths" if supporting else "required_paths",
         "required_path_precision": required_path_precision,
         "hallucinated_surface_count": len(hallucinated_surfaces),
         "hallucinated_surface_rate": hallucinated_surface_rate,
@@ -2371,6 +3932,10 @@ def _packet_result(
     repo_root: Path,
     scenario: Mapping[str, Any],
     mode: str,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> dict[str, Any]:
     normalized_mode = _normalize_mode(mode)
     changed_paths = [str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()]
@@ -2382,14 +3947,21 @@ def _packet_result(
         scenario=scenario,
         mode=mode,
         existing_paths=existing_paths,
+        report_id=report_id,
+        cache_profile=cache_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
     )
+    payload = _apply_packet_fixture(payload=payload, scenario=scenario, packet_source=packet_source)
     duration_ms = round((time.perf_counter() - started_at) * 1000.0, 3)
     timing_trace = _timing_trace(
         repo_root=repo_root,
         before=timing_before,
         operations=("impact", "governance_slice", "session_brief", "bootstrap_session", "architecture"),
     )
-    packet_summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+    with agent_runtime_contract.codex_host_runtime_environment_if_missing():
+        packet_summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+    packet_summary["packet_source"] = packet_source
     measurement_payload = dict(payload)
     supplemented_doc_count = 0
     if _mode_uses_odylith(normalized_mode):
@@ -2470,7 +4042,7 @@ def _packet_result(
             mode=normalized_mode,
         )
     )
-    expected_write_paths = changed_paths if bool(scenario.get("needs_write")) else []
+    expected_write_paths = _scenario_expected_write_paths(scenario)
     candidate_write_paths = (
         _dedupe_strings(orchestration_payload.get("candidate_paths", []))
         if bool(scenario.get("needs_write")) and isinstance(orchestration_payload.get("candidate_paths"), list)
@@ -2478,6 +4050,7 @@ def _packet_result(
     )
     precision_metrics = _precision_metrics(
         required_paths=[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
+        supporting_paths=_scenario_supporting_paths(scenario),
         observed_paths=observed_paths,
         expected_write_paths=expected_write_paths,
         candidate_write_paths=candidate_write_paths,
@@ -2495,6 +4068,7 @@ def _packet_result(
         "mode": normalized_mode,
         "packet_source": str(token_breakdown.get("packet_source", packet_source)).strip() or packet_source,
         "latency_ms": duration_ms,
+        "context_engine_packet_build_ms": duration_ms,
         "instrumented_reasoning_duration_ms": float(
             latency_fields.get("instrumented_reasoning_duration_ms", 0.0) or 0.0
         ),
@@ -2532,7 +4106,8 @@ def _packet_result(
         "selected_command_count": int(packet_summary.get("selected_command_count", 0) or 0),
         "strict_gate_command_count": int(packet_summary.get("strict_gate_command_count", 0) or 0),
         "effective_estimated_tokens": int(token_breakdown.get("effective_estimated_tokens", 0) or 0),
-        "effective_token_basis": str(token_breakdown.get("effective_token_basis", "")).strip() or "codex_prompt_bundle",
+        "effective_token_basis": str(token_breakdown.get("effective_token_basis", "")).strip() or "host_prompt_bundle",
+        "host_prompt_estimated_tokens": int(token_breakdown.get("host_prompt_estimated_tokens", 0) or 0),
         "codex_prompt_estimated_tokens": int(token_breakdown.get("codex_prompt_estimated_tokens", 0) or 0),
         "total_payload_estimated_tokens": int(token_breakdown.get("total_payload_estimated_tokens", 0) or 0),
         "runtime_contract_estimated_tokens": int(token_breakdown.get("runtime_contract_estimated_tokens", 0) or 0),
@@ -2618,6 +4193,7 @@ def _architecture_result(
         )
         precision_metrics = _precision_metrics(
             required_paths=[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
+            supporting_paths=_scenario_supporting_paths(scenario),
             observed_paths=observed_paths,
             expected_write_paths=[],
             candidate_write_paths=[],
@@ -2636,7 +4212,7 @@ def _architecture_result(
             "expectation_ok": False,
             "expectation_details": {
                 "baseline_mode": "repo_scan_only",
-                "note": "Raw repo scan baseline does not produce an architecture dossier; compare Odylith dossier quality against this grounding-only baseline.",
+                "note": "Raw repo scan baseline does not produce an architecture dossier; compare Odylith dossier quality against this repo-scan-only control.",
             },
             "required_path_recall": required_path_recall,
             "required_path_misses": required_path_misses,
@@ -2661,7 +4237,8 @@ def _architecture_result(
             "selected_command_count": 0,
             "strict_gate_command_count": 0,
             "effective_estimated_tokens": max(1, full_scan_bytes // 4),
-            "effective_token_basis": "codex_prompt_bundle",
+            "effective_token_basis": "host_prompt_bundle",
+            "host_prompt_estimated_tokens": max(1, full_scan_bytes // 4),
             "codex_prompt_estimated_tokens": max(1, full_scan_bytes // 4),
             "total_payload_estimated_tokens": max(1, full_scan_bytes // 4),
             "runtime_contract_estimated_tokens": 0,
@@ -2706,6 +4283,7 @@ def _architecture_result(
         )
         precision_metrics = _precision_metrics(
             required_paths=[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
+            supporting_paths=_scenario_supporting_paths(scenario),
             observed_paths=observed_paths,
             expected_write_paths=[],
             candidate_write_paths=[],
@@ -2746,7 +4324,8 @@ def _architecture_result(
             "selected_command_count": 0,
             "strict_gate_command_count": 0,
             "effective_estimated_tokens": raw_prompt_tokens,
-            "effective_token_basis": "codex_prompt_bundle",
+            "effective_token_basis": "host_prompt_bundle",
+            "host_prompt_estimated_tokens": raw_prompt_tokens,
             "codex_prompt_estimated_tokens": raw_prompt_tokens,
             "total_payload_estimated_tokens": raw_prompt_tokens,
             "runtime_contract_estimated_tokens": 0,
@@ -2852,6 +4431,7 @@ def _architecture_result(
     )
     precision_metrics = _precision_metrics(
         required_paths=[str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()],
+        supporting_paths=_scenario_supporting_paths(scenario),
         observed_paths=observed_paths,
         expected_write_paths=[],
         candidate_write_paths=[],
@@ -2891,7 +4471,8 @@ def _architecture_result(
         "unnecessary_widening_rate": 0.0,
         "unnecessary_widening_paths": [],
         "effective_estimated_tokens": max(1, len(encoded) // 4),
-        "effective_token_basis": "codex_prompt_bundle",
+        "effective_token_basis": "host_prompt_bundle",
+        "host_prompt_estimated_tokens": max(1, len(encoded) // 4),
         "codex_prompt_estimated_tokens": max(1, len(encoded) // 4),
         "total_payload_estimated_tokens": max(1, len(encoded) // 4),
         "runtime_contract_estimated_tokens": 0,
@@ -2921,6 +4502,35 @@ def _is_live_public_mode(mode: str) -> bool:
 
 def _benchmark_profile_uses_live_public_modes(profile: str) -> bool:
     return str(profile).strip() in {BENCHMARK_PROFILE_QUICK, BENCHMARK_PROFILE_PROOF}
+
+
+def _profile_uses_live_public_modes_for_selection(
+    *,
+    profile: str,
+    selected_families: Sequence[str],
+) -> bool:
+    families = {str(token).strip() for token in selected_families if str(token).strip()}
+    if str(profile).strip() == BENCHMARK_PROFILE_QUICK and families and families.issubset(_LOCAL_ONLY_QUICK_FAMILIES):
+        return False
+    return _benchmark_profile_uses_live_public_modes(profile)
+
+
+def _cache_profiles_for_selection(
+    *,
+    profile: str,
+    selected_families: Sequence[str],
+    cache_profiles: Sequence[str],
+    explicit_cache_profile_selection: bool,
+) -> list[str]:
+    families = {str(token).strip() for token in selected_families if str(token).strip()}
+    if (
+        not explicit_cache_profile_selection
+        and str(profile).strip() == BENCHMARK_PROFILE_QUICK
+        and families
+        and families.issubset(_LOCAL_ONLY_QUICK_FAMILIES)
+    ):
+        return ["cold"]
+    return [str(token).strip() for token in cache_profiles if str(token).strip()]
 
 
 def _dedupe_path_strings(values: Sequence[str]) -> list[str]:
@@ -2973,13 +4583,72 @@ def _validation_command_file_paths(*, repo_root: Path, commands: Sequence[str]) 
 
 
 def _source_local_cli_snapshot_paths(*, repo_root: Path, commands: Sequence[str]) -> list[str]:
-    if not any(re.match(r"^(?:[A-Za-z_][A-Za-z0-9_]*=[^\s]+\s+)*odylith(?:\s|$)", str(raw or "").strip()) for raw in commands):
-        return []
     root = Path(repo_root).resolve()
-    candidate = root / "src" / "odylith" / "cli.py"
-    if not candidate.is_file():
-        return []
-    return [candidate.relative_to(root).as_posix()]
+    cli_path = root / "src" / "odylith" / "cli.py"
+    rows: list[str] = []
+    saw_odylith_command = False
+    command_module_paths = {
+        "benchmark": "odylith.runtime.context_engine.odylith_context_engine",
+        "context-engine": "odylith.runtime.context_engine.odylith_context_engine",
+        "subagent-orchestrator": "odylith.runtime.orchestration.subagent_orchestrator",
+        "subagent-router": "odylith.runtime.orchestration.subagent_router",
+    }
+    validate_command_module_paths = {
+        "discipline": "odylith.runtime.governance.validate_discipline",
+        "guidance-behavior": "odylith.runtime.governance.validate_guidance_behavior",
+    }
+
+    for raw in commands:
+        command = str(raw or "").strip()
+        if not command:
+            continue
+        with contextlib.suppress(ValueError):
+            tokens = shlex.split(command)
+            while tokens and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=.*$", str(tokens[0]).strip()):
+                tokens = tokens[1:]
+            if not tokens or str(tokens[0]).strip() != "odylith":
+                continue
+            saw_odylith_command = True
+            backend_module = ""
+            if len(tokens) >= 2:
+                backend_module = command_module_paths.get(str(tokens[1]).strip(), "")
+                if str(tokens[1]).strip() == "validate" and len(tokens) >= 3:
+                    backend_module = validate_command_module_paths.get(str(tokens[2]).strip(), backend_module)
+            if backend_module:
+                backend_path = _repo_python_module_path(repo_root=root, module_name=backend_module)
+                if backend_path:
+                    rows.append(backend_path)
+    if saw_odylith_command and cli_path.is_file():
+        rows.insert(0, cli_path.relative_to(root).as_posix())
+    return _dedupe_path_strings(rows)
+
+
+def _expand_import_dependency_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
+    base_paths = _dedupe_path_strings(snapshot_paths)
+    expanded = list(base_paths)
+    seen_paths = set(expanded)
+    pending = [path for path in base_paths if Path(path).suffix == ".py"]
+    scanned_paths: set[str] = set()
+    scan_budget = 512
+
+    while pending and scan_budget > 0:
+        current = pending.pop()
+        if current in scanned_paths:
+            continue
+        scanned_paths.add(current)
+        scan_budget -= 1
+        for module_name in _imported_python_module_candidates(repo_root=repo_root, path=current):
+            target = _repo_python_module_path(repo_root=repo_root, module_name=module_name)
+            if not target or not target.startswith(("src/", "tests/")):
+                continue
+            if target in seen_paths:
+                if target not in scanned_paths:
+                    pending.append(target)
+                continue
+            seen_paths.add(target)
+            expanded.append(target)
+            pending.append(target)
+    return _dedupe_path_strings(expanded)
 
 
 def _path_expression_literal(node: ast.AST) -> str:
@@ -3024,7 +4693,10 @@ def _validation_companion_file_paths(*, repo_root: Path, validation_paths: Seque
         if not candidate.is_file() or candidate.suffix != ".py":
             continue
         try:
-            tree = ast.parse(candidate.read_text(encoding="utf-8"))
+            tree = parse_python_source_for_static_analysis(
+                candidate.read_text(encoding="utf-8"),
+                filename=candidate.as_posix(),
+            )
         except (OSError, SyntaxError, UnicodeDecodeError):
             continue
         literal_candidates: list[str] = []
@@ -3196,7 +4868,10 @@ def _imported_python_module_candidates(*, repo_root: Path, path: str) -> list[st
     if not candidate.is_file() or candidate.suffix != ".py":
         return []
     try:
-        tree = ast.parse(candidate.read_text(encoding="utf-8"))
+        tree = parse_python_source_for_static_analysis(
+            candidate.read_text(encoding="utf-8"),
+            filename=candidate.as_posix(),
+        )
     except (OSError, SyntaxError, UnicodeDecodeError):
         return []
 
@@ -3231,6 +4906,24 @@ def _imported_python_module_candidates(*, repo_root: Path, path: str) -> list[st
     return _dedupe_path_strings(rows)
 
 
+def _expand_python_package_init_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
+    root = Path(repo_root).resolve()
+    rows = list(_dedupe_path_strings(snapshot_paths))
+    for raw in list(rows):
+        candidate = Path(str(raw or "").strip())
+        if candidate.suffix != ".py":
+            continue
+        current = root
+        relative_parts: list[str] = []
+        for part in candidate.parent.parts:
+            current = current / part
+            relative_parts.append(str(part))
+            init_path = current / "__init__.py"
+            if init_path.is_file():
+                rows.append(Path(*relative_parts, "__init__.py").as_posix())
+    return _dedupe_path_strings(rows)
+
+
 def _expand_dirty_import_dependency_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
     base_paths = _dedupe_path_strings(snapshot_paths)
     dirty_python_paths = {
@@ -3248,6 +4941,11 @@ def _expand_dirty_import_dependency_paths(*, repo_root: Path, snapshot_paths: Se
         if Path(path).suffix == ".py"
     ]
     seen_paths = set(expanded)
+    closure_required_paths = {
+        path
+        for path in pending
+        if path in dirty_python_paths
+    }
     scanned_paths: set[str] = set()
     scan_budget = 256
 
@@ -3263,10 +4961,39 @@ def _expand_dirty_import_dependency_paths(*, repo_root: Path, snapshot_paths: Se
                 continue
             if target not in scanned_paths:
                 pending.append(target)
-            if target not in dirty_python_paths or target in seen_paths:
+            target_requires_closure = current in closure_required_paths or target in dirty_python_paths
+            if not target_requires_closure or target in seen_paths:
                 continue
             seen_paths.add(target)
+            closure_required_paths.add(target)
             expanded.append(target)
+    return _dedupe_path_strings(expanded)
+
+
+def _expand_dirty_benchmark_runtime_snapshot_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
+    base_paths = _dedupe_path_strings(snapshot_paths)
+    dirty_paths = _dirty_repo_paths(repo_root)
+    if not dirty_paths:
+        return base_paths
+
+    expanded = list(base_paths)
+    for path in dirty_paths:
+        token = str(path or "").strip()
+        if not token:
+            continue
+        if token.startswith("src/odylith/runtime/evaluation/"):
+            expanded.append(token)
+            continue
+        if token.startswith("tests/unit/runtime/test_odylith_benchmark_"):
+            expanded.append(token)
+            continue
+        if token in {
+            "src/odylith/cli.py",
+            "tests/unit/test_cli.py",
+            "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+            "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        }:
+            expanded.append(token)
     return _dedupe_path_strings(expanded)
 
 
@@ -3340,6 +5067,7 @@ def _expand_sync_validator_snapshot_paths(
                 "odylith/atlas/source/catalog/diagrams.v1.json",
                 "odylith/runtime/delivery_intelligence.v4.json",
                 "odylith/casebook/bugs/INDEX.md",
+                *agent_runtime_contract.candidate_stream_tokens(),
             ],
         )
     )
@@ -3347,14 +5075,11 @@ def _expand_sync_validator_snapshot_paths(
         token = str(path or "").strip()
         if not token:
             continue
-        if token.startswith(
-            (
-                "odylith/radar/source/ideas/",
-                "odylith/technical-plans/in-progress/",
-                "odylith/registry/source/components/",
-            )
-        ):
-            expanded.append(token)
+        # `odylith sync --check-only` can fail on current dirty-tree forensic
+        # evidence, not just the scenario's declared governance roots. Mirror
+        # the full dirty slice into the disposable workspace so validator-
+        # backed no-op proof measures the current tree truthfully.
+        expanded.append(token)
     return _dedupe_path_strings(expanded)
 
 
@@ -3412,8 +5137,23 @@ def _expand_atlas_catalog_reference_snapshot_paths(
             if not isinstance(value, list):
                 continue
             reference_candidates.extend(str(token).strip() for token in value if str(token).strip())
-    companion_paths = _existing_repo_file_paths(repo_root=root, candidates=reference_candidates)
+    companion_paths = _existing_repo_paths(repo_root=root, paths=reference_candidates)
     return _dedupe_path_strings([*base_paths, *companion_paths])
+
+
+def _expand_projection_runtime_snapshot_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
+    base_paths = _dedupe_path_strings(snapshot_paths)
+    if "src/odylith/runtime/memory/odylith_projection_snapshot.py" not in set(base_paths):
+        return base_paths
+    return _dedupe_path_strings(
+        [
+            *base_paths,
+            *_existing_repo_file_paths(
+                repo_root=repo_root,
+                candidates=[".odylith/runtime/odylith-compiler/projection-snapshot.v1.json"],
+            ),
+        ]
+    )
 
 
 def _prompt_payload_snapshot_paths(prompt_payload: Mapping[str, Any] | None) -> list[str]:
@@ -3468,16 +5208,10 @@ def _live_workspace_snapshot_paths(
     snapshot_commands = _dedupe_strings([*validation_commands, *focused_local_checks])
     scenario_paths = _dedupe_path_strings(
         [
-            *(
-                [str(token).strip() for token in scenario.get("changed_paths", []) if str(token).strip()]
-                if isinstance(scenario.get("changed_paths"), list)
-                else []
-            ),
-            *(
-                [str(token).strip() for token in scenario.get("required_paths", []) if str(token).strip()]
-                if isinstance(scenario.get("required_paths"), list)
-                else []
-            ),
+            str(token).strip()
+            for key in ("changed_paths", "required_paths", "supporting_paths")
+            for token in (scenario.get(key, []) if isinstance(scenario.get(key), list) else [])
+            if str(token).strip()
         ]
     )
     validation_paths = _validation_command_file_paths(
@@ -3490,31 +5224,50 @@ def _live_workspace_snapshot_paths(
     )
     validation_companion_paths = _validation_companion_file_paths(
         repo_root=repo_root,
-        validation_paths=validation_paths,
+        validation_paths=[*validation_paths, *source_local_cli_paths],
     )
     prompt_paths = _existing_repo_file_paths(
         repo_root=repo_root,
         candidates=_prompt_payload_snapshot_paths(prompt_payload),
     )
-    return _expand_dirty_import_dependency_paths(
+    return odylith_benchmark_snapshot_paths.expand_deleted_repo_snapshot_paths(
         repo_root=repo_root,
-        snapshot_paths=_expand_atlas_catalog_reference_snapshot_paths(
+        snapshot_paths=_expand_dirty_import_dependency_paths(
             repo_root=repo_root,
-            validation_commands=validation_commands,
-            snapshot_paths=_expand_governance_validator_snapshot_paths(
+            snapshot_paths=_expand_projection_runtime_snapshot_paths(
                 repo_root=repo_root,
-                snapshot_paths=_expand_sync_validator_snapshot_paths(
+                snapshot_paths=_expand_import_dependency_paths(
                     repo_root=repo_root,
-                    validation_commands=validation_commands,
-                    snapshot_paths=_expand_same_package_dirty_paths(
+                    snapshot_paths=_expand_python_package_init_paths(
                         repo_root=repo_root,
-                        snapshot_paths=[
-                            *scenario_paths,
-                            *validation_paths,
-                            *source_local_cli_paths,
-                            *validation_companion_paths,
-                            *prompt_paths,
-                        ],
+                        snapshot_paths=_expand_atlas_catalog_reference_snapshot_paths(
+                            repo_root=repo_root,
+                            validation_commands=validation_commands,
+                            snapshot_paths=_expand_governance_validator_snapshot_paths(
+                                repo_root=repo_root,
+                                snapshot_paths=_expand_sync_validator_snapshot_paths(
+                                    repo_root=repo_root,
+                                    validation_commands=validation_commands,
+                                    snapshot_paths=odylith_benchmark_snapshot_paths.expand_browser_surface_snapshot_paths(
+                                        repo_root=repo_root,
+                                        validation_paths=validation_paths,
+                                        snapshot_paths=_expand_same_package_dirty_paths(
+                                            repo_root=repo_root,
+                                            snapshot_paths=_expand_dirty_benchmark_runtime_snapshot_paths(
+                                                repo_root=repo_root,
+                                                snapshot_paths=[
+                                                    *scenario_paths,
+                                                    *validation_paths,
+                                                    *source_local_cli_paths,
+                                                    *validation_companion_paths,
+                                                    *prompt_paths,
+                                                ],
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
                     ),
                 ),
             ),
@@ -3528,6 +5281,10 @@ def _prepare_live_scenario_request(
     scenario: Mapping[str, Any],
     mode: str,
     benchmark_profile: str,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> dict[str, Any]:
     normalized_mode = _normalize_mode(mode)
     if not _is_live_public_mode(normalized_mode):
@@ -3536,7 +5293,7 @@ def _prepare_live_scenario_request(
     existing_paths = _existing_repo_paths(repo_root=repo_root, paths=changed_paths)
     if str(scenario.get("kind", "")).strip() == "architecture":
         prompt_payload: dict[str, Any] = {}
-        packet_source = "raw_codex_cli"
+        packet_source = "raw_host_cli"
         if normalized_mode == _ODYLITH_ON_MODE:
             with _odylith_enabled_override(True):
                 audit_payload = store.build_architecture_audit(
@@ -3565,14 +5322,19 @@ def _prepare_live_scenario_request(
             "prompt_payload": prompt_payload,
         }
     prompt_payload = {}
-    packet_source = "raw_codex_cli"
+    packet_source = "raw_host_cli"
     if normalized_mode == _ODYLITH_ON_MODE:
         packet_source, payload, _adaptive_escalation = _build_packet_payload(
             repo_root=repo_root,
             scenario=scenario,
             mode=normalized_mode,
             existing_paths=existing_paths,
+            report_id=report_id,
+            cache_profile=cache_profile,
+            shard_index=shard_index,
+            shard_count=shard_count,
         )
+        payload = _apply_packet_fixture(payload=payload, scenario=scenario, packet_source=packet_source)
         prompt_keys = set(_PROMPT_PAYLOAD_KEYS)
         if not isinstance(payload.get("narrowing_guidance"), Mapping):
             prompt_keys.discard("narrowing_guidance")
@@ -3590,22 +5352,40 @@ def _prepare_live_scenario_request(
         "scenario": dict(scenario),
         "mode": normalized_mode,
         "benchmark_profile": _normalize_benchmark_profile(benchmark_profile),
+        "benchmark_session_namespace": _benchmark_session_namespace(
+            scenario=scenario,
+            mode=normalized_mode,
+            report_id=report_id,
+            cache_profile=cache_profile,
+            shard_index=shard_index,
+            shard_count=shard_count,
+        ),
         "packet_source": packet_source,
         "prompt_payload": prompt_payload,
+        "packet_summary": (
+            store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+            if normalized_mode == _ODYLITH_ON_MODE
+            else {}
+        ),
     }
 
 
 def _run_prepared_live_scenario(prepared_request: Mapping[str, Any]) -> dict[str, Any]:
     benchmark_profile = _normalize_benchmark_profile(str(prepared_request.get("benchmark_profile", "")).strip())
     if benchmark_profile == BENCHMARK_PROFILE_DIAGNOSTIC:
-        raise RuntimeError("diagnostic benchmark attempted live Codex execution")
+        raise RuntimeError("diagnostic benchmark attempted live host execution")
     result = odylith_benchmark_live_execution.run_live_scenario(
         repo_root=Path(prepared_request.get("repo_root", ".")),
         scenario=dict(prepared_request.get("scenario", {})),
         mode=str(prepared_request.get("mode", "")).strip(),
-        packet_source=str(prepared_request.get("packet_source", "")).strip() or "raw_codex_cli",
+        benchmark_profile=benchmark_profile,
+        benchmark_session_namespace=str(prepared_request.get("benchmark_session_namespace", "")).strip(),
+        packet_source=str(prepared_request.get("packet_source", "")).strip() or "raw_host_cli",
         prompt_payload=dict(prepared_request.get("prompt_payload", {}))
         if isinstance(prepared_request.get("prompt_payload"), Mapping)
+        else {},
+        packet_summary=dict(prepared_request.get("packet_summary", {}))
+        if isinstance(prepared_request.get("packet_summary"), Mapping)
         else {},
         snapshot_paths=[
             str(token).strip()
@@ -3637,24 +5417,65 @@ def _run_prepared_live_scenario(prepared_request: Mapping[str, Any]) -> dict[str
     return result
 
 
+def _result_snapshot_overlay_paths(result: Mapping[str, Any]) -> list[str]:
+    live_execution = dict(result.get("live_execution", {})) if isinstance(result.get("live_execution"), Mapping) else {}
+    effective_paths = live_execution.get("effective_snapshot_paths", [])
+    if not isinstance(effective_paths, list):
+        return []
+    return stable_snapshot_overlay_paths(effective_paths)
+
+
+def _report_snapshot_overlay_paths(scenario_reports: Sequence[Mapping[str, Any]]) -> list[str]:
+    return _dedupe_strings(
+        [
+            token
+            for scenario_report in scenario_reports
+            if isinstance(scenario_report, Mapping)
+            for result in scenario_report.get("results", [])
+            if isinstance(scenario_report.get("results"), list) and isinstance(result, Mapping)
+            for token in _result_snapshot_overlay_paths(result)
+        ]
+    )
+
+
 def _run_live_scenario_batch(
     *,
     repo_root: Path,
     scenario: Mapping[str, Any],
     modes: Sequence[str],
     benchmark_profile: str,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> dict[str, dict[str, Any]]:
     live_modes = [_normalize_mode(str(token).strip()) for token in modes if _is_live_public_mode(str(token).strip())]
     ordered_live_modes = list(dict.fromkeys(live_modes))
-    prepared_requests = [
-        _prepare_live_scenario_request(
-            repo_root=repo_root,
-            scenario=scenario,
-            mode=mode,
-            benchmark_profile=benchmark_profile,
-        )
-        for mode in ordered_live_modes
-    ]
+    prepared_requests: list[dict[str, Any]] = []
+    request_by_mode: dict[str, dict[str, Any]] = {}
+    results: dict[str, dict[str, Any]] = {}
+    for mode in ordered_live_modes:
+        try:
+            request = _prepare_live_scenario_request(
+                repo_root=repo_root,
+                scenario=scenario,
+                mode=mode,
+                benchmark_profile=benchmark_profile,
+                report_id=report_id,
+                cache_profile=cache_profile,
+                shard_index=shard_index,
+                shard_count=shard_count,
+            )
+        except Exception as exc:
+            results[mode] = _scenario_exception_result(
+                scenario=scenario,
+                mode=mode,
+                error=exc,
+                live_runner=True,
+            )
+            continue
+        prepared_requests.append(request)
+        request_by_mode[mode] = request
     matched_pair_batch = len(prepared_requests) > 1
     paired_modes = [str(request.get("mode", "")).strip() for request in prepared_requests if str(request.get("mode", "")).strip()]
     for request in prepared_requests:
@@ -3677,18 +5498,50 @@ def _run_live_scenario_batch(
     for request in prepared_requests:
         request["snapshot_paths"] = list(shared_snapshot_paths)
     if not prepared_requests:
-        return {}
+        return results
     if len(prepared_requests) == 1:
         only_request = prepared_requests[0]
-        return {str(only_request.get("mode", "")).strip(): _run_prepared_live_scenario(only_request)}
-    results: dict[str, dict[str, Any]] = {}
+        only_mode = str(only_request.get("mode", "")).strip()
+        try:
+            results[only_mode] = _run_prepared_live_scenario(only_request)
+        except Exception as exc:
+            results[only_mode] = _scenario_exception_result(
+                scenario=scenario,
+                mode=only_mode,
+                error=exc,
+                live_runner=True,
+                packet_source=str(only_request.get("packet_source", "")).strip(),
+            )
+        return results
     with concurrent.futures.ThreadPoolExecutor(max_workers=min(_LIVE_MATCHED_PAIR_MAX_WORKERS, len(prepared_requests))) as executor:
         future_by_mode = {
             str(request.get("mode", "")).strip(): executor.submit(_run_prepared_live_scenario, request)
             for request in prepared_requests
         }
         for mode in ordered_live_modes:
-            results[mode] = future_by_mode[mode].result()
+            if mode in results:
+                continue
+            request = request_by_mode.get(mode, {})
+            future = future_by_mode.get(mode)
+            if future is None:
+                results[mode] = _scenario_exception_result(
+                    scenario=scenario,
+                    mode=mode,
+                    error="live benchmark batch did not schedule this mode",
+                    live_runner=True,
+                    packet_source=str(request.get("packet_source", "")).strip(),
+                )
+                continue
+            try:
+                results[mode] = future.result()
+            except Exception as exc:
+                results[mode] = _scenario_exception_result(
+                    scenario=scenario,
+                    mode=mode,
+                    error=exc,
+                    live_runner=True,
+                    packet_source=str(request.get("packet_source", "")).strip(),
+                )
     return results
 
 
@@ -3698,6 +5551,10 @@ def _run_scenario_mode(
     scenario: Mapping[str, Any],
     mode: str,
     benchmark_profile: str = BENCHMARK_PROFILE_PROOF,
+    report_id: str = "",
+    cache_profile: str = "",
+    shard_index: int = 1,
+    shard_count: int = 1,
 ) -> dict[str, Any]:
     normalized_mode = _normalize_mode(mode)
     if (
@@ -3710,11 +5567,23 @@ def _run_scenario_mode(
             scenario=scenario,
             mode=normalized_mode,
             benchmark_profile=benchmark_profile,
+            report_id=report_id,
+            cache_profile=cache_profile,
+            shard_index=shard_index,
+            shard_count=shard_count,
         )
         return _run_prepared_live_scenario(prepared_request)
     if str(scenario.get("kind", "")).strip() == "architecture":
         return _architecture_result(repo_root=repo_root, scenario=scenario, mode=mode)
-    return _packet_result(repo_root=repo_root, scenario=scenario, mode=mode)
+    return _packet_result(
+        repo_root=repo_root,
+        scenario=scenario,
+        mode=mode,
+        report_id=report_id,
+        cache_profile=cache_profile,
+        shard_index=shard_index,
+        shard_count=shard_count,
+    )
 
 
 def _median(values: Sequence[float]) -> float:
@@ -3754,8 +5623,7 @@ def _sum(values: Sequence[float]) -> float:
 
 
 def _rate(values: Sequence[bool]) -> float:
-    rows = [1.0 if bool(value) else 0.0 for value in values]
-    return _avg(rows)
+    return benchmark_metric_helpers.boolean_rate(values)
 
 
 def _stage_latency_summary(scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, dict[str, float]]:
@@ -3856,14 +5724,12 @@ def _live_execution_contracts(mode_rows: Mapping[str, Sequence[Mapping[str, Any]
 
 
 def _live_execution_contract_match(execution_contracts: Mapping[str, Mapping[str, Any]] | None) -> bool:
-    if not isinstance(execution_contracts, Mapping):
-        return True
-    candidate = dict(_lookup_mode_mapping(execution_contracts, _ODYLITH_ON_MODE) or {})
-    baseline = dict(_lookup_mode_mapping(execution_contracts, _BASELINE_MODE) or {})
-    if not candidate or not baseline:
-        return True
-    fields = ("runner", "codex_bin", "model", "reasoning_effort")
-    return all(str(candidate.get(field, "")).strip() == str(baseline.get(field, "")).strip() for field in fields)
+    return odylith_benchmark_acceptance.live_execution_contract_match(
+        execution_contracts,
+        lookup_mode_mapping=_lookup_mode_mapping,
+        candidate_mode=_ODYLITH_ON_MODE,
+        baseline_mode=_BASELINE_MODE,
+    )
 
 
 def _mode_summary(*, mode: str, scenario_rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
@@ -3965,7 +5831,7 @@ def _mode_summary(*, mode: str, scenario_rows: Sequence[Mapping[str, Any]]) -> d
     workstream_selector_hits = [bool(diag.get("fast_selector_used")) for diag in selector_diagnostics]
     component_selector_hits = [bool(diag.get("component_fast_selector_used")) for diag in selector_diagnostics]
     architecture_compaction_applied = [bool(row.get("architecture_compaction_applied")) for row in architecture_rows]
-    return {
+    summary = {
         "mode": mode,
         "scenario_count": len(scenario_rows),
         "packet_scenario_count": len(packet_rows),
@@ -4062,6 +5928,10 @@ def _mode_summary(*, mode: str, scenario_rows: Sequence[Mapping[str, Any]]) -> d
             field_name="runtime_transport",
         ),
     }
+    summary.update(odylith_benchmark_proof_discipline.summary_from_rows(scenario_rows))
+    summary.update(odylith_benchmark_context_engine.summary_from_rows(scenario_rows))
+    summary.update(odylith_benchmark_execution_engine.summary_from_rows(scenario_rows))
+    return summary
 
 
 def _result_wall_clock_ms(result: Mapping[str, Any]) -> float:
@@ -4128,26 +5998,166 @@ def _pair_timing_summary(
 
 
 def _corpus_summary(*, scenarios: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    packet_count = sum(1 for row in scenarios if str(row.get("kind", "")).strip() == "packet")
-    architecture_count = sum(1 for row in scenarios if str(row.get("kind", "")).strip() == "architecture")
+    packet_rows = [row for row in scenarios if str(row.get("kind", "")).strip() == "packet"]
+    architecture_rows = [row for row in scenarios if str(row.get("kind", "")).strip() == "architecture"]
     required_path_backed = [row for row in scenarios if row.get("required_paths")]
     validation_backed = [row for row in scenarios if row.get("validation_commands")]
     write_surface_backed = [row for row in scenarios if bool(row.get("needs_write")) and row.get("changed_paths")]
     correctness_critical = [row for row in scenarios if bool(row.get("correctness_critical"))]
     critical_required_path_backed = [row for row in correctness_critical if row.get("required_paths")]
     critical_validation_backed = [row for row in correctness_critical if row.get("validation_commands")]
+    write_plus_validator_rows = [
+        row for row in packet_rows if bool(row.get("needs_write")) and row.get("validation_commands")
+    ]
+    implementation_family_counts: dict[str, int] = {}
+    for row in packet_rows:
+        family = str(row.get("family", "")).strip()
+        if not family:
+            continue
+        implementation_family_counts[family] = implementation_family_counts.get(family, 0) + 1
+    mechanism_heavy_rows = [
+        row
+        for row in packet_rows
+        if str(row.get("family", "")).strip() in _MECHANISM_HEAVY_IMPLEMENTATION_FAMILIES
+    ]
+    required_family_counts = {
+        family: int(implementation_family_counts.get(family, 0) or 0)
+        for family in sorted(_SERIOUS_REQUIRED_FAMILIES)
+    }
     return {
         "scenario_count": len(scenarios),
-        "packet_scenario_count": packet_count,
-        "architecture_scenario_count": architecture_count,
+        "packet_scenario_count": len(packet_rows),
+        "architecture_scenario_count": len(architecture_rows),
+        "implementation_scenario_count": len(packet_rows),
         "family_count": len({str(row.get("family", "")).strip() for row in scenarios if str(row.get("family", "")).strip()}),
         "required_path_backed_scenario_count": len(required_path_backed),
         "validation_backed_scenario_count": len(validation_backed),
         "write_surface_backed_scenario_count": len(write_surface_backed),
+        "write_plus_validator_scenario_count": len(write_plus_validator_rows),
         "correctness_critical_scenario_count": len(correctness_critical),
         "critical_required_path_backed_scenario_count": len(critical_required_path_backed),
         "critical_validation_backed_scenario_count": len(critical_validation_backed),
+        "implementation_family_counts": implementation_family_counts,
+        "mechanism_heavy_implementation_scenario_count": len(mechanism_heavy_rows),
+        "mechanism_heavy_implementation_ratio": round(
+            len(mechanism_heavy_rows) / max(1, len(packet_rows)),
+            3,
+        ),
+        "required_family_counts": required_family_counts,
     }
+
+
+def _corpus_composition(*, scenarios: Sequence[Mapping[str, Any]], available_scenarios: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    summary = _corpus_summary(scenarios=scenarios)
+    implementation_count = int(summary.get("implementation_scenario_count", 0) or 0)
+    mechanism_ratio = float(summary.get("mechanism_heavy_implementation_ratio", 0.0) or 0.0)
+    required_family_counts = (
+        dict(summary.get("required_family_counts", {}))
+        if isinstance(summary.get("required_family_counts"), Mapping)
+        else {}
+    )
+    findings: list[str] = []
+    if implementation_count < _SERIOUS_IMPLEMENTATION_SCENARIO_MIN:
+        findings.append(
+            f"implementation_scenario_count={implementation_count} is below the seriousness floor {_SERIOUS_IMPLEMENTATION_SCENARIO_MIN}"
+        )
+    write_plus_validator = int(summary.get("write_plus_validator_scenario_count", 0) or 0)
+    if write_plus_validator < _SERIOUS_WRITE_PLUS_VALIDATOR_SCENARIO_MIN:
+        findings.append(
+            f"write_plus_validator_scenario_count={write_plus_validator} is below the seriousness floor {_SERIOUS_WRITE_PLUS_VALIDATOR_SCENARIO_MIN}"
+        )
+    correctness_critical = int(summary.get("correctness_critical_scenario_count", 0) or 0)
+    if correctness_critical < _SERIOUS_CORRECTNESS_CRITICAL_SCENARIO_MIN:
+        findings.append(
+            f"correctness_critical_scenario_count={correctness_critical} is below the seriousness floor {_SERIOUS_CORRECTNESS_CRITICAL_SCENARIO_MIN}"
+        )
+    if mechanism_ratio > _SERIOUS_MECHANISM_HEAVY_IMPLEMENTATION_MAX_RATIO:
+        findings.append(
+            "mechanism_heavy_implementation_ratio="
+            f"{mechanism_ratio:.3f} exceeds the seriousness ceiling {_SERIOUS_MECHANISM_HEAVY_IMPLEMENTATION_MAX_RATIO:.2f}"
+        )
+    missing_required_families = [
+        family for family in sorted(_SERIOUS_REQUIRED_FAMILIES) if int(required_family_counts.get(family, 0) or 0) <= 0
+    ]
+    if missing_required_families:
+        findings.append("required serious families missing: " + ", ".join(missing_required_families))
+    available_count = len(list(available_scenarios))
+    selected_count = len(list(scenarios))
+    full_corpus_coverage = round(selected_count / max(1, available_count), 3)
+    if available_count and selected_count != available_count:
+        findings.append(
+            f"published selection covers {selected_count}/{available_count} tracked scenarios instead of the full current corpus"
+        )
+    return {
+        "implementation_scenario_count": implementation_count,
+        "write_plus_validator_scenario_count": write_plus_validator,
+        "correctness_critical_scenario_count": correctness_critical,
+        "mechanism_heavy_implementation_scenario_count": int(
+            summary.get("mechanism_heavy_implementation_scenario_count", 0) or 0
+        ),
+        "mechanism_heavy_implementation_ratio": mechanism_ratio,
+        "required_family_counts": required_family_counts,
+        "required_serious_families": sorted(_SERIOUS_REQUIRED_FAMILIES),
+        "full_corpus_selected": selected_count == available_count if available_count else False,
+        "selected_scenario_count": selected_count,
+        "available_scenario_count": available_count,
+        "full_corpus_coverage_rate": full_corpus_coverage,
+        "seriousness_floor_passed": not findings,
+        "findings": findings,
+    }
+
+
+def _fairness_findings(
+    *,
+    repo_root: Path,
+    comparison_contract: str,
+    published_scenarios: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    if not _is_live_comparison_contract(comparison_contract):
+        return []
+    findings: list[str] = []
+    for scenario in published_scenarios:
+        scenario_id = str(scenario.get("scenario_id", "")).strip() or str(scenario.get("label", "")).strip() or "scenario"
+        raw_prompt_visible_expected = bool(
+            odylith_benchmark_live_diagnostics.raw_prompt_visible_paths(
+                repo_root=repo_root,
+                raw_prompt={
+                    "prompt": str(scenario.get("prompt", "")).strip(),
+                    "acceptance_criteria": [
+                        str(token).strip()
+                        for token in scenario.get("acceptance_criteria", [])
+                        if str(token).strip()
+                    ],
+                },
+            )
+        )
+        for result in scenario.get("results", []):
+            if not isinstance(result, Mapping):
+                continue
+            mode = _normalize_mode(str(result.get("mode", "")).strip())
+            sources = {
+                str(token).strip()
+                for token in result.get("observed_path_sources", [])
+                if isinstance(result.get("observed_path_sources"), list) and str(token).strip()
+            }
+            preflight_mode = str(result.get("preflight_evidence_mode", "")).strip()
+            if mode == _RAW_AGENT_BASELINE_MODE and preflight_mode not in {"", "none"}:
+                findings.append(
+                    f"{scenario_id}/{mode} exposes unexpected preflight evidence mode `{preflight_mode}`"
+                )
+            if mode == _RAW_AGENT_BASELINE_MODE and raw_prompt_visible_expected and "raw_prompt_visible_paths" not in sources:
+                findings.append(
+                    f"{scenario_id}/{mode} is missing raw prompt-visible path attribution"
+                )
+            if mode == _ODYLITH_ON_MODE and preflight_mode not in {
+                "",
+                "none",
+                "scenario_declared_focused_local_checks",
+            }:
+                findings.append(
+                    f"{scenario_id}/{mode} uses undeclared preflight evidence mode `{preflight_mode}`"
+                )
+    return _dedupe_strings(findings)
 
 
 def _proof_request_from_scenario(
@@ -4287,77 +6297,6 @@ def _live_adoption_proof_scenarios(
     ordered.extend(("governance_slice", row) for row in governance[:3])
     ordered.extend(("architecture", row) for row in architecture[:3])
     return ordered[:12]
-
-
-def _runtime_posture_summary(*, repo_root: Path) -> dict[str, Any]:
-    optimization = store.load_runtime_optimization_snapshot(repo_root=repo_root)
-    evaluation = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
-    memory = store.load_runtime_memory_snapshot(
-        repo_root=repo_root,
-        optimization_snapshot=optimization,
-        evaluation_snapshot=evaluation,
-    )
-    backend_transition = dict(memory.get("backend_transition", {})) if isinstance(memory.get("backend_transition"), Mapping) else {}
-    actual_backend = dict(backend_transition.get("actual_local_backend", {})) if isinstance(backend_transition.get("actual_local_backend"), Mapping) else {}
-    target_backend = dict(backend_transition.get("target_local_backend", {})) if isinstance(backend_transition.get("target_local_backend"), Mapping) else {}
-    local_backend_status = dict(backend_transition.get("local_backend_status", {})) if isinstance(backend_transition.get("local_backend_status"), Mapping) else {}
-    signature = dict(backend_transition.get("signature", {})) if isinstance(backend_transition.get("signature"), Mapping) else {}
-    degraded_fallback = dict(memory.get("repo_scan_degraded_fallback", {})) if isinstance(memory.get("repo_scan_degraded_fallback"), Mapping) else {}
-    governance_runtime_first = dict(memory.get("governance_runtime_first", {})) if isinstance(memory.get("governance_runtime_first"), Mapping) else {}
-    entity_counts = dict(memory.get("entity_counts", {})) if isinstance(memory.get("entity_counts"), Mapping) else {}
-    remote_retrieval = dict(memory.get("remote_retrieval", {})) if isinstance(memory.get("remote_retrieval"), Mapping) else {}
-    quality_posture = dict(optimization.get("quality_posture", {})) if isinstance(optimization.get("quality_posture"), Mapping) else {}
-    architecture = dict(evaluation.get("architecture", {})) if isinstance(evaluation.get("architecture"), Mapping) else {}
-    storage = str(actual_backend.get("storage", "")).strip()
-    sparse_recall = str(actual_backend.get("sparse_recall", "")).strip()
-    projection_scope = str(signature.get("projection_scope", "")).strip()
-    indexed_entities = int(entity_counts.get("indexed_entity_count", 0) or 0)
-    evidence_documents = int(entity_counts.get("evidence_documents", 0) or 0)
-    memory_backed_retrieval_ready = bool(local_backend_status.get("ready")) and storage == "lance_local_columnar" and sparse_recall == "tantivy_sparse_recall" and indexed_entities > 0 and evidence_documents > 0
-    return {
-        "memory_standardization_state": str(backend_transition.get("status", "")).strip(),
-        "memory_backend_actual": {
-            "storage": storage,
-            "sparse_recall": sparse_recall,
-        },
-        "memory_backend_target": {
-            "storage": str(target_backend.get("storage", "")).strip(),
-            "sparse_recall": str(target_backend.get("sparse_recall", "")).strip(),
-        },
-        "memory_backed_retrieval_ready": memory_backed_retrieval_ready,
-        "memory_local_backend_ready": bool(local_backend_status.get("ready")),
-        "memory_projection_scope": projection_scope,
-        "memory_indexed_entity_count": indexed_entities,
-        "memory_evidence_document_count": evidence_documents,
-        "remote_retrieval_enabled": bool(remote_retrieval.get("enabled")),
-        "remote_retrieval_configured": bool(remote_retrieval.get("configured")),
-        "remote_retrieval_mode": str(remote_retrieval.get("mode", "")).strip() or "disabled",
-        "remote_retrieval_provider": str(remote_retrieval.get("provider", "")).strip(),
-        "remote_retrieval_status": str(remote_retrieval.get("status", "")).strip() or "disabled",
-        "repo_scan_degraded_fallback_rate": float(
-            degraded_fallback.get("repo_scan_degraded_fallback_rate", 0.0) or 0.0
-        ),
-        "repo_scan_degraded_reason_distribution": dict(
-            degraded_fallback.get("repo_scan_degraded_reason_distribution", {})
-        )
-        if isinstance(degraded_fallback.get("repo_scan_degraded_reason_distribution"), Mapping)
-        else {},
-        "governance_runtime_first_usage_rate": float(governance_runtime_first.get("usage_rate", 0.0) or 0.0),
-        "governance_runtime_first_fallback_rate": float(governance_runtime_first.get("fallback_rate", 0.0) or 0.0),
-        "governance_runtime_first_fallback_reason_distribution": dict(
-            governance_runtime_first.get("fallback_reason_distribution", {})
-        )
-        if isinstance(governance_runtime_first.get("fallback_reason_distribution"), Mapping)
-        else {},
-        "route_ready_rate": float(quality_posture.get("route_ready_rate", 0.0) or 0.0),
-        "native_spawn_ready_rate": float(quality_posture.get("native_spawn_ready_rate", 0.0) or 0.0),
-        "architecture_covered_case_count": int(architecture.get("covered_case_count", 0) or 0),
-        "architecture_satisfied_case_count": int(architecture.get("satisfied_case_count", 0) or 0),
-        "architecture_coverage_rate": float(architecture.get("coverage_rate", 0.0) or 0.0),
-        "architecture_satisfaction_rate": float(architecture.get("satisfaction_rate", 0.0) or 0.0),
-    }
-
-
 def _run_live_adoption_proof(
     *,
     repo_root: Path,
@@ -4462,66 +6401,6 @@ def _run_live_adoption_proof(
             source="benchmark_live_adoption_proof",
         )
     return payload
-
-
-def _prime_benchmark_runtime_cache(*, repo_root: Path) -> None:
-    root = Path(repo_root).resolve()
-    store.warm_projections(repo_root=root, reason="benchmark", scope="full")
-    store.prime_reasoning_projection_cache(repo_root=root)
-    guidance_catalog = store.tooling_guidance_catalog.load_guidance_catalog(repo_root=root)
-    guidance_chunk_count = int(guidance_catalog.get("chunk_count", 0) or 0)
-    guidance_source_doc_count = int(guidance_catalog.get("source_doc_count", 0) or 0)
-    guidance_task_family_count = int(guidance_catalog.get("task_family_count", 0) or 0)
-    if guidance_chunk_count <= 0 or guidance_source_doc_count <= 0 or guidance_task_family_count <= 0:
-        raise RuntimeError(
-            "Benchmark warm cache requires a populated guidance catalog before proof runs."
-        )
-    store._judgment_memory_snapshot_cached(repo_root=root)  # noqa: SLF001
-    store._git_branch_name(repo_root=root)  # noqa: SLF001
-    store._git_head_oid(repo_root=root)  # noqa: SLF001
-    memory_snapshot = store.load_runtime_memory_snapshot(repo_root=root)
-    backend_transition = (
-        dict(memory_snapshot.get("backend_transition", {}))
-        if isinstance(memory_snapshot.get("backend_transition"), Mapping)
-        else {}
-    )
-    actual_backend = (
-        dict(backend_transition.get("actual_local_backend", {}))
-        if isinstance(backend_transition.get("actual_local_backend"), Mapping)
-        else {}
-    )
-    local_backend_status = (
-        dict(backend_transition.get("local_backend_status", {}))
-        if isinstance(backend_transition.get("local_backend_status"), Mapping)
-        else {}
-    )
-    entity_counts = (
-        dict(memory_snapshot.get("entity_counts", {}))
-        if isinstance(memory_snapshot.get("entity_counts"), Mapping)
-        else {}
-    )
-    if not (
-        bool(local_backend_status.get("ready"))
-        and str(actual_backend.get("storage", "")).strip() == "lance_local_columnar"
-        and str(actual_backend.get("sparse_recall", "")).strip() == "tantivy_sparse_recall"
-        and int(entity_counts.get("indexed_entity_count", 0) or 0) > 0
-        and int(entity_counts.get("evidence_documents", 0) or 0) > 0
-    ):
-        raise RuntimeError(
-            "Benchmark warm cache requires an active local LanceDB/Tantivy memory substrate before proof runs."
-        )
-    cache_until = time.monotonic() + _BENCHMARK_WARM_CACHE_SECONDS
-    full_fingerprint = store.projection_input_fingerprint(repo_root=root, scope="full")
-    reasoning_fingerprint = store.projection_input_fingerprint(repo_root=root, scope="reasoning")
-    default_fingerprint = store.projection_input_fingerprint(repo_root=root, scope="default")
-    store._PROCESS_WARM_CACHE[f"{root}:full"] = cache_until  # noqa: SLF001
-    store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{root}:full"] = full_fingerprint  # noqa: SLF001
-    store._PROCESS_WARM_CACHE[f"{root}:reasoning"] = cache_until  # noqa: SLF001
-    store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{root}:reasoning"] = reasoning_fingerprint  # noqa: SLF001
-    store._PROCESS_WARM_CACHE[f"{root}:default"] = cache_until  # noqa: SLF001
-    store._PROCESS_WARM_CACHE_FINGERPRINTS[f"{root}:default"] = default_fingerprint  # noqa: SLF001
-
-
 def _normalize_cache_profiles(cache_profiles: Sequence[str]) -> list[str]:
     normalized = [str(token).strip().lower() for token in cache_profiles if str(token).strip().lower() in _VALID_CACHE_PROFILES]
     if not normalized:
@@ -4545,7 +6424,7 @@ def _prepare_benchmark_runtime_cache(*, repo_root: Path, cache_profile: str) -> 
     profile = str(cache_profile or "warm").strip().lower() or "warm"
     store.clear_runtime_process_caches(repo_root=repo_root)
     if profile == "warm":
-        _prime_benchmark_runtime_cache(repo_root=repo_root)
+        benchmark_runtime_posture_runtime.prime_benchmark_runtime_cache(repo_root=repo_root)
 
 
 def _benchmark_report_id(
@@ -4573,12 +6452,17 @@ def _write_progress(
     *,
     repo_root: Path,
     payload: Mapping[str, Any],
+    write_shared: bool = True,
 ) -> None:
+    root = Path(repo_root).resolve()
+    _sync_active_run_progress(repo_root=root, payload=payload)
+    if not write_shared:
+        return
     odylith_context_cache.write_json_if_changed(
-        repo_root=repo_root,
-        path=progress_report_path(repo_root=repo_root),
+        repo_root=root,
+        path=progress_report_path(repo_root=root),
         payload=dict(payload),
-        lock_key=str(progress_report_path(repo_root=repo_root)),
+        lock_key=str(progress_report_path(repo_root=root)),
     )
 
 
@@ -4587,6 +6471,136 @@ def _clear_progress(*, repo_root: Path) -> None:
     with odylith_context_cache.advisory_lock(repo_root=repo_root, key=str(path)):
         if path.exists():
             path.unlink()
+
+
+def _failed_benchmark_report(
+    *,
+    repo_root: Path,
+    report_id: str,
+    benchmark_profile: str,
+    comparison_contract: str,
+    modes: Sequence[str],
+    cache_profiles: Sequence[str],
+    primary_cache_profile: str,
+    scenarios: Sequence[Mapping[str, Any]],
+    all_scenarios: Sequence[Mapping[str, Any]],
+    progress_payload: Mapping[str, Any],
+    selection_strategy: str,
+    latest_eligible: bool,
+    startup_hygiene: Mapping[str, Any],
+    corpus_contract: Mapping[str, Any],
+    tree_identity: Mapping[str, Any],
+    error: BaseException | str,
+) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    normalized_profile = _normalize_benchmark_profile(benchmark_profile)
+    error_text = _benchmark_exception_text(error)
+    generated_utc = str(progress_payload.get("updated_utc", "")).strip() or _utc_now()
+    acceptance = {
+        "status": "failed",
+        "hard_quality_gate_cleared": False,
+        "secondary_guardrails_cleared": False,
+        "advisory_checks_cleared": False,
+        "checks": {
+            "benchmark_run_completed": False,
+        },
+        "hard_gate_failures": ["benchmark_run_completed"],
+        "hard_gate_failure_labels": [error_text],
+        "secondary_guardrail_failures": [],
+        "secondary_guardrail_failure_labels": [],
+        "advisory_failures": [],
+        "advisory_failure_labels": [],
+        "weak_families": [],
+        "advisory_families": [],
+        "notes": [f"Benchmark run aborted before report completion: {error_text}"],
+    }
+    report: dict[str, Any] = {
+        "contract": REPORT_CONTRACT,
+        "version": REPORT_VERSION,
+        "report_id": str(report_id).strip(),
+        "repo_root": str(root),
+        "benchmark_profile": normalized_profile,
+        "benchmark_profile_label": _benchmark_profile_label(normalized_profile),
+        "benchmark_profile_description": _benchmark_profile_description(normalized_profile),
+        "comparison_contract": str(comparison_contract).strip(),
+        "comparison_contract_details": _comparison_contract_details(str(comparison_contract).strip()),
+        "generated_utc": generated_utc,
+        "started_utc": str(progress_payload.get("started_utc", "")).strip() or generated_utc,
+        "modes": list(modes),
+        "cache_profiles": list(cache_profiles),
+        "primary_cache_profile": str(primary_cache_profile).strip() or "warm",
+        "selection_strategy": str(selection_strategy).strip() or "manual_selection",
+        "product_version": _product_version_from_pyproject(repo_root=root),
+        "corpus_path": str(store.optimization_evaluation_corpus_path(repo_root=root)),
+        "git_branch": str(tree_identity.get("git_branch", "")).strip(),
+        "git_commit": str(tree_identity.get("git_commit", "")).strip(),
+        "git_dirty": bool(tree_identity.get("git_dirty")),
+        "repo_dirty_paths": [
+            str(token).strip()
+            for token in tree_identity.get("repo_dirty_paths", [])
+            if isinstance(tree_identity.get("repo_dirty_paths"), list) and str(token).strip()
+        ],
+        "selection_fingerprint": str(tree_identity.get("selection_fingerprint", "")).strip(),
+        "corpus_fingerprint": str(tree_identity.get("corpus_fingerprint", "")).strip(),
+        "snapshot_overlay_fingerprint": str(tree_identity.get("snapshot_overlay_fingerprint", "")).strip(),
+        "snapshot_overlay_paths": [],
+        "source_posture": str(tree_identity.get("source_posture", "")).strip(),
+        "scenario_count": len(scenarios),
+        "selection": dict(progress_payload.get("selection", {}))
+        if isinstance(progress_payload.get("selection"), Mapping)
+        else {},
+        "latest_eligible": bool(latest_eligible),
+        "scenarios": [],
+        "published_scenarios": [],
+        "cache_profile_scenarios": {},
+        "cache_profile_summaries": {},
+        "cache_profile_reports": {},
+        "cache_profile_mode_rows": {},
+        "singleton_family_latency_probes": {},
+        "mode_summaries": {},
+        "published_mode_summaries": {},
+        "published_mode_table": {},
+        "published_mode_table_markdown": _published_mode_table_markdown({}),
+        "published_pair_timing_summary": {},
+        "full_pair_timing_summary": {},
+        "tracked_mode_table": {},
+        "tracked_mode_table_markdown": _published_mode_table_markdown({}),
+        "family_summaries": {},
+        "published_family_summaries": {},
+        "packet_source_summaries": {},
+        "published_packet_source_summaries": {},
+        "execution_contracts": {},
+        "family_deltas": {},
+        "published_family_deltas": {},
+        "packet_source_deltas": {},
+        "published_packet_source_deltas": {},
+        "primary_comparison": {},
+        "published_comparison": {},
+        "comparison": {},
+        "adoption_proof": {},
+        "runtime_posture": {},
+        "startup_hygiene": dict(startup_hygiene),
+        "final_hygiene": {},
+        "robustness_summary": {},
+        "corpus_contract": dict(corpus_contract),
+        "corpus_composition": _corpus_composition(
+            scenarios=scenarios,
+            available_scenarios=all_scenarios,
+        ),
+        "fairness_contract_passed": True,
+        "fairness_findings": [],
+        "observed_path_sources": [],
+        "preflight_evidence_mode": "none",
+        "preflight_evidence_commands": [],
+        "preflight_evidence_result_status": "not_applicable",
+        "preflight_evidence_modes": [],
+        "status": "failed",
+        "acceptance": acceptance,
+        "error": error_text,
+    }
+    report["published_summary"] = compact_report_summary(report)
+    report["summary_text"] = _render_report_summary(report)
+    return report
 
 
 def _family_summaries(
@@ -4625,123 +6639,62 @@ def _summary_comparison(
     baseline_payload = _lookup_mode_mapping(mode_summaries, baseline_mode)
     candidate = dict(candidate_payload) if isinstance(candidate_payload, Mapping) else {}
     baseline = dict(baseline_payload) if isinstance(baseline_payload, Mapping) else {}
-    return {
+    field_map = {
+        "median_latency_delta_ms": "median_latency_ms",
+        "avg_latency_delta_ms": "avg_latency_ms",
+        "p95_latency_delta_ms": "p95_latency_ms",
+        "median_initial_prompt_token_delta": "median_initial_prompt_tokens",
+        "median_token_delta": "median_effective_tokens",
+        "median_prompt_token_delta": "median_effective_tokens",
+        "median_total_payload_token_delta": "median_total_payload_tokens",
+        "median_runtime_contract_token_delta": "median_runtime_contract_tokens",
+        "median_operator_diag_token_delta": "median_operator_diag_tokens",
+        "median_observed_path_count_delta": "median_observed_path_count",
+        "median_candidate_write_path_count_delta": "median_candidate_write_path_count",
+        "median_selected_doc_count_delta": "median_selected_doc_count",
+        "median_selected_command_count_delta": "median_selected_command_count",
+        "required_path_recall_delta": "required_path_recall_rate",
+        "required_path_precision_delta": "required_path_precision_rate",
+        "hallucinated_surface_rate_delta": "hallucinated_surface_rate",
+        "validation_success_delta": "validation_success_rate",
+        "write_surface_precision_delta": "write_surface_precision_rate",
+        "unnecessary_widening_rate_delta": "unnecessary_widening_rate",
+        "critical_required_path_recall_delta": "critical_required_path_recall_rate",
+        "critical_validation_success_delta": "critical_validation_success_rate",
+        "expectation_success_delta": "expectation_success_rate",
+        "route_ready_validation_success_delta": "route_ready_validation_success_rate",
+        "route_ready_expectation_success_delta": "route_ready_expectation_success_rate",
+    }
+    comparison = {
         "candidate_mode": _public_mode_name(candidate_mode),
         "baseline_mode": _public_mode_name(baseline_mode),
-        "median_latency_delta_ms": round(
-            float(candidate.get("median_latency_ms", 0.0) or 0.0) - float(baseline.get("median_latency_ms", 0.0) or 0.0),
-            3,
-        ),
-        "avg_latency_delta_ms": round(
-            float(candidate.get("avg_latency_ms", 0.0) or 0.0) - float(baseline.get("avg_latency_ms", 0.0) or 0.0),
-            3,
-        ),
-        "p95_latency_delta_ms": round(
-            float(candidate.get("p95_latency_ms", 0.0) or 0.0) - float(baseline.get("p95_latency_ms", 0.0) or 0.0),
-            3,
-        ),
-        "median_initial_prompt_token_delta": round(
-            float(candidate.get("median_initial_prompt_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_initial_prompt_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_token_delta": round(
-            float(candidate.get("median_effective_tokens", 0.0) or 0.0) - float(baseline.get("median_effective_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_prompt_token_delta": round(
-            float(candidate.get("median_effective_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_effective_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_total_payload_token_delta": round(
-            float(candidate.get("median_total_payload_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_total_payload_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_runtime_contract_token_delta": round(
-            float(candidate.get("median_runtime_contract_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_runtime_contract_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_operator_diag_token_delta": round(
-            float(candidate.get("median_operator_diag_tokens", 0.0) or 0.0)
-            - float(baseline.get("median_operator_diag_tokens", 0.0) or 0.0),
-            3,
-        ),
-        "median_observed_path_count_delta": round(
-            float(candidate.get("median_observed_path_count", 0.0) or 0.0)
-            - float(baseline.get("median_observed_path_count", 0.0) or 0.0),
-            3,
-        ),
-        "median_candidate_write_path_count_delta": round(
-            float(candidate.get("median_candidate_write_path_count", 0.0) or 0.0)
-            - float(baseline.get("median_candidate_write_path_count", 0.0) or 0.0),
-            3,
-        ),
-        "median_selected_doc_count_delta": round(
-            float(candidate.get("median_selected_doc_count", 0.0) or 0.0)
-            - float(baseline.get("median_selected_doc_count", 0.0) or 0.0),
-            3,
-        ),
-        "median_selected_command_count_delta": round(
-            float(candidate.get("median_selected_command_count", 0.0) or 0.0)
-            - float(baseline.get("median_selected_command_count", 0.0) or 0.0),
-            3,
-        ),
-        "required_path_recall_delta": round(
-            float(candidate.get("required_path_recall_rate", 0.0) or 0.0) - float(baseline.get("required_path_recall_rate", 0.0) or 0.0),
-            3,
-        ),
-        "required_path_precision_delta": round(
-            float(candidate.get("required_path_precision_rate", 0.0) or 0.0)
-            - float(baseline.get("required_path_precision_rate", 0.0) or 0.0),
-            3,
-        ),
-        "hallucinated_surface_rate_delta": round(
-            float(candidate.get("hallucinated_surface_rate", 0.0) or 0.0)
-            - float(baseline.get("hallucinated_surface_rate", 0.0) or 0.0),
-            3,
-        ),
-        "validation_success_delta": round(
-            float(candidate.get("validation_success_rate", 0.0) or 0.0) - float(baseline.get("validation_success_rate", 0.0) or 0.0),
-            3,
-        ),
-        "write_surface_precision_delta": round(
-            float(candidate.get("write_surface_precision_rate", 0.0) or 0.0)
-            - float(baseline.get("write_surface_precision_rate", 0.0) or 0.0),
-            3,
-        ),
-        "unnecessary_widening_rate_delta": round(
-            float(candidate.get("unnecessary_widening_rate", 0.0) or 0.0)
-            - float(baseline.get("unnecessary_widening_rate", 0.0) or 0.0),
-            3,
-        ),
-        "critical_required_path_recall_delta": round(
-            float(candidate.get("critical_required_path_recall_rate", 0.0) or 0.0)
-            - float(baseline.get("critical_required_path_recall_rate", 0.0) or 0.0),
-            3,
-        ),
-        "critical_validation_success_delta": round(
-            float(candidate.get("critical_validation_success_rate", 0.0) or 0.0)
-            - float(baseline.get("critical_validation_success_rate", 0.0) or 0.0),
-            3,
-        ),
-        "expectation_success_delta": round(
-            float(candidate.get("expectation_success_rate", 0.0) or 0.0) - float(baseline.get("expectation_success_rate", 0.0) or 0.0),
-            3,
-        ),
-        "route_ready_validation_success_delta": round(
-            float(candidate.get("route_ready_validation_success_rate", 0.0) or 0.0)
-            - float(baseline.get("route_ready_validation_success_rate", 0.0) or 0.0),
-            3,
-        ),
-        "route_ready_expectation_success_delta": round(
-            float(candidate.get("route_ready_expectation_success_rate", 0.0) or 0.0)
-            - float(baseline.get("route_ready_expectation_success_rate", 0.0) or 0.0),
-            3,
-        ),
     }
+    comparison.update(
+        benchmark_metric_helpers.summary_deltas(
+            candidate=candidate,
+            baseline=baseline,
+            field_map=field_map,
+        )
+    )
+    comparison.update(
+        odylith_benchmark_proof_discipline.comparison(
+            candidate=candidate,
+            baseline=baseline,
+        )
+    )
+    comparison.update(
+        odylith_benchmark_context_engine.comparison(
+            candidate=candidate,
+            baseline=baseline,
+        )
+    )
+    comparison.update(
+        odylith_benchmark_execution_engine.comparison(
+            candidate=candidate,
+            baseline=baseline,
+        )
+    )
+    return comparison
 
 
 def _primary_comparison(
@@ -4817,7 +6770,7 @@ def _human_number_label(value: float) -> str:
 
 
 def _humanized_proof_table_enabled(comparison_contract: str) -> bool:
-    return str(comparison_contract or "").strip() == "live_end_to_end"
+    return _is_live_comparison_contract(comparison_contract)
 
 
 def _format_mode_table_value(*, field: str, value: Any, comparison_contract: str = "") -> str:
@@ -5612,26 +7565,34 @@ def _aggregate_published_scenarios(
             profile_candidates.append(
                 (
                     (
-                        round(float(candidate.get("latency_ms", 0.0) or 0.0) - float(baseline.get("latency_ms", 0.0) or 0.0), 3),
-                        round(
-                            float(candidate.get("effective_estimated_tokens", candidate.get("codex_prompt_estimated_tokens", 0.0)) or 0.0)
-                            - float(baseline.get("effective_estimated_tokens", baseline.get("codex_prompt_estimated_tokens", 0.0)) or 0.0),
-                            3,
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="latency_ms",
                         ),
-                        round(
-                            float(candidate.get("total_payload_estimated_tokens", candidate.get("effective_estimated_tokens", 0.0)) or 0.0)
-                            - float(baseline.get("total_payload_estimated_tokens", baseline.get("effective_estimated_tokens", 0.0)) or 0.0),
-                            3,
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="effective_estimated_tokens",
+                            candidate_fallback_fields=("host_prompt_estimated_tokens", "codex_prompt_estimated_tokens"),
+                            baseline_fallback_fields=("host_prompt_estimated_tokens", "codex_prompt_estimated_tokens"),
                         ),
-                        round(
-                            float(baseline.get("required_path_recall", 0.0) or 0.0)
-                            - float(candidate.get("required_path_recall", 0.0) or 0.0),
-                            3,
+                        benchmark_metric_helpers.numeric_delta(
+                            candidate,
+                            baseline,
+                            candidate_field="total_payload_estimated_tokens",
+                            candidate_fallback_fields=("effective_estimated_tokens",),
+                            baseline_fallback_fields=("effective_estimated_tokens",),
                         ),
-                        round(
-                            float(baseline.get("validation_success_proxy", 0.0) or 0.0)
-                            - float(candidate.get("validation_success_proxy", 0.0) or 0.0),
-                            3,
+                        benchmark_metric_helpers.numeric_delta(
+                            baseline,
+                            candidate,
+                            candidate_field="required_path_recall",
+                        ),
+                        benchmark_metric_helpers.numeric_delta(
+                            baseline,
+                            candidate,
+                            candidate_field="validation_success_proxy",
                         ),
                     ),
                     str(profile).strip(),
@@ -5675,381 +7636,31 @@ def _acceptance(
     primary_comparison: Mapping[str, Any],
     family_summaries: Mapping[str, Mapping[str, Mapping[str, Any]]],
     corpus_summary: Mapping[str, Any],
+    fairness_findings: Sequence[str] = (),
     runtime_posture: Mapping[str, Any] | None = None,
     packet_source_summaries: Mapping[str, Mapping[str, Mapping[str, Any]]] | None = None,
     cache_profile_summaries: Mapping[str, Mapping[str, Any]] | None = None,
     execution_contracts: Mapping[str, Mapping[str, Any]] | None = None,
     comparison_contract: str = "",
 ) -> dict[str, Any]:
-    candidate_payload = _lookup_mode_mapping(mode_summaries, _ODYLITH_ON_MODE)
-    baseline_payload = _lookup_mode_mapping(mode_summaries, _BASELINE_MODE)
-    candidate = dict(candidate_payload) if isinstance(candidate_payload, Mapping) else {}
-    baseline = dict(baseline_payload) if isinstance(baseline_payload, Mapping) else {}
-    architecture_candidate = (
-        dict(_lookup_mode_mapping(dict(family_summaries.get("architecture", {})), _ODYLITH_ON_MODE) or {})
-        if isinstance(family_summaries.get("architecture"), Mapping)
-        else {}
+    return odylith_benchmark_acceptance.build_acceptance(
+        mode_summaries=mode_summaries,
+        primary_comparison=primary_comparison,
+        family_summaries=family_summaries,
+        corpus_summary=corpus_summary,
+        fairness_findings=fairness_findings,
+        runtime_posture=runtime_posture,
+        packet_source_summaries=packet_source_summaries,
+        cache_profile_summaries=cache_profile_summaries,
+        execution_contracts=execution_contracts,
+        comparison_contract=comparison_contract,
+        candidate_mode=_ODYLITH_ON_MODE,
+        baseline_mode=_BASELINE_MODE,
+        governance_slice_families=tuple(sorted(_GOVERNANCE_SLICE_FAMILIES)),
+        live_comparison_contracts=(LIVE_COMPARISON_CONTRACT, LEGACY_LIVE_COMPARISON_CONTRACT),
+        lookup_mode_mapping=_lookup_mode_mapping,
+        mode_supports_architecture_dossier=_mode_supports_architecture_dossier,
     )
-    architecture_baseline = (
-        dict(_lookup_mode_mapping(dict(family_summaries.get("architecture", {})), _BASELINE_MODE) or {})
-        if isinstance(family_summaries.get("architecture"), Mapping)
-        else {}
-    )
-    explicit_workstream_candidate = (
-        dict(_lookup_mode_mapping(dict(family_summaries.get("explicit_workstream", {})), _ODYLITH_ON_MODE) or {})
-        if isinstance(family_summaries.get("explicit_workstream"), Mapping)
-        else {}
-    )
-    governance_packet_coverage_complete = all(
-        float(
-            dict(_lookup_mode_mapping(dict(family_summaries.get(family, {})), _ODYLITH_ON_MODE) or {}).get("odylith_packet_present_rate", 0.0)
-            or 0.0
-        )
-        >= 1.0
-        for family in _GOVERNANCE_SLICE_FAMILIES
-        if isinstance(family_summaries.get(family), Mapping)
-    )
-    prompt_token_delta = float(
-        primary_comparison.get(
-            "median_prompt_token_delta",
-            primary_comparison.get("median_token_delta", 0.0),
-        )
-        or 0.0
-    )
-    total_payload_delta = float(primary_comparison.get("median_total_payload_token_delta", 0.0) or 0.0)
-    bootstrap_packet_source = (
-        dict(packet_source_summaries.get("bootstrap_session", {}))
-        if isinstance(packet_source_summaries, Mapping) and isinstance(packet_source_summaries.get("bootstrap_session"), Mapping)
-        else {}
-    )
-    bootstrap_candidate = (
-        dict(_lookup_mode_mapping(bootstrap_packet_source, _ODYLITH_ON_MODE) or {})
-        if bootstrap_packet_source
-        else {}
-    )
-    bootstrap_baseline = (
-        dict(_lookup_mode_mapping(bootstrap_packet_source, _BASELINE_MODE) or {})
-        if bootstrap_packet_source
-        else {}
-    )
-    bootstrap_payload_delta = 0.0
-    if bootstrap_candidate and bootstrap_baseline:
-        bootstrap_payload_delta = float(bootstrap_candidate.get("median_total_payload_tokens", 0.0) or 0.0) - float(
-            bootstrap_baseline.get("median_total_payload_tokens", 0.0) or 0.0
-        )
-    architecture_latency_delta = 0.0
-    if architecture_candidate and architecture_baseline:
-        architecture_latency_delta = float(architecture_candidate.get("median_latency_ms", 0.0) or 0.0) - float(
-            architecture_baseline.get("median_latency_ms", 0.0) or 0.0
-        )
-    candidate_scenario_count = int(candidate.get("scenario_count", 0) or 0)
-    candidate_validation_backed_scenario_count = int(candidate.get("validation_backed_scenario_count", 0) or 0)
-    candidate_critical_required_path_backed_scenario_count = int(
-        candidate.get("critical_required_path_backed_scenario_count", 0) or 0
-    )
-    candidate_critical_validation_backed_scenario_count = int(
-        candidate.get("critical_validation_backed_scenario_count", 0) or 0
-    )
-    packet_budget_guardrail_applicable = int(candidate.get("packet_scenario_count", 0) or 0) > 0
-    comparative_efficiency_guardrails = odylith_benchmark_guardrails.comparative_efficiency_guardrails_applicability(
-        candidate_summary=candidate,
-        baseline_summary=baseline,
-    )
-    runtime = dict(runtime_posture or {}) if isinstance(runtime_posture, Mapping) else {}
-    runtime_memory_standardization_state = str(runtime.get("memory_standardization_state", "")).strip()
-    runtime_memory_backed_retrieval_ready = runtime.get("memory_backed_retrieval_ready")
-    if runtime_memory_backed_retrieval_ready is None:
-        runtime_memory_backed_retrieval_ready = True
-    comparative_efficiency_applicable = bool(comparative_efficiency_guardrails.get("applicable"))
-    live_end_to_end_comparison = str(comparison_contract or "").strip() == "live_end_to_end"
-    comparative_latency_and_token_status_blocking = comparative_efficiency_applicable and not live_end_to_end_comparison
-
-    hard_quality_checks = {
-        "memory_backend_standardized": runtime_memory_standardization_state in {"", "standardized"},
-        "memory_backed_retrieval_ready": bool(runtime_memory_backed_retrieval_ready),
-        "required_path_recall_not_worse": float(primary_comparison.get("required_path_recall_delta", 0.0) or 0.0) >= 0.0,
-        "required_path_precision_not_worse": float(primary_comparison.get("required_path_precision_delta", 0.0) or 0.0) >= 0.0,
-        "hallucinated_surface_not_worse": float(primary_comparison.get("hallucinated_surface_rate_delta", 0.0) or 0.0) <= 0.0,
-        "validation_success_not_worse": float(primary_comparison.get("validation_success_delta", 0.0) or 0.0) >= 0.0,
-        "write_surface_precision_not_worse": (
-            int(candidate.get("write_surface_backed_scenario_count", 0) or 0) == 0
-            or float(primary_comparison.get("write_surface_precision_delta", 0.0) or 0.0) >= 0.0
-        ),
-        "unnecessary_widening_not_worse": (
-            int(candidate.get("write_surface_backed_scenario_count", 0) or 0) == 0
-            or float(primary_comparison.get("unnecessary_widening_rate_delta", 0.0) or 0.0) <= 0.0
-        ),
-        "critical_required_path_recall_not_worse": float(primary_comparison.get("critical_required_path_recall_delta", 0.0) or 0.0) >= 0.0,
-        "critical_validation_success_not_worse": float(primary_comparison.get("critical_validation_success_delta", 0.0) or 0.0) >= 0.0,
-        "live_execution_contract_match": _live_execution_contract_match(execution_contracts),
-        "expectation_success_not_worse": float(primary_comparison.get("expectation_success_delta", 0.0) or 0.0) >= 0.0,
-        "candidate_expectation_success_positive": (
-            candidate_scenario_count == 0 or float(candidate.get("expectation_success_rate", 0.0) or 0.0) > 0.0
-        ),
-        "candidate_validation_success_positive": (
-            candidate_validation_backed_scenario_count == 0
-            or float(candidate.get("validation_success_rate", 0.0) or 0.0) > 0.0
-        ),
-        "candidate_critical_required_path_recall_positive": (
-            candidate_critical_required_path_backed_scenario_count == 0
-            or float(candidate.get("critical_required_path_recall_rate", 0.0) or 0.0) > 0.0
-        ),
-        "candidate_critical_validation_success_positive": (
-            candidate_critical_validation_backed_scenario_count == 0
-            or float(candidate.get("critical_validation_success_rate", 0.0) or 0.0) > 0.0
-        ),
-        "explicit_workstream_expectation_positive": (
-            not explicit_workstream_candidate
-            or float(explicit_workstream_candidate.get("expectation_success_rate", 0.0) or 0.0) > 0.0
-        ),
-        "critical_metric_coverage_complete": (
-            int(corpus_summary.get("correctness_critical_scenario_count", 0) or 0)
-            == int(corpus_summary.get("critical_required_path_backed_scenario_count", 0) or 0)
-            == int(corpus_summary.get("critical_validation_backed_scenario_count", 0) or 0)
-        ),
-        "selected_cache_profiles_clear_gate": (
-            True
-            if not dict(cache_profile_summaries or {})
-            else all(
-                _acceptance_hard_quality_gate_cleared(dict(summary.get("acceptance", {})))
-                for summary in dict(cache_profile_summaries or {}).values()
-                if isinstance(summary, Mapping)
-            )
-        ),
-    }
-    secondary_guardrail_checks = {
-        "latency_within_guardrail": (not comparative_latency_and_token_status_blocking)
-        or float(primary_comparison.get("median_latency_delta_ms", 0.0) or 0.0)
-        <= _SECONDARY_LATENCY_GUARDRAIL_MAX_DELTA_MS,
-        "prompt_delta_within_guardrail": (not comparative_latency_and_token_status_blocking)
-        or prompt_token_delta <= _SECONDARY_PROMPT_TOKEN_GUARDRAIL_MAX_DELTA,
-        "total_payload_delta_within_guardrail": (not comparative_latency_and_token_status_blocking)
-        or total_payload_delta <= _SECONDARY_TOTAL_PAYLOAD_TOKEN_GUARDRAIL_MAX_DELTA,
-        "bootstrap_payload_delta_within_guardrail": (
-            not comparative_latency_and_token_status_blocking
-            or not bootstrap_candidate
-            or not bootstrap_baseline
-            or bootstrap_payload_delta <= _SECONDARY_TOTAL_PAYLOAD_TOKEN_GUARDRAIL_MAX_DELTA
-        ),
-        "tight_budget_behavior_healthy": (not packet_budget_guardrail_applicable)
-        or float(candidate.get("within_budget_rate", 0.0) or 0.0) >= _SECONDARY_WITHIN_BUDGET_RATE_MIN,
-        "architecture_latency_within_guardrail": (
-            not comparative_latency_and_token_status_blocking
-            or not architecture_candidate
-            or not architecture_baseline
-            or not _mode_supports_architecture_dossier(_BASELINE_MODE)
-            or architecture_latency_delta <= _SECONDARY_ARCHITECTURE_LATENCY_GUARDRAIL_MAX_DELTA_MS
-        ),
-    }
-    advisory_checks = {
-        "widening_rate_healthy": float(candidate.get("odylith_requires_widening_rate", 0.0) or 0.0) <= 0.15,
-        "governance_packet_coverage_complete": governance_packet_coverage_complete,
-    }
-    checks = {
-        **hard_quality_checks,
-        **secondary_guardrail_checks,
-        **advisory_checks,
-        "packet_budget_healthy": secondary_guardrail_checks["tight_budget_behavior_healthy"],
-        "architecture_not_slower": secondary_guardrail_checks["architecture_latency_within_guardrail"],
-    }
-    hard_quality_gate_cleared = all(hard_quality_checks.values()) if candidate and baseline else False
-    secondary_guardrails_cleared = all(secondary_guardrail_checks.values()) if candidate and baseline else False
-    advisory_checks_cleared = all(advisory_checks.values()) if candidate else False
-    passed = hard_quality_gate_cleared and secondary_guardrails_cleared
-    notes = []
-    hard_gate_families: list[str] = []
-    advisory_families: list[str] = []
-    if not baseline:
-        notes.append("`odylith_off` summary is unavailable; rerun with the raw Codex CLI lane enabled.")
-    for family, family_modes in family_summaries.items():
-        candidate_family_payload = _lookup_mode_mapping(family_modes, _ODYLITH_ON_MODE)
-        baseline_family_payload = _lookup_mode_mapping(family_modes, _BASELINE_MODE)
-        candidate_family = dict(candidate_family_payload) if isinstance(candidate_family_payload, Mapping) else {}
-        baseline_family = dict(baseline_family_payload) if isinstance(baseline_family_payload, Mapping) else {}
-        if not candidate_family or not baseline_family:
-            continue
-        if (
-            float(candidate_family.get("required_path_recall_rate", 0.0) or 0.0) < float(baseline_family.get("required_path_recall_rate", 0.0) or 0.0)
-            or float(candidate_family.get("required_path_precision_rate", 0.0) or 0.0) < float(baseline_family.get("required_path_precision_rate", 0.0) or 0.0)
-            or float(candidate_family.get("hallucinated_surface_rate", 0.0) or 0.0) > float(baseline_family.get("hallucinated_surface_rate", 0.0) or 0.0)
-            or float(candidate_family.get("validation_success_rate", 0.0) or 0.0) < float(baseline_family.get("validation_success_rate", 0.0) or 0.0)
-            or float(candidate_family.get("expectation_success_rate", 0.0) or 0.0) < float(baseline_family.get("expectation_success_rate", 0.0) or 0.0)
-            or (
-                int(candidate_family.get("write_surface_backed_scenario_count", 0) or 0) > 0
-                and float(candidate_family.get("write_surface_precision_rate", 0.0) or 0.0)
-                < float(baseline_family.get("write_surface_precision_rate", 0.0) or 0.0)
-            )
-            or (
-                int(candidate_family.get("write_surface_backed_scenario_count", 0) or 0) > 0
-                and float(candidate_family.get("unnecessary_widening_rate", 0.0) or 0.0) > 0.15
-            )
-        ):
-            hard_gate_families.append(family)
-        if (
-            family != "architecture"
-            and float(candidate_family.get("odylith_requires_widening_rate", 0.0) or 0.0) > 0.15
-        ) or (
-            family in _GOVERNANCE_SLICE_FAMILIES
-            and float(candidate_family.get("odylith_packet_present_rate", 0.0) or 0.0) < 1.0
-        ):
-            advisory_families.append(family)
-
-    hard_gate_failures = [name for name, ok in hard_quality_checks.items() if not ok]
-    secondary_guardrail_failures = [name for name, ok in secondary_guardrail_checks.items() if not ok]
-    advisory_failures = [name for name, ok in advisory_checks.items() if not ok]
-    hard_gate_failure_labels = _acceptance_failure_labels(hard_gate_failures)
-    secondary_guardrail_failure_labels = _acceptance_failure_labels(secondary_guardrail_failures)
-    advisory_failure_labels = _acceptance_failure_labels(advisory_failures)
-    if hard_quality_gate_cleared:
-        notes.append("Odylith clears the hard quality gate against `odylith_off` on this sampled corpus.")
-    else:
-        notes.append("Odylith has not yet cleared the hard quality gate against `odylith_off` on this sampled corpus.")
-    if hard_gate_failure_labels:
-        notes.append(
-            "Hard-gate blockers: " + "; ".join(hard_gate_failure_labels[:4]) + "."
-        )
-    if not hard_quality_checks["candidate_expectation_success_positive"]:
-        notes.append(
-            "The sampled live run is not yet informative: `odylith_on` did not complete any benchmark task successfully end to end."
-        )
-    if not hard_quality_checks["candidate_validation_success_positive"]:
-        notes.append(
-            "No sampled validation-backed task produced a successful `odylith_on` outcome, so this run cannot publish as a benchmark win."
-        )
-    if not hard_quality_checks["candidate_critical_required_path_recall_positive"]:
-        notes.append("Odylith still missed every sampled critical required path, so the critical slice is not benchmark-ready.")
-    if not hard_quality_checks["candidate_critical_validation_success_positive"]:
-        notes.append(
-            "No sampled critical validator-backed task produced a successful `odylith_on` outcome, so the critical slice is not benchmark-ready."
-        )
-    if not _live_execution_contract_match(execution_contracts):
-        notes.append("`odylith_on` and `odylith_off` did not run on the same Codex CLI model/reasoning contract.")
-    if hard_quality_checks["memory_backed_retrieval_ready"]:
-        notes.append("Benchmark proof used active local LanceDB plus Tantivy retrieval memory.")
-    else:
-        notes.append("Benchmark ran without an active local LanceDB/Tantivy retrieval substrate.")
-    if str(runtime.get("remote_retrieval_status", "")).strip() == "disabled":
-        notes.append("Vespa is optional and currently disabled; the current benchmark proof is local-first, not remote-assisted.")
-    elif bool(runtime.get("remote_retrieval_enabled")):
-        notes.append(
-            "Vespa remote retrieval is active in "
-            + (str(runtime.get("remote_retrieval_mode", "")).strip() or "augment")
-            + " mode for this benchmark posture."
-        )
-    if comparative_efficiency_applicable and not live_end_to_end_comparison:
-        notes.append(
-            "Relative latency and token-efficiency guardrails are active because both `odylith_on` and `odylith_off` produced successful outcomes on the sampled corpus."
-        )
-    elif comparative_efficiency_applicable and live_end_to_end_comparison:
-        notes.append(
-            "Live proof keeps benchmark time to valid outcome and full-session token spend published, but not status-blocking, because the public pair measures contention-shared matched-pair wall clock and multi-turn session accumulation rather than interactive product latency or initial prompt size."
-        )
-    else:
-        reason = str(comparative_efficiency_guardrails.get("reason", "")).strip()
-        if reason == "baseline_has_no_successful_outcomes":
-            notes.append(
-                "Relative latency and token-efficiency guardrails were not applied because `odylith_off` produced no successful outcomes on the sampled corpus."
-            )
-        elif reason == "candidate_has_no_successful_outcomes":
-            notes.append(
-                "Relative latency and token-efficiency guardrails were not applied because `odylith_on` produced no successful outcomes on the sampled corpus."
-            )
-        else:
-            notes.append(
-                "Relative latency and token-efficiency guardrails were not applied because the sampled corpus did not produce successful outcomes on both compared lanes."
-            )
-    if not packet_budget_guardrail_applicable:
-        notes.append(
-            "Tighter-budget behavior was not applied because the sampled corpus contains no packet-backed scenarios."
-        )
-    if secondary_guardrails_cleared:
-        notes.append("Secondary latency, efficiency, and tighter-budget guardrails are within threshold on this sampled corpus.")
-    elif secondary_guardrail_failure_labels:
-        notes.append(
-            "Secondary guardrails needing attention: " + "; ".join(secondary_guardrail_failure_labels[:4]) + "."
-        )
-    if float(primary_comparison.get("median_latency_delta_ms", 0.0) or 0.0) > 0.0:
-        notes.append(
-            "Odylith takes longer than raw Codex CLI to reach a valid outcome on the benchmark pair; this stays published as a secondary tradeoff and only blocks status when the comparative live-efficiency guardrail is actually status-blocking."
-        )
-    if prompt_token_delta > 0.0:
-        notes.append(
-            "Odylith uses more full-session input tokens than raw Codex CLI on the live run; that overhead stays visible, but it is not the same thing as initial prompt size."
-        )
-    if hard_gate_families:
-        notes.append(f"Hard-gate families needing attention: {', '.join(hard_gate_families[:5])}.")
-    failed_profiles = [
-        str(profile).strip()
-        for profile, summary in dict(cache_profile_summaries or {}).items()
-        if isinstance(summary, Mapping)
-        and not _acceptance_hard_quality_gate_cleared(dict(summary.get("acceptance", {})))
-    ]
-    if failed_profiles:
-        notes.append(
-            "Selected cache profiles still failing the hard quality gate: "
-            + ", ".join(failed_profiles[:4])
-            + "."
-        )
-    if total_payload_delta > 0.0:
-        notes.append(
-            f"Total runtime-contract payload is still heavier than baseline by {total_payload_delta:.3f} median tokens; that remains a published secondary cost and only blocks status when the comparative payload guardrail is applicable and breached."
-        )
-    if bootstrap_candidate and bootstrap_baseline and bootstrap_payload_delta > 0.0:
-        notes.append(
-            f"Bootstrap-session payload is still heavier than baseline by {bootstrap_payload_delta:.3f} median tokens; this first-turn tax now has its own benchmark guardrail."
-        )
-    if architecture_candidate and architecture_baseline and architecture_latency_delta > 0.0:
-        notes.append(
-            f"Architecture still takes {architecture_latency_delta:.3f}ms longer than baseline to reach a valid outcome in the published comparison view."
-        )
-    if float(candidate.get("odylith_requires_widening_rate", 0.0) or 0.0) > 0.15:
-        notes.append(
-            "Widening is still too frequent in the published candidate view; this stays published as advisory mechanism attention rather than the primary outcome gate."
-        )
-    if float(primary_comparison.get("hallucinated_surface_rate_delta", 0.0) or 0.0) > 0.0:
-        notes.append("Published observed-surface drift is still worse than baseline; tighten the evidence cone before widening more families.")
-    if int(candidate.get("write_surface_backed_scenario_count", 0) or 0) > 0 and float(
-        primary_comparison.get("unnecessary_widening_rate_delta", 0.0) or 0.0
-    ) > 0.0:
-        notes.append("Published write-surface widening is still worse than baseline on scenarios that actually require writes.")
-    if not governance_packet_coverage_complete:
-        notes.append(
-            "Governance-family packet coverage is incomplete; this stays published as advisory mechanism attention, not as the primary outcome gate."
-        )
-    if advisory_failure_labels:
-        notes.append("Advisory mechanism checks needing attention: " + "; ".join(advisory_failure_labels[:4]) + ".")
-    if advisory_families:
-        notes.append("Advisory mechanism families needing attention: " + ", ".join(sorted(set(advisory_families))[:5]) + ".")
-    if dict(cache_profile_summaries or {}) and hard_quality_checks["selected_cache_profiles_clear_gate"]:
-        notes.append(
-            "All selected cache profiles clear the hard quality gate, so the published result is not relying on a single flattering cache posture."
-        )
-    notes.append(
-        "This harness blocks status on the hard quality gate first. In live proof, benchmark time to valid outcome and full-session token spend stay published as diagnostics, while tighter-budget behavior remains an active secondary guardrail."
-    )
-    return {
-        "status": "provisional_pass" if passed else "hold",
-        "hard_quality_gate_cleared": hard_quality_gate_cleared,
-        "secondary_guardrails_cleared": secondary_guardrails_cleared,
-        "advisory_checks_cleared": advisory_checks_cleared,
-        "comparative_efficiency_guardrails_applicable": comparative_efficiency_applicable,
-        "comparative_latency_and_token_status_blocking": comparative_latency_and_token_status_blocking,
-        "comparative_efficiency_guardrail_reason": str(comparative_efficiency_guardrails.get("reason", "")).strip(),
-        "packet_budget_guardrail_applicable": packet_budget_guardrail_applicable,
-        "hard_quality_checks": hard_quality_checks,
-        "secondary_guardrail_checks": secondary_guardrail_checks,
-        "advisory_checks": advisory_checks,
-        "hard_gate_failures": hard_gate_failures,
-        "hard_gate_failure_labels": hard_gate_failure_labels,
-        "secondary_guardrail_failures": secondary_guardrail_failures,
-        "secondary_guardrail_failure_labels": secondary_guardrail_failure_labels,
-        "advisory_failures": advisory_failures,
-        "advisory_failure_labels": advisory_failure_labels,
-        "checks": checks,
-        "weak_families": hard_gate_families,
-        "advisory_families": sorted(set(advisory_families)),
-        "notes": notes,
-    }
 
 
 def _render_report_summary(report: Mapping[str, Any]) -> str:
@@ -6069,7 +7680,13 @@ def _render_report_summary(report: Mapping[str, Any]) -> str:
         f"- primary_cache_profile: {summary.get('primary_cache_profile', '')}\n"
         f"- published_view_strategy: {summary.get('published_view_strategy', '') or 'primary_profile'}\n"
         f"- published_cache_profiles: {', '.join(summary.get('published_cache_profiles', [])) or '-'}\n"
+        f"- comparison_contract: {summary.get('comparison_contract', '') or '-'}\n"
+        f"- comparison_primary_claim: {summary.get('comparison_primary_claim', '') or '-'}\n"
         f"- comparison: {summary.get('candidate_mode', '')} vs {summary.get('baseline_mode', '')}\n"
+        f"- fairness_contract_passed: {bool(summary.get('fairness_contract_passed'))}\n"
+        f"- fairness_findings: {', '.join(summary.get('fairness_findings', [])) or '-'}\n"
+        f"- observed_path_sources: {', '.join(summary.get('observed_path_sources', [])) or '-'}\n"
+        f"- preflight_evidence_modes: {', '.join(summary.get('preflight_evidence_modes', [])) or '-'}\n"
         f"- hard_quality_gate_cleared: {bool(summary.get('hard_quality_gate_cleared'))}\n"
         f"- hard_gate_failures: {', '.join(summary.get('hard_gate_failure_labels', [])) or '-'}\n"
         f"- secondary_guardrails_cleared: {bool(summary.get('secondary_guardrails_cleared'))}\n"
@@ -6104,7 +7721,12 @@ def _render_report_summary(report: Mapping[str, Any]) -> str:
         f"- runtime_remote_retrieval: "
         f"{summary.get('runtime_remote_retrieval_status', '') or 'disabled'}"
         f"/{summary.get('runtime_remote_retrieval_mode', '') or 'disabled'}\n"
-        f"- corpus_contract_status: {summary.get('corpus_contract_status', '')}"
+        f"- corpus_contract_status: {summary.get('corpus_contract_status', '')}\n"
+        f"- corpus_seriousness_floor_passed: {bool(summary.get('corpus_seriousness_floor_passed'))}\n"
+        f"- corpus_full_coverage_rate: {float(summary.get('corpus_full_coverage_rate', 0.0) or 0.0):.3f}\n"
+        f"- corpus_implementation_scenario_count: {int(summary.get('corpus_implementation_scenario_count', 0) or 0)}\n"
+        f"- corpus_write_plus_validator_scenario_count: {int(summary.get('corpus_write_plus_validator_scenario_count', 0) or 0)}\n"
+        f"- corpus_correctness_critical_scenario_count: {int(summary.get('corpus_correctness_critical_scenario_count', 0) or 0)}"
     )
 
 
@@ -6124,8 +7746,8 @@ def run_benchmarks(
     root = Path(repo_root).resolve()
     live_batching_available = (root / ".git").exists()
     normalized_profile = _normalize_benchmark_profile(benchmark_profile)
-    normalized_shard_count = int(shard_count or 1)
-    normalized_shard_index = int(shard_index or 1)
+    normalized_shard_count = int(1 if shard_count is None else shard_count)
+    normalized_shard_index = int(1 if shard_index is None else shard_index)
     requested_modes = [_normalize_mode(str(token).strip()) for token in modes if str(token).strip() in _VALID_MODES]
     explicit_mode_selection = bool(requested_modes)
     normalized_modes = list(dict.fromkeys(requested_modes)) or list(_PROFILE_DEFAULT_MODES[normalized_profile])
@@ -6142,40 +7764,29 @@ def run_benchmarks(
     corpus = odylith_context_cache.read_json_object(store.optimization_evaluation_corpus_path(repo_root=root))
     corpus_contract = odylith_benchmark_contract.benchmark_corpus_contract(corpus)
     all_scenarios = load_benchmark_scenarios(repo_root=root)
-    all_case_ids = {
-        str(row.get("scenario_id", "")).strip()
-        for row in all_scenarios
-        if str(row.get("scenario_id", "")).strip()
-    }
-    selected_case_ids = {str(token).strip() for token in case_ids if str(token).strip()}
-    selected_families = set(_normalize_family_filters(families))
-    base_scenarios = [
-        dict(row)
-        for row in all_scenarios
-        if (not selected_case_ids or str(row.get("scenario_id", "")).strip() in selected_case_ids)
-        and (not selected_families or str(row.get("family", "")).strip() in selected_families)
-    ]
-    profile_default_narrowing = ""
-    if (
-        normalized_profile == BENCHMARK_PROFILE_QUICK
-        and not selected_case_ids
-        and not selected_families
-        and int(limit) <= 0
-        and normalized_shard_count <= 1
-    ):
-        scenarios = _representative_family_smoke_scenarios(scenarios=base_scenarios)
-        profile_default_narrowing = "representative_family_smoke"
-    else:
-        scenarios = [dict(row) for row in base_scenarios]
-    scenarios = _apply_scenario_shard(
-        scenarios=scenarios,
+    selection_state = _resolve_benchmark_scenario_selection(
+        all_scenarios=all_scenarios,
+        benchmark_profile=normalized_profile,
+        case_ids=case_ids,
+        families=families,
         shard_count=normalized_shard_count,
         shard_index=normalized_shard_index,
+        limit=limit,
     )
-    if limit > 0:
-        scenarios = scenarios[: max(1, int(limit))]
+    all_case_ids = set(selection_state.get("all_case_ids", set()))
+    selected_case_ids = set(selection_state.get("selected_case_ids", set()))
+    selected_families = set(selection_state.get("selected_families", set()))
+    profile_default_narrowing = str(selection_state.get("profile_default_narrowing", "")).strip()
+    scenarios = [dict(row) for row in selection_state.get("scenarios", [])]
     if not scenarios:
         raise ValueError("No benchmark scenarios matched the requested selection.")
+    normalized_cache_profiles = _cache_profiles_for_selection(
+        profile=normalized_profile,
+        selected_families=sorted(selected_families),
+        cache_profiles=normalized_cache_profiles,
+        explicit_cache_profile_selection=explicit_cache_profile_selection,
+    )
+    primary_cache_profile = _primary_cache_profile(normalized_cache_profiles)
     generated_utc = _utc_now()
     report_id = _benchmark_report_id(
         generated_utc=generated_utc,
@@ -6183,37 +7794,44 @@ def run_benchmarks(
         scenario_ids=[str(row.get("scenario_id", "")).strip() for row in scenarios],
         cache_profiles=normalized_cache_profiles,
     )
-    explicit_full_selection = bool(selected_case_ids) and selected_case_ids == all_case_ids and not selected_families
-    full_corpus_selected = bool(
-        not profile_default_narrowing
-        and int(limit) <= 0
-        and normalized_shard_count <= 1
-        and ((not selected_case_ids and not selected_families and len(scenarios) == len(all_scenarios)) or explicit_full_selection)
-    )
-    selection_strategy = "full_corpus"
-    if profile_default_narrowing:
-        selection_strategy = profile_default_narrowing
-    elif selected_case_ids or selected_families or normalized_shard_count > 1 or int(limit) > 0:
-        selection_strategy = "manual_selection"
+    full_corpus_selected = bool(selection_state.get("full_corpus_selected"))
+    selection_strategy = str(selection_state.get("selection_strategy", "")).strip() or "manual_selection"
     latest_eligible = bool(
         normalized_profile == BENCHMARK_PROFILE_PROOF
         and full_corpus_selected
         and normalized_cache_profiles == list(DEFAULT_CACHE_PROFILES)
         and normalized_modes == list(DEFAULT_MODES)
     )
+    profile_uses_live_public_modes = _profile_uses_live_public_modes_for_selection(
+        profile=normalized_profile,
+        selected_families=sorted(selected_families),
+    )
     comparison_contract = (
-        "live_end_to_end"
-        if _benchmark_profile_uses_live_public_modes(normalized_profile)
-        else "internal_packet_prompt_diagnostic"
+        LIVE_COMPARISON_CONTRACT
+        if profile_uses_live_public_modes
+        else DIAGNOSTIC_COMPARISON_CONTRACT
     )
     total_results = len(scenarios) * len(normalized_modes) * len(normalized_cache_profiles)
-    with odylith_context_cache.advisory_lock(repo_root=root, key=_BENCHMARK_LOCK_KEY):
-        startup_hygiene = _cleanup_stale_benchmark_state(repo_root=root, clear_progress=True)
+    sharded_run = normalized_shard_count > 1
+    lock_key = (
+        f"{_BENCHMARK_LOCK_KEY}:{normalized_profile}:{normalized_shard_index}-of-{normalized_shard_count}"
+        if sharded_run
+        else _BENCHMARK_LOCK_KEY
+    )
+    with odylith_context_cache.advisory_lock(repo_root=root, key=lock_key), _benchmark_interrupt_guard():
+        startup_hygiene = _cleanup_stale_benchmark_state(
+            repo_root=root,
+            clear_progress=not sharded_run,
+            allow_destructive_runtime_cleanup=not sharded_run,
+        )
+        benchmark_runtime_storage = _require_benchmark_runtime_space(repo_root=root)
         progress_payload: dict[str, Any] = {
             "contract": PROGRESS_CONTRACT,
             "version": PROGRESS_VERSION,
             "report_id": report_id,
             "repo_root": str(root),
+            "owning_pid": os.getpid(),
+            "write_report": write_report,
             "benchmark_profile": normalized_profile,
             "benchmark_profile_label": _benchmark_profile_label(normalized_profile),
             "benchmark_profile_description": _benchmark_profile_description(normalized_profile),
@@ -6253,8 +7871,29 @@ def run_benchmarks(
                 "available_scenario_count": len(all_scenarios),
                 "cache_profiles": list(normalized_cache_profiles),
             },
+            "benchmark_runtime_storage": dict(benchmark_runtime_storage),
         }
-        _write_progress(repo_root=root, payload=progress_payload)
+        initial_tree_identity = benchmark_tree_identity(
+            repo_root=root,
+            selection=dict(progress_payload.get("selection", {})),
+        )
+        progress_payload.update(
+            {
+                "git_branch": str(initial_tree_identity.get("git_branch", "")).strip(),
+                "git_commit": str(initial_tree_identity.get("git_commit", "")).strip(),
+                "git_dirty": bool(initial_tree_identity.get("git_dirty")),
+                "repo_dirty_paths": [
+                    str(token).strip()
+                    for token in initial_tree_identity.get("repo_dirty_paths", [])
+                    if isinstance(initial_tree_identity.get("repo_dirty_paths"), list) and str(token).strip()
+                ],
+                "selection_fingerprint": str(initial_tree_identity.get("selection_fingerprint", "")).strip(),
+                "corpus_fingerprint": str(initial_tree_identity.get("corpus_fingerprint", "")).strip(),
+                "snapshot_overlay_fingerprint": str(initial_tree_identity.get("snapshot_overlay_fingerprint", "")).strip(),
+                "source_posture": str(initial_tree_identity.get("source_posture", "")).strip(),
+            }
+        )
+        _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
         try:
             cache_profile_reports: dict[str, list[dict[str, Any]]] = {}
             cache_profile_mode_rows: dict[str, dict[str, list[dict[str, Any]]]] = {}
@@ -6263,7 +7902,7 @@ def run_benchmarks(
                 _prepare_benchmark_runtime_cache(repo_root=root, cache_profile=cache_profile)
                 scenario_reports: list[dict[str, Any]] = []
                 mode_rows: dict[str, list[dict[str, Any]]] = {mode: [] for mode in normalized_modes}
-                use_live_public_modes = _benchmark_profile_uses_live_public_modes(normalized_profile)
+                use_live_public_modes = profile_uses_live_public_modes
                 for scenario_index, scenario in enumerate(scenarios, start=1):
                     scenario_report = {
                         "cache_profile": cache_profile,
@@ -6273,6 +7912,11 @@ def run_benchmarks(
                         "summary": scenario["summary"],
                         "family": scenario["family"],
                         "priority": scenario["priority"],
+                        "prompt": str(scenario.get("prompt", "")).strip(),
+                        "acceptance_criteria": list(scenario.get("acceptance_criteria", [])),
+                        "required_paths": list(scenario.get("required_paths", [])),
+                        "validation_commands": list(scenario.get("validation_commands", [])),
+                        "needs_write": bool(scenario.get("needs_write")),
                         "changed_paths": list(scenario["changed_paths"]),
                         "workstream": scenario["workstream"],
                         "results": [],
@@ -6280,7 +7924,7 @@ def run_benchmarks(
                     live_batch_results: dict[str, dict[str, Any]] = {}
                     live_batch_modes = (
                         [normalized_mode for normalized_mode in normalized_modes if _is_live_public_mode(normalized_mode)]
-                        if live_batching_available and use_live_public_modes
+                        if live_batching_available and use_live_public_modes and not sharded_run
                         else []
                     )
                     live_batch_executed = False
@@ -6297,7 +7941,7 @@ def run_benchmarks(
                                 "completed_results": completed_results,
                             }
                         )
-                        _write_progress(repo_root=root, payload=progress_payload)
+                        _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
                         normalized_mode = _normalize_mode(mode)
                         if normalized_mode in live_batch_modes:
                             if not live_batch_executed:
@@ -6306,6 +7950,10 @@ def run_benchmarks(
                                     scenario=scenario,
                                     modes=live_batch_modes,
                                     benchmark_profile=normalized_profile,
+                                    report_id=report_id,
+                                    cache_profile=cache_profile,
+                                    shard_index=normalized_shard_index,
+                                    shard_count=normalized_shard_count,
                                 )
                                 live_batch_executed = True
                             result = dict(live_batch_results.get(normalized_mode, {}))
@@ -6317,13 +7965,27 @@ def run_benchmarks(
                             if str(scenario.get("kind", "")).strip() == "architecture":
                                 result = _architecture_result(repo_root=root, scenario=scenario, mode=mode)
                             else:
-                                result = _packet_result(repo_root=root, scenario=scenario, mode=mode)
+                                result = _call_with_supported_kwargs(
+                                    _packet_result,
+                                    repo_root=root,
+                                    scenario=scenario,
+                                    mode=mode,
+                                    report_id=report_id,
+                                    cache_profile=cache_profile,
+                                    shard_index=normalized_shard_index,
+                                    shard_count=normalized_shard_count,
+                                )
                         else:
-                            result = _run_scenario_mode(
+                            result = _call_with_supported_kwargs(
+                                _run_scenario_mode,
                                 repo_root=root,
                                 scenario=scenario,
                                 mode=mode,
                                 benchmark_profile=normalized_profile,
+                                report_id=report_id,
+                                cache_profile=cache_profile,
+                                shard_index=normalized_shard_index,
+                                shard_count=normalized_shard_count,
                             )
                         result["cache_profile"] = cache_profile
                         result["scenario_family"] = str(scenario.get("family", "")).strip()
@@ -6348,7 +8010,7 @@ def run_benchmarks(
                             "completed_results": completed_results,
                         }
                     )
-                    _write_progress(repo_root=root, payload=progress_payload)
+                    _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
                 cache_profile_reports[cache_profile] = scenario_reports
                 cache_profile_mode_rows[cache_profile] = mode_rows
             progress_payload.update(
@@ -6363,20 +8025,31 @@ def run_benchmarks(
                     "completed_results": completed_results,
                 }
             )
-            _write_progress(repo_root=root, payload=progress_payload)
-            latency_probes = _singleton_family_latency_probes(
-                repo_root=root,
-                scenarios=scenarios,
-                modes=normalized_modes,
-                cache_profiles=normalized_cache_profiles,
-                benchmark_profile=normalized_profile,
+            _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
+            post_run_probe_eligible = bool(not sharded_run and selection_strategy == "full_corpus")
+            latency_probes = (
+                _singleton_family_latency_probes(
+                    repo_root=root,
+                    scenarios=scenarios,
+                    modes=normalized_modes,
+                    cache_profiles=normalized_cache_profiles,
+                    benchmark_profile=normalized_profile,
+                )
+                if post_run_probe_eligible
+                else {}
             )
             final_hygiene = (
-                _enforce_diagnostic_runtime_hygiene(repo_root=root)
+                {}
+                if sharded_run
+                else _enforce_diagnostic_runtime_hygiene(repo_root=root, ignore_progress=progress_payload)
                 if normalized_profile == BENCHMARK_PROFILE_DIAGNOSTIC
                 else _benchmark_runtime_hygiene_snapshot(repo_root=root)
             )
             corpus_summary = _corpus_summary(scenarios=scenarios)
+            corpus_composition = _corpus_composition(
+                scenarios=scenarios,
+                available_scenarios=all_scenarios,
+            )
             primary_scenario_reports = cache_profile_reports.get(primary_cache_profile, [])
             primary_mode_rows = cache_profile_mode_rows.get(primary_cache_profile, {})
             mode_summaries = {
@@ -6406,6 +8079,11 @@ def run_benchmarks(
                     baseline_mode=_BASELINE_MODE,
                     mode_summaries=profile_mode_summaries,
                 )
+                profile_fairness_findings = _fairness_findings(
+                    repo_root=root,
+                    comparison_contract=comparison_contract,
+                    published_scenarios=cache_profile_reports.get(cache_profile, []),
+                )
                 profile_packet_source_summaries = benchmark_group_summaries.grouped_summaries(
                     modes=normalized_modes,
                     mode_rows=profile_mode_rows,
@@ -6426,11 +8104,14 @@ def run_benchmarks(
                         family_summaries=profile_family_summaries,
                     ),
                     "primary_comparison": profile_primary_comparison,
+                    "fairness_contract_passed": not profile_fairness_findings,
+                    "fairness_findings": profile_fairness_findings,
                     "acceptance": _acceptance(
                         mode_summaries=profile_mode_summaries,
                         primary_comparison=profile_primary_comparison,
                         family_summaries=profile_family_summaries,
                         corpus_summary=corpus_summary,
+                        fairness_findings=profile_fairness_findings,
                         packet_source_summaries=profile_packet_source_summaries,
                         execution_contracts=profile_execution_contracts,
                         comparison_contract=comparison_contract,
@@ -6450,6 +8131,11 @@ def run_benchmarks(
             published_scenarios = _apply_singleton_latency_probes_to_published_scenarios(
                 published_scenarios=published_scenarios,
                 latency_probes=latency_probes,
+            )
+            fairness_findings = _fairness_findings(
+                repo_root=root,
+                comparison_contract=comparison_contract,
+                published_scenarios=published_scenarios,
             )
             published_mode_rows: dict[str, list[dict[str, Any]]] = {mode: [] for mode in normalized_modes}
             for scenario_report in published_scenarios:
@@ -6510,9 +8196,17 @@ def run_benchmarks(
                 grouped_summaries=published_packet_source_summaries,
                 compare=_summary_comparison,
             )
-            adoption_proof = _run_live_adoption_proof(repo_root=root, scenarios=scenarios)
-            runtime_posture = _runtime_posture_summary(repo_root=root)
-            if int(adoption_proof.get("sample_size", 0) or 0) > 0:
+            adoption_proof = (
+                _run_live_adoption_proof(repo_root=root, scenarios=scenarios)
+                if post_run_probe_eligible
+                else {}
+            )
+            runtime_posture = (
+                {}
+                if sharded_run
+                else benchmark_runtime_posture_runtime.runtime_posture_summary(repo_root=root)
+            )
+            if not sharded_run and int(adoption_proof.get("sample_size", 0) or 0) > 0:
                 runtime_posture["route_ready_rate"] = float(adoption_proof.get("route_ready_rate", 0.0) or 0.0)
                 runtime_posture["native_spawn_ready_rate"] = float(
                     adoption_proof.get("native_spawn_ready_rate", 0.0) or 0.0
@@ -6522,16 +8216,63 @@ def run_benchmarks(
                 primary_comparison=published_comparison,
                 family_summaries=published_family_summaries,
                 corpus_summary=corpus_summary,
+                fairness_findings=fairness_findings,
                 runtime_posture=runtime_posture,
                 packet_source_summaries=published_packet_source_summaries,
                 cache_profile_summaries=cache_profile_summaries,
                 execution_contracts=published_execution_contracts,
                 comparison_contract=comparison_contract,
             )
-            robustness_summary = _robustness_summary(
-                cache_profile_summaries=cache_profile_summaries,
-                candidate_mode=_ODYLITH_ON_MODE,
-                latency_probes=latency_probes,
+            observed_path_sources = sorted(
+                {
+                    str(token).strip()
+                    for scenario_report in published_scenarios
+                    for result in scenario_report.get("results", [])
+                    if isinstance(result, Mapping)
+                    for token in result.get("observed_path_sources", [])
+                    if isinstance(result.get("observed_path_sources"), list) and str(token).strip()
+                }
+            )
+            preflight_evidence_modes = sorted(
+                {
+                    str(result.get("preflight_evidence_mode", "")).strip()
+                    for scenario_report in published_scenarios
+                    for result in scenario_report.get("results", [])
+                    if isinstance(result, Mapping) and str(result.get("preflight_evidence_mode", "")).strip()
+                }
+            )
+            preflight_evidence_commands = sorted(
+                {
+                    str(token).strip()
+                    for scenario_report in published_scenarios
+                    for result in scenario_report.get("results", [])
+                    if isinstance(result, Mapping)
+                    for token in result.get("preflight_evidence_commands", [])
+                    if isinstance(result.get("preflight_evidence_commands"), list) and str(token).strip()
+                }
+            )
+            preflight_evidence_result_statuses = sorted(
+                {
+                    str(result.get("preflight_evidence_result_status", "")).strip()
+                    for scenario_report in published_scenarios
+                    for result in scenario_report.get("results", [])
+                    if isinstance(result, Mapping) and str(result.get("preflight_evidence_result_status", "")).strip()
+                }
+            )
+            snapshot_overlay_paths = _report_snapshot_overlay_paths(published_scenarios)
+            tree_identity = benchmark_tree_identity(
+                repo_root=root,
+                selection=dict(progress_payload.get("selection", {})),
+                snapshot_paths=snapshot_overlay_paths,
+            )
+            robustness_summary = (
+                {}
+                if sharded_run
+                else _robustness_summary(
+                    cache_profile_summaries=cache_profile_summaries,
+                    candidate_mode=_ODYLITH_ON_MODE,
+                    latency_probes=latency_probes,
+                )
             )
             published_mode_table = _published_mode_table(
                 mode_summaries=published_mode_summaries,
@@ -6569,12 +8310,42 @@ def run_benchmarks(
                 "benchmark_profile_label": _benchmark_profile_label(normalized_profile),
                 "benchmark_profile_description": _benchmark_profile_description(normalized_profile),
                 "comparison_contract": comparison_contract,
+                "comparison_contract_details": _comparison_contract_details(comparison_contract),
                 "selection_strategy": selection_strategy,
                 "product_version": _product_version_from_pyproject(repo_root=root),
                 "corpus_path": str(store.optimization_evaluation_corpus_path(repo_root=root)),
+                "git_branch": str(tree_identity.get("git_branch", "")).strip(),
+                "git_commit": str(tree_identity.get("git_commit", "")).strip(),
+                "git_dirty": bool(tree_identity.get("git_dirty")),
+                "repo_dirty_paths": [
+                    str(token).strip()
+                    for token in tree_identity.get("repo_dirty_paths", [])
+                    if isinstance(tree_identity.get("repo_dirty_paths"), list) and str(token).strip()
+                ],
+                "selection_fingerprint": str(tree_identity.get("selection_fingerprint", "")).strip(),
+                "corpus_fingerprint": str(tree_identity.get("corpus_fingerprint", "")).strip(),
+                "snapshot_overlay_fingerprint": str(tree_identity.get("snapshot_overlay_fingerprint", "")).strip(),
+                "snapshot_overlay_paths": snapshot_overlay_paths,
+                "source_posture": str(tree_identity.get("source_posture", "")).strip(),
                 "scenario_count": len(primary_scenario_reports),
                 "corpus_summary": corpus_summary,
+                "corpus_composition": corpus_composition,
                 "corpus_contract": corpus_contract,
+                "fairness_contract_passed": not fairness_findings,
+                "fairness_findings": fairness_findings,
+                "observed_path_sources": observed_path_sources,
+                "preflight_evidence_mode": preflight_evidence_modes[0]
+                if len(preflight_evidence_modes) == 1
+                else "mixed"
+                if preflight_evidence_modes
+                else "none",
+                "preflight_evidence_commands": preflight_evidence_commands,
+                "preflight_evidence_result_status": preflight_evidence_result_statuses[0]
+                if len(preflight_evidence_result_statuses) == 1
+                else "mixed"
+                if preflight_evidence_result_statuses
+                else "not_applicable",
+                "preflight_evidence_modes": preflight_evidence_modes,
                 "modes": normalized_modes,
                 "cache_profiles": list(normalized_cache_profiles),
                 "primary_cache_profile": primary_cache_profile,
@@ -6629,10 +8400,25 @@ def run_benchmarks(
                 "robustness_summary": robustness_summary,
                 "status": str(acceptance.get("status", "")).strip() or "unknown",
                 "acceptance": acceptance,
+                "selection_family_filters": sorted(selected_families),
+                "hard_quality_gate_cleared": bool(acceptance.get("hard_quality_gate_cleared")),
+                "hard_gate_cleared": bool(acceptance.get("hard_quality_gate_cleared")),
+                "hard_gate_failures": [
+                    str(token).strip()
+                    for token in acceptance.get("hard_gate_failures", [])
+                    if isinstance(acceptance.get("hard_gate_failures"), list) and str(token).strip()
+                ],
+                "hard_gate_failure_labels": [
+                    str(token).strip()
+                    for token in acceptance.get("hard_gate_failure_labels", [])
+                    if isinstance(acceptance.get("hard_gate_failure_labels"), list) and str(token).strip()
+                ],
                 "report_id": report_id,
             }
             report["published_summary"] = compact_report_summary(report)
             report["summary_text"] = _render_report_summary(report)
+            history_path = history_report_path(repo_root=root, report_id=report_id)
+            history_report_written = False
             if write_report:
                 progress_payload.update(
                     {
@@ -6640,21 +8426,36 @@ def run_benchmarks(
                         "phase": "persisting_report",
                     }
                 )
-                _write_progress(repo_root=root, payload=progress_payload)
+                _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
+                odylith_context_cache.write_json_if_changed(
+                    repo_root=root,
+                    path=history_path,
+                    payload=report,
+                    lock_key=str(history_path),
+                )
+                history_report_written = True
+                progress_payload.update(
+                    {
+                        "history_report_path": str(history_path),
+                        "history_report_written": True,
+                    }
+                )
                 latest_path = latest_report_path(repo_root=root)
                 profile_latest_path = latest_report_path(
                     repo_root=root,
                     benchmark_profile=normalized_profile,
                 )
-                publish_latest = bool(report.get("latest_eligible")) or (
-                    not latest_path.exists() and normalized_cache_profiles == list(DEFAULT_CACHE_PROFILES)
+                publish_latest = not sharded_run and (
+                    bool(report.get("latest_eligible"))
+                    or (not latest_path.exists() and normalized_cache_profiles == list(DEFAULT_CACHE_PROFILES))
                 )
-                odylith_context_cache.write_json_if_changed(
-                    repo_root=root,
-                    path=profile_latest_path,
-                    payload=report,
-                    lock_key=str(profile_latest_path),
-                )
+                if not sharded_run:
+                    odylith_context_cache.write_json_if_changed(
+                        repo_root=root,
+                        path=profile_latest_path,
+                        payload=report,
+                        lock_key=str(profile_latest_path),
+                    )
                 if publish_latest:
                     odylith_context_cache.write_json_if_changed(
                         repo_root=root,
@@ -6662,22 +8463,21 @@ def run_benchmarks(
                         payload=report,
                         lock_key=str(latest_path),
                     )
-                odylith_context_cache.write_json_if_changed(
-                    repo_root=root,
-                    path=history_report_path(repo_root=root, report_id=report_id),
-                    payload=report,
-                    lock_key=str(history_report_path(repo_root=root, report_id=report_id)),
-                )
+                remove_retired_latest_reports(repo_root=root)
             progress_payload.update(
                 {
                     "updated_utc": _utc_now(),
                     "phase": "final_cleanup",
+                    "status": str(report.get("status", "")).strip() or "unknown",
+                    "history_report_path": str(history_path),
+                    "history_report_written": history_report_written,
                 }
             )
-            _write_progress(repo_root=root, payload=progress_payload)
-            _clear_progress(repo_root=root)
+            _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
+            if not sharded_run:
+                _clear_progress(repo_root=root)
             return report
-        except Exception as exc:
+        except BaseException as exc:
             progress_payload.update(
                 {
                     "updated_utc": _utc_now(),
@@ -6685,10 +8485,47 @@ def run_benchmarks(
                     "error": f"{type(exc).__name__}: {exc}",
                 }
             )
-            _write_progress(repo_root=root, payload=progress_payload)
+            if write_report and not _history_report_exists_for_progress(repo_root=root, progress=progress_payload):
+                failed_report = _failed_benchmark_report(
+                    repo_root=root,
+                    report_id=report_id,
+                    benchmark_profile=normalized_profile,
+                    comparison_contract=comparison_contract,
+                    modes=normalized_modes,
+                    cache_profiles=normalized_cache_profiles,
+                    primary_cache_profile=primary_cache_profile,
+                    scenarios=scenarios,
+                    all_scenarios=all_scenarios,
+                    progress_payload=progress_payload,
+                    selection_strategy=selection_strategy,
+                    latest_eligible=latest_eligible,
+                    startup_hygiene=startup_hygiene,
+                    corpus_contract=corpus_contract,
+                    tree_identity=initial_tree_identity,
+                    error=exc,
+                )
+                history_path = history_report_path(repo_root=root, report_id=report_id)
+                odylith_context_cache.write_json_if_changed(
+                    repo_root=root,
+                    path=history_path,
+                    payload=failed_report,
+                    lock_key=str(history_path),
+                )
+                progress_payload.update(
+                    {
+                        "history_report_path": str(history_path),
+                        "history_report_written": True,
+                    }
+                )
+            _write_progress(repo_root=root, payload=progress_payload, write_shared=not sharded_run)
             raise
         finally:
-            _cleanup_stale_benchmark_state(repo_root=root, clear_progress=False)
+            _clear_active_run_progress(repo_root=root, payload=progress_payload)
+            _cleanup_stale_benchmark_state(
+                repo_root=root,
+                clear_progress=not sharded_run,
+                allow_destructive_runtime_cleanup=not sharded_run,
+            )
 
 
 __all__ = [
@@ -6714,7 +8551,10 @@ __all__ = [
     "latest_report_path",
     "load_benchmark_scenarios",
     "load_latest_benchmark_report",
+    "load_latest_runtime_benchmark_report",
     "profile_latest_report_path",
     "progress_report_path",
+    "remove_retired_latest_reports",
+    "retired_latest_report_paths",
     "run_benchmarks",
 ]

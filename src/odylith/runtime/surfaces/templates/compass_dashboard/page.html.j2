@@ -12,7 +12,6 @@
 <body data-surface-ready="loading">
   <main class="shell">
     <section class="hero">
-      <p class="kicker">Delivery Posture and Risk Brief</p>
       <h1>Executive Compass</h1>
       <p class="subtitle">Current workstream direction, risks, and runtime evidence across Radar, plans, bugs, and Atlas traceability.</p>
       <section class="stats" id="kpi-grid"></section>
@@ -26,7 +25,6 @@
           <option value="">Global</option>
         </select>
         <button class="pill subtle" id="scope-global" type="button">Global</button>
-        <button class="pill subtle" id="copy-brief" type="button">Copy Brief</button>
         <span class="grow"></span>
         <span class="pill subtle" id="scope-pill">Scope: Global</span>
         <span class="pill subtle" id="audit-day-pill">Audit Day: -</span>
@@ -36,12 +34,17 @@
 
     <section class="layout">
       <div class="stack">
-        <article class="card">
-          <h2>Standup Brief</h2>
+        <article class="card standup-brief-card standup-brief-card--compact" id="standup-brief-card">
+          <div class="card-title-row standup-brief-title-row">
+            <h2>Standup Brief</h2>
+            <button class="pill subtle hidden" id="copy-brief" type="button" disabled aria-hidden="true" tabindex="-1">Copy Brief</button>
+          </div>
+          <div id="brief-copy-status" class="brief-copy-status hidden" role="status" aria-live="polite"></div>
           <div class="bullet-list standup-brief-panel" id="digest-list"></div>
         </article>
 
         <div id="execution-waves-host"></div>
+        <div id="release-groups-host"></div>
 
         <article class="card">
           <h2>Current Workstreams</h2>
@@ -63,10 +66,12 @@
     </section>
   </main>
   <script src="{{ shared_js_href }}"></script>
+  <script src="{{ runtime_truth_js_href }}"></script>
   <script src="{{ state_js_href }}"></script>
   <script src="{{ summary_js_href }}"></script>
   <script src="{{ timeline_js_href }}"></script>
   <script src="{{ waves_js_href }}"></script>
+  <script src="{{ releases_js_href }}"></script>
   <script src="{{ workstreams_js_href }}"></script>
   <script src="{{ ui_runtime_js_href }}"></script>
   <script src="{{ runtime_js_href }}"></script>

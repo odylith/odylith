@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 from odylith.runtime.common.consumer_profile import truth_root_path
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import component_registry_intelligence as component_registry
 
 _SECTION_TITLE = "Requirements Trace"
@@ -96,10 +97,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve one spec-sync path token against the repo root."""
+
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _normalize_space(value: str) -> str:
@@ -585,7 +585,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if working_lines != source_lines:
             updated_components += 1
-            rel = spec_path.resolve().relative_to(repo_root).as_posix()
+            rel = repo_path_resolver.display_repo_path(repo_root=repo_root, value=spec_path)
             if args.check_only:
                 stale_paths.append(rel)
             else:
@@ -598,7 +598,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             flat_spec_dirs.add(spec_path.parent.resolve())
         else:
             per_component_specs_roots.add(spec_path.parent.parent.resolve())
-        forensics_rel = forensics_path.resolve().relative_to(repo_root).as_posix()
+        forensics_rel = repo_path_resolver.display_repo_path(repo_root=repo_root, value=forensics_path)
         payload = _forensics_payload(
             entry=entry,
             coverage=report.forensic_coverage.get(
@@ -637,7 +637,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         legacy_path = directory / "FORENSICS.v1.json"
         if legacy_path.resolve() in expected_forensics_paths or not legacy_path.exists():
             continue
-        legacy_rel = legacy_path.resolve().relative_to(repo_root).as_posix()
+        legacy_rel = repo_path_resolver.display_repo_path(repo_root=repo_root, value=legacy_path)
         if args.check_only:
             stale_paths.append(legacy_rel)
             continue
@@ -648,7 +648,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         legacy_path = directory / "FORENSICS.v1.json"
         if legacy_path.resolve() in expected_forensics_paths or not legacy_path.exists():
             continue
-        legacy_rel = legacy_path.resolve().relative_to(repo_root).as_posix()
+        legacy_rel = repo_path_resolver.display_repo_path(repo_root=repo_root, value=legacy_path)
         if args.check_only:
             stale_paths.append(legacy_rel)
             continue
@@ -661,7 +661,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         legacy_specs_root_forensics.exists()
         and legacy_specs_root_forensics.resolve() not in expected_forensics_paths
     ):
-        legacy_root_rel = legacy_specs_root_forensics.resolve().relative_to(repo_root).as_posix()
+        legacy_root_rel = repo_path_resolver.display_repo_path(
+            repo_root=repo_root,
+            value=legacy_specs_root_forensics,
+        )
         if args.check_only:
             stale_paths.append(legacy_root_rel)
         else:

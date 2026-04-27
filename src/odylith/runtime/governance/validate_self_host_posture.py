@@ -16,6 +16,7 @@ import re
 from typing import Sequence
 
 from odylith import __version__
+from odylith.runtime.common import agent_runtime_contract
 from odylith.install.manager import (
     PINNED_RELEASE_POSTURE,
     PINNED_RUNTIME_SOURCE,
@@ -68,7 +69,7 @@ def _append_failure_event(*, repo_root: Path, summary: str) -> None:
     try:
         timeline_logger.append_event(
             repo_root=repo_root,
-            stream_path=repo_root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl",
+            stream_path=agent_runtime_contract.resolve_agent_stream_path(repo_root=repo_root),
             kind="statement",
             summary=summary,
             workstream_values=[],

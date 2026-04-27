@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-011
-title: Odylith Memory Coherence, Contradiction Retention, and Onboarding Continuity
+title: Memory Coherence, Contradiction Retention, and Onboarding Continuity
 date: 2026-03-29
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: memory snapshot contract, Casebook bug ingestion, contradiction and negative memory, onboarding continuity, shell starter-slice retention, and benchmark proof
 sizing: M
 complexity: Medium

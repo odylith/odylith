@@ -1,3 +1,5 @@
+"""Versioned plan contract for multi-step agent execution."""
+
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass

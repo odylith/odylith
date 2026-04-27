@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-037
-title: Odylith Live Benchmarks Drawer and Dynamic Metric Readout
+title: Live Benchmarks Drawer and Dynamic Metric Readout
 date: 2026-03-30
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 3
-impacted_lanes: both
 impacted_parts: shell drawer IA, benchmark compare surfaces, current metric visibility, dynamic refresh behavior, and maintainer-facing proof readouts
 sizing: L
 complexity: High

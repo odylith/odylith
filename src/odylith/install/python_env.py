@@ -1,3 +1,5 @@
+"""Environment scrubbing helpers for managed Python invocations."""
+
 from __future__ import annotations
 
 import os

@@ -8,9 +8,15 @@ import json
 from pathlib import Path
 from typing import Sequence
 
+from odylith.runtime.governance import owned_surface_refresh
+from odylith.runtime.surfaces import surface_path_helpers
+
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Scaffold Mermaid diagram metadata + source")
+    parser = argparse.ArgumentParser(
+        prog="odylith atlas scaffold",
+        description="Scaffold Mermaid diagram metadata + source",
+    )
     parser.add_argument("--repo-root", default=".", help="Repository root")
     parser.add_argument("--catalog", default="odylith/atlas/source/catalog/diagrams.v1.json", help="Catalog JSON path")
     parser.add_argument("--diagram-id", required=True, help="Diagram ID (for example D-010)")
@@ -41,13 +47,6 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Create odylith/atlas/source/<slug>.mmd from template if it does not exist",
     )
     return parser.parse_args(argv)
-
-
-def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token).strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
 
 
 def _parse_components(tokens: list[str]) -> list[dict[str, str]]:
@@ -89,7 +88,7 @@ def _unique(values: list[str]) -> list[str]:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
-    catalog_path = _resolve(repo_root, args.catalog)
+    catalog_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=args.catalog)
 
     if not catalog_path.is_file():
         print(f"FAILED: catalog not found: {catalog_path}")
@@ -159,7 +158,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"added: {diagram_id} ({slug})")
 
     if args.create_source_if_missing:
-        source_path = _resolve(repo_root, source_mmd)
+        source_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
         if source_path.exists():
             print(f"source exists: {source_path}")
         else:
@@ -169,6 +168,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             source_path.write_text(template, encoding="utf-8")
             print(f"source created: {source_path}")
+    try:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=repo_root,
+            surface="atlas",
+            operation_label="Atlas scaffold",
+        )
+    except RuntimeError as exc:
+        print(str(exc))
+        return 1
 
     return 0
 

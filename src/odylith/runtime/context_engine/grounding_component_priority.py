@@ -1,3 +1,5 @@
+"""Grounding Component Priority helpers for the Odylith context engine layer."""
+
 from __future__ import annotations
 
 from pathlib import Path

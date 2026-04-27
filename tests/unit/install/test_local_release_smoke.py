@@ -51,6 +51,32 @@ def test_force_deterministic_reasoning_env_overrides_exported_provider() -> None
     assert env["ODYLITH_REASONING_PROVIDER"] == "auto-local"
 
 
+def test_release_smoke_temp_dir_ignores_cleanup_races(monkeypatch) -> None:  # noqa: ANN001
+    module = _module()
+    seen: dict[str, object] = {}
+
+    class _DummyTempDirectory:
+        def __init__(self, *args, **kwargs) -> None:  # noqa: ANN002,ANN003
+            seen["args"] = args
+            seen["kwargs"] = kwargs
+
+        def __enter__(self) -> str:
+            return "/tmp/odylith-smoke"
+
+        def __exit__(self, exc_type, exc, tb) -> None:  # noqa: ANN001
+            return None
+
+    monkeypatch.setattr(module.tempfile, "TemporaryDirectory", _DummyTempDirectory)
+
+    with module._release_smoke_temp_dir():
+        pass
+
+    assert seen["kwargs"] == {
+        "prefix": "odylith-release-smoke-",
+        "ignore_cleanup_errors": True,
+    }
+
+
 def test_previous_release_is_published_treats_404_as_missing(monkeypatch) -> None:
     module = _module()
 

@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-023
-title: Odylith Atlas Tab-State Isolation, Query Self-Healing, and Browser Hardening
+title: Atlas Tab-State Isolation, Query Self-Healing, and Browser Hardening
 date: 2026-03-29
 priority: P0
 commercial_value: 4
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: shell tab-state routing, Atlas query normalization, Atlas count consistency, and browser proof depth
 sizing: M
 complexity: High

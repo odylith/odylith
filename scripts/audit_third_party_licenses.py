@@ -1,3 +1,5 @@
+"""Audit the repo and managed runtime dependency licenses into attribution output."""
+
 from __future__ import annotations
 
 import argparse

@@ -6,20 +6,26 @@ Updated: 2026-03-29
 
 Backlog: B-012
 
+Historical note:
+- The Compass brief contract language below reflects the March 29 product
+  posture. The current governed contract lives under
+  `briefs-voice-contract` and allows only fresh `provider`, exact `cache`,
+  or explicit `unavailable`.
+
 Goal: Restore Compass to provider-authored standup narration by default in
 local agent environments, add Claude Code compatibility to the shared
 reasoning adapter, and keep proof lanes deterministic.
 
 Assumptions:
 - Odylith runs inside a local coding agent most of the time.
-- Deterministic fallback remains the fail-closed posture.
+- The then-current deterministic fallback remains the fail-closed posture.
 - Claude Code structured non-interactive JSON output is sufficient for the
   shared reasoning adapter boundary.
 
 Constraints:
 - Do not require hosted API keys for the default local Compass brief path.
 - Do not let pytest or CI silently invoke external providers.
-- Do not remove deterministic fallback or cache reuse.
+- Do not remove the then-current deterministic fallback or cache reuse.
 
 Reversibility: Reverting this slice restores the old provider-unavailable
 default and removes Claude Code local-provider compatibility without touching
@@ -58,7 +64,7 @@ Related Bugs:
   global brief first instead of blocking on every window.
 
 ## Non-Goals
-- [x] Removing deterministic fallback.
+- [x] Removing the then-current deterministic fallback.
 - [x] Changing Claude Code subagent spawn support.
 - [x] Requiring hosted credentials for default local narration.
 
@@ -117,12 +123,13 @@ Related Bugs:
 
 ## Dependencies/Preconditions
 - [x] Compass standup narration already had deterministic fallback and cache
-  contracts in place.
+  contracts in place at the time this slice shipped.
 - [x] The shared reasoning adapter already supported bounded Codex CLI and
   endpoint-backed providers.
 
 ## Edge Cases
-- [x] No local provider available still yields deterministic fallback.
+- [x] No local provider available still yields the then-current deterministic
+  fallback.
 - [x] Explicit endpoint config still works when intentionally configured.
 - [x] Claude Code output wrapped under `result` still parses into structured
   reasoning payloads.
@@ -140,7 +147,7 @@ Related Bugs:
   outside pytest/CI, so the global standup brief can be provider-authored and
   cached.
 - The default live refresh now warms the 24h global brief first and lets the
-  48h view reuse cache or stay deterministic until it has been warmed, which
-  keeps sync materially faster on cold start.
+  48h view reuse cache or stay on the then-current deterministic path until it
+  has been warmed, which keeps sync materially faster on cold start.
 - Claude Code now has a compatible local structured-output provider adapter in
   Odylith reasoning.

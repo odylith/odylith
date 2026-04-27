@@ -1,36 +1,18 @@
+"""Odylith Benchmark Live Prompt helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 import json
 from typing import Any, Mapping, Sequence
 
-
-def _normalize_mode(mode: str) -> str:
-    token = str(mode or "").strip()
-    if token == "odylith_off":
-        return "raw_agent_baseline"
-    return token
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
+from odylith.runtime.common.value_coercion import string_rows as _string_rows
+from odylith.runtime.evaluation import odylith_benchmark_mode
+_normalize_mode = odylith_benchmark_mode.normalize_public_mode
 
 
 def _pretty_json(payload: Mapping[str, Any] | None) -> str:
     return json.dumps(dict(payload or {}), indent=2, sort_keys=True, ensure_ascii=False)
-
-
-def _dedupe_strings(rows: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    ordered: list[str] = []
-    for raw in rows:
-        token = str(raw or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        ordered.append(token)
-    return ordered
-
-
-def _string_rows(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    return [str(token).strip() for token in value if str(token).strip()]
 
 
 def _looks_like_code_or_test_path(path: str) -> bool:
@@ -285,7 +267,7 @@ def build_agent_prompt(
     focused_local_check_results = _string_rows(prompt_payload.get("focused_local_check_results"))
     if focused_local_check_results:
         task_lines.append("")
-        task_lines.append("Current workspace focused-check results:")
+        task_lines.append("Declared Odylith preflight evidence from the current workspace:")
         task_lines.extend(f"- {token}" for token in focused_local_check_results[:8])
         task_lines.append(
             "Treat these focused-check results as current workspace evidence. If they already prove the contract holds, prefer a no-file-change completion unless a grounded contradiction remains."
@@ -466,7 +448,7 @@ def build_agent_prompt(
                 "On install or rollback slices, keep the fix on manager, runtime, repair, and the focused install tests; do not widen into activation or policy wording when the grounded contract already holds."
             )
             task_lines.append(
-                "Do not treat missing repo `AGENTS.md` files or benchmark-managed pytest temp/cache paths during your own checks as product regressions on install slices; the harness restores stripped guidance before final validation."
+                "Do not treat missing repo `AGENTS.md` or `CLAUDE.md` files or benchmark-managed pytest temp/cache paths during your own checks as product regressions on install slices; the harness restores stripped guidance before final validation."
             )
         elif family == "daemon_security":
             task_lines.append(

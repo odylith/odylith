@@ -1,3 +1,5 @@
+"""Lazy public export surface for install runtime helpers."""
+
 from __future__ import annotations
 
 from importlib import import_module

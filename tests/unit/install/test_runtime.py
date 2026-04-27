@@ -9,13 +9,20 @@ import tarfile
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from odylith.install import runtime, runtime_integrity, runtime_tree_policy
 from odylith.install.managed_runtime import (
     MANAGED_RUNTIME_SCHEMA_VERSION,
     MANAGED_RUNTIME_VERIFICATION_SCHEMA_VERSION,
     MANAGED_PYTHON_VERSION,
     managed_runtime_platform_by_slug,
+    managed_runtime_site_packages_roots,
+    require_managed_runtime_platform,
+    supported_feature_pack_ids,
+    supported_platform_labels,
     supported_managed_runtime_platforms,
+    supported_platform_slugs,
 )
 
 
@@ -960,6 +967,37 @@ def test_ensure_launcher_preserves_host_venv_python_path_when_source_root_is_pro
     assert str(source_root / "src") in text
 
 
+def test_ensure_launcher_prefers_managed_runtime_over_sys_executable_for_source_local(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    source_root = tmp_path / "source"
+    (source_root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+    (source_root / "pyproject.toml").write_text("[project]\nname = 'odylith'\nversion = '1.2.3'\n", encoding="utf-8")
+
+    managed_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(managed_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    managed_python = managed_root / "bin" / "python"
+    managed_python.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    managed_python.chmod(0o755)
+    _trust_managed_runtime(managed_root)
+
+    launcher = runtime.ensure_launcher(
+        repo_root=repo_root,
+        fallback_python=Path(sys.executable),
+        fallback_source_root=source_root,
+        allow_host_python_fallback=True,
+    )
+
+    launcher_text = launcher.read_text(encoding="utf-8")
+    bootstrap_text = (repo_root / ".odylith" / "bin" / "odylith-bootstrap").read_text(encoding="utf-8")
+
+    assert str(managed_python) in launcher_text
+    assert str(managed_python) in bootstrap_text
+    assert str(Path(sys.executable).expanduser()) not in launcher_text
+    assert str(Path(sys.executable).expanduser()) not in bootstrap_text
+    assert str(source_root / "src") in launcher_text
+    assert str(source_root / "src") in bootstrap_text
+
+
 def test_doctor_runtime_repairs_missing_launcher(tmp_path: Path) -> None:
     repo_root = _repo_root(tmp_path)
     version_root = _make_runtime(repo_root)
@@ -1143,6 +1181,34 @@ def test_switch_runtime_rejects_target_outside_versions(tmp_path: Path) -> None:
 def test_supported_managed_runtime_platforms_pin_upstream_sha256() -> None:
     for runtime_platform in supported_managed_runtime_platforms():
         assert len(runtime_platform.upstream_asset_sha256) == 64
+
+
+def test_managed_runtime_catalog_helpers_match_supported_definitions() -> None:
+    assert supported_platform_slugs() == tuple(item.slug for item in supported_managed_runtime_platforms())
+    assert supported_platform_labels() == [item.display_name for item in supported_managed_runtime_platforms()]
+    assert "odylith-context-engine-memory" in supported_feature_pack_ids()
+
+
+def test_require_managed_runtime_platform_reports_supported_labels() -> None:
+    with pytest.raises(ValueError, match="unsupported Odylith managed runtime platform; supported platforms:"):
+        require_managed_runtime_platform(system_name="Plan9", machine_name="mips64")
+
+
+def test_require_managed_runtime_platform_accepts_machine_aliases() -> None:
+    assert require_managed_runtime_platform(system_name="Darwin", machine_name="AARCH64").slug == "darwin-arm64"
+    assert require_managed_runtime_platform(system_name="Linux", machine_name="AMD64").slug == "linux-x86_64"
+
+
+def test_managed_runtime_site_packages_roots_collects_known_layouts_without_duplicates(tmp_path: Path) -> None:
+    runtime_root = tmp_path / "runtime"
+    lib_site_packages = runtime_root / "lib" / "python3.13" / "site-packages"
+    direct_site_packages = runtime_root / "site-packages"
+    lib_site_packages.mkdir(parents=True)
+    direct_site_packages.mkdir(parents=True)
+
+    observed = managed_runtime_site_packages_roots(runtime_root)
+
+    assert observed == (lib_site_packages, direct_site_packages)
 
 
 def test_install_release_runtime_reuses_existing_verified_runtime(monkeypatch, tmp_path: Path) -> None:

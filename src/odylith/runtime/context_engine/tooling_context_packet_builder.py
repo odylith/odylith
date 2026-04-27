@@ -7,6 +7,12 @@ import math
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping_value
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
+from odylith.runtime.common.value_coercion import string_rows as _string_rows
+from odylith.runtime.discipline import runtime as discipline_runtime
 from odylith.runtime.evaluation import odylith_ablation
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.context_engine import tooling_context_budgeting as budgeting
@@ -15,31 +21,16 @@ from odylith.runtime.context_engine import tooling_context_quality as quality
 from odylith.runtime.context_engine import tooling_context_retrieval as retrieval
 from odylith.runtime.context_engine import tooling_context_routing as routing
 from odylith.runtime.context_engine import tooling_guidance_catalog
+from odylith.runtime.governance import delivery_intelligence_engine
+from odylith.runtime.governance import guidance_behavior_runtime
+from odylith.runtime.governance import proof_state
 
 _PROCESS_HOT_PATH_PACKET_QUALITY_CACHE: dict[str, dict[str, Any]] = {}
 _PROCESS_HOT_PATH_ROUTING_HANDOFF_CACHE: dict[str, dict[str, Any]] = {}
 
 
-def _mapping_value(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
-
-
 def _mapping_rows(value: Any) -> list[dict[str, Any]]:
     return [dict(row) for row in value] if isinstance(value, list) else []
-
-
-def _string_rows(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = str(item or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
 
 
 def _guidance_actionability_read_path(row: Mapping[str, Any]) -> str:
@@ -139,17 +130,100 @@ def _merge_guidance_rows(
 def _nested_mapping(payload: Mapping[str, Any], key: str) -> dict[str, Any]:
     value = payload.get(key, {})
     return dict(value) if isinstance(value, Mapping) else {}
+def _delivery_scope_lookup(repo_root: Path) -> tuple[dict[str, dict[str, Any]], dict[str, Mapping[str, Any]]]:
+    payload = delivery_intelligence_engine.load_delivery_intelligence_artifact(repo_root=repo_root)
+    scopes = payload.get("scopes", []) if isinstance(payload.get("scopes"), list) else []
+    indexes = payload.get("indexes", {}) if isinstance(payload.get("indexes"), Mapping) else {}
+    scope_lookup = {
+        str(row.get("scope_key", "")).strip(): dict(row)
+        for row in scopes
+        if isinstance(row, Mapping) and str(row.get("scope_key", "")).strip()
+    }
+    return scope_lookup, indexes
 
 
-def _normalize_token(value: Any) -> str:
-    return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+def _packet_proof_anchor_scope_keys(
+    *,
+    indexes: Mapping[str, Any],
+    workstream_selection: Mapping[str, Any],
+    candidate_workstreams: Sequence[Mapping[str, Any]],
+    components: Sequence[Mapping[str, Any]],
+    diagrams: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    rows: list[str] = []
+    workstream_index = indexes.get("workstreams", {}) if isinstance(indexes.get("workstreams"), Mapping) else {}
+    component_index = indexes.get("components", {}) if isinstance(indexes.get("components"), Mapping) else {}
+    diagram_index = indexes.get("diagrams", {}) if isinstance(indexes.get("diagrams"), Mapping) else {}
+    selected = workstream_selection.get("selected_workstream")
+    if isinstance(selected, Mapping):
+        token = str(selected.get("entity_id", "")).strip()
+        if token and token in workstream_index:
+            rows.append(str(workstream_index.get(token, "")).strip())
+    for row in candidate_workstreams:
+        if not isinstance(row, Mapping):
+            continue
+        token = str(row.get("entity_id", "")).strip()
+        if token and token in workstream_index:
+            rows.append(str(workstream_index.get(token, "")).strip())
+    for row in components:
+        if not isinstance(row, Mapping):
+            continue
+        token = str(row.get("component_id", row.get("entity_id", ""))).strip()
+        if token and token in component_index:
+            rows.append(str(component_index.get(token, "")).strip())
+    for row in diagrams:
+        if not isinstance(row, Mapping):
+            continue
+        token = str(row.get("diagram_id", row.get("entity_id", ""))).strip()
+        if token and token in diagram_index:
+            rows.append(str(diagram_index.get(token, "")).strip())
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for token in rows:
+        if not token or token in seen:
+            continue
+        seen.add(token)
+        deduped.append(token)
+    return deduped
 
 
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
+def _packet_proof_state(
+    *,
+    repo_root: Path,
+    workstream_selection: Mapping[str, Any],
+    candidate_workstreams: Sequence[Mapping[str, Any]],
+    components: Sequence[Mapping[str, Any]],
+    diagrams: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    selected = workstream_selection.get("selected_workstream")
+    has_candidate_anchor = bool(
+        (isinstance(selected, Mapping) and str(selected.get("entity_id", "")).strip())
+        or any(isinstance(row, Mapping) and str(row.get("entity_id", "")).strip() for row in candidate_workstreams)
+        or any(
+            isinstance(row, Mapping) and str(row.get("component_id", row.get("entity_id", ""))).strip()
+            for row in components
+        )
+        or any(
+            isinstance(row, Mapping) and str(row.get("diagram_id", row.get("entity_id", ""))).strip()
+            for row in diagrams
+        )
+    )
+    if not has_candidate_anchor:
+        return proof_state.resolve_scope_collection_proof_state([])
+    scope_lookup, indexes = _delivery_scope_lookup(repo_root)
+    candidate_scope_keys = _packet_proof_anchor_scope_keys(
+        indexes=indexes,
+        workstream_selection=workstream_selection,
+        candidate_workstreams=candidate_workstreams,
+        components=components,
+        diagrams=diagrams,
+    )
+    candidate_scopes = [
+        scope_lookup[key]
+        for key in candidate_scope_keys
+        if key in scope_lookup and isinstance(scope_lookup[key], Mapping)
+    ]
+    return proof_state.resolve_scope_collection_proof_state(candidate_scopes)
 
 
 def _odylith_switch_snapshot(*, repo_root: Path) -> dict[str, Any]:
@@ -1285,7 +1359,7 @@ def _refresh_context_views(
     retained_components = _retained_components(refreshed, components)
     retained_diagrams = _retained_diagrams(refreshed, diagrams)
     retained_docs = _retained_docs(refreshed, docs)
-    retained_commands = _retained_commands(refreshed, recommended_commands)
+    retained_commands = _string_rows(recommended_commands)
     retained_tests = _retained_tests(refreshed, recommended_tests)
     if str(packet_kind or "").strip() == "bootstrap_session" and str(packet_state or "").strip().startswith("gated_"):
         retained_tests = _compact_finalize_test_rows(retained_tests, limit=1)
@@ -1501,11 +1575,16 @@ def _prune_hot_path_finalize_base_payload(
         "full_scan_reason",
         "fallback_scan",
         "narrowing_guidance",
+        "turn_context",
+        "target_resolution",
+        "presentation_policy",
         "miss_recovery",
         "packet_budget",
         "truncation",
         "inferred_workstream",
         "adaptive_packet_profile",
+        "guidance_behavior_summary",
+        "discipline_summary",
     }
     if normalized_kind in {"impact", "governance_slice"}:
         keep_keys.add("intent")
@@ -1896,6 +1975,45 @@ def finalize_packet(
             payload=payload,
             packet_state=packet_state,
         )
+    source_recommended_commands = tuple(
+        str(token).strip() for token in recommended_commands if str(token).strip()
+    )
+    guidance_behavior_summary = guidance_behavior_runtime.summary_for_packet(
+        repo_root=root,
+        family_hint=family_hint,
+        changed_paths=changed_paths,
+        explicit_paths=explicit_paths,
+        docs=docs,
+        recommended_commands=source_recommended_commands,
+    )
+    discipline_summary = discipline_runtime.summary_for_packet(
+        repo_root=root,
+        family_hint=family_hint,
+        changed_paths=changed_paths,
+        explicit_paths=explicit_paths,
+        docs=docs,
+        recommended_commands=source_recommended_commands,
+    )
+    recommended_commands = source_recommended_commands
+    if guidance_behavior_summary:
+        recommended_commands = tuple(
+            guidance_behavior_runtime.commands_with_validator(
+                source_recommended_commands,
+                guidance_behavior_summary,
+                limit=16,
+            )
+        )
+    if discipline_summary:
+        recommended_commands = tuple(
+            discipline_runtime.commands_with_validator(
+                recommended_commands,
+                discipline_summary,
+                limit=16,
+            )
+        )
+    effective_recommended_commands = tuple(
+        str(token).strip() for token in recommended_commands if str(token).strip()
+    )
     catalog = (
         dict(guidance_catalog)
         if isinstance(guidance_catalog, Mapping)
@@ -1914,7 +2032,7 @@ def finalize_packet(
         changed_paths=changed_paths,
         explicit_paths=explicit_paths,
         docs=docs,
-        recommended_commands=recommended_commands,
+        recommended_commands=effective_recommended_commands,
         recommended_tests=recommended_tests,
         components=components,
         selected_workstreams=selected_workstreams,
@@ -1922,7 +2040,7 @@ def finalize_packet(
         guidance_catalog=catalog,
         session_id=session_id,
         selection_state=selection_state,
-        build_working_memory=not str(delivery_profile or "").strip() == "codex_hot_path",
+        build_working_memory=not agent_runtime_contract.is_agent_hot_path_profile(delivery_profile),
     )
     selected_guidance_chunks = (
         [dict(row) for row in retrieval_bundle.get("selected_guidance_chunks", []) if isinstance(row, Mapping)]
@@ -1939,7 +2057,7 @@ def finalize_packet(
         and bool(dict(row.get("actionability", {})).get("actionable"))
     )
     selected_test_count = len([row for row in recommended_tests if isinstance(row, Mapping)])
-    selected_command_count = len([str(token).strip() for token in recommended_commands if str(token).strip()])
+    selected_command_count = len([str(token).strip() for token in effective_recommended_commands if str(token).strip()])
     preflight_actionability_score = 0
     if actionable_guidance_chunk_count > 0 and (direct_guidance_chunk_count > 0 or selected_test_count > 0 or selected_command_count > 0):
         preflight_actionability_score = 3
@@ -1966,7 +2084,7 @@ def finalize_packet(
         diagrams=diagrams,
         docs=docs,
         recommended_tests=recommended_tests,
-        recommended_commands=recommended_commands,
+        recommended_commands=effective_recommended_commands,
         selected_guidance_chunks=selected_guidance_chunks,
         miss_recovery=miss_recovery or {},
         guidance_catalog_summary=guidance_catalog_summary,
@@ -1985,11 +2103,25 @@ def finalize_packet(
         selected_test_count=selected_test_count,
         selected_command_count=selected_command_count,
     )
+    full_scan_reason_token = str(full_scan_reason or "").strip()
+    guidance_behavior_validator_grounded = bool(
+        guidance_behavior_summary
+        and selected_command_count > 0
+        and full_scan_reason_token in {"", "selection_ambiguous", "selection_none", "adaptive_full_scan_fallback"}
+    )
+    discipline_validator_grounded = bool(
+        discipline_summary
+        and selected_command_count > 0
+        and full_scan_reason_token in {"", "selection_ambiguous", "selection_none", "adaptive_full_scan_fallback"}
+    )
     if (
         str(packet_state or "").strip() == "gated_ambiguous"
         and bool(full_scan_recommended)
-        and str(full_scan_reason or "").strip() == "selection_ambiguous"
-        and grounded_ambiguous_write
+        and (
+            (full_scan_reason_token == "selection_ambiguous" and grounded_ambiguous_write)
+            or guidance_behavior_validator_grounded
+            or discipline_validator_grounded
+        )
     ):
         packet_state = "expanded"
         full_scan_recommended = False
@@ -2007,7 +2139,7 @@ def finalize_packet(
             diagrams=diagrams,
             docs=docs,
             recommended_tests=recommended_tests,
-            recommended_commands=recommended_commands,
+            recommended_commands=effective_recommended_commands,
             selected_guidance_chunks=selected_guidance_chunks,
             miss_recovery=miss_recovery or {},
             guidance_catalog_summary=guidance_catalog_summary,
@@ -2023,7 +2155,23 @@ def finalize_packet(
         full_scan_recommended=full_scan_recommended,
     )
     enriched = dict(payload)
-    enriched["delivery_profile"] = str(delivery_profile or "").strip()
+    if guidance_behavior_summary:
+        enriched["guidance_behavior_summary"] = dict(guidance_behavior_summary)
+    if discipline_summary:
+        enriched["discipline_summary"] = dict(discipline_summary)
+    effective_commands = guidance_behavior_runtime.commands_with_validator(
+        enriched.get("recommended_commands") or recommended_commands,
+        guidance_behavior_summary,
+        limit=16,
+    )
+    effective_commands = discipline_runtime.commands_with_validator(
+        effective_commands,
+        discipline_summary,
+        limit=16,
+    )
+    if effective_commands:
+        enriched["recommended_commands"] = effective_commands
+    enriched["delivery_profile"] = agent_runtime_contract.canonical_delivery_profile(delivery_profile)
     enriched["adaptive_packet_profile"] = dict(adaptive_packet_profile)
     prioritized_docs = retrieval_bundle.get("prioritized_docs", [])
     if isinstance(prioritized_docs, list) and isinstance(enriched.get("docs"), list):
@@ -2056,6 +2204,15 @@ def finalize_packet(
         )
         impact_updated["guidance_brief"] = retrieval_bundle.get("guidance_brief", [])
         enriched["impact"] = impact_updated
+    enriched.update(
+        _packet_proof_state(
+            repo_root=root,
+            workstream_selection=workstream_selection,
+            candidate_workstreams=candidate_workstreams,
+            components=components,
+            diagrams=diagrams,
+        )
+    )
     enriched["retrieval_plan"] = plan
     enriched["guidance_brief"] = retrieval_bundle.get("guidance_brief", [])
     enriched["context_packet_state"] = str(packet_state or "").strip()
@@ -2098,7 +2255,7 @@ def finalize_packet(
         ),
         adaptive_packet_profile=adaptive_packet_profile,
     )
-    build_evidence_pack = str(delivery_profile or "").strip() != "codex_hot_path"
+    build_evidence_pack = not agent_runtime_contract.is_agent_hot_path_profile(delivery_profile)
     hot_path = not build_evidence_pack
     final_packet: dict[str, Any] = {}
     final_metrics: dict[str, Any] = {}
@@ -2153,7 +2310,7 @@ def finalize_packet(
                 components=components,
                 diagrams=diagrams,
                 docs=docs,
-                recommended_commands=recommended_commands,
+                recommended_commands=effective_recommended_commands,
                 recommended_tests=recommended_tests,
                 fallback_guidance_chunks=retrieval_bundle.get("selected_guidance_chunks", []),
                 miss_recovery=miss_recovery or {},

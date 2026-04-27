@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-051
-title: Odylith Runtime Posture Reporting Explains Wrapped Runtime Degradation
+title: Runtime Posture Reporting Explains Wrapped Runtime Degradation
 date: 2026-04-06
 priority: P1
 commercial_value: 4
 product_impact: 5
 market_value: 3
-impacted_lanes: both
 impacted_parts: runtime-source classification, `version` output, `doctor` messaging, and product-repo self-host posture reporting
 sizing: S
 complexity: Medium

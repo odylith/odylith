@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import errno
 import json
 import os
 from pathlib import Path
@@ -12,6 +13,66 @@ import time
 import pytest
 from odylith.runtime.evaluation import odylith_benchmark_live_execution as live_execution
 from odylith.runtime.reasoning import odylith_reasoning
+
+
+def test_temporary_benchmark_temp_dir_retries_enotempty_cleanup(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    calls: list[bool] = []
+    real_rmtree = shutil.rmtree
+
+    def _flaky_rmtree(path, *args, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(bool(kwargs.get("ignore_errors")))
+        if len(calls) == 1:
+            raise OSError(errno.ENOTEMPTY, "Directory not empty")
+        return real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(live_execution.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(live_execution.shutil, "rmtree", _flaky_rmtree)
+
+    with live_execution._temporary_benchmark_temp_dir(  # noqa: SLF001
+        repo_root=repo_root,
+        prefix="odylith-benchmark-temp-test-",
+    ) as temp_root:
+        stubborn_dir = temp_root / "sandbox" / "pycache" / "Users"
+        stubborn_dir.mkdir(parents=True, exist_ok=True)
+        (stubborn_dir / "artifact.pyc").write_text("bytecode", encoding="utf-8")
+        created = temp_root
+
+    assert not created.exists()
+    assert calls[0] is False
+    assert len(calls) >= 2
+
+
+def test_temporary_benchmark_temp_dir_swallows_persistent_cleanup_noise(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    calls: list[bool] = []
+
+    def _always_fail(path, *args, **kwargs):  # type: ignore[no-untyped-def]
+        calls.append(bool(kwargs.get("ignore_errors")))
+        if kwargs.get("ignore_errors"):
+            return None
+        raise OSError(errno.ENOTEMPTY, "Directory not empty")
+
+    monkeypatch.setattr(live_execution.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(live_execution.shutil, "rmtree", _always_fail)
+
+    with live_execution._temporary_benchmark_temp_dir(  # noqa: SLF001
+        repo_root=repo_root,
+        prefix="odylith-benchmark-temp-test-",
+    ) as temp_root:
+        (temp_root / "sandbox").mkdir(parents=True, exist_ok=True)
+        created = temp_root
+
+    assert calls[-1] is True
+    shutil.rmtree(created, ignore_errors=True)
 
 
 def test_resolved_live_execution_contract_prefers_env_over_repo_and_ignores_user_defaults(tmp_path: Path) -> None:
@@ -55,7 +116,7 @@ def test_resolved_live_execution_contract_prefers_env_over_repo_and_ignores_user
         },
     )
 
-    assert contract["runner"] == "live_codex_cli"
+    assert contract["runner"] == "live_host_cli"
     assert contract["model"] == "env-model"
     assert contract["reasoning_effort"] == "low"
     assert contract["codex_bin"]
@@ -103,6 +164,57 @@ def test_resolved_live_execution_contract_prefers_env_over_repo_and_ignores_user
     assert contract_with_defaults_only["reasoning_effort"] == "medium"
 
 
+def test_resolved_live_execution_contract_supports_claude_provider(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reasoning_path = tmp_path / odylith_reasoning.DEFAULT_REASONING_CONFIG_PATH
+    reasoning_path.parent.mkdir(parents=True, exist_ok=True)
+    reasoning_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "model": "claude-repo-model",
+                "claude_reasoning_effort": "xhigh",
+                "claude_bin": "claude",
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        odylith_reasoning,
+        "resolve_claude_bin",
+        lambda raw: f"/tmp/{Path(str(raw)).name}",
+    )
+
+    contract = live_execution._resolved_live_execution_contract(  # noqa: SLF001
+        repo_root=tmp_path,
+        config=odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="claude-cli",
+            model="claude-config-model",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            claude_bin="claude",
+            claude_reasoning_effort="medium",
+        ),
+        environ={
+            "HOME": str(tmp_path / "home"),
+            "ODYLITH_REASONING_MODEL": "claude-env-model",
+            "ODYLITH_REASONING_CLAUDE_REASONING_EFFORT": "max",
+        },
+    )
+
+    assert contract["runner"] == "live_host_cli"
+    assert contract["provider"] == "claude-cli"
+    assert contract["host_family"] == "claude"
+    assert contract["model"] == "claude-env-model"
+    assert contract["reasoning_effort"] == "max"
+    assert contract["claude_bin"].endswith("/claude")
+
+
 def test_minimal_codex_config_text_disables_guidance_surfaces() -> None:
     config_text = live_execution._minimal_codex_config_text(  # noqa: SLF001
         execution_contract={
@@ -121,6 +233,80 @@ def test_minimal_codex_config_text_disables_guidance_surfaces() -> None:
     assert 'project_doc_fallback_filename = ""' in config_text
     assert "[features]" in config_text
     assert "multi_agent = false" in config_text
+
+
+def test_temporary_codex_home_uses_codex_home_when_home_is_stripped(tmp_path: Path) -> None:
+    source_codex_home = tmp_path / "real-codex-home"
+    source_codex_home.mkdir(parents=True, exist_ok=True)
+    (source_codex_home / "auth.json").write_text('{"token":"local"}\n', encoding="utf-8")
+    stripped_home = tmp_path / "stripped-home"
+    stripped_home.mkdir(parents=True, exist_ok=True)
+
+    with live_execution._temporary_codex_home(  # noqa: SLF001
+        execution_contract={"model": "gpt-5.4", "reasoning_effort": "medium"},
+        repo_root=tmp_path,
+        environ={
+            "HOME": str(stripped_home),
+            "CODEX_HOME": str(source_codex_home),
+        },
+    ) as temp_home:
+        copied_auth = temp_home / ".codex" / "auth.json"
+        copied_config = temp_home / ".codex" / "config.toml"
+        assert copied_auth.read_text(encoding="utf-8") == '{"token":"local"}\n'
+        assert 'model = "gpt-5.4"' in copied_config.read_text(encoding="utf-8")
+
+
+def test_temporary_codex_home_reports_all_checked_auth_candidates(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    stripped_home = tmp_path / "stripped-home"
+    explicit_codex_home = tmp_path / "missing-codex-home"
+    real_home = tmp_path / "real-home-without-auth"
+    stripped_home.mkdir(parents=True, exist_ok=True)
+    real_home.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(live_execution.Path, "home", classmethod(lambda cls: real_home))
+
+    with pytest.raises(RuntimeError) as exc_info:
+        with live_execution._temporary_codex_home(  # noqa: SLF001
+            execution_contract={"model": "gpt-5.4", "reasoning_effort": "medium"},
+            repo_root=tmp_path,
+            environ={
+                "HOME": str(stripped_home),
+                "CODEX_HOME": str(explicit_codex_home),
+            },
+        ):
+            pass
+
+    message = str(exc_info.value)
+    assert str(explicit_codex_home / "auth.json") in message
+    assert str(stripped_home / ".codex" / "auth.json") in message
+
+
+def test_temporary_codex_home_dispatches_to_claude_home_copy(tmp_path: Path) -> None:
+    source_home = tmp_path / "source-home"
+    (source_home / ".claude").mkdir(parents=True, exist_ok=True)
+    (source_home / ".claude" / "settings.json").write_text(
+        json.dumps({"apiKeyHelper": "helper --print-key"}),
+        encoding="utf-8",
+    )
+    (source_home / ".claude.json").write_text('{"user":"local"}\n', encoding="utf-8")
+    buddy_tokens = source_home / "Library" / "Application Support" / "Claude" / "buddy-tokens.json"
+    buddy_tokens.parent.mkdir(parents=True, exist_ok=True)
+    buddy_tokens.write_text('{"token":"local"}\n', encoding="utf-8")
+
+    with live_execution._temporary_codex_home(  # noqa: SLF001
+        execution_contract={"provider": "claude-cli", "model": "sonnet", "reasoning_effort": "high"},
+        repo_root=tmp_path,
+        environ={"HOME": str(source_home)},
+    ) as temp_home:
+        copied_settings = json.loads((temp_home / ".claude" / "settings.json").read_text(encoding="utf-8"))
+        assert copied_settings["apiKeyHelper"] == "helper --print-key"
+        assert copied_settings["model"] == "sonnet"
+        assert (temp_home / ".claude.json").read_text(encoding="utf-8") == '{"user":"local"}\n'
+        assert (
+            temp_home / "Library" / "Application Support" / "Claude" / "buddy-tokens.json"
+        ).read_text(encoding="utf-8") == '{"token":"local"}\n'
 
 
 def test_resolved_live_timeout_budget_prefers_env_override_then_scenario_timeout() -> None:
@@ -179,6 +365,20 @@ def test_default_live_timeout_policy_uses_default_guardrail_when_scenario_has_no
     assert live_execution._validator_timeout_seconds(environ={}) is None  # noqa: SLF001
 
 
+def test_default_live_timeout_policy_uses_proof_profile_guardrail_when_requested() -> None:
+    timeout_seconds, timeout_policy = live_execution._default_live_timeout_policy(  # noqa: SLF001
+        {
+            "needs_write": True,
+            "validation_commands": ["pytest -q"],
+            "correctness_critical": True,
+        },
+        benchmark_profile="proof",
+    )
+
+    assert timeout_seconds == 240.0
+    assert timeout_policy == "proof_default_live_timeout"
+
+
 def test_odylith_focus_lines_prioritize_selected_files_and_docs() -> None:
     lines = live_execution._odylith_focus_lines(  # noqa: SLF001
         {
@@ -217,7 +417,7 @@ def test_odylith_focus_lines_include_component_implementation_anchors() -> None:
             "docs": ["odylith/registry/source/components/subagent-router/CURRENT_SPEC.md"],
             "context_packet": {
                 "anchors": {
-                    "changed_paths": ["odylith/skills/subagent-router/SKILL.md"],
+                    "changed_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
                 },
                 "selection_state": "x:B-022",
                 "route": {"route_ready": True},
@@ -319,7 +519,7 @@ def test_odylith_focus_lines_render_strict_boundary_guidance() -> None:
             "strict_boundary": True,
             "context_packet": {
                 "anchors": {
-                    "changed_paths": ["odylith/skills/subagent-router/SKILL.md"],
+                    "changed_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
                 },
                 "selection_state": "x:B-022",
                 "route": {"route_ready": True},
@@ -432,8 +632,8 @@ def test_agent_prompt_uses_known_starting_anchors_when_compact_payload_has_no_ch
         scenario={
             "prompt": "Keep the explicit workstream slice bounded.",
             "needs_write": True,
-            "changed_paths": ["odylith/skills/subagent-orchestrator/SKILL.md"],
-            "acceptance_criteria": ["Keep the slice bounded to odylith/skills/subagent-orchestrator/SKILL.md."],
+            "changed_paths": ["odylith/skills/odylith-subagent-orchestrator/SKILL.md"],
+            "acceptance_criteria": ["Keep the slice bounded to odylith/skills/odylith-subagent-orchestrator/SKILL.md."],
         },
         mode="odylith_on",
         prompt_payload={
@@ -446,7 +646,7 @@ def test_agent_prompt_uses_known_starting_anchors_when_compact_payload_has_no_ch
     )
 
     assert "Odylith-selected starting files:" in prompt
-    assert "odylith/skills/subagent-orchestrator/SKILL.md" in prompt
+    assert "odylith/skills/odylith-subagent-orchestrator/SKILL.md" in prompt
     assert "hard working boundary" in prompt
 
 
@@ -804,7 +1004,7 @@ def test_agent_prompt_warns_install_slices_about_stripped_guidance_false_positiv
     assert "On this allow-no-op install slice, treat the listed focused checks as the approved first-pass proof path before opening broader runtime or guidance surfaces." in prompt
     assert "If one of the listed focused install checks passes cleanly, do not widen into adjacent CLI, shell, dashboard, or routing surfaces unless the failure output points there directly." in prompt
     assert "Do not run the full listed validator during first-pass diagnosis just to prove current truth on an allow-no-op task" in prompt
-    assert "Do not treat missing repo `AGENTS.md` files or benchmark-managed pytest temp/cache paths during your own checks as product regressions on install slices" in prompt
+    assert "Do not treat missing repo `AGENTS.md` or `CLAUDE.md` files or benchmark-managed pytest temp/cache paths during your own checks as product regressions on install slices" in prompt
 
 
 def test_agent_prompt_uses_daemon_focused_checks_as_noop_boundary() -> None:
@@ -888,7 +1088,7 @@ def test_agent_prompt_surfaces_focused_check_results_as_current_workspace_eviden
         ],
     )
 
-    assert "Current workspace focused-check results:" in prompt
+    assert "Declared Odylith preflight evidence from the current workspace:" in prompt
     assert "passed: tests/unit/install/test_agents.py::test_managed_block_defaults_consumers_to_odylith_guidance_and_skills" in prompt
     assert "Treat these focused-check results as current workspace evidence." in prompt
     assert "The listed supporting docs/contracts are already represented in the focused-check evidence; do not reopen them unless a grounded contradiction or validator failure points there directly." in prompt
@@ -1005,7 +1205,7 @@ def test_agent_prompt_merge_heavy_slice_allows_successful_bounded_noop_closeout(
             "allow_noop_completion": True,
             "needs_write": True,
             "changed_paths": [
-                "odylith/skills/subagent-router/SKILL.md",
+                "odylith/skills/odylith-subagent-router/SKILL.md",
                 "odylith/runtime/SUBAGENT_OPERATIONS.md",
             ],
         },
@@ -1064,6 +1264,48 @@ def test_write_expectation_satisfied_accepts_validator_backed_noop_completion() 
         candidate_write_paths=[],
         validators_passed=False,
     )
+
+
+def test_write_expectation_satisfied_uses_explicit_expected_write_paths() -> None:
+    scenario = {
+        "needs_write": True,
+        "changed_paths": ["odylith/skills/odylith-subagent-router/SKILL.md"],
+        "expected_write_paths": ["src/odylith/runtime/orchestration/subagent_router.py"],
+    }
+
+    assert live_execution._write_expectation_satisfied(  # noqa: SLF001
+        scenario=scenario,
+        candidate_write_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        validators_passed=False,
+    )
+    assert not live_execution._write_expectation_satisfied(  # noqa: SLF001
+        scenario=scenario,
+        candidate_write_paths=[],
+        validators_passed=True,
+    )
+
+
+def test_live_codex_sandbox_defaults_to_workspace_write_for_analysis_cache_hygiene() -> None:
+    assert live_execution._live_codex_sandbox({"needs_write": False}) == "workspace-write"  # noqa: SLF001
+    assert live_execution._live_codex_sandbox({"live_sandbox": "read-only"}) == "read-only"  # noqa: SLF001
+
+
+def test_live_precision_metrics_count_supporting_paths_as_relevant_not_hidden_truth() -> None:
+    metrics = live_execution._precision_metrics(  # noqa: SLF001
+        required_paths=["src/odylith/runtime/surfaces/codex_host_bash_guard.py"],
+        supporting_paths=["odylith/agents-guidelines/CODEX_HOST_CONTRACT.md"],
+        observed_paths=[
+            "src/odylith/runtime/surfaces/codex_host_bash_guard.py",
+            "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+            "docs/benchmarks/README.md",
+        ],
+        expected_write_paths=["src/odylith/runtime/surfaces/codex_host_bash_guard.py"],
+        candidate_write_paths=["src/odylith/runtime/surfaces/codex_host_bash_guard.py"],
+    )
+
+    assert metrics["required_path_precision_basis"] == "required_plus_supporting_paths"
+    assert metrics["supporting_path_hits"] == ["odylith/agents-guidelines/CODEX_HOST_CONTRACT.md"]
+    assert metrics["hallucinated_surfaces"] == ["docs/benchmarks/README.md"]
 
 
 def test_successful_noop_precision_metrics_zeroes_expected_writes_for_valid_noop() -> None:
@@ -1182,6 +1424,46 @@ def test_validator_backed_completion_accepts_import_error_outside_allowed_slice(
     )
 
 
+def test_validator_backed_completion_accepts_import_error_outside_bounded_slice() -> None:
+    assert live_execution._validator_backed_completion_satisfied(  # noqa: SLF001
+        scenario={
+            "needs_write": True,
+            "changed_paths": [
+                "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+            ],
+            "allow_noop_completion": True,
+        },
+        structured_output={
+            "status": "blocked",
+            "summary": "Updated the orchestrator skill guidance for the bounded slice.",
+            "validation_summary": "The focused validator passed, but an ImportError appears unrelated and remains outside this bounded slice.",
+            "notes": [
+                "The missing module appears unrelated to the edited skill and remains outside the bounded slice.",
+            ],
+        },
+        status="blocked",
+        candidate_write_paths=[
+            "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
+        ],
+        validators_passed=True,
+        required_path_misses=[],
+    )
+
+
+def test_live_orchestration_summary_preserves_benchmark_session_namespace() -> None:
+    summary = live_execution._live_orchestration_summary(  # noqa: SLF001
+        mode="odylith_on",
+        packet_source="impact",
+        required_path_recall=1.0,
+        precision_metrics={},
+        benchmark_session_namespace="benchmark-report-s3-of-4-warm-case-odylith_on",
+    )
+
+    adoption = summary["odylith_adoption"]
+    assert adoption["session_namespace"] == "benchmark-report-s3-of-4-warm-case-odylith_on"
+    assert adoption["session_namespaced"] is True
+
+
 def test_focused_noop_validator_proxy_accepts_out_of_slice_workspace_drift() -> None:
     assert live_execution._focused_noop_validator_proxy_allowed(  # noqa: SLF001
         scenario={
@@ -1275,6 +1557,168 @@ def test_focused_noop_validator_proxy_accepts_completed_noop_with_out_of_slice_v
     )
 
 
+def test_focused_noop_validator_proxy_accepts_allowed_working_set_boundary_language() -> None:
+    assert live_execution._focused_noop_validator_proxy_allowed(  # noqa: SLF001
+        scenario={
+            "family": "merge_heavy_change",
+            "allow_noop_completion": True,
+            "focused_local_checks": [
+                "odylith subagent-router --repo-root . --help",
+                "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills",
+            ],
+            "validation_commands": [
+                "odylith subagent-router --repo-root . --help",
+                "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills",
+            ],
+        },
+        structured_output={
+            "status": "blocked",
+            "summary": (
+                "The bounded router/doc slice is internally consistent, but the required sync validator "
+                "is currently failing due to unrelated stale Registry component specs outside the allowed "
+                "working set, so this task cannot be completed within the slice without violating the "
+                "benchmark boundary."
+            ),
+        },
+        candidate_write_paths=[],
+        required_path_misses=[],
+        focused_check_result={"status": "passed"},
+        validator_result={"status": "failed"},
+    )
+
+
+def test_focused_noop_validator_proxy_accepts_enforced_slice_boundary_language() -> None:
+    assert live_execution._focused_noop_validator_proxy_allowed(  # noqa: SLF001
+        scenario={
+            "family": "merge_heavy_change",
+            "allow_noop_completion": True,
+            "focused_local_checks": [
+                "odylith subagent-router --repo-root . --help",
+                "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills",
+            ],
+            "validation_commands": [
+                "odylith subagent-router --repo-root . --help",
+                "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills",
+            ],
+        },
+        structured_output={
+            "status": "blocked",
+            "summary": (
+                "No file changes were made. The bounded router/doc slice is already consistent, "
+                "but the required sync validator is failing on unrelated stale Registry component "
+                "specs outside `odylith/skills/odylith-subagent-router/SKILL.md` and "
+                "`odylith/runtime/SUBAGENT_OPERATIONS.md`, which prevents a completed closeout "
+                "within the enforced slice boundary."
+            ),
+        },
+        candidate_write_paths=[],
+        required_path_misses=[],
+        focused_check_result={"status": "passed"},
+        validator_result={"status": "failed"},
+    )
+
+
+def test_focused_noop_validator_proxy_accepts_permitted_files_language() -> None:
+    assert live_execution._focused_noop_validator_proxy_allowed(  # noqa: SLF001
+        scenario={
+            "family": "merge_heavy_change",
+            "allow_noop_completion": True,
+            "focused_local_checks": [
+                "odylith subagent-router --repo-root . --help",
+                "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills",
+            ],
+            "validation_commands": [
+                "odylith subagent-router --repo-root . --help",
+                "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills",
+            ],
+        },
+        structured_output={
+            "status": "blocked",
+            "summary": (
+                "No file changes made. The bounded router/doc slice is internally consistent, but "
+                "the required sync check remains blocked by unrelated stale governed specs outside "
+                "the permitted files."
+            ),
+        },
+        candidate_write_paths=[],
+        required_path_misses=[],
+        focused_check_result={"status": "passed"},
+        validator_result={"status": "failed"},
+    )
+
+
+def test_focused_noop_validator_proxy_accepts_matching_preflight_and_validator_failures() -> None:
+    sync_command = (
+        "PYTHONPATH=src /Users/freedom/code/odylith/.venv/bin/python src/odylith/cli.py "
+        "sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills"
+    )
+    assert live_execution._focused_noop_validator_proxy_allowed(  # noqa: SLF001
+        scenario={
+            "family": "merge_heavy_change",
+            "allow_noop_completion": True,
+            "focused_local_checks": [
+                "odylith subagent-router --repo-root . --help",
+                "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills",
+            ],
+            "validation_commands": [
+                "odylith subagent-router --repo-root . --help",
+                "odylith sync --repo-root . --check-only --registry-policy-mode enforce-critical --enforce-deep-skills",
+            ],
+        },
+        structured_output={
+            "status": "blocked",
+            "summary": (
+                "No file changes made. The bounded router/doc slice is internally consistent, but "
+                "the required sync check remains blocked by unrelated stale governed specs outside "
+                "the permitted files."
+            ),
+        },
+        candidate_write_paths=[],
+        required_path_misses=[],
+        focused_check_result={
+            "status": "failed",
+            "results": [
+                {"command": sync_command, "status": "failed", "exit_code": 2},
+            ],
+        },
+        validator_result={
+            "status": "failed",
+            "results": [
+                {"command": sync_command, "status": "failed", "exit_code": 2},
+            ],
+        },
+    )
+
+
+def test_focused_noop_preflight_short_circuit_allowed_requires_matching_focused_proof() -> None:
+    assert live_execution._focused_noop_preflight_short_circuit_allowed(  # noqa: SLF001
+        scenario={
+            "family": "api_contract_evolution",
+            "allow_noop_completion": True,
+            "focused_local_checks": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py",
+            ],
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py",
+            ],
+        },
+        focused_check_result={"status": "passed"},
+    )
+    assert not live_execution._focused_noop_preflight_short_circuit_allowed(  # noqa: SLF001
+        scenario={
+            "family": "api_contract_evolution",
+            "allow_noop_completion": True,
+            "focused_local_checks": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py",
+            ],
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_release_planning_authoring.py",
+            ],
+        },
+        focused_check_result={"status": "passed"},
+    )
+
+
 def test_estimated_initial_prompt_tokens_uses_utf8_byte_budget() -> None:
     assert live_execution._estimated_initial_prompt_tokens("") == 0  # noqa: SLF001
     assert live_execution._estimated_initial_prompt_tokens("abcd") == 1  # noqa: SLF001
@@ -1319,6 +1763,10 @@ def test_sandbox_process_env_uses_local_cache_and_temp_roots(tmp_path: Path, mon
     monkeypatch.setenv("PYENV_ROOT", "/tmp/pyenv")
     monkeypatch.setenv("GH_CONFIG_DIR", "/tmp/gh")
     monkeypatch.setenv("CODEX_THREAD_ID", "thread-123")
+    monkeypatch.delenv("PLAYWRIGHT_BROWSERS_PATH", raising=False)
+    host_home = tmp_path / "host-home"
+    (host_home / "Library" / "Caches" / "ms-playwright").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setenv("HOME", str(host_home))
     codex_home_root = tmp_path / "codex-home"
     repo_root = tmp_path / "repo"
     sandbox_root = tmp_path / "sandbox"
@@ -1347,8 +1795,79 @@ def test_sandbox_process_env_uses_local_cache_and_temp_roots(tmp_path: Path, mon
     assert env["GIT_CONFIG_NOSYSTEM"] == "1"
     assert env["BASH_ENV"].startswith(str(sandbox_root))
     assert env["CODEX_THREAD_ID"] == "thread-123"
+    assert env["PLAYWRIGHT_BROWSERS_PATH"] == str((host_home / "Library" / "Caches" / "ms-playwright").resolve())
     assert "PYENV_ROOT" not in env
     assert "GH_CONFIG_DIR" not in env
+
+
+def test_sandbox_process_env_prefers_explicit_playwright_browsers_path(tmp_path: Path, monkeypatch) -> None:
+    explicit_browsers = tmp_path / "explicit-playwright"
+    explicit_browsers.mkdir(parents=True, exist_ok=True)
+    host_home = tmp_path / "host-home"
+    (host_home / "Library" / "Caches" / "ms-playwright").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setenv("HOME", str(host_home))
+    monkeypatch.setenv("PLAYWRIGHT_BROWSERS_PATH", str(explicit_browsers))
+    codex_home_root = tmp_path / "codex-home"
+    repo_root = tmp_path / "repo"
+    sandbox_root = tmp_path / "sandbox"
+    codex_home_root.mkdir(parents=True, exist_ok=True)
+    (repo_root / ".venv" / "bin").mkdir(parents=True, exist_ok=True)
+
+    env = live_execution._sandbox_process_env(  # noqa: SLF001
+        repo_root=repo_root,
+        execution_contract={"codex_bin": "codex"},
+        codex_home_root=codex_home_root,
+        sandbox_root=sandbox_root,
+    )
+
+    assert env["PLAYWRIGHT_BROWSERS_PATH"] == str(explicit_browsers.resolve())
+
+
+def test_sandbox_process_env_passes_claude_auth_and_config_dir(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    host_home_root = tmp_path / "claude-home"
+    repo_root = tmp_path / "repo"
+    sandbox_root = tmp_path / "sandbox"
+    host_home_root.mkdir(parents=True, exist_ok=True)
+    (repo_root / ".venv" / "bin").mkdir(parents=True, exist_ok=True)
+
+    env = live_execution._sandbox_process_env(  # noqa: SLF001
+        repo_root=repo_root,
+        execution_contract={"provider": "claude-cli", "claude_bin": "claude"},
+        host_home_root=host_home_root,
+        sandbox_root=sandbox_root,
+    )
+
+    assert env["HOME"] == str(host_home_root)
+    assert env["CLAUDE_CONFIG_DIR"] == str((host_home_root / ".claude").resolve())
+    assert env["ANTHROPIC_API_KEY"] == "test-key"
+
+
+def test_sandbox_process_env_uses_benchmark_tool_bin_when_repo_local_venv_is_not_ready(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    codex_home_root = tmp_path / "codex-home"
+    repo_root = tmp_path / "repo"
+    sandbox_root = tmp_path / "sandbox"
+    fallback_bin = tmp_path / "shared-runtime" / "bin"
+    codex_home_root.mkdir(parents=True, exist_ok=True)
+    fallback_bin.mkdir(parents=True, exist_ok=True)
+    (repo_root / ".venv" / "bin").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_isolation,
+        "benchmark_tool_bin",
+        lambda *, repo_root: fallback_bin.resolve(),
+    )
+
+    env = live_execution._sandbox_process_env(  # noqa: SLF001
+        repo_root=repo_root,
+        execution_contract={"codex_bin": "codex"},
+        codex_home_root=codex_home_root,
+        sandbox_root=sandbox_root,
+    )
+
+    assert env["PATH"].split(":")[0] == str(fallback_bin.resolve())
 
 
 def test_codex_exec_command_disables_plugins_multi_agent_and_personality(
@@ -1368,6 +1887,31 @@ def test_codex_exec_command_disables_plugins_multi_agent_and_personality(
     assert command[1] == "exec"
     assert ["--disable", "plugins"] == command[2:4]
     assert "--disable" in command and "multi_agent" in command and "personality" in command
+
+
+def test_codex_exec_command_supports_claude_cli_contract(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(live_execution, "_host_binary_available", lambda _binary: True)
+    monkeypatch.setattr(
+        odylith_reasoning,
+        "resolve_claude_bin",
+        lambda raw: f"/Applications/{Path(str(raw)).name}",
+    )
+
+    command = live_execution._codex_exec_command(  # noqa: SLF001
+        execution_contract={"provider": "claude-cli", "claude_bin": "claude", "model": "sonnet", "reasoning_effort": "max"},
+        workspace_root=tmp_path,
+        schema_path=tmp_path / "schema.json",
+        output_path=tmp_path / "out.json",
+    )
+
+    assert command[0].endswith("/claude")
+    assert "--output-format" in command and "stream-json" in command
+    assert "--json-schema" in command
+    assert "--tools" in command and "Bash,Edit,Glob,Grep,Read,Write" in command
+    assert "--effort" in command and "max" in command
 
 
 def test_run_validators_uses_non_login_bash(monkeypatch, tmp_path: Path) -> None:
@@ -1473,6 +2017,58 @@ def test_run_subprocess_capture_kills_orphaned_process_group_on_timeout(tmp_path
         pytest.fail("timed-out benchmark child marker remained alive after process-group cleanup")
 
 
+def test_run_subprocess_capture_enforces_wall_clock_timeout_for_chatty_sigterm_ignoring_child(
+    tmp_path: Path,
+) -> None:
+    marker = "odylith-benchmark-wall-clock-timeout-marker"
+    script = tmp_path / "chatty_timeout_child.py"
+    script.write_text(
+        "\n".join(
+            [
+                "import signal",
+                "import sys",
+                "import time",
+                "",
+                "signal.signal(signal.SIGTERM, lambda *_: None)",
+                "print('start', flush=True)",
+                "sys.stderr.write('stderr-start\\n')",
+                "sys.stderr.flush()",
+                "while True:",
+                "    print('tick', flush=True)",
+                "    sys.stderr.write('tock\\n')",
+                "    sys.stderr.flush()",
+                "    time.sleep(0.05)",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    command = [sys.executable, str(script), marker]
+
+    with pytest.raises(subprocess.TimeoutExpired) as exc_info:
+        live_execution._run_subprocess_capture(  # noqa: SLF001
+            command=command,
+            cwd=tmp_path,
+            timeout_seconds=0.3,
+        )
+
+    assert "tick" in str(exc_info.value.stdout or "")
+    assert "tock" in str(exc_info.value.stderr or "")
+
+    deadline = time.time() + 3.0
+    while time.time() < deadline:
+        completed = subprocess.run(
+            ["ps", "-axo", "command="],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if marker not in str(completed.stdout or ""):
+            break
+        time.sleep(0.1)
+    else:
+        pytest.fail("chatty benchmark child remained alive after enforced wall-clock timeout cleanup")
+
+
 def test_provision_workspace_odylith_root_copies_minimal_state(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     workspace_root = tmp_path / "workspace"
@@ -1535,7 +2131,7 @@ def test_workspace_strip_paths_keeps_truth_bearing_repo_docs(tmp_path: Path) -> 
     assert Path("odylith/maintainer/agents-guidelines") not in rows
     assert Path("odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md") not in rows
     assert Path("odylith/skills") not in rows
-    assert Path("odylith/skills/registry-spec-sync/SKILL.md") not in rows
+    assert Path("odylith/skills/odylith-registry-spec-sync/SKILL.md") not in rows
 
 
 def test_workspace_strip_paths_preserves_explicit_task_anchors(tmp_path: Path) -> None:
@@ -1571,6 +2167,114 @@ def test_live_workspace_preserve_paths_include_snapshot_validator_companions() -
         "odylith/radar/source/INDEX.md",
         "src/odylith/runtime/evaluation/odylith_benchmark_runner.py",
     ]
+
+
+def test_benchmark_live_validator_support_paths_preserve_runtime_package(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    support_paths = [
+        "src/odylith/runtime",
+    ]
+    for relative in support_paths:
+        path = repo_root / relative
+        path.mkdir(parents=True, exist_ok=True)
+
+    rows = live_execution._benchmark_live_validator_support_paths(  # noqa: SLF001
+        repo_root=repo_root,
+        scenario={
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py"
+            ],
+        },
+    )
+
+    assert rows == support_paths
+
+
+def test_benchmark_runtime_validator_support_paths_preserve_import_graph_and_command_tests(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    support_paths = [
+        "src/odylith/__init__.py",
+        "src/odylith/cli.py",
+        "src/odylith/runtime",
+        "tests/unit/runtime/test_odylith_benchmark_runner.py",
+    ]
+    for relative in support_paths:
+        path = repo_root / relative
+        if relative.endswith(".py"):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# file\n", encoding="utf-8")
+        else:
+            path.mkdir(parents=True, exist_ok=True)
+
+    rows = live_execution._benchmark_live_validator_support_paths(  # noqa: SLF001
+        repo_root=repo_root,
+        scenario={
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_run_benchmarks_publishes_conservative_multi_profile_view"
+            ],
+        },
+    )
+
+    assert rows == support_paths
+
+
+def test_runtime_unit_validator_support_paths_preserve_import_graph_and_command_tests(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    support_paths = [
+        "src/odylith/__init__.py",
+        "src/odylith/cli.py",
+        "src/odylith/runtime",
+        "tests/unit/runtime/test_proof_state_runtime.py",
+        "tests/unit/runtime/test_delivery_intelligence_engine.py",
+    ]
+    for relative in support_paths:
+        path = repo_root / relative
+        if relative.endswith(".py"):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# file\n", encoding="utf-8")
+        else:
+            path.mkdir(parents=True, exist_ok=True)
+
+    rows = live_execution._benchmark_live_validator_support_paths(  # noqa: SLF001
+        repo_root=repo_root,
+        scenario={
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q "
+                "tests/unit/runtime/test_proof_state_runtime.py "
+                "tests/unit/runtime/test_delivery_intelligence_engine.py"
+            ],
+        },
+    )
+
+    assert rows == support_paths
+
+
+def test_session_brief_validator_support_paths_preserve_projection_snapshot(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    for relative in (
+        "src/odylith/__init__.py",
+        "src/odylith/cli.py",
+        "tests/unit/runtime/test_odylith_benchmark_runner.py",
+        ".odylith/runtime/odylith-compiler/projection-snapshot.v1.json",
+    ):
+        path = repo_root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}\n", encoding="utf-8")
+    (repo_root / "src/odylith/runtime").mkdir(parents=True, exist_ok=True)
+
+    rows = live_execution._benchmark_live_validator_support_paths(  # noqa: SLF001
+        repo_root=repo_root,
+        scenario={
+            "scenario_id": "session-brief-runtime-path-ambiguity",
+            "focused_local_checks": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_session_brief_exact_path_hot_path_keeps_only_live_narrowing_signal"
+            ],
+        },
+    )
+
+    assert ".odylith/runtime/odylith-compiler/projection-snapshot.v1.json" in rows
+    assert "src/odylith/runtime" in rows
+    assert "tests/unit/runtime/test_odylith_benchmark_runner.py" in rows
 
 
 def test_run_live_scenario_preserves_snapshot_validator_paths_for_self_reference_strip(
@@ -1611,7 +2315,7 @@ def test_run_live_scenario_preserves_snapshot_validator_paths_for_self_reference
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -1642,7 +2346,7 @@ def test_run_live_scenario_preserves_snapshot_validator_paths_for_self_reference
     assert "src/odylith/runtime/evaluation/odylith_benchmark_runner.py" in captured_preserve_paths
 
 
-def test_restore_workspace_validator_truth_restores_stripped_files_only(tmp_path: Path) -> None:
+def test_restore_workspace_validator_truth_restores_stripped_files_and_directories(tmp_path: Path) -> None:
     workspace_root = tmp_path / "workspace"
     truth_root = tmp_path / "validator-truth"
     workspace_root.mkdir(parents=True, exist_ok=True)
@@ -1652,6 +2356,9 @@ def test_restore_workspace_validator_truth_restores_stripped_files_only(tmp_path
     nested = truth_root / "odylith" / "casebook" / "bugs" / "AGENTS.md"
     nested.parent.mkdir(parents=True, exist_ok=True)
     nested.write_text("nested instructions\n", encoding="utf-8")
+    cursor_rule = truth_root / ".cursor" / "rules" / "validator.md"
+    cursor_rule.parent.mkdir(parents=True, exist_ok=True)
+    cursor_rule.write_text("validator dir truth\n", encoding="utf-8")
 
     strip_paths = [Path("AGENTS.md"), Path("odylith/casebook/bugs/AGENTS.md"), Path(".cursor")]
     live_execution._restore_workspace_validator_truth(  # noqa: SLF001
@@ -1664,10 +2371,12 @@ def test_restore_workspace_validator_truth_restores_stripped_files_only(tmp_path
     assert (workspace_root / "odylith" / "casebook" / "bugs" / "AGENTS.md").read_text(encoding="utf-8") == (
         "nested instructions\n"
     )
-    assert not (workspace_root / ".cursor").exists()
+    assert (workspace_root / ".cursor" / "rules" / "validator.md").read_text(encoding="utf-8") == (
+        "validator dir truth\n"
+    )
 
 
-def test_capture_workspace_validator_truth_copies_scoped_workspace_files_only(tmp_path: Path) -> None:
+def test_capture_workspace_validator_truth_copies_scoped_workspace_files_and_directories(tmp_path: Path) -> None:
     workspace_root = tmp_path / "workspace"
     truth_root = tmp_path / "validator-truth"
     workspace_root.mkdir(parents=True, exist_ok=True)
@@ -1676,7 +2385,9 @@ def test_capture_workspace_validator_truth_copies_scoped_workspace_files_only(tm
     nested = workspace_root / "odylith" / "AGENTS.md"
     nested.parent.mkdir(parents=True, exist_ok=True)
     nested.write_text("scoped odylith truth\n", encoding="utf-8")
-    (workspace_root / ".cursor").mkdir(parents=True, exist_ok=True)
+    cursor_rule = workspace_root / ".cursor" / "rules" / "validator.md"
+    cursor_rule.parent.mkdir(parents=True, exist_ok=True)
+    cursor_rule.write_text("scoped cursor truth\n", encoding="utf-8")
 
     live_execution._capture_workspace_validator_truth(  # noqa: SLF001
         workspace_root=workspace_root,
@@ -1686,7 +2397,9 @@ def test_capture_workspace_validator_truth_copies_scoped_workspace_files_only(tm
 
     assert (truth_root / "AGENTS.md").read_text(encoding="utf-8") == "scoped root truth\n"
     assert (truth_root / "odylith" / "AGENTS.md").read_text(encoding="utf-8") == "scoped odylith truth\n"
-    assert not (truth_root / ".cursor").exists()
+    assert (truth_root / ".cursor" / "rules" / "validator.md").read_text(encoding="utf-8") == (
+        "scoped cursor truth\n"
+    )
 
 
 def test_restore_workspace_validator_truth_noops_when_workspace_root_is_missing(tmp_path: Path) -> None:
@@ -1714,6 +2427,11 @@ def test_run_live_scenario_returns_failed_payload_when_workspace_disappears_midf
     truth_root = tmp_path / "truth"
     workspace_root.mkdir(parents=True, exist_ok=True)
     truth_root.mkdir(parents=True, exist_ok=True)
+    validator_path = Path("tests/unit/runtime/test_odylith_benchmark_runner.py")
+    for root in (workspace_root, truth_root):
+        full_path = root / validator_path
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        full_path.write_text("def test_placeholder() -> None:\n    pass\n", encoding="utf-8")
 
     @contextlib.contextmanager
     def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
@@ -1760,7 +2478,7 @@ def test_run_live_scenario_returns_failed_payload_when_workspace_disappears_midf
         live_execution,
         "_resolved_live_execution_contract",
         lambda **kwargs: {
-            "runner": "live_codex_cli",
+            "runner": "live_host_cli",
             "codex_bin": "codex",
             "model": "gpt-5.4",
             "reasoning_effort": "medium",
@@ -1786,6 +2504,1165 @@ def test_run_live_scenario_returns_failed_payload_when_workspace_disappears_midf
     assert result["validation_results"]["status"] == "not_applicable"
     assert result["live_execution"]["failure_artifacts"]["workspace_state_post_codex"]["workspace_root_exists"] is False
     assert result["live_execution"]["failure_artifacts"]["workspace_state_pre_validator"]["workspace_root_exists"] is False
+
+
+def test_run_live_scenario_records_declared_preflight_evidence_and_observed_path_sources(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "truth"
+    workspace_root.mkdir(parents=True, exist_ok=True)
+    truth_root.mkdir(parents=True, exist_ok=True)
+    validator_path = Path("tests/unit/runtime/test_odylith_benchmark_runner.py")
+    for root in (workspace_root, truth_root):
+        full_path = root / validator_path
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        full_path.write_text("def test_placeholder() -> None:\n    pass\n", encoding="utf-8")
+
+    @contextlib.contextmanager
+    def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
+        del repo_root, strip_paths, snapshot_paths
+        yield workspace_root, truth_root
+
+    @contextlib.contextmanager
+    def _fake_temporary_codex_home(*, execution_contract, environ=None):  # type: ignore[no-untyped-def]
+        del execution_contract, environ
+        yield tmp_path / "codex-home"
+
+    def _fake_run_validators(*, workspace_root: Path, commands, environ=None):  # type: ignore[no-untyped-def]
+        del workspace_root, environ
+        command_list = [str(token).strip() for token in commands if str(token).strip()]
+        if command_list:
+            return {
+                "status": "passed",
+                "duration_ms": 1.0,
+                "results": [{"status": "passed", "command": command_list[0]}],
+                "passed_count": len(command_list),
+                "failed_count": 0,
+                "skipped_count": 0,
+                "timeout_count": 0,
+            }
+        return {
+            "status": "not_applicable",
+            "duration_ms": 0.0,
+            "results": [],
+            "passed_count": 0,
+            "failed_count": 0,
+            "skipped_count": 0,
+            "timeout_count": 0,
+        }
+
+    monkeypatch.setattr(live_execution, "_temporary_worktree", _fake_temporary_worktree)
+    monkeypatch.setattr(live_execution, "_temporary_codex_home", _fake_temporary_codex_home)
+    monkeypatch.setattr(live_execution, "_workspace_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_scenario_workspace_self_reference_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_sandbox_process_env", lambda **kwargs: {"PATH": "/usr/bin:/bin"})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_codex_exec_command",
+        lambda **kwargs: ["codex", "exec", "--skip-git-repo-check", "-C", str(workspace_root)],  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_agent_prompt", lambda **kwargs: "prompt")  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_run_subprocess_capture",
+        lambda **kwargs: subprocess.CompletedProcess(args=["codex"], returncode=0, stdout="", stderr=""),  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_parse_json_lines", lambda stream_text: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_usage_from_events", lambda events: {})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_structured_output",
+        lambda output_path, stream_text='': {"status": "completed", "summary": "complete", "changed_files": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_observed_path_details_from_events",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+            "sources": ["odylith_prompt_payload"],
+        },
+    )
+    monkeypatch.setattr(live_execution, "_path_recall", lambda **kwargs: (1.0, []))  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_precision_metrics",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "observed_path_count": 1,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "hallucinated_surfaces": [],
+            "expected_write_path_count": 0,
+            "candidate_write_path_count": 0,
+            "candidate_write_paths": [],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "unnecessary_widening_paths": [],
+        },
+    )
+    monkeypatch.setattr(live_execution, "_candidate_write_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_meaningful_candidate_write_paths", lambda rows: rows)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_git_status_snapshot", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_state_delta_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_restore_workspace_validator_truth", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_apply_strip_paths", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_validators", _fake_run_validators)
+    monkeypatch.setattr(live_execution, "_validator_result_passed", lambda result: True)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_successful_noop_precision_metrics", lambda **kwargs: kwargs["precision_metrics"])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_validator_backed_completion_satisfied", lambda **kwargs: False)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_write_expectation_satisfied", lambda **kwargs: True)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_estimated_initial_prompt_tokens", lambda prompt: 1)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_live_diagnostics,
+        "workspace_state_diff",
+        lambda **kwargs: {"workspace_root_exists": True, "differences": [], "difference_count": 0},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.4",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+        ),
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_resolved_live_execution_contract",
+        lambda **kwargs: {
+            "runner": "live_host_cli",
+            "codex_bin": "codex",
+            "model": "gpt-5.4",
+            "reasoning_effort": "medium",
+        },
+    )
+
+    result = live_execution.run_live_scenario(
+        repo_root=repo_root,
+        scenario={
+            "prompt": "Keep the benchmark contract honest.",
+            "required_paths": ["src/odylith/runtime/evaluation/odylith_benchmark_runner.py"],
+            "focused_local_checks": [
+                "tests/unit/runtime/test_odylith_benchmark_runner.py::test_compact_report_summary_includes_candidate_odylith_adoption_rates"
+            ],
+            "validation_commands": [],
+            "needs_write": False,
+        },
+        mode="odylith_on",
+        packet_source="benchmark_packet",
+        prompt_payload={"docs": ["odylith/registry/source/components/benchmark/CURRENT_SPEC.md"]},
+        snapshot_paths=[],
+    )
+
+    assert result["preflight_evidence_mode"] == "scenario_declared_focused_local_checks"
+    assert result["preflight_evidence_result_status"] == "passed"
+    assert len(result["preflight_evidence_commands"]) == 1
+    expected_pytest = live_execution.odylith_benchmark_isolation.benchmark_tool_bin(repo_root=repo_root) / "pytest"
+    assert result["preflight_evidence_commands"][0] == (
+        f"PYTHONPATH=src {expected_pytest} -q "
+        "tests/unit/runtime/test_odylith_benchmark_runner.py::test_compact_report_summary_includes_candidate_odylith_adoption_rates"
+    )
+    assert result["observed_path_sources"] == ["odylith_prompt_payload"]
+    assert result["live_execution"]["preflight_evidence_mode"] == "scenario_declared_focused_local_checks"
+    assert result["live_execution"]["preflight_evidence_result_status"] == "passed"
+    assert result["live_execution"]["observed_path_sources"] == ["odylith_prompt_payload"]
+
+
+def test_run_live_scenario_keeps_raw_prompt_visible_paths_when_workspace_strips_them(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    visible_path = repo_root / "src" / "odylith" / "runtime" / "execution_engine" / "policy.py"
+    visible_path.parent.mkdir(parents=True, exist_ok=True)
+    visible_path.write_text("POLICY = True\n", encoding="utf-8")
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "truth"
+    workspace_root.mkdir(parents=True, exist_ok=True)
+    truth_root.mkdir(parents=True, exist_ok=True)
+
+    @contextlib.contextmanager
+    def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
+        del repo_root, strip_paths, snapshot_paths
+        yield workspace_root, truth_root
+
+    @contextlib.contextmanager
+    def _fake_temporary_codex_home(*, execution_contract, environ=None):  # type: ignore[no-untyped-def]
+        del execution_contract, environ
+        yield tmp_path / "codex-home"
+
+    def _fake_run_validators(*, workspace_root: Path, commands, environ=None):  # type: ignore[no-untyped-def]
+        del workspace_root, commands, environ
+        return {
+            "status": "not_applicable",
+            "duration_ms": 0.0,
+            "results": [],
+            "passed_count": 0,
+            "failed_count": 0,
+            "skipped_count": 0,
+            "timeout_count": 0,
+        }
+
+    monkeypatch.setattr(live_execution, "_temporary_worktree", _fake_temporary_worktree)
+    monkeypatch.setattr(live_execution, "_temporary_codex_home", _fake_temporary_codex_home)
+    monkeypatch.setattr(live_execution, "_workspace_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_scenario_workspace_self_reference_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_sandbox_process_env", lambda **kwargs: {"PATH": "/usr/bin:/bin"})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_codex_exec_command",
+        lambda **kwargs: ["codex", "exec", "--skip-git-repo-check", "-C", str(workspace_root)],  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_agent_prompt", lambda **kwargs: "prompt")  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_run_subprocess_capture",
+        lambda **kwargs: subprocess.CompletedProcess(args=["codex"], returncode=0, stdout="", stderr=""),  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_parse_json_lines", lambda stream_text: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_usage_from_events", lambda events: {})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_structured_output",
+        lambda output_path, stream_text='': {"status": "completed", "summary": "complete", "changed_files": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_observed_path_details_from_events",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "paths": list(kwargs["raw_prompt_visible_paths"]),
+            "sources": ["raw_prompt_visible_paths"] if kwargs["raw_prompt_visible_paths"] else [],
+        },
+    )
+    monkeypatch.setattr(live_execution, "_path_recall", lambda **kwargs: (1.0, []))  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_precision_metrics",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "observed_path_count": len(kwargs["observed_paths"]),
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "hallucinated_surfaces": [],
+            "expected_write_path_count": 0,
+            "candidate_write_path_count": 0,
+            "candidate_write_paths": [],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "unnecessary_widening_paths": [],
+        },
+    )
+    monkeypatch.setattr(live_execution, "_candidate_write_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_meaningful_candidate_write_paths", lambda rows: rows)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_git_status_snapshot", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_state_delta_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_restore_workspace_validator_truth", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_apply_strip_paths", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_validators", _fake_run_validators)
+    monkeypatch.setattr(live_execution, "_validator_result_passed", lambda result: True)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_successful_noop_precision_metrics", lambda **kwargs: kwargs["precision_metrics"])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_validator_backed_completion_satisfied", lambda **kwargs: False)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_write_expectation_satisfied", lambda **kwargs: True)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_estimated_initial_prompt_tokens", lambda prompt: 1)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_live_diagnostics,
+        "workspace_state_diff",
+        lambda **kwargs: {"workspace_root_exists": True, "differences": [], "difference_count": 0},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.4",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+        ),
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_resolved_live_execution_contract",
+        lambda **kwargs: {
+            "runner": "live_host_cli",
+            "codex_bin": "codex",
+            "model": "gpt-5.4",
+            "reasoning_effort": "medium",
+        },
+    )
+
+    result = live_execution.run_live_scenario(
+        repo_root=repo_root,
+        scenario={
+            "prompt": "Inspect `src/odylith/runtime/execution_engine/policy.py` and keep the raw prompt bounded.",
+            "required_paths": ["src/odylith/runtime/execution_engine/policy.py"],
+            "validation_commands": [],
+            "needs_write": False,
+        },
+        mode="raw_agent_baseline",
+        packet_source="raw_host_cli",
+        prompt_payload={},
+        snapshot_paths=[],
+    )
+
+    assert result["observed_path_sources"] == ["raw_prompt_visible_paths"]
+    assert result["observed_paths"] == ["src/odylith/runtime/execution_engine/policy.py"]
+    assert result["live_execution"]["observed_path_sources"] == ["raw_prompt_visible_paths"]
+
+
+def test_run_live_scenario_short_circuits_validators_after_live_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "truth"
+    workspace_root.mkdir(parents=True, exist_ok=True)
+    truth_root.mkdir(parents=True, exist_ok=True)
+    captured: dict[str, object] = {}
+
+    @contextlib.contextmanager
+    def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
+        del repo_root, strip_paths, snapshot_paths
+        yield workspace_root, truth_root
+
+    @contextlib.contextmanager
+    def _fake_temporary_codex_home(*, execution_contract, environ=None):  # type: ignore[no-untyped-def]
+        del execution_contract, environ
+        yield tmp_path / "codex-home"
+
+    def _fake_run_subprocess_capture(*, command, cwd, env=None, input_text=None, timeout_seconds=None):  # type: ignore[no-untyped-def]
+        del command, cwd, env, input_text
+        captured["timeout_seconds"] = timeout_seconds
+        raise subprocess.TimeoutExpired(
+            cmd=["codex"],
+            timeout=float(timeout_seconds or 0.0),
+            output="partial stdout",
+            stderr="partial stderr",
+        )
+
+    def _fake_run_validators(**kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError(f"validators should not run after a live timeout: {kwargs}")
+
+    monkeypatch.setattr(live_execution, "_temporary_worktree", _fake_temporary_worktree)
+    monkeypatch.setattr(live_execution, "_temporary_codex_home", _fake_temporary_codex_home)
+    monkeypatch.setattr(live_execution, "_workspace_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_scenario_workspace_self_reference_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_sandbox_process_env", lambda **kwargs: {"PATH": "/usr/bin:/bin"})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_codex_exec_command",
+        lambda **kwargs: ["codex", "exec", "--skip-git-repo-check", "-C", str(workspace_root)],  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_agent_prompt", lambda **kwargs: "prompt")  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_subprocess_capture", _fake_run_subprocess_capture)
+    monkeypatch.setattr(live_execution, "_parse_json_lines", lambda stream_text: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_usage_from_events", lambda events: {})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_structured_output",
+        lambda output_path, stream_text='': {"status": "failed", "summary": "timed out", "changed_files": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_observed_path_details_from_events",
+        lambda **kwargs: {"paths": [], "sources": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_path_recall", lambda **kwargs: (1.0, []))  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_precision_metrics",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "observed_path_count": 0,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "hallucinated_surfaces": [],
+            "expected_write_path_count": 0,
+            "candidate_write_path_count": 0,
+            "candidate_write_paths": [],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "unnecessary_widening_paths": [],
+        },
+    )
+    monkeypatch.setattr(live_execution, "_candidate_write_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_meaningful_candidate_write_paths", lambda rows: rows)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_git_status_snapshot", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_state_delta_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_restore_workspace_validator_truth", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_apply_strip_paths", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_validators", _fake_run_validators)
+    monkeypatch.setattr(live_execution, "_validator_result_passed", lambda result: result.get("status") in {"passed", "not_applicable"})  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_successful_noop_precision_metrics", lambda **kwargs: kwargs["precision_metrics"])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_validator_backed_completion_satisfied", lambda **kwargs: False)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_write_expectation_satisfied", lambda **kwargs: True)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_estimated_initial_prompt_tokens", lambda prompt: 1)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_live_diagnostics,
+        "workspace_state_diff",
+        lambda **kwargs: {"workspace_root_exists": True, "differences": [], "difference_count": 0},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.4",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+        ),
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_resolved_live_execution_contract",
+        lambda **kwargs: {
+            "runner": "live_host_cli",
+            "codex_bin": "codex",
+            "model": "gpt-5.4",
+            "reasoning_effort": "medium",
+        },
+    )
+
+    result = live_execution.run_live_scenario(
+        repo_root=repo_root,
+        scenario={
+            "prompt": "Fail closed when the live lane times out.",
+            "required_paths": [],
+            "validation_commands": ["PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_remediator.py"],
+            "needs_write": True,
+        },
+        mode="odylith_on",
+        benchmark_profile="proof",
+        packet_source="benchmark_packet",
+        prompt_payload={},
+        snapshot_paths=[],
+    )
+
+    assert captured["timeout_seconds"] == 240.0
+    assert result["validation_results"]["status"] == "failed"
+    assert result["validation_results"]["status_basis"] == "live_timeout_short_circuit"
+    assert result["live_execution"]["timed_out"] is True
+    assert result["live_execution"]["validator_execution_mode"] == "skipped_due_to_live_timeout"
+    assert result["live_execution"]["benchmark_profile"] == "proof"
+
+
+def test_run_live_scenario_uses_focused_noop_preflight_short_circuit(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    (repo_root / ".venv" / "bin").mkdir(parents=True, exist_ok=True)
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "truth"
+    required_path = workspace_root / "tests" / "unit" / "runtime" / "test_program_wave_authoring.py"
+    required_path.parent.mkdir(parents=True, exist_ok=True)
+    required_path.write_text("def test_wave_contract():\n    assert True\n", encoding="utf-8")
+    truth_root.mkdir(parents=True, exist_ok=True)
+    validator_calls: list[list[str]] = []
+
+    @contextlib.contextmanager
+    def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
+        del repo_root, strip_paths, snapshot_paths
+        yield workspace_root, truth_root
+
+    @contextlib.contextmanager
+    def _fake_temporary_codex_home(*, execution_contract, environ=None):  # type: ignore[no-untyped-def]
+        del execution_contract, environ
+        yield tmp_path / "codex-home"
+
+    def _fake_run_validators(*, workspace_root: Path, commands, environ=None):  # type: ignore[no-untyped-def]
+        del workspace_root, environ
+        command_list = [str(token).strip() for token in commands if str(token).strip()]
+        validator_calls.append(command_list)
+        return {
+            "status": "passed",
+            "duration_ms": 7.0,
+            "results": [{"status": "passed", "command": command_list[0]}] if command_list else [],
+            "passed_count": len(command_list),
+            "failed_count": 0,
+            "skipped_count": 0,
+            "timeout_count": 0,
+        }
+
+    monkeypatch.setattr(live_execution, "_temporary_worktree", _fake_temporary_worktree)
+    monkeypatch.setattr(live_execution, "_temporary_codex_home", _fake_temporary_codex_home)
+    monkeypatch.setattr(live_execution, "_workspace_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_scenario_workspace_self_reference_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_sandbox_process_env", lambda **kwargs: {"PATH": "/usr/bin:/bin"})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_codex_exec_command",
+        lambda **kwargs: ["codex", "exec", "--skip-git-repo-check", "-C", str(workspace_root)],  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_agent_prompt", lambda **kwargs: "prompt")  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_run_subprocess_capture",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("live codex execution should short-circuit")),  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_observed_path_details_from_events",
+        lambda **kwargs: {"paths": [], "sources": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_workspace_git_status_snapshot", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_state_delta_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_restore_workspace_validator_truth", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_apply_strip_paths", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_validators", _fake_run_validators)
+    monkeypatch.setattr(live_execution, "_estimated_initial_prompt_tokens", lambda prompt: 1)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_live_diagnostics,
+        "workspace_state_diff",
+        lambda **kwargs: {"workspace_root_exists": True, "differences": [], "difference_count": 0},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.4",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+        ),
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_resolved_live_execution_contract",
+        lambda **kwargs: {
+            "runner": "live_host_cli",
+            "codex_bin": "codex",
+            "model": "gpt-5.4",
+            "reasoning_effort": "medium",
+        },
+    )
+
+    result = live_execution.run_live_scenario(
+        repo_root=repo_root,
+        scenario={
+            "family": "api_contract_evolution",
+            "prompt": "Use the passing focused check as the bounded no-op proof.",
+            "required_paths": ["tests/unit/runtime/test_program_wave_authoring.py"],
+            "focused_local_checks": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py",
+            ],
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py",
+            ],
+            "allow_noop_completion": True,
+            "needs_write": False,
+        },
+        mode="odylith_on",
+        benchmark_profile="quick",
+        packet_source="benchmark_packet",
+        prompt_payload={},
+        snapshot_paths=[],
+    )
+
+    assert len(validator_calls) == 1
+    assert validator_calls[0] == [
+        f"PYTHONPATH=src {repo_root.resolve() / '.venv' / 'bin' / 'pytest'} -q tests/unit/runtime/test_program_wave_authoring.py"
+    ]
+    assert result["expectation_ok"] is True
+    assert result["latency_ms"] == 7.0
+    assert result["observed_paths"] == ["tests/unit/runtime/test_program_wave_authoring.py"]
+    assert result["observed_path_sources"] == ["command_text"]
+    assert result["validation_results"]["status"] == "passed"
+    assert result["validation_results"]["status_basis"] == "focused_noop_short_circuit"
+    assert result["live_execution"]["timed_out"] is False
+    assert result["live_execution"]["validator_execution_mode"] == "focused_noop_short_circuit"
+    assert result["live_execution"]["preflight_evidence_result_status"] == "passed"
+    assert result["preflight_evidence_mode"] == "scenario_declared_focused_local_checks"
+    assert result["preflight_evidence_result_status"] == "passed"
+
+
+def test_sandbox_validation_command_uses_benchmark_tool_bin_for_pytest_and_odylith_commands(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root = tmp_path / "repo"
+    fallback_bin = tmp_path / "shared-runtime" / "bin"
+    fallback_bin.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_isolation,
+        "benchmark_tool_bin",
+        lambda *, repo_root: fallback_bin.resolve(),
+    )
+
+    pytest_command = live_execution._sandbox_validation_command(  # noqa: SLF001
+        repo_root=repo_root,
+        command="PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_program_wave_authoring.py",
+    )
+    odylith_command = live_execution._sandbox_validation_command(  # noqa: SLF001
+        repo_root=repo_root,
+        command="odylith subagent-orchestrator --repo-root . --help",
+    )
+
+    assert pytest_command == (
+        f"PYTHONPATH=src {fallback_bin.resolve() / 'pytest'} -q "
+        "tests/unit/runtime/test_program_wave_authoring.py"
+    )
+    assert odylith_command == (
+        f"PYTHONPATH=src {fallback_bin.resolve() / 'python'} "
+        "src/odylith/cli.py subagent-orchestrator --repo-root . --help"
+    )
+
+
+def test_run_live_scenario_treats_noop_validator_paths_as_supporting_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "truth"
+    workspace_root.mkdir(parents=True, exist_ok=True)
+    truth_root.mkdir(parents=True, exist_ok=True)
+    validator_path = Path("tests/unit/runtime/test_odylith_benchmark_runner.py")
+    for root in (workspace_root, truth_root):
+        full_path = root / validator_path
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        full_path.write_text("def test_placeholder() -> None:\n    pass\n", encoding="utf-8")
+
+    @contextlib.contextmanager
+    def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
+        del repo_root, strip_paths, snapshot_paths
+        yield workspace_root, truth_root
+
+    @contextlib.contextmanager
+    def _fake_temporary_codex_home(*, execution_contract, environ=None):  # type: ignore[no-untyped-def]
+        del execution_contract, environ
+        yield tmp_path / "codex-home"
+
+    def _fake_run_validators(*, workspace_root: Path, commands, environ=None):  # type: ignore[no-untyped-def]
+        del workspace_root, environ
+        command_list = list(commands)
+        return {
+            "status": "passed",
+            "duration_ms": 5.0,
+            "results": [{"status": "passed", "command": command_list[0]}] if command_list else [],
+            "passed_count": len(command_list),
+            "failed_count": 0,
+            "skipped_count": 0,
+            "timeout_count": 0,
+        }
+
+    monkeypatch.setattr(live_execution, "_temporary_worktree", _fake_temporary_worktree)
+    monkeypatch.setattr(live_execution, "_temporary_codex_home", _fake_temporary_codex_home)
+    monkeypatch.setattr(live_execution, "_workspace_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_scenario_workspace_self_reference_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_sandbox_process_env", lambda **kwargs: {"PATH": "/usr/bin:/bin"})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_codex_exec_command",
+        lambda **kwargs: ["codex", "exec", "--skip-git-repo-check", "-C", str(workspace_root)],  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_agent_prompt", lambda **kwargs: "prompt")  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_run_subprocess_capture",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("live codex execution should short-circuit")),  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_observed_path_details_from_events",
+        lambda **kwargs: {"paths": ["AGENTS.md", "odylith/AGENTS.md"], "sources": ["odylith_prompt_payload"]},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_workspace_git_status_snapshot", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_state_delta_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_restore_workspace_validator_truth", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_apply_strip_paths", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_validators", _fake_run_validators)
+    monkeypatch.setattr(live_execution, "_estimated_initial_prompt_tokens", lambda prompt: 1)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_live_diagnostics,
+        "workspace_state_diff",
+        lambda **kwargs: {"workspace_root_exists": True, "differences": [], "difference_count": 0},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.4",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+        ),
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_resolved_live_execution_contract",
+        lambda **kwargs: {
+            "runner": "live_host_cli",
+            "codex_bin": "codex",
+            "model": "gpt-5.4",
+            "reasoning_effort": "medium",
+        },
+    )
+
+    result = live_execution.run_live_scenario(
+        repo_root=repo_root,
+        scenario={
+            "family": "broad_shared_scope",
+            "prompt": "Treat the focused local check as the bounded no-op proof.",
+            "required_paths": ["AGENTS.md", "odylith/AGENTS.md"],
+            "focused_local_checks": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff",
+            ],
+            "validation_commands": [
+                "PYTHONPATH=src .venv/bin/pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py::test_non_route_ready_hot_path_payload_drops_duplicate_routing_handoff",
+            ],
+            "allow_noop_completion": True,
+            "needs_write": False,
+        },
+        mode="odylith_on",
+        benchmark_profile="proof",
+        packet_source="benchmark_packet",
+        prompt_payload={"changed_paths": ["AGENTS.md", "odylith/AGENTS.md"]},
+        snapshot_paths=[],
+    )
+
+    assert result["observed_paths"] == [
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+        validator_path.as_posix(),
+    ]
+    assert result["required_path_precision"] == 1.0
+    assert result["hallucinated_surface_rate"] == 0.0
+    assert result["hallucinated_surfaces"] == []
+    assert result["validation_results"]["status_basis"] == "focused_noop_short_circuit"
+
+
+def test_run_live_scenario_noop_preflight_ignores_benchmark_cli_launcher_artifacts(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "truth"
+    for root in (workspace_root, truth_root):
+        for relative in ("AGENTS.md", "odylith/AGENTS.md", "src/odylith/cli.py"):
+            path = root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# file\n", encoding="utf-8")
+
+    @contextlib.contextmanager
+    def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
+        del repo_root, strip_paths, snapshot_paths
+        yield workspace_root, truth_root
+
+    @contextlib.contextmanager
+    def _fake_temporary_codex_home(*, execution_contract, environ=None):  # type: ignore[no-untyped-def]
+        del execution_contract, environ
+        yield tmp_path / "codex-home"
+
+    def _fake_run_validators(*, workspace_root: Path, commands, environ=None):  # type: ignore[no-untyped-def]
+        del workspace_root, environ
+        command_list = list(commands)
+        return {
+            "status": "passed",
+            "duration_ms": 5.0,
+            "results": [{"status": "passed", "command": command_list[0]}] if command_list else [],
+            "passed_count": len(command_list),
+            "failed_count": 0,
+            "skipped_count": 0,
+            "timeout_count": 0,
+        }
+
+    monkeypatch.setattr(live_execution, "_temporary_worktree", _fake_temporary_worktree)
+    monkeypatch.setattr(live_execution, "_temporary_codex_home", _fake_temporary_codex_home)
+    monkeypatch.setattr(live_execution, "_workspace_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_scenario_workspace_self_reference_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_sandbox_process_env", lambda **kwargs: {"PATH": "/usr/bin:/bin"})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_codex_exec_command",
+        lambda **kwargs: ["codex", "exec", "--skip-git-repo-check", "-C", str(workspace_root)],  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_agent_prompt", lambda **kwargs: "prompt")  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_run_subprocess_capture",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("live codex execution should short-circuit")),  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_observed_path_details_from_events",
+        lambda **kwargs: {"paths": ["AGENTS.md", "odylith/AGENTS.md"], "sources": ["odylith_prompt_payload"]},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_workspace_git_status_snapshot", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_state_delta_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_restore_workspace_validator_truth", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_apply_strip_paths", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_validators", _fake_run_validators)
+    monkeypatch.setattr(live_execution, "_estimated_initial_prompt_tokens", lambda prompt: 1)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_live_diagnostics,
+        "workspace_state_diff",
+        lambda **kwargs: {"workspace_root_exists": True, "differences": [], "difference_count": 0},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.4",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+        ),
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_resolved_live_execution_contract",
+        lambda **kwargs: {
+            "runner": "live_host_cli",
+            "codex_bin": "codex",
+            "model": "gpt-5.4",
+            "reasoning_effort": "medium",
+        },
+    )
+
+    result = live_execution.run_live_scenario(
+        repo_root=repo_root,
+        scenario={
+            "family": "guidance_behavior",
+            "prompt": "Treat the passing guidance validator as the bounded no-op proof.",
+            "required_paths": ["AGENTS.md", "odylith/AGENTS.md"],
+            "focused_local_checks": [
+                "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth",
+            ],
+            "validation_commands": [
+                "odylith validate guidance-behavior --repo-root . --case-id guidance-cli-first-governed-truth",
+            ],
+            "allow_noop_completion": True,
+            "needs_write": False,
+        },
+        mode="odylith_on",
+        benchmark_profile="proof",
+        packet_source="benchmark_packet",
+        prompt_payload={"changed_paths": ["AGENTS.md", "odylith/AGENTS.md"]},
+        snapshot_paths=[],
+    )
+
+    assert result["observed_paths"] == ["AGENTS.md", "odylith/AGENTS.md"]
+    assert result["required_path_precision"] == 1.0
+    assert result["hallucinated_surface_rate"] == 0.0
+    assert "src/odylith/cli.py" not in result["observed_paths"]
+
+
+def test_run_live_scenario_noop_preflight_keeps_cli_launcher_when_scenario_targets_cli(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "truth"
+    for root in (workspace_root, truth_root):
+        path = root / "src" / "odylith" / "cli.py"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# cli\n", encoding="utf-8")
+
+    @contextlib.contextmanager
+    def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
+        del repo_root, strip_paths, snapshot_paths
+        yield workspace_root, truth_root
+
+    @contextlib.contextmanager
+    def _fake_temporary_codex_home(*, execution_contract, environ=None):  # type: ignore[no-untyped-def]
+        del execution_contract, environ
+        yield tmp_path / "codex-home"
+
+    def _fake_run_validators(*, workspace_root: Path, commands, environ=None):  # type: ignore[no-untyped-def]
+        del workspace_root, environ
+        command_list = list(commands)
+        return {
+            "status": "passed",
+            "duration_ms": 5.0,
+            "results": [{"status": "passed", "command": command_list[0]}] if command_list else [],
+            "passed_count": len(command_list),
+            "failed_count": 0,
+            "skipped_count": 0,
+            "timeout_count": 0,
+        }
+
+    monkeypatch.setattr(live_execution, "_temporary_worktree", _fake_temporary_worktree)
+    monkeypatch.setattr(live_execution, "_temporary_codex_home", _fake_temporary_codex_home)
+    monkeypatch.setattr(live_execution, "_workspace_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_scenario_workspace_self_reference_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_sandbox_process_env", lambda **kwargs: {"PATH": "/usr/bin:/bin"})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_codex_exec_command",
+        lambda **kwargs: ["codex", "exec", "--skip-git-repo-check", "-C", str(workspace_root)],  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_agent_prompt", lambda **kwargs: "prompt")  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_run_subprocess_capture",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("live codex execution should short-circuit")),  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_observed_path_details_from_events",
+        lambda **kwargs: {"paths": [], "sources": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_workspace_git_status_snapshot", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_state_delta_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_restore_workspace_validator_truth", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_apply_strip_paths", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_run_validators", _fake_run_validators)
+    monkeypatch.setattr(live_execution, "_estimated_initial_prompt_tokens", lambda prompt: 1)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_live_diagnostics,
+        "workspace_state_diff",
+        lambda **kwargs: {"workspace_root_exists": True, "differences": [], "difference_count": 0},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.4",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+        ),
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_resolved_live_execution_contract",
+        lambda **kwargs: {
+            "runner": "live_host_cli",
+            "codex_bin": "codex",
+            "model": "gpt-5.4",
+            "reasoning_effort": "medium",
+        },
+    )
+
+    result = live_execution.run_live_scenario(
+        repo_root=repo_root,
+        scenario={
+            "family": "cli_contract_regression",
+            "prompt": "Keep the CLI launcher contract visible.",
+            "required_paths": ["src/odylith/cli.py"],
+            "focused_local_checks": ["odylith benchmark --repo-root . --help"],
+            "validation_commands": ["odylith benchmark --repo-root . --help"],
+            "allow_noop_completion": True,
+            "needs_write": False,
+            "changed_paths": ["src/odylith/cli.py"],
+        },
+        mode="odylith_on",
+        benchmark_profile="proof",
+        packet_source="benchmark_packet",
+        prompt_payload={"changed_paths": ["src/odylith/cli.py"]},
+        snapshot_paths=[],
+    )
+
+    assert result["observed_paths"] == ["src/odylith/cli.py"]
+    assert result["required_path_precision"] == 1.0
+    assert result["hallucinated_surface_rate"] == 0.0
+
+
+def test_run_live_scenario_preserves_carried_packet_summary_truth(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    workspace_root = tmp_path / "workspace"
+    truth_root = tmp_path / "truth"
+    workspace_root.mkdir(parents=True, exist_ok=True)
+    truth_root.mkdir(parents=True, exist_ok=True)
+
+    @contextlib.contextmanager
+    def _fake_temporary_worktree(*, repo_root: Path, strip_paths, snapshot_paths):  # type: ignore[no-untyped-def]
+        del repo_root, strip_paths, snapshot_paths
+        yield workspace_root, truth_root
+
+    @contextlib.contextmanager
+    def _fake_temporary_codex_home(*, execution_contract, environ=None):  # type: ignore[no-untyped-def]
+        del execution_contract, environ
+        yield tmp_path / "codex-home"
+
+    monkeypatch.setattr(live_execution, "_temporary_worktree", _fake_temporary_worktree)
+    monkeypatch.setattr(live_execution, "_temporary_codex_home", _fake_temporary_codex_home)
+    monkeypatch.setattr(live_execution, "_workspace_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_scenario_workspace_self_reference_strip_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_sandbox_process_env", lambda **kwargs: {"PATH": "/usr/bin:/bin"})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_codex_exec_command",
+        lambda **kwargs: ["codex", "exec", "--skip-git-repo-check", "-C", str(workspace_root)],  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_agent_prompt", lambda **kwargs: "prompt")  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_run_subprocess_capture",
+        lambda **kwargs: subprocess.CompletedProcess(args=["codex"], returncode=0, stdout="", stderr=""),  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_parse_json_lines", lambda stream_text: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_usage_from_events", lambda events: {})  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_structured_output",
+        lambda output_path, stream_text='': {"status": "completed", "summary": "complete", "changed_files": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_observed_path_details_from_events",
+        lambda **kwargs: {"paths": [], "sources": []},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(live_execution, "_path_recall", lambda **kwargs: (1.0, []))  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_precision_metrics",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "observed_path_count": 0,
+            "required_path_precision": 1.0,
+            "hallucinated_surface_count": 0,
+            "hallucinated_surface_rate": 0.0,
+            "hallucinated_surfaces": [],
+            "expected_write_path_count": 0,
+            "candidate_write_path_count": 0,
+            "candidate_write_paths": [],
+            "write_surface_precision": 1.0,
+            "unnecessary_widening_count": 0,
+            "unnecessary_widening_rate": 0.0,
+            "unnecessary_widening_paths": [],
+        },
+    )
+    monkeypatch.setattr(live_execution, "_candidate_write_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_meaningful_candidate_write_paths", lambda rows: rows)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_git_status_snapshot", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_workspace_state_delta_paths", lambda **kwargs: [])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_restore_workspace_validator_truth", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_apply_strip_paths", lambda **kwargs: None)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution,
+        "_run_validators",
+        lambda **kwargs: {  # type: ignore[arg-type]
+            "status": "passed",
+            "duration_ms": 1.0,
+            "results": [],
+            "passed_count": 0,
+            "failed_count": 0,
+            "skipped_count": 0,
+            "timeout_count": 0,
+        },
+    )
+    monkeypatch.setattr(live_execution, "_validator_result_passed", lambda result: True)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_successful_noop_precision_metrics", lambda **kwargs: kwargs["precision_metrics"])  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_validator_backed_completion_satisfied", lambda **kwargs: False)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_write_expectation_satisfied", lambda **kwargs: True)  # type: ignore[arg-type]
+    monkeypatch.setattr(live_execution, "_estimated_initial_prompt_tokens", lambda prompt: 1)  # type: ignore[arg-type]
+    monkeypatch.setattr(
+        live_execution.odylith_benchmark_live_diagnostics,
+        "workspace_state_diff",
+        lambda **kwargs: {"workspace_root_exists": True, "differences": [], "difference_count": 0},  # type: ignore[arg-type]
+    )
+    monkeypatch.setattr(
+        live_execution.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda **kwargs: odylith_reasoning.ReasoningConfig(
+            mode="auto",
+            provider="codex-cli",
+            model="gpt-5.4",
+            base_url="",
+            api_key="",
+            scope_cap=5,
+            timeout_seconds=20.0,
+            codex_bin="codex",
+            codex_reasoning_effort="medium",
+        ),
+    )
+    monkeypatch.setattr(
+        live_execution,
+        "_resolved_live_execution_contract",
+        lambda **kwargs: {
+            "runner": "live_host_cli",
+            "codex_bin": "codex",
+            "model": "gpt-5.4",
+            "reasoning_effort": "medium",
+        },
+    )
+
+    result = live_execution.run_live_scenario(
+        repo_root=repo_root,
+        scenario={
+            "prompt": "Preserve execution-engine benchmark packet truth.",
+            "required_paths": [],
+            "validation_commands": [],
+            "needs_write": False,
+        },
+        mode="odylith_on",
+        packet_source="governance_slice",
+        prompt_payload={},
+        packet_summary={
+            "packet_kind": "governance_slice",
+            "execution_engine_present": True,
+            "execution_engine_mode": "verify",
+            "execution_engine_current_phase": "verify",
+            "execution_engine_resume_token": "resume:governance_slice",
+        },
+        snapshot_paths=[],
+    )
+
+    packet = dict(result["packet"])
+    assert packet["packet_kind"] == "governance_slice"
+    assert packet["execution_engine_present"] is True
+    assert packet["execution_engine_mode"] == "verify"
+    assert packet["execution_engine_current_phase"] == "verify"
+    assert packet["execution_engine_resume_token"] == "resume:governance_slice"
+    assert packet["within_budget"] is True
+    assert packet["route_ready"] is True
+    assert packet["live_status"] == "completed"
 
 
 def test_overlay_workspace_repo_snapshot_applies_dirty_tracked_and_untracked_changes(tmp_path: Path) -> None:
@@ -1844,6 +3721,75 @@ def test_overlay_workspace_repo_snapshot_limits_dirty_overlay_to_allowed_paths(t
 
     assert (workspace_root / "keep.txt").read_text(encoding="utf-8") == "dirty keep\n"
     assert (workspace_root / "drop.txt").read_text(encoding="utf-8") == "base drop\n"
+
+
+def test_overlay_workspace_repo_snapshot_copies_allowed_directory_trees(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    workspace_root = tmp_path / "workspace"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    workspace_root.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.email", "bench@example.com"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Benchmark"], cwd=repo_root, check=True)
+    tracked = repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "__init__.py"
+    tracked.parent.mkdir(parents=True, exist_ok=True)
+    tracked.write_text("# base\n", encoding="utf-8")
+    subprocess.run(["git", "add", str(tracked.relative_to(repo_root))], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+
+    workspace_tracked = workspace_root / "src" / "odylith" / "runtime" / "intervention_engine" / "__init__.py"
+    workspace_tracked.parent.mkdir(parents=True, exist_ok=True)
+    workspace_tracked.write_text("# base\n", encoding="utf-8")
+
+    (repo_root / "src" / "odylith" / "runtime" / "intervention_engine" / "calibration").mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    live_execution._overlay_workspace_repo_snapshot(  # noqa: SLF001
+        repo_root=repo_root,
+        workspace_root=workspace_root,
+        allowed_paths=["src/odylith/runtime/intervention_engine"],
+    )
+
+    assert (workspace_root / "src" / "odylith" / "runtime" / "intervention_engine" / "calibration").is_dir()
+
+
+def test_temporary_worktree_uses_real_detached_checkout_outside_repo_root(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=repo_root, text=True, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.email", "bench@example.com"], cwd=repo_root, check=True)
+    subprocess.run(["git", "config", "user.name", "Benchmark"], cwd=repo_root, check=True)
+    (repo_root / "README.md").write_text("repo\n", encoding="utf-8")
+    subprocess.run(["git", "add", "README.md"], cwd=repo_root, check=True)
+    subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
+
+    with live_execution._temporary_worktree(  # noqa: SLF001
+        repo_root=repo_root,
+        strip_paths=[],
+        snapshot_paths=[],
+    ) as workspace_pair:
+        workspace_root, _ = workspace_pair
+        resolved_workspace_root = workspace_root.resolve()
+        assert resolved_workspace_root != repo_root.resolve()
+        assert repo_root.resolve() not in resolved_workspace_root.parents
+        assert (workspace_root / ".git").exists()
+        assert (workspace_root / "README.md").read_text(encoding="utf-8") == "repo\n"
+        top_level = subprocess.run(
+            ["git", "-C", str(workspace_root), "rev-parse", "--show-toplevel"],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        head_name = subprocess.run(
+            ["git", "-C", str(workspace_root), "rev-parse", "--abbrev-ref", "HEAD"],
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        assert Path(top_level).resolve() == resolved_workspace_root
+        assert head_name == "HEAD"
 
 
 def test_observed_paths_from_events_ignores_transitive_paths_in_file_content_output(tmp_path: Path) -> None:
@@ -2150,6 +4096,35 @@ def test_workspace_state_delta_paths_ignores_preexisting_workspace_noise(tmp_pat
     assert changed_paths == ["tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py"]
 
 
+def test_workspace_state_delta_paths_ignores_benchmark_strip_restore_paths(tmp_path: Path) -> None:
+    workspace_root = tmp_path / "workspace"
+    readme = workspace_root / "README.md"
+    readme.parent.mkdir(parents=True, exist_ok=True)
+    readme.write_text("dirty before\n", encoding="utf-8")
+
+    changed_paths = live_execution._workspace_state_delta_paths(  # noqa: SLF001
+        baseline={
+            "git_status_paths": ["README.md"],
+            "fingerprints": {
+                "README.md": live_execution._workspace_file_fingerprint(  # noqa: SLF001
+                    workspace_root=workspace_root,
+                    relative_path="README.md",
+                ),
+            },
+        },
+        workspace_root=workspace_root,
+        workspace_state={
+            "git_status_paths": [
+                "README.md",
+                "odylith/casebook/bugs/AGENTS.md",
+            ],
+        },
+        ignored_paths=["odylith/casebook/bugs/AGENTS.md"],
+    )
+
+    assert changed_paths == []
+
+
 def test_meaningful_candidate_write_paths_filters_benchmark_temp_and_env_noise() -> None:
     changed_paths = live_execution._meaningful_candidate_write_paths(  # noqa: SLF001
         [
@@ -2199,7 +4174,7 @@ def test_observed_paths_from_events_include_prompt_selected_grounding_surfaces(t
                 "retrieval_plan": {
                     "selected_docs": [
                         "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-                        "odylith/skills/subagent-orchestrator/SKILL.md",
+                        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
                     ]
                 }
             },
@@ -2209,7 +4184,7 @@ def test_observed_paths_from_events_include_prompt_selected_grounding_surfaces(t
     assert observed == [
         "odylith/AGENTS.md",
         "odylith/agents-guidelines/SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        "odylith/skills/subagent-orchestrator/SKILL.md",
+        "odylith/skills/odylith-subagent-orchestrator/SKILL.md",
         "src/odylith/install/agents.py",
     ]
 

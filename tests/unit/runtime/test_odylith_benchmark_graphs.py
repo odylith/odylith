@@ -24,6 +24,7 @@ def test_render_graph_assets_writes_codex_benchmark_svgs(tmp_path: Path) -> None
                 "results": [
                     {
                         "mode": "odylith_on",
+                        "host_prompt_estimated_tokens": 119,
                         "codex_prompt_estimated_tokens": 119,
                         "latency_ms": 26.554,
                         "total_payload_estimated_tokens": 119,
@@ -32,6 +33,7 @@ def test_render_graph_assets_writes_codex_benchmark_svgs(tmp_path: Path) -> None
                     },
                     {
                         "mode": "odylith_repo_scan_baseline",
+                        "host_prompt_estimated_tokens": 520,
                         "codex_prompt_estimated_tokens": 520,
                         "latency_ms": 36.99,
                         "total_payload_estimated_tokens": 520,
@@ -108,6 +110,36 @@ def test_render_graph_assets_writes_codex_benchmark_svgs(tmp_path: Path) -> None
     assert "Focus window" in frontier
     assert "How to read" in frontier
     assert "Repo-scan baseline" in frontier
+
+
+def test_scenario_rows_prefer_host_prompt_tokens_over_compat_alias() -> None:
+    report = {
+        "scenarios": [
+            {
+                "scenario_id": "host-neutral-prompt",
+                "family": "cross_file_feature",
+                "results": [
+                    {
+                        "mode": "odylith_on",
+                        "host_prompt_estimated_tokens": 144,
+                        "codex_prompt_estimated_tokens": 19,
+                        "latency_ms": 10.0,
+                    },
+                    {
+                        "mode": "raw_agent_baseline",
+                        "host_prompt_estimated_tokens": 96,
+                        "codex_prompt_estimated_tokens": 11,
+                        "latency_ms": 5.0,
+                    },
+                ],
+            }
+        ]
+    }
+
+    rows = graphs._scenario_rows(report)  # noqa: SLF001
+
+    assert rows[0]["candidate_prompt"] == 144.0
+    assert rows[0]["baseline_prompt"] == 96.0
 
 
 def test_render_graph_assets_prefers_published_conservative_view(tmp_path: Path) -> None:
@@ -988,7 +1020,7 @@ def test_benchmark_graph_style_contract_stays_stable() -> None:
     assert graphs.QUALITY_FRONTIER_HEADING == "Live Benchmark Quality Frontier: grounding recall vs time to valid outcome"
     assert graphs.FRONTIER_HEADING == "Live Benchmark: time to valid outcome vs live session input"
     assert graphs.HEATMAP_HEADING == "Live Benchmark Family Heatmap: where Odylith wins"
-    assert graphs.POSTURE_HEADING == "Live Benchmark operating posture on the Codex benchmark corpus"
+    assert graphs.POSTURE_HEADING == "Live Benchmark operating posture on the current proof-host corpus"
     assert graphs._BG == "#f6f1e7"
     assert graphs._PANEL == "#fffdfa"
     assert graphs._BASELINE == "#c75b52"
@@ -1072,16 +1104,16 @@ def test_render_graph_assets_uses_diagnostic_labels_for_diagnostic_reports(tmp_p
     frontier = (tmp_path / graphs.FRONTIER_FILENAME).read_text(encoding="utf-8")
     heatmap = (tmp_path / graphs.HEATMAP_FILENAME).read_text(encoding="utf-8")
     quality = (tmp_path / graphs.QUALITY_FRONTIER_FILENAME).read_text(encoding="utf-8")
-    assert "Grounding Benchmark: packet/prompt time vs prompt-bundle input" in frontier
+    assert "Internal Diagnostic Benchmark: packet/prompt time vs prompt-bundle input" in frontier
     assert "Prompt-bundle input tokens" in frontier
     assert "Packet time (ms)" in frontier
     assert "Source: latest-diagnostic.v1.json" in frontier
-    assert "Grounding Benchmark Family Heatmap" in heatmap
+    assert "Internal Diagnostic Family Heatmap" in heatmap
     assert "Prompt-bundle input" in heatmap
     assert "Packet time (ms)" in heatmap
-    assert "Grounding Benchmark Quality Frontier" in quality
+    assert "Internal Diagnostic Quality Frontier" in quality
     assert "packet time" in quality
-    assert "prompt-only raw Codex control" in quality
+    assert "prompt-only raw host control" in quality
     assert "0.00 rail by contract" in quality
     assert "Prompt-only control rail" in quality
 

@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-050
-title: Odylith Repair and Reinstall Converge After Partial Runtime Failure
+title: Repair and Reinstall Converge After Partial Runtime Failure
 date: 2026-04-06
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: service
 impacted_parts: runtime replacement, repair cleanup, reinstall convergence, stale wrapper residue, and `.backup-*` handling
 sizing: M
 complexity: High

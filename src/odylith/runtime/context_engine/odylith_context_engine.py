@@ -25,7 +25,15 @@ from odylith.runtime.evaluation import odylith_benchmark_runner
 from odylith.runtime.memory import odylith_memory_backend
 from odylith.runtime.memory import odylith_remote_retrieval
 from odylith.runtime.context_engine import odylith_context_cache
+from odylith.runtime.context_engine import odylith_context_engine_compass_runtime_cache
+from odylith.runtime.context_engine import odylith_context_engine_daemon_wait_runtime
+from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
+from odylith.runtime.context_engine import odylith_context_engine_memory_snapshot_runtime as memory_snapshot_runtime
+from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
+from odylith.runtime.context_engine import odylith_context_engine_runtime_learning_runtime as runtime_learning_runtime
 from odylith.runtime.context_engine import odylith_context_engine_store as store
+from odylith.runtime.context_engine import odylith_context_engine_workspace_daemon as workspace_daemon
+from odylith.runtime.context_engine import runtime_read_session
 from odylith.runtime.common.command_surface import module_invocation
 
 _WORKSPACE_PYTHON_HANDOFF_ENV = "ODYLITH_CONTEXT_ENGINE_WORKSPACE_PYTHON_HANDOFF"
@@ -159,6 +167,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--kind",
         choices=(
             "workstream",
+            "release",
             "plan",
             "bug",
             "diagram",
@@ -172,7 +181,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="",
         help="Optional explicit entity kind.",
     )
-    context.add_argument("--event-limit", type=int, default=2, help="Maximum linked Codex events to return.")
+    context.add_argument("--event-limit", type=int, default=2, help="Maximum linked agent events to return.")
     context.add_argument("--relation-limit", type=int, default=2, help="Maximum relation rows to return.")
 
     impact = subparsers.add_parser("impact", help="Resolve architecture impact for one or more changed paths.")
@@ -237,7 +246,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
     session_brief = subparsers.add_parser(
         "session-brief",
-        help="Build one deterministic Codex session dossier and refresh the local session heartbeat.",
+        help="Build one deterministic coding-agent session dossier and refresh the local session heartbeat.",
     )
     session_brief.add_argument("paths", nargs="*", help="Optional explicit repo-relative changed paths.")
     session_brief.add_argument("--working-tree", action="store_true", help="Include meaningful changed paths from the git working tree.")
@@ -255,6 +264,19 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="append",
         default=[],
         help="Generated/dashboard surfaces this session expects to touch (repeatable).",
+    )
+    session_brief.add_argument(
+        "--visible-text",
+        action="append",
+        default=[],
+        help="Copied UI or screenshot-visible text to treat as grounding literals (repeatable).",
+    )
+    session_brief.add_argument("--active-tab", default="", help="Optional active dashboard tab or route hint.")
+    session_brief.add_argument("--user-turn-id", default="", help="Optional stable upstream turn identifier.")
+    session_brief.add_argument(
+        "--supersedes-turn-id",
+        default="",
+        help="Optional prior turn id this turn supersedes for narration purposes.",
     )
     session_brief.add_argument(
         "--claim-mode",
@@ -297,6 +319,19 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Generated/dashboard surfaces this session expects to touch (repeatable).",
     )
     bootstrap.add_argument(
+        "--visible-text",
+        action="append",
+        default=[],
+        help="Copied UI or screenshot-visible text to treat as grounding literals (repeatable).",
+    )
+    bootstrap.add_argument("--active-tab", default="", help="Optional active dashboard tab or route hint.")
+    bootstrap.add_argument("--user-turn-id", default="", help="Optional stable upstream turn identifier.")
+    bootstrap.add_argument(
+        "--supersedes-turn-id",
+        default="",
+        help="Optional prior turn id this turn supersedes for narration purposes.",
+    )
+    bootstrap.add_argument(
         "--claim-mode",
         choices=("shared", "exclusive"),
         default="shared",
@@ -327,16 +362,16 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
     benchmark = subparsers.add_parser(
         "benchmark",
-        help="Run the local Codex benchmark harness with explicit quick versus proof profiles.",
+        help="Run the local benchmark harness with explicit quick versus proof profiles.",
     )
     benchmark.add_argument(
         "--profile",
         choices=tuple(odylith_benchmark_runner.BENCHMARK_PROFILES),
         default=odylith_benchmark_runner.DEFAULT_CLI_BENCHMARK_PROFILE,
         help=(
-            "Benchmark profile to run. `quick` is the default live matched-pair developer lane; "
+            "Benchmark profile to run. `quick` is the default bounded live matched-pair smoke lane; "
             "`proof` is the full-corpus live publication proof for `odylith_on` versus `odylith_off`; "
-            "`diagnostic` isolates packet and prompt creation without running the live Codex pair."
+            "`diagnostic` isolates packet and prompt creation without running the live host pair."
         ),
     )
     benchmark.add_argument(
@@ -346,7 +381,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         choices=tuple(odylith_benchmark_runner.PUBLIC_CLI_MODES),
         help=(
             "Benchmark mode to run (repeatable). Defaults follow the selected profile; "
-            "use `odylith_off` for the raw Codex CLI lane."
+            "use `odylith_off` for the raw host CLI lane."
         ),
     )
     benchmark.add_argument(
@@ -649,16 +684,12 @@ def _runtime_status_payload(*, repo_root: Path) -> dict[str, Any]:
     )
     preferred_backend = watcher_report.get("preferred_backend", store.preferred_watcher_backend(repo_root=repo_root))
     odylith_switch = odylith_ablation.build_odylith_switch_snapshot(repo_root=repo_root)
-    optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)
-    evaluation_snapshot = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
+    optimization_snapshot = runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=repo_root)
+    evaluation_snapshot = memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=repo_root)
     orchestration_adoption_snapshot = store.load_orchestration_adoption_snapshot(repo_root=repo_root)
-    memory_snapshot = store.load_runtime_memory_snapshot(
-        repo_root=repo_root,
-        optimization_snapshot=optimization_snapshot,
-        evaluation_snapshot=evaluation_snapshot,
-    )
+    memory_snapshot = memory_snapshot_runtime.load_runtime_memory_snapshot(repo_root=repo_root, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
     benchmark_report = odylith_benchmark_runner.compact_report_summary(
-        odylith_benchmark_runner.load_latest_benchmark_report(repo_root=repo_root)
+        odylith_benchmark_runner.load_latest_runtime_benchmark_report(repo_root=repo_root)
     )
     benchmark_progress = odylith_benchmark_runner.compact_progress_summary(
         odylith_benchmark_runner.load_benchmark_progress(repo_root=repo_root)
@@ -826,17 +857,23 @@ def _print_runtime_status(payload: Mapping[str, Any]) -> None:
         backend = engine.get("backend", {}) if isinstance(engine, Mapping) else {}
         target_backend = engine.get("target_backend", {}) if isinstance(engine, Mapping) else {}
         backend_transition = engine.get("backend_transition", {}) if isinstance(engine, Mapping) else {}
+        backend_evidence = memory_snapshot.get("backend_transition", {})
+        backend_source = str(backend_evidence.get("evidence_source", "")).strip() if isinstance(backend_evidence, Mapping) else ""
+        backend_source = backend_source or "live_backend"
+        backend_fallback = backend_source in {"compiler_projection_snapshot", "repo_scan_fallback", "repo_scan_degraded_fallback"}
+        backend_fallback_label = "yes" if backend_fallback else "no"
         if isinstance(runtime_state, Mapping) and isinstance(guidance_catalog, Mapping) and isinstance(entity_counts, Mapping):
             print(
                 "- memory: "
                 f"actual={str(backend.get('storage', '')).strip() or '-'} / {str(backend.get('sparse_recall', '')).strip() or '-'}, "
                 f"target={str(target_backend.get('storage', '')).strip() or '-'} / {str(target_backend.get('sparse_recall', '')).strip() or '-'}, "
                 f"transition={str(backend_transition.get('status', '')).strip() or '-'}, "
-                f"source={str(memory_snapshot.get('backend_transition', {}).get('evidence_source', '')).strip() or 'live_backend'}, "
+                f"source={backend_source}, "
                 f"indexed_entities={int(entity_counts.get('indexed_entity_count', 0) or 0)}, "
                 f"guidance_chunks={int(guidance_catalog.get('chunk_count', 0) or 0)}, "
                 f"bootstrap_packets={int(runtime_state.get('bootstrap_packets', 0) or 0)}"
             )
+            print(f"- memory_backend_fallback: {backend_fallback_label}, source={backend_source}, scope=live_backend_transition")
         if isinstance(memory_areas, Mapping):
             count_summary = _memory_area_count_summary(memory_areas)
             if count_summary:
@@ -860,10 +897,14 @@ def _print_runtime_status(payload: Mapping[str, Any]) -> None:
                 f"provider={str(remote_retrieval.get('provider', '')).strip() or '-'}"
             )
         if isinstance(degraded_fallback, Mapping):
+            reason_keys = dict(degraded_fallback.get("repo_scan_degraded_reason_distribution", {})).keys()
+            degraded_reasons = ",".join(str(key) for key in reason_keys) or "-"
             print(
-                "- repo_scan_degraded_fallback: "
+                "- context_selection_degraded_fallback: "
                 f"rate={float(degraded_fallback.get('repo_scan_degraded_fallback_rate', 0.0) or 0.0):.3f}, "
-                f"reasons={','.join(str(key) for key in dict(degraded_fallback.get('repo_scan_degraded_reason_distribution', {})).keys()) or '-'}"
+                f"reasons={degraded_reasons}, "
+                "scope=recent_context_selection_events, "
+                f"memory_backend_fallback={backend_fallback_label}"
             )
             print(
                 "- grounding_failure_split: "
@@ -998,10 +1039,16 @@ def _print_runtime_status(payload: Mapping[str, Any]) -> None:
         print(
             "- benchmark_report: "
             f"status={benchmark_report.get('status', '')}, "
+            f"profile={benchmark_report.get('benchmark_profile', '') or '-'}, "
             f"scenarios={int(benchmark_report.get('scenario_count', 0) or 0)}, "
             f"comparison={benchmark_report.get('candidate_mode', '') or '-'} vs "
             f"{benchmark_report.get('baseline_mode', '') or '-'}"
         )
+        if "current_tree_identity_match" in benchmark_report:
+            print(
+                "- benchmark_tree_match: "
+                f"{'yes' if bool(benchmark_report.get('current_tree_identity_match')) else 'no'}"
+            )
         print(
             "- benchmark_deltas: "
             f"latency_ms={float(benchmark_report.get('latency_delta_ms', 0.0) or 0.0):.3f}, "
@@ -1017,6 +1064,23 @@ def _daemon_socket_available(*, repo_root: Path) -> bool:
     if not (pid and _pid_alive(pid)):
         return False
     return _read_daemon_transport(repo_root=repo_root) is not None
+
+
+def _wait_for_daemon_ready(*, repo_root: Path, timeout_seconds: float) -> bool:
+    deadline = time.monotonic() + max(0.0, float(timeout_seconds))
+    while time.monotonic() < deadline:
+        remaining = max(0.0, deadline - time.monotonic())
+        payload = _daemon_request(
+            repo_root=repo_root,
+            command="ready",
+            payload={},
+            required=False,
+            timeout_seconds=min(0.25, max(0.05, remaining)),
+        )
+        if isinstance(payload, Mapping) and bool(payload.get("ready")):
+            return True
+        time.sleep(0.05)
+    return False
 
 
 def _normalize_loopback_host(value: Any) -> str:
@@ -1101,7 +1165,6 @@ def _daemon_request(
     timeout_seconds: float = 5.0,
 ) -> dict[str, Any] | None:
     started_at = time.perf_counter()
-    daemon_metadata = _read_daemon_metadata(repo_root=repo_root)
     transport = _read_daemon_transport(repo_root=repo_root)
     if transport is None:
         if required:
@@ -1126,73 +1189,43 @@ def _daemon_request(
             metadata={"required": bool(required), "transport": "inproc"},
         )
         return dict(daemon_payload) if isinstance(daemon_payload, Mapping) else {"value": daemon_payload}
-    if str(transport.get("transport", "")).strip() == "tcp":
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        connect_target: Any = (
-            str(transport.get("host", "")).strip() or "127.0.0.1",
-            int(transport.get("port", 0) or 0),
-        )
-    else:
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        connect_target = str(transport.get("path", "")).strip() or str(store.socket_path(repo_root=repo_root))
-    sock.settimeout(timeout_seconds)
-    try:
-        sock.connect(connect_target)
-        request = {
-            "command": str(command).strip(),
-            "payload": dict(payload or {}),
+
+    def _socket_transport_reader(**kwargs: Any) -> dict[str, Any] | None:
+        resolved_root = Path(str(kwargs.get("repo_root", repo_root))).resolve()
+        active_transport = _read_daemon_transport(repo_root=resolved_root)
+        if not isinstance(active_transport, Mapping):
+            return None
+        if str(active_transport.get("transport", "")).strip() == "inproc":
+            return None
+        return dict(active_transport)
+
+    def _unscoped_namespace_builder(**kwargs: Any) -> dict[str, Any]:
+        return {
+            "workspace_key": "",
+            "request_namespace": "",
+            "session_namespaced": False,
+            "session_namespace": "",
+            "working_tree_scope": "",
+            "session_id_present": False,
+            "claim_path_count": 0,
+            "changed_path_count": 0,
         }
-        auth_token = str(daemon_metadata.get("auth_token", "")).strip()
-        if auth_token:
-            request["auth_token"] = auth_token
-        rendered = json.dumps(request, sort_keys=True).encode("utf-8") + b"\n"
-        sock.sendall(rendered)
-        sock.shutdown(socket.SHUT_WR)
-        chunks: list[bytes] = []
-        while True:
-            data = sock.recv(65536)
-            if not data:
-                break
-            chunks.append(data)
-    except OSError as exc:
-        if required:
-            raise RuntimeError("odylith context engine daemon request failed") from exc
-        return None
-    finally:
-        with contextlib.suppress(OSError):
-            sock.close()
-    if not chunks:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned no response")
-        return None
-    try:
-        response = json.loads(b"".join(chunks).decode("utf-8"))
-    except json.JSONDecodeError as exc:
-        if required:
-            raise RuntimeError("odylith context engine daemon returned invalid JSON") from exc
-        return None
-    if not isinstance(response, Mapping):
-        if required:
-            raise RuntimeError("odylith context engine daemon returned an invalid payload")
-        return None
-    if not bool(response.get("ok", False)):
-        message = str(response.get("error", "")).strip() or "odylith context engine daemon request failed"
-        if required:
-            raise RuntimeError(message)
-        return None
-    daemon_payload = response.get("payload", {})
-    store.record_runtime_timing(
+
+    result = workspace_daemon.request_runtime_daemon(
         repo_root=repo_root,
-        category="daemon",
-        operation=str(command).strip() or "request",
-        duration_ms=(time.perf_counter() - started_at) * 1000.0,
-        metadata={
-            "required": bool(required),
-            "transport": str(transport.get("transport", "")).strip() or "unknown",
-            "authenticated": bool(str(daemon_metadata.get("auth_token", "")).strip()),
-        },
+        command=command,
+        payload=payload,
+        required=required,
+        timeout_seconds=timeout_seconds,
+        transport_reader=_socket_transport_reader,
+        metadata_reader=_read_daemon_metadata,
+        namespace_builder=_unscoped_namespace_builder,
+        timing_recorder=store.record_runtime_timing,
     )
-    return dict(daemon_payload) if isinstance(daemon_payload, Mapping) else {"value": daemon_payload}
+    if result is None:
+        return None
+    daemon_payload, _runtime_execution = result
+    return daemon_payload
 
 
 def _client_mode_required(client_mode: str) -> bool:
@@ -1304,13 +1337,7 @@ def _spawn_daemon_background(*, repo_root: Path, scope: str = "full") -> bool:
             except OSError:
                 spawned = False
     if spawned or waiting_for_existing:
-        for _ in range(50):
-            if _daemon_socket_available(repo_root=repo_root):
-                ready = True
-                break
-            if waiting_for_existing and existing_pid and not _pid_alive(existing_pid):
-                break
-            time.sleep(0.1)
+        ready = _wait_for_daemon_ready(repo_root=repo_root, timeout_seconds=5.0)
     if spawned and not ready and spawned_process is not None:
         startup_reaped = _terminate_background_process(spawned_process)
         _clear_stale_daemon_artifacts(repo_root=repo_root)
@@ -1416,14 +1443,11 @@ def _run_status(*, repo_root: Path) -> int:
 
 
 def _run_memory_snapshot(*, repo_root: Path) -> int:
-    store._warm_runtime(repo_root=repo_root, runtime_mode="auto", reason="memory_snapshot", scope="full")  # noqa: SLF001
-    optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)
-    evaluation_snapshot = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
-    payload = store.load_runtime_memory_snapshot(
-        repo_root=repo_root,
-        optimization_snapshot=optimization_snapshot,
-        evaluation_snapshot=evaluation_snapshot,
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="full"):
+        store._warm_runtime(repo_root=repo_root, runtime_mode="auto", reason="memory_snapshot", scope="full")  # noqa: SLF001
+        optimization_snapshot = runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=repo_root)
+        evaluation_snapshot = memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=repo_root)
+        payload = memory_snapshot_runtime.load_runtime_memory_snapshot(repo_root=repo_root, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1597,12 +1621,13 @@ def _run_stop(*, repo_root: Path) -> int:
 
 
 def _run_query(*, repo_root: Path, text: str, limit: int, kinds: Sequence[str]) -> int:
-    payload = store.search_entities_payload(
-        repo_root=repo_root,
-        query=text,
-        limit=limit,
-        kinds=kinds,
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.search_entities_payload(
+            repo_root=repo_root,
+            query=text,
+            limit=limit,
+            kinds=kinds,
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1648,18 +1673,19 @@ def _run_context(
     event_limit: int,
     relation_limit: int,
 ) -> int:
-    payload = store.compact_context_dossier_for_delivery(
-        store.load_context_dossier(
-            repo_root=repo_root,
-            ref=ref,
-            kind=str(kind or "").strip() or None,
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = dossier_compaction_runtime.compact_context_dossier_for_delivery(
+            store.load_context_dossier(
+                repo_root=repo_root,
+                ref=ref,
+                kind=str(kind or "").strip() or None,
+                event_limit=max(1, int(event_limit)),
+                relation_limit=max(1, int(relation_limit)),
+            ),
             event_limit=max(1, int(event_limit)),
-            relation_limit=max(1, int(relation_limit)),
-        ),
-        event_limit=max(1, int(event_limit)),
-        relation_limit_per_kind=max(1, int(relation_limit)),
-        delivery_limit=1,
-    )
+            relation_limit_per_kind=max(1, int(relation_limit)),
+            delivery_limit=1,
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1751,18 +1777,20 @@ def _run_surface_read(
     case: str,
     view: str,
 ) -> int:
-    payload = _surface_read_payload(
-        repo_root=repo_root,
-        entity=entity,
-        workstream=workstream,
-        component=component,
-        paths=paths,
-        session_id=session_id,
-        claim_paths=claim_paths,
-        working_tree_scope=working_tree_scope,
-        case=case,
-        view=view,
-    )
+    requested_scope = "reasoning" if str(entity).strip().lower() == "governance-detail" else "default"
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope=requested_scope):
+        payload = _surface_read_payload(
+            repo_root=repo_root,
+            entity=entity,
+            workstream=workstream,
+            component=component,
+            paths=paths,
+            session_id=session_id,
+            claim_paths=claim_paths,
+            working_tree_scope=working_tree_scope,
+            case=case,
+            view=view,
+        )
     print(json.dumps(_surface_payload_json_ready(payload), indent=2, ensure_ascii=False))
     return 0
 
@@ -1777,15 +1805,16 @@ def _run_impact(
     claim_paths: Sequence[str],
     test_limit: int,
 ) -> int:
-    payload = store.build_impact_report(
-        repo_root=repo_root,
-        changed_paths=paths,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        claimed_paths=claim_paths,
-        test_limit=max(1, int(test_limit)),
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.build_impact_report(
+            repo_root=repo_root,
+            changed_paths=paths,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            claimed_paths=claim_paths,
+            test_limit=max(1, int(test_limit)),
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1799,14 +1828,15 @@ def _run_architecture(
     session_id: str,
     claim_paths: Sequence[str],
 ) -> int:
-    payload = store.build_architecture_audit(
-        repo_root=repo_root,
-        changed_paths=paths,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        claimed_paths=claim_paths,
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.build_architecture_audit(
+            repo_root=repo_root,
+            changed_paths=paths,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            claimed_paths=claim_paths,
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1822,16 +1852,17 @@ def _run_governance_slice(
     session_id: str,
     claim_paths: Sequence[str],
 ) -> int:
-    payload = store.build_governance_slice(
-        repo_root=repo_root,
-        changed_paths=paths,
-        workstream=workstream,
-        component=component,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        claimed_paths=claim_paths,
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = store.build_governance_slice(
+            repo_root=repo_root,
+            changed_paths=paths,
+            workstream=workstream,
+            component=component,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            claimed_paths=claim_paths,
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1846,23 +1877,32 @@ def _run_session_brief(
     workstream: str,
     intent: str,
     surfaces: Sequence[str],
+    visible_text: Sequence[str],
+    active_tab: str,
+    user_turn_id: str,
+    supersedes_turn_id: str,
     claim_mode: str,
     claim_paths: Sequence[str],
     lease_seconds: int,
 ) -> int:
-    payload = store.build_session_brief(
-        repo_root=repo_root,
-        changed_paths=paths,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        workstream=workstream,
-        intent=intent,
-        generated_surfaces=surfaces,
-        claim_mode=claim_mode,
-        claimed_paths=claim_paths,
-        lease_seconds=max(60, int(lease_seconds)),
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = packet_session_runtime.build_session_brief(
+            repo_root=repo_root,
+            changed_paths=paths,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            workstream=workstream,
+            intent=intent,
+            generated_surfaces=surfaces,
+            visible_text=visible_text,
+            active_tab=active_tab,
+            user_turn_id=user_turn_id,
+            supersedes_turn_id=supersedes_turn_id,
+            claim_mode=claim_mode,
+            claimed_paths=claim_paths,
+            lease_seconds=max(60, int(lease_seconds)),
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1877,6 +1917,10 @@ def _run_bootstrap_session(
     workstream: str,
     intent: str,
     surfaces: Sequence[str],
+    visible_text: Sequence[str],
+    active_tab: str,
+    user_turn_id: str,
+    supersedes_turn_id: str,
     claim_mode: str,
     claim_paths: Sequence[str],
     lease_seconds: int,
@@ -1884,22 +1928,27 @@ def _run_bootstrap_session(
     command_limit: int,
     test_limit: int,
 ) -> int:
-    payload = store.build_session_bootstrap(
-        repo_root=repo_root,
-        changed_paths=paths,
-        use_working_tree=use_working_tree,
-        working_tree_scope=working_tree_scope,
-        session_id=session_id,
-        workstream=workstream,
-        intent=intent,
-        generated_surfaces=surfaces,
-        claim_mode=claim_mode,
-        claimed_paths=claim_paths,
-        lease_seconds=max(60, int(lease_seconds)),
-        doc_limit=max(1, int(doc_limit)),
-        command_limit=max(1, int(command_limit)),
-        test_limit=max(1, int(test_limit)),
-    )
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root, requested_scope="reasoning"):
+        payload = packet_session_runtime.build_session_bootstrap(
+            repo_root=repo_root,
+            changed_paths=paths,
+            use_working_tree=use_working_tree,
+            working_tree_scope=working_tree_scope,
+            session_id=session_id,
+            workstream=workstream,
+            intent=intent,
+            generated_surfaces=surfaces,
+            visible_text=visible_text,
+            active_tab=active_tab,
+            user_turn_id=user_turn_id,
+            supersedes_turn_id=supersedes_turn_id,
+            claim_mode=claim_mode,
+            claimed_paths=claim_paths,
+            lease_seconds=max(60, int(lease_seconds)),
+            doc_limit=max(1, int(doc_limit)),
+            command_limit=max(1, int(command_limit)),
+            test_limit=max(1, int(test_limit)),
+        )
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1920,22 +1969,50 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
         payload=payload,
     )
     if command == "warmup":
-        return store.warm_projections(
+        summary = store.warm_projections(
             repo_root=repo_root,
             force=bool(payload.get("force")),
             reason=str(payload.get("reason", "daemon")).strip() or "daemon",
             scope=str(payload.get("scope", "full")).strip() or "full",
         )
+        odylith_context_engine_daemon_wait_runtime.record_projection_fingerprint(
+            repo_root=repo_root,
+            projection_fingerprint=str(summary.get("projection_fingerprint", "")).strip(),
+        )
+        return summary
+    if command == "ready":
+        return {"ready": True}
     if command == "status":
         return _runtime_status_payload(repo_root=repo_root)
-    if command == "memory-snapshot":
-        optimization_snapshot = store.load_runtime_optimization_snapshot(repo_root=repo_root)
-        evaluation_snapshot = store.load_runtime_evaluation_snapshot(repo_root=repo_root)
-        return store.load_runtime_memory_snapshot(
+    if command == "wait-projection-change":
+        current_status = _runtime_status_payload(repo_root=repo_root)
+        return odylith_context_engine_daemon_wait_runtime.wait_for_projection_change(
             repo_root=repo_root,
-            optimization_snapshot=optimization_snapshot,
-            evaluation_snapshot=evaluation_snapshot,
+            since_fingerprint=str(payload.get("since_fingerprint", "")).strip(),
+            current_fingerprint=str(current_status.get("projection_fingerprint", "")).strip(),
+            timeout_seconds=float(payload.get("timeout_seconds", 60.0) or 60.0),
         )
+    if command == "compass-runtime-get":
+        cached = odylith_context_engine_compass_runtime_cache.load_runtime_payload(
+            repo_root=repo_root,
+            input_fingerprint=str(payload.get("input_fingerprint", "")).strip(),
+            refresh_profile=str(payload.get("refresh_profile", "")).strip(),
+        )
+        return {
+            "hit": bool(isinstance(cached, Mapping) and cached),
+            "payload": dict(cached) if isinstance(cached, Mapping) else {},
+        }
+    if command == "compass-runtime-put":
+        return odylith_context_engine_compass_runtime_cache.record_runtime_payload(
+            repo_root=repo_root,
+            input_fingerprint=str(payload.get("input_fingerprint", "")).strip(),
+            refresh_profile=str(payload.get("refresh_profile", "")).strip(),
+            payload=dict(payload.get("runtime_payload", {})) if isinstance(payload.get("runtime_payload"), Mapping) else {},
+        )
+    if command == "memory-snapshot":
+        optimization_snapshot = runtime_learning_runtime.load_runtime_optimization_snapshot(repo_root=repo_root)
+        evaluation_snapshot = memory_snapshot_runtime.load_runtime_evaluation_snapshot(repo_root=repo_root)
+        return memory_snapshot_runtime.load_runtime_memory_snapshot(repo_root=repo_root, optimization_snapshot=optimization_snapshot, evaluation_snapshot=evaluation_snapshot)
     if command == "query":
         return store.search_entities_payload(
             repo_root=repo_root,
@@ -1967,7 +2044,7 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
     if command == "context":
         event_limit = max(1, int(payload.get("event_limit", 2) or 2))
         relation_limit = max(1, int(payload.get("relation_limit", 2) or 2))
-        return store.compact_context_dossier_for_delivery(
+        return dossier_compaction_runtime.compact_context_dossier_for_delivery(
             store.load_context_dossier(
                 repo_root=repo_root,
                 ref=str(payload.get("ref", "")).strip(),
@@ -2046,7 +2123,7 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             else [],
         )
     if command == "session-brief":
-        return store.build_session_brief(
+        return packet_session_runtime.build_session_brief(
             repo_root=repo_root,
             changed_paths=[str(path).strip() for path in payload.get("paths", []) if str(path).strip()]
             if isinstance(payload.get("paths"), list)
@@ -2059,6 +2136,12 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             generated_surfaces=[str(token).strip() for token in payload.get("surfaces", []) if str(token).strip()]
             if isinstance(payload.get("surfaces"), list)
             else [],
+            visible_text=[str(token).strip() for token in payload.get("visible_text", []) if str(token).strip()]
+            if isinstance(payload.get("visible_text"), list)
+            else [],
+            active_tab=str(payload.get("active_tab", "")).strip(),
+            user_turn_id=str(payload.get("user_turn_id", "")).strip(),
+            supersedes_turn_id=str(payload.get("supersedes_turn_id", "")).strip(),
             claim_mode=str(payload.get("claim_mode", "shared")).strip() or "shared",
             claimed_paths=[str(token).strip() for token in payload.get("claim_paths", []) if str(token).strip()]
             if isinstance(payload.get("claim_paths"), list)
@@ -2076,7 +2159,7 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             else [],
         )
     if command == "bootstrap-session":
-        return store.build_session_bootstrap(
+        return packet_session_runtime.build_session_bootstrap(
             repo_root=repo_root,
             changed_paths=[str(path).strip() for path in payload.get("paths", []) if str(path).strip()]
             if isinstance(payload.get("paths"), list)
@@ -2089,6 +2172,12 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             generated_surfaces=[str(token).strip() for token in payload.get("surfaces", []) if str(token).strip()]
             if isinstance(payload.get("surfaces"), list)
             else [],
+            visible_text=[str(token).strip() for token in payload.get("visible_text", []) if str(token).strip()]
+            if isinstance(payload.get("visible_text"), list)
+            else [],
+            active_tab=str(payload.get("active_tab", "")).strip(),
+            user_turn_id=str(payload.get("user_turn_id", "")).strip(),
+            supersedes_turn_id=str(payload.get("supersedes_turn_id", "")).strip(),
             claim_mode=str(payload.get("claim_mode", "shared")).strip() or "shared",
             claimed_paths=[str(token).strip() for token in payload.get("claim_paths", []) if str(token).strip()]
             if isinstance(payload.get("claim_paths"), list)
@@ -2125,8 +2214,8 @@ def _dispatch_daemon_command(*, repo_root: Path, command: str, payload: Mapping[
             families=[str(token).strip() for token in payload.get("families", []) if str(token).strip()]
             if isinstance(payload.get("families"), list)
             else [],
-            shard_count=max(1, int(payload.get("shard_count", 1) or 1)),
-            shard_index=max(1, int(payload.get("shard_index", 1) or 1)),
+            shard_count=int(1 if payload.get("shard_count") is None else payload.get("shard_count")),
+            shard_index=int(1 if payload.get("shard_index") is None else payload.get("shard_index")),
             limit=max(0, int(payload.get("limit", 0) or 0)),
             write_report=bool(payload.get("write_report", True)),
         )
@@ -2502,6 +2591,7 @@ class _GitFsmonitorRuntimeWatcher:
 def _build_runtime_watcher(*, repo_root: Path, backend: str) -> Any:
     watch_targets = store.watch_targets(repo_root=repo_root)
     requested = str(backend or "auto").strip().lower()
+    backend_report = store.watcher_backend_report(repo_root=repo_root) if requested == "auto" else {}
     if requested == "auto":
         ordered = [store.preferred_watcher_backend(repo_root=repo_root), "watchman", "watchdog", "git-fsmonitor", "poll"]
     else:
@@ -2517,10 +2607,11 @@ def _build_runtime_watcher(*, repo_root: Path, backend: str) -> Any:
             if candidate == "watchdog":
                 return _WatchdogRuntimeWatcher(repo_root=repo_root, watch_targets=watch_targets)
             if candidate == "git-fsmonitor":
+                bootstrap_git_fsmonitor = requested == "git-fsmonitor" or bool(backend_report.get("bootstrap_recommended"))
                 return _GitFsmonitorRuntimeWatcher(
                     repo_root=repo_root,
                     watch_targets=watch_targets,
-                    bootstrap=requested == "git-fsmonitor",
+                    bootstrap=bootstrap_git_fsmonitor,
                 )
             if candidate == "poll":
                 return _PollingRuntimeWatcher()
@@ -2559,6 +2650,13 @@ def _run_serve(
         auth_token=str(_read_daemon_metadata(repo_root=repo_root).get("auth_token", "")).strip(),
     )
     daemon_server.start()
+    if not _wait_for_daemon_ready(repo_root=repo_root, timeout_seconds=5.0):
+        with contextlib.suppress(Exception):
+            daemon_server.close()
+        _clear_pid(repo_root=repo_root)
+        _clear_daemon_metadata(repo_root=repo_root)
+        print("odylith context engine serve failed to become request-ready")
+        return 1
     watcher = _build_runtime_watcher(repo_root=repo_root, backend=watcher_backend)
     try:
         first = True
@@ -2572,11 +2670,15 @@ def _run_serve(
             ):
                 break
             if first:
-                store.warm_projections(
+                summary = store.warm_projections(
                     repo_root=repo_root,
                     force=bool(force and first),
                     reason="serve",
                     scope=scope,
+                )
+                odylith_context_engine_daemon_wait_runtime.record_projection_fingerprint(
+                    repo_root=repo_root,
+                    projection_fingerprint=str(summary.get("projection_fingerprint", "")).strip(),
                 )
                 first = False
                 continue
@@ -2588,11 +2690,15 @@ def _run_serve(
                 idle_timeout_seconds=idle_timeout_seconds,
             ):
                 break
-            store.warm_projections(
+            summary = store.warm_projections(
                 repo_root=repo_root,
                 force=False,
                 reason="serve",
                 scope=scope,
+            )
+            odylith_context_engine_daemon_wait_runtime.record_projection_fingerprint(
+                repo_root=repo_root,
+                projection_fingerprint=str(summary.get("projection_fingerprint", "")).strip(),
             )
     except KeyboardInterrupt:
         return 130
@@ -2859,6 +2965,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "workstream": str(args.workstream),
                     "intent": str(args.intent),
                     "surfaces": [str(token).strip() for token in args.surface if str(token).strip()],
+                    "visible_text": [str(token).strip() for token in args.visible_text if str(token).strip()],
+                    "active_tab": str(args.active_tab),
+                    "user_turn_id": str(args.user_turn_id),
+                    "supersedes_turn_id": str(args.supersedes_turn_id),
                     "claim_mode": str(args.claim_mode),
                     "claim_paths": [str(token).strip() for token in args.claim_path if str(token).strip()],
                     "lease_seconds": max(60, int(args.lease_seconds)),
@@ -2881,6 +2991,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 workstream=str(args.workstream),
                 intent=str(args.intent),
                 surfaces=[str(token).strip() for token in args.surface if str(token).strip()],
+                visible_text=[str(token).strip() for token in args.visible_text if str(token).strip()],
+                active_tab=str(args.active_tab),
+                user_turn_id=str(args.user_turn_id),
+                supersedes_turn_id=str(args.supersedes_turn_id),
                 claim_mode=str(args.claim_mode),
                 claim_paths=[str(token).strip() for token in args.claim_path if str(token).strip()],
                 lease_seconds=max(60, int(args.lease_seconds)),
@@ -2899,6 +3013,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "workstream": str(args.workstream),
                     "intent": str(args.intent),
                     "surfaces": [str(token).strip() for token in args.surface if str(token).strip()],
+                    "visible_text": [str(token).strip() for token in args.visible_text if str(token).strip()],
+                    "active_tab": str(args.active_tab),
+                    "user_turn_id": str(args.user_turn_id),
+                    "supersedes_turn_id": str(args.supersedes_turn_id),
                     "claim_mode": str(args.claim_mode),
                     "claim_paths": [str(token).strip() for token in args.claim_path if str(token).strip()],
                     "lease_seconds": max(60, int(args.lease_seconds)),
@@ -2924,6 +3042,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 workstream=str(args.workstream),
                 intent=str(args.intent),
                 surfaces=[str(token).strip() for token in args.surface if str(token).strip()],
+                visible_text=[str(token).strip() for token in args.visible_text if str(token).strip()],
+                active_tab=str(args.active_tab),
+                user_turn_id=str(args.user_turn_id),
+                supersedes_turn_id=str(args.supersedes_turn_id),
                 claim_mode=str(args.claim_mode),
                 claim_paths=[str(token).strip() for token in args.claim_path if str(token).strip()],
                 lease_seconds=max(60, int(args.lease_seconds)),
@@ -2945,8 +3067,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             cache_profiles=[str(token).strip() for token in args.cache_profile if str(token).strip()],
             case_ids=[str(token).strip() for token in args.case_id if str(token).strip()],
             families=[str(token).strip() for token in args.family if str(token).strip()],
-            shard_count=max(1, int(args.shard_count)),
-            shard_index=max(1, int(args.shard_index)),
+            shard_count=int(args.shard_count),
+            shard_index=int(args.shard_index),
             limit=max(0, int(args.limit)),
             write_report=not bool(args.no_write_report),
             json_output=bool(args.json),

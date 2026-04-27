@@ -1,8 +1,14 @@
 # Casebook
-Last updated: 2026-04-07
+
+## Odylith Discipline Contract
+- Casebook owns severe or repeated failure memory for Odylith Discipline pressure.
+  Recurring false allows, false blocks, proofless claims, visible-UX misses,
+  or governance-bypass patterns should become Casebook bugs only when evidence
+  is concrete enough to prevent rediscovery.
+Last updated: 2026-04-16
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-16
 
 ## Purpose
 Casebook is Odylith's bug and operational-learning surface. It preserves product
@@ -66,6 +72,23 @@ such as:
 The renderer and index sync both assume those metadata fields remain the
 authoritative representation of bug knowledge.
 
+`odylith bug capture` must fail closed when the caller cannot provide grounded
+intake evidence for a new bug. The capture path must not emit placeholder field
+values such as `TBD`, `unknown`, or other synthetic stand-ins as if they were
+authoritative Casebook truth.
+
+`Reproducibility` is a compact classifier, not a prose field. It must stay to
+one token such as `High`, `Medium`, `Low`, `Always`, `Intermittent`, or
+`Consistent`. Reproduction commands, proof shard ids, screenshots, observed
+environments, and narrative details belong in `Trigger Path`,
+`Failure Signature`, `Environment(s)`, or `Description` instead.
+
+Casebook source validation is shared by bug capture, index refresh, dashboard
+refresh, direct renderer execution, and CI-style validation. The shared
+validator must fail closed on missing, duplicate, placeholder-like, or
+non-compact `Reproducibility` fields before generated Casebook artifacts are
+rewritten.
+
 `Bug ID` is the primary Casebook identity. The source markdown owns it, the
 index projects it, and shell/render/runtime links should prefer it over file
 paths while still accepting legacy file-path aliases during migration.
@@ -80,6 +103,7 @@ one-off operator step.
 - parses bug metadata from markdown
 - resolves a stable bug id for each bug, preferring markdown `Bug ID` and
   falling back to a deterministic alias for legacy records
+- validates Casebook source truth before writing `INDEX.md`
 - canonicalizes status labels
 - rebuilds open and closed bug tables
 - writes a deterministic `odylith/casebook/bugs/INDEX.md`
@@ -97,8 +121,13 @@ builds:
   migration aliases
 - source links back to markdown bug files
 - workstream, component, and diagram links into Radar, Registry, and Atlas
+- shared deep-link buttons for component, spec, proof, and diagram actions;
+  those chips must reuse Dashboard's centralized deep-link button contract
+  instead of Casebook-local button styling
 
 The renderer is intentionally read-only with respect to bug truth.
+It must validate Casebook source truth before fingerprint reuse or render
+writes so stale generated artifacts cannot mask malformed markdown.
 
 ### Detail-view readout contract
 Casebook detail should keep two distinct read bands:
@@ -112,6 +141,11 @@ The renderer should not echo the same field content in both bands unless the
 copy is materially transformed for a different audience.
 - It should also dedupe overlapping proof and evidence links across those
   bands so the same path is not rendered twice under adjacent headings.
+- The selected bug id should appear in the detail-header summary-facts band,
+  and the renderer must not also emit a separate `CB-###` kicker above the
+  title.
+- Compact fields such as `Reproducibility` may render in summary facts because
+  source truth and capture validation keep them to one token.
 
 ## Intent Behind Casebook
 Casebook exists so a developer can answer:
@@ -141,6 +175,7 @@ It is the product learning archive, not just a list of open bugs.
 
 ## Validation Playbook
 ### Casebook
+- `odylith casebook validate --repo-root .`
 - `odylith governance sync-casebook-bug-index --repo-root .`
 - `odylith sync --repo-root . --check-only`
 - `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output odylith/casebook/casebook.html`
@@ -156,3 +191,5 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-03-26: Added an Odylith-owned Casebook root so the product can keep its own bug and learning history without treating any consumer bug archive as the product source of truth. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Tightened the Casebook detail contract so the human brief and Odylith agent-learning band stay distinct, and overlapping proof/evidence links are deduped instead of repeated. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-16: Locked `Reproducibility` to compact classifier tokens in bug source truth and capture guidance so Casebook summary facts never inherit prose repro steps. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-16: Added shared Casebook source validation and wired it into capture, index refresh, dashboard refresh, direct renderer execution, and `odylith casebook validate` so malformed bug markdown stops before generated Casebook artifacts are rewritten. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

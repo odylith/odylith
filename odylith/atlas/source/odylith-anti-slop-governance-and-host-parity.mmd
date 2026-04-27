@@ -1,0 +1,74 @@
+%% Reviewed 2026-04-19 for B-115/B-117 after anti-slop hardening, Claude parity closure, benchmark acceptance extraction, and governed surface proof.
+flowchart TB
+    contract["Anti-slop contract<br/>no transitional states + real ownership + two-layer proof"]
+    umbrella["B-110 umbrella<br/>B-115 host parity + B-117 surfaces/release proof"]
+
+    subgraph source["Canonical product truth"]
+        agents["AGENTS + host contracts"]
+        guide["ANTI_SLOP_AND_DECOMPOSITION<br/>portable repo-wide guardrails"]
+        skill["odylith-code-hygiene-guard<br/>shared slop cleanup discipline"]
+        plan["B-110 technical plan<br/>waves + validation evidence"]
+    end
+
+    subgraph propagation["Generated parity and owned mirrors"]
+        install["Install generators<br/>agents.py + bootstrap_assets.py"]
+        bundle["Bundled mirrors<br/>project-root/.claude + shipped guidance"]
+        atlas["Atlas catalog + Mermaid source"]
+        compass["Compass timeline evidence"]
+        sync["Governed refresh lanes<br/>atlas refresh --atlas-sync + odylith sync"]
+    end
+
+    subgraph hosts["Cross-host execution surfaces"]
+        codex["Codex surface<br/>repo AGENTS + shared runtime contract"]
+        claude["Claude surface<br/>.claude/CLAUDE + reviewer + 35/35 skills"]
+        fastpath["CLI fast paths<br/>Odylith, help + show me what you can do"]
+    end
+
+    subgraph runtime["Runtime cleanup and release proof"]
+        owners["Ownership moves<br/>repo_path_resolver + benchmark acceptance + focused support owners"]
+        hygiene["Hygiene enforcement<br/>no shim walls + no helper drift regressions"]
+        validators["Discipline + guidance-behavior validators"]
+        browser["Headless browser proof<br/>Atlas / Compass / shell rendered states"]
+        benchmark["Benchmark acceptance<br/>public-claim guard + family proof"]
+        inventory["Structural inventory<br/>red-zone files + helper drift counts"]
+        close["Release-proof accountability<br/>behavior holds while structure improves"]
+    end
+
+    contract --> guide
+    contract --> skill
+    contract --> plan
+    umbrella --> plan
+
+    agents --> codex
+    agents --> claude
+    guide --> codex
+    guide --> claude
+    skill --> codex
+    skill --> claude
+
+    guide --> install --> bundle
+    bundle --> codex
+    bundle --> claude
+
+    plan --> atlas
+    plan --> compass
+    atlas --> sync
+    compass --> sync
+    bundle --> sync
+
+    owners --> hygiene
+    owners --> benchmark
+    hygiene --> validators
+    validators --> close
+    benchmark --> close
+    inventory --> close
+    sync --> browser
+    browser --> close
+
+    codex --> fastpath
+    claude --> fastpath
+    skill -. "must not intercept help/show UX" .-> fastpath
+    fastpath --> close
+
+    sync -. "refresh proves governed surfaces, not runtime semantics alone" .-> close
+    inventory -. "structural claims require fresh counts" .-> contract

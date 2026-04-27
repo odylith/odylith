@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-032
-title: Odylith v0.1.5 Agent-First Operator Workflow and Recovery Polish
+title: v0.1.5 Agent-First Operator Workflow and Recovery Polish
 date: 2026-03-30
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: first-turn agent entrypoint, long-running command progress UX, surface-scoped refresh, reinstall semantics, dry-run previews, launcher recovery, docs and CLI contract discipline, dirty-worktree mutation clarity, interpreter/status reporting, and fallback guidance
 sizing: L
 complexity: High

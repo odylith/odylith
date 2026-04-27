@@ -1,3 +1,5 @@
+"""Coverage for tooling dashboard runtime payload builders."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -45,7 +47,6 @@ def test_build_runtime_payload_preserves_release_note_urls_and_surface_hrefs(tmp
     result = builder.build_runtime_payload(
         repo_root=tmp_path,
         surface_paths=paths,
-        shell_payload={"window_title": "Odylith"},
         welcome_state={"show": True},
         release_spotlight={
             "show": True,
@@ -59,7 +60,6 @@ def test_build_runtime_payload_preserves_release_note_urls_and_surface_hrefs(tmp
             "headline": "What changed since v1.2.2?",
             "notes_url": "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md",
         },
-        benchmark_story={"show": True, "status": "pass"},
         shell_source_payload={"shell_repo_label": "Repo · Odylith"},
         self_host_payload={"repo_role": "product_repo"},
         brand_payload={"brand_head_html": "<meta />"},
@@ -74,8 +74,12 @@ def test_build_runtime_payload_preserves_release_note_urls_and_surface_hrefs(tmp
     assert result.runtime_payload["version_story"]["notes_url"] == (
         "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"
     )
-    assert result.runtime_payload["benchmark_story"]["status"] == "pass"
+    assert "benchmark_story" not in result.runtime_payload
     assert result.runtime_payload["shell_version_label"] == "v1.2.3"
+    assert result.runtime_payload["case_queue"] == []
+    assert result.runtime_payload["components"] == {}
+    assert result.runtime_payload["diagrams"] == {}
+    assert result.runtime_payload["workstreams"] == {}
 
 
 def test_build_runtime_payload_uses_version_story_when_popup_payload_is_absent(tmp_path: Path) -> None:
@@ -101,7 +105,6 @@ def test_build_runtime_payload_uses_version_story_when_popup_payload_is_absent(t
     result = builder.build_runtime_payload(
         repo_root=tmp_path,
         surface_paths=paths,
-        shell_payload={},
         welcome_state={"show": False},
         release_spotlight={},
         version_story={
@@ -110,7 +113,6 @@ def test_build_runtime_payload_uses_version_story_when_popup_payload_is_absent(t
             "headline": "What changed since v1.2.2?",
             "notes_url": "https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md",
         },
-        benchmark_story={},
         shell_source_payload={},
         self_host_payload={},
         brand_payload={},
@@ -148,11 +150,9 @@ def test_build_runtime_payload_uses_product_name_for_public_product_repo(tmp_pat
     result = builder.build_runtime_payload(
         repo_root=tmp_path,
         surface_paths=paths,
-        shell_payload={},
         welcome_state={},
         release_spotlight={},
         version_story={},
-        benchmark_story={},
         shell_source_payload={},
         self_host_payload={},
         brand_payload={},

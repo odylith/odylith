@@ -1,9 +1,13 @@
+"""Helpers for loading the authored Odylith release-notes markdown records."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
 import re
 from typing import Any
+
+from odylith.common.release_text import normalize_release_text as _normalize_text
 
 _FRONT_MATTER_DELIMITER = "---"
 _FRONT_MATTER_KEY_RE = re.compile(r"^(?P<key>[A-Za-z0-9_-]+):\s*(?P<value>.*)$")
@@ -12,6 +16,8 @@ _PUBLIC_RELEASE_NOTES_REPO = "https://github.com/odylith/odylith"
 
 @dataclass(frozen=True)
 class ReleaseNotesSource:
+    """Normalized release-note metadata and body content."""
+
     version: str
     title: str
     published_at: str
@@ -25,6 +31,7 @@ class ReleaseNotesSource:
 
 
 def release_notes_path(*, repo_root: str | Path, version: str) -> Path:
+    """Return the checked-in release-notes markdown path for a version."""
     token = str(version or "").strip().lstrip("v")
     return (
         Path(repo_root).expanduser().resolve()
@@ -37,27 +44,14 @@ def release_notes_path(*, repo_root: str | Path, version: str) -> Path:
 
 
 def github_release_notes_url(*, version: str, release_tag: str = "") -> str:
+    """Return the GitHub URL for the tagged release-notes markdown file."""
     version_token = str(version or "").strip().lstrip("v")
     if not version_token:
         return ""
     ref_token = str(release_tag or f"v{version_token}").strip() or f"v{version_token}"
     return f"{_PUBLIC_RELEASE_NOTES_REPO}/blob/{ref_token}/odylith/runtime/source/release-notes/v{version_token}.md"
-
-
-def _normalize_text(value: Any, *, limit: int = 240) -> str:
-    token = str(value or "").strip()
-    if not token:
-        return ""
-    token = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", token)
-    token = re.sub(r"<[^>]+>", "", token)
-    token = re.sub(r"[*_`>#]", "", token)
-    token = re.sub(r"\s+", " ", token).strip(" -:")
-    if len(token) > limit:
-        token = token[: limit - 3].rstrip() + "..."
-    return token
-
-
 def _paragraphs(body: str, *, limit: int) -> list[str]:
+    """Extract readable paragraph summaries from markdown body text."""
     text = str(body or "").strip()
     if not text:
         return []
@@ -85,6 +79,7 @@ def _paragraphs(body: str, *, limit: int) -> list[str]:
 
 
 def _heading_title(body: str) -> str:
+    """Return the first level-one markdown heading as a normalized title."""
     text = str(body or "").strip()
     if not text:
         return ""
@@ -100,6 +95,7 @@ def _heading_title(body: str) -> str:
 
 
 def _parse_front_matter(text: str) -> tuple[dict[str, object], str]:
+    """Parse the optional markdown front matter into a payload and body."""
     if not text.startswith(f"{_FRONT_MATTER_DELIMITER}\n"):
         return {}, text
     end = text.find(f"\n{_FRONT_MATTER_DELIMITER}\n", len(_FRONT_MATTER_DELIMITER) + 1)
@@ -141,35 +137,39 @@ def _parse_front_matter(text: str) -> tuple[dict[str, object], str]:
     return payload, body
 
 
+def _front_matter_highlights(value: object) -> tuple[str, ...]:
+    """Normalize front-matter highlights into the shipped tuple form."""
+    if not isinstance(value, tuple):
+        return ()
+    return tuple(token for token in value if str(token).strip())[:3]
+
+
+def _body_highlights(body: str) -> tuple[str, ...]:
+    """Extract up to three bullet highlights from the markdown body."""
+    bullet_highlights: list[str] = []
+    for raw_line in str(body or "").splitlines():
+        line = str(raw_line or "").strip()
+        if not line.startswith(("- ", "* ", "+ ")):
+            continue
+        token = _normalize_text(line[2:])
+        if token and token not in bullet_highlights:
+            bullet_highlights.append(token)
+        if len(bullet_highlights) >= 3:
+            break
+    return tuple(bullet_highlights[:3])
+
+
 def load_release_notes_source(*, repo_root: str | Path, version: str) -> ReleaseNotesSource | None:
+    """Load and normalize one authored release-notes markdown record."""
     path = release_notes_path(repo_root=repo_root, version=version)
     if not path.is_file():
         return None
     text = path.read_text(encoding="utf-8")
     front_matter, body = _parse_front_matter(text)
     normalized_body = str(body or "").strip()
-    raw_highlights = front_matter.get("highlights")
-    highlights = (
-        tuple(
-            token
-            for token in raw_highlights
-            if str(token).strip()
-        )[:3]
-        if isinstance(raw_highlights, tuple)
-        else ()
-    )
+    highlights = _front_matter_highlights(front_matter.get("highlights"))
     if not highlights and normalized_body:
-        bullet_highlights: list[str] = []
-        for raw_line in normalized_body.splitlines():
-            line = str(raw_line or "").strip()
-            if not line.startswith(("- ", "* ", "+ ")):
-                continue
-            token = _normalize_text(line[2:])
-            if token and token not in bullet_highlights:
-                bullet_highlights.append(token)
-            if len(bullet_highlights) >= 3:
-                break
-        highlights = tuple(bullet_highlights[:3])
+        highlights = _body_highlights(normalized_body)
     paragraphs = _paragraphs(normalized_body, limit=2)
     summary = _normalize_text(front_matter.get("summary") or "") or (paragraphs[0] if paragraphs else "")
     return ReleaseNotesSource(

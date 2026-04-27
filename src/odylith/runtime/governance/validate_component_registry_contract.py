@@ -1,7 +1,7 @@
 """Validate component-registry contracts.
 
 This validator is fail-closed for component inventory integrity and meaningful
-Codex event coverage.
+agent-event coverage.
 """
 
 from __future__ import annotations
@@ -10,7 +10,11 @@ import argparse
 from pathlib import Path
 from typing import Sequence
 
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import component_registry_intelligence as registry
+from odylith.runtime.governance.component_registry_review_policy import (
+    should_emit_deep_skill_policy_warning,
+)
 
 
 _WARN_ONLY_PREFIXES: tuple[str, ...] = (
@@ -76,10 +80,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, token: str) -> Path:
-    path = Path(str(token or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve CLI path arguments against the active repo root."""
+
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=token)
 
 
 def _parse_csv(value: str) -> list[str]:
@@ -120,10 +123,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         stream_path=stream_path,
         workspace_activity_window_hours=registry.DEFAULT_WORKSPACE_ACTIVITY_WINDOW_HOURS,
     )
-    try:
-        report_cache_display = str(report_cache_path.relative_to(repo_root))
-    except ValueError:
-        report_cache_display = str(report_cache_path)
+    report_cache_display = repo_path_resolver.display_repo_path(repo_root=repo_root, value=report_cache_path)
 
     warnings: list[str] = []
     errors: list[str] = []
@@ -164,6 +164,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         component_id = str(row.get("component_id", "")).strip() or "unknown"
         missing = [str(token or "").strip() for token in row.get("missing", []) if str(token or "").strip()]
         if not missing:
+            continue
+        if not should_emit_deep_skill_policy_warning(row):
             continue
         required = bool(row.get("required", False))
         gate_count = int(row.get("gate_count", 0) or 0)

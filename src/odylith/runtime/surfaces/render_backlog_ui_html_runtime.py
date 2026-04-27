@@ -5,22 +5,28 @@ from __future__ import annotations
 import html
 import json
 from pathlib import Path
+import re
 from typing import Any, Mapping
 
+from odylith.runtime.governance import workstream_inference
+from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
 
-
-def _host():
-    from odylith.runtime.surfaces import render_backlog_ui as host
-
-    return host
+_TRACEABILITY_SECTION_NAME = "Traceability"
+_TRACEABILITY_BUCKETS: tuple[str, ...] = (
+    "Runbooks",
+    "Developer Docs",
+    "Code References",
+)
+_TRACEABILITY_PATH_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)\)")
+_TRACEABILITY_PATH_CODE_RE = re.compile(r"`([^`\n]+)`")
+_TRACEABILITY_CHECKBOX_PREFIX_RE = re.compile(r"^\[(?:x|X| )\]\s*")
 
 
 def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
-    host = _host()
-    normalized = host.workstream_inference.normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
+    normalized = workstream_inference.normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
     collapsed = str(normalized or "").strip().strip(".,;:")
     if not collapsed or " " in collapsed or "<" in collapsed or ">" in collapsed:
         return ""
@@ -30,129 +36,16 @@ def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
 
 
 def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
-    host = _host()
-
-    def _render_list_block(items: list[tuple[int, str]]) -> str:
-        parsed_checklist: list[tuple[int, bool, str]] = []
-        for level, text in items:
-            match = host._CHECKBOX_LINE_RE.match(text)  # noqa: SLF001
-            if match is None:
-                parsed_checklist = []
-                break
-            parsed_checklist.append(
-                (
-                    level,
-                    str(match.group("mark")).lower() == "x",
-                    str(match.group("body")).strip(),
-                )
-            )
-        if parsed_checklist:
-            base_level = min(level for level, _, _ in parsed_checklist)
-            rows = "".join(
-                (
-                    f'<div class="check-item" style="--level:{max(0, level - base_level)}">'
-                    f'<input class="check-box" type="checkbox" disabled{" checked" if checked else ""} />'
-                    f'<span class="check-text">{html.escape(host._rewrite_section_text(repo_root=repo_root, text=body))}</span>'
-                    '</div>'
-                )
-                for level, checked, body in parsed_checklist
-            )
-            return f'<div class="checklist">{rows}</div>'
-
-        if len(items) == 1:
-            _, text = items[0]
-            return f'<p>{html.escape(host._rewrite_section_text(repo_root=repo_root, text=text))}</p>'
-
-        item_html = "".join(
-            f'<li>{html.escape(host._rewrite_section_text(repo_root=repo_root, text=text))}</li>' for _, text in items
-        )
-        return f'<ul>{item_html}</ul>'
-
-    blocks: list[str] = []
-    idx = 0
-    total = len(lines)
-    while idx < total:
-        current = lines[idx].rstrip()
-        current_stripped = current.strip()
-        if not current_stripped:
-            idx += 1
-            continue
-
-        if current_stripped.startswith("```"):
-            lang = current_stripped[3:].strip().lower()
-            idx += 1
-            code_lines: list[str] = []
-            while idx < total:
-                token = lines[idx].rstrip()
-                if token.strip().startswith("```"):
-                    idx += 1
-                    break
-                code_lines.append(token)
-                idx += 1
-            code_body = "\n".join(code_lines).rstrip()
-            if lang == "mermaid":
-                blocks.append(
-                    f'<div class="mermaid-wrap"><div class="mermaid">{html.escape(code_body)}</div></div>'
-                )
-            else:
-                class_token = f' language-{host._slug_token(lang)}' if lang else ''  # noqa: SLF001
-                blocks.append(
-                    f'<pre class="code{class_token}"><code>{html.escape(code_body)}</code></pre>'
-                )
-            continue
-
-        if current.lstrip().startswith("- "):
-            items: list[tuple[int, str]] = []
-            while idx < total:
-                token = lines[idx].rstrip()
-                if not token.lstrip().startswith("- "):
-                    break
-                leading_spaces = len(token) - len(token.lstrip(" "))
-                normalized = token.lstrip()
-                level = max(0, leading_spaces // 2)
-                items.append((level, normalized[2:].strip()))
-                idx += 1
-            blocks.append(_render_list_block(items))
-            continue
-
-        if current.startswith("### "):
-            blocks.append(
-                f'<h3>{html.escape(host._rewrite_section_text(repo_root=repo_root, text=current[4:].strip()))}</h3>'
-            )
-            idx += 1
-            continue
-
-        paragraph: list[str] = [current_stripped]
-        idx += 1
-        while idx < total:
-            token = lines[idx].rstrip()
-            token_stripped = token.strip()
-            if (
-                not token_stripped
-                or token.lstrip().startswith("- ")
-                or token.startswith("### ")
-                or token_stripped.startswith("```")
-            ):
-                break
-            paragraph.append(token_stripped)
-            idx += 1
-        blocks.append(
-            f'<p>{html.escape(host._rewrite_section_text(repo_root=repo_root, text=" ".join(paragraph)))}</p>'
-        )
-
-    if not blocks:
-        return '<p>Not captured in this section.</p>'
-    return ''.join(blocks)
+    return backlog_rich_text.render_section_body(repo_root=repo_root, lines=lines)
 
 
 def _extract_traceability_path_tokens(text: str) -> list[str]:
-    host = _host()
     tokens: list[str] = []
-    for match in host._TRACEABILITY_PATH_LINK_RE.finditer(text):  # noqa: SLF001
+    for match in _TRACEABILITY_PATH_LINK_RE.finditer(text):
         token = str(match.group(1)).strip()
         if token:
             tokens.append(token)
-    for match in host._TRACEABILITY_PATH_CODE_RE.finditer(text):  # noqa: SLF001
+    for match in _TRACEABILITY_PATH_CODE_RE.finditer(text):
         token = str(match.group(1)).strip()
         if token:
             tokens.append(token)
@@ -168,17 +61,16 @@ def _collect_plan_traceability_paths(
     repo_root: Path,
     sections: list[tuple[str, list[str]]],
 ) -> dict[str, list[str]]:
-    host = _host()
     raw_traceability_lines: list[str] = []
     for title, lines in sections:
-        if title.strip().lower() == host._TRACEABILITY_SECTION_NAME.lower():  # noqa: SLF001
+        if title.strip().lower() == _TRACEABILITY_SECTION_NAME.lower():
             raw_traceability_lines = lines
             break
     if not raw_traceability_lines:
         return {}
 
     bucket: str | None = None
-    grouped: dict[str, list[str]] = {label: [] for label in host._TRACEABILITY_BUCKETS}  # noqa: SLF001
+    grouped: dict[str, list[str]] = {label: [] for label in _TRACEABILITY_BUCKETS}
     for line in raw_traceability_lines:
         stripped = line.strip()
         if stripped.startswith("### "):
@@ -192,7 +84,7 @@ def _collect_plan_traceability_paths(
         if not stripped.lstrip().startswith("- "):
             continue
         body = stripped.lstrip()[2:].strip()
-        body = host._TRACEABILITY_CHECKBOX_PREFIX_RE.sub("", body).strip()  # noqa: SLF001
+        body = _TRACEABILITY_CHECKBOX_PREFIX_RE.sub("", body).strip()
         for token in _extract_traceability_path_tokens(body):
             normalized = _normalize_traceability_path(repo_root=repo_root, token=token)
             if normalized:
@@ -244,12 +136,9 @@ def _render_html(*, payload: dict[str, object]) -> str:
       min-height: 100vh;
     }
     __ODYLITH_PAGE_BODY__
+    __ODYLITH_SURFACE_SHELL_ROOT__
 
-    .shell {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 22px 18px 34px;
-    }
+    __ODYLITH_SURFACE_SHELL__
 
     __ODYLITH_HERO_PANEL__
 
@@ -423,27 +312,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
       padding: 10px;
       display: grid;
       gap: 10px;
-    }
-
-    .topology-focus {
-      grid-column: 1 / -1;
-      border: 1px solid #bfdbfe;
-      border-radius: 11px;
-      background: #ffffff;
-      padding: 8px 10px;
-      display: grid;
-      grid-template-columns: var(--topology-label-column) var(--topology-count-column) minmax(0, 1fr);
-      align-items: center;
-      gap: 10px;
-    }
-
-    .topology-focus-title {
-      grid-column: 1;
-    }
-
-    .topology-focus .chip-topology-source {
-      grid-column: 3;
-      justify-self: start;
     }
 
     .topology-relations-panel {
@@ -666,6 +534,13 @@ def _render_html(*, payload: dict[str, object]) -> str:
       flex-wrap: wrap;
     }
 
+    .row-foot {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .row-chips,
     .chips {
       display: flex;
@@ -677,41 +552,53 @@ def _render_html(*, payload: dict[str, object]) -> str:
       margin: 0;
     }
 
+    .row-chips-end {
+      margin-left: auto;
+      justify-content: flex-end;
+    }
+
     __ODYLITH_RADAR_CHIP_SURFACE__
     __ODYLITH_RADAR_CHIP_TYPOGRAPHY__
 
     __ODYLITH_RADAR_CHIP_LINK_CONTRACT__
 
     .detail {
-      padding: 14px 16px 16px;
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 14px;
     }
 
     .detail-header {
       border: 1px solid #d7e3f6;
       border-radius: 14px;
-      padding: 12px 12px 10px;
+      padding: 14px 16px;
       background: linear-gradient(170deg, #f8fafc, #ffffff 65%, #eff6ff);
     }
 
     __ODYLITH_DETAIL_IDENTITY_TYPOGRAPHY__
 
     .chips {
-      margin-top: 10px;
-      margin-bottom: 6px;
+      margin-top: 12px;
+      margin-bottom: 0;
     }
 
     .kpis {
-      margin-top: 12px;
+      margin-top: 14px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 8px;
+      gap: 10px;
+    }
+
+    .kpi.kpi-section .k,
+    .kpi.kpi-section .v {
+      color: inherit;
     }
 
     __ODYLITH_RADAR_DETAIL_KPI_SURFACE__
     __ODYLITH_RADAR_DETAIL_KPI_TYPOGRAPHY__
 
     .meter {
-      margin-top: 12px;
+      margin-top: 14px;
     }
 
     .meter-head {
@@ -734,10 +621,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     .block {
-      margin-top: 14px;
+      margin-top: 0;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
-      padding: 11px 12px;
+      padding: 14px 16px;
       background: #ffffff;
     }
 
@@ -749,19 +636,19 @@ def _render_html(*, payload: dict[str, object]) -> str:
     .split-grid {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
     .split-card {
       border: 1px solid #e2e8f0;
       border-radius: 10px;
       background: #f8fafc;
-      padding: 10px;
+      padding: 12px 14px;
       min-width: 0;
     }
 
     .block h3 {
-      margin: 0 0 8px;
+      margin: 0 0 10px;
     }
     __ODYLITH_RADAR_BLOCK_HEADING__
     .block .trace-subhead {
@@ -828,6 +715,11 @@ def _render_html(*, payload: dict[str, object]) -> str:
       margin: 14px;
     }
 
+    .controls input,
+    .controls select {
+      min-width: 0;
+    }
+
     __ODYLITH_RADAR_TOOLTIP_SURFACE__
 
     @media (max-width: 1100px) {
@@ -846,13 +738,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
       .controls {
         grid-template-columns: 1fr 1fr;
       }
-      .topology-focus,
       .topology-rel-row {
         grid-template-columns: 1fr;
         align-items: start;
       }
-      .topology-focus-title,
-      .topology-focus .chip-topology-source,
       .topology-rel-title,
       .topology-rel-count,
       .topology-rel-body {
@@ -906,12 +795,24 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
     <section class="controls">
       <input id="query" placeholder="Search title, ID, rationale, impacted parts..." />
-      <select id="section">
+      <select id="lane">
         <option value="all">All Sections</option>
         <option value="execution">Delivery Pipeline</option>
         <option value="parked">Parked</option>
         <option value="active">Idea Stage (Ranked Active)</option>
         <option value="finished">Finished</option>
+      </select>
+      <select id="section" aria-hidden="true" tabindex="-1" style="position:absolute;inline-size:1px;block-size:1px;opacity:0.01;padding:0;border:0">
+        <option value="all">All Sections</option>
+        <option value="execution">Delivery Pipeline</option>
+        <option value="parked">Parked</option>
+        <option value="active">Idea Stage (Ranked Active)</option>
+        <option value="finished">Finished</option>
+      </select>
+      <select id="type">
+        <option value="all">All Types</option>
+        <option value="umbrella">Umbrella</option>
+        <option value="child">Child</option>
       </select>
       <select id="phase">
         <option value="all">All Phases</option>
@@ -923,11 +824,11 @@ def _render_html(*, payload: dict[str, object]) -> str:
         <option value="active">Signal: Active</option>
         <option value="quiet">Signal: Quiet</option>
       </select>
-      <select id="lane">
-        <option value="all">All Lanes</option>
-      </select>
       <select id="priority">
         <option value="all">All Priorities</option>
+      </select>
+      <select id="release">
+        <option value="all">All Releases</option>
       </select>
       <select id="sort">
         <option value="rank">Sort: Rank</option>
@@ -1032,7 +933,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const protocol = String(window.location.protocol || "").toLowerCase();
       if (!base || protocol === "file:") return null;
       try {
-        const url = new URL(path.replace(/^\/+/, ""), base.endsWith("/") ? base : `${base}/`);
+        const url = new URL(path.replace(/^\\/+/, ""), base.endsWith("/") ? base : `${base}/`);
         Object.entries(params || {}).forEach(([key, value]) => {
           if (value === undefined || value === null || value === "") return;
           url.searchParams.set(key, String(value));
@@ -1179,9 +1080,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
       query: "",
       section: "all",
       phase: "all",
+      type: "all",
       activity: "all",
-      lane: "all",
       priority: "all",
+      release: "all",
       sort: "rank",
       mixBy: "complexity",
       selectedIdeaId: ""
@@ -1190,11 +1092,13 @@ def _render_html(*, payload: dict[str, object]) -> str:
     const el = {
       stats: document.getElementById("stats"),
       query: document.getElementById("query"),
-      section: document.getElementById("section"),
+      section: document.getElementById("lane"),
+      legacySection: document.getElementById("section"),
       phase: document.getElementById("phase"),
+      type: document.getElementById("type"),
       activity: document.getElementById("activity"),
-      lane: document.getElementById("lane"),
       priority: document.getElementById("priority"),
+      release: document.getElementById("release"),
       sort: document.getElementById("sort"),
       meta: document.getElementById("meta"),
       analyticsPanel: document.getElementById("analytics-panel"),
@@ -1315,6 +1219,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
         if (row.section !== "execution") return false;
         if (stageLabel(row.status) !== state.phase) return false;
       }
+      if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) return false;
       if (state.activity !== "all") {
         if (row.section !== "execution") return false;
         const stateToken = normalizeExecutionState(row.execution_state);
@@ -1324,8 +1229,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
         ) ? "active" : "quiet";
         if (activity !== state.activity) return false;
       }
-      if (state.lane !== "all" && row.impacted_lanes !== state.lane) return false;
       if (state.priority !== "all" && row.priority !== state.priority) return false;
+      if (state.release !== "all" && workstreamActiveReleaseId(row) !== state.release) return false;
       return rowMatchesQuery(row, query, exactIdeaQuery);
     }
 
@@ -1349,15 +1254,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
       } catch (_error) {
         // Ignore parent-shell sync failures; local radar interactions must still work.
       }
-    }
-
-    function laneLabel(value) {
-      const token = String(value || "").trim().toLowerCase();
-      if (!token) return "-";
-      if (token === "both") return "Cross-lane (Platform + Service)";
-      if (token === "platform") return "Platform only";
-      if (token === "service" || token === "services") return "Service only";
-      return prettyLabel(token);
     }
 
     function formatCompactTimestamp(value) {
@@ -1394,16 +1290,27 @@ def _render_html(*, payload: dict[str, object]) -> str:
       });
     }
 
-    seedSelect(el.lane, uniqueValues("impacted_lanes"), (value) => laneLabel(value));
     seedSelect(el.priority, uniqueValues("priority"));
+    seedSelect(
+      el.release,
+      releaseCatalog()
+        .map((row) => String(row && row.release_id ? row.release_id : "").trim())
+        .filter(Boolean),
+      (value) => {
+        const release = releaseCatalog().find((row) => String(row && row.release_id ? row.release_id : "").trim() === value) || {};
+        return releaseLabel(release) || value;
+      },
+    );
 
     function syncFilterControls() {
       el.query.value = state.query;
       el.section.value = state.section;
+      if (el.legacySection) el.legacySection.value = state.section;
       el.phase.value = state.phase;
+      el.type.value = state.type;
       el.activity.value = state.activity;
-      el.lane.value = state.lane;
       el.priority.value = state.priority;
+      el.release.value = state.release;
     }
 
     // Explicit deep-link navigation must reveal the requested workstream instead of
@@ -1435,8 +1342,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
             state.activity = "all";
           }
         }
-        if (state.lane !== "all" && row.impacted_lanes !== state.lane) {
-          state.lane = "all";
+        if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) {
+          state.type = "all";
         }
         if (state.priority !== "all" && row.priority !== state.priority) {
           state.priority = "all";
@@ -1578,8 +1485,11 @@ def _render_html(*, payload: dict[str, object]) -> str:
       syncAnalyticsToggleHint();
     }
 
-    function statBlock(label, value) {
-      return `<div class="stat"><div class="label">${escapeHtml(label)}</div><div class="value">${escapeHtml(value)}</div></div>`;
+    function statBlock(label, value, options = {}) {
+      const releaseOnly = Boolean(options && options.releaseOnly);
+      const classes = releaseOnly ? "stat stat-release-only" : "stat";
+      const labelHtml = label ? `<div class="label">${escapeHtml(label)}</div>` : "";
+      return `<div class="${classes}">${labelHtml}<div class="value">${escapeHtml(value)}</div></div>`;
     }
 
     function summarizeVisibleSections(rows) {
@@ -1614,6 +1524,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const counts = summarizeVisibleSections(rows);
       const wavePrograms = Number(waveSummary && waveSummary.program_count ? waveSummary.program_count : 0);
       const activeWaves = Number(waveSummary && waveSummary.active_wave_count ? waveSummary.active_wave_count : 0);
+      const traceability = traceabilityPayload();
+      const currentRelease = traceability && traceability.current_release && typeof traceability.current_release === "object"
+        ? traceability.current_release
+        : {};
       const statRows = [
         statBlock("Index Updated", DATA.index_updated_display || "-"),
         statBlock("Queued", counts.queued),
@@ -1622,8 +1536,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
         statBlock("Finished", counts.finished),
       ];
       if (wavePrograms > 0) {
-        statRows.push(statBlock("Wave Programs", wavePrograms));
         statRows.push(statBlock("Active Waves", activeWaves));
+      }
+      if (releaseCardLabel(currentRelease)) {
+        statRows.push(statBlock("Target Release", releaseCardLabel(currentRelease), { releaseOnly: true }));
       }
       return statRows;
     }
@@ -2091,6 +2007,16 @@ def _render_html(*, payload: dict[str, object]) -> str:
       return all.filter((row) => rowMatchesFilters(row, { query: q, exactIdeaQuery }));
     }
 
+    function scopeSignalRank(row) {
+      const signal = row && typeof row.scope_signal === "object" ? row.scope_signal : {};
+      const numeric = Number(signal.rank);
+      if (Number.isFinite(numeric)) return numeric;
+      const rung = String(signal.rung || "").trim().toUpperCase();
+      if (/^R\\d+$/.test(rung)) return Number.parseInt(rung.slice(1), 10);
+      const direct = Number(row && row.scope_signal_rank);
+      return Number.isFinite(direct) ? direct : 0;
+    }
+
     function sortRows(rows) {
       const sectionOrder = { execution: 0, parked: 1, active: 2, finished: 3 };
       const executionStatusOrder = { implementation: 0, planning: 1 };
@@ -2104,6 +2030,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const copy = [...rows];
       copy.sort((a, b) => {
         if (a.section !== b.section) return (sectionOrder[a.section] ?? 99) - (sectionOrder[b.section] ?? 99);
+        if (a.section !== "finished") {
+          const rankDelta = scopeSignalRank(b) - scopeSignalRank(a);
+          if (rankDelta !== 0) return rankDelta;
+        }
         if (a.section === "execution") {
           const leftState = executionStateOrder[normalizeExecutionState(a.execution_state)] ?? 99;
           const rightState = executionStateOrder[normalizeExecutionState(b.execution_state)] ?? 99;
@@ -2225,13 +2155,22 @@ def _render_html(*, payload: dict[str, object]) -> str:
       return "";
     }
 
+    function sectionBadgeInfo(row) {
+      const section = String(row && row.section ? row.section : "").trim().toLowerCase();
+      if (section === "execution") {
+        return { label: "Pipeline", chipClassName: "rank-chip-execution", kpiClassName: "kpi-section-execution" };
+      }
+      if (section === "finished") {
+        return { label: "Finished", chipClassName: "rank-chip-finished", kpiClassName: "kpi-section-finished" };
+      }
+      if (section === "parked") {
+        return { label: "Parked", chipClassName: "rank-chip-parked", kpiClassName: "kpi-section-parked" };
+      }
+      return { label: `Rank #${row.rank}`, chipClassName: "rank-chip-active", kpiClassName: "kpi-section-active" };
+    }
+
     function rowHtml(row) {
-      const rankLabel = row.section === "execution"
-        ? "Pipeline"
-        : (row.section === "finished" ? "Finished" : (row.section === "parked" ? "Parked" : `Rank #${row.rank}`));
-      const rankChipClass = row.section === "execution"
-        ? "rank-chip-execution"
-        : (row.section === "finished" ? "rank-chip-finished" : (row.section === "parked" ? "rank-chip-parked" : "rank-chip-active"));
+      const sectionBadge = sectionBadgeInfo(row);
       const activeClass = row.idea_id === state.selectedIdeaId ? "active" : "";
       const ageRaw = String(row.idea_age_days || "-");
       const ageLabel = /^\\d+$/.test(ageRaw) ? `${ageRaw}d` : ageRaw;
@@ -2265,21 +2204,26 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const executionChip = row.section === "execution"
         ? `<span class="chip execution-chip ${escapeHtml(executionStateClass(executionState))}" data-tooltip="${escapeHtml(executionSignalTooltip(row.status, executionState, activeWindowMinutes))}">${escapeHtml(executionStateLabel(executionState))}</span>`
         : "";
+      const releaseChip = workstreamActiveReleaseLabel(row)
+        ? `<span class="chip" data-tooltip="Active target release for this workstream.">${escapeHtml(workstreamActiveReleaseLabel(row))}</span>`
+        : "";
       const waveChips = executionWaveRoleChips(row);
+      const footerChips = `${waveChips}${typeChips}${stageChip}${executionChip}${releaseChip}`;
       return `
         <button class="row ${activeClass}" data-idea-id="${escapeHtml(row.idea_id)}">
           <div class="row-top">
-            <span class="rank-chip ${escapeHtml(rankChipClass)}">${escapeHtml(rankLabel)}</span>
+            <span class="rank-chip ${escapeHtml(sectionBadge.chipClassName)}">${escapeHtml(sectionBadge.label)}</span>
             <strong class="row-title">${escapeHtml(row.title)}</strong>
           </div>
           <div class="row-meta">
             <p class="row-id">${escapeHtml(row.idea_id)}</p>
-            <div class="row-chips">${typeChips}${stageChip}${executionChip}</div>
+            <div class="row-chips row-chips-end">
+              <span class="chip">Age ${escapeHtml(ageLabel)}</span>
+              <span class="chip">Exec ${escapeHtml(executionDays)}</span>
+            </div>
           </div>
-          <div class="row-chips">
-            ${waveChips}
-            <span class="chip">Age ${escapeHtml(ageLabel)}</span>
-            <span class="chip">Exec ${escapeHtml(executionDays)}</span>
+          <div class="row-foot">
+            ${footerChips ? `<div class="row-chips row-chips-end">${footerChips}</div>` : ""}
           </div>
         </button>
       `;
@@ -2468,7 +2412,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
     function renderDecisionBasisLine(line) {
       const raw = String(line || "").trim();
-      const match = raw.match(/^([^:]+):\s*(.+)$/);
+      const match = raw.match(/^([^:]+):\\s*(.+)$/);
       if (!match) return `<li>${escapeHtml(raw)}</li>`;
       const [, label, body] = match;
       return `<li>${escapeHtml(decisionBasisLabel(label))}: ${escapeHtml(body)}</li>`;
@@ -2492,6 +2436,10 @@ def _render_html(*, payload: dict[str, object]) -> str:
     }
 
     function successMetricsHtml(row) {
+      const renderedHtml = String(row && row.success_metrics_html || "").trim();
+      if (renderedHtml) {
+        return `<div class="detail-copy">${renderedHtml}</div>`;
+      }
       const explicitMetrics = Array.isArray(row.success_metrics_items)
         ? row.success_metrics_items.map((token) => String(token || "").trim()).filter(Boolean)
         : [];
@@ -2502,18 +2450,22 @@ def _render_html(*, payload: dict[str, object]) -> str:
         || metrics.length > 1
         || (metrics.length === 1 && raw.startsWith("- "));
       if (shouldRenderList) {
-        return `<ul class="bullets">${metrics.map((metric) => `<li>${escapeHtml(metric)}</li>`).join("")}</ul>`;
+        return `<div class="detail-copy"><ul class="bullets">${metrics.map((metric) => `<li>${escapeHtml(metric)}</li>`).join("")}</ul></div>`;
       }
-      return `<p>${escapeHtml(raw || "Not captured in the idea spec yet.")}</p>`;
+      return `<div class="detail-copy"><p>${escapeHtml(raw || "Not captured in the idea spec yet.")}</p></div>`;
     }
 
-    function summarySectionHtml(value, fallback) {
+    function summarySectionHtml(value, fallback, renderedHtml = "") {
+      const rich = String(renderedHtml || "").trim();
+      if (rich) {
+        return `<div class="detail-copy">${rich}</div>`;
+      }
       const raw = String(value || "").trim();
       const bullets = splitInlineBulletText(raw);
       if (bullets.length) {
-        return `<ul class="bullets">${bullets.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>`;
+        return `<div class="detail-copy"><ul class="bullets">${bullets.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul></div>`;
       }
-      return `<p>${escapeHtml(raw || fallback || "Not captured in the idea spec yet.")}</p>`;
+      return `<div class="detail-copy"><p>${escapeHtml(raw || fallback || "Not captured in the idea spec yet.")}</p></div>`;
     }
 
     function normalizeIdList(values) {
@@ -2546,6 +2498,43 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const payload = traceabilityPayload();
       const rows = Array.isArray(payload.workstreams) ? payload.workstreams : [];
       return rows.find((row) => row.idea_id === ideaId) || null;
+    }
+
+    function releaseCatalog() {
+      const payload = traceabilityPayload();
+      return Array.isArray(payload.releases) ? payload.releases : [];
+    }
+
+    function releaseLabel(row) {
+      const release = row && typeof row === "object" ? row : {};
+      const nameLabel = String(release.effective_name || release.name || "").trim();
+      if (nameLabel) return nameLabel;
+      const versionLabel = String(release.version || release.display_label || "").trim();
+      if (versionLabel) return /^v\\d/.test(versionLabel) ? versionLabel.slice(1) : versionLabel;
+      const tagLabel = String(release.tag || "").trim();
+      if (tagLabel) return /^v\\d/.test(tagLabel) ? tagLabel.slice(1) : tagLabel;
+      return String(release.release_id || "").trim();
+    }
+
+    function releaseCardLabel(row) {
+      return releaseLabel(row);
+    }
+
+    function workstreamActiveRelease(row) {
+      const trace = workstreamTrace(row.idea_id) || {};
+      return trace && trace.active_release && typeof trace.active_release === "object"
+        ? trace.active_release
+        : {};
+    }
+
+    function workstreamActiveReleaseId(row) {
+      const trace = workstreamTrace(row.idea_id) || {};
+      const activeRelease = workstreamActiveRelease(row);
+      return String(trace.active_release_id || activeRelease.release_id || "").trim();
+    }
+
+    function workstreamActiveReleaseLabel(row) {
+      return releaseLabel(workstreamActiveRelease(row));
     }
 
     function executionWavePayload() {
@@ -2689,7 +2678,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const token = String(ideaId || "").trim();
       if (!token) return "";
       const tooltip = workstreamTooltip(token);
-      return `<button type="button" class="chip chip-link ${escapeHtml(tone)}" data-link-idea="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">${escapeHtml(token)}</button>`;
+      return `<button type="button" class="chip chip-link entity-id-chip ${escapeHtml(tone)}" data-link-idea="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">${escapeHtml(token)}</button>`;
     }
 
     function renderWorkstreamLinkSet(items, tone = "") {
@@ -2705,7 +2694,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
         .map((diagramId) => {
           const href = atlasDiagramHref(diagramId, selectedIdeaId);
           const tooltip = diagramTooltip(diagramId);
-          return `<a class="chip chip-link chip-topology-diagram" href="${escapeHtml(href)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}" target="_top">${escapeHtml(diagramId)}</a>`;
+          return `<a class="chip chip-link entity-id-chip chip-topology-diagram" href="${escapeHtml(href)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}" target="_top">${escapeHtml(diagramId)}</a>`;
         })
         .join("");
     }
@@ -2886,10 +2875,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
       return `
         <div class="topology-board">
-          <div class="topology-focus">
-            <span class="topology-focus-title">Selected</span>
-            ${workstreamLinkChip(selectedIdeaId, "chip-topology-source")}
-          </div>
           ${visibleRelationItems.length ? `
             <details class="topology-relations-panel">
               <summary>
@@ -3008,7 +2993,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
       if (!token) return "";
       const tooltip = workstreamTooltip(token);
       const tone = options && options.selected ? " wave-member-selected" : "";
-      return `<button type="button" class="chip chip-link execution-wave-chip-link${tone}" data-link-idea="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">${escapeHtml(token)}</button>`;
+      return `<button type="button" class="chip chip-link entity-id-chip execution-wave-chip-link${tone}" data-link-idea="${escapeHtml(token)}" data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">${escapeHtml(token)}</button>`;
     }
 
     function renderExecutionWaveDetailSection(selected) {
@@ -3035,6 +3020,11 @@ def _render_html(*, payload: dict[str, object]) -> str:
       const contextLine = primaryContext
         ? `This workstream participates across ${String(primaryContext.wave_span_label || "").trim() || "the program"} as ${String(primaryContext.role_label || "").trim() || "a member"}.`
         : "Umbrella-owned execution waves for this program.";
+      const numericProgressOrNull = (value) => {
+        if (value === null || value === undefined || value === "") return null;
+        const numericValue = Number(value);
+        return Number.isFinite(numericValue) ? numericValue : null;
+      };
       const workstreamStatusById = new Map(
         (Array.isArray(DATA.entries) ? DATA.entries : [])
           .map((row) => {
@@ -3049,8 +3039,12 @@ def _render_html(*, payload: dict[str, object]) -> str:
           .map((row) => {
             const ideaId = String(row && row.idea_id ? row.idea_id : "").trim();
             const plan = row && typeof row.plan === "object" ? row.plan : {};
-            const progressRatio = Number(plan && plan.progress_ratio);
-            return [ideaId, Number.isFinite(progressRatio) ? progressRatio : null];
+            const progressRatio = numericProgressOrNull(
+              Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")
+                ? plan.display_progress_ratio
+                : (Object.prototype.hasOwnProperty.call(plan, "progress_ratio") ? plan.progress_ratio : null)
+            );
+            return [ideaId, progressRatio];
           })
           .filter(([ideaId]) => ideaId)
       );
@@ -3128,12 +3122,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
         ? { ...selectedSummary, ...loadedDetail }
         : selectedSummary;
 
-      const rankLabel = selected.section === "execution"
-        ? "Pipeline"
-        : (selected.section === "finished" ? "Finished" : (selected.section === "parked" ? "Parked" : `Rank #${selected.rank}`));
-      const rankChipClass = selected.section === "execution"
-        ? "rank-chip-execution"
-        : (selected.section === "finished" ? "rank-chip-finished" : (selected.section === "parked" ? "rank-chip-parked" : "rank-chip-active"));
+      const sectionBadge = sectionBadgeInfo(selected);
       const rankingClass = selected.founder_override === "yes" ? "founder-override" : "score-ordered";
       const rankingText = selected.founder_override === "yes" ? "Priority Override" : "Score Ordered";
       const scoreWidth = Math.max(3, Math.min(100, selected.ordering_score));
@@ -3150,6 +3139,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
         ? `<span class="chip execution-chip ${escapeHtml(executionStateClass(executionState))}" data-tooltip="${escapeHtml(executionSignalTooltip(selected.status, executionState, activeWindowMinutes))}">${escapeHtml(executionStateLabel(executionState))}</span>`
         : "";
       const trace = workstreamTrace(selected.idea_id) || {};
+      const activeRelease = workstreamActiveRelease(selected);
+      const activeReleaseLabel = releaseLabel(activeRelease);
       const fallbackTopology = {
         parents: trace.workstream_parent || selected.workstream_parent || "",
         children: Array.isArray(trace.workstream_children) ? trace.workstream_children : (Array.isArray(selected.workstream_children) ? selected.workstream_children : []),
@@ -3228,16 +3219,16 @@ def _render_html(*, payload: dict[str, object]) -> str:
         ? `
         <section class="block">
           <h3>Implemented Summary</h3>
-          ${summarySectionHtml(implementedSummary, "Not captured in the idea spec yet.")}
+          ${summarySectionHtml(implementedSummary, "Not captured in the idea spec yet.", selected.implemented_summary_html)}
         </section>
       `
         : "";
       el.detail.innerHTML = `
         <header class="detail-header">
-          <span class="rank-chip ${escapeHtml(rankChipClass)}">${escapeHtml(rankLabel)}</span>
           <h2 class="detail-title">${escapeHtml(selected.title)}</h2>
           <div class="kpis">
             <div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>
+            <div class="kpi kpi-section ${escapeHtml(sectionBadge.kpiClassName)}" data-kpi="workstream-placement"><div class="k">Placement</div><div class="v">${escapeHtml(sectionBadge.label)}</div></div>
             <div class="kpi"><div class="k">Ordering Score</div><div class="v">${escapeHtml(selected.ordering_score)}</div></div>
             <div class="kpi"><div class="k">Created Date</div><div class="v">${escapeHtml(selected.idea_date_display || selected.idea_date || "-")}</div></div>
             <div class="kpi"><div class="k">Age (days)</div><div class="v">${escapeHtml(selected.idea_age_days || "-")}</div></div>
@@ -3251,7 +3242,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
             <span class="chip chip-priority">${escapeHtml(selected.priority)}</span>
             <span class="chip ${statusClass}">${escapeHtml(stageDisplay)}</span>
             ${executionSignalChip}
-            <span class="chip chip-lane">${escapeHtml(laneLabel(selected.impacted_lanes))}</span>
+            ${activeReleaseLabel ? `<span class="chip">${escapeHtml(activeReleaseLabel)}</span>` : ""}
             <span class="chip chip-sizing">${escapeHtml(selected.sizing)} / ${escapeHtml(selected.complexity)}</span>
             <span class="chip ${rankingClass}">${rankingText}</span>
           </div>
@@ -3266,15 +3257,16 @@ def _render_html(*, payload: dict[str, object]) -> str:
         <section class="block">
           <h3>Traceability</h3>
           <div class="links">
-            <a href="${escapeHtml(compassScopeHref(selected.idea_id))}" target="_top">Compass Scope</a>
-            <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
             <a href="${escapeHtml(selected.idea_ui_href || selected.idea_href)}">Workstream Spec</a>
             ${
               selected.promoted_to_plan_ui_href
                 ? `<a href="${escapeHtml(selected.promoted_to_plan_ui_href)}">Technical Implementation Plan</a>`
                 : ""
             }
+            <a href="${escapeHtml(compassScopeHref(selected.idea_id))}" target="_top">Compass Scope</a>
+            <a href="${escapeHtml(registryHrefForRow(selected))}" target="_top">Registry</a>
           </div>
+          ${activeReleaseLabel ? `<p class="trace-subhead">Release Target</p><p>${escapeHtml(activeReleaseLabel)}</p>` : ""}
           ${registryComponents.length ? `
             <p class="trace-subhead">Registry Components</p>
             <div class="topology-rel-body">${registryComponentLinksHtml}</div>
@@ -3292,32 +3284,32 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
         ${implementedSummaryHtml}
 
-        <section class="block">
+        <section class="block block-problem">
           <h3>Problem</h3>
-          ${summarySectionHtml(selected.problem, "Not captured in the idea spec yet.")}
-        </section>
-
-        <section class="block">
-          <h3>Customer</h3>
-          ${summarySectionHtml(selected.customer, "Not captured in the idea spec yet.")}
-        </section>
-
-        <section class="block">
-          <h3>Opportunity</h3>
-          ${summarySectionHtml(selected.opportunity, "Not captured in the idea spec yet.")}
+          ${summarySectionHtml(selected.problem, "Not captured in the idea spec yet.", selected.problem_html)}
         </section>
 
         <section class="block">
           <div class="split-grid">
             <article class="split-card">
               <h3>Product View</h3>
-              ${summarySectionHtml(selected.founder_pov, "Not captured in the idea spec yet.")}
+              ${summarySectionHtml(selected.founder_pov, "Not captured in the idea spec yet.", selected.founder_pov_html)}
             </article>
             <article class="split-card">
               <h3>Decision Basis</h3>
               ${toBulletHtml(selected)}
             </article>
           </div>
+        </section>
+
+        <section class="block">
+          <h3>Customer</h3>
+          ${summarySectionHtml(selected.customer, "Not captured in the idea spec yet.", selected.customer_html)}
+        </section>
+
+        <section class="block">
+          <h3>Opportunity</h3>
+          ${summarySectionHtml(selected.opportunity, "Not captured in the idea spec yet.", selected.opportunity_html)}
         </section>
 
         <section class="block">
@@ -3371,10 +3363,12 @@ def _render_html(*, payload: dict[str, object]) -> str:
 
     bind(el.query, "query");
     bind(el.section, "section");
+    bind(el.legacySection, "section");
     bind(el.phase, "phase");
+    bind(el.type, "type");
     bind(el.activity, "activity");
-    bind(el.lane, "lane");
     bind(el.priority, "priority");
+    bind(el.release, "release");
     bind(el.sort, "sort");
 
     el.mixByComplexity.addEventListener("click", () => {
@@ -3416,19 +3410,27 @@ def _render_html(*, payload: dict[str, object]) -> str:
     page_body_css = dashboard_ui_primitives.page_body_typography_css(
         selector="body",
     )
+    surface_shell_root_css = dashboard_ui_primitives.standard_surface_shell_root_css()
+    surface_shell_css = dashboard_ui_primitives.standard_surface_shell_css(
+        selector=".shell",
+    )
     hero_panel_css = dashboard_ui_primitives.hero_panel_css(
         container_selector=".hero",
         margin_bottom="16px",
     )
     sticky_filter_css = dashboard_ui_primitives.sticky_filter_bar_css(
         container_selector=".controls",
-        columns="2fr repeat(6, minmax(130px, 1fr))",
+        columns="minmax(220px, 1.8fr) repeat(7, minmax(0, 1fr))",
         field_selector=".controls input, .controls select",
         focus_selector=".controls input:focus, .controls select:focus",
         top_px=10,
     )
-    stat_card_surface_css = dashboard_ui_primitives.kpi_card_surface_css(
-        card_selector=".stat",
+    stat_card_surface_css = "\n\n".join(
+        (
+            dashboard_ui_primitives.kpi_card_surface_css(
+                card_selector=".stat",
+            ),
+        )
     )
     kpi_grid_layout_css = dashboard_ui_primitives.kpi_grid_layout_css(
         container_selector=".stats",
@@ -3483,18 +3485,134 @@ def _render_html(*, payload: dict[str, object]) -> str:
             ),
         )
     )
-    radar_readable_copy_css = dashboard_ui_primitives.content_copy_css(
-        selectors=(
-            ".meta-row-val",
-            ".block p",
-            ".block ul",
-            ".block li",
-            ".bullets",
-            ".bullets li",
-            ".analytics-toggle-sub",
-            ".graph-sub",
-            ".graph-empty",
-        ),
+    radar_readable_copy_css = "\n\n".join(
+        (
+            dashboard_ui_primitives.content_copy_css(
+                selectors=(
+                    ".meta-row-val",
+                    ".block p",
+                    ".block ul",
+                    ".block li",
+                    ".bullets",
+                    ".bullets li",
+                    ".detail-copy p",
+                    ".detail-copy ul",
+                    ".detail-copy li",
+                    ".detail-copy .check-text",
+                    ".analytics-toggle-sub",
+                    ".graph-sub",
+                    ".graph-empty",
+                ),
+            ),
+            dashboard_ui_primitives.code_typography_css(
+                selector=".detail-copy .code",
+            ),
+            """
+.block.block-problem {
+  border-color: #bfdbfe;
+  background: linear-gradient(180deg, #f8fbff, #ffffff 70%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.detail-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.detail-copy > * {
+  margin: 0;
+}
+
+.detail-copy > p {
+  max-width: 100%;
+}
+
+.detail-copy ul {
+  margin: 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 10px;
+}
+
+.detail-copy li {
+  margin: 0;
+}
+
+.detail-copy a {
+  color: #1d4ed8;
+  text-decoration: none;
+  border-bottom: 1px solid #bfdbfe;
+}
+
+.detail-copy a:hover {
+  border-bottom-color: #60a5fa;
+}
+
+.detail-copy code {
+  font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+  color: #1e3a8a;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  padding: 0.08em 0.38em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.detail-copy .code {
+  margin: 0;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #0f172a;
+  padding: 12px 13px;
+  overflow: auto;
+}
+
+.detail-copy .code code {
+  background: none;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  padding: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.detail-copy .checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-copy .check-item {
+  --level: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding-left: calc(var(--level) * 28px);
+}
+
+.detail-copy .check-text {
+  min-width: 0;
+}
+
+.detail-copy .check-box {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: #0f766e;
+  cursor: default;
+  flex: 0 0 auto;
+}
+
+.detail-copy .check-box:disabled {
+  opacity: 1;
+}
+            """.strip(),
+        )
     )
     meta_supporting_css = dashboard_ui_primitives.supporting_copy_typography_css(
         selector=".meta",
@@ -3548,7 +3666,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
     row_id_css = dashboard_ui_primitives.mono_identifier_typography_css(
         selector=".row-id",
         color="var(--ink-muted)",
-        size_px=12,
         margin="0",
     )
     analytics_title_css = dashboard_ui_primitives.card_title_typography_css(
@@ -3574,12 +3691,21 @@ def _render_html(*, payload: dict[str, object]) -> str:
     )
     workspace_layout_css = dashboard_ui_primitives.split_detail_workspace_css(
         selector=".workspace",
+        left_min_px=300,
+        left_max_px=380,
     )
     chart_axis_css = dashboard_ui_primitives.chart_axis_typography_css(
         selector=".chart-axis",
     )
-    chip_link_contract_css = dashboard_ui_primitives.detail_action_chip_css(
-        selector=".chip-link",
+    chip_link_contract_css = "\n\n".join(
+        (
+            dashboard_ui_primitives.detail_action_chip_css(
+                selector=".chip-link:not(.entity-id-chip):not(.execution-wave-chip-link)",
+            ),
+            dashboard_ui_primitives.surface_workstream_button_chip_css(
+                selector=".entity-id-chip",
+            ),
+        )
     )
     mix_toggle_button_css = dashboard_ui_primitives.detail_toggle_chip_css(
         selector=".mix-toggle button",
@@ -3629,6 +3755,30 @@ def _render_html(*, payload: dict[str, object]) -> str:
                 border_color="#e2ddd6",
                 color="#75695d",
             ),
+            dashboard_ui_primitives.subtle_labeled_surface_tone_css(
+                selector=".kpi.kpi-section.kpi-section-active",
+                background="#f4f1f9",
+                border_color="#e1dbeb",
+                color="#6a627c",
+            ),
+            dashboard_ui_primitives.subtle_labeled_surface_tone_css(
+                selector=".kpi.kpi-section.kpi-section-execution",
+                background="#eef2f7",
+                border_color="#d5ddea",
+                color="#5b697d",
+            ),
+            dashboard_ui_primitives.subtle_labeled_surface_tone_css(
+                selector=".kpi.kpi-section.kpi-section-finished",
+                background="#f3f5ee",
+                border_color="#dce2d2",
+                color="#68725b",
+            ),
+            dashboard_ui_primitives.subtle_labeled_surface_tone_css(
+                selector=".kpi.kpi-section.kpi-section-parked",
+                background="#f4f3f1",
+                border_color="#e2ddd6",
+                color="#75695d",
+            ),
             dashboard_ui_primitives.subtle_label_tone_css(
                 selector=".rank-chip",
                 background="#eef2f7",
@@ -3670,12 +3820,6 @@ def _render_html(*, payload: dict[str, object]) -> str:
                 background="#f7eff6",
                 border_color="#e8d9e7",
                 color="#795770",
-            ),
-            dashboard_ui_primitives.subtle_label_tone_css(
-                selector=".chip.chip-lane",
-                background="#f1f3f9",
-                border_color="#dce2ee",
-                color="#5b6881",
             ),
             dashboard_ui_primitives.subtle_label_tone_css(
                 selector=".chip.chip-sizing",
@@ -3908,7 +4052,7 @@ def _render_html(*, payload: dict[str, object]) -> str:
                 letter_spacing_em=0.03,
             ),
             dashboard_ui_primitives.auxiliary_heading_css(
-                selector=".topology-focus-title, .topology-relations-panel > summary, .topology-rel-title",
+                selector=".topology-relations-panel > summary, .topology-rel-title",
                 color="#475569",
                 size_px=11,
                 line_height=1.2,
@@ -3987,6 +4131,8 @@ def _render_html(*, payload: dict[str, object]) -> str:
     execution_wave_runtime_js = execution_wave_ui_runtime_primitives.execution_wave_runtime_helpers_js()
     return (
         template.replace("__ODYLITH_PAGE_BODY__", page_body_css)
+        .replace("__ODYLITH_SURFACE_SHELL_ROOT__", surface_shell_root_css)
+        .replace("__ODYLITH_SURFACE_SHELL__", surface_shell_css)
         .replace("__ODYLITH_BRAND_HEAD__", str(payload.get("brand_head_html", "")).strip())
         .replace("__ODYLITH_HERO_PANEL__", hero_panel_css)
         .replace("__ODYLITH_HEADER_TYPOGRAPHY__", header_typography_css)

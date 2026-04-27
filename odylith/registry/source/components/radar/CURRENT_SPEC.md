@@ -1,11 +1,17 @@
 # Radar
-Last updated: 2026-04-07
+
+## Odylith Discipline Contract
+- Radar owns public workstream accountability for B-110 and child workstreams
+  B-111 through B-117. The surface should show the umbrella, execution waves,
+  release target `release-0-1-11`, and proof gates without turning Odylith Discipline
+  into noisy task theater.
+Last updated: 2026-04-19
 
 
-Last updated (UTC): 2026-04-07
+Last updated (UTC): 2026-04-15
 
 ## Purpose
-Radar is Odylith's authoritative workstream backlog and execution-governance
+Radar is Odylith's authoritative workstream backlog and execution-evidence
 surface. It turns backlog markdown, plan linkage, traceability metadata, and
 execution evidence into the ranked workstream view used by operators and other
 Odylith surfaces.
@@ -13,14 +19,20 @@ Odylith surfaces.
 ## Scope And Non-Goals
 ### Radar owns
 - The canonical Odylith workstream backlog under `odylith/radar/source/`.
+- The repo-local release-planning source subtree under
+  `odylith/radar/source/releases/`.
 - Workstream ranking and status presentation.
 - Backlog-to-plan linkage and validation.
 - Workstream traceability graph generation.
+- Release-based filtering, release summary cards, and release chips in the
+  read-only backlog UI.
 - Auto-backfill and auto-promotion helpers for workstream state.
 - Read-only rendered backlog UI and standalone detail/document shards.
 
 ### Radar does not own
 - The actual implementation plans under `odylith/technical-plans/`.
+- Maintainer publication preflight, tag dispatch, or ship proof. That belongs
+  to Release.
 - Component inventory ownership. That belongs to Registry.
 - Diagram rendering. That belongs to Atlas.
 
@@ -32,6 +44,10 @@ Odylith surfaces.
   - the rendered backlog surface
 - Markdown in `odylith/radar/source/` remains authoritative. Generated UI
   bundles and traceability JSON are derived.
+- Radar is the canonical landing surface for interactive `B-###` workstream
+  controls across the product. When Atlas, Registry, Casebook, Compass, or the
+  shell render a shared workstream button, the destination is Radar's
+  workstream route rather than a surface-local approximation.
 
 ## Runtime Contract
 ### Source truth
@@ -39,6 +55,10 @@ Odylith surfaces.
   Canonical ranked backlog index.
 - `odylith/radar/source/ideas/YYYY-MM/*.md`
   Idea/workstream specs.
+- `odylith/radar/source/releases/releases.v1.json`
+  Repo-local release registry and alias ownership.
+- `odylith/radar/source/releases/release-assignment-events.v1.jsonl`
+  Append-only add, remove, and move history for workstream release targeting.
 
 ### Generated artifacts
 - `odylith/radar/radar.html`
@@ -83,7 +103,6 @@ contract with stable headers including:
 - ordering score
 - commercial/product/market value
 - sizing and complexity
-- impacted lanes
 - status
 - link
 
@@ -94,7 +113,6 @@ Idea files are also validated fail-closed. Required metadata includes:
 - `commercial_value`
 - `product_impact`
 - `market_value`
-- `impacted_lanes`
 - `impacted_parts`
 - `sizing`
 - `complexity`
@@ -105,8 +123,40 @@ Required sections include workstream problem framing, solution, scope,
 validation, rollout, components, interface changes, migration/compatibility,
 test strategy, and open questions.
 
+The core detail sections are a fail-closed authoring contract:
+- `## Problem`
+- `## Customer`
+- `## Opportunity`
+- `## Product View`
+- `## Success Metrics`
+
+Those sections must contain grounded narrative text. Placeholder bodies,
+`Details.`, title-derived backlog-create boilerplate, and empty values are
+invalid. `odylith backlog create` requires the same five grounded inputs before
+it can mint a new Radar workstream, and `validate backlog-contract` rejects
+source records that regress to generic core detail.
+
 The practical effect is that Radar doubles as both the visual backlog surface
 and the contract gate for workstream authoring quality.
+
+In the Odylith product repo, workstream `title` should name the slice directly
+and must not be prefixed with `Odylith`; Radar is already product-scoped, so
+the extra prefix only wastes width in Radar and Compass.
+Interactive `B-###` workstream chips in Radar summary rows, traceability
+cards, and release readouts must use Dashboard's shared compact
+workstream-button contract instead of Radar-local size or padding overrides.
+Radar summary stats and release summary cards must also use Dashboard's shared
+governance KPI/stat-card contract instead of Radar-local stat-tile forks.
+Release-only summary tiles in Radar must not add local grid, alignment, or
+value-spacing overrides on top of that shared KPI/stat-card contract.
+The same shared contract includes destination semantics: those interactive
+workstream controls across product surfaces deep-link back to Radar.
+Radar's topology board should open directly into relation content. Do not
+render a separate selected-workstream focus strip or selected chip bar above
+the relations disclosure; the detail header and KPI band already carry the
+focused workstream identity.
+Generic chip selectors must explicitly exclude those interactive workstream
+controls so unrelated chip styling cannot change Radar button sizing.
 
 ## Render Pipeline
 `render_backlog_ui.py` reads canonical Radar markdown plus linked plan and
@@ -117,8 +167,24 @@ traceability data and produces:
 - execution-wave summaries
 - Compass-aware live context such as current active window and recent activity
 
+The renderer is allowed to use Delivery Intelligence's shared `scope_signal`
+for default operational ordering, but it must remain exhaustive with respect to
+backlog truth.
+
 The renderer is read-only with respect to backlog truth. It projects what the
 markdown and linked governance state already say.
+
+Radar execution-wave summaries must preserve unknown progress. If a linked
+workstream has no explicit `plan.progress_ratio`, the backlog UI leaves the
+execution-wave progress chip blank instead of coercing that absence into
+synthetic `0%`.
+Radar-visible workstream progress is based on execution-relevant checklist
+sections only. `Learnings`, `Defer`, `Non-Goals`, `Impacted Areas`,
+`Traceability`, risk/mitigation checklists, and `Open Questions` must stay
+out of the visible percent.
+If an active `implementation` workstream still has `0/N` checked execution
+tasks, Radar must preserve that as checklist-only state and must not claim
+`0% progress` for the workstream itself.
 
 ## Traceability Model
 Radar's traceability layer is first-class, not optional garnish.
@@ -126,6 +192,7 @@ Radar's traceability layer is first-class, not optional garnish.
 ### Graph generation
 `build_traceability_graph.py` composes one graph from:
 - Radar idea metadata
+- repo-local release-planning catalog and active workstream targets
 - linked plans
 - Atlas diagram catalog
 - runbook/developer-doc/code references parsed from traceability sections
@@ -148,9 +215,21 @@ Radar's traceability layer is first-class, not optional garnish.
 
 ### Why this exists
 Radar is the workstream source of truth, but workstreams must still be tied to
-plans, components, diagrams, and implementation evidence. The traceability
-graph is the machine-readable join layer that lets Atlas, Compass, Registry,
-and Context Engine reason over those relationships.
+plans, releases, components, diagrams, and implementation evidence. The
+traceability graph is the machine-readable join layer that lets Atlas,
+Compass, Registry, and Context Engine reason over those relationships.
+
+## Scope Signal Ladder Contract
+Radar remains exhaustive source truth. The shared Scope Signal Ladder affects
+only default promotion and ordering:
+- `R3+` scopes rise in default operational views
+- `R0-R2` scopes remain present in the backlog but should not crowd default
+  focus chips or ordering ahead of higher-signal work
+- proof-state `R5` remains dominant over ordinary activity signals when Radar
+  chooses what to emphasize first
+
+Radar must not build a second local urgency model once Delivery Intelligence
+has published `scope_signal`.
 
 ## Execution State Automation
 `auto_promote_workstream_phase.py` is intentionally conservative:
@@ -161,6 +240,12 @@ and Context Engine reason over those relationships.
 
 This prevents generated dashboard churn from being mistaken for implementation
 progress.
+
+`reconcile_plan_workstream_binding.py` must only create successor workstreams
+for a finished backlog item when the touched plan is still a real, readable
+in-progress plan. Deleted stale index rows and plan files that already declare
+a terminal status are skipped with an explicit `stale_active_plan_binding`
+decision instead of minting a new `B-###` continuation.
 
 ## Intent Behind Radar
 Radar exists so a developer or operator can answer:
@@ -181,6 +266,9 @@ themselves.
   as auto-promotion.
 - New traceability edge type:
   update graph generation, UI lookup helpers, and any cross-surface consumers.
+- New release-planning field or selector:
+  update release source truth, validator, traceability graph, renderer
+  filters, and cross-surface consumers together.
 - New standalone page behavior:
   update the renderer, standalone page map, and any shell deep-link assumptions.
 
@@ -205,20 +293,32 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-19 · Implementation:** Added D-041 anti-slop governance topology, refreshed B-115/B-117 surfaces, and closed the Compass standup-batch regression with final green source-local proof.
+  - Scope: B-115, B-117
+  - Evidence: odylith/atlas/source/odylith-anti-slop-governance-and-host-parity.mmd, odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md +5 more
+- **2026-04-17 · Implementation:** B-110 aggressive QA hardened visible-proof command handling, transcript-safe practice memory, malformed counter validation, and structured refresh result coercion.
+  - Scope: B-110
+  - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md, src/odylith/runtime/discipline/laws.py +7 more
+- **2026-04-17 · Decision:** Queued B-126 Conditional Release-Targeted Backlog Authoring for v0.1.12 next release targeting; status remains queued and implementation is intentionally deferred out of the v0.1.11 lane.
+  - Scope: B-126
+  - Evidence: odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl
+- **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
+  - Scope: B-099, B-100
+  - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
 - **2026-03-23 · Decision:** Successor created: B-280 reopens B-279 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md +1 more
 - **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
-- **2026-03-23 · Decision:** Successor created: B-276 reopens B-275 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
-- **2026-03-20 · Decision:** Successor created: B-266 reopens B-265 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/casebook/CURRENT_SPEC.md +1 more
-- **2026-03-20 · Decision:** Successor created: B-258 reopens B-256 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +1 more
-- **2026-03-20 · Decision:** Successor created: B-255 reopens B-253 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/compass/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-15: Hardened Radar detail and authoring so runtime backlog detail exposes renderer-ready workstream fields, summary payloads retain fail-closed fallback detail, `odylith backlog create` requires grounded core detail, backlog validation rejects placeholder or boilerplate Problem/Customer/Opportunity/Product View/Success Metrics sections, and stale finished-workstream plan bindings cannot mint accidental successor backlogs. (Plan: [B-098](odylith/radar/radar.html?view=plan&workstream=B-098))
+- 2026-04-09: Switched Radar default operational ordering onto Delivery Intelligence's shared Scope Signal Ladder while keeping the underlying backlog exhaustive. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)
 - 2026-03-26: Created the first Odylith-owned Radar source tree so the public repo can maintain its own ranked product backlog instead of borrowing a consumer backlog as authority. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Curated default workstream warnings to stay operator-facing while keeping info-level autofix conflicts in shared diagnostics artifacts for maintainers. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-08: Added repo-local release-planning source truth, active release traceability, release chips, and release-based backlog filtering without collapsing release targeting into execution waves. (Plan: [B-063](odylith/radar/radar.html?view=plan&workstream=B-063))
+- 2026-04-09: Hardened plan-progress extraction and downstream Radar execution readouts so visible workstream progress counts only execution-relevant checklist sections and active implementation lanes with `0/N` captured execution tasks no longer masquerade as `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068); Bug: `CB-087`)
+- 2026-04-08: Dropped the redundant `Odylith` title prefix from product-repo Radar workstreams and enforced prefix-free title authoring plus validation so backlog titles use their width on the actual slice name. (Plan: [B-064](odylith/radar/radar.html?view=plan&workstream=B-064))
+- 2026-04-08: Bound Radar workstream chips to the shared compact `B-###` button contract so backlog and release views stop drifting when generic identifier styling changes elsewhere. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
+- 2026-04-09: Excluded Radar workstream chips from generic chip styling and added live/bundle plus browser proof so shared chip changes cannot silently reopen workstream-button drift. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-080`)
+- 2026-04-09: Locked Radar summary stats and current-release cards to Dashboard's shared KPI/stat-card contract and added browser proof for labeled, non-`v`-prefixed current-release values. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025); Bug: `CB-085`)

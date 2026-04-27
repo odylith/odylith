@@ -1,4 +1,4 @@
-"""Adaptive orchestration helpers extracted from the subagent orchestrator."""
+"""Derive orchestration mode and subtask signal overlays from runtime evidence."""
 
 from __future__ import annotations
 
@@ -6,11 +6,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
-
-def _host():
-    from odylith.runtime.orchestration import subagent_orchestrator as host
-
-    return host
+from odylith.runtime.execution_engine import runtime_lane_policy
 
 
 def _adaptive_batch_mode(
@@ -21,7 +17,9 @@ def _adaptive_batch_mode(
     groups: Sequence[Sequence[str]],
     tuning: TuningState,
 ) -> tuple[OrchestrationMode, list[str]]:
-    host = _host()
+    """Choose serial versus parallel batching from safety, grounding, and learned posture."""
+    from odylith.runtime.orchestration import subagent_orchestrator as host
+
     OrchestrationMode = host.OrchestrationMode
     ParallelSafetyClass = host.ParallelSafetyClass
     _mode_reliability_summary = host._mode_reliability_summary
@@ -64,6 +62,10 @@ def _adaptive_batch_mode(
         return mode, _sanitize_user_facing_lines(notes)
 
     context_summary = dict(assessment.context_signal_summary or {})
+    governance_guard = runtime_lane_policy.parallelism_guard(context_summary)
+    if governance_guard.blocked:
+        notes.append(governance_guard.reason)
+        return _finish(OrchestrationMode.SERIAL_BATCH)
     odylith_confidence = _clamp_confidence(context_summary.get("odylith_execution_confidence_score", 0) or 0)
     odylith_delegate_preference = _normalize_token(context_summary.get("odylith_execution_delegate_preference", ""))
     odylith_selection_mode = _normalize_token(context_summary.get("odylith_execution_selection_mode", ""))
@@ -204,6 +206,9 @@ def _adaptive_batch_mode(
     )
     packet_profile_guarded = packet_reliability == "guarded"
     packet_profile_reliable = packet_reliability == "reliable"
+    # The early exits deliberately bias toward serial execution whenever recent
+    # telemetry says the slice is still being narrowed, the packet fit is stale,
+    # or delegated closeouts are regressing. Parallelism is earned later.
     if odylith_confidence >= 3 and (
         odylith_selection_mode in {"narrow_first", "guarded_narrowing"}
         or odylith_parallel_hint in {"serial_preferred", "serial_guarded", "support_followup"}
@@ -342,6 +347,9 @@ def _adaptive_batch_mode(
             "Bounded parallel fan-out is allowed because the slice is grounded, delegation-ready, and has already earned deeper reasoning."
         )
         return _finish(OrchestrationMode.PARALLEL_BATCH)
+    # Once the serial safety gates have passed, these branches allow parallel
+    # fan-out only when routing readiness, budget fit, and historical outcomes
+    # agree that the bounded slice is worth delegating.
     if (
         control_advisory_parallelism == "allow_when_disjoint"
         and advisory_reliable
@@ -496,7 +504,9 @@ def _subtask_context_signals(
     mode: OrchestrationMode,
     all_subtasks: Sequence[SubtaskSlice],
 ) -> dict[str, Any]:
-    host = _host()
+    """Project parent context signals into a leaf-specific routing and evidence bundle."""
+    from odylith.runtime.orchestration import subagent_orchestrator as host
+
     OrchestrationMode = host.OrchestrationMode
     _normalize_context_signals = host._normalize_context_signals
     _nested_mapping = host._nested_mapping
@@ -525,6 +535,8 @@ def _subtask_context_signals(
         named_contract_keys.intersection({"routing_handoff", "context_packet", "evidence_pack", "optimization_snapshot"})
     )
     if base and "routing_handoff" not in named_contract_keys and not base_has_named_contracts:
+        # Older callers may hand in a flat routing bundle. Wrap it so the rest of
+        # the overlay logic can treat every caller as contract-shaped input.
         base = {"routing_handoff": base}
     base_root = _nested_mapping(base, "routing_handoff") or ({} if base_has_named_contracts else dict(base))
     base_context_packet = _nested_mapping(base, "context_packet")
@@ -568,6 +580,9 @@ def _subtask_context_signals(
     base_learning_evidence_strength = _nested_mapping(base_optimization_learning_loop, "evidence_strength")
     base_learning_control_advisories = _nested_mapping(base_optimization_learning_loop, "control_advisories")
     merged_control_advisories = dict(base_learning_control_advisories)
+    # Prefer the freshest learning-loop view, then backfill missing fields from
+    # evaluation and optimization summaries so downstream consumers see one
+    # coherent advisory surface.
     for source in (base_evaluation_control_advisories, base_optimization_control_advisories):
         for key, value in source.items():
             if key not in merged_control_advisories or merged_control_advisories[key] in ("", [], {}, None):
@@ -609,6 +624,9 @@ def _subtask_context_signals(
         and (plan_binding_required or governed_surface_sync_required or strict_gate_commands)
         and (base_governance_obligations or base_surface_refs)
     )
+    # Governance support leaves are allowed to look more spawn-worthy than their
+    # raw score would suggest when the parent packet already proves a governed
+    # closeout is required and bounded.
     retained_signal_count = max(
         _int_value(_mapping_lookup(base_utility_profile, "retained_signal_count")),
         scope_size + len(subtask.validation_commands) + (1 if request.evidence_cone_grounded else 0),
@@ -783,6 +801,8 @@ def _subtask_context_signals(
             *subtask.validation_commands,
         ]
     )
+    # The overlay does not replace parent packets; it adds the leaf-local
+    # routing, utility, and execution-profile signals needed by the spawned task.
     overlay = {
         "routing_handoff": {
             "grounding": {

@@ -30,6 +30,14 @@ _SURFACE_HEADINGS = {
 }
 
 
+def _legacy_payload_key(*parts: str) -> str:
+    return "_".join(parts)
+
+
+def _legacy_ui_phrase(*parts: str) -> str:
+    return " ".join(parts)
+
+
 def _seed_shell_assets(repo_root: Path) -> None:
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
     shutil.copytree(
@@ -109,7 +117,7 @@ def _seed_consumer_repo(
 
 def _render_shell(repo_root: Path, monkeypatch) -> None:  # noqa: ANN001
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -118,15 +126,26 @@ def _render_shell(repo_root: Path, monkeypatch) -> None:  # noqa: ANN001
     assert rc == 0
 
 
+def _render_shell_with_payload(repo_root: Path, monkeypatch, shell_payload: dict[str, object]) -> None:  # noqa: ANN001
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: dict(shell_payload),
+    )
+    monkeypatch.setattr(renderer, "_build_self_host_payload", lambda **kwargs: {})
+    rc = renderer.main(["--repo-root", str(repo_root), "--output", "odylith/index.html"])
+    assert rc == 0
+
+
 def _render_shell_without_monkeypatch(repo_root: Path) -> None:
-    original_loader = renderer.odylith_context_engine_store.load_delivery_surface_payload
+    original_loader = renderer.delivery_surface_payload_runtime.load_delivery_surface_payload
     original_self_host = renderer._build_self_host_payload
-    renderer.odylith_context_engine_store.load_delivery_surface_payload = lambda **kwargs: {}
+    renderer.delivery_surface_payload_runtime.load_delivery_surface_payload = lambda **kwargs: {}
     renderer._build_self_host_payload = lambda **kwargs: {}
     try:
         rc = renderer.main(["--repo-root", str(repo_root), "--output", "odylith/index.html"])
     finally:
-        renderer.odylith_context_engine_store.load_delivery_surface_payload = original_loader
+        renderer.delivery_surface_payload_runtime.load_delivery_surface_payload = original_loader
         renderer._build_self_host_payload = original_self_host
     assert rc == 0
 
@@ -223,6 +242,37 @@ def _block_storage(page, *, block_local: bool, block_session: bool) -> None:  # 
         page.add_init_script("\n".join(snippets))
 
 
+def _assert_shell_internal_status_absent(page) -> None:  # noqa: ANN001
+    body_text = page.evaluate("() => document.body ? document.body.innerText : ''")
+    payload_text = page.evaluate("() => JSON.stringify(window.__ODYLITH_TOOLING_DATA__ || {})")
+    for forbidden in (
+        "Internal Diagnostic Snapshot",
+        "Internal runtime status",
+        "Internal recorder tape",
+        "Recorder Tape",
+        "Backend Footprint",
+        "Control Calibration",
+    ):
+        assert forbidden not in body_text
+        assert forbidden not in payload_text
+    for forbidden_payload_key in (
+        _legacy_payload_key("memory", "snapshot"),
+        _legacy_payload_key("optimization", "snapshot"),
+        _legacy_payload_key("evaluation", "snapshot"),
+        _legacy_payload_key("odylith", "drawer"),
+        _legacy_payload_key("odylith", "drawer", "history"),
+    ):
+        assert forbidden_payload_key not in payload_text
+    for selector in (
+        ".system-status-shell",
+        ".legacy-stat-grid",
+        ".odylith-recorder-shell",
+        ".odylith-chart-canvas",
+        "script[src*='echarts']",
+    ):
+        assert page.locator(selector).count() == 0
+
+
 def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popup(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     repo_root = tmp_path / "consumer-repo"
     repo_root.mkdir()
@@ -275,14 +325,36 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         assert welcome_box["x"] >= (handle_box["x"] + handle_box["width"] - 1)
         assert abs(explainer_box["x"] - launchpad_grid_box["x"]) < 2
         assert abs(explainer_box["width"] - launchpad_grid_box["width"]) < 2
+        step_labels = [
+            label.strip()
+            for label in page.locator(".welcome-step-process .welcome-step-copy").all_inner_texts()
+        ]
+        assert step_labels == ["Copy prompt.", "Run in Codex or Claude.", "Map the repo."]
+        step_metrics = page.evaluate(
+            "() => Array.from(document.querySelectorAll('.welcome-step-process')).map((node) => {"
+            "  const card = node.getBoundingClientRect();"
+            "  const index = node.querySelector('.welcome-step-index').getBoundingClientRect();"
+            "  const copy = node.querySelector('.welcome-step-copy').getBoundingClientRect();"
+            "  return {"
+            "    height: card.height,"
+            "    cardCenter: card.left + card.width / 2,"
+            "    indexCenter: index.left + index.width / 2,"
+            "    copyCenter: copy.left + copy.width / 2"
+            "  };"
+            "})"
+        )
+        assert max(item["height"] for item in step_metrics) - min(item["height"] for item in step_metrics) <= 1
+        for item in step_metrics:
+            assert abs(item["indexCenter"] - item["cardCenter"]) <= 1
+            assert abs(item["copyCenter"] - item["cardCenter"]) <= 1
 
         _click_visible(page.locator("#welcomeCopyPrompt"))
-        page.locator("#welcomeCopyStatus", has_text="Starter prompt copied. Paste it into your agent.").wait_for(
+        page.locator("#welcomeCopyStatus", has_text="Prompt copied. Paste it into your agent.").wait_for(
             timeout=15000
         )
         writes = _clipboard_writes(page)
         assert writes
-        assert writes[-1].startswith("Use Odylith to start this repo from one real code path.")
+        assert writes[-1] == "Odylith, show me what you can do."
 
         _click_visible(page.locator("#welcomeDismiss"))
         page.wait_for_function(
@@ -308,6 +380,89 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         _click_visible(page.locator("#welcomeReopen"))
         welcome.wait_for(timeout=15000)
         assert page.locator("#shellWelcomeState [data-welcome-tab]").count() == 0
+
+        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_first_install_launchpad_fits_narrow_viewport(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "consumer-narrow-welcome"
+    repo_root.mkdir()
+    _seed_consumer_repo(
+        repo_root,
+        focus_path="src/billing",
+        existing_truth=False,
+        active_version="1.2.3",
+        activation_history=["1.2.3"],
+    )
+    _render_shell(repo_root, monkeypatch)
+
+    with _repo_browser_context(repo_root) as (base_url, context):
+        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+        page.set_viewport_size({"width": 390, "height": 844})
+        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+
+        welcome = page.locator("#shellWelcomeState")
+        welcome.wait_for(timeout=15000)
+        assert page.locator(".welcome-title").inner_text().strip() == "Start Odylith from one real code path"
+        assert page.locator(".welcome-prompt-text").inner_text().strip() == '"Odylith, show me what you can do."'
+        assert page.locator("#welcomeCopyPrompt").is_visible()
+
+        dimensions = page.evaluate(
+            "() => ({"
+            "scrollWidth: document.documentElement.scrollWidth,"
+            "clientWidth: document.documentElement.clientWidth,"
+            "welcome: (() => {"
+            "  const rect = document.getElementById('shellWelcomeState').getBoundingClientRect();"
+            "  return {left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom};"
+            "})(),"
+            "title: (() => {"
+            "  const rect = document.querySelector('.welcome-title').getBoundingClientRect();"
+            "  return {left: rect.left, right: rect.right};"
+            "})(),"
+            "prompt: (() => {"
+            "  const rect = document.querySelector('.welcome-prompt-block').getBoundingClientRect();"
+            "  return {left: rect.left, right: rect.right};"
+            "})(),"
+            "handles: Array.from(document.querySelectorAll('.brief-handle')).map((node) => {"
+            "  const rect = node.getBoundingClientRect();"
+            "  return {left: rect.left, right: rect.right};"
+            "})"
+            "})"
+        )
+        assert dimensions["scrollWidth"] <= dimensions["clientWidth"] + 1
+        assert dimensions["welcome"]["left"] >= 0
+        assert dimensions["welcome"]["right"] <= 390
+        assert max(handle["right"] for handle in dimensions["handles"]) <= dimensions["welcome"]["left"]
+        assert dimensions["title"]["left"] >= dimensions["welcome"]["left"]
+        assert dimensions["title"]["right"] <= dimensions["welcome"]["right"]
+        assert dimensions["prompt"]["left"] >= dimensions["welcome"]["left"]
+        assert dimensions["prompt"]["right"] <= dimensions["welcome"]["right"]
+
+        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_shell_never_renders_internal_status_across_tabs(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "consumer-no-shell-status"
+    repo_root.mkdir()
+    _seed_consumer_repo(repo_root, existing_truth=True)
+    _render_shell_with_payload(
+        repo_root,
+        monkeypatch,
+        {
+            _legacy_payload_key("odylith", "drawer"): {"headline": "Internal Diagnostic Snapshot"},
+            _legacy_payload_key("odylith", "drawer", "history"): {"rows": [{"state": "leaked"}]},
+            "internal_diagnostics": {"runtime": {"status": "should stay internal"}},
+        },
+    )
+
+    with _repo_browser_context(repo_root) as (base_url, context):
+        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+        for tab in ("radar", "registry", "casebook", "atlas", "compass"):
+            response = page.goto(f"{base_url}/odylith/index.html?tab={tab}", wait_until="domcontentloaded")
+            assert response is not None and response.ok
+            _wait_for_shell_tab(page, tab)
+            _assert_shell_internal_status_absent(page)
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -348,6 +503,9 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
         assert response is not None and response.ok
 
+        assert page.locator("text=Internal Diagnostic Snapshot").count() == 0
+        assert page.locator("text=Maintainer Benchmark Lane").count() == 0
+
         _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
         page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
         page.locator(".cheatsheet-card-title", has_text="Create a Radar backlog item").wait_for(timeout=15000)
@@ -366,6 +524,17 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         assert writes
         assert writes[-1] == 'Create a developer note titled "Compass refresh drift".'
 
+        search.fill("deep refresh")
+        page.locator(".cheatsheet-card-title", has_text="Deep-refresh Compass").wait_for(timeout=15000)
+        assert page.locator(".cheatsheet-card", has_text="Add a developer note").first.is_hidden()
+
+        deep_refresh_card = page.locator(".cheatsheet-card", has_text="Deep-refresh Compass").first
+        _click_visible(deep_refresh_card.locator("button", has_text="Copy CLI"))
+        page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
+        writes = _clipboard_writes(page)
+        assert writes
+        assert writes[-1] == "odylith compass deep-refresh --repo-root ."
+
         search.fill("watch-transactions")
         page.locator(".cheatsheet-card-title", has_text="Keep Compass warm").wait_for(timeout=15000)
         assert page.locator(".cheatsheet-card", has_text="Add a developer note").first.is_hidden()
@@ -375,7 +544,29 @@ def test_shell_cheatsheet_drawer_filters_and_copies_commands(tmp_path: Path, mon
         page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
         writes = _clipboard_writes(page)
         assert writes
-        assert writes[-1] == "odylith compass watch-transactions --repo-root . --interval-seconds 10"
+        assert writes[-1] == "odylith compass watch-transactions --repo-root ."
+
+        search.fill("ship target")
+        page.locator(".cheatsheet-card-title", has_text="Release planning: pick the ship target").wait_for(timeout=15000)
+        assert page.locator(".cheatsheet-card", has_text="Program/wave planning: sequence umbrella execution").first.is_hidden()
+
+        release_card = page.locator(".cheatsheet-card", has_text="Release planning: pick the ship target").first
+        _click_visible(release_card.locator("button", has_text="Copy CLI"))
+        page.locator("#agentCheatsheetCopyStatus", has_text="CLI equivalent copied.").wait_for(timeout=15000)
+        writes = _clipboard_writes(page)
+        assert writes
+        assert writes[-1] == "odylith release add B-067 0.1.11 --repo-root ."
+
+        search.fill("umbrella execution")
+        page.locator(".cheatsheet-card-title", has_text="Program/wave planning: sequence umbrella execution").wait_for(timeout=15000)
+        assert page.locator(".cheatsheet-card", has_text="Release planning: pick the ship target").first.is_hidden()
+
+        wave_card = page.locator(".cheatsheet-card", has_text="Program/wave planning: sequence umbrella execution").first
+        _click_visible(wave_card.locator("button", has_text="Copy CLI"))
+        page.locator("#agentCheatsheetCopyStatus", has_text="CLI copied.").wait_for(timeout=15000)
+        writes = _clipboard_writes(page)
+        assert writes
+        assert writes[-1] == "odylith program next B-021 --repo-root ."
 
         search.fill("")
         _click_visible(page.locator('[data-cheatsheet-filter="validate"]'))
@@ -531,6 +722,99 @@ def test_incremental_upgrade_suppresses_starter_guide_until_the_user_reopens_it(
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def test_shell_delivery_payload_does_not_render_status_summary_cards(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "consumer-governance-card"
+    repo_root.mkdir()
+    _seed_consumer_repo(repo_root, existing_truth=True)
+    _render_shell_with_payload(
+        repo_root,
+        monkeypatch,
+        {
+            _legacy_payload_key("memory", "snapshot"): {},
+            _legacy_payload_key("evaluation", "snapshot"): {},
+            _legacy_payload_key("optimization", "snapshot"): {
+                "latest_packet": {
+                    "workstream": "B-072",
+                    "packet_state": "gated_ambiguous",
+                    _legacy_payload_key("execution", "governance", "present"): True,
+                    _legacy_payload_key("execution", "governance", "outcome"): "deny",
+                    _legacy_payload_key("execution", "governance", "mode"): "recover",
+                    _legacy_payload_key("execution", "governance", "next", "move"): "recover.current_blocker",
+                    _legacy_payload_key("execution", "governance", "current", "phase"): "recover",
+                    _legacy_payload_key("execution", "governance", "last", "successful", "phase"): "submit",
+                    _legacy_payload_key("execution", "governance", "blocker"): "waiting approval",
+                    _legacy_payload_key("execution", "governance", "closure"): "safe",
+                    _legacy_payload_key("execution", "governance", "wait", "status"): "awaiting_callback",
+                    _legacy_payload_key("execution", "governance", "wait", "detail"): "github actions run 991",
+                    _legacy_payload_key("execution", "governance", "resume", "token"): "resume:B-072",
+                    _legacy_payload_key("execution", "governance", "validation", "archetype"): "recover",
+                    _legacy_payload_key("execution", "governance", "validation", "derived", "from"): ["mode:recover"],
+                    _legacy_payload_key(
+                        "execution",
+                        "governance",
+                        "authoritative",
+                        "lane",
+                    ): "context_engine.governance_slice.authoritative",
+                    _legacy_payload_key("execution", "governance", "history", "rule", "hits"): [
+                        "lane_drift_preflight"
+                    ],
+                    _legacy_payload_key("execution", "governance", "pressure", "signals"): [
+                        "wait:awaiting_callback",
+                        "denials:2",
+                    ],
+                    _legacy_payload_key("execution", "governance", "nearby", "denial", "actions"): [
+                        "explore.broad_reset"
+                    ],
+                    _legacy_payload_key(
+                        "execution",
+                        "governance",
+                        "runtime",
+                        "invalidated",
+                        "by",
+                        "step",
+                    ): "render_compass_dashboard",
+                    _legacy_payload_key("execution", "governance", "host", "family"): "claude",
+                    _legacy_payload_key("execution", "governance", "host", "supports", "native", "spawn"): False,
+                    _legacy_payload_key("execution", "governance", "target", "lane"): "dev_maintainer",
+                    _legacy_payload_key(
+                        "execution",
+                        "governance",
+                        "requires",
+                        "more",
+                        "consumer",
+                        "context",
+                    ): True,
+                    _legacy_payload_key(
+                        "execution",
+                        "governance",
+                        "consumer",
+                        "failover",
+                    ): "maintainer_ready_feedback_plus_bounded_narrowing",
+                    _legacy_payload_key("execution", "governance", "requires", "reanchor"): True,
+                }
+            },
+        },
+    )
+
+    with _repo_browser_context(repo_root) as (base_url, context):
+        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+
+        _click_visible(page.locator("#odylithToggle", has_text="Cheatsheet"))
+        page.locator("#agentCheatsheetSearch").wait_for(timeout=15000)
+        assert page.locator(".odylith-summary-card", has_text=_legacy_ui_phrase("Latest", "Governed", "Packet")).count() == 0
+        assert page.locator("text=Serial host execution").count() == 0
+        assert page.locator("text=recover.current_blocker").count() == 0
+        assert page.locator("text=waiting approval").count() == 0
+        assert page.locator("text=explore.broad_reset").count() == 0
+        assert page.locator("text=render_compass_dashboard").count() == 0
+        assert page.locator("text=resume:B-072").count() == 0
+        _assert_shell_internal_status_absent(page)
+
+        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_release_spotlight_and_release_note_links_work_in_browser(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     repo_root = tmp_path / "upgrade-links"
     repo_root.mkdir()
@@ -624,12 +908,67 @@ def test_authored_v0_1_10_release_note_drives_upgrade_popup_copy(tmp_path: Path,
         assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.10"
         assert page.locator(".upgrade-spotlight-title-copy").inner_text().strip() == "Boringly Trustworthy"
         assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.10"
-        assert "Explicit Compass full refresh now fails closed" in page.locator(
+        assert "Compass refresh now sticks to one bounded runtime contract" in page.locator(
             "#shellUpgradeSpotlight"
         ).inner_text()
         assert (
             page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
             == "https://github.com/odylith/odylith/blob/v0.1.10/odylith/runtime/source/release-notes/v0.1.10.md"
+        )
+
+        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_authored_v0_1_11_release_note_drives_upgrade_popup_copy(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "upgrade-v0-1-11"
+    repo_root.mkdir()
+    _seed_consumer_repo(
+        repo_root,
+        focus_path="src/billing",
+        existing_truth=True,
+        active_version="0.1.11",
+        activation_history=["0.1.10", "0.1.11"],
+    )
+    write_upgrade_spotlight(
+        repo_root=repo_root,
+        from_version="0.1.10",
+        to_version="0.1.11",
+        release_tag="v0.1.11",
+        release_url="https://example.com/releases/v0.1.11",
+        release_published_at="2026-04-26T20:54:14Z",
+        release_body="Fallback body should be replaced by the authored note.",
+        highlights=("Fallback highlight.",),
+    )
+    notes_root = repo_root / "odylith" / "runtime" / "source" / "release-notes"
+    notes_root.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(
+        REPO_ROOT / "odylith" / "runtime" / "source" / "release-notes" / "v0.1.11.md",
+        notes_root / "v0.1.11.md",
+    )
+    _render_shell(repo_root, monkeypatch)
+
+    with _repo_browser_context(repo_root) as (base_url, context):
+        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+
+        page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
+        spotlight_text = page.locator("#shellUpgradeSpotlight").inner_text()
+        assert page.locator("#shellWelcomeState").count() == 0
+        assert page.locator(".toolbar-version").inner_text().strip() == "v0.1.11"
+        assert (
+            page.locator(".upgrade-spotlight-title-copy").inner_text().strip()
+            == "Governed Execution Goes Multi-Host"
+        )
+        assert page.locator(".upgrade-spotlight-title-version").inner_text().strip() == "v0.1.11"
+        assert "Claude Code is first-class" in spotlight_text
+        assert "Execution is governed" in spotlight_text
+        assert "Benchmarks got teeth" in spotlight_text
+        assert "not ready to publish" not in spotlight_text
+        assert "Compass still needs to clear" not in spotlight_text
+        assert (
+            page.locator("#shellUpgradeSpotlight .upgrade-spotlight-link").get_attribute("href")
+            == "https://github.com/odylith/odylith/blob/v0.1.11/odylith/runtime/source/release-notes/v0.1.11.md"
         )
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

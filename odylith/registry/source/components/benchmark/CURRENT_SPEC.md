@@ -1,8 +1,39 @@
 # Benchmark
-Last updated: 2026-04-08
+
+## Odylith Discipline Contract
+- Benchmark owns Product Truth for Odylith Discipline. The
+  `discipline` family measures hard laws, unknown pressure,
+  mixed pressure, learning replay, false allow/block behavior, intervention
+  precision, zero-credit hot paths, and public-claim gating.
+- Quick family proof stays local-only; public/release claims require full
+  matched proof with `odylith_on` versus `raw_agent_baseline`, fairness intact,
+  warm and cold profiles, and pinned dogfood runtime health.
+- The family includes a critical host/lane parity scenario so Codex and Claude
+  across dev, dogfood, and consumer lanes are benchmark-visible. Host model
+  aliases remain adapter metadata; hot Odylith Discipline proof requires zero host model
+  and provider calls.
+- Odylith Discipline validation is a platform contract, not only corpus parsing: it
+  checks declared proof obligations, affordance ranking, intervention
+  visibility, learning/memory signals, zero-credit budget counters, bundle
+  mirrors, and cross-layer integration tokens before benchmark summaries can
+  report clean Odylith Discipline metrics.
+- Odylith Discipline metrics now include deterministic false allow/block rates,
+  unknown-pressure handling, stance-vector coverage, noise-suppression,
+  intervention precision, and unseen-pressure generalization alongside
+  hot-path provider and host-model call counts.
+- Odylith Discipline corpus coverage includes false-block guards for
+  allowed technical-plan authoring, release-proof execution, credit-safety
+  hardening, negated delegation, and modern Codex/Claude model-alias
+  normalization.
+- Guidance Behavior and Odylith Discipline quick scenarios are tagged
+  to B-110 so program/release proof and benchmark adoption metrics carry the
+  same workstream anchor. A missing B-110 anchor is treated as benchmark
+  corpus drift because it can create false `requires_widening` advisory noise
+  even when required-path recall and validation are green.
+Last updated: 2026-04-25
 
 
-Last updated (UTC): 2026-04-08
+Last updated (UTC): 2026-04-18
 
 ## Purpose
 Benchmark is Odylith's local proof subsystem for measuring whether Odylith-on
@@ -25,12 +56,23 @@ reviewer framing that explains how Odylith should be compared.
 - Local benchmark history under `.odylith/runtime/odylith-benchmarks/`.
 - The release-safe benchmark publication contract used by README and maintainer
   release proof.
+- Advisory mechanism reports that support release proof without pretending to
+  be full `odylith_on` outcome proof. The v0.1.11 visible intervention value
+  report lives in
+  `src/odylith/runtime/evaluation/odylith_intervention_value_engine_benchmark.py`
+  and evaluates the governed bootstrap corpus only as selector mechanism
+  evidence.
 
 ### Benchmark does not own
 - The grounding, routing, or orchestration runtime it measures.
 - Hosted evaluation infrastructure.
 - Consumer-repo source truth outside the local Odylith tree.
-- Claude-native benchmark claims that do not share the current Codex harness.
+- Host-native benchmark claims that do not share the current matched proof
+  harness.
+- Runtime claims that a sparse or synthetic corpus is ML-calibrated. Benchmark
+  may report `corpus_quality_state=bootstrap` and `calibration_publishable`,
+  but only a publishable non-synthetic adjudication corpus can support
+  calibration claims.
 
 ## Developer Mental Model
 - The corpus defines the scenarios, expectations, and validation hooks that
@@ -38,26 +80,131 @@ reviewer framing that explains how Odylith should be compared.
 - The runner executes those scenarios across multiple cache profiles and modes,
   then publishes a conservative same-scenario comparison instead of the easiest
   green snapshot.
-- `odylith_on` measures the real grounded Odylith stack.
+- `odylith_on` measures the real full-product Odylith assistance stack.
 - `odylith_on_no_fanout` isolates how much bounded multi-leaf orchestration is
-  contributing on top of the same Odylith grounding packet.
+  contributing on top of the same full-product Odylith assistance lane.
 - `raw_agent_baseline` is `odylith_off`, or plain-English `Odylith off`: the
-  raw Codex CLI control with Odylith grounding disabled.
+  raw host CLI control with Odylith grounding disabled.
 - `odylith_repo_scan_baseline` is the current repo-scan scaffold control lane.
 - The honest primary benchmark comparison is `odylith_on` versus
-  `raw_agent_baseline`; the repo-scan lane is secondary context that shows how
-  much scaffolding helps.
+  `raw_agent_baseline`, and the public comparison contract for that pair is
+  `full_product_assistance_vs_raw_agent`; the repo-scan lane is secondary
+  context that shows how much scaffolding helps.
 - The benchmark now also owns a developer-first family taxonomy in
   `src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py`. That
   taxonomy orders the public README table and both proof and diagnostic family
   heatmaps by developer legibility rather than by prompt-cost ranking.
+- The tracked corpus now includes a dedicated `live_proof_discipline` family
+  for proof-state control-panel behavior. That family measures whether
+  benchmark packets expose a real live blocker lane when one resolves and stay
+  explicit about `none` when no lane resolves.
+- The tracked corpus now also includes a dedicated
+  `context_engine_grounding` family for Context Engine packet-lane and
+  scope-resolution behavior. That family measures whether adaptive and
+  governance packets choose the right lane, keep the right workstream anchor,
+  and stay fail-closed on broad or unresolved scope.
+- The tracked corpus now also includes a dedicated
+  `execution_engine` family for Execution Engine contract posture and
+  honest guardrail proof. That family measures whether packets and runtime
+  summaries preserve the real `admit|deny|defer` decision, mode, next move,
+  closure posture, wait/resume state, validation archetype, host family,
+  target lane, delegation or parallelism guard posture, and fail-closed
+  recovery shape instead of collapsing back to stale or generic route hints.
+- The tracked corpus now also includes a dedicated `guidance_behavior` family
+  for high-risk guidance pressure cases. That family measures whether agents
+  ground before broad scans, obey CLI-first governed truth, avoid adopting
+  queued work without explicit instruction, qualify completion claims with
+  fresh proof, bound delegation contracts, and distinguish hidden
+  intervention payloads from chat-visible proof.
+- The tracked corpus now tags `guidance_behavior` and
+  `discipline` quick scenarios to B-110 so the v0.1.11 program
+  is visible to benchmark selection, adoption summaries, and advisory widening
+  checks.
+- Proof-discipline summary metrics are first-class benchmark outputs now:
+  `proof_state_present_rate`, `false_clearance_rate`,
+  `proof_frontier_gate_accuracy_rate`, `proof_claim_guard_accuracy_rate`, and
+  `proof_same_fingerprint_reuse_rate`.
+- Context Engine grounding summary metrics are first-class benchmark outputs
+  now too: `context_engine_packet_source_accuracy_rate`,
+  `context_engine_selection_state_accuracy_rate`,
+  `context_engine_workstream_accuracy_rate`,
+  `context_engine_fail_closed_ambiguity_rate`, and
+  `context_engine_session_namespace_rate` when runtime-backed rows are present.
+- Execution Engine summary metrics are first-class benchmark outputs now too:
+  `execution_engine_present_rate`,
+  `execution_engine_resume_token_present_rate`,
+  `execution_engine_outcome_accuracy_rate`,
+  `execution_engine_mode_accuracy_rate`,
+  `execution_engine_next_move_accuracy_rate`,
+  `execution_engine_closure_accuracy_rate`,
+  `execution_engine_wait_status_accuracy_rate`,
+  `execution_engine_validation_archetype_accuracy_rate`,
+  `execution_engine_current_phase_accuracy_rate`,
+  `execution_engine_last_successful_phase_accuracy_rate`,
+  `execution_engine_authoritative_lane_accuracy_rate`,
+  `execution_engine_target_lane_accuracy_rate`,
+  `execution_engine_resume_token_accuracy_rate`,
+  `execution_engine_host_family_accuracy_rate`,
+  `execution_engine_model_family_accuracy_rate`,
+  `execution_engine_component_id_accuracy_rate`,
+  `execution_engine_canonical_component_id_accuracy_rate`,
+  `execution_engine_identity_status_accuracy_rate`,
+  `execution_engine_target_component_status_accuracy_rate`,
+  `execution_engine_snapshot_reuse_status_accuracy_rate`,
+  `execution_engine_reanchor_accuracy_rate`,
+  `execution_engine_delegation_guard_accuracy_rate`, and
+  `execution_engine_parallelism_guard_accuracy_rate` when execution-backed rows
+  are present.
+- Execution Engine cost metrics are measured as lower-is-better diagnostics:
+  `execution_engine_median_context_packet_build_ms`,
+  `execution_engine_median_snapshot_duration_ms`,
+  `execution_engine_median_prompt_bundle_tokens`,
+  `execution_engine_median_runtime_contract_tokens`, and
+  `execution_engine_median_total_payload_tokens`.
+- Intervention Value Engine advisory metrics are measured separately from the
+  full-product benchmark: visible-block precision, must-surface recall,
+  duplicate visible rate, visibility-failure recall, no-output accuracy, p95
+  selector latency, corpus quality state, and calibration publishability. These
+  are mechanism-health signals, not a substitute for paired `odylith_on` vs
+  `odylith_off` outcome lift.
 - A live `odylith_on` versus `odylith_off` comparison only counts as benchmark
-  proof when both lanes run the same Codex CLI model, reasoning effort,
+  proof when both lanes run the same host CLI model, reasoning effort,
   sandbox policy, approval posture, validator contract, and stripped workspace
-  shape. The only intended lane difference is whether Odylith contributes the
-  grounding scaffold.
+  shape for the proof host under test. The intended lane difference is the
+  declared Odylith product assistance stack, not a hidden side channel:
+  grounding packet, selected docs and repo anchors, Execution Engine posture
+  and truthful next-move guidance, scenario-declared focused-check
+  shaping, preflight focused-check results only when those checks run in the
+  disposable benchmark workspace and are logged in the report, and bounded
+  orchestration or recovery policy.
 - The report under `.odylith/runtime/odylith-benchmarks/latest.v1.json` is the
   machine-readable source of truth for publication.
+- That report must expose the comparison contract and fairness state
+  explicitly, including `comparison_contract.primary_claim`,
+  `comparison_contract.odylith_on_affordances`,
+  `comparison_contract.raw_agent_affordances`,
+  `preflight_evidence_mode`, `preflight_evidence_commands`,
+  `preflight_evidence_result_status`, `observed_path_sources`,
+  `validator_status_basis`, `fairness_contract_passed`,
+  `fairness_findings`, and `corpus_composition`.
+- The current report contract keeps `comparison_contract` as the stable
+  comparison token and carries the structured affordance details in
+  `comparison_contract_details`. Publication docs may render those details as
+  `comparison_contract.primary_claim`,
+  `comparison_contract.odylith_on_affordances`, and
+  `comparison_contract.raw_agent_affordances`, but the machine-readable report
+  must preserve both the stable token and the explicit affordance mapping.
+- Packet-only diagnostic scenarios may attach a bounded `benchmark.packet_fixture`
+  to restore missing proof, routing, external-state, or context fields when the
+  scenario is explicitly measuring packet or runtime-summary carry-through
+  instead of re-running the whole live host path. Those fixtures are
+  non-publication scaffolding only: they must stay whitelisted, additive,
+  scenario-local, and unable to inject hidden repo truth outside the declared
+  packet payload seam.
+- When focused preflight evidence is what turns a no-op lane into a validator
+  pass, the result must say so explicitly through
+  `validator_status_basis=focused_noop_proxy` instead of looking like a normal
+  broad-validator success.
 - The README numbers, benchmark explainer, reviewer guide, and canonical SVG
   graphs are derived outputs. They must never outrun the latest validated
   published report or drift away from the benchmark priority order.
@@ -69,12 +216,14 @@ reviewer framing that explains how Odylith should be compared.
   execution delta, not the primary scorecard.
 - Simulation, reviewer, and closeout artifacts should suppress mid-analysis
   Odylith brand narration. If a writeup or agent handoff names Odylith
-  directly beyond lane labels, reserve that for one short end-of-work
-  `Odylith Assist:` line, and prefer `**Odylith Assist:**` when Markdown
-  formatting is available. Follow the detailed closeout contract in
-  [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md) and keep benchmark
-  storytelling anchored in measured proof rather than duplicated branding
-  rubric.
+  directly beyond lane labels, reserve that for one short evidence-backed
+  `Odylith Assist:` line at closeout or for explicit visibility-feedback
+  fallback, and prefer `**Odylith Assist:**` when Markdown formatting is
+  available. Follow the detailed closeout contract in
+  [Odylith Chatter](../odylith-chatter/CURRENT_SPEC.md), including the rule
+  that any supplemental line renders before the final Assist line, and keep
+  benchmark storytelling anchored in measured proof rather than duplicated
+  branding rubric.
 - That closeout rule is metadata-only for benchmark families: do not add
   benchmark required paths, hot-path docs, or validation commands just to
   repeat the chatter contract.
@@ -125,6 +274,18 @@ reviewer framing that explains how Odylith should be compared.
 - Preserve bounded benchmark finalization: adoption-proof sampling is
   supplementary and must degrade cleanly on timeout or transport loss instead
   of blocking report persistence after the full corpus finishes.
+- Keep proof-state benchmark slices honest: `false_clearance_rate` must stay at
+  `0.0`, and proof-backed benchmark rows must keep frontier gating plus
+  claim-tier accuracy at `1.0`.
+- Keep Context Engine benchmark slices honest: packet-lane accuracy,
+  selection-state accuracy, workstream accuracy, and ambiguity fail-closed
+  behavior must stay at `1.0` whenever the sampled corpus includes those rows.
+- Keep Execution Engine benchmark slices honest: Execution Engine
+  presence, resume-token presence, outcome accuracy, mode accuracy, truthful
+  next-move accuracy, closure accuracy, wait/resume accuracy, host-family
+  accuracy, target-lane accuracy, guard accuracy, canonical identity accuracy,
+  snapshot-reuse posture, and authoritative-lane accuracy must stay at `1.0`
+  whenever the sampled corpus includes those rows.
 - Keep the first shipped release proof local-memory-first; hybrid rerank and
   remote retrieval remain experiment lanes until they improve proof without
   harming the current pass.
@@ -143,9 +304,11 @@ Benchmark publication now leads with the developer-facing core:
 - Runtime / Install / Security
 - Surface / UI Reliability
 - Docs + Code Closeout
-- Governance / Release Integrity
+- Governance / Release Integrity, including live blocker proof discipline
 - Architecture Review
 - Grounding / Orchestration Control
+- Execution posture is measured inside Grounding / Orchestration Control as a
+  first-class family now, not as an implicit byproduct of context grounding.
 
 That ordering is non-cosmetic. The benchmark keeps Odylith's governance and
 architecture truth, but the public heatmaps and family tables should now start
@@ -168,6 +331,10 @@ with the families that look and feel most like normal coding-agent work.
 ### Maintainer publication helpers
 - `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_graphs --report .odylith/runtime/odylith-benchmarks/latest.v1.json --out-dir docs/benchmarks`
   Regenerate the canonical README SVG graph set from the current report.
+- `PYTHONPATH=src python -m odylith.runtime.evaluation.odylith_benchmark_publication --repo-root .`
+  Refresh the benchmark snapshot markdown and tracked `latest-summary` JSON
+  from the selected diagnostic and live reports without hand-editing the
+  generated snapshot files.
 - [Maintainer benchmark release guidance](../../../../maintainer/agents-guidelines/RELEASE_BENCHMARKS.md)
   defines the release-safe publication contract and graph order.
 
@@ -179,6 +346,9 @@ with the families that look and feel most like normal coding-agent work.
   Benchmark runner, aggregation, and publication logic.
 - `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`
   Canonical graph renderer for the maintained README SVG set.
+- `src/odylith/runtime/evaluation/odylith_benchmark_publication.py`
+  Canonical publication writer for benchmark snapshot markdown and tracked
+  latest-summary truth.
 - `src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py`
   Canonical developer-first family ordering for README and graph publication.
 - `README.md`
@@ -220,10 +390,10 @@ with the families that look and feel most like normal coding-agent work.
   softened to preserve flattering numbers.
 - Benchmark evolution is allowed only when it makes the eval harder, more
   representative, more reproducible, or more conservative.
-- A live raw-Codex baseline is invalid for publication if the disposable
+- A live raw-host baseline is invalid for publication if the disposable
   workspace inherits ambient workstation or repo state beyond the explicit
   shared task contract. Shared `.odylith` runtime state, global Git config,
-  host Python or package-manager state, desktop Codex environment variables,
+  host Python or package-manager state, desktop host environment variables,
   shared caches, or shell startup drift all count as contamination.
 - Benchmark status must fail closed when both compared lanes fail, time out, or
   miss the validator contract. Equal failure is never a pass.
@@ -245,9 +415,9 @@ with the families that look and feel most like normal coding-agent work.
   profiles unless the operator passes explicit filters.
 - `diagnostic` is the internal tuning lane: it isolates packet and prompt
   creation for `odylith_on` versus `odylith_off` without running the live
-  end-to-end Codex pair.
+  end-to-end host pair.
 - The proof lane answers:
-  - "Does Odylith beat raw Codex CLI on the same live end-to-end task contract?"
+  - "Does the full Odylith assistance stack beat the raw host CLI on the same live end-to-end task contract?"
   - "What is the full matched-pair time to valid outcome?"
   - "Does Odylith improve required-path coverage, validation, and expectation success on the live run?"
 - The diagnostic lane answers:
@@ -263,7 +433,8 @@ with the families that look and feel most like normal coding-agent work.
 - `odylith_off` means `raw_agent_baseline`, and plain-English `Odylith off`
   means the same lane.
 - The release-safe primary comparison is `odylith_on` versus
-  `raw_agent_baseline`.
+  `raw_agent_baseline`, under the `full_product_assistance_vs_raw_agent`
+  comparison contract.
 - Older history artifacts may still carry the legacy repo-scan key
   `full_scan_baseline`; report readers must continue to accept it.
 - The release-safe default cache profiles are `warm` and `cold`.
@@ -277,7 +448,7 @@ with the families that look and feel most like normal coding-agent work.
 - `latest-diagnostic.v1.json` is the profile-specific diagnostic snapshot.
 - `docs/benchmarks/proof/` and `docs/benchmarks/diagnostic/` carry the
   profile-specific SVG graph sets.
-- For live Codex CLI proof, `odylith_on` and `odylith_off` must also share the
+- For live proof, `odylith_on` and `odylith_off` must also share the
   same execution contract fields for resolved CLI binary, model, and reasoning
   effort. A report that mixes those contracts is not a valid same-agent
   comparison.
@@ -291,7 +462,7 @@ with the families that look and feel most like normal coding-agent work.
 - The runner may batch the public live pair only after each lane's request has
   already been prepared. Odylith packet-building, cache-profile preparation,
   and other global-state-sensitive phases stay serial. Only the isolated live
-  Codex subprocess phase is allowed to run concurrently, and only for the same
+  host subprocess phase is allowed to run concurrently, and only for the same
   scenario's `odylith_on` versus `odylith_off` pair.
 - Because of that matched-pair batching, published live-proof timing is a
   contention-shared benchmark time-to-valid-outcome measurement, not a
@@ -301,7 +472,7 @@ with the families that look and feel most like normal coding-agent work.
   context such as mean, `p95`, and full proof pair-wall total across the
   selected cache profiles.
 - If Odylith selects docs or contracts for the live evidence cone, those
-  surfaces must survive the packet-to-prompt handoff into the live Codex lane.
+  surfaces must survive the packet-to-prompt handoff into the live host lane.
   Stripping selected docs from the prompt payload invalidates both required-path
   accuracy claims and prompt-token accounting.
 - The inverse also matters on strict bounded proof slices. When the scenario's
@@ -321,6 +492,10 @@ with the families that look and feel most like normal coding-agent work.
   auto-consumed instruction entrypoints and tool config surfaces. It must not
   delete truth-bearing repo docs, maintainer markdown, or product skill files
   that remain valid explicit read targets during the task.
+- The fairness contract fails closed if `odylith_on` receives undeclared
+  preflight evidence, if `odylith_off` loses prompt-visible path attribution
+  that the prompt actually showed, or if the report cannot expose those lane
+  affordances explicitly.
 - If stripped guidance or validator-truth files must reappear before
   validation, they must be restored from a stash captured inside the scoped
   benchmark workspace snapshot, never from the ambient repo root. Restoring
@@ -329,7 +504,7 @@ with the families that look and feel most like normal coding-agent work.
   package. If a dirty selected Python file depends on dirty sibling modules in
   the same package, the snapshot must carry those same-package dirty siblings
   for both compared lanes or fail closed before publication.
-- Diagnostic runs must fail closed if any benchmark-owned live Codex
+- Diagnostic runs must fail closed if any benchmark-owned live host
   subprocess or benchmark temp worktree appears during or after the run.
 - Live observed-path attribution must count direct listing, search, and file
   inspection behavior, not transitive file-path mentions embedded inside the
@@ -339,8 +514,19 @@ with the families that look and feel most like normal coding-agent work.
   contracts or runbooks before generic guidance surfaces. Generic files such
   as `AGENTS.md`, `agents-guidelines/*`, or skills are valid support docs only
   when they are also the most relevant truthful read for the slice.
+- Corpus path semantics must keep grounding recall, supporting evidence, and
+  write-surface precision separate. `required_paths` remain the recall target;
+  `supporting_paths` are legitimate prompt-visible or command-visible evidence
+  that may count as relevant for precision but never satisfy required-path
+  recall; `expected_write_paths` are the only authoritative write-target set
+  when present, so broad `changed_paths` anchors cannot silently become write
+  expectations.
+- Manual or case-selected live benchmark runs must execute only the selected
+  comparison rows plus required validators. Singleton latency probes and live
+  adoption samples are full-corpus publication probes, not hidden fanout for
+  focused repro or developer smoke runs.
 - Live proof completion recovery must prefer `result.json` but fall back to a
-  schema-valid final `agent_message` from the Codex JSON event stream before
+  schema-valid final `agent_message` from the host JSON event stream before
   declaring `missing_schema_output`.
 
 ### Published proof posture
@@ -354,7 +540,7 @@ with the families that look and feel most like normal coding-agent work.
   attribution and anti-gaming review.
 - Packet and prompt creation diagnostics are useful internal tuning signals,
   but they are not the same thing as the live end-to-end product comparison.
-- By default, Odylith applies a conservative `20m` timeout to each live Codex
+- By default, Odylith applies a conservative `20m` timeout to each live host
   turn so one stalled scenario cannot hang the benchmark indefinitely.
   Validator timeouts remain operator-controlled. Any operator-supplied timeout
   override or explicit disable must be recorded in the report contract.
@@ -389,12 +575,17 @@ with the families that look and feel most like normal coding-agent work.
   repo-scan scaffold itself is helping, but it is not `Odylith off`.
 - Structural feature comparisons are secondary context and only meaningful when
   they are tied back to execution consequences.
-- Public measured proof is Codex-first today. Public docs may describe
+- Public measured proof is Codex-host-scoped today. Public docs may describe
   Claude-facing benefits from the same grounding and governance layer, but they
-  must not overstate those benefits as Claude-native benchmark proof.
+  must not overstate those benefits as Claude-host benchmark proof until that
+  proof exists.
 - If Odylith only wins when it gets extra hidden truth, that is a weaker story
   than the true benchmark claim and must not be presented as the primary
   proof.
+- The benchmark therefore prefers declared product advantages over pretend
+  symmetry. If an affordance is intentional Odylith behavior, document it in
+  the comparison contract and report it explicitly; do not hide it behind a
+  narrower public claim.
 - If `odylith_on` beats `odylith_off` when both lanes can explicitly read the
   same truthful repo surfaces, then Odylith has demonstrated real systems
   value rather than a hidden-information advantage.
@@ -427,7 +618,7 @@ In practice that means:
   live proof lane this is benchmark time to valid outcome, not solo-user
   latency
 - prompt-token and total payload efficiency:
-  on the live proof lane these are full-session Codex costs; initial
+  on the live proof lane these are full-session host-session costs; initial
   prompt-bundle efficiency belongs to the diagnostic lane
 - bounded token-budget behavior:
   Odylith should degrade gracefully under tighter budgets rather than winning
@@ -517,8 +708,9 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 5. Packet results must publish traced reasoning time plus explicit
    uninstrumented overhead so latency spikes can be diagnosed instead of being
    mistaken for grounding-quality regressions.
-6. Live Codex CLI results must also publish the isolation contract that made
-   the comparison fair, including whether the run used a temporary Codex home,
+6. Live proof-host CLI results must also publish the isolation contract that
+   made the comparison fair, including whether the run used a temporary host
+   home,
    stripped repo guidance, localized validator cache or temp roots, the
    resolved timeout policy, and any remaining contamination risks that still
    invalidate publication.
@@ -562,7 +754,7 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
   If a documented `odylith ...` validator command misparses, the fix belongs in
   the product command surface before the benchmark story moves forward.
 - The benchmark must also fail closed on contaminated live-run isolation. If
-  the raw-Codex lane still sees shared workstation or repo state, the result is
+  the raw-host lane still sees shared workstation or repo state, the result is
   debug-only and must not be narrated as benchmark proof.
 - The tracked corpus stays canonical on `scenarios` and
   `architecture_scenarios`; reader support for legacy `cases` keys is only a
@@ -596,11 +788,18 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 ### Focused tests
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_graphs.py tests/unit/test_cli.py`
 - `python -m pytest -q tests/unit/runtime/test_tooling_guidance_catalog.py tests/unit/runtime/test_tooling_context_retrieval_guidance.py tests/unit/runtime/test_odylith_benchmark_prompt_regressions.py tests/unit/runtime/test_odylith_benchmark_preflight.py`
+- `odylith validate guidance-behavior --repo-root .`
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-25 · Implementation:** v0.1.11 benchmark reproof published proof report 44f2a3d83d2c9975 and diagnostic report 9dcae95d5bb62c75 on head 1cfca107 after fixing CB-125 and CB-126.
+  - Scope: B-093
+  - Evidence: docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md, docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md +1 more
+- **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
+  - Scope: B-110
+  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
 - **2026-04-05 · Implementation:** Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.
   - Scope: B-021, B-022
   - Evidence: README.md, docs/benchmarks/README.md +3 more
@@ -610,9 +809,14 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-03-28: Added a first-class local benchmark corpus and proof lane that cleared the initial provisional benchmark gate to `provisional_pass` and refreshed the public README snapshot from real measured behavior. (Plan: [B-009](odylith/radar/radar.html?view=plan&workstream=B-009))
 - 2026-03-29: Tightened the benchmark frontier by compacting hot-path overhead, reran the Codex corpus, and regenerated the canonical README graph set from the stronger report. (Plan: [B-019](odylith/radar/radar.html?view=plan&workstream=B-019))
 - 2026-03-29: Hardened benchmark integrity with warm-plus-cold conservative publication, explicit published-summary fields, and release-safe README or graph proof driven from the harder benchmark view. (Plan: [B-020](odylith/radar/radar.html?view=plan&workstream=B-020))
-- 2026-04-01: Reframed the benchmark component around a real same-model live Codex CLI comparison, documented the strict isolation contract for `odylith_off`, and recorded the false-pass, contamination, prompt-boundary selected-doc loss, over-stripped worktree truth-loss, and transitive-link attribution failure modes discovered during the honest raw-baseline redesign. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
+- 2026-04-01: Reframed the benchmark component around a real same-model live host CLI comparison, documented the strict isolation contract for `odylith_off`, and recorded the false-pass, contamination, prompt-boundary selected-doc loss, over-stripped worktree truth-loss, and transitive-link attribution failure modes discovered during the honest raw-baseline redesign. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
 - 2026-04-02: Fixed the public subagent validator wrapper contract so proof can call documented `odylith subagent-router` and `odylith subagent-orchestrator` commands without repo-root parse failures, and recorded the resulting validator-backed targeted proof rerun against the honest warm slice. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
 - 2026-04-02: Tightened the clean-room proof boundary again by restoring validator truth only from the scoped workspace snapshot and by expanding the shared snapshot allowlist to dirty same-package Python siblings needed for imports, so disposable worktrees stop rehydrating unrelated repo state or failing on partial local packages. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
 - 2026-04-02: Clarified that benchmark wins are meaningful only when Odylith improves the operating policy around the same model under the same repo and same truth contract, and explicitly documented the weaker status of wins that depend on extra hidden information. (Plan: [B-022](odylith/radar/radar.html?view=plan&workstream=B-022))
 - 2026-04-05: Restored canonical benchmark guidance memory, made weak-family packet shaping fail closed before prompt rendering, bounded the post-run adoption-proof finalizer so it cannot hold a completed report hostage, and refreshed the current local-memory-first source-local proof to `52aa3f76538cf12f` `provisional_pass` while the diagnostic grounding floor remains `74cbe36427f2c375` on `hold`. (Plan: [B-021](odylith/radar/radar.html?view=plan&workstream=B-021))
 - 2026-04-08: Completed the reasoning-package boundary split with no compatibility shims, refreshed Atlas and delivery-intelligence sync truth to the new reasoning paths, and re-proved the quick source-local architecture shard to `provisional_pass` after the package-separation hardening. (Plan: [B-061](odylith/radar/radar.html?view=plan&workstream=B-061))
+- 2026-04-17: Added the `guidance_behavior` benchmark family, source corpus, bundle-mirror check, and validator command so high-risk guidance behavior is measured separately from intervention-value calibration and cannot be mistaken for ML-quality selector training data. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Bound the `guidance_behavior` benchmark/eval path into `odylith_guidance_behavior_platform_end_to_end.v1`, so quick-family selection, low-latency support-doc policy, benchmark isolation, host mirrors, consumer bundle assets, and install guidance are validated as one platform proof contract. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Added the `hot_path_efficiency` domain to Guidance Behavior platform proof and re-proved the quick family at `6` scenarios, `0.0` widening rate, no advisory failures, and Odylith ON packet timing of `median=5.712 ms`, `avg=5.999 ms`, `p95=7.463 ms`. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-17: Hardened Guidance Behavior platform proof so stale live/source-bundle mirrors for guidance docs, host shims, skills, governed program/spec truth, and benchmark corpora fail validation instead of passing on token-present but lane-divergent consumer assets. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-04-18: Expanded Odylith Discipline benchmark sovereignty from scenario selection into contract-quality metrics: pressure observations, affordances, admissibility, proof obligations, learning replay, memory recurrence, intervention visibility, and platform integration now feed deterministic summary rates while provider and host-model call counts stay zero. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))

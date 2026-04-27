@@ -425,26 +425,6 @@ initSharedQuickTooltips();
       return "Low";
     }
 
-    function intelligenceConfidenceBasis(confidence, explicitCount, syntheticCount, workstreamCount, baselineCount = 0) {
-      const explicit = Number(explicitCount || 0);
-      const synthetic = Number(syntheticCount || 0);
-      const workstreams = Number(workstreamCount || 0);
-      const baseline = Number(baselineCount || 0);
-      if (confidence === "High") {
-        return `High confidence because ${explicit} explicit checkpoint${explicit === 1 ? "" : "s"} and ${workstreams} linked workstream${workstreams === 1 ? "" : "s"} are present.`;
-      }
-      if (confidence === "Medium") {
-        return `Medium confidence because explicit evidence exists, but the picture still relies on a limited checkpoint set${synthetic > 0 ? " mixed with inferred local change" : ""}.`;
-      }
-      if (synthetic > 0) {
-        return "Low confidence because the read is driven mainly by inferred local change rather than explicit governance checkpoints.";
-      }
-      if (baseline > 0) {
-        return `Low confidence because Registry currently has ${baseline} documented spec history ${pluralize(baseline, "checkpoint", "checkpoints")} but no live mapped forensic evidence yet.`;
-      }
-      return "Low confidence because Registry does not yet have enough mapped evidence to form a strong narrative.";
-    }
-
     function latestExplicitEvent(events) {
       return (Array.isArray(events) ? events : []).find((event) => isExplicitTimelineEvent(event)) || null;
     }
@@ -658,261 +638,24 @@ initSharedQuickTooltips();
       return intelligenceScope("component", componentId);
     }
 
-    function operatorReadout(snapshot) {
-      const readout = snapshot && typeof snapshot.operator_readout === "object" ? snapshot.operator_readout : {};
-      return readout && typeof readout === "object" ? readout : {};
+    function scopeSignal(snapshot) {
+      const value = snapshot && typeof snapshot.scope_signal === "object" ? snapshot.scope_signal : {};
+      return value && typeof value === "object" ? value : {};
     }
 
-    function humanizeOperatorReadoutToken(value) {
-  const raw = String(value || "").replace(/[_-]+/g, " ").trim().replace(/\s+/g, " ");
-  if (!raw) return "";
-  return raw.split(" ").map((segment) => {
-    const lower = String(segment || "").toLowerCase();
-    if (!lower) return "";
-    if (lower === "llm") return "LLM";
-    return `${lower.charAt(0).toUpperCase()}${lower.slice(1)}`;
-  }).join(" ");
-}
-
-const OPERATOR_SCENARIO_SUMMARIES = {"unsafe_closeout": "Closeout is ahead of trusted proof.", "cross_surface_conflict": "Linked surfaces disagree on the current state.", "orphan_activity": "Recent activity is not anchored to a clear controlling scope.", "stale_authority": "The controlling checkpoint is behind current activity.", "false_priority": "A linked blocker matters more than the local urgency signal.", "clear_path": "No intervention is required right now."};
-
-function compactOperatorText(value, options = {}) {
-  const fallback = String(options.fallback || "").trim();
-  const limit = Number(options.limit || 120);
-  let token = String(value || "").replace(/`/g, "").replace(/\s+/g, " ").trim();
-  if (!token) token = fallback;
-  token = token
-    .replace(/Latest workspace activity signal at [0-9T:+\-]+ is newer than the last explicit checkpoint at [0-9T:+\-]+\./gi, "Recent activity is newer than the last explicit checkpoint.")
-    .replace(/Finished workstream has newer activity than its last explicit checkpoint\./gi, "Finished scope has newer activity than its last explicit checkpoint.")
-    .replace(/Shell clearance state is pending\./gi, "Shell clearance is pending.")
-    .replace(/Clearance is marked cleared and .* has no newer activity than (?:its|the) last explicit checkpoint\./gi, "Clearance is marked cleared and no newer activity remains.")
-    .replace(/If ignored, .* can be closed against stale proof and force re-clearance later\./gi, "Ignoring this risks closeout against stale proof.");
-  token = token.replace(/\s+/g, " ").trim();
-  if (!limit || token.length <= limit) return token;
-  let clipped = token.slice(0, Math.max(0, limit - 3)).trimEnd();
-  const lastSpace = clipped.lastIndexOf(" ");
-  if (lastSpace > 0) clipped = clipped.slice(0, lastSpace);
-  return `${clipped.replace(/[ .,:;]+$/g, "")}...`;
-}
-
-function operatorQueueProblemTitle(item) {
-  const row = item && typeof item === "object" ? item : {};
-  const scenario = String(row.primary_scenario || "").trim();
-  const fallback = String(OPERATOR_SCENARIO_SUMMARIES[scenario] || "Path is clear. Keep the latest checkpoint and proof current.").trim() || "Path is clear. Keep the latest checkpoint and proof current.";
-  const issue = compactOperatorText(row.issue, { fallback: "", limit: 132 });
-  if (issue && issue.length <= 88) return issue;
-  return fallback;
-}
-
-function operatorQueueScopeCaption(item, limit = 96) {
-  const row = item && typeof item === "object" ? item : {};
-  const scopeId = String(row.scope_id || "").trim();
-  const scopeLabel = String(row.scope_label || "").replace(/\s+/g, " ").trim();
-  if (!scopeId && !scopeLabel) return "Linked scope";
-  if (scopeId && scopeLabel) {
-    if (scopeLabel.startsWith(`${scopeId} `)) return compactOperatorText(scopeLabel, { limit });
-    return compactOperatorText(`${scopeId} · ${scopeLabel}`, { limit });
-  }
-  return compactOperatorText(scopeLabel || scopeId, { limit });
-}
-
-function operatorQueueSignalSummaries(item, limit = 3) {
-  const rows = [];
-  for (const raw of normalizeOperatorTextList(item && item.proof_highlights, 4)) {
-    const token = compactOperatorText(raw, { limit: 88 });
-    if (!token || rows.includes(token)) continue;
-    rows.push(token);
-    if (rows.length >= limit) break;
-  }
-  if (!rows.length) rows.push("Open Shell for proof and clearance details.");
-  return rows;
-}
-
-function operatorQueueRiskText(item) {
-  const highlights = normalizeOperatorTextList(item && item.proof_highlights, 4);
-  for (const raw of highlights) {
-    if (/^If ignored,/i.test(String(raw || "").trim())) {
-      return compactOperatorText(raw, { limit: 124 });
-    }
-  }
-  return "";
-}
-
-function renderOperatorReadoutMeta(readout) {
-  const row = readout && typeof readout === "object" ? readout : {};
-  const items = [
-    { label: "Scenario", value: humanizeOperatorReadoutToken(row.primary_scenario || "clear_path") || "Clear Path", tone: "operator-readout-meta-scenario" },
-    { label: "Severity", value: humanizeOperatorReadoutToken(row.severity || "clear") || "Clear", tone: "operator-readout-meta-severity" },
-    { label: "Source", value: humanizeOperatorReadoutToken(row.source || "deterministic") || "Deterministic", tone: "operator-readout-meta-source" },
-  ];
-  return items.map((item) => `<span class="operator-readout-meta-item ${item.tone}">${escapeHtml(`${item.label}: ${item.value}`)}</span>`).join("");
-}
-
-function renderOperatorReadoutProofLinks(refs, hrefBuilder, emptyText = "No proof routes are currently mapped.") {
-  const rows = Array.isArray(refs) ? refs.filter((row) => row && typeof row === "object") : [];
-  if (!rows.length) {
-    return `<span class="operator-readout-copy">${escapeHtml(String(emptyText || "No proof routes are currently mapped."))}</span>`;
-  }
-  const resolver = typeof hrefBuilder === "function" ? hrefBuilder : (() => "#");
-  return rows.map((row) => {
-    const label = String(row && row.label || row && row.value || "Proof").trim() || "Proof";
-    const href = String(resolver(row) || "#").trim() || "#";
-    return `<a class="operator-readout-proof-link" href="${escapeHtml(href)}" target="_top" data-tooltip="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${escapeHtml(label)}</a>`;
-  }).join("");
-}
-
-function renderOperatorReadoutArticle(readout, options = {}) {
-  const row = readout && typeof readout === "object" ? readout : {};
-  const isClearPath = String(row.primary_scenario || "").trim() === "clear_path";
-  const issueText = String(row.issue || options.issueFallback || "Path is clear. Keep the latest checkpoint and proof current.").trim() || "Path is clear. Keep the latest checkpoint and proof current.";
-  const whyHiddenText = String(row.why_hidden || options.whyHiddenFallback || "No hidden operator context is currently resolved.").trim() || "No hidden operator context is currently resolved.";
-  const actionText = String(row.action || options.actionFallback || "No operator action is currently mapped.").trim() || "No operator action is currently mapped.";
-  const proofHtml = String(
-    options.proofHtml
-    || `<span class="operator-readout-copy">${escapeHtml(String(options.proofFallback || "No proof routes are currently mapped."))}</span>`
-  );
-  const metaHtml = String(options.metaHtml || renderOperatorReadoutMeta(row));
-  const detailsHtml = isClearPath
-    ? `
-      <div class="operator-readout-details">
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Go To Proof</p>
-          <div class="operator-readout-proof">${proofHtml}</div>
-        </div>
-      </div>
-    `
-    : `
-      <div class="operator-readout-details">
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Why Hidden</p>
-          <p class="operator-readout-copy">${escapeHtml(whyHiddenText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Do This</p>
-          <p class="operator-readout-copy">${escapeHtml(actionText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Go To Proof</p>
-          <div class="operator-readout-proof">${proofHtml}</div>
-        </div>
-      </div>
-    `;
-  return `
-    <article class="operator-readout${isClearPath ? " is-clear" : ""}">
-      <div class="operator-readout-meta">${metaHtml}</div>
-      <div class="operator-readout-main">
-        <p class="operator-readout-label">Issue</p>
-        <p class="operator-readout-copy">${escapeHtml(issueText)}</p>
-      </div>
-      ${detailsHtml}
-    </article>
-  `;
-}
-
-function normalizeOperatorTextList(values, limit = 4) {
-  if (!Array.isArray(values)) return [];
-  const rows = [];
-  for (const raw of values) {
-    const token = String(raw || "").trim();
-    if (!token) continue;
-    rows.push(token);
-    if (rows.length >= limit) break;
-  }
-  return rows;
-}
-
-function renderOperatorHighlightList(values, emptyText = "No proof highlights are currently mapped.") {
-  const rows = normalizeOperatorTextList(values, 4);
-  if (!rows.length) {
-    return `<span class="operator-readout-copy">${escapeHtml(String(emptyText || "No proof highlights are currently mapped."))}</span>`;
-  }
-  return rows.map((token) => `<span class="operator-readout-copy">${escapeHtml(token)}</span>`).join("");
-}
-
-function renderOperatorQueueMeta(item) {
-  const row = item && typeof item === "object" ? item : {};
-  const rank = Number(row.rank || 0);
-  const items = [
-    { label: "Rank", value: rank > 0 ? `#${rank}` : "#-", tone: "operator-readout-meta-rank" },
-    { label: "Severity", value: humanizeOperatorReadoutToken(row.severity || "watch") || "Watch", tone: "operator-readout-meta-severity" },
-    { label: "Scenario", value: humanizeOperatorReadoutToken(row.primary_scenario || "clear_path") || "Clear Path", tone: "operator-readout-meta-scenario" },
-  ];
-  return items.map((item) => `<span class="operator-readout-meta-item ${item.tone}">${escapeHtml(`${item.label}: ${item.value}`)}</span>`).join("");
-}
-
-function renderOperatorQueueItem(item, options = {}) {
-  const row = item && typeof item === "object" ? item : {};
-  const issueText = String(row.issue || options.issueFallback || "Path is clear. Keep the latest checkpoint and proof current.").trim() || "Path is clear. Keep the latest checkpoint and proof current.";
-  const whyNowText = String(row.why_now || options.whyNowFallback || "No immediate operator forcing function is currently mapped.").trim() || "No immediate operator forcing function is currently mapped.";
-  const actionText = String(row.action || options.actionFallback || "No operator action is currently mapped.").trim() || "No operator action is currently mapped.";
-  const successCheckText = String(row.success_check || options.successCheckFallback || "No explicit success check is currently mapped.").trim() || "No explicit success check is currently mapped.";
-  const metaHtml = String(options.metaHtml || renderOperatorQueueMeta(row));
-  const highlightsHtml = String(options.highlightsHtml || renderOperatorHighlightList(row.proof_highlights, options.highlightFallback || "No proof highlights are currently mapped."));
-  const openHref = String(options.openHref || "").trim();
-  const openLabel = String(options.openLabel || "Open in Shell").trim() || "Open in Shell";
-  const openSection = openHref
-    ? `
-      <div class="operator-readout-section">
-        <p class="operator-readout-label">Open in Shell</p>
-        <div class="operator-readout-proof">
-          <a class="operator-readout-proof-link" href="${escapeHtml(openHref)}" target="_top">${escapeHtml(openLabel)}</a>
-        </div>
-      </div>
-    `
-    : "";
-  return `
-    <article class="operator-readout operator-inbox-item">
-      <div class="operator-readout-meta">${metaHtml}</div>
-      <div class="operator-readout-main">
-        <p class="operator-readout-label">Issue</p>
-        <p class="operator-readout-copy">${escapeHtml(issueText)}</p>
-      </div>
-      <div class="operator-readout-details">
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Why Now</p>
-          <p class="operator-readout-copy">${escapeHtml(whyNowText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Do This Now</p>
-          <p class="operator-readout-copy">${escapeHtml(actionText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Success Check</p>
-          <p class="operator-readout-copy">${escapeHtml(successCheckText)}</p>
-        </div>
-        <div class="operator-readout-section">
-          <p class="operator-readout-label">Proof Highlights</p>
-          <div class="operator-readout-proof">${highlightsHtml}</div>
-        </div>
-        ${openSection}
-      </div>
-    </article>
-  `;
-}
-
-    function proofHref(ref, componentId, primaryWorkstream) {
-      const row = ref && typeof ref === "object" ? ref : {};
-      const surface = String(row.surface || "").trim().toLowerCase();
-      const value = String(row.value || "").trim();
-      if (surface === "shell" || surface === "tooling") return "../index.html";
-      if (surface === "compass") return hrefCompass(primaryWorkstream || value);
-      if (surface === "atlas") return hrefAtlas(primaryWorkstream || "", value);
-      if (surface === "radar") return hrefRadar(primaryWorkstream || value);
-      if (surface === "registry") return hrefRegistry(componentId || value.replace(/^component:/, ""));
-      return "../index.html?tab=registry";
+    function scopeSignalRank(snapshot) {
+      const signal = scopeSignal(snapshot);
+      const numeric = Number(signal.rank);
+      if (Number.isFinite(numeric)) return numeric;
+      const rung = String(signal.rung || "").trim().toUpperCase();
+      if (/^R\d+$/.test(rung)) return Number.parseInt(rung.slice(1), 10);
+      return 0;
     }
 
     function registryComponentHref(componentId) {
       const token = String(componentId || "").trim();
       if (!token) return "../index.html?tab=registry";
       return `../index.html?tab=registry&component=${encodeURIComponent(token)}`;
-    }
-
-    function renderProofRefs(refs, componentId, primaryWorkstream) {
-      return renderOperatorReadoutProofLinks(
-        refs,
-        (row) => proofHref(row, componentId, primaryWorkstream),
-      );
     }
 
     function toneClassForCategory(category) {
@@ -952,7 +695,7 @@ function renderOperatorQueueItem(item, options = {}) {
       const token = String(layer || "").trim().toLowerCase();
       if (token === "shell_host") return "Owns the top-level Odylith shell and host routing surface.";
       if (token === "evidence_surface") return "Owns one of the operator-facing evidence and inspection surfaces.";
-      if (token === "memory_retrieval") return "Owns the derived local memory, sparse recall, packet compaction, and dense-context telemetry substrate.";
+      if (token === "memory_retrieval") return "Owns the derived local memory, sparse recall, packet compaction, and dense-context diagnostics substrate.";
       if (token === "intelligence") return "Owns case-building, reasoning, or remediation intelligence inside Odylith.";
       if (token === "agent_execution") return "Owns bounded agent routing, orchestration, or host-execution behavior.";
       if (token === "cli_bootstrap") return "Owns install, bootstrap, or operator command-entry boundaries for Odylith.";
@@ -1164,6 +907,9 @@ function renderOperatorQueueItem(item, options = {}) {
           const leftCategory = String(left.category || "");
           const rightCategory = String(right.category || "");
           if (leftCategory !== rightCategory) return leftCategory.localeCompare(rightCategory);
+          const leftRank = scopeSignalRank(componentIntelligenceSnapshot(left.component_id));
+          const rightRank = scopeSignalRank(componentIntelligenceSnapshot(right.component_id));
+          if (leftRank !== rightRank) return rightRank - leftRank;
           const leftName = String(left.name || left.component_id || "");
           const rightName = String(right.name || right.component_id || "");
           return leftName.localeCompare(rightName);
@@ -1813,7 +1559,6 @@ function renderOperatorQueueItem(item, options = {}) {
       const liveTimelineEvents = timelineEvents.filter((event) => !isBaselineTimelineEvent(event));
       const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
       const categoryToken = String(row.category || "").trim().toLowerCase();
-      const toneClass = toneClassForCategory(categoryToken);
       const latestEvent = liveTimelineEvents[0] || (timelineEvents.length ? timelineEvents[0] : null);
       const latestSummary = latestEvent
         ? String(latestEvent.summary || "(no summary)").trim()
@@ -1869,18 +1614,6 @@ function renderOperatorQueueItem(item, options = {}) {
         specRunbooks: Array.isArray(row.spec_runbooks) ? row.spec_runbooks : [],
         specDeveloperDocs: Array.isArray(row.spec_developer_docs) ? row.spec_developer_docs : [],
       };
-      const intelligenceSnapshot = componentIntelligenceSnapshot(row.component_id);
-      const confidenceToken = String(intelligenceSnapshot && intelligenceSnapshot.confidence || confidence).trim() || confidence;
-      const confidenceSummary = intelligenceConfidenceBasis(
-        confidenceToken,
-        explicitExecutiveEvents.length,
-        syntheticExecutiveEvents.length,
-        allWorkstreams.length,
-        baselineExecutiveEvents.length,
-      );
-      const postureMode = humanizeToken(String(intelligenceSnapshot && intelligenceSnapshot.posture_mode || "converging"));
-      const trajectory = humanizeToken(String(intelligenceSnapshot && intelligenceSnapshot.trajectory || "converging"));
-
       const metadata = [
         staticLabel(`Category: ${humanizeToken(row.category)}`, categoryDescription(row.category)),
         staticLabel(`Qualification: ${humanizeToken(row.qualification)}`, qualificationDescription(row.qualification)),
@@ -2033,7 +1766,6 @@ function renderOperatorQueueItem(item, options = {}) {
           <summary>
             <div class="context-head">
               <span class="detail-disclosure-title context-toggle-label">Topology</span>
-              <span class="detail-chip-label ${escapeHtml(toneClass)}" data-tooltip="${escapeHtml(categoryDescription(categoryToken))}">${escapeHtml(row.component_id)}</span>
             </div>
             <div class="context-head-actions">
               <span class="label" data-tooltip="Linked workstreams count.">Workstreams ${workstreams.length}</span>
@@ -2048,43 +1780,206 @@ function renderOperatorQueueItem(item, options = {}) {
       `;
     }
 
-    function renderTimeline(row) {
-      const events = row && Array.isArray(row.timeline) ? row.timeline : [];
-      const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
-      timelineCountEl.textContent = `${events.length} events`;
-      if (!events.length) {
-        timelineEl.innerHTML = "";
-        return;
-      }
-      timelineEl.innerHTML = events.map((event) => {
-        const workstreams = Array.isArray(event.workstreams) ? event.workstreams : [];
-        const artifacts = Array.isArray(event.artifacts) ? event.artifacts : [];
-        const wsPills = workstreams.length
-          ? workstreams.map((ws) => linkChip({
-              label: ws,
-              href: hrefRadar(ws),
-              tone: "tone-gov",
-              tooltip: `Workstream ${ws}. Open Radar context.`,
-            })).join("")
-          : '<span class="label">No scope</span>';
+    const FORENSIC_DIGEST_WORKSTREAM_LIMIT = 4;
+    const FORENSIC_DIGEST_ARTIFACT_LIMIT = 2;
 
-        const artifactLinks = artifacts.length
-          ? artifacts.map((item) => `<a class="artifact" href="${escapeHtml(item.href || item.path || "")}" target="_top" data-tooltip="Artifact evidence path for this event.">${escapeHtml(item.path || "artifact")}</a>`).join("")
-          : '<span class="artifact">No artifacts</span>';
+    function forensicEventCountLabel(count) {
+      const value = Number(count || 0);
+      return `${value} ${pluralize(value, "event", "events")}`;
+    }
 
-        return `
-          <li class="event">
-            <div class="event-top">
-              <span class="label" data-tooltip="Codex stream event kind.">${escapeHtml(eventKindLabel(event.kind))}</span>
-              <span class="label" data-tooltip="Component-link confidence for this event.">confidence: ${escapeHtml(event.confidence || "none")}</span>
-              <span>${escapeHtml(event.ts_iso || "")}</span>
+    function forensicEvidenceEvents(row) {
+      return row && Array.isArray(row.timeline) ? row.timeline : [];
+    }
+
+    function forensicEventTimestamp(event) {
+      return String(event && event.ts_iso || "").trim();
+    }
+
+    function forensicNewestEvent(events) {
+      const rows = Array.isArray(events) ? events : [];
+      return rows.reduce((newest, event) => {
+        if (!newest) return event;
+        return forensicEventTimestamp(event) > forensicEventTimestamp(newest) ? event : newest;
+      }, null);
+    }
+
+    function forensicCoverageMetric(coverage, key) {
+      const value = Number(coverage && coverage[key] || 0);
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function forensicCoverageStrip(events, forensicCoverage) {
+      const facts = [
+        ["Events", events.length],
+        ["Explicit", forensicCoverageMetric(forensicCoverage, "explicit_event_count")],
+        ["Path matches", forensicCoverageMetric(forensicCoverage, "recent_path_match_count")],
+        ["Workstream evidence", forensicCoverageMetric(forensicCoverage, "mapped_workstream_evidence_count")],
+        ["Spec history", forensicCoverageMetric(forensicCoverage, "spec_history_event_count")],
+      ];
+      return `
+        <div class="forensic-coverage-strip" aria-label="Forensic coverage counts">
+          ${facts.map(([label, value]) => `
+            <div class="forensic-stat">
+              <p class="forensic-stat-label">${escapeHtml(label)}</p>
+              <p class="forensic-stat-value">${escapeHtml(String(value))}</p>
             </div>
-            <p class="event-summary">${escapeHtml(event.summary || "(no summary)")}</p>
-            <div class="inline">${wsPills}</div>
-            <div class="artifact-list">${artifactLinks}</div>
-          </li>
-        `;
-      }).join("");
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function forensicWorkstreamLink(workstream) {
+      const token = String(workstream || "").trim();
+      if (!token) return "";
+      return `<a class="forensic-workstream-chip" href="${escapeHtml(hrefRadar(token))}" target="_top" data-tooltip="Workstream ${escapeHtml(token)}. Open Radar context.">${escapeHtml(token)}</a>`;
+    }
+
+    function forensicArtifactLink(item) {
+      const path = String(item && item.path || "").trim();
+      const href = String(item && (item.href || item.path) || "").trim();
+      if (!path && !href) return "";
+      return `<a class="artifact" href="${escapeHtml(href || path)}" target="_top" data-tooltip="Artifact evidence path for this event.">${escapeHtml(path || "artifact")}</a>`;
+    }
+
+    function forensicOverflowLabel(count, noun) {
+      const value = Number(count || 0);
+      if (value <= 0) return "";
+      return `<span class="label">+${escapeHtml(String(value))} ${escapeHtml(pluralize(value, noun, `${noun}s`))}</span>`;
+    }
+
+    function forensicArtifactOverflowDisclosure(items, overflow) {
+      const value = Number(overflow || 0);
+      if (value <= 0 || !Array.isArray(items) || !items.length) return "";
+      return `
+        <details class="forensic-artifact-disclosure">
+          <summary class="forensic-artifact-overflow-summary" data-tooltip="Show hidden artifact evidence paths.">+${escapeHtml(String(value))} ${escapeHtml(pluralize(value, "artifact", "artifacts"))}</summary>
+          <div class="forensic-artifact-disclosure-panel artifact-list">
+            ${items.map(forensicArtifactLink).filter(Boolean).join("")}
+          </div>
+        </details>
+      `;
+    }
+
+    function forensicLimitedWorkstreams(workstreams, limit = FORENSIC_DIGEST_WORKSTREAM_LIMIT) {
+      const tokens = [];
+      const seen = new Set();
+      (Array.isArray(workstreams) ? workstreams : []).forEach((workstream) => {
+        const token = String(workstream || "").trim();
+        if (!token || seen.has(token)) return;
+        seen.add(token);
+        tokens.push(token);
+      });
+      const visible = tokens.slice(0, limit);
+      const overflow = Math.max(0, tokens.length - visible.length);
+      return {
+        count: tokens.length,
+        html: [
+          ...visible.map(forensicWorkstreamLink),
+          forensicOverflowLabel(overflow, "workstream"),
+        ].filter(Boolean).join(""),
+      };
+    }
+
+    function forensicLimitedArtifacts(artifacts, limit = FORENSIC_DIGEST_ARTIFACT_LIMIT) {
+      const rows = [];
+      const seen = new Set();
+      (Array.isArray(artifacts) ? artifacts : []).forEach((item) => {
+        const path = String(item && item.path || item && item.href || "").trim();
+        if (!path || seen.has(path)) return;
+        seen.add(path);
+        rows.push(item);
+      });
+      const visible = rows.slice(0, limit);
+      const hidden = rows.slice(limit);
+      const overflow = Math.max(0, rows.length - visible.length);
+      return {
+        count: rows.length,
+        html: [
+          ...visible.map(forensicArtifactLink),
+          forensicArtifactOverflowDisclosure(hidden, overflow),
+        ].filter(Boolean).join(""),
+      };
+    }
+
+    function forensicEvidenceGroups(events) {
+      const groups = [];
+      const byKind = new Map();
+      (Array.isArray(events) ? events : []).forEach((event) => {
+        const kind = String(event && event.kind || "unknown").trim().toLowerCase() || "unknown";
+        if (!byKind.has(kind)) {
+          const group = { kind, count: 0, latest: event, workstreams: [], artifacts: [] };
+          byKind.set(kind, group);
+          groups.push(group);
+        }
+        const group = byKind.get(kind);
+        group.count += 1;
+        if (!group.latest || forensicEventTimestamp(event) > forensicEventTimestamp(group.latest)) {
+          group.latest = event;
+        }
+        group.workstreams.push(...(Array.isArray(event.workstreams) ? event.workstreams : []));
+        group.artifacts.push(...(Array.isArray(event.artifacts) ? event.artifacts : []));
+      });
+      return groups;
+    }
+
+    function renderForensicTokenRow(workstreams, artifacts, options = {}) {
+      const workstreamLimit = Number(options.workstreamLimit || FORENSIC_DIGEST_WORKSTREAM_LIMIT);
+      const artifactLimit = Number(options.artifactLimit || FORENSIC_DIGEST_ARTIFACT_LIMIT);
+      const workstreamPreview = forensicLimitedWorkstreams(workstreams, workstreamLimit);
+      const artifactPreview = forensicLimitedArtifacts(artifacts, artifactLimit);
+      const html = [workstreamPreview.html, artifactPreview.html].filter(Boolean).join("");
+      return html ? `<div class="forensic-token-row">${html}</div>` : "";
+    }
+
+    function renderForensicLatestEvent(event) {
+      if (!event) {
+        return '<article class="forensic-latest"><p class="empty">No mapped forensic events are attached yet.</p></article>';
+      }
+      return `
+        <article class="forensic-latest">
+          <div class="forensic-row-top">
+            <span class="label" data-tooltip="Codex stream event kind.">${escapeHtml(eventKindLabel(event.kind))}</span>
+            <span class="label" data-tooltip="Component-link confidence for this event.">confidence: ${escapeHtml(event.confidence || "none")}</span>
+            <span class="label">${escapeHtml(event.ts_iso || "No timestamp")}</span>
+          </div>
+          <p class="forensic-summary">${escapeHtml(event.summary || "(no summary)")}</p>
+          ${renderForensicTokenRow(event.workstreams, event.artifacts)}
+        </article>
+      `;
+    }
+
+    function renderForensicGroups(events) {
+      const groups = forensicEvidenceGroups(events);
+      if (!groups.length) return "";
+      return `
+        <div class="forensic-evidence-list">
+          ${groups.map((group) => `
+            <article class="forensic-group-row">
+              <div class="forensic-row-top">
+                <span class="label">${escapeHtml(eventKindLabel(group.kind))}</span>
+                <span class="label">${escapeHtml(forensicEventCountLabel(group.count))}</span>
+              </div>
+              <p class="forensic-summary">${escapeHtml(group.latest && group.latest.summary || "(no summary)")}</p>
+              ${renderForensicTokenRow(group.workstreams, group.artifacts)}
+            </article>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderTimeline(row) {
+      const events = forensicEvidenceEvents(row);
+      const forensicCoverage = row && typeof row.forensic_coverage === "object" ? row.forensic_coverage : {};
+      const latestEvent = forensicNewestEvent(events);
+      timelineCountEl.textContent = forensicEventCountLabel(events.length);
+      timelineEl.innerHTML = `
+        <section class="forensic-digest">
+          ${forensicCoverageStrip(events, forensicCoverage)}
+          ${renderForensicLatestEvent(latestEvent)}
+          ${renderForensicGroups(events)}
+        </section>
+      `;
     }
 
     async function renderSelectedComponent(selectedId, filtered) {

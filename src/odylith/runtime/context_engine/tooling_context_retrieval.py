@@ -5,6 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import string_rows as _string_list
 from odylith.runtime.common.consumer_profile import (
     canonical_truth_token,
     truth_path_kind,
@@ -12,18 +15,6 @@ from odylith.runtime.common.consumer_profile import (
 )
 
 _ACTIONABLE_NOTE_KINDS = {"guardrail", "runbook", "testing", "tooling_policy", "workflow"}
-
-
-def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    rows: list[str] = []
-    for item in values:
-        token = str(item or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
 
 
 def _compact_mapping_list(
@@ -62,19 +53,6 @@ def _coalesced_string(*values: Any) -> str:
     return ""
 
 
-def _string_list(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    return _dedupe_strings([str(item) for item in value])
-
-
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
-
-
 def _path_prefix_match(path_ref: str, prefix: str) -> bool:
     path_token = str(path_ref or "").strip().strip("/")
     prefix_token = str(prefix or "").strip().strip("/")
@@ -109,7 +87,7 @@ def _infer_task_families(
         families.append(normalized_family)
     seed_paths = _dedupe_strings([*map(str, changed_paths), *map(str, explicit_paths)])
     for path_ref in seed_paths:
-        if path_ref == "AGENTS.md" or path_ref.startswith("agents-guidelines/"):
+        if path_ref in {"AGENTS.md", "CLAUDE.md"} or path_ref.startswith("agents-guidelines/"):
             families.extend(["workflow", "prompt-hygiene", "grounding"])
         if path_ref.startswith("src/odylith/"):
             families.extend(["implementation", "tooling"])
@@ -724,6 +702,7 @@ def build_working_memory_tiers(
         guidance_limit = 2
     cold_sources = [
         "AGENTS.md",
+        "CLAUDE.md",
         "agents-guidelines/indexable-guidance-chunks.v1.json",
         "odylith/registry/source/component_registry.v1.json",
         "odylith/radar/source/INDEX.md",

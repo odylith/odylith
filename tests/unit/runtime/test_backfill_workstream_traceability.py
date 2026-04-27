@@ -45,7 +45,19 @@ def _idea_text(
     workstream_merged_into: str = "",
     workstream_merged_from: str = "",
 ) -> str:
-    sections = "\n\n".join([f"## {name}\nBody." for name in _SECTIONS])
+    section_bodies = {
+        "Problem": "Traceability fixtures need realistic Radar detail before autofill runs.",
+        "Customer": "Maintainers validating Radar topology inference from fixture repos.",
+        "Opportunity": "Meaningful fixture prose keeps traceability autofill aligned with validation.",
+        "Product View": "Autofill should reject weak ideas without breaking valid fixture repositories.",
+        "Success Metrics": "- Traceability autofill validates governed workstream truth.\n- Report writes remain deterministic.",
+    }
+    sections = "\n\n".join(
+        [
+            f"## {name}\n{section_bodies.get(name, 'Fixture body for traceability autofill validation.')}"
+            for name in _SECTIONS
+        ]
+    )
     return (
         f"status: {status}\n\n"
         f"idea_id: {idea_id}\n\n"
@@ -55,7 +67,6 @@ def _idea_text(
         "commercial_value: 5\n\n"
         "product_impact: 5\n\n"
         "market_value: 5\n\n"
-        "impacted_lanes: both\n\n"
         "impacted_parts: control grid\n\n"
         "sizing: L\n\n"
         "complexity: VeryHigh\n\n"

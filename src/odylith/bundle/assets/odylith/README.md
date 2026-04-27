@@ -30,6 +30,15 @@ After install, you should have:
 - repo-local launcher at `./.odylith/bin/odylith`
 - local Odylith shell at `odylith/index.html`
 - managed starter tree under `odylith/`
+- repo-root Claude project assets under `.claude/` including `CLAUDE.md`,
+  `settings.json`, commands, hooks, rules, and subagents
+- repo-root Codex project assets under `.codex/` including `config.toml`,
+  `hooks.json`, and custom project agents under `.codex/agents/`
+- repo-root Codex skill shims under `.agents/skills/`, including explicit
+  command-shims such as `$odylith-start`, `$odylith-context`,
+  `$odylith-query`, `$odylith-session-brief`, `$odylith-sync`,
+  `$odylith-version`, `$odylith-doctor`, `$odylith-compass-log`, and
+  `$odylith-compass-refresh`
 - root `.gitignore` updated with `/.odylith/` when the repo is Git-backed
 - gitignored managed-runtime trust anchors under
   `.odylith/trust/managed-runtime-trust/` when the repo is Git-backed
@@ -38,6 +47,32 @@ Odylith is not a standalone app or IDE. Use it through an AI coding agent such
 as Codex or Claude Code. In Odylith, the agent is the execution interface and
 `odylith/index.html` is the operating surface that keeps intent, constraints,
 topology, and execution state visible.
+
+Codex and Claude Code share the same default Odylith lane: the repo-root
+`AGENTS.md` contract, `./.odylith/bin/odylith`, truthful `odylith ... --help`,
+and the grounded governance workflow. Routine backlog, plan, bug, spec,
+component, and diagram upkeep should stay on that shared lane first, and the
+specialist overlays stay under `odylith/skills/`.
+
+Host-specific tips belong only where a native host capability materially
+reduces hops. `.claude/` gives Claude Code its project-native lane. On Codex,
+`.codex/` and the curated `.agents/skills/` command shims are best-effort
+enhancements for trusted projects rather than the default operating contract.
+
+On Codex, the repo-root `AGENTS.md` plus `./.odylith/bin/odylith` are the
+baseline-safe contract. The checked-in `.codex/` and `.agents/skills/` layers
+are best-effort host enhancements rather than hard prerequisites, so Odylith
+should still start safely even when a local Codex build ignores some
+project-asset features. If you want to know whether those optional Codex
+optimizations are actually active, run:
+
+```bash
+./.odylith/bin/odylith codex compatibility --repo-root .
+```
+
+Consumer install and repair also derive the effective `.codex/config.toml`
+from the local Codex capability snapshot when possible, so hook enablement
+tracks the detected Codex host instead of one static feature assumption.
 
 For the default grounded first turn, run:
 
@@ -57,6 +92,41 @@ Once concrete nouns exist, use:
 ./.odylith/bin/odylith query --repo-root . "<text>"
 ```
 
+For the common governance authoring fast paths, use:
+
+```bash
+./.odylith/bin/odylith bug capture --help
+./.odylith/bin/odylith backlog create --help
+./.odylith/bin/odylith component register --help
+./.odylith/bin/odylith atlas scaffold --help
+./.odylith/bin/odylith compass log --help
+```
+
+For quick visibility after a narrow truth change, rerender only the owned
+surface:
+
+```bash
+./.odylith/bin/odylith radar refresh --repo-root .
+./.odylith/bin/odylith registry refresh --repo-root .
+./.odylith/bin/odylith casebook validate --repo-root .
+./.odylith/bin/odylith casebook refresh --repo-root .
+./.odylith/bin/odylith atlas refresh --repo-root . --atlas-sync
+./.odylith/bin/odylith compass refresh --repo-root .
+```
+
+When you want the same Compass rerender to wait for standup-brief settlement,
+use:
+
+```bash
+./.odylith/bin/odylith compass deep-refresh --repo-root .
+```
+
+Keep `odylith sync` as the broader governance and correctness lane when the
+task spans multiple truth roots or needs full lifecycle reconciliation.
+
+Keep `.agents/skills` lookup, missing-shim, and fallback-source details in the
+background unless they change the next user-visible action.
+
 On a successful local interactive install, Odylith tries to open
 `odylith/index.html` automatically. Use `ODYLITH_NO_BROWSER=1` for the hosted
 bootstrap or `odylith install --no-open` for direct CLI installs if you want
@@ -65,16 +135,17 @@ to suppress that.
 > [!CAUTION]
 > **Odylith is designed to anchor to a git repo root.** If there is no
 > enclosing `.git`, install still succeeds, but Odylith treats the current
-> folder as the repo root, creates a root `AGENTS.md` there, and runs with
-> reduced Git-aware behavior until that folder is backed by Git.
+> folder as the repo root, creates root `AGENTS.md` and `CLAUDE.md` guidance
+> files there if they are missing, and runs with reduced Git-aware behavior
+> until that folder is backed by Git.
 
 Before activation, the installer picks the install boundary like this:
 
-- If it finds a root `AGENTS.md`, it uses that repo root.
+- If it finds a root `AGENTS.md` or `CLAUDE.md`, it uses that repo root.
 - Otherwise, if it finds an enclosing `.git`, it uses that Git root and
-  creates a root `AGENTS.md` there.
-- Otherwise, it treats the current folder as the repo root and creates a root
-  `AGENTS.md` in place.
+  creates any missing root `AGENTS.md` and `CLAUDE.md` guidance files there.
+- Otherwise, it treats the current folder as the repo root and creates root
+  `AGENTS.md` and `CLAUDE.md` guidance files in place.
 
 If no `.git` exists yet, install still succeeds, but Git-aware features stay
 limited until the folder is Git-backed.
@@ -105,10 +176,9 @@ Here are some starter prompt inspirations:
 - Edit: "Update developer note [N###] with [...]."
 - Delete: "Delete developer note [N###]."
 
-For more prompt examples, see
-[Starter Prompt Inspirations](../docs/STARTER_PROMPT_INSPIRATIONS.md). If the
-local shell is already open, the Cheatsheet drawer in `odylith/index.html`
-mirrors the strongest prompt patterns.
+For the full set of things the agent understands, see
+[Operator Instructions](../docs/OPERATOR_INSTRUCTIONS.md). The Cheatsheet
+drawer in `odylith/index.html` has copyable prompts for every operation.
 
 The shell refreshes itself as Odylith updates local surfaces.
 
@@ -119,21 +189,41 @@ branding it by default; explicit `Odylith Insight:`, `Odylith History:`, or
 
 If a final handoff benefits from naming Odylith directly, keep it to one short
 `Odylith Assist:` line. Prefer `**Odylith Assist:**` when Markdown formatting
-is available. Lead with the user win, link updated governance ids inline when
-they were actually changed, and ground the line in concrete observed counts,
-measured deltas, or validation outcomes. When the evidence supports it, frame
-the edge against `odylith_off` or the broader unguided path. Keep it crisp,
-authentic, clear, simple, insightful, soulful, friendly, free-flowing, human,
-and factual. Silence is better than filler.
+is available. Lead with the user win, link updated governance IDs inline when
+they were actually changed, and when no governed file moved, name the affected
+governance-contract IDs from bounded request or packet truth without calling
+them updated. Ground the line in concrete observed counts, measured deltas, or
+validation outcomes. When the evidence supports it, frame the edge against
+`odylith_off` or the broader unguided path. Keep it crisp, authentic, clear,
+simple, insightful, soulful, friendly, free-flowing, human, and factual.
+Explicit feedback that Odylith's ambient highlights, interventions, Assist,
+Observations, Proposals, hooks, or chat output are not visible is itself
+evidence for a short visibility-continuity Assist line; ordinary low-signal
+turns should still stay silent.
+Silence is better than filler.
 
 ## What Is Here
 
 - `AGENTS.md`
-  Odylith guidance entrypoint for this tree.
+  Canonical Odylith guidance entrypoint for this tree.
+- `CLAUDE.md`
+  Claude Code shim that points back to `AGENTS.md` for this tree.
+- repo-root `.claude/`
+  Claude project assets Odylith ships for commands, hooks, rules, and
+  subagents so Claude Code stays a supported first-class host alongside
+  Codex.
+- repo-root `.codex/`
+  Codex CLI project assets Odylith ships for project config, supported hooks,
+  and repo-scoped custom agents. These reinforce the baseline Codex contract;
+  they do not replace repo-root `AGENTS.md` plus the Odylith launcher.
+- repo-root `.agents/skills/`
+  Codex repo-scoped command shims for the curated high-frequency Odylith CLI
+  lane. They are intentionally narrow and do not mirror the full specialist
+  skill inventory.
 - `agents-guidelines/`
   Shared Odylith operating guidance.
 - `skills/`
-  Shared Odylith skills intended to stay consumer-safe.
+  Shared Odylith specialist skills intended to stay consumer-safe.
 - `maintainer/`
   Maintainer-only release guidance and skills for the Odylith product repo.
 - `FAQ.md`, `INSTALL.md`, `OPERATING_MODEL.md`, `PRODUCT_COMPONENTS.md`
@@ -183,12 +273,11 @@ tree in place, run:
 ./.odylith/bin/odylith uninstall --repo-root .
 ```
 
-If you need an older Compass day that aged out of the active window, restore
-it from the compressed archive with:
-
-```bash
-./.odylith/bin/odylith compass restore-history --repo-root . --date YYYY-MM-DD
-```
+Compass keeps today plus the previous 15 days active in
+`odylith/compass/runtime/history/`. Older days are deleted when they age out of
+that window. Upgrading from `v0.1.10` to `v0.1.11` automatically removes legacy
+Compass archive files and rewrites retained history metadata to the current
+layout.
 
 ## License And Attribution
 

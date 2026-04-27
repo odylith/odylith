@@ -18,6 +18,13 @@ import subprocess
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.command_surface import display_command
+from odylith.runtime.context_engine import execution_engine_handshake
+from odylith.runtime.execution_engine import policy as execution_policy
+from odylith.runtime.execution_engine import resource_closure as execution_resource_closure
+from odylith.runtime.execution_engine import runtime_surface_governance
+from odylith.runtime.execution_engine import validation as execution_validation
+from odylith.runtime.execution_engine.contract import ExecutionContract
+from odylith.runtime.execution_engine.contract import detect_execution_host_profile
 
 
 DEFAULT_DECISION_LEDGER_PATH = "odylith/runtime/odylith-decisions.v1.jsonl"
@@ -62,9 +69,93 @@ def _looks_like_evaluator_change(paths: Sequence[str]) -> bool:
     return False
 
 
+def _packet_primary_action(mode: str) -> str:
+    if mode == "deterministic":
+        return "implement.packet_commands"
+    if mode == "ai_engine":
+        return "implement.ai_packet"
+    if mode == "hybrid":
+        return "implement.packet_commands"
+    return "manual.review"
+
+
+def _packet_allowed_moves(mode: str) -> list[str]:
+    moves = ["re_anchor", "verify.packet_validation"]
+    if mode in {"deterministic", "hybrid"}:
+        moves.append("implement.packet_commands")
+    if mode in {"ai_engine", "hybrid"}:
+        moves.append("implement.ai_packet")
+    if mode == "manual":
+        moves.append("manual.review")
+    return moves
+
+
+def _packet_forbidden_moves(mode: str) -> list[str]:
+    moves = ["implement.unbounded_scope"]
+    if mode == "manual":
+        moves.extend(("implement.packet_commands", "implement.ai_packet"))
+    return moves
+
+
+def _packet_execution_engine(packet: Mapping[str, Any]) -> dict[str, Any]:
+    mode = str(packet.get("execution_mode", "manual")).strip() or "manual"
+    case_id = str(packet.get("case_id", "")).strip() or "case"
+    goal = str(packet.get("goal", "")).strip() or f"Execute the approved remediation packet for {case_id}."
+    touched_paths = _dedupe_paths(
+        [str(token).strip() for token in packet.get("touched_paths", []) if str(token).strip()]
+    )
+    target_scope = touched_paths or [case_id]
+    host_profile = detect_execution_host_profile()
+    contract = ExecutionContract.create(
+        objective=goal,
+        authoritative_lane="reasoning.remediator.authoritative",
+        target_scope=target_scope,
+        environment="repo_local",
+        resource_set=target_scope,
+        success_criteria=_dedupe_paths(
+            [
+                str(token).strip()
+                for token in packet.get("expected_evidence_after_success", [])
+                if str(token).strip()
+            ]
+        )
+        or [goal],
+        validation_plan=_dedupe_paths(
+            [str(token).strip() for token in packet.get("validation_steps", []) if str(token).strip()]
+        )
+        or ["verify.packet_validation"],
+        allowed_moves=_packet_allowed_moves(mode),
+        forbidden_moves=_packet_forbidden_moves(mode),
+        external_dependencies=[],
+        critical_path=[mode, *target_scope[:2]],
+        host_profile=host_profile,
+        execution_mode="recover" if mode == "manual" else "implement",
+    )
+    action = _packet_primary_action(mode)
+    closure = execution_resource_closure.classify_resource_closure(target_scope)
+    validation_matrix = execution_validation.synthesize_validation_matrix(contract)
+    admissibility = execution_policy.evaluate_admissibility(
+        contract,
+        action,
+        requested_scope=target_scope,
+    )
+    return {
+        "contract": contract.to_dict(),
+        "admissibility": admissibility.to_dict(),
+        "resource_closure": closure.to_dict(),
+        "validation_matrix": validation_matrix.to_dict(),
+    }
+
+
+def _with_execution_engine(packet: Mapping[str, Any]) -> dict[str, Any]:
+    payload = dict(packet)
+    payload["execution_engine"] = _packet_execution_engine(payload)
+    return payload
+
+
 def _sync_packet(*, case_id: str, outcome_id: str, touched_paths: Sequence[str], goal: str) -> dict[str, Any]:
     fingerprint = _packet_fingerprint(case_id, outcome_id, "deterministic", touched_paths, goal)
-    return {
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -96,7 +187,7 @@ def _sync_packet(*, case_id: str, outcome_id: str, touched_paths: Sequence[str],
             "No stale generated workstream surfaces remain in git status.",
         ],
         "status": "draft",
-    }
+    })
 
 
 def _traceability_packet(*, case_id: str, outcome_id: str, goal: str) -> dict[str, Any]:
@@ -105,7 +196,7 @@ def _traceability_packet(*, case_id: str, outcome_id: str, goal: str) -> dict[st
         "odylith/radar/traceability-autofix-report.v1.json",
     ]
     fingerprint = _packet_fingerprint(case_id, outcome_id, "deterministic", touched_paths, goal)
-    return {
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -136,7 +227,7 @@ def _traceability_packet(*, case_id: str, outcome_id: str, goal: str) -> dict[st
             "Workstream artifacts validate cleanly after sync.",
         ],
         "status": "draft",
-    }
+    })
 
 
 def _ai_packet(
@@ -151,7 +242,7 @@ def _ai_packet(
     rollback_steps: Sequence[str],
 ) -> dict[str, Any]:
     fingerprint = _packet_fingerprint(case_id, outcome_id, "ai_engine", touched_paths, goal)
-    return {
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -185,7 +276,7 @@ def _ai_packet(
             "Validation steps pass on the updated implementation.",
         ],
         "status": "draft",
-    }
+    })
 
 
 def _hybrid_packet(
@@ -198,7 +289,7 @@ def _hybrid_packet(
     constraints: Sequence[str],
 ) -> dict[str, Any]:
     fingerprint = _packet_fingerprint(case_id, outcome_id, "hybrid", touched_paths, goal)
-    return {
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -240,7 +331,7 @@ def _hybrid_packet(
             "Deterministic prep stays clean and the delegated semantic fix validates.",
         ],
         "status": "draft",
-    }
+    })
 
 
 def compile_correction_packet(
@@ -332,7 +423,7 @@ def compile_correction_packet(
         )
 
     fingerprint = _packet_fingerprint(case_id, outcome_id, "manual", touched_paths, prescriber_claim or decision_at_stake)
-    return {
+    return _with_execution_engine({
         "id": f"pkt-{case_id}",
         "fingerprint": fingerprint,
         "case_id": case_id,
@@ -359,13 +450,22 @@ def compile_correction_packet(
             "The manual check either resolves the case or reopens it with stronger evidence.",
         ],
         "status": "draft",
-    }
+    })
 
 
 def packet_summary(packet: Mapping[str, Any]) -> dict[str, Any]:
     """Return the small packet shape Odylith needs for posture and UI surfaces."""
 
-    return {
+    execution_engine = {}
+    if isinstance(packet.get("execution_engine"), Mapping):
+        execution_engine = execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+            payload=packet,
+            context_packet={},
+        )
+    execution_summary = runtime_surface_governance.summary_fields_from_execution_engine(
+        execution_engine
+    )
+    summary = {
         "id": str(packet.get("id", "")).strip(),
         "case_id": str(packet.get("case_id", "")).strip(),
         "outcome_id": str(packet.get("outcome_id", "")).strip(),
@@ -380,6 +480,8 @@ def packet_summary(packet: Mapping[str, Any]) -> dict[str, Any]:
         ],
         "status": str(packet.get("status", "draft")).strip() or "draft",
     }
+    summary.update(execution_summary)
+    return summary
 
 
 def apply_deterministic_packet(*, repo_root: Path, packet: Mapping[str, Any]) -> dict[str, Any]:
@@ -406,6 +508,36 @@ def apply_deterministic_packet(*, repo_root: Path, packet: Mapping[str, Any]) ->
             "returncode": 2,
         }
 
+    execution_engine = (
+        execution_engine_handshake.compact_execution_engine_snapshot_for_packet(
+            payload=packet,
+            context_packet={},
+        )
+        if isinstance(packet.get("execution_engine"), Mapping)
+        else _packet_execution_engine(packet)
+    )
+    execution_summary = runtime_surface_governance.summary_fields_from_execution_engine(
+        execution_engine
+    )
+    admissibility = (
+        dict(execution_engine.get("admissibility", {}))
+        if isinstance(execution_engine.get("admissibility"), Mapping)
+        else {}
+    )
+    outcome = str(execution_summary.get("execution_engine_outcome", "")).strip() or str(
+        admissibility.get("outcome", "")
+    ).strip()
+    if outcome not in {"", "admit"}:
+        return {
+            "ok": False,
+            "error": (
+                f"packet `{packet.get('id', '')}` is not admissible for deterministic execution: "
+                f"{str(admissibility.get('rationale', '')).strip() or 'contract denied execution'}"
+            ),
+            "returncode": 2,
+            "execution_engine": execution_engine,
+        }
+
     for command in commands:
         if not isinstance(command, list) or not command:
             return {
@@ -425,6 +557,7 @@ def apply_deterministic_packet(*, repo_root: Path, packet: Mapping[str, Any]) ->
         "ok": True,
         "error": "",
         "returncode": 0,
+        "execution_engine": execution_engine,
     }
 
 

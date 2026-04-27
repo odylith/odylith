@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from odylith.runtime.governance import component_registry_intelligence as registry
+from odylith.runtime.governance import sync_session
 from odylith.runtime.surfaces import compass_dashboard_base as renderer
 
 
@@ -54,3 +56,153 @@ def test_collect_git_local_changes_skips_deleted_legacy_bug_and_runtime_rollback
     monkeypatch.setattr(renderer, "_run_git", _fake_run_git)
     rows = renderer._collect_git_local_changes(tmp_path)  # noqa: SLF001
     assert rows == [{"status": "M", "path": "src/odylith/runtime/surfaces/compass_dashboard_base.py"}]
+
+
+def test_collect_git_local_changes_skips_retired_surface_modules(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    (tmp_path / "odylith" / "casebook" / "bugs").mkdir(parents=True, exist_ok=True)
+
+    def _fake_run_git(repo_root: Path, args: list[str]):  # noqa: ANN001, ANN202
+        _ = repo_root, args
+        return (
+            0,
+            " D src/odylith/runtime/surfaces/compass_standup_brief_attempts.py\n"
+            " D src/odylith/runtime/surfaces/tooling_dashboard_debug_presenter.py\n"
+            " M src/odylith/runtime/surfaces/compass_standup_brief_batch.py\n"
+            " M src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py\n",
+        )
+
+    monkeypatch.setattr(renderer, "_run_git", _fake_run_git)
+    rows = renderer._collect_git_local_changes(tmp_path)  # noqa: SLF001
+    assert rows == [
+        {"status": "M", "path": "src/odylith/runtime/surfaces/compass_standup_brief_batch.py"},
+        {"status": "M", "path": "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py"},
+    ]
+
+
+def test_collect_git_commits_skips_stale_casebook_and_retired_presenter_tests(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    bug_dir = tmp_path / "odylith" / "casebook" / "bugs"
+    bug_dir.mkdir(parents=True, exist_ok=True)
+    (bug_dir / "INDEX.md").write_text(
+        "# Bug Index\n\n"
+        "| id | date | title | severity | component | status | link |\n"
+        "| --- | --- | --- | --- | --- | --- | --- |\n"
+        "| CB-999 | 2026-04-16 | Keep | P1 | dashboard | Open | [keep.md](keep.md) |\n",
+        encoding="utf-8",
+    )
+
+    log_output = (
+        "abc123\x1f1760000000\x1ffreedom-research\x1ffreedom@example.com\x1fUpdate dashboard\n"
+        "odylith/casebook/bugs/removed-entry.md\n"
+        "tests/unit/runtime/test_tooling_dashboard_debug_presenter.py\n"
+        "tests/unit/runtime/test_compass_standup_brief_attempts.py\n"
+        "src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py\n"
+    )
+
+    def _fake_run_git(repo_root: Path, args: list[str]):  # noqa: ANN001, ANN202
+        _ = repo_root
+        if args and args[0] == "check-mailmap":
+            return 1, ""
+        return 0, log_output
+
+    monkeypatch.setattr(renderer, "_run_git", _fake_run_git)
+
+    rows = renderer._collect_git_commits(  # noqa: SLF001
+        tmp_path,
+        since_hours=48,
+        my_name="freedom-research",
+        my_email="",
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["files"] == ["src/odylith/runtime/surfaces/tooling_dashboard_shell_presenter.py"]
+
+
+def test_load_component_index_runtime_reuses_sync_session_registry_report(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    sentinel = {
+        "compass": registry.ComponentEntry(
+            component_id="compass",
+            name="Compass",
+            kind="composite",
+            category="governance_surface",
+            qualification="curated",
+            aliases=[],
+            path_prefixes=[],
+            workstreams=[],
+            diagrams=[],
+            owner="platform",
+            status="active",
+            what_it_is="Compass surface.",
+            why_tracked="Tracks executive state.",
+            spec_ref="odylith/registry/source/components/compass/CURRENT_SPEC.md",
+            sources=["manifest"],
+        )
+    }
+
+    class _Report:
+        components = sentinel
+
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_component_index",
+        lambda **_: (_ for _ in ()).throw(AssertionError("projection runtime should not be used inside sync session")),
+    )
+    monkeypatch.setattr(registry, "build_component_registry_report", lambda **_: _Report())
+
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    with sync_session.activate_sync_session(session):
+        components = renderer._load_component_index_runtime(repo_root=tmp_path, runtime_mode="standalone")  # noqa: SLF001
+
+    assert components is sentinel
+
+
+def test_parse_backlog_rows_reuses_sync_session_projection(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    index_path = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.write_text(
+        (
+            "# Backlog Index\n\n"
+            "## Ranked Active Backlog\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| 1 | B-091 | Shared sync | P1 | 100 | 4 | 4 | 4 | M | Medium | implementation | [idea](odylith/radar/source/ideas/2026-04/example.md) |\n\n"
+            "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| - | B-092 | Next | P1 | 99 | 4 | 4 | 4 | M | Medium | implementation | [idea](odylith/radar/source/ideas/2026-04/next.md) |\n"
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        renderer.odylith_context_engine_store,
+        "load_backlog_rows",
+        lambda **_: (_ for _ in ()).throw(AssertionError("sync-session backlog rows should come from source truth")),
+    )
+
+    session = sync_session.GovernedSyncSession(repo_root=tmp_path)
+    with sync_session.activate_sync_session(session):
+        first_active, first_execution = renderer._parse_backlog_rows(  # noqa: SLF001
+            repo_root=tmp_path,
+            index_path=index_path,
+            runtime_mode="auto",
+        )
+        second_active, second_execution = renderer._parse_backlog_rows(  # noqa: SLF001
+            repo_root=tmp_path,
+            index_path=index_path,
+            runtime_mode="auto",
+        )
+
+    assert [row["idea_id"] for row in first_active] == [row["idea_id"] for row in second_active] == ["B-091"]
+    assert [row["title"] for row in first_active] == [row["title"] for row in second_active] == ["Shared sync"]
+    assert [row["idea_id"] for row in first_execution] == [row["idea_id"] for row in second_execution] == ["B-092"]
+    assert [row["title"] for row in first_execution] == [row["title"] for row in second_execution] == ["Next"]
+    assert first_active is not second_active

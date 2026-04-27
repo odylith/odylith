@@ -3,6 +3,9 @@ from __future__ import annotations
 import contextlib
 from pathlib import Path
 
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import derivation_provenance
+from odylith.runtime.context_engine import odylith_context_engine_dossier_compaction_runtime as dossier_compaction_runtime
 from odylith.runtime.context_engine import odylith_context_engine_projection_compiler_runtime as projection_compiler_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_runtime as hot_path_runtime
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime as hot_path_scope
@@ -175,13 +178,12 @@ def test_session_scope_caps_dirty_paths_to_high_signal_subset(tmp_path: Path, mo
             "odylith/atlas/atlas.html",
             "README.md",
             "docs/specs/odylith-repo-integration-contract.md",
-            "src/odylith/runtime/context_engine/odylith_context_engine_projection_surface_runtime.py",
+            "src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py",
             "src/odylith/runtime/governance/backlog_authoring.py",
             "src/odylith/runtime/governance/sync_workstream_artifacts.py",
             "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py",
             "src/odylith/runtime/surfaces/tooling_dashboard_runtime_builder.py",
             "src/odylith/runtime/surfaces/tooling_dashboard_release_presenter.py",
-            "src/odylith/runtime/surfaces/tooling_dashboard_system_status_presenter.py",
             "src/odylith/runtime/surfaces/tooling_dashboard_welcome_presenter.py",
             "src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js",
             "src/odylith/runtime/surfaces/templates/tooling_dashboard/style.css",
@@ -382,11 +384,108 @@ def test_finalized_bootstrap_payload_compactor_drops_duplicate_views() -> None:
         "reason": "Need one code path.",
     }
     assert payload.get("packet_metrics") is None
-    assert payload["context_packet"] == {
-        "packet_kind": "bootstrap_session",
-        "packet_state": "gated_ambiguous",
-        "retrieval_plan": {"ambiguity_class": "no_candidates"},
-        "packet_quality": {"rc": "low"},
+    context_packet = payload["context_packet"]
+    assert context_packet["packet_kind"] == "bootstrap_session"
+    assert context_packet["packet_state"] == "gated_ambiguous"
+    assert context_packet["retrieval_plan"] == {"ambiguity_class": "no_candidates"}
+    assert context_packet["packet_quality"] == {"rc": "low"}
+    if "execution_engine" in context_packet:
+        assert isinstance(context_packet["execution_engine"], dict)
+
+
+def test_finalized_bootstrap_payload_compactor_preserves_turn_targets_and_anchor_followup() -> None:
+    payload = session_bootstrap_payload_compactor.compact_finalized_bootstrap_payload(
+        {
+            "context_packet_state": "gated_ambiguous",
+            "context_packet": {
+                "packet_kind": "bootstrap_session",
+                "packet_state": "gated_ambiguous",
+                "anchors": {"has_non_shared_anchor": True},
+            },
+            "turn_context": {
+                "intent": 'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
+                "surfaces": ["compass"],
+                "visible_text": ["Task Contract, Event Ledger, and Hard-Constraint Promotion"],
+                "active_tab": "releases",
+                "user_turn_id": "turn-2",
+                "supersedes_turn_id": "turn-1",
+            },
+            "target_resolution": {
+                "lane": "consumer",
+                "candidate_targets": [
+                    {
+                        "path": "odylith/compass/compass.html",
+                        "source": "path_scope",
+                        "writable": False,
+                    }
+                ],
+                "diagnostic_anchors": [
+                    {
+                        "kind": "workstream",
+                        "value": "B-073",
+                        "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+                    }
+                ],
+                "has_writable_targets": False,
+                "requires_more_consumer_context": True,
+                "consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+            },
+            "presentation_policy": {
+                "commentary_mode": "task_first_minimal",
+                "suppress_routing_receipts": True,
+                "surface_fast_lane": True,
+            },
+            "narrowing_guidance": {
+                "required": True,
+                "reason": "No workstream evidence matched the current changed-path set.",
+                "suggested_inputs": ["Open the consumer route component first."],
+                "next_best_anchors": [
+                    {
+                        "kind": "workstream",
+                        "value": "B-073",
+                        "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+                    }
+                ],
+            },
+        }
+    )
+
+    assert payload["narrowing_guidance"] == {
+        "required": True,
+        "reason": "Need one code path.",
+        "suggested_inputs": ["Open the consumer route component first."],
+        "next_best_anchors": [
+            {
+                "kind": "workstream",
+                "value": "B-073",
+                "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+            }
+        ],
+    }
+    assert payload["target_resolution"] == {
+        "lane": "consumer",
+        "candidate_targets": [
+            {
+                "path": "odylith/compass/compass.html",
+                "source": "path_scope",
+                "writable": False,
+            }
+        ],
+        "diagnostic_anchors": [
+            {
+                "kind": "workstream",
+                "value": "B-073",
+                "label": "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+            }
+        ],
+        "has_writable_targets": False,
+        "requires_more_consumer_context": True,
+        "consumer_failover": "maintainer_ready_feedback_plus_bounded_narrowing",
+    }
+    assert payload["presentation_policy"] == {
+        "commentary_mode": "task_first_minimal",
+        "suppress_routing_receipts": True,
+        "surface_fast_lane": True,
     }
 
 
@@ -777,15 +876,15 @@ def test_projection_compiler_runtime_refuses_fast_reuse_when_local_backend_is_st
     monkeypatch,
 ) -> None:
     runtime_root = tmp_path / ".odylith" / "runtime"
-    monkeypatch.setattr(store, "runtime_root", lambda **_kwargs: runtime_root)
-    monkeypatch.setattr(store, "projection_input_fingerprint", lambda **_kwargs: "fp-1")
+    monkeypatch.setattr(projection_compiler_runtime, "runtime_root", lambda **_kwargs: runtime_root)
+    monkeypatch.setattr(projection_compiler_runtime, "projection_input_fingerprint", lambda **_kwargs: "fp-1")
     monkeypatch.setattr(
-        store,
+        projection_compiler_runtime,
         "read_runtime_state",
         lambda **_kwargs: {"projection_fingerprint": "fp-1", "projection_scope": "reasoning"},
     )
-    monkeypatch.setattr(store, "load_runtime_timing_summary", lambda **_kwargs: [])
-    monkeypatch.setattr(store, "record_runtime_timing", lambda **_kwargs: None)
+    monkeypatch.setattr(projection_compiler_runtime, "load_runtime_timing_summary", lambda **_kwargs: [])
+    monkeypatch.setattr(projection_compiler_runtime, "record_runtime_timing", lambda **_kwargs: None)
     monkeypatch.setattr(
         store.odylith_projection_bundle,
         "load_bundle_manifest",
@@ -818,7 +917,7 @@ def test_projection_compiler_runtime_refuses_fast_reuse_when_local_backend_is_st
     )
     monkeypatch.setattr(store.odylith_context_cache, "advisory_lock", lambda **_kwargs: contextlib.nullcontext())
     monkeypatch.setattr(
-        store,
+        projection_compiler_runtime,
         "_empty_projection_tables",
         lambda: (_ for _ in ()).throw(RuntimeError("rebuild_required")),
     )
@@ -843,24 +942,59 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
     runtime_root = tmp_path / ".odylith" / "runtime"
     state_writes: list[dict[str, object]] = []
     timing_rows: list[dict[str, object]] = []
+    compiler_provenance = derivation_provenance.build_derivation_provenance(
+        repo_root=tmp_path,
+        projection_scope="full",
+        projection_fingerprint="fp-full",
+        sync_generation=0,
+        code_version=derivation_provenance.fingerprint_source_files(
+            [
+                Path(projection_compiler_runtime.__file__),
+                Path(store.odylith_projection_snapshot.__file__),
+                Path(store.odylith_projection_bundle.__file__),
+            ]
+        ),
+        flags={"projection_names": sorted(store._projection_names_for_scope("full"))},  # noqa: SLF001
+    )
+    backend_provenance = derivation_provenance.build_derivation_provenance(
+        repo_root=tmp_path,
+        projection_scope="full",
+        projection_fingerprint="fp-full",
+        sync_generation=0,
+        code_version=derivation_provenance.fingerprint_source_files(
+            [
+                Path(store.odylith_memory_backend.__file__),
+                Path(store.odylith_projection_bundle.__file__),
+            ]
+        ),
+        flags={
+            "backend_dependencies_available": True,
+            "storage": "lance_local_columnar",
+        },
+    )
 
-    monkeypatch.setattr(store, "runtime_root", lambda **_kwargs: runtime_root)
+    monkeypatch.setattr(projection_compiler_runtime, "runtime_root", lambda **_kwargs: runtime_root)
     monkeypatch.setattr(
-        store,
+        projection_compiler_runtime,
         "projection_input_fingerprint",
         lambda **kwargs: "fp-full" if kwargs.get("scope") == "full" else "fp-reasoning",
     )
     monkeypatch.setattr(
-        store,
+        projection_compiler_runtime,
         "read_runtime_state",
         lambda **_kwargs: {"projection_fingerprint": "fp-old", "projection_scope": "reasoning"},
     )
-    monkeypatch.setattr(store, "load_runtime_timing_summary", lambda **_kwargs: [])
-    monkeypatch.setattr(store, "record_runtime_timing", lambda **kwargs: timing_rows.append(kwargs))
+    monkeypatch.setattr(projection_compiler_runtime, "load_runtime_timing_summary", lambda **_kwargs: [])
+    monkeypatch.setattr(projection_compiler_runtime, "record_runtime_timing", lambda **kwargs: timing_rows.append(kwargs))
     monkeypatch.setattr(
         store.odylith_projection_bundle,
         "load_bundle_manifest",
-        lambda **_kwargs: {"ready": True, "projection_fingerprint": "fp-full", "projection_scope": "full"},
+        lambda **_kwargs: {
+            "ready": True,
+            "projection_fingerprint": "fp-full",
+            "projection_scope": "full",
+            "provenance": compiler_provenance,
+        },
     )
     monkeypatch.setattr(
         store.odylith_projection_snapshot,
@@ -870,12 +1004,18 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
             "tables": {"components": 1},
             "projection_fingerprint": "fp-full",
             "projection_scope": "full",
+            "provenance": compiler_provenance,
         },
     )
     monkeypatch.setattr(
         store.odylith_memory_backend,
         "load_manifest",
-        lambda **_kwargs: {"projection_fingerprint": "fp-full", "projection_scope": "full", "ready": True},
+        lambda **_kwargs: {
+            "projection_fingerprint": "fp-full",
+            "projection_scope": "full",
+            "ready": True,
+            "provenance": backend_provenance,
+        },
     )
     monkeypatch.setattr(
         store.odylith_memory_backend,
@@ -888,8 +1028,12 @@ def test_projection_compiler_runtime_reuses_full_projection_when_reasoning_is_re
         lambda **kwargs: kwargs.get("projection_scope") == "full"
         and kwargs.get("projection_fingerprint") == "fp-full",
     )
-    monkeypatch.setattr(store, "preferred_watcher_backend", lambda **_kwargs: "poll")
-    monkeypatch.setattr(store, "write_runtime_state", lambda **kwargs: state_writes.append(dict(kwargs["payload"])))
+    monkeypatch.setattr(projection_compiler_runtime, "preferred_watcher_backend", lambda **_kwargs: "poll")
+    monkeypatch.setattr(
+        projection_compiler_runtime,
+        "write_runtime_state",
+        lambda **kwargs: state_writes.append(dict(kwargs["payload"])),
+    )
 
     summary = projection_compiler_runtime.warm_projections(
         repo_root=tmp_path,
@@ -917,7 +1061,7 @@ def test_search_entities_payload_keeps_local_results_when_remote_only_is_misconf
     monkeypatch.setattr(
         projection_search_runtime,
         "_full_scan_guidance",
-        lambda **kwargs: {"performed": False, "reason": kwargs.get("reason", ""), "results": []},
+        lambda **_: (_ for _ in ()).throw(AssertionError("local runtime hits must not trigger raw scan fallback")),
     )
     monkeypatch.setattr(
         projection_search_runtime.odylith_memory_backend,
@@ -967,6 +1111,9 @@ def test_search_entities_payload_keeps_local_results_when_remote_only_is_misconf
 
     assert payload["retrieval_mode"] == "tantivy_sparse"
     assert payload["results"][0]["source"] == "local"
+    assert payload["full_scan_recommended"] is False
+    assert payload["full_scan_reason"] == ""
+    assert payload["fallback_scan"] == {}
 
 
 def test_search_entities_payload_accepts_full_scope_backend_for_reasoning_queries(
@@ -1102,7 +1249,7 @@ def test_search_entities_payload_keeps_local_results_when_remote_only_returns_no
     assert payload["results"][0]["source"] == "local"
 
 
-def test_clear_runtime_process_caches_keeps_projection_input_fingerprints_for_repo_scoped_clear(
+def test_clear_runtime_process_caches_clears_projection_input_fingerprints_for_repo_scoped_clear(
     tmp_path: Path,
 ) -> None:
     key = f"{tmp_path.resolve()}:reasoning"
@@ -1117,14 +1264,8 @@ def test_clear_runtime_process_caches_keeps_projection_input_fingerprints_for_re
 
     projection_search_runtime.clear_runtime_process_caches(repo_root=tmp_path)
 
-    assert projection_search_runtime._PROCESS_PROJECTED_INPUTS_CACHE[key] == (  # noqa: SLF001
-        "state-1",
-        {"components": "fp-components"},
-    )
-    assert projection_search_runtime._PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE[key] == (  # noqa: SLF001
-        "state-1",
-        "fp-runtime",
-    )
+    assert key not in projection_search_runtime._PROCESS_PROJECTED_INPUTS_CACHE  # noqa: SLF001
+    assert key not in projection_search_runtime._PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE  # noqa: SLF001
     assert key not in projection_search_runtime._PROCESS_WARM_CACHE  # noqa: SLF001
     assert key not in projection_search_runtime._PROCESS_WARM_CACHE_FINGERPRINTS  # noqa: SLF001
 
@@ -1194,8 +1335,63 @@ def test_warm_runtime_reuses_compatible_snapshot_when_runtime_state_lags(
     assert projection_search_runtime._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:default"] == "fp-default-fresh"  # noqa: SLF001
 
 
+def test_direct_warm_projections_primes_process_warm_cache_for_follow_on_runtime_reads(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    projection_search_runtime._PROCESS_WARM_CACHE.clear()  # noqa: SLF001
+    projection_search_runtime._PROCESS_WARM_CACHE_FINGERPRINTS.clear()  # noqa: SLF001
+    compiler_calls: list[dict[str, object]] = []
+
+    monkeypatch.setattr(
+        projection_search_runtime,
+        "projection_input_fingerprint",
+        lambda **kwargs: {
+            "default": "fp-default",
+            "reasoning": "fp-reasoning",
+            "full": "fp-full",
+        }[kwargs["scope"]],
+    )
+    monkeypatch.setattr(
+        projection_search_runtime.odylith_context_engine_projection_compiler_runtime,
+        "warm_projections",
+        lambda **kwargs: compiler_calls.append(dict(kwargs)) or {"projection_scope": kwargs["scope"]},
+    )
+
+    projection_search_runtime.warm_projections(
+        repo_root=tmp_path,
+        force=False,
+        reason="sync",
+        scope="default",
+    )
+
+    monkeypatch.setattr(
+        projection_search_runtime,
+        "warm_projections",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("cached runtime should not rewarm projections")),
+    )
+
+    reused = projection_search_runtime._warm_runtime(  # noqa: SLF001
+        repo_root=tmp_path,
+        runtime_mode="auto",
+        reason="bug_rows",
+        scope="default",
+    )
+
+    assert reused is True
+    assert compiler_calls == [
+        {
+            "repo_root": tmp_path,
+            "force": False,
+            "reason": "sync",
+            "scope": "default",
+        }
+    ]
+    assert projection_search_runtime._PROCESS_WARM_CACHE_FINGERPRINTS[f"{tmp_path.resolve()}:default"] == "fp-default"  # noqa: SLF001
+
+
 def test_compact_context_dossier_for_delivery_uses_tight_defaults() -> None:
-    compact = store.compact_context_dossier_for_delivery(
+    compact = dossier_compaction_runtime.compact_context_dossier_for_delivery(
         {
             "resolved": True,
             "entity": {
@@ -1209,7 +1405,7 @@ def test_compact_context_dossier_for_delivery_uses_tight_defaults() -> None:
             "related_entities": {
                 "plans": [{"entity_id": "P-1"}, {"entity_id": "P-2"}, {"entity_id": "P-3"}],
             },
-            "recent_codex_events": [
+            agent_runtime_contract.AGENT_EVENT_KEY: [
                 {"event_id": "1", "summary": "one"},
                 {"event_id": "2", "summary": "two"},
                 {"event_id": "3", "summary": "three"},
@@ -1224,7 +1420,8 @@ def test_compact_context_dossier_for_delivery_uses_tight_defaults() -> None:
 
     assert compact["entity"]["diagram_id_count"] == 2
     assert compact["related_entities"]["plans"] == [{"entity_id": "P-1"}, {"entity_id": "P-2"}]
-    assert len(compact["recent_codex_events"]) == 2
+    assert len(compact[agent_runtime_contract.AGENT_EVENT_KEY]) == 2
+    assert "recent_codex_events" not in compact
     assert len(compact["delivery_scope_summaries"]) == 1
     assert compact["relation_count"] == 3
 

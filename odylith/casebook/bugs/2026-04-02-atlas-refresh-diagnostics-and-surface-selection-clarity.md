@@ -139,7 +139,7 @@
   `tests/unit/runtime/test_auto_update_mermaid_diagrams.py`
 
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`,
-  `odylith/skills/delivery-governance-surface-ops/SKILL.md`,
+  `odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md`,
   `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`,
   `odylith/registry/source/components/atlas/CURRENT_SPEC.md`
 

@@ -1,3 +1,5 @@
+"""Sync Argument Contract helpers for the Odylith governance layer."""
+
 from __future__ import annotations
 
 import argparse
@@ -71,6 +73,11 @@ def configure_sync_parser(
         help="Show the full dirty-overlap listing instead of the compact summary.",
     )
     parser.add_argument(
+        "--debug-cache",
+        action="store_true",
+        help="Print governed sync cache/provenance decisions while the plan runs.",
+    )
+    parser.add_argument(
         "--proceed-with-overlap",
         action="store_true",
         help=(
@@ -108,15 +115,6 @@ def configure_sync_parser(
             "Execution mode for local upkeep commands. `auto` prefers the local runtime-backed "
             "fast path with standalone fallback, `standalone` preserves subprocess-only strict "
             "behavior, and `daemon` requires runtime-backed execution."
-        ),
-    )
-    parser.add_argument(
-        "--compass-refresh-profile",
-        choices=("full", "shell-safe"),
-        default=DEFAULT_SYNC_COMPASS_REFRESH_PROFILE,
-        help=(
-            "Compass refresh profile for sync/render steps. "
-            "`shell-safe` defers live AI narration so sync stays bounded."
         ),
     )
     deep_skill_group = parser.add_mutually_exclusive_group()
@@ -183,6 +181,8 @@ def namespace_to_argv(args: argparse.Namespace, *, include_repo_root: bool = Tru
         argv.append("--dry-run")
     if bool(getattr(args, "verbose", False)):
         argv.append("--verbose")
+    if bool(getattr(args, "debug_cache", False)):
+        argv.append("--debug-cache")
     if bool(getattr(args, "proceed_with_overlap", False)):
         argv.append("--proceed-with-overlap")
     if bool(getattr(args, "no_traceability_autofix", False)):
@@ -195,8 +195,6 @@ def namespace_to_argv(args: argparse.Namespace, *, include_repo_root: bool = Tru
         argv.extend(["--registry-policy-mode", str(args.registry_policy_mode)])
     if str(getattr(args, "runtime_mode", "auto")).strip() != "auto":
         argv.extend(["--runtime-mode", str(args.runtime_mode)])
-    if str(getattr(args, "compass_refresh_profile", DEFAULT_SYNC_COMPASS_REFRESH_PROFILE)).strip() != DEFAULT_SYNC_COMPASS_REFRESH_PROFILE:
-        argv.extend(["--compass-refresh-profile", str(args.compass_refresh_profile)])
     if bool(getattr(args, "enforce_deep_skills", True)) is False:
         argv.append("--no-enforce-deep-skills")
     if bool(getattr(args, "once", False)):

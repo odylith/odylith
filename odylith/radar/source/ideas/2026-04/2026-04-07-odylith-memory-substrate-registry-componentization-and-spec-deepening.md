@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-058
-title: Odylith Memory Substrate Registry Componentization and Spec Deepening
+title: Memory Substrate Registry Componentization and Spec Deepening
 date: 2026-04-07
 priority: P1
 commercial_value: 3
 product_impact: 5
 market_value: 3
-impacted_lanes: both
 impacted_parts: Registry component inventory, memory-substrate boundaries, context-engine traceability, Registry detail rendering, and memory contract documentation
 sizing: M
 complexity: Medium

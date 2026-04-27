@@ -1,11 +1,112 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import render_backlog_ui
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _load_backlog_payload(root: Path) -> dict[str, object]:
+    payload_js = (root / "odylith" / "radar" / "backlog-payload.v1.js").read_text(encoding="utf-8")
+    return json.loads(payload_js.split(" = ", 1)[1].rsplit(";", 1)[0])
+
+
+def _seed_backlog_render_repo(root: Path) -> None:
+    (root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+    (root / "pyproject.toml").write_text(
+        "[project]\nname = \"odylith\"\nversion = \"0.1.11\"\n",
+        encoding="utf-8",
+    )
+    (root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
+    (root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
+        "{\"version\": \"v1\", \"components\": []}\n",
+        encoding="utf-8",
+    )
+    (root / "odylith" / "technical-plans").mkdir(parents=True, exist_ok=True)
+    (root / "odylith" / "technical-plans" / "INDEX.md").write_text("# Plan Index\n", encoding="utf-8")
+    atlas_catalog = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    atlas_catalog.parent.mkdir(parents=True, exist_ok=True)
+    atlas_catalog.write_text("{\"version\":\"v1\",\"diagrams\":[]}\n", encoding="utf-8")
+
+    idea_path = root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-11-cached-render.md"
+    idea_path.parent.mkdir(parents=True, exist_ok=True)
+    idea_path.write_text(
+        (
+            "status: queued\n\n"
+            "idea_id: B-777\n\n"
+            "title: Cached Radar Render\n\n"
+            "date: 2026-04-11\n\n"
+            "priority: P1\n\n"
+            "commercial_value: 4\n\n"
+            "product_impact: 4\n\n"
+            "market_value: 4\n\n"
+            "impacted_parts: radar\n\n"
+            "sizing: M\n\n"
+            "complexity: Medium\n\n"
+            "ordering_score: 88\n\n"
+            "ordering_rationale: prove cached radar render reuse\n\n"
+            "confidence: high\n\n"
+            "founder_override: no\n\n"
+            "promoted_to_plan:\n\n"
+            "workstream_type: standalone\n\n"
+            "workstream_parent:\n\n"
+            "workstream_children:\n\n"
+            "workstream_depends_on:\n\n"
+            "workstream_blocks:\n\n"
+            "related_diagram_ids:\n\n"
+            "workstream_reopens:\n\n"
+            "workstream_reopened_by:\n\n"
+            "workstream_split_from:\n\n"
+            "workstream_split_into:\n\n"
+            "workstream_merged_into:\n\n"
+            "workstream_merged_from:\n\n"
+            "supersedes:\n\n"
+            "superseded_by:\n\n"
+            "## Problem\nKeep no-op Radar rerenders fast.\n\n"
+            "## Customer\nOperators running repeated syncs.\n\n"
+            "## Opportunity\nAvoid redoing unchanged projection work.\n\n"
+            "## Proposed Solution\nFingerprint the render input cone.\n\n"
+            "## Scope\nRadar surface only.\n\n"
+            "## Non-Goals\nChanging Radar truth.\n\n"
+            "## Risks\nUnsound cache keys.\n\n"
+            "## Dependencies\nNone.\n\n"
+            "## Success Metrics\nNo-op render skips the expensive path.\n\n"
+            "## Validation\nRender twice and compare outputs.\n\n"
+            "## Rollout\nShip with unit coverage.\n\n"
+            "## Why Now\nSync latency is dominated by redundant work.\n\n"
+            "## Product View\nRadar should keep exact output bytes while skipping unchanged rebuilds.\n"
+        ),
+        encoding="utf-8",
+    )
+    index_path = root / "odylith" / "radar" / "source" / "INDEX.md"
+    index_path.write_text(
+        (
+            "# Backlog Index\n\n"
+            "Last updated (UTC): 2026-04-11\n\n"
+            "## Ranked Active Backlog\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            f"| 1 | B-777 | Cached Radar Render | P1 | 88 | 4 | 4 | 4 | M | Medium | queued | [cached-render]({idea_path.resolve().as_posix()}) |\n\n"
+            "## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress`)\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "## Finished (Linked to `odylith/technical-plans/done`)\n\n"
+            "| rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n\n"
+            "## Reorder Rationale Log\n\n"
+            "### B-777 (rank 1)\n"
+            "- why now: make repeated render validation fast.\n"
+            "- expected outcome: unchanged rebuilds become cheap.\n"
+            "- tradeoff: cache keys must stay conservative.\n"
+            "- deferred for now: daemonization.\n"
+            "- ranking basis: score-led queue ordering.\n"
+        ),
+        encoding="utf-8",
+    )
 
 
 def test_rewrite_section_text_normalizes_removed_plain_paths() -> None:
@@ -76,6 +177,175 @@ def test_render_plan_html_normalizes_legacy_meta_row_paths(tmp_path: Path) -> No
     assert "odylith/registry/source/components/dashboard/CURRENT_SPEC.md" in html
     assert "odylith sync --check-only --check-clean --runtime-mode standalone --repo-root ." in html
     assert "odylith sync --repo-root . --check-only --runtime-mode standalone" in html
+    assert "<code>odylith/registry/source/components/compass/CURRENT_SPEC.md</code>" in html
+    assert "<code>odylith/registry/source/components/dashboard/CURRENT_SPEC.md</code>" in html
+    assert "<code>odylith sync --check-only --check-clean --runtime-mode standalone --repo-root .</code>" in html
+
+
+def test_render_idea_spec_html_uses_rich_text_for_decision_basis_and_implemented_summary(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    idea_path = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-08-example.md"
+    idea_path.parent.mkdir(parents=True)
+    idea_path.write_text(
+        "\n".join(
+            (
+                "---",
+                "status: implementation",
+                "idea_id: B-999",
+                "title: Example",
+                "date: 2026-04-08",
+                "priority: P1",
+                "commercial_value: 3",
+                "product_impact: 3",
+                "market_value: 3",
+                "sizing: M",
+                "complexity: Medium",
+                "ordering_score: 42",
+                "confidence: high",
+                "founder_override: no",
+                "---",
+                "",
+                "## Problem",
+                "Example problem.",
+                "",
+                "## Customer",
+                "- Primary: operators.",
+                "",
+                "## Opportunity",
+                "Example opportunity.",
+                "",
+                "## Product View",
+                "Example view.",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    html = render_backlog_ui._render_idea_spec_html(
+        repo_root=repo_root,
+        index_output_path=repo_root / "odylith" / "radar" / "radar.html",
+        entry={
+            "idea_id": "B-999",
+            "title": "Example",
+            "priority": "P1",
+            "status": "implementation",
+            "ordering_score": 42,
+            "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-example.md",
+            "rationale_bullets": ["Run `pytest -q tests/scripts/test_sync_workstream_artifacts.py`."],
+            "implemented_summary": "Point maintainers to `python -m scripts.run_clean_snapshot_strict_sync --repo-root .` when needed.",
+        },
+    )
+
+    assert "tests/scripts/test_sync_workstream_artifacts.py" not in html
+    assert "python -m scripts.run_clean_snapshot_strict_sync" not in html
+    assert "<code>odylith sync --repo-root . --check-only --runtime-mode standalone</code>" in html
+    assert "<code>odylith sync --check-only --check-clean --runtime-mode standalone --repo-root .</code>" in html
+
+
+def test_render_idea_spec_html_places_product_view_below_problem(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    idea_path = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-08-order-example.md"
+    idea_path.parent.mkdir(parents=True)
+    idea_path.write_text(
+        "\n".join(
+            (
+                "---",
+                "status: implementation",
+                "idea_id: B-998",
+                "title: Example",
+                "date: 2026-04-08",
+                "priority: P1",
+                "commercial_value: 3",
+                "product_impact: 3",
+                "market_value: 3",
+                "sizing: M",
+                "complexity: Medium",
+                "ordering_score: 42",
+                "confidence: high",
+                "founder_override: no",
+                "---",
+                "",
+                "## Problem",
+                "Example problem.",
+                "",
+                "## Customer",
+                "Example customer.",
+                "",
+                "## Product View",
+                "Example view.",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    html = render_backlog_ui._render_idea_spec_html(
+        repo_root=repo_root,
+        index_output_path=repo_root / "odylith" / "radar" / "radar.html",
+        entry={
+            "idea_id": "B-998",
+            "title": "Example",
+            "priority": "P1",
+            "status": "implementation",
+            "ordering_score": 42,
+            "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-order-example.md",
+            "rationale_bullets": ["why now: Example rationale."],
+        },
+    )
+
+    problem_idx = html.index("<h2>Problem</h2>")
+    product_idx = html.index("<h2>Product View</h2>")
+    decision_idx = html.index("<h2>Decision Basis</h2>")
+    customer_idx = html.index("<h2>Customer</h2>")
+
+    assert problem_idx < product_idx < customer_idx
+    assert problem_idx < decision_idx < customer_idx
+
+
+def test_render_section_body_splits_dense_single_paragraph_prose() -> None:
+    html = render_backlog_ui._render_section_body(
+        repo_root=REPO_ROOT,
+        lines=[
+            "`v0.1.9` reached GA on 2026-04-07, but the release lane still carried several truths that should not become permanent operating posture.",
+            "Fresh downstream sync feedback on 2026-04-07 added another trust slice: operator-facing sync behavior is stronger than its public surface suggests, but it still hides supported controls and can rewrite unchanged generated JSON artifacts in ways that make file mtimes disagree with embedded `generated_utc`.",
+            "Another downstream packet the same day exposed a Compass refresh trust gap: bounded refresh behaved as designed, but Compass still advertised an older deeper rerender path that shared the same hard dashboard timeout.",
+            "Release prep on 2026-04-08 exposed one more maintainer truth: PR `pytest` and `candidate-proof` still carried unit tests that silently depended on a live Codex host runtime or a local `codex` binary.",
+        ],
+    )
+
+    assert html.count("<p>") == 4
+    assert "<code>generated_utc</code>" in html
+    assert "bounded refresh" in html
+    assert "<code>pytest</code>" in html
+
+
+def test_render_section_body_keeps_wrapped_bullets_in_single_list_item() -> None:
+    html = render_backlog_ui._render_section_body(
+        repo_root=REPO_ROOT,
+        lines=[
+            "- Primary: operators relying on `doctor --repair` or",
+            "  `reinstall --latest` to recover the repo in place.",
+            "- Secondary: maintainers proving the release path.",
+        ],
+    )
+
+    assert "<ul>" in html
+    assert "<li>Primary: operators relying on <code>doctor --repair</code> or <code>reinstall --latest</code> to recover the repo in place.</li>" in html
+    assert "<li>Secondary: maintainers proving the release path.</li>" in html
+
+
+def test_render_section_body_keeps_command_only_checklist_items_inline_and_wrapped() -> None:
+    html = render_backlog_ui._render_section_body(
+        repo_root=REPO_ROOT,
+        lines=[
+            "- [ ] `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py`",
+        ],
+    )
+
+    assert '<div class="check-text"><code>PYTHONPATH=src python -m pytest -q' in html
+    assert "PYTHONPATH=src python -m pytest -q" in html
+    assert '<pre class="code"><code>' not in html
 
 
 def test_render_backlog_ui_uses_diagram_owner_aware_atlas_links() -> None:
@@ -156,7 +426,290 @@ def test_render_backlog_ui_promotes_workstream_id_into_detail_kpi_grid() -> None
     html = render_backlog_ui._render_html(payload={"entries": []})
 
     assert 'data-kpi="workstream-id"' in html
+    assert 'data-kpi="workstream-placement"' in html
     assert "Workstream ID" in html
+    assert "Placement" in html
+    assert "function sectionBadgeInfo(row)" in html
+    assert '<header class="detail-header">\n          <h2 class="detail-title">${escapeHtml(selected.title)}</h2>' in html
+    assert '<header class="detail-header">\n          <span class="rank-chip' not in html
+    assert '<div class="kpi" data-kpi="workstream-id"><div class="k">Workstream ID</div><div class="v">${escapeHtml(selected.idea_id)}</div></div>' in html
+    assert '<div class="kpi kpi-section ${escapeHtml(sectionBadge.kpiClassName)}" data-kpi="workstream-placement"><div class="k">Placement</div><div class="v">${escapeHtml(sectionBadge.label)}</div></div>' in html
+    assert '.kpi.kpi-section .k,\n    .kpi.kpi-section .v {\n      color: inherit;\n    }' in html
+    assert ".kpi.kpi-section.kpi-section-execution {" in html
+    assert ".kpi.kpi-section.kpi-section-active {" in html
+    assert ".kpi.kpi-section.kpi-section-finished {" in html
+    assert ".kpi.kpi-section.kpi-section-parked {" in html
     assert 'class="detail-id"' not in html
     assert html.index('data-kpi="workstream-id"') < html.index('<div class="chips">')
-    assert html.index('data-kpi="workstream-id"') < html.index("Ordering Score")
+    assert html.index('data-kpi="workstream-placement"') < html.index("Ordering Score")
+
+
+def test_render_backlog_ui_orders_traceability_links_with_spec_first() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    spec_idx = html.index(">Workstream Spec</a>")
+    plan_idx = html.index(">Technical Implementation Plan</a>")
+    compass_idx = html.index(">Compass Scope</a>")
+    registry_idx = html.index(">Registry</a>")
+
+    assert spec_idx < plan_idx < compass_idx < registry_idx
+
+
+def test_render_backlog_ui_places_product_view_below_problem() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    problem_idx = html.index("<h3>Problem</h3>")
+    product_idx = html.index("<h3>Product View</h3>")
+    decision_idx = html.index("<h3>Decision Basis</h3>")
+    customer_idx = html.index("<h3>Customer</h3>")
+
+    assert problem_idx < product_idx < customer_idx
+    assert problem_idx < decision_idx < customer_idx
+
+
+def test_render_backlog_ui_includes_release_filters_summary_cards_and_release_chips() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert '<select id="type">' in html
+    assert '<option value="umbrella">Umbrella</option>' in html
+    assert '<option value="child">Child</option>' in html
+    assert 'type: "all",' in html
+    assert 'type: document.getElementById("type"),' in html
+    assert 'if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) return false;' in html
+    assert 'if (state.type !== "all" && workstreamTypeInfo(row).type !== state.type) {' in html
+    assert 'el.type.value = state.type;' in html
+    assert 'bind(el.type, "type");' in html
+    assert "grid-template-columns: minmax(220px, 1.8fr) repeat(7, minmax(0, 1fr));" in html
+    assert ".controls input,\n    .controls select {\n      min-width: 0;\n    }" in html
+    assert 'if (state.release !== "all" && workstreamActiveReleaseId(row) !== state.release) return false;' in html
+    assert "seedSelect(\n      el.release," in html
+    assert "Active target release for this workstream." in html
+    assert 'const nameLabel = String(release.effective_name || release.name || "").trim();' in html
+    assert 'const versionLabel = String(release.version || release.display_label || "").trim();' in html
+    assert 'escapeHtml(workstreamActiveReleaseLabel(row))' in html
+    assert "Release ${workstreamActiveReleaseLabel(row)}" not in html
+    assert "function releaseCardLabel(row)" in html
+    assert 'statRows.push(statBlock("Target Release", releaseCardLabel(currentRelease), { releaseOnly: true }));' in html
+    assert 'statRows.push(statBlock("", releaseCardLabel(currentRelease), { releaseOnly: true }));' not in html
+    assert 'statRows.push(statBlock("Wave Programs"' not in html
+    assert 'statRows.push(statBlock("Active Waves", activeWaves));' in html
+    assert html.index('statRows.push(statBlock("Active Waves", activeWaves));') < html.index('statRows.push(statBlock("Target Release", releaseCardLabel(currentRelease), { releaseOnly: true }));')
+    assert 'statRows.push(statBlock("Next Release", releaseCardLabel(nextRelease)));' not in html
+    assert "versionLabel.startsWith(\"v\") ? versionLabel : `v${versionLabel}`" not in html
+    assert ".stat.stat-release-only {" not in html
+    assert ".stat.stat-release-only .value {" not in html
+    assert "Next Release" not in html
+    assert "Release Target" in html
+
+
+def test_render_backlog_ui_topology_focus_does_not_repeat_selected_label() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert '<span class="topology-focus-title">Selected</span>' not in html
+    assert 'selector=".topology-focus-title, .topology-relations-panel > summary, .topology-rel-title"' not in html
+    assert ".topology-focus-title {" not in html
+
+
+def test_render_backlog_ui_matches_compass_shell_width_and_favors_detail_workspace() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+    compass_css = (
+        REPO_ROOT / "src" / "odylith" / "runtime" / "surfaces" / "templates" / "compass_dashboard" / "compass-style-base.v1.css"
+    ).read_text(encoding="utf-8")
+
+    assert ".shell {" in html
+    assert "--surface-shell-max-width: 1320px;" in html
+    assert "max-width: var(--surface-shell-max-width, 1320px);" in html
+    assert "__ODYLITH_STANDARD_SURFACE_SHELL_MAX_WIDTH__" in compass_css
+    assert ".workspace {" in html
+    assert "grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);" in html
+
+
+def test_render_backlog_ui_sorts_default_sections_by_scope_signal_rank() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert "function scopeSignalRank(row)" in html
+    assert "const rankDelta = scopeSignalRank(b) - scopeSignalRank(a);" in html
+    assert "if (rankDelta !== 0) return rankDelta;" in html
+
+
+def test_render_backlog_ui_uses_shared_workstream_button_contract_for_workstream_ids() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert "class=\"chip chip-link entity-id-chip" in html
+    assert ".chip-link:not(.entity-id-chip):not(.execution-wave-chip-link) {" in html
+    assert (
+        f"{dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}: "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING};"
+    ) in html
+    assert ".entity-id-chip {" in html
+    assert (
+        "padding: "
+        f"var({dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_PADDING_CSS_VAR}, "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_PADDING});"
+    ) in html
+    assert (
+        "font-size: "
+        f"var({dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_SIZE_CSS_VAR}, "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_SIZE});"
+    ) in html
+    assert (
+        "font-weight: "
+        f"var({dashboard_ui_primitives.SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT_CSS_VAR}, "
+        f"{dashboard_ui_primitives.STANDARD_SURFACE_WORKSTREAM_BUTTON_FONT_WEIGHT});"
+    ) in html
+
+
+def test_render_backlog_ui_routes_topology_diagram_ids_through_shared_identifier_chip_contract() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert "class=\"chip chip-link entity-id-chip chip-topology-diagram\"" in html
+
+
+def test_backlog_summary_entry_keeps_fail_closed_detail_fields() -> None:
+    summary = render_backlog_ui._build_backlog_summary_entry(
+        {
+            "idea_id": "B-073",
+            "title": "Runtime detail shape",
+            "problem": "Runtime detail rows must expose renderer-ready problem text.",
+            "customer": "Operators opening Radar detail for a populated workstream.",
+            "opportunity": "Keep static summary data useful when runtime detail is unavailable.",
+            "founder_pov": "Radar should never collapse populated source truth into hollow detail.",
+            "success_metrics": "- B-073 renders its workstream details.\n- Fallback detail remains populated.",
+            "impacted_parts": "radar, context-engine",
+            "idea_file": "odylith/radar/source/ideas/2026-04/b-073.md",
+            "idea_href": "source/ideas/2026-04/b-073.md",
+            "idea_ui_file": "odylith/radar/radar.html",
+            "idea_ui_href": "radar.html?view=spec&workstream=B-073",
+            "promoted_to_plan": "odylith/technical-plans/in-progress/b-073.md",
+            "promoted_to_plan_file": "odylith/technical-plans/in-progress/b-073.md",
+            "promoted_to_plan_href": "technical-plans/in-progress/b-073.md",
+            "promoted_to_plan_ui_file": "odylith/radar/radar.html",
+            "promoted_to_plan_ui_href": "radar.html?view=plan&workstream=B-073",
+            "registry_components": [{"component_id": "radar", "name": "Radar"}],
+        }
+    )
+
+    assert summary["problem"] == "Runtime detail rows must expose renderer-ready problem text."
+    assert summary["customer"] == "Operators opening Radar detail for a populated workstream."
+    assert summary["opportunity"] == "Keep static summary data useful when runtime detail is unavailable."
+    assert summary["founder_pov"] == "Radar should never collapse populated source truth into hollow detail."
+    assert "- B-073 renders its workstream details." in str(summary["success_metrics"])
+    assert summary["impacted_parts"] == "radar, context-engine"
+    assert summary["idea_href"] == "source/ideas/2026-04/b-073.md"
+    assert summary["idea_ui_href"] == "radar.html?view=spec&workstream=B-073"
+    assert summary["promoted_to_plan"] == "odylith/technical-plans/in-progress/b-073.md"
+    assert summary["promoted_to_plan_href"] == "technical-plans/in-progress/b-073.md"
+    assert summary["promoted_to_plan_ui_href"] == "radar.html?view=plan&workstream=B-073"
+    assert summary["registry_components"] == [{"component_id": "radar", "name": "Radar"}]
+    assert "idea_file" not in summary
+    assert "idea_ui_file" not in summary
+    assert "promoted_to_plan_file" not in summary
+    assert "promoted_to_plan_ui_file" not in summary
+
+
+def test_render_backlog_ui_right_aligns_age_and_exec_row_chips() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert ".row-meta {" in html
+    assert ".row-chips-end {" in html
+    assert '<div class="row-meta">' in html
+    assert '<div class="row-chips row-chips-end">' in html
+    assert '<span class="chip">Age ${escapeHtml(ageLabel)}</span>' in html
+    assert '<span class="chip">Exec ${escapeHtml(executionDays)}</span>' in html
+
+
+def test_render_backlog_ui_moves_status_and_release_labels_into_right_aligned_footer_row() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert 'const footerChips = `${waveChips}${typeChips}${stageChip}${executionChip}${releaseChip}`;' in html
+    assert '<div class="row-foot">' in html
+    assert '${footerChips ? `<div class="row-chips row-chips-end">${footerChips}</div>` : ""}' in html
+
+
+def test_render_backlog_ui_topology_board_does_not_render_selected_focus_strip() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert '<div class="topology-focus">' not in html
+    assert ".topology-focus {" not in html
+    assert ".topology-focus .chip-topology-source {" not in html
+    assert ".topology-focus," not in html
+    assert ".row-id {" in html
+    assert "font-family: ui-monospace" in html
+
+
+def test_render_backlog_ui_uses_full_width_copy_and_consistent_detail_spacing() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert ".detail {" in html
+    assert "padding: 16px 18px 18px;" in html
+    assert "display: grid;" in html
+    assert ".block {" in html
+    assert "margin-top: 0;" in html
+    assert "padding: 14px 16px;" in html
+    assert ".detail-copy > p {" in html
+    assert "max-width: 100%;" in html
+
+
+def test_render_backlog_ui_keeps_unknown_execution_wave_progress_unknown() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert "const numericProgressOrNull = (value) => {" in html
+    assert 'if (value === null || value === undefined || value === "") return null;' in html
+    assert 'Object.prototype.hasOwnProperty.call(plan, "display_progress_ratio")' in html
+
+
+def test_render_backlog_ui_skips_cached_rebuild_before_snapshot_load(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_backlog_render_repo(tmp_path)
+
+    rc = render_backlog_ui.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "odylith/radar/radar.html",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+    assert rc == 0
+
+    def _boom(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("backlog snapshot loading should be skipped on a cache hit")
+
+    monkeypatch.setattr(render_backlog_ui.contract, "load_backlog_index_snapshot", _boom)
+
+    rc = render_backlog_ui.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "odylith/radar/radar.html",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+    assert rc == 0
+
+
+def test_render_backlog_ui_emits_runtime_contract(tmp_path: Path) -> None:
+    _seed_backlog_render_repo(tmp_path)
+
+    rc = render_backlog_ui.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--output",
+            "odylith/radar/radar.html",
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+
+    assert rc == 0
+    payload = _load_backlog_payload(tmp_path)
+    assert payload["runtime_contract"]["surface"] == "radar"
+    assert payload["runtime_contract"]["cache_hit"] is False
+    assert payload["runtime_contract"]["built_from"] == "surface_render"

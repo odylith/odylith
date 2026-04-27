@@ -2,7 +2,7 @@ status: finished
 
 idea_id: B-010
 
-title: Odylith Durable Judgment Memory and Memory Backend Productization
+title: Durable Judgment Memory and Memory Backend Productization
 
 date: 2026-03-28
 
@@ -14,9 +14,7 @@ product_impact: 5
 
 market_value: 4
 
-impacted_lanes: both
-
-impacted_parts: judgment memory snapshot contract, workspace and actor memory posture, contradiction and outcome persistence, shell telemetry, CLI runtime readouts, benchmark proof, and the memory backend component boundary
+impacted_parts: judgment memory snapshot contract, workspace and actor memory posture, contradiction and outcome persistence, runtime diagnostics, CLI runtime readouts, benchmark proof, and the memory backend component boundary
 
 sizing: L
 
@@ -104,7 +102,7 @@ component boundary.
 ## Non-Goals
 - retaining raw chat transcripts as primary memory
 - making hosted memory authoritative over repo truth
-- broadening prompt payloads with verbose telemetry that does not improve
+- broadening prompt payloads with verbose diagnostics that does not improve
   coding outcomes
 - changing the optional remote retrieval provider contract
 
@@ -167,7 +165,8 @@ or disproved its decisions.
 - `memory_snapshot.v1` gains a `judgment_memory` section
 - `.odylith/runtime/odylith-memory/odylith-judgment-memory.v1.json` becomes a
   durable local runtime artifact
-- the shared shell telemetry drawer renders a dedicated judgment-memory readout
+- runtime and diagnostic readouts expose judgment-memory posture without
+  reintroducing dashboard shell status UI
 - the local memory backend becomes a first-class Registry component
 
 ## Migration/Compatibility

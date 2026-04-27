@@ -1,5 +1,8 @@
 # Security And Trust
 
+## CLI-First Non-Negotiable
+- CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
+
 ## Security Boundary
 - Treat the repo launcher, the managed runtime, the repo-root trust anchor,
   and the signed release asset path as one connected trust boundary.
@@ -51,6 +54,17 @@
   shutdown should all fail closed.
 - After runtime or daemon changes, explicitly verify that Odylith-owned Python
   processes exit when the command or timeout path is complete.
+
+## Projection Reuse Trust Rules
+- Shared projection/compiler/backend substrates are trusted only when their
+  persisted provenance still matches the current repo root, scope, fingerprint,
+  code version, and active derivation generation when a sync session is live.
+- Fail closed on provenance mismatch. Do not widen the trust boundary by
+  accepting stale manifests, partial tables, or fingerprint-only matches when
+  generation or code-version evidence disagrees.
+- Keep compiler/backend writes single-writer and atomic. Latency work may batch
+  locking, but it must not weaken the advisory-lock plus atomic-replace
+  contract that prevents torn or interleaved local state.
 
 ## Canonical Commands
 ```bash

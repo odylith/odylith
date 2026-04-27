@@ -3,12 +3,394 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from odylith import cli
+from odylith.runtime.governance import bug_authoring
 
 
 class _TTYStream:
     def isatty(self) -> bool:
         return True
+
+
+def _write_casebook_bug(
+    path: Path,
+    *,
+    bug_id: str,
+    status: str,
+    created: str,
+    severity: str,
+    components: str,
+    reproducibility: str = "High",
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join(
+            [
+                f"- Bug ID: {bug_id}",
+                "",
+                f"- Status: {status}",
+                "",
+                f"- Created: {created}",
+                "",
+                f"- Severity: {severity}",
+                "",
+                f"- Reproducibility: {reproducibility}",
+                "",
+                f"- Components Affected: {components}",
+                "",
+                "- Description: Example bug.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+def _bug_capture_kwargs(**overrides: object) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "reproducibility": "High",
+        "impact": "Maintainers can publish low-evidence bug truth into Casebook.",
+        "environment": "Odylith product repo maintainer mode on branch 2026/freedom/v0.1.11.",
+        "detected_by": "Maintainer review of the rendered Casebook detail after `odylith bug capture`.",
+        "failure_signature": "A newly captured bug renders literal placeholder intake fields instead of grounded evidence.",
+        "trigger_path": "`odylith bug capture --title ...` with only the legacy required flags.",
+        "ownership": "casebook bug-authoring contract",
+        "blast_radius": "Casebook bug truth, shared agent guidance, and automated casebook-create paths.",
+        "slo_sla_impact": "Maintainer release-proof confidence drops because Casebook truth is visibly ungrounded.",
+        "data_risk": "Low product-data risk, high governed-memory trust risk.",
+        "security_compliance": "None directly.",
+        "invariant_violated": "A newly captured bug must not publish placeholder evidence as authoritative Casebook truth.",
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_bug_capture_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["bug", "capture", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith bug capture" in output
+    assert "--title" in output
+    assert "--component" in output
+    assert "--severity" in output
+    assert "--reproducibility" in output
+    assert "--impact" in output
+    assert "--failure-signature" in output
+    assert "--trigger-path" in output
+    assert "--detected-by" in output
+    assert "--dry-run" in output
+    assert "--json" in output
+
+
+def test_compass_log_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["compass", "log", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith compass log" in output
+    assert "--kind" in output
+    assert "--summary" in output
+    assert "--workstream" in output
+    assert "--artifact" in output
+
+
+def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["backlog", "create", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith backlog create" in output
+    assert "--title" in output
+    assert "--problem" in output
+    assert "--customer" in output
+    assert "--opportunity" in output
+    assert "--product-view" in output
+    assert "--success-metrics" in output
+    assert "--priority" in output
+    assert "--release" in output
+    assert "--dry-run" in output
+    assert "--json" in output
+
+
+def test_component_register_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["component", "register", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith component register" in output
+    assert "--id" in output
+    assert "--path" in output
+    assert "--label" in output
+    assert "--kind" in output
+
+
+def test_atlas_scaffold_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["atlas", "scaffold", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith atlas scaffold" in output
+    assert "--diagram-id" in output
+    assert "--slug" in output
+    assert "--title" in output
+    assert "--component" in output
+
+
+def test_atlas_render_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["atlas", "render", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith atlas render" in output
+    assert "Render odylith/atlas/atlas.html from catalog metadata" in output
+    assert "Skip current Atlas rerenders" not in output
+    assert "--catalog" in output
+    assert "--output" in output
+    assert "--diagram-id" in output
+
+
+def test_atlas_auto_update_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["atlas", "auto-update", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith atlas auto-update" in output
+    assert "--changed-path" in output
+    assert "--from-git-head" in output
+    assert "--dry-run" in output
+
+
+def test_atlas_install_autosync_hook_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["atlas", "install-autosync-hook", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith atlas install-autosync-hook" in output
+    assert "--force" in output
+
+
+def test_governance_intervention_preview_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["governance", "intervention-preview", "--repo-root", ".", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith governance intervention-preview" in output
+    assert "--payload-json" in output
+
+
+def test_governance_capture_apply_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["governance", "capture-apply", "--repo-root", ".", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith governance capture-apply" in output
+    assert "--payload-json" in output
+    assert "--decline" in output
+
+
+def test_bug_capture_rebuilds_multiline_casebook_index_from_source(tmp_path: Path, monkeypatch) -> None:
+    bug_root = tmp_path / "odylith" / "casebook" / "bugs"
+    existing_bug = bug_root / "2026-04-12-existing-open-bug.md"
+    refresh_calls: list[Path] = []
+
+    monkeypatch.setattr(
+        bug_authoring,
+        "_refresh_casebook_surface",
+        lambda *, repo_root: refresh_calls.append(repo_root) or 0,
+    )
+    _write_casebook_bug(
+        existing_bug,
+        bug_id="CB-101",
+        status="Open",
+        created="2026-04-12",
+        severity="P1",
+        components=(
+            "`src/odylith/runtime/governance/sync_workstream_artifacts.py`,\n"
+            "  `src/odylith/runtime/governance/sync_casebook_bug_index.py`"
+        ),
+    )
+    (bug_root / "INDEX.md").write_text(
+        "\n".join(
+            [
+                "# Bug Index",
+                "",
+                "Last updated (UTC): 2026-04-12",
+                "",
+                "## Open Bugs",
+                "",
+                "| Bug ID | Date | Title | Severity | Components | Status | Link |",
+                "| --- | --- | --- | --- | --- | --- | --- |",
+                "| CB-101 | 2026-04-12 | Existing open bug | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,",
+                "  `src/odylith/runtime/governance/sync_casebook_bug_index.py` | Open | [2026-04-12-existing-open-bug.md](2026-04-12-existing-open-bug.md) |",
+                "",
+                "## Closed Bugs",
+                "",
+                "| Bug ID | Date | Title | Severity | Components | Status | Link |",
+                "| --- | --- | --- | --- | --- | --- | --- |",
+                "",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    created = bug_authoring.capture_bug(
+        repo_root=tmp_path,
+        title="Fresh Casebook bug capture stays out of multiline rows",
+        component="compass",
+        severity="P1",
+        **_bug_capture_kwargs(),
+    )
+    index_text = (bug_root / "INDEX.md").read_text(encoding="utf-8")
+    created_text = created.bug_path.read_text(encoding="utf-8")
+
+    existing_row = (
+        "| CB-101 | 2026-04-12 | Existing open bug | P1 | "
+        "`src/odylith/runtime/governance/sync_workstream_artifacts.py`,\n"
+        "  `src/odylith/runtime/governance/sync_casebook_bug_index.py` | Open | "
+        "[2026-04-12-existing-open-bug.md](2026-04-12-existing-open-bug.md) |"
+    )
+    assert created.bug_id == "CB-102"
+    assert existing_row in index_text
+    assert "`src/odylith/runtime/governance/sync_workstream_artifacts.py`,\n| CB-102 |" not in index_text
+    assert "## Closed Bugs" in index_text
+    assert "TBD" not in created_text
+    assert refresh_calls == [tmp_path]
+
+
+def test_bug_capture_raises_when_casebook_refresh_fails(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(bug_authoring, "_refresh_casebook_surface", lambda *, repo_root: 1)
+
+    with pytest.raises(RuntimeError, match="Casebook-only refresh failed"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Refresh failure should not hide stale Casebook state",
+            component="casebook",
+            severity="P1",
+            **_bug_capture_kwargs(),
+        )
+
+
+def test_bug_capture_rejects_missing_grounded_evidence(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="missing grounded capture fields: --impact"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Low-evidence bug capture should fail closed",
+            component="casebook",
+            severity="P1",
+            **_bug_capture_kwargs(impact=""),
+        )
+
+
+def test_bug_capture_rejects_placeholder_values(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="placeholder-like values are not allowed"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Placeholder values must not pass bug capture",
+            component="casebook",
+            severity="P1",
+            **_bug_capture_kwargs(failure_signature="TBD"),
+        )
+
+
+def test_bug_capture_rejects_sentence_reproducibility(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="`--reproducibility` must be one compact token"):
+        bug_authoring.capture_bug(
+            repo_root=tmp_path,
+            title="Reproducibility must stay compact",
+            component="casebook",
+            severity="P1",
+            **_bug_capture_kwargs(
+                reproducibility=(
+                    "High; render odylith/index.html and the diagnostic shell block "
+                    "appears above dashboard tabs."
+                ),
+            ),
+        )
+
+
+def test_checked_in_casebook_reproducibility_fields_are_compact() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    offenders: list[str] = []
+    for path in sorted((repo_root / "odylith" / "casebook" / "bugs").rglob("*.md")):
+        if path.name in {"AGENTS.md", "CLAUDE.md", "INDEX.md"}:
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line.startswith("- Reproducibility:"):
+                continue
+            value = line.split(":", 1)[1].strip()
+            if not bug_authoring._reproducibility_token_is_valid(value):  # noqa: SLF001
+                offenders.append(f"{path.relative_to(repo_root)}: {value}")
+            break
+    assert offenders == []
+
+
+def test_bug_capture_from_payload_accepts_single_string_references(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        bug_authoring,
+        "_refresh_casebook_surface",
+        lambda *, repo_root: 0,
+    )
+
+    created = bug_authoring.capture_bug_from_payload(
+        repo_root=tmp_path,
+        title="Single-string reference payloads stay intact",
+        component="casebook",
+        severity="P1",
+        payload={
+            **_bug_capture_kwargs(),
+            "code_references": "src/odylith/runtime/governance/bug_authoring.py",
+            "runbook_references": "docs/runbooks/casebook-bug-capture.md",
+        },
+    )
+
+    created_text = created.bug_path.read_text(encoding="utf-8")
+    assert "- Code References: - src/odylith/runtime/governance/bug_authoring.py" in created_text
+    assert "- Runbook References: - docs/runbooks/casebook-bug-capture.md" in created_text
+    assert "- Code References: - s\n- r\n- c" not in created_text
+
+
+def test_bug_capture_from_payload_rejects_non_scalar_grounded_fields(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="`failure_signature` must be a single grounded string value"):
+        bug_authoring.capture_bug_from_payload(
+            repo_root=tmp_path,
+            title="List-valued scalar evidence must fail closed",
+            component="casebook",
+            severity="P1",
+            payload={
+                **_bug_capture_kwargs(),
+                "failure_signature": ["wrong", "shape"],
+            },
+            dry_run=True,
+        )
+
+
+def _seed_product_repo_shape(repo_root: Path) -> None:
+    (repo_root / "pyproject.toml").write_text("[project]\nname='odylith'\nversion='0.1.0'\n", encoding="utf-8")
+    (repo_root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "radar" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "radar" / "source" / "INDEX.md").write_text("# Backlog Index\n", encoding="utf-8")
+    (repo_root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
+        json.dumps({"version": "v1", "components": []}) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _seed_first_run_surfaces(repo_root: Path) -> None:
@@ -76,14 +458,13 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
         "--force",
         "--impact-mode",
         "full",
-        "--compass-refresh-profile",
-        "shell-safe",
     ]
     assert "Odylith 1.2.3 is ready" in output.out
     assert "Rendering first-run Odylith surfaces" in output.out
     assert "Dashboard:" in output.out
-    assert "Added `/.odylith/` to the root `.gitignore`" in output.out
-    assert "Repo-root AGENTS now activates Odylith guidance, skills, and the Codex-native spawn path for most grounded work." in output.out
+    assert "Added Odylith local-state ignore rules to the root `.gitignore`" in output.out
+    assert "Repo-root AGENTS now activates Odylith guidance, skills, and route-ready native delegation candidates" in output.out
+    assert "host transport support kept separate from current-session spawn policy" in output.out
     assert "Full Odylith is installed by default." in output.out
     assert "later repairs and upgrades" in output.out
     assert "Odylith is used through an AI coding agent" in output.out
@@ -138,7 +519,6 @@ def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch
     assert refresh_capture["surfaces"] == ("tooling_shell",)
     assert refresh_capture["runtime_mode"] == "auto"
     assert refresh_capture["atlas_sync"] is False
-    assert refresh_capture["compass_refresh_profile"] == "shell-safe"
     assert opened["url"] == (tmp_path / "odylith" / "index.html").resolve().as_uri()
     assert opened["new"] == 2
     assert "Opened `odylith/index.html` in your browser." in output.out
@@ -401,6 +781,106 @@ def test_install_adopt_latest_clears_stale_upgrade_spotlight_when_no_version_cha
     assert "Dashboard refreshed." in output
 
 
+def test_refresh_dashboard_after_upgrade_reenters_through_fresh_launcher(monkeypatch, tmp_path: Path, capsys) -> None:
+    repo_root = tmp_path / "repo"
+    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
+    launcher_path.parent.mkdir(parents=True, exist_ok=True)
+    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
+    captured: dict[str, object] = {}
+
+    def fake_run(command, **kwargs):  # noqa: ANN001, ANN003
+        captured["command"] = command
+        captured["kwargs"] = kwargs
+        return SimpleNamespace(returncode=0, stdout="dashboard refresh completed\n", stderr="")
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_run)
+
+    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
+    output = capsys.readouterr()
+
+    assert refreshed is True
+    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
+    assert captured["command"] == [
+        str(launcher_path.resolve()),
+        "dashboard",
+        "refresh",
+        "--repo-root",
+        str(repo_root),
+        "--surfaces",
+        "tooling_shell,radar,compass",
+    ]
+    assert captured["kwargs"] == {
+        "cwd": str(repo_root),
+        "check": False,
+        "capture_output": True,
+        "text": True,
+    }
+    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
+    assert "dashboard refresh completed" in output.out
+
+
+def test_refresh_dashboard_after_upgrade_returns_failure_when_launcher_refresh_fails(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    repo_root = tmp_path / "repo"
+    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
+    launcher_path.parent.mkdir(parents=True, exist_ok=True)
+    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(  # noqa: ANN002, ANN003
+            returncode=2,
+            stdout="dashboard refresh completed\n- outcome: failed\n",
+            stderr="compass failed\n",
+        ),
+    )
+
+    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
+    output = capsys.readouterr()
+
+    assert refreshed is False
+    assert (
+        message
+        == "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`."
+    )
+    assert "dashboard refresh completed" in output.out
+    assert "compass failed" in output.err
+
+
+def test_refresh_dashboard_after_upgrade_falls_back_to_in_process_refresh_when_launcher_is_missing(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        lambda **kwargs: captured.update(kwargs) or 0,
+    )
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should use in-process fallback")),
+    )
+
+    refreshed, message = cli._refresh_dashboard_after_upgrade(repo_root=repo_root)  # noqa: SLF001
+    output = capsys.readouterr()
+
+    assert refreshed is True
+    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
+    assert captured == {
+        "repo_root": repo_root,
+        "surfaces": ("tooling_shell", "radar", "compass"),
+        "runtime_mode": "auto",
+        "atlas_sync": False,
+    }
+    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output.out
+
+
 def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     install_state = tmp_path / ".odylith" / "install.json"
@@ -609,9 +1089,121 @@ def test_dashboard_refresh_defaults_to_tooling_shell_radar_and_compass(monkeypat
     assert rc == 0
     assert captured["repo_root"] == tmp_path.resolve()
     assert captured["surfaces"] == ["tooling_shell", "radar", "compass"]
-    assert captured["runtime_mode"] == "auto"
-    assert captured["atlas_sync"] is False
-    assert captured["dry_run"] is True
+
+
+def test_radar_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        captured.update(kwargs)
+        return 0
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        fake_refresh_dashboard_surfaces,
+    )
+
+    rc = cli.main(["radar", "refresh", "--repo-root", str(tmp_path), "--dry-run"])
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "surfaces": ("radar",),
+        "runtime_mode": "auto",
+        "atlas_sync": False,
+        "dry_run": True,
+    }
+
+
+def test_registry_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        captured.update(kwargs)
+        return 0
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        fake_refresh_dashboard_surfaces,
+    )
+
+    rc = cli.main(["registry", "refresh", "--repo-root", str(tmp_path), "--runtime-mode", "standalone"])
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "surfaces": ("registry",),
+        "runtime_mode": "standalone",
+        "atlas_sync": False,
+        "dry_run": False,
+    }
+
+
+def test_casebook_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        captured.update(kwargs)
+        return 0
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        fake_refresh_dashboard_surfaces,
+    )
+
+    rc = cli.main(["casebook", "refresh", "--repo-root", str(tmp_path)])
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "surfaces": ("casebook",),
+        "runtime_mode": "auto",
+        "atlas_sync": False,
+        "dry_run": False,
+    }
+
+
+def test_atlas_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_refresh_dashboard_surfaces(**kwargs) -> int:  # noqa: ANN003
+        captured.update(kwargs)
+        return 0
+
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        fake_refresh_dashboard_surfaces,
+    )
+
+    rc = cli.main(["atlas", "refresh", "--repo-root", str(tmp_path), "--atlas-sync"])
+
+    assert rc == 0
+    assert captured == {
+        "repo_root": tmp_path.resolve(),
+        "surfaces": ("atlas",),
+        "runtime_mode": "auto",
+        "atlas_sync": True,
+        "dry_run": False,
+    }
+
+
+def test_product_repo_main_branch_guard_uses_local_shape_without_install_manager(monkeypatch, tmp_path: Path) -> None:
+    _seed_product_repo_shape(tmp_path)
+    monkeypatch.setattr(
+        cli,
+        "product_repo_role",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("install manager role lookup should stay off the hot path")),
+    )
+    monkeypatch.setattr(cli, "_current_git_branch", lambda **kwargs: "main")
+
+    message = cli._product_repo_main_branch_write_block(repo_root=tmp_path)
+
+    assert "Maintainer authoring on `main` is forbidden in this repo." in message
+    assert f"{cli.datetime.now(cli.UTC).year}/freedom/<tag>" in message
 
 
 def test_backlog_create_dispatches_to_backlog_authoring(monkeypatch, tmp_path: Path) -> None:
@@ -658,6 +1250,198 @@ def test_validate_guidance_portability_dispatches_fast_path(monkeypatch, tmp_pat
 
     assert rc == 0
     assert captured["argv"] == ["--repo-root", str(tmp_path)]
+
+
+def test_validate_guidance_behavior_dispatches_fast_path(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_validate_main(argv: list[str]) -> int:
+        captured["argv"] = list(argv)
+        return 0
+
+    monkeypatch.setattr(cli.validate_guidance_behavior, "main", fake_validate_main)
+
+    rc = cli.main(
+        [
+            "validate",
+            "guidance-behavior",
+            "--repo-root",
+            str(tmp_path),
+            "--case-id",
+            "guidance-a",
+            "--json",
+        ]
+    )
+
+    assert rc == 0
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "--case-id", "guidance-a", "--json"]
+
+
+def test_validate_discipline_dispatches_fast_path(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_validate_main(argv: list[str]) -> int:
+        captured["argv"] = list(argv)
+        return 0
+
+    monkeypatch.setattr(cli.validate_discipline, "main", fake_validate_main)
+
+    rc = cli.main(
+        [
+            "validate",
+            "discipline",
+            "--repo-root",
+            str(tmp_path),
+            "--case-id",
+            "discipline-credit-safe-hot-path",
+            "--json",
+        ]
+    )
+
+    assert rc == 0
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "--case-id",
+        "discipline-credit-safe-hot-path",
+        "--json",
+    ]
+
+
+def test_discipline_check_dispatches_to_shared_cli(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    class _DisciplineModule:
+        @staticmethod
+        def run_discipline(argv: list[str]) -> int:
+            captured["argv"] = list(argv)
+            return 7
+
+    real_module_handle = cli._module_handle  # noqa: SLF001
+    monkeypatch.setattr(
+        cli,
+        "_module_handle",
+        lambda module_name: _DisciplineModule if module_name == "odylith.runtime.discipline.cli" else real_module_handle(module_name),
+    )
+    intent = tmp_path / "intent.txt"
+    intent.write_text("Say it is fixed now.", encoding="utf-8")
+
+    rc = cli.main(
+        [
+            "discipline",
+            "check",
+            "--repo-root",
+            str(tmp_path),
+            "--intent-file",
+            str(intent),
+            "--host",
+            "codex",
+            "--json",
+        ]
+    )
+
+    assert rc == 7
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "check",
+        "--intent-file",
+        str(intent),
+        "--host",
+        "codex",
+        "--lane",
+        "dev",
+        "--json",
+    ]
+
+
+def test_discipline_dispatches_to_shared_discipline_cli(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    class _DisciplineModule:
+        @staticmethod
+        def run_discipline(argv: list[str]) -> int:
+            captured["argv"] = list(argv)
+            return 9
+
+    real_module_handle = cli._module_handle  # noqa: SLF001
+    monkeypatch.setattr(
+        cli,
+        "_module_handle",
+        lambda module_name: _DisciplineModule if module_name == "odylith.runtime.discipline.cli" else real_module_handle(module_name),
+    )
+    intent = tmp_path / "intent.txt"
+    intent.write_text("Say it is fixed now.", encoding="utf-8")
+
+    rc = cli.main(
+        [
+            "discipline",
+            "check",
+            "--repo-root",
+            str(tmp_path),
+            "--intent-file",
+            str(intent),
+            "--host",
+            "claude",
+            "--lane",
+            "dev-maintainer",
+        ]
+    )
+
+    assert rc == 9
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "check",
+        "--intent-file",
+        str(intent),
+        "--host",
+        "claude",
+        "--lane",
+        "dev-maintainer",
+    ]
+
+
+def test_discipline_status_and_explain_dispatch_to_shared_cli(monkeypatch, tmp_path: Path) -> None:
+    captured: list[list[str]] = []
+
+    class _DisciplineModule:
+        @staticmethod
+        def run_discipline(argv: list[str]) -> int:
+            captured.append(list(argv))
+            return 0
+
+    real_module_handle = cli._module_handle  # noqa: SLF001
+    monkeypatch.setattr(
+        cli,
+        "_module_handle",
+        lambda module_name: _DisciplineModule if module_name == "odylith.runtime.discipline.cli" else real_module_handle(module_name),
+    )
+
+    assert cli.main(["discipline", "status", "--repo-root", str(tmp_path), "--json"]) == 0
+    assert cli.main(
+        [
+            "discipline",
+            "explain",
+            "--repo-root",
+            str(tmp_path),
+            "--decision-id",
+            "discipline:codex:dev:abc",
+            "--json",
+        ]
+    ) == 0
+
+    assert captured == [
+        ["--repo-root", str(tmp_path), "status", "--json"],
+        [
+            "--repo-root",
+            str(tmp_path),
+            "explain",
+            "--decision-id",
+            "discipline:codex:dev:abc",
+            "--json",
+        ],
+    ]
 
 
 def test_validate_version_truth_dispatches_check_mode(monkeypatch, tmp_path: Path) -> None:
@@ -725,6 +1509,7 @@ def test_install_reports_created_guidance_and_non_git_caveat(monkeypatch, tmp_pa
             repo_root=tmp_path,
             launcher_path=launcher_path,
             repo_guidance_created=True,
+            created_guidance_files=("AGENTS.md", "CLAUDE.md"),
             git_repo_present=False,
             gitignore_updated=True,
         ),
@@ -739,8 +1524,10 @@ def test_install_reports_created_guidance_and_non_git_caveat(monkeypatch, tmp_pa
     captured = capsys.readouterr()
 
     assert rc == 0
-    assert "Created root AGENTS.md" in captured.out
-    assert "Added `/.odylith/` to the root `.gitignore`" in captured.out
+    assert "Created root guidance files:" in captured.out
+    assert "AGENTS.md" in captured.out
+    assert "CLAUDE.md" in captured.out
+    assert "Added Odylith local-state ignore rules to the root `.gitignore`" in captured.out
     assert "This folder is not backed by Git yet." in captured.out
     assert "working-tree intelligence, background autospawn, and git-fsmonitor watcher help" in captured.out
 
@@ -810,8 +1597,6 @@ def test_install_fails_when_first_run_full_sync_fails(monkeypatch, tmp_path: Pat
         "--force",
         "--impact-mode",
         "full",
-        "--compass-refresh-profile",
-        "shell-safe",
     ]
     assert "Odylith runtime install succeeded, but the first-run Odylith shell is incomplete." in captured.err
     assert "odylith sync --repo-root . --force --impact-mode full" in captured.err
@@ -973,6 +1758,170 @@ def test_governance_reconcile_dispatch_accepts_plain_forwarded_flags(monkeypatch
     ]
 
 
+def test_release_show_dispatch_accepts_plain_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 31
+
+    monkeypatch.setattr(cli.release_planning_authoring, "main", fake_main)
+    rc = cli.main(["release", "show", "--repo-root", str(tmp_path), "current", "--json"])
+
+    assert rc == 31
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "show", "current", "--json"]
+
+
+def test_context_engine_help_dispatches_to_context_engine_parser(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 313
+
+    monkeypatch.setattr(cli.odylith_context_engine, "main", fake_main)
+    rc = cli.main(["context-engine", "--repo-root", str(tmp_path), "--help"])
+
+    assert rc == 313
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "--help"]
+
+
+def test_benchmark_help_dispatches_to_context_engine_benchmark_parser(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 314
+
+    monkeypatch.setattr(cli.odylith_context_engine, "main", fake_main)
+    rc = cli.main(["benchmark", "--repo-root", str(tmp_path), "--help"])
+
+    assert rc == 314
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "benchmark", "--help"]
+
+
+def test_release_list_dispatch_accepts_option_only_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 311
+
+    monkeypatch.setattr(cli.release_planning_authoring, "main", fake_main)
+    rc = cli.main(["release", "list", "--repo-root", str(tmp_path), "--json"])
+
+    assert rc == 311
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "list", "--json"]
+
+
+def test_release_show_dispatch_accepts_option_before_positional(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 312
+
+    monkeypatch.setattr(cli.release_planning_authoring, "main", fake_main)
+    rc = cli.main(["release", "show", "--repo-root", str(tmp_path), "--json", "current"])
+
+    assert rc == 312
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "show", "--json", "current"]
+
+
+def test_release_mutation_dry_run_skips_main_branch_guard(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli,
+        "_guard_product_repo_main_branch",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("dry-run release mutation should not hit main-branch guard")),
+    )
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 32
+
+    monkeypatch.setattr(cli.release_planning_authoring, "main", fake_main)
+    rc = cli.main(["release", "create", "--repo-root", str(tmp_path), "release-1", "--dry-run"])
+
+    assert rc == 32
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "create", "release-1", "--dry-run"]
+
+
+def test_release_mutation_blocks_on_main_branch_before_authoring(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(cli, "_guard_product_repo_main_branch", lambda **_kwargs: 17)
+    monkeypatch.setattr(
+        cli.release_planning_authoring,
+        "main",
+        lambda argv: (_ for _ in ()).throw(AssertionError(f"release authoring should not run when guard blocks: {argv}")),
+    )
+
+    rc = cli.main(["release", "create", "--repo-root", str(tmp_path), "release-1"])
+
+    assert rc == 17
+
+
+def test_program_status_dispatch_accepts_plain_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_run(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 41
+
+    monkeypatch.setattr(cli.program_wave_authoring, "run_program", fake_run)
+    rc = cli.main(["program", "status", "--repo-root", str(tmp_path), "B-201", "--json"])
+
+    assert rc == 41
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "status", "B-201", "--json"]
+
+
+def test_wave_status_dispatch_accepts_plain_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_run(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 42
+
+    monkeypatch.setattr(cli.program_wave_authoring, "run_wave", fake_run)
+    rc = cli.main(["wave", "status", "--repo-root", str(tmp_path), "B-201", "W1", "--json"])
+
+    assert rc == 42
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "status", "B-201", "W1", "--json"]
+
+
+def test_program_mutation_dry_run_skips_main_branch_guard(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli,
+        "_guard_product_repo_main_branch",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("dry-run program mutation should not hit main-branch guard")),
+    )
+
+    def fake_run(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 43
+
+    monkeypatch.setattr(cli.program_wave_authoring, "run_program", fake_run)
+    rc = cli.main(["program", "create", "--repo-root", str(tmp_path), "B-201", "--dry-run"])
+
+    assert rc == 43
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "create", "B-201", "--dry-run"]
+
+
+def test_wave_mutation_blocks_on_main_branch_before_authoring(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(cli, "_guard_product_repo_main_branch", lambda **_kwargs: 18)
+    monkeypatch.setattr(
+        cli.program_wave_authoring,
+        "run_wave",
+        lambda argv: (_ for _ in ()).throw(AssertionError(f"wave authoring should not run when guard blocks: {argv}")),
+    )
+
+    rc = cli.main(["wave", "assign", "--repo-root", str(tmp_path), "B-201", "W1", "B-202"])
+
+    assert rc == 18
+
+
 def test_governance_sync_component_spec_requirements_dispatch_accepts_plain_forwarded_flags(
     monkeypatch,
     tmp_path: Path,
@@ -1027,6 +1976,22 @@ def test_governance_validate_guidance_portability_dispatch_accepts_plain_forward
     assert captured["argv"] == ["--repo-root", str(tmp_path), "--check-only"]
 
 
+def test_governance_validate_guidance_behavior_dispatch_accepts_plain_forwarded_flags(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 251
+
+    monkeypatch.setattr(cli.validate_guidance_behavior, "main", fake_main)
+    rc = cli.main(["governance", "validate-guidance-behavior", "--repo-root", str(tmp_path), "--case-id", "guidance-a"])
+    assert rc == 251
+    assert captured["argv"] == ["--repo-root", str(tmp_path), "--case-id", "guidance-a"]
+
+
 def test_governance_validate_plan_traceability_dispatch_accepts_plain_forwarded_flags(
     monkeypatch,
     tmp_path: Path,
@@ -1067,6 +2032,77 @@ def test_compass_update_dispatch_accepts_forwarded_flags(monkeypatch, tmp_path: 
     rc = cli.main(["compass", "update", "--repo-root", str(tmp_path), "--statement", "hello"])
     assert rc == 29
     assert captured["argv"] == ["--repo-root", str(tmp_path), "--statement", "hello"]
+
+
+def test_compass_refresh_dispatch_accepts_structured_flags(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 28
+
+    monkeypatch.setattr(cli.compass_refresh_runtime, "main", fake_main)
+    rc = cli.main(
+        [
+            "compass",
+            "refresh",
+            "--repo-root",
+            str(tmp_path),
+            "--runtime-mode",
+            "standalone",
+            "--wait",
+        ]
+    )
+    assert rc == 28
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "--wait",
+        "--runtime-mode",
+        "standalone",
+    ]
+
+
+def test_compass_deep_refresh_dispatch_implies_wait(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_main(argv: list[str]) -> int:
+        captured["argv"] = argv
+        return 28
+
+    monkeypatch.setattr(cli.compass_refresh_runtime, "main", fake_main)
+    rc = cli.main(
+        [
+            "compass",
+            "deep-refresh",
+            "--repo-root",
+            str(tmp_path),
+            "--runtime-mode",
+            "standalone",
+        ]
+    )
+    assert rc == 28
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "--wait",
+        "--runtime-mode",
+        "standalone",
+    ]
+
+
+def test_compass_refresh_dispatch_rejects_removed_refresh_profile_flag(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit):
+        cli.main(
+            [
+                "compass",
+                "refresh",
+                "--repo-root",
+                str(tmp_path),
+                "--refresh-profile",
+                "full",
+            ]
+        )
 
 
 def test_compass_restore_history_dispatch_accepts_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
@@ -1222,6 +2258,49 @@ def test_start_bootstrap_lane_emits_payload(monkeypatch, tmp_path: Path, capsys)
     assert rc == 0
     assert "- lane: bootstrap" in captured
     assert '"packet_kind": "bootstrap_session"' in captured
+
+
+def test_start_bootstrap_payload_forwards_turn_context(monkeypatch, tmp_path: Path) -> None:
+    from odylith.runtime.context_engine import odylith_context_engine_packet_session_runtime as packet_session_runtime
+
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        packet_session_runtime,
+        "build_session_bootstrap",
+        lambda **kwargs: captured.update(kwargs) or {"packet_kind": "bootstrap_session"},
+    )
+
+    parser = cli.build_parser()
+    args = parser.parse_args(
+        [
+            "start",
+            "--repo-root",
+            str(tmp_path),
+            "--intent",
+            "Why doesn't this admin panel take full width?",
+            "--surface",
+            "compass",
+            "--visible-text",
+            "Current release",
+            "--active-tab",
+            "releases",
+            "--user-turn-id",
+            "turn-3",
+            "--supersedes-turn-id",
+            "turn-2",
+        ]
+    )
+
+    payload = cli._start_bootstrap_payload(args)
+
+    assert payload == {"packet_kind": "bootstrap_session"}
+    assert captured["intent"] == "Why doesn't this admin panel take full width?"
+    assert captured["generated_surfaces"] == ["compass"]
+    assert captured["visible_text"] == ["Current release"]
+    assert captured["active_tab"] == "releases"
+    assert captured["user_turn_id"] == "turn-3"
+    assert captured["supersedes_turn_id"] == "turn-2"
 
 
 def test_start_fallback_lane_prints_exact_next_command(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -1525,7 +2604,7 @@ def test_off_prints_default_behavior_guidance(monkeypatch, tmp_path: Path, capsy
     captured = capsys.readouterr()
 
     assert rc == 0
-    assert "Codex falls back to the surrounding repo's default behavior" in captured.out
+    assert "The current coding host falls back to the surrounding repo's default behavior" in captured.out
     assert "./.odylith/bin/odylith on --repo-root ." in captured.out
     assert "runtime and `odylith/` context stay installed" in captured.out
 
@@ -1543,6 +2622,56 @@ def test_bootstrap_shortcut_defaults_to_clean_first_turn_command(monkeypatch, tm
 
     assert rc == 0
     assert captured["argv"] == ["--repo-root", str(tmp_path), "bootstrap-session", "--working-tree"]
+
+
+def test_bootstrap_shortcut_forwards_turn_context(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli.odylith_context_engine,
+        "main",
+        lambda argv: captured.update({"argv": argv}) or 0,
+    )
+
+    rc = cli.main(
+        [
+            "bootstrap",
+            "--repo-root",
+            str(tmp_path),
+            "--intent",
+            'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
+            "--surface",
+            "compass",
+            "--visible-text",
+            "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+            "--active-tab",
+            "releases",
+            "--user-turn-id",
+            "turn-2",
+            "--supersedes-turn-id",
+            "turn-1",
+        ]
+    )
+
+    assert rc == 0
+    assert captured["argv"] == [
+        "--repo-root",
+        str(tmp_path),
+        "bootstrap-session",
+        "--working-tree",
+        "--intent",
+        'Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion"',
+        "--surface",
+        "compass",
+        "--visible-text",
+        "Task Contract, Event Ledger, and Hard-Constraint Promotion",
+        "--active-tab",
+        "releases",
+        "--user-turn-id",
+        "turn-2",
+        "--supersedes-turn-id",
+        "turn-1",
+    ]
 
 
 def test_context_shortcut_dispatches_to_context_engine(monkeypatch, tmp_path: Path) -> None:

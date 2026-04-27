@@ -21,12 +21,16 @@ from pathlib import Path
 import re
 from typing import Mapping, Sequence
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import log_compass_timeline_event as timeline_logger
+from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import workstream_inference as ws_inference
 
 
 _WORKSTREAM_RE = re.compile(r"^B-\d{3,}$")
+_BACKLOG_ROW_COL_COUNT = len(backlog_contract._INDEX_COLS)
+_BACKLOG_STATUS_COL_INDEX = backlog_contract._INDEX_COLS.index("status")
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -37,7 +41,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--ideas-root", default="odylith/radar/source/ideas")
     parser.add_argument("--backlog-index", default="odylith/radar/source/INDEX.md")
-    parser.add_argument("--stream", default="odylith/compass/runtime/codex-stream.v1.jsonl")
+    parser.add_argument("--stream", default=agent_runtime_contract.AGENT_STREAM_PATH)
     parser.add_argument("--active-window-minutes", type=int, default=15)
     parser.add_argument("--author", default="sync")
     parser.add_argument("--source", default="sync")
@@ -45,10 +49,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _resolve(repo_root: Path, value: str) -> Path:
-    path = Path(str(value or "").strip())
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
+    """Resolve one promotion path token against the repo root."""
+
+    return repo_path_resolver.resolve_repo_path(repo_root=repo_root, value=value)
 
 
 def _parse_ts(raw: str) -> dt.datetime | None:
@@ -119,13 +122,13 @@ def _update_backlog_index_status(index_text: str, *, idea_id: str) -> tuple[str,
         if stripped.startswith("| ---"):
             continue
         cells = [cell.strip() for cell in stripped.split("|")[1:-1]]
-        if len(cells) < 13:
+        if len(cells) < _BACKLOG_ROW_COL_COUNT:
             continue
         if cells[1] != idea_id:
             continue
-        if cells[11].lower() != "planning":
+        if cells[_BACKLOG_STATUS_COL_INDEX].lower() != "planning":
             continue
-        cells[11] = "implementation"
+        cells[_BACKLOG_STATUS_COL_INDEX] = "implementation"
         lines[idx] = "| " + " | ".join(cells) + " |"
         updated_any = True
 

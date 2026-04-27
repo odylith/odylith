@@ -1,7 +1,7 @@
 """Local-only cache and atomic-write helpers for the Odylith Context Engine.
 
-The upkeep commands in this repository are invoked repeatedly from local Codex
-sessions, pre-commit, and CI. Those callers often share a worktree, so the
+The upkeep commands in this repository are invoked repeatedly from local coding
+agent sessions, pre-commit, and CI. Those callers often share a worktree, so the
 tooling layer needs two guarantees:
 
 - local compiled caches must be safe to reuse across processes without making

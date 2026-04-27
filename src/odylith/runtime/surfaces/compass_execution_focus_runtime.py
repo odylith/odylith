@@ -5,11 +5,8 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any, Mapping, Sequence
 
-
-def _host():
-    from odylith.runtime.surfaces import compass_dashboard_runtime as host
-
-    return host
+from odylith.runtime.surfaces import compass_dashboard_base as compass_base
+from odylith.runtime.surfaces import compass_transaction_runtime
 
 
 def _build_execution_focus_payload(
@@ -19,12 +16,6 @@ def _build_execution_focus_payload(
     active_window_minutes: int,
     recent_window_minutes: int,
 ) -> dict[str, Any]:
-    host = _host()
-    _DEFAULT_ACTIVE_WINDOW_MINUTES = host._DEFAULT_ACTIVE_WINDOW_MINUTES
-    _DEFAULT_RECENT_FOCUS_WINDOW_MINUTES = host._DEFAULT_RECENT_FOCUS_WINDOW_MINUTES
-    _split_source_vs_generated_files = host._split_source_vs_generated_files
-    _parse_iso_ts = host._parse_iso_ts
-    _safe_iso = host._safe_iso
     active_window = dt.timedelta(minutes=max(1, active_window_minutes))
     recent_window = dt.timedelta(minutes=max(1, recent_window_minutes))
     score_weights: dict[str, int] = {
@@ -66,7 +57,9 @@ def _build_execution_focus_payload(
             if source:
                 source_counts[source] = source_counts.get(source, 0) + 1
 
-        source_files, generated_files = _split_source_vs_generated_files(row.get("files", []))
+        source_files, generated_files = compass_transaction_runtime._split_source_vs_generated_files(
+            row.get("files", [])
+        )
         implementation_signal_count = sum(
             int(kind_counts.get(kind, 0) or 0) for kind in implementation_signal_kinds
         )
@@ -98,35 +91,35 @@ def _build_execution_focus_payload(
             )
         )
 
-        end_ts = _parse_iso_ts(str(row.get("end_ts_iso", "")).strip())
-        last_event_ts = end_ts or _parse_iso_ts(str(row.get("start_ts_iso", "")).strip())
+        end_ts = compass_base._parse_iso_ts(str(row.get("end_ts_iso", "")).strip())
+        last_event_ts = end_ts or compass_base._parse_iso_ts(str(row.get("start_ts_iso", "")).strip())
         event_age = (now - last_event_ts) if last_event_ts is not None else None
         is_active = bool(event_age is not None and event_age <= active_window)
         is_recent = bool(event_age is not None and event_age <= recent_window)
 
-        telemetry_score = sum(
+        focus_score = sum(
             int(count or 0) * int(score_weights.get(kind, 0))
             for kind, count in kind_counts.items()
         )
         if has_implementation_signal:
-            telemetry_score += 20
+            focus_score += 20
         if source_files:
-            telemetry_score += min(12, len(source_files))
+            focus_score += min(12, len(source_files))
         if bool(row.get("explicit_open")):
-            telemetry_score += 6
+            focus_score += 6
         if context:
-            telemetry_score += 6
+            focus_score += 6
         tx_id = str(row.get("transaction_id", "")).strip()
         if tx_id and not tx_id.startswith("txn:global:auto-"):
-            telemetry_score += 2
+            focus_score += 2
         if activity_signal_count > 0:
-            telemetry_score += 4
+            focus_score += 4
         if activity_signal_count == 0 and risk_signal_count > 0:
-            telemetry_score -= 12
+            focus_score -= 12
         if generated_only_batch:
-            telemetry_score -= 24
+            focus_score -= 24
         if generated_bulk_flood:
-            telemetry_score -= 80
+            focus_score -= 80
 
         cached = {
             "events": events,
@@ -142,7 +135,7 @@ def _build_execution_focus_payload(
             "last_event_ts": last_event_ts,
             "is_active": is_active,
             "is_recent": is_recent,
-            "telemetry_score": telemetry_score,
+            "focus_score": focus_score,
         }
         row_facts_cache[id(row)] = cached
         return cached
@@ -200,8 +193,8 @@ def _build_execution_focus_payload(
     def _is_generated_bulk_flood(row: Mapping[str, Any]) -> bool:
         return bool(_row_facts(row)["generated_bulk_flood"])
 
-    def _telemetry_score(row: Mapping[str, Any]) -> int:
-        return int(_row_facts(row)["telemetry_score"])
+    def _focus_score(row: Mapping[str, Any]) -> int:
+        return int(_row_facts(row)["focus_score"])
 
     def _focus_rank(row: Mapping[str, Any]) -> tuple[int, int, int, int, int, int, int, int, int, dt.datetime, str]:
         kind_counts = _kind_counts(row)
@@ -222,7 +215,7 @@ def _build_execution_focus_payload(
             1 if bool(row.get("explicit_open")) else 0,
             1 if str(row.get("context", "")).strip() else 0,
             activity_count,
-            _telemetry_score(row),
+            _focus_score(row),
             last_ts,
             str(row.get("id", "")).strip(),
         )
@@ -250,7 +243,7 @@ def _build_execution_focus_payload(
                 continue
             if latest is None or ts > latest:
                 latest = ts
-        return _safe_iso(latest) if latest else ""
+        return compass_base._safe_iso(latest) if latest else ""
 
     def _select_focus_row(
         rows: Sequence[Mapping[str, Any]],
@@ -364,7 +357,7 @@ def _build_execution_focus_payload(
             for token in row.get("files", [])
             if str(token).strip()
         ]
-        source_files, generated_files = _split_source_vs_generated_files(files)
+        source_files, generated_files = compass_transaction_runtime._split_source_vs_generated_files(files)
         ordered_files = source_files + generated_files
         return {
             "is_active": _is_active(row),

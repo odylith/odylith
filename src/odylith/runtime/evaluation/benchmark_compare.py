@@ -1,3 +1,5 @@
+"""Benchmark Compare helpers for the Odylith evaluation layer."""
+
 from __future__ import annotations
 
 import json
@@ -9,6 +11,7 @@ from odylith.install.manager import product_source_version
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation.benchmark_snapshot_fallbacks import (
     load_release_baseline_summary,
     load_tracked_latest_summary,
@@ -28,6 +31,16 @@ _FAIL_CRITICAL_RATE_DELTA = 0.01
 _WARN_CRITICAL_RATE_DELTA = 0.005
 _FAIL_WIDENING_RATE_DELTA = 0.02
 _WARN_WIDENING_RATE_DELTA = 0.01
+_SUMMARY_DELTA_FIELDS = {
+    "latency_delta_ms": "latency_delta_ms",
+    "prompt_token_delta": "prompt_token_delta",
+    "required_path_recall_delta": "required_path_recall_delta",
+    "validation_success_delta": "validation_success_delta",
+    "critical_required_path_recall_delta": "critical_required_path_recall_delta",
+    "critical_validation_success_delta": "critical_validation_success_delta",
+    "hallucinated_surface_rate_delta": "hallucinated_surface_rate_delta",
+    "unnecessary_widening_rate_delta": "unnecessary_widening_rate_delta",
+}
 
 
 @dataclass(frozen=True)
@@ -108,14 +121,31 @@ def _eligible_release_report(report: Mapping[str, Any]) -> bool:
 
 def _resolve_candidate_summary(*, repo_root: Path) -> tuple[dict[str, Any] | None, str]:
     candidate_report = runner.load_latest_benchmark_report(repo_root=repo_root)
-    if candidate_report:
+    if candidate_report and runner.benchmark_report_matches_current_tree(repo_root=repo_root, report=candidate_report):
         return _summary_with_version(
             runner.compact_report_summary(candidate_report),
             product_version=_report_product_version(candidate_report),
         ), "latest-runtime-report"
+    if candidate_report:
+        stale_summary = _summary_with_version(
+            runner.compact_report_summary(candidate_report),
+            product_version=_report_product_version(candidate_report),
+        )
+        stale_summary["current_tree_identity_match"] = False
+        stale_summary["stale_runtime_report"] = True
+        return stale_summary, "latest-runtime-report-stale"
     tracked_summary = load_tracked_latest_summary(repo_root=repo_root)
     if tracked_summary:
-        return dict(tracked_summary), "tracked-latest-summary"
+        summary = dict(tracked_summary)
+        tracked_report_id = str(summary.get("report_id") or "").strip()
+        summary.setdefault("current_tree_identity_match", False)
+        summary["tracked_summary_only"] = True
+        summary["tracked_summary_backing_report_present"] = bool(
+            tracked_report_id and runner.history_report_path(repo_root=repo_root, report_id=tracked_report_id).is_file()
+        )
+        if tracked_report_id and not bool(summary.get("tracked_summary_backing_report_present")):
+            summary["tracked_summary_backing_report_missing"] = True
+        return summary, "tracked-latest-summary"
     return None, "missing-latest"
 
 
@@ -148,10 +178,6 @@ def _resolve_baseline_report(*, repo_root: Path, baseline: str, candidate_report
         if baseline_summary:
             return baseline_summary, "last-shipped"
     return None, "missing-last-shipped"
-
-
-def _delta(candidate: Mapping[str, Any], baseline: Mapping[str, Any], key: str) -> float:
-    return round(float(candidate.get(key, 0.0) or 0.0) - float(baseline.get(key, 0.0) or 0.0), 3)
 
 
 def _override_notes(override: BenchmarkProofOverride) -> tuple[str, str]:
@@ -231,6 +257,44 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
             blocking=True,
         )
     candidate_version = str(candidate_summary.get("product_version", "")).strip()
+    current_tree_identity_match = bool(
+        candidate_summary.get(
+            "current_tree_identity_match",
+            candidate_source == "latest-runtime-report",
+        )
+    )
+    if candidate_source != "latest-runtime-report" or not current_tree_identity_match:
+        notes = [
+            "No current-tree authoritative proof candidate is available for benchmark compare.",
+            f"Candidate source `{candidate_source}` is not a current-head proof report.",
+            "Record a fresh current-tree proof report before treating compare as a release gate.",
+        ]
+        if bool(candidate_summary.get("tracked_summary_backing_report_missing")):
+            notes.append(
+                "Tracked benchmark publication summary points at a missing runtime report artifact and is not safe benchmark authority."
+            )
+        notes = tuple(notes)
+        if override is not None:
+            return _override_unavailable(
+                override=override,
+                baseline_source=candidate_source,
+                candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
+                candidate_product_version=candidate_version or source_version,
+                summary={"candidate": candidate_summary, "baseline": {}},
+                notes=notes,
+            )
+        return BenchmarkComparison(
+            status="unavailable",
+            candidate_report_id=str(candidate_summary.get("report_id", "")).strip(),
+            candidate_product_version=candidate_version,
+            baseline_report_id="",
+            baseline_product_version="",
+            baseline_source=candidate_source,
+            summary={"candidate": candidate_summary, "baseline": {}},
+            deltas={},
+            notes=notes,
+            blocking=True,
+        )
     if source_version and candidate_version and candidate_version != source_version:
         if override is not None:
             return _override_unavailable(
@@ -310,16 +374,11 @@ def compare_latest_to_baseline(*, repo_root: str | Path, baseline: str = "last-s
             ),
             blocking=True,
         )
-    deltas = {
-        "latency_delta_ms": _delta(candidate_summary, baseline_summary, "latency_delta_ms"),
-        "prompt_token_delta": _delta(candidate_summary, baseline_summary, "prompt_token_delta"),
-        "required_path_recall_delta": _delta(candidate_summary, baseline_summary, "required_path_recall_delta"),
-        "validation_success_delta": _delta(candidate_summary, baseline_summary, "validation_success_delta"),
-        "critical_required_path_recall_delta": _delta(candidate_summary, baseline_summary, "critical_required_path_recall_delta"),
-        "critical_validation_success_delta": _delta(candidate_summary, baseline_summary, "critical_validation_success_delta"),
-        "hallucinated_surface_rate_delta": _delta(candidate_summary, baseline_summary, "hallucinated_surface_rate_delta"),
-        "unnecessary_widening_rate_delta": _delta(candidate_summary, baseline_summary, "unnecessary_widening_rate_delta"),
-    }
+    deltas = benchmark_metric_helpers.summary_deltas(
+        candidate=candidate_summary,
+        baseline=baseline_summary,
+        field_map=_SUMMARY_DELTA_FIELDS,
+    )
     notes: list[str] = []
     failures: list[str] = []
     warnings: list[str] = []

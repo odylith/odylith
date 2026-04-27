@@ -2,9 +2,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import time
 
 from odylith.install.state import write_install_state, write_upgrade_spotlight, write_version_pin
 from odylith.runtime.surfaces import render_tooling_dashboard as renderer
+from odylith.runtime.surfaces import tooling_dashboard_shell_presenter
+
+
+def _legacy_payload_key(*parts: str) -> str:
+    return "_".join(parts)
 
 
 def _load_externalized_payload_js(path: Path) -> dict[str, object]:
@@ -210,7 +216,7 @@ def _seed_consumer_upgrade_spotlight(tmp_path: Path) -> None:
 def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -218,6 +224,7 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
+
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "Repo · Odylith" not in html
     assert "Product Self-Governance Is Live Here" in html
@@ -234,9 +241,14 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "welcome-launchpad-hero" in html
     assert "Open the cheatsheet drawer on the left and try out commands in this repo." in html
     assert "Three quick steps" in html
-    assert "Paste it into Codex or Claude Code." in html
-    assert "Try commands in the cheatsheet." in html
+    assert "Odylith, show me what you can do." in html
+    assert "Copy prompt." in html
+    assert "Run in Codex or Claude." in html
+    assert "Open the cheatsheet." in html
+    assert "Copy the Odylith prompt." not in html
+    assert "Run it in Codex or Claude Code." not in html
     assert "Open the cheatsheet drawer on the left side of the screen and try out commands." not in html
+    assert "Use Odylith to start this repo from one real code path." not in html
     assert "Paste it into Codex or Claude Code in this repo." not in html
     assert "Let Odylith create the first Radar item, Registry boundary, Atlas map around" not in html
     assert "Copy this starter prompt into your agent. Odylith will create the first Radar item, Registry boundary, and Atlas map around one real code path in this repo." not in html
@@ -272,7 +284,7 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Compass keeps briefs and timelines so the next move stays clear." in html
     assert "the first real code path you choose" not in html
     assert 'id="themeToggle"' not in html
-    assert ">Telemetry<" not in html
+    assert ">Internal Diagnostic<" not in html
     assert 'id="odylithToggle"' in html
     assert "Cheatsheet" in html
     assert "Odylith Dashboard Cheatsheet" in html
@@ -288,8 +300,23 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Create a Registry component named" in html
     assert "Create an Atlas diagram for the payments component." in html
     assert "Duplicate payment capture after webhook retry" in html
+    assert "Release planning: pick the ship target" in html
+    assert "Program/wave planning: sequence umbrella execution" in html
+    assert "Release planning picks the ship target for one workstream" in html
+    assert "Program/wave planning picks execution order under one umbrella" in html
+    assert "A workstream can belong to both." in html
+    assert "Add B-067 to release 0.1.11." in html
+    assert "odylith release add B-067 0.1.11 --repo-root ." in html
+    assert "For umbrella workstream B-021, create a 3-wave execution program." in html
+    assert "odylith program next B-021 --repo-root ." in html
     assert "Refresh the full dashboard" in html
+    assert "Refresh Compass now" in html
+    assert "Deep-refresh Compass" in html
     assert "Keep Compass warm" in html
+    assert "odylith compass refresh --repo-root ." in html
+    assert "odylith compass deep-refresh --repo-root ." in html
+    assert "Run the change-driven watcher so Compass refreshes only when repo truth actually moves." in html
+    assert "odylith compass watch-transactions --repo-root ." in html
     assert "Add a developer note" in html
     assert "Open Radar for workstream B-025." in html
     assert "Open Registry for the payments component." in html
@@ -313,36 +340,148 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert 'data-cheatsheet-filter="edit"' in html
     assert "Example prompt" in html
     assert "Copy prompt" in html
-    assert "Telemetry runtime status drawer" not in html
+    assert "Internal runtime status drawer" not in html
     assert html.index('<h3 class="cheatsheet-card-title">Create a Radar backlog item</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
     assert html.index('<h3 class="cheatsheet-card-title">Create a Registry component</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
     assert html.index('<h3 class="cheatsheet-card-title">Create an Atlas diagram</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
     assert html.index('<h3 class="cheatsheet-card-title">Create a Casebook bug</h3>') < html.index('<h3 class="cheatsheet-card-title">Odylith Dashboard</h3>')
 
 
+def test_shell_case_preview_rows_include_proof_preview_lines(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    _seed_inputs(tmp_path)
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+
+    rows = tooling_dashboard_shell_presenter.shell_case_preview_rows(
+        [
+            {
+                "id": "case-1",
+                "rank": 1,
+                "headline": "Stay pinned to the blocker seam",
+                "brief": "Preview proof is not live proof.",
+                "decision_at_stake": "Fix the live blocker before sidecars.",
+                "scope_key": "workstream:B-062",
+                "scope_id": "B-062",
+                "proof_state": {
+                    "lane_id": "proof-state-control-plane",
+                    "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                    "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                    "frontier_phase": "manifests-deploy",
+                    "proof_status": "fixed_in_code",
+                },
+                "claim_guard": {
+                    "highest_truthful_claim": "fixed in code",
+                    "blocked_terms": ["fixed", "cleared", "resolved"],
+                },
+            }
+        ]
+    )
+
+    assert rows[0]["proof_lines"][:3] == [
+        "Current blocker: Lambda permission lifecycle on ecs-drift-monitor invoke",
+        "Failure fingerprint: aws:lambda:Permission doesn't support update",
+        "Frontier: manifests-deploy",
+    ]
+    assert rows[0]["proof_claim"] == "fixed in code"
+
+
+def test_shell_case_preview_rows_surface_proof_resolution_ambiguity() -> None:
+    rows = tooling_dashboard_shell_presenter.shell_case_preview_rows(
+        [
+            {
+                "id": "case-2",
+                "rank": 2,
+                "headline": "Ambiguous proof lane",
+                "brief": "Do not fake a precise blocker.",
+                "decision_at_stake": "Pick the right lane before status language.",
+                "scope_key": "workstream:B-999",
+                "scope_id": "B-999",
+                "proof_state": {},
+                "proof_state_resolution": {
+                    "state": "ambiguous",
+                    "lane_ids": ["lane-a", "lane-b"],
+                },
+            }
+        ]
+    )
+
+    assert rows[0]["proof_lines"] == [
+        "Proof state is ambiguous across multiple blocker lanes: lane-a, lane-b."
+    ]
+
+
+def test_shell_case_preview_rows_surface_same_fingerprint_reopen_summary() -> None:
+    rows = tooling_dashboard_shell_presenter.shell_case_preview_rows(
+        [
+            {
+                "id": "case-3",
+                "rank": 3,
+                "headline": "Keep the blocker seam pinned",
+                "brief": "The same live blocker came back.",
+                "decision_at_stake": "Reuse the same bug lane instead of narrating a new mystery.",
+                "scope_key": "workstream:B-062",
+                "scope_id": "B-062",
+                "proof_state": {
+                    "lane_id": "proof-state-control-plane",
+                    "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                    "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                    "frontier_phase": "manifests-deploy",
+                    "proof_status": "falsified_live",
+                    "last_falsification": {
+                        "recorded_at": "2026-04-08T18:42:00Z",
+                        "failure_fingerprint": "aws:lambda:Permission doesn't support update",
+                        "frontier_phase": "manifests-deploy",
+                    },
+                    "linked_bug_id": "CB-077",
+                    "repeated_fingerprint_count": 2,
+                },
+                "proof_reopen": {
+                    "same_fingerprint_reopened": True,
+                    "linked_bug_id": "CB-077",
+                    "repeated_fingerprint_count": 2,
+                    "summary": "Previous fix did not clear the live blocker; keep Lambda permission lifecycle on ecs-drift-monitor invoke pinned as the active seam. Reuse Casebook bug CB-077 rather than opening a new blocker record.",
+                },
+            }
+        ]
+    )
+
+    assert rows[0]["proof_lines"][0].startswith("Previous fix did not clear the live blocker")
+
+
 def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_product_repo_posture(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
-    monkeypatch.setattr(
-        renderer.benchmark_compare,
-        "build_benchmark_story",
-        lambda **kwargs: {"show": True, "headline": "Benchmark compare versus last shipped release", "summary": "pass"},
-    )
-
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "v0.1.0" in html
     assert ">odylith<" in html
+    assert "Internal Diagnostic Snapshot" not in html
+    assert "Internal runtime status" not in html
+    assert "system-status-shell" not in html
+    assert "odylith-recorder-shell" not in html
+    assert "odylith-chart-canvas" not in html
+    assert "echarts" not in html
+    assert "Maintainer Benchmark Lane" not in html
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert '"self_host"' in payload_js
-    assert '"benchmark_story"' in payload_js
+    assert '"benchmark_story"' not in payload_js
+    assert f'"{_legacy_payload_key("odylith", "drawer")}"' not in payload_js
+    assert f'"{_legacy_payload_key("odylith", "drawer", "history")}"' not in payload_js
+    assert f'"{_legacy_payload_key("memory", "snapshot")}"' not in payload_js
+    assert f'"{_legacy_payload_key("optimization", "snapshot")}"' not in payload_js
+    assert f'"{_legacy_payload_key("evaluation", "snapshot")}"' not in payload_js
     assert '"repo_role": "product_repo"' in payload_js
     assert '"posture": "pinned_release"' in payload_js
     assert '"runtime_source": "pinned_runtime"' in payload_js
@@ -354,7 +493,7 @@ def test_render_tooling_dashboard_includes_self_host_payload(tmp_path: Path, mon
 def test_render_tooling_dashboard_enables_passive_live_refresh_for_consumer_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -387,7 +526,7 @@ def test_render_tooling_dashboard_dedupes_stale_compass_runtime_from_shell_statu
     _seed_inputs(tmp_path)
     _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -404,28 +543,104 @@ def test_render_tooling_dashboard_dedupes_stale_compass_runtime_from_shell_statu
     assert payload_js["surface_runtime_status"] == {}
 
 
-def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_status(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_dedupes_stale_failed_compass_refresh_from_shell_status(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
-    warning = (
-        "Requested Compass full refresh did not finish before the dashboard timeout. "
-        "Showing the last successful shell-safe runtime snapshot from 2026-04-07T17:06:12Z."
+    _seed_compass_runtime_snapshot(
+        tmp_path,
+        generated_utc="2020-01-02T17:06:12Z",
+        last_refresh_attempt={
+            "status": "failed",
+            "requested_profile": "shell-safe",
+            "applied_profile": "shell-safe",
+            "attempted_utc": "2026-04-07T17:17:57Z",
+            "reason": "timeout",
+        },
+        warning=(
+            "Requested Compass refresh did not finish before the refresh timeout. "
+            "Showing the last successful shell-safe runtime snapshot from 2020-01-02T17:06:12Z."
+        ),
     )
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+    monkeypatch.setattr(
+        renderer.tooling_dashboard_surface_status,
+        "now_utc",
+        lambda: "2026-04-09T19:17:57Z",
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+
+    assert rc == 0
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    assert payload_js["surface_runtime_status"] == {}
+
+
+def test_render_tooling_dashboard_dedupes_failed_compass_refresh_when_compass_payload_warns(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:  # noqa: ANN001
+    _seed_inputs(tmp_path)
     _seed_compass_runtime_snapshot(
         tmp_path,
         generated_utc="2026-04-07T17:06:12Z",
         last_refresh_attempt={
             "status": "failed",
-            "requested_profile": "full",
+            "requested_profile": "shell-safe",
             "applied_profile": "shell-safe",
             "attempted_utc": "2026-04-07T17:17:57Z",
             "reason": "timeout",
         },
-        warning=warning,
+        warning=(
+            "Requested Compass refresh did not finish before the refresh timeout. "
+            "Showing the last successful shell-safe runtime snapshot from 2026-04-07T17:06:12Z."
+        ),
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
+    )
+    monkeypatch.setattr(
+        renderer.tooling_dashboard_surface_status,
+        "now_utc",
+        lambda: "2026-04-07T18:17:57Z",
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+
+    assert rc == 0
+    payload_js = _load_externalized_payload_js(tmp_path / "odylith" / "tooling-payload.v1.js")
+    assert payload_js["surface_runtime_status"] == {}
+
+
+def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_status(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(
+        tmp_path,
+        generated_utc="2026-04-07T17:06:12Z",
+        last_refresh_attempt={
+            "status": "failed",
+            "requested_profile": "shell-safe",
+            "applied_profile": "shell-safe",
+            "attempted_utc": "2026-04-07T17:17:57Z",
+            "reason": "timeout",
+        },
+    )
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+    monkeypatch.setattr(
+        renderer.tooling_dashboard_surface_status,
+        "now_utc",
+        lambda: "2026-04-07T18:17:57Z",
     )
 
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
@@ -435,20 +650,20 @@ def test_render_tooling_dashboard_projects_failed_compass_refresh_into_shell_sta
     compass_status = dict(payload_js["surface_runtime_status"]["compass"])
     assert compass_status["tone"] == "warning"
     assert compass_status["title"] == "Showing prior Compass snapshot"
-    assert compass_status["body"] == warning
+    assert compass_status["body"] == (
+        "Requested Compass refresh failed before a fresh payload was written. "
+        "Showing the prior runtime snapshot from 2026-04-07T17:06:12Z."
+    )
     assert "Snapshot: 2026-04-07T17:06:12Z" in compass_status["meta"]
     assert "Attempted: 2026-04-07T17:17:57Z" in compass_status["meta"]
-    assert (
-        "Next: odylith dashboard refresh --repo-root . --surfaces compass --compass-refresh-profile full"
-        in compass_status["meta"]
-    )
+    assert "Next: odylith dashboard refresh --repo-root . --surfaces compass" in compass_status["meta"]
 
 
 def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     _seed_product_repo_posture(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -457,12 +672,6 @@ def test_render_tooling_dashboard_disables_live_refresh_for_product_repo(tmp_pat
         "collect_git_changed_paths",
         lambda **kwargs: (_ for _ in ()).throw(AssertionError("product repo live refresh should stay benchmark-frozen")),
     )
-    monkeypatch.setattr(
-        renderer.benchmark_compare,
-        "build_benchmark_story",
-        lambda **kwargs: {},
-    )
-
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
@@ -477,16 +686,10 @@ def test_render_tooling_dashboard_shows_detached_product_repo_version_readout(tm
     _seed_inputs(tmp_path)
     _seed_product_repo_source_local_posture(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
-    monkeypatch.setattr(
-        renderer.benchmark_compare,
-        "build_benchmark_story",
-        lambda **kwargs: {},
-    )
-
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
@@ -502,7 +705,7 @@ def test_render_tooling_dashboard_enables_balanced_live_refresh_for_detached_sou
     _seed_inputs(tmp_path)
     _seed_product_repo_source_local_posture(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -511,12 +714,6 @@ def test_render_tooling_dashboard_enables_balanced_live_refresh_for_detached_sou
         "collect_git_changed_paths",
         lambda **kwargs: ["src/odylith/runtime/surfaces/render_tooling_dashboard.py"],
     )
-    monkeypatch.setattr(
-        renderer.benchmark_compare,
-        "build_benchmark_story",
-        lambda **kwargs: {},
-    )
-
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
 
     assert rc == 0
@@ -534,7 +731,7 @@ def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_override
     payload["live_refresh_policy"] = "full_dev"
     source_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -559,7 +756,7 @@ def test_render_tooling_dashboard_allows_explicit_full_dev_live_refresh_override
 def test_render_tooling_dashboard_uses_tab_local_state_for_shell_surface_switches(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -641,7 +838,7 @@ def test_render_tooling_dashboard_hides_welcome_state_once_truth_exists(tmp_path
     _seed_inputs(tmp_path)
     _seed_existing_odylith_truth(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -662,7 +859,7 @@ def test_render_tooling_dashboard_shows_compact_legacy_upgrade_notice(tmp_path: 
     _seed_existing_odylith_truth(tmp_path)
     _seed_legacy_consumer_launcher(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -683,7 +880,7 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     _seed_existing_odylith_truth(tmp_path)
     _seed_consumer_upgrade_spotlight(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -708,12 +905,12 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     assert '>v1.2.2<' not in html
     assert "Open full release note" not in html
     assert "Sharper install messaging." in html
-    assert "Open release note on GitHub" in html
+    assert "Open release notes on GitHub" in html
     assert (
         'href="https://github.com/odylith/odylith/blob/v1.2.3/odylith/runtime/source/release-notes/v1.2.3.md"'
         in html
     )
-    assert 'target="_blank" rel="noreferrer"' in html
+    assert 'target="_blank" rel="noopener noreferrer"' in html
     assert "upgrade-spotlight-secondary-link" not in html
     assert "The bottom recovery pill keeps it close for thirty minutes after the upgrade is recorded." not in html
     assert 'id="upgradeReopen"' in html
@@ -729,6 +926,12 @@ def test_render_tooling_dashboard_shows_release_spotlight_for_recent_upgrade(tmp
     assert 'upgradeReopen.textContent = upgradeSpotlightReopenLabel;' in control_js
     assert 'welcomeReopen.textContent = "Starter Guide";' in control_js
     assert 'const upgradeSpotlightReopenLabel = hasUpgradeSpotlight()' in control_js
+    assert (
+        'const upgradeSpotlightLinks = Array.from(document.querySelectorAll("#shellUpgradeSpotlight .upgrade-spotlight-link"));'
+        in control_js
+    )
+    assert 'window.open(href, "_blank");' in control_js
+    assert 'link.addEventListener("click", openUpgradeSpotlightLink);' in control_js
     assert not (tmp_path / "odylith" / "release-notes" / "1.2.3.html").exists()
 
 
@@ -766,7 +969,7 @@ def test_render_tooling_dashboard_persists_version_story_without_live_upgrade_po
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -813,7 +1016,7 @@ def test_render_tooling_dashboard_release_note_prefers_highlights_over_full_body
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -847,7 +1050,7 @@ def test_render_tooling_dashboard_includes_version_in_authored_release_hero_titl
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -882,7 +1085,7 @@ def test_render_tooling_dashboard_prunes_stale_release_note_pages(tmp_path: Path
     rendered_notes_root.mkdir(parents=True, exist_ok=True)
     (rendered_notes_root / "1.2.2.html").write_text("stale\n", encoding="utf-8")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -914,7 +1117,7 @@ def test_render_tooling_dashboard_escapes_authored_release_note_content(tmp_path
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -964,7 +1167,7 @@ def test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install
     rendered_notes_root.mkdir(parents=True, exist_ok=True)
     (rendered_notes_root / "1.2.2.html").write_text("stale\n", encoding="utf-8")
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {},
     )
@@ -983,13 +1186,13 @@ def test_render_tooling_dashboard_ignores_stale_upgrade_payload_on_first_install
     assert not rendered_notes_root.exists()
 
 
-def test_render_tooling_dashboard_includes_memory_area_readout(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+def test_render_tooling_dashboard_does_not_embed_internal_status_snapshots(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _seed_inputs(tmp_path)
     monkeypatch.setattr(
-        renderer.odylith_context_engine_store,
+        renderer.delivery_surface_payload_runtime,
         "load_delivery_surface_payload",
         lambda **kwargs: {
-            "memory_snapshot": {
+            _legacy_payload_key("memory", "snapshot"): {
                 "engine": {
                     "backend": {
                         "storage": "lance_local_columnar",
@@ -1062,8 +1265,8 @@ def test_render_tooling_dashboard_includes_memory_area_readout(tmp_path: Path, m
                 },
                 "remote_retrieval": {"enabled": False},
             },
-            "optimization_snapshot": {"overall": {"score": 0.0, "level": "cold"}},
-            "evaluation_snapshot": {"status": "cold", "coverage_rate": 0.0, "satisfaction_rate": 0.0},
+            _legacy_payload_key("optimization", "snapshot"): {"overall": {"score": 0.0, "level": "cold"}},
+            _legacy_payload_key("evaluation", "snapshot"): {"status": "cold", "coverage_rate": 0.0, "satisfaction_rate": 0.0},
         },
     )
 
@@ -1074,8 +1277,65 @@ def test_render_tooling_dashboard_includes_memory_area_readout(tmp_path: Path, m
     payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
     assert "tooling-payload.v1.js?v=" in html
     assert "tooling-app.v1.js?v=" in html
-    assert "memory_areas" in payload_js
-    assert "Repo truth" in payload_js
-    assert "Decision memory" in payload_js
-    assert "Onboarding memory" in payload_js
-    assert "judgment_memory" in payload_js
+    assert _legacy_payload_key("memory", "snapshot") not in payload_js
+    assert "memory_areas" not in payload_js
+    assert _legacy_payload_key("optimization", "snapshot") not in payload_js
+    assert _legacy_payload_key("evaluation", "snapshot") not in payload_js
+    assert "Repo truth" not in payload_js
+    assert "Decision memory" not in payload_js
+    assert "Onboarding memory" not in payload_js
+    assert "judgment_memory" not in payload_js
+
+
+def test_render_tooling_dashboard_skips_noop_writes_when_bundle_is_unchanged(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+
+    tracked_paths = (
+        tmp_path / "odylith" / "index.html",
+        tmp_path / "odylith" / "tooling-payload.v1.js",
+        tmp_path / "odylith" / "tooling-app.v1.js",
+    )
+    first_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+
+    time.sleep(0.01)
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+
+    second_mtimes = {path: path.stat().st_mtime_ns for path in tracked_paths}
+    assert second_mtimes == first_mtimes
+
+
+def test_render_tooling_dashboard_skips_cached_rebuild_before_surface_validation(
+    tmp_path: Path,
+    monkeypatch,  # noqa: ANN001
+) -> None:
+    _seed_inputs(tmp_path)
+    _seed_compass_runtime_snapshot(tmp_path, generated_utc="2026-04-07T17:06:12Z")
+    monkeypatch.setattr(
+        renderer.delivery_surface_payload_runtime,
+        "load_delivery_surface_payload",
+        lambda **kwargs: {},
+    )
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0
+
+    def _boom(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("surface validation should be skipped on a cache hit")
+
+    monkeypatch.setattr(renderer.tooling_dashboard_runtime_builder, "validate_surface_paths", _boom)
+
+    rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
+    assert rc == 0

@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-027
-title: Odylith Lane Boundary, Runtime, and Toolchain Clarity
+title: Lane Boundary, Runtime, and Toolchain Clarity
 date: 2026-03-30
 priority: P0
 commercial_value: 5
 product_impact: 5
 market_value: 4
-impacted_lanes: both
 impacted_parts: constitutional docs, AGENTS activation, maintainer overlays, consumer bundle guidance, consumer write-policy enforcement, subagent routing and orchestration contract surfaces, component specs, backlog truth, Atlas runtime-boundary and orchestration diagrams, Atlas short-token search discoverability, and delivery-intelligence / Tribunal refresh behavior
 sizing: M
 complexity: High

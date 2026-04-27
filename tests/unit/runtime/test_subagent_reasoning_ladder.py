@@ -1,11 +1,30 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
 
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 from odylith.runtime.orchestration import subagent_router as router
+
+
+def _clear_agent_host_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
+    for key in (
+        "CODEX_THREAD_ID",
+        "CODEX_SHELL",
+        "CODEX_CI",
+        "CODEX_INTERNAL_ORIGINATOR_OVERRIDE",
+        "__CFBundleIdentifier",
+        "CLAUDE_CODE",
+        "CLAUDE_CODE_SESSION_ID",
+        "CLAUDE_SESSION_ID",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+
+def _profile_runtime_fields(profile: router.RouterProfile) -> tuple[str, str]:
+    return router.subagent_router_profile_support.profile_runtime_fields(profile)
 
 
 def _packet_quality(*, mode: str = "bounded_write") -> dict[str, object]:
@@ -302,7 +321,14 @@ def test_execution_profile_mapping_canonicalizes_explicit_profile_runtime_fields
 )
 def test_orchestrator_execution_profile_mapping_infers_profile_from_runtime_fields(
     profile: router.RouterProfile,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     execution_profile = orchestrator._execution_profile_mapping(  # noqa: SLF001
         {
             "model": profile.model,
@@ -346,7 +372,16 @@ def test_orchestrator_execution_profile_mapping_canonicalizes_conflicting_runtim
     assert execution_profile["reasoning_effort"] == profile.reasoning_effort
 
 
-def test_route_request_keeps_recommended_runtime_fields_consistent_with_explicit_profile(tmp_path: Path) -> None:
+def test_route_request_keeps_recommended_runtime_fields_consistent_with_explicit_profile(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     request = _route_request(
         prompt="Update the bounded implementation in src/odylith/runtime/orchestration/subagent_router.py.",
         task_kind="implementation",
@@ -418,7 +453,34 @@ def test_synthesized_execution_profile_candidate_routes_governance_support_to_sp
     assert profile["selection_mode"] == "support_fast_lane"
 
 
-def test_route_request_infers_profile_from_model_and_reasoning_only(tmp_path: Path) -> None:
+def test_synthesized_execution_profile_candidate_uses_host_specific_model_on_claude_host(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CLAUDE_CODE", "1")
+    monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
+    monkeypatch.delenv("CODEX_SHELL", raising=False)
+
+    profile = router._synthesized_execution_profile_candidate(  # noqa: SLF001
+        context_packet=_context_packet_for_synthesis(
+            family="implementation",
+            tests=1,
+            commands=1,
+        )
+    )
+
+    assert profile["profile"] == router.RouterProfile.CODEX_HIGH.value
+    assert profile["model"] == "claude-sonnet-4-6"
+    assert profile["reasoning_effort"] == router.RouterProfile.CODEX_HIGH.reasoning_effort
+
+
+def test_route_request_infers_profile_from_model_and_reasoning_only(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     request = _route_request(
         prompt="Review the bounded analysis slice.",
         task_kind="analysis",
@@ -438,7 +500,15 @@ def test_route_request_infers_profile_from_model_and_reasoning_only(tmp_path: Pa
     assert summary["odylith_execution_reasoning_effort"] == router.RouterProfile.CODEX_HIGH.reasoning_effort
 
 
-def test_execution_profile_mapping_infers_profile_from_optimization_latest_packet_runtime_fields() -> None:
+def test_execution_profile_mapping_infers_profile_from_optimization_latest_packet_runtime_fields(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     execution_profile = router._execution_profile_mapping(  # noqa: SLF001
         root={},
         context_packet={},
@@ -558,10 +628,19 @@ def test_route_request_spawn_payloads_never_inherit_parent_defaults(tmp_path: Pa
     assert decision.native_spawn_payload["model"] == decision.model
     assert decision.native_spawn_payload["reasoning_effort"] == decision.reasoning_effort
     assert decision.native_spawn_payload["message"] == decision.spawn_task_message
+    assert decision.host_tool_contract["built_in_agent_types_only"] is True
+    assert decision.host_tool_contract["named_custom_agent_type_supported"] is False
+    assert decision.host_tool_contract["native_spawn_transport_supported"] is True
+    assert decision.host_tool_contract["native_spawn_policy_status"] == "not_inspectable"
+    assert decision.host_tool_contract["native_spawn_effective"] is False
+    assert "active host policy" in decision.host_tool_contract["host_policy_note"]
+    assert any("HOST POLICY:" in line and "not_inspectable" in line for line in decision.runtime_banner_lines)
+    assert ".codex/agents/*.toml" in decision.host_tool_contract["custom_agent_type_note"]
+    assert "built-in `agent_type` values" in decision.host_tool_contract["custom_agent_type_note"]
     assert any("do not inherit the parent thread model or reasoning weight" in line for line in decision.spawn_contract_lines)
 
 
-def test_route_request_omits_native_spawn_payloads_for_claude_host(
+def test_route_request_emits_task_tool_payloads_for_claude_host(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -588,21 +667,28 @@ def test_route_request_omits_native_spawn_payloads_for_claude_host(
     decision = router.route_request(request, repo_root=tmp_path)
 
     assert decision.delegate is True
-    assert decision.spawn_overrides == {}
+    assert decision.spawn_overrides["subagent_type"] == "general-purpose"
+    assert decision.spawn_overrides["preferred_project_subagent"] == "odylith-workstream"
     assert decision.spawn_agent_overrides == {}
     assert decision.close_agent_overrides == {}
-    assert decision.native_spawn_payload == {}
+    assert decision.native_spawn_payload["tool_name"] == "Task"
+    assert decision.native_spawn_payload["subagent_type"] == "general-purpose"
+    assert decision.native_spawn_payload["preferred_project_subagent"] == "odylith-workstream"
+    assert decision.native_spawn_payload["isolation"] == "worktree"
     assert decision.host_tool_contract["host_runtime"] == "claude_cli"
-    assert decision.host_tool_contract["native_spawn_supported"] is False
-    assert decision.host_tool_contract["local_guidance_only"] is True
-    assert any("local execution guidance only" in line for line in decision.spawn_contract_lines)
+    assert decision.host_tool_contract["native_spawn_supported"] is True
+    assert decision.host_tool_contract["delegation_style"] == "task_tool_subagents"
+    assert decision.host_tool_contract["tool_name"] == "Task"
+    assert any("Claude Code `Task`" in line for line in decision.spawn_contract_lines)
 
 
 def test_route_request_omits_native_spawn_payloads_for_unknown_host(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.delenv("CLAUDE_CODE", raising=False)
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
     monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
     monkeypatch.delenv("CODEX_SHELL", raising=False)
     monkeypatch.delenv("__CFBundleIdentifier", raising=False)
@@ -616,8 +702,8 @@ def test_route_request_omits_native_spawn_payloads_for_unknown_host(
         validation_commands=["pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py"],
         routing_handoff=_routing_handoff(
             profile=router.RouterProfile.CODEX_HIGH.value,
-            model=router.RouterProfile.CODEX_HIGH.model,
-            reasoning_effort=router.RouterProfile.CODEX_HIGH.reasoning_effort,
+            model="gpt-5.3-codex",
+            reasoning_effort="high",
             host_runtime="",
             selection_mode="bounded_write",
         ),
@@ -639,7 +725,9 @@ def test_route_request_provider_only_codex_hint_does_not_enable_native_spawn(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
-    monkeypatch.delenv("CLAUDE_CODE", raising=False)
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
     monkeypatch.delenv("CODEX_THREAD_ID", raising=False)
     monkeypatch.delenv("CODEX_SHELL", raising=False)
     monkeypatch.delenv("__CFBundleIdentifier", raising=False)
@@ -653,8 +741,8 @@ def test_route_request_provider_only_codex_hint_does_not_enable_native_spawn(
         validation_commands=["pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py"],
         routing_handoff=_routing_handoff(
             profile=router.RouterProfile.CODEX_HIGH.value,
-            model=router.RouterProfile.CODEX_HIGH.model,
-            reasoning_effort=router.RouterProfile.CODEX_HIGH.reasoning_effort,
+            model="gpt-5.3-codex",
+            reasoning_effort="high",
             host_runtime="",
             selection_mode="bounded_write",
         ),
@@ -875,13 +963,14 @@ def test_lifecycle_and_native_spawn_payloads_match_for_every_profile(profile: ro
         message="bounded delegated leaf",
     )
 
+    model, reasoning_effort = _profile_runtime_fields(profile)
     assert lifecycle.spawn_overrides["apply_parent_defaults"] is False
-    assert lifecycle.spawn_overrides["model"] == profile.model
-    assert lifecycle.spawn_overrides["reasoning_effort"] == profile.reasoning_effort
-    assert lifecycle.spawn_agent_overrides["model"] == profile.model
-    assert lifecycle.spawn_agent_overrides["reasoning_effort"] == profile.reasoning_effort
-    assert native_payload["model"] == profile.model
-    assert native_payload["reasoning_effort"] == profile.reasoning_effort
+    assert lifecycle.spawn_overrides["model"] == model
+    assert lifecycle.spawn_overrides["reasoning_effort"] == reasoning_effort
+    assert lifecycle.spawn_agent_overrides["model"] == model
+    assert lifecycle.spawn_agent_overrides["reasoning_effort"] == reasoning_effort
+    assert native_payload["model"] == model
+    assert native_payload["reasoning_effort"] == reasoning_effort
     assert native_payload["message"] == "bounded delegated leaf"
 
 
@@ -1026,7 +1115,7 @@ def test_subtask_execution_profile_promotes_critical_validation_to_gpt54_high() 
 
     assert profile["profile"] == router.RouterProfile.GPT54_HIGH.value
     assert profile["selection_mode"] == "deep_validation"
-    assert profile["reasoning_effort"] == router.RouterProfile.GPT54_HIGH.reasoning_effort
+    assert profile["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.GPT54_HIGH)[1]
 
 
 def test_subtask_execution_profile_routes_support_docs_to_spark_fast_lane() -> None:
@@ -1039,7 +1128,7 @@ def test_subtask_execution_profile_routes_support_docs_to_spark_fast_lane() -> N
 
     assert profile["profile"] == router.RouterProfile.SPARK_MEDIUM.value
     assert profile["selection_mode"] == "support_fast_lane"
-    assert profile["reasoning_effort"] == router.RouterProfile.SPARK_MEDIUM.reasoning_effort
+    assert profile["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.SPARK_MEDIUM)[1]
 
 
 @pytest.mark.parametrize(
@@ -1052,7 +1141,14 @@ def test_subtask_execution_profile_routes_support_docs_to_spark_fast_lane() -> N
 )
 def test_subtask_execution_profile_inherits_parent_profile_floor_for_primary_leaves(
     profile: router.RouterProfile,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     routed = _subtask_execution_profile(
         request_needs_write=False,
         subtask_scope_role="analysis",
@@ -1081,8 +1177,8 @@ def test_subtask_execution_profile_inherits_parent_profile_from_context_packet()
     )
 
     assert routed["profile"] == router.RouterProfile.GPT54_HIGH.value
-    assert routed["model"] == router.RouterProfile.GPT54_HIGH.model
-    assert routed["reasoning_effort"] == router.RouterProfile.GPT54_HIGH.reasoning_effort
+    assert routed["model"] == _profile_runtime_fields(router.RouterProfile.GPT54_HIGH)[0]
+    assert routed["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.GPT54_HIGH)[1]
 
 
 def test_subtask_execution_profile_inherits_parent_profile_from_optimization_snapshot() -> None:
@@ -1097,8 +1193,8 @@ def test_subtask_execution_profile_inherits_parent_profile_from_optimization_sna
     )
 
     assert routed["profile"] == router.RouterProfile.CODEX_HIGH.value
-    assert routed["model"] == router.RouterProfile.CODEX_HIGH.model
-    assert routed["reasoning_effort"] == router.RouterProfile.CODEX_HIGH.reasoning_effort
+    assert routed["model"] == _profile_runtime_fields(router.RouterProfile.CODEX_HIGH)[0]
+    assert routed["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.CODEX_HIGH)[1]
 
 
 def test_subtask_execution_profile_keeps_local_narrowing_even_with_strong_parent_profile() -> None:
@@ -1195,10 +1291,14 @@ def test_subtask_execution_profile_respects_high_risk_architecture_lane() -> Non
 
     assert profile["profile"] == router.RouterProfile.GPT54_HIGH.value
     assert profile["selection_mode"] == "architecture_grounding"
-    assert profile["reasoning_effort"] == router.RouterProfile.GPT54_HIGH.reasoning_effort
+    assert profile["reasoning_effort"] == _profile_runtime_fields(router.RouterProfile.GPT54_HIGH)[1]
 
 
-def test_orchestrator_leaf_payload_uses_routed_reasoning_without_parent_default_leakage(tmp_path: Path) -> None:
+def test_orchestrator_leaf_payload_uses_routed_reasoning_without_parent_default_leakage(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _clear_agent_host_runtime(monkeypatch)
     request = orchestrator.orchestration_request_from_mapping(
         {
             "prompt": "Update the bounded implementation in src/odylith/runtime/orchestration/subagent_router.py.",
@@ -1262,7 +1362,7 @@ def test_orchestrator_leaf_payload_uses_routed_reasoning_without_parent_default_
     )
 
 
-def test_orchestrator_leaf_payload_omits_native_spawn_payload_for_claude_host(
+def test_orchestrator_leaf_payload_emits_task_tool_payload_for_claude_host(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -1321,14 +1421,23 @@ def test_orchestrator_leaf_payload_omits_native_spawn_payload_for_claude_host(
 
     assert decision.delegate is True
     assert decision.spawn_agent_overrides == {}
-    assert decision.native_spawn_payload == {}
+    assert decision.native_spawn_payload["tool_name"] == "Task"
+    assert decision.native_spawn_payload["subagent_type"] == "general-purpose"
     assert subtask.route_spawn_agent_overrides == {}
-    assert subtask.route_native_spawn_payload == {}
+    assert subtask.route_native_spawn_payload["tool_name"] == "Task"
+    assert subtask.route_native_spawn_payload["isolation"] == "worktree"
 
 
 def test_orchestrator_leaf_payload_infers_parent_runtime_from_model_and_reasoning_only(
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     request = orchestrator.orchestration_request_from_mapping(
         {
             "prompt": "Review the bounded analysis in src/odylith/runtime/orchestration/subagent_router.py.",
@@ -1383,8 +1492,15 @@ def test_orchestrator_leaf_payload_infers_parent_runtime_from_model_and_reasonin
 
 
 def test_orchestrator_leaf_payload_canonicalizes_conflicting_parent_runtime_fields_before_routing(
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    for key in list(os.environ):
+        if key.startswith("CLAUDE_CODE") or key == "CLAUDE_CODE":
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("__CFBundleIdentifier", raising=False)
+    monkeypatch.setenv("CODEX_THREAD_ID", "test-thread-id")
+
     request = orchestrator.orchestration_request_from_mapping(
         {
             "prompt": "Review the bounded analysis in src/odylith/runtime/orchestration/subagent_router.py.",
@@ -1498,6 +1614,348 @@ def test_orchestrator_local_narrowing_notes_stay_task_first() -> None:
     assert all("runtime handoff" not in note for note in notes)
     assert all("retained context packet" not in note for note in notes)
     assert any("narrowing" in note for note in notes)
+
+
+def test_assessment_extracts_execution_engine_fields_from_context_packet() -> None:
+    request = router.route_request_from_mapping(
+        {
+            "prompt": "Verify the active rollout before widening anything.",
+            "task_kind": "analysis",
+            "needs_write": False,
+            "evidence_cone_grounded": True,
+            "context_signals": {
+                "context_packet": {
+                    "route": {"route_ready": True},
+                    "packet_quality": {"i": "analysis", "native_spawn_ready": True},
+                    "execution_engine": {
+                        "present": True,
+                        "outcome": "defer",
+                        "requires_reanchor": True,
+                        "mode": "verify",
+                        "next_move": "verify.selected_matrix",
+                        "current_phase": "status_synthesis",
+                        "last_successful_phase": "submit",
+                        "blocker": "waiting for rollout evidence",
+                        "closure": "incomplete",
+                        "wait_status": "building",
+                        "wait_detail": "deploying cell-01",
+                        "resume_token": "resume:B-072",
+                        "validation_archetype": "deploy",
+                        "validation_minimum_pass_count": 6,
+                        "validation_derived_from": ["mode:verify", "closure:incomplete"],
+                        "contradiction_count": 1,
+                        "history_rule_count": 2,
+                        "history_rule_hits": [
+                            "partial_scope_requires_closure",
+                            "user_correction_requires_promotion",
+                        ],
+                        "pressure_signals": ["wait:building", "history:user_correction_requires_promotion"],
+                        "nearby_denial_actions": ["explore.broad_reset", "delegate.parallel_workers"],
+                        "authoritative_lane": "context_engine.governance_slice.authoritative",
+                        "host_family": "codex",
+                        "model_family": "codex",
+                        "component_id": "execution-engine",
+                        "canonical_component_id": "execution-engine",
+                        "identity_status": "canonical",
+                        "target_component_id": "execution-engine",
+                        "target_component_ids": ["execution-engine"],
+                        "target_component_status": "execution_engine",
+                        "snapshot_reuse_status": "built",
+                        "host_supports_native_spawn": True,
+                        "runtime_invalidated_by_step": "render_compass_dashboard",
+                    },
+                }
+            },
+        }
+    )
+
+    assessment = router.assess_request(request)
+    summary = assessment.context_signal_summary
+
+    assert summary["execution_engine_present"] is True
+    assert summary["execution_engine_outcome"] == "defer"
+    assert summary["execution_engine_requires_reanchor"] is True
+    assert summary["execution_engine_mode"] == "verify"
+    assert summary["execution_engine_next_move"] == "verify.selected_matrix"
+    assert summary["execution_engine_closure"] == "incomplete"
+    assert summary["execution_engine_wait_status"] == "building"
+    assert summary["execution_engine_validation_archetype"] == "deploy"
+    assert summary["execution_engine_validation_derived_from"] == ["mode:verify", "closure:incomplete"]
+    assert summary["execution_engine_contradiction_count"] == 1
+    assert summary["execution_engine_history_rule_count"] == 2
+    assert summary["execution_engine_history_rule_hits"] == [
+        "partial_scope_requires_closure",
+        "user_correction_requires_promotion",
+    ]
+    assert summary["execution_engine_pressure_signals"] == [
+        "wait:building",
+        "history:user_correction_requires_promotion",
+    ]
+    assert summary["execution_engine_nearby_denial_actions"] == [
+        "explore.broad_reset",
+        "delegate.parallel_workers",
+    ]
+    assert summary["execution_engine_host_family"] == "codex"
+    assert summary["execution_engine_host_supports_native_spawn"] is True
+    assert summary["execution_engine_component_id"] == "execution-engine"
+    assert summary["execution_engine_canonical_component_id"] == "execution-engine"
+    assert summary["execution_engine_identity_status"] == "canonical"
+    assert summary["execution_engine_target_component_id"] == "execution-engine"
+    assert summary["execution_engine_target_component_ids"] == ["execution-engine"]
+    assert summary["execution_engine_target_component_status"] == "execution_engine"
+    assert summary["execution_engine_snapshot_reuse_status"] == "built"
+    assert summary["execution_engine_runtime_invalidated_by_step"] == "render_compass_dashboard"
+
+
+def test_assessment_fail_closes_stale_raw_execution_engine_identity_before_delegation() -> None:
+    request = router.route_request_from_mapping(
+        {
+            "prompt": "Implement the execution packet only if the active identity is canonical.",
+            "task_kind": "implementation",
+            "needs_write": True,
+            "evidence_cone_grounded": True,
+            "context_signals": {
+                "component": "execution-" + "governance",
+                "context_packet": {
+                    "route": {"route_ready": True, "native_spawn_ready": True},
+                    "packet_quality": {"i": "implementation", "native_spawn_ready": True},
+                    "execution_engine": {
+                        "present": True,
+                        "outcome": "admit",
+                        "mode": "implement",
+                        "next_move": "implement.bounded_patch",
+                        "closure": "safe",
+                        "host_family": "codex",
+                        "host_supports_native_spawn": True,
+                    },
+                },
+            },
+        }
+    )
+
+    assessment = router.assess_request(request)
+    summary = assessment.context_signal_summary
+    reason = router._odylith_execution_guard_reason(assessment)  # noqa: SLF001
+
+    assert summary["execution_engine_outcome"] == "deny"
+    assert summary["execution_engine_mode"] == "recover"
+    assert summary["execution_engine_next_move"] == "re_anchor.execution_engine_identity"
+    assert summary["execution_engine_identity_status"] == "blocked_noncanonical_target"
+    assert summary["execution_engine_target_component_id"] == "execution-" + "governance"
+    assert summary["execution_engine_target_component_status"] == "blocked_noncanonical_execution_engine"
+    assert summary["execution_engine_snapshot_reuse_status"] == "fail_closed_identity"
+    assert "noncanonical execution-engine identity" in reason
+
+
+def test_assessment_prefers_explicit_execution_engine_snapshot_over_stale_flat_fallbacks() -> None:
+    request = router.route_request_from_mapping(
+        {
+            "prompt": "Keep this slice local until the fresh governance packet says otherwise.",
+            "task_kind": "analysis",
+            "needs_write": False,
+            "evidence_cone_grounded": True,
+            "context_signals": {
+                "context_packet": {
+                    "execution_engine": {
+                        "present": True,
+                        "outcome": "admit",
+                        "requires_reanchor": False,
+                        "mode": "implement",
+                        "wait_status": "",
+                        "wait_detail": "",
+                        "validation_minimum_pass_count": 0,
+                        "history_rule_count": 0,
+                        "history_rule_hits": [],
+                        "pressure_signals": [],
+                        "host_family": "claude",
+                        "component_id": "execution-engine",
+                        "canonical_component_id": "execution-engine",
+                        "identity_status": "canonical",
+                        "target_component_id": "execution-engine",
+                        "target_component_ids": ["execution-engine"],
+                        "target_component_status": "execution_engine",
+                        "snapshot_reuse_status": "reused_context_packet_snapshot",
+                        "host_supports_native_spawn": False,
+                        "has_writable_targets": False,
+                        "requires_more_consumer_context": False,
+                        "runtime_invalidated_by_step": "",
+                    }
+                },
+                "latest_execution_engine_requires_reanchor": True,
+                "latest_execution_engine_wait_status": "building",
+                "latest_execution_engine_validation_minimum_pass_count": 6,
+                "latest_execution_engine_history_rule_count": 2,
+                "latest_execution_engine_history_rule_hits": ["lane_drift_preflight"],
+                "latest_execution_engine_pressure_signals": ["wait:building", "denials:2"],
+                "latest_execution_engine_host_supports_native_spawn": True,
+                "latest_execution_engine_requires_more_consumer_context": True,
+                "latest_execution_engine_identity_status": "blocked_noncanonical_target",
+                "latest_execution_engine_target_component_status": "blocked_noncanonical_execution_engine",
+                "latest_execution_engine_snapshot_reuse_status": "fail_closed_identity",
+                "latest_execution_engine_runtime_invalidated_by_step": "render_compass_dashboard",
+            },
+        }
+    )
+
+    assessment = router.assess_request(request)
+    summary = assessment.context_signal_summary
+
+    assert summary["execution_engine_requires_reanchor"] is False
+    assert summary["execution_engine_wait_status"] == ""
+    assert summary["execution_engine_validation_minimum_pass_count"] == 0
+    assert summary["execution_engine_history_rule_count"] == 0
+    assert summary["execution_engine_history_rule_hits"] == []
+    assert summary["execution_engine_pressure_signals"] == []
+    assert summary["execution_engine_host_family"] == "claude"
+    assert summary["execution_engine_host_supports_native_spawn"] is False
+    assert summary["execution_engine_identity_status"] == "canonical"
+    assert summary["execution_engine_target_component_status"] == "execution_engine"
+    assert summary["execution_engine_snapshot_reuse_status"] == "reused_context_packet_snapshot"
+    assert summary["execution_engine_requires_more_consumer_context"] is False
+    assert summary["execution_engine_runtime_invalidated_by_step"] == ""
+
+
+def test_router_execution_engine_reanchor_blocks_delegation() -> None:
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        context_signal_summary={
+            "execution_engine_present": True,
+            "execution_engine_requires_reanchor": True,
+            "execution_engine_mode": "recover",
+            "execution_engine_next_move": "recover.current_blocker",
+            "execution_engine_host_family": "codex",
+            "execution_engine_host_supports_native_spawn": True,
+        },
+    )
+
+    reason = router._odylith_execution_guard_reason(assessment)  # noqa: SLF001
+
+    assert "re-anchor" in reason
+    assert "Odylith" not in reason
+    assert "runtime handoff" not in reason
+
+
+def test_router_execution_engine_identity_guard_blocks_delegation() -> None:
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        context_signal_summary={
+            "execution_engine_present": True,
+            "execution_engine_outcome": "admit",
+            "execution_engine_identity_status": "blocked_noncanonical_target",
+            "execution_engine_target_component_id": "execution-" + "governance",
+            "execution_engine_target_component_status": "blocked_noncanonical_execution_engine",
+            "execution_engine_snapshot_reuse_status": "fail_closed_identity",
+            "execution_engine_host_family": "codex",
+            "execution_engine_host_supports_native_spawn": True,
+        },
+    )
+
+    reason = router._odylith_execution_guard_reason(assessment)  # noqa: SLF001
+
+    assert "noncanonical execution-engine identity" in reason
+    assert "re-anchor locally" in reason
+
+
+def test_router_execution_engine_host_serial_reason_uses_packet_derived_host_capability() -> None:
+    request = router.route_request_from_mapping(
+        {
+            "prompt": "Implement the bounded runtime fix without widening execution.",
+            "task_kind": "implementation",
+            "needs_write": True,
+            "evidence_cone_grounded": True,
+            "context_signals": {
+                "context_packet": {
+                    "route": {"route_ready": True},
+                    "packet_quality": {"i": "implementation", "native_spawn_ready": False},
+                    "execution_engine": {
+                        "present": True,
+                        "outcome": "admit",
+                        "mode": "implement",
+                        "host_family": "claude",
+                        "host_supports_native_spawn": False,
+                    },
+                }
+            },
+        }
+    )
+
+    assessment = router.assess_request(request)
+    reason = router._odylith_execution_guard_reason(assessment)  # noqa: SLF001
+
+    assert "Claude Code" in reason
+    assert "does not expose native delegated execution" in reason
+
+
+def test_orchestrator_parallel_fanout_stays_serial_while_waiting_on_verify_frontier() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Verify the active rollout before widening execution.",
+        candidate_paths=["src/odylith/runtime/a.py", "src/odylith/runtime/b.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        delegation_readiness=4,
+        earned_depth=4,
+        context_signal_summary={
+            "route_ready": True,
+            "odylith_execution_route_ready": True,
+            "native_spawn_ready": True,
+            "parallelism_hint": "bounded_parallel_candidate",
+            "parallelism_score": 4,
+            "spawn_worthiness_score": 4,
+            "odylith_execution_confidence_score": 4,
+            "execution_engine_present": True,
+            "execution_engine_mode": "verify",
+            "execution_engine_next_move": "resume.external_dependency",
+            "execution_engine_wait_status": "building",
+            "execution_engine_wait_detail": "deploying cell-01",
+            "execution_engine_host_family": "codex",
+            "execution_engine_host_supports_native_spawn": True,
+        },
+    )
+
+    mode, notes = orchestrator._adaptive_batch_mode(  # noqa: SLF001
+        request,
+        assessment,
+        safety=orchestrator.ParallelSafetyClass.DISJOINT_WRITE_SAFE,
+        groups=[["src/odylith/runtime/a.py"], ["src/odylith/runtime/b.py"]],
+        tuning=orchestrator.TuningState(),
+    )
+
+    assert mode == orchestrator.OrchestrationMode.SERIAL_BATCH
+    assert any("resume the active external dependency" in note for note in notes)
+
+
+def test_orchestrator_keeps_claude_host_local_when_worker_delegation_is_unavailable() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Implement the bounded runtime fix.",
+        candidate_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        context_signal_summary={
+            "route_ready": True,
+            "odylith_execution_route_ready": True,
+            "native_spawn_ready": False,
+            "execution_engine_present": True,
+            "execution_engine_outcome": "admit",
+            "execution_engine_mode": "implement",
+            "execution_engine_host_family": "claude",
+            "execution_engine_host_supports_native_spawn": False,
+        },
+    )
+
+    reasons, notes = orchestrator._should_keep_local(request, assessment)  # noqa: SLF001
+
+    assert "execution-engine-host-serial" in reasons
+    assert any("Claude Code" in note for note in notes)
 
 
 def test_orchestrator_keeps_consumer_odylith_fix_local_with_handoff_note(tmp_path: Path) -> None:

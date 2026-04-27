@@ -20,6 +20,10 @@ from pathlib import Path
 import tempfile
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.common.value_coercion import float_value as _float_value
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import mapping_copy as _mapping_value
+from odylith.runtime.common.value_coercion import normalize_string_list as _string_list
 from odylith.runtime.context_engine import odylith_context_cache
 
 
@@ -49,20 +53,6 @@ def _normalize_token(value: Any) -> str:
     return _normalize_string(value).lower().replace(" ", "_")
 
 
-def _int_value(value: Any) -> int:
-    try:
-        return int(value or 0)
-    except (TypeError, ValueError):
-        return 0
-
-
-def _float_value(value: Any) -> float:
-    try:
-        return float(value or 0.0)
-    except (TypeError, ValueError):
-        return 0.0
-
-
 def _bool_value(value: Any) -> bool:
     if isinstance(value, bool):
         return value
@@ -72,27 +62,6 @@ def _bool_value(value: Any) -> bool:
     if token in {"0", "false", "no", "off"}:
         return False
     return bool(value)
-
-
-def _mapping_value(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
-
-
-def _string_list(value: Any, *, limit: int | None = None) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    rows: list[str] = []
-    seen: set[str] = set()
-    for item in value:
-        token = _normalize_string(item)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-        if limit is not None and len(rows) >= max(1, int(limit)):
-            break
-    return rows
-
 
 def _context_signal_score(value: Any) -> int:
     if isinstance(value, Mapping):

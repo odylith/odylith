@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
+
+from odylith.runtime.context_engine import odylith_context_engine_hot_path_delivery_runtime
+from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
+from odylith.runtime.evaluation import odylith_benchmark_prompt_family_rules
+from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+from odylith.runtime.evaluation import odylith_benchmark_taxonomy
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -15,8 +22,125 @@ def _load(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _load_normalized() -> list[dict[str, object]]:
+    return runner.load_benchmark_scenarios(repo_root=ROOT)
+
+
 def test_public_and_bundle_benchmark_corpus_stay_aligned() -> None:
     assert _load(PUBLIC_CORPUS) == _load(BUNDLE_CORPUS)
+
+
+def test_execution_engine_support_doc_rank_uses_completed_plan_path() -> None:
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path=(
+                "odylith/technical-plans/done/2026-04/"
+                "2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
+            ),
+            family="execution_engine",
+        )
+        == 2
+    )
+
+
+def test_execution_engine_corpus_hard_gates_identity_for_every_execution_case() -> None:
+    corpus = _load(PUBLIC_CORPUS)
+    execution_cases = [
+        case
+        for case in corpus.get("scenarios", [])
+        if isinstance(case, dict) and str(case.get("family", "")).strip() == "execution_engine"
+    ]
+    required_keys = {
+        "execution_engine_component_id",
+        "execution_engine_canonical_component_id",
+        "execution_engine_identity_status",
+        "execution_engine_target_component_status",
+        "execution_engine_snapshot_reuse_status",
+    }
+
+    assert len(execution_cases) >= 9
+    historical_cases = [
+        case
+        for case in execution_cases
+        if str(case.get("case_id", "")) == "execution-engine-historical-id-fails-closed"
+    ]
+    assert len(historical_cases) == 1
+
+    for case in execution_cases:
+        expect = dict(case.get("expect", {}))
+        benchmark = dict(case.get("benchmark", {}))
+        missing = sorted(key for key in required_keys if key not in expect)
+        assert not missing, (case.get("case_id"), missing)
+
+        if case is historical_cases[0]:
+            assert benchmark.get("component") == "execution-governance"
+            assert expect["execution_engine_component_id"] == ["execution-engine"]
+            assert expect["execution_engine_canonical_component_id"] == ["execution-engine"]
+            assert expect["execution_engine_identity_status"] == ["blocked_noncanonical_target"]
+            assert expect["execution_engine_target_component_status"] == [
+                "blocked_noncanonical_execution_engine"
+            ]
+            assert expect["execution_engine_snapshot_reuse_status"] == ["fail_closed_identity"]
+            continue
+
+        assert "execution-governance" not in json.dumps(benchmark, sort_keys=True)
+        assert "execution-governance" not in json.dumps(expect, sort_keys=True)
+        assert expect["execution_engine_component_id"] == ["execution-engine"]
+        assert expect["execution_engine_canonical_component_id"] == ["execution-engine"]
+        assert expect["execution_engine_identity_status"] == ["canonical"]
+        benchmark_component = str(benchmark.get("component", "")).strip()
+        expected_target_status = (
+            ["execution_engine_plus_related"]
+            if benchmark_component and benchmark_component != "execution-engine"
+            else ["execution_engine"]
+        )
+        assert expect["execution_engine_target_component_status"] == expected_target_status
+        assert expect["execution_engine_snapshot_reuse_status"] == ["built"]
+
+
+def test_benchmark_corpus_declares_supporting_paths_and_write_targets_separately() -> None:
+    public_corpus = _load(PUBLIC_CORPUS)
+    raw_scenarios = {
+        str(row.get("case_id", "")).strip(): row
+        for row in public_corpus.get("scenarios", [])
+        if isinstance(row, dict)
+    }
+    scenarios = {str(row.get("scenario_id", "")).strip(): row for row in _load_normalized()}
+
+    cross_file = scenarios["cross-file-feature-budget-discipline"]
+    assert "odylith/skills/odylith-subagent-router/SKILL.md" in cross_file["required_paths"]
+    assert "src/odylith/runtime/orchestration/subagent_router.py" in cross_file["supporting_paths"]
+    assert "src/odylith/runtime/orchestration/subagent_router.py" in cross_file["expected_write_paths"]
+    assert "odylith/skills/odylith-subagent-router/SKILL.md" not in cross_file["expected_write_paths"]
+
+    wave3 = scenarios["wave3-explicit-workstream"]
+    assert wave3["needs_write"] is False
+    assert wave3["expected_write_paths"] == []
+
+    benchmark_component = scenarios["benchmark-component-governance-truth"]
+    assert "odylith/atlas/source/catalog/diagrams.v1.json" in benchmark_component["expected_write_paths"]
+
+    live_attribution = scenarios["live-observed-path-attribution-contract-parity"]
+    assert live_attribution["needs_write"] is False
+    assert (
+        "src/odylith/runtime/evaluation/odylith_benchmark_live_artifacts.py"
+        in live_attribution["required_paths"]
+    )
+    raw_live_attribution = raw_scenarios["live-observed-path-attribution-contract-parity"]
+    assert (
+        "src/odylith/runtime/evaluation/odylith_benchmark_live_artifacts.py"
+        in raw_live_attribution["benchmark"]["paths"]
+    )
+
+    no_fake_lane = scenarios["live-proof-no-fake-precision-without-a-lane"]
+    assert "odylith/runtime/source/optimization-evaluation-corpus.v1.json" in no_fake_lane["supporting_paths"]
+    assert (
+        "src/odylith/bundle/assets/odylith/runtime/source/optimization-evaluation-corpus.v1.json"
+        in no_fake_lane["supporting_paths"]
+    )
+
+    corpus_expansion = scenarios["benchmark-corpus-expansion-mirror-integrity"]
+    assert "docs/benchmarks/FAMILIES_AND_EVALS.md" in corpus_expansion["supporting_paths"]
 
 
 def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
@@ -36,12 +160,15 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         if isinstance(case, dict)
     }
 
-    assert len(scenarios) >= 33
-    assert len(architecture_scenarios) >= 4
+    assert len(scenarios) >= 60
+    assert len(architecture_scenarios) >= 5
     assert {
         "install_upgrade_runtime",
+        "live_proof_discipline",
+        "execution_engine",
         "release_publication",
         "browser_surface_reliability",
+        "context_engine_grounding",
         "daemon_security",
         "component_governance",
         "compass_brief_freshness",
@@ -50,6 +177,12 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "cli_contract_regression",
         "consumer_profile_compatibility",
         "runtime_state_integrity",
+        "api_contract_evolution",
+        "stateful_bug_recovery",
+        "external_dependency_recovery",
+        "destructive_scope_control",
+        "guidance_behavior",
+        "discipline",
     }.issubset(families)
     assert {
         "consumer-install-upgrade-runtime-contract",
@@ -63,15 +196,55 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
         "install-time-agent-activation-contract",
         "cli-install-first-run-onboarding-contract",
         "consumer-profile-truth-root-compatibility",
+        "context-engine-split-adaptive-grounding",
+        "context-engine-governance-boundary-grounding",
+        "context-engine-broad-scope-fail-closed",
+        "context-engine-release-resolution-grounding",
+        "execution-engine-contract-verify-closure-discipline",
+        "execution-engine-runtime-surface-phase-carry-through",
+        "execution-engine-router-recovery-posture",
+        "execution-engine-broad-scope-recover-fail-closed",
+        "execution-engine-governance-slice-ambiguity-recovery",
+        "live-proof-frontier-verified-control-panel",
+        "live-proof-no-fake-precision-without-a-lane",
         "product-runtime-state-js-companion-contract",
         "cross-surface-governance-sync-truth",
         "benchmark-raw-baseline-publication-contract",
         "benchmark-raw-baseline-runner-gate",
         "benchmark-docs-and-readme-closeout",
         "benchmark-corpus-expansion-mirror-integrity",
+        "benchmark-taxonomy-and-heatmap-family-order-evolution",
+        "compass-wave-and-release-posture-surface-sync",
+        "tooling-dashboard-shell-render-contract",
+        "subagent-routing-and-remediator-guardrail-carry-through",
+        "benchmark-live-comparison-contract-and-report-schema",
+        "live-observed-path-attribution-contract-parity",
+        "program-wave-and-release-authoring-status-schema",
+        "benchmark-progress-checkpoint-and-resume-recovery",
+        "compass-refresh-queued-state-recovery",
+        "execution-engine-contradiction-reanchor-recovery",
+        "github-actions-semantic-wait-and-resume-token-contract",
+        "live-preflight-evidence-disposable-workspace-contract",
+        "runtime-surface-wait-status-carry-through",
+        "resource-closure-destructive-subset-blocking",
+        "codex-bash-guard-destructive-command-blocking",
+        "claude-bash-guard-destructive-command-blocking",
+        "guidance-ground-before-broad-search",
+        "guidance-cli-first-governed-truth",
+        "guidance-queue-non-adoption",
+        "guidance-fresh-proof-completion-claim",
+        "guidance-bounded-delegation-contract",
+        "guidance-visible-intervention-proof",
+        "discipline-hard-law-zero-credit",
+        "discipline-unknown-pressure-adaptive-stance",
+        "discipline-mixed-pressure-affordance-ranking",
+        "discipline-learning-replay-tribunal-candidate",
+        "discipline-noise-suppression-silent-pass",
+        "discipline-benchmark-sovereignty-public-claim",
     }.issubset(scenario_ids)
     assert {
         "architecture-release-install-runtime-boundary",
+        "architecture-context-engine-split-boundary-contract",
         "architecture-benchmark-proof-publication-lane",
         "architecture-benchmark-honest-baseline-contract",
     }.issubset(architecture_ids)
@@ -84,12 +257,323 @@ def test_benchmark_corpus_covers_complex_repo_agentic_scenarios() -> None:
     assert "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md" not in release_boundary_required_paths
 
 
-def test_benchmark_corpus_keeps_final_only_odylith_assist_closeout_contract() -> None:
+def test_guidance_behavior_family_filter_selects_only_guidance_cases() -> None:
+    scenarios = _load_normalized()
+    selection = runner._resolve_benchmark_scenario_selection(  # noqa: SLF001
+        all_scenarios=scenarios,
+        benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
+        families=["guidance_behavior"],
+    )
+    selected = selection["scenarios"]
+    selected_ids = {str(row.get("scenario_id", "")).strip() for row in selected}
+
+    assert selection["selection_strategy"] == "manual_selection"
+    assert selection["selected_families"] == {"guidance_behavior"}
+    assert len(selected) == 6
+    assert all(str(row.get("family", "")).strip() == "guidance_behavior" for row in selected)
+    assert selected_ids == {
+        "guidance-ground-before-broad-search",
+        "guidance-cli-first-governed-truth",
+        "guidance-queue-non-adoption",
+        "guidance-fresh-proof-completion-claim",
+        "guidance-bounded-delegation-contract",
+        "guidance-visible-intervention-proof",
+    }
+
+
+def test_guidance_behavior_family_is_curated_low_latency_and_taxonomized() -> None:
+    assert odylith_benchmark_prompt_family_rules.family_zero_support_doc_expansion("guidance_behavior") is True
+    assert odylith_benchmark_prompt_family_rules.family_uses_curated_doc_overrides("guidance_behavior") is True
+    assert odylith_benchmark_prompt_family_rules.family_anchors_all_required_docs("guidance_behavior") is True
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path="odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json",
+            family="guidance_behavior",
+        )
+        == 0
+    )
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path="src/odylith/runtime/governance/validate_guidance_behavior.py",
+            family="guidance_behavior",
+        )
+        == 1
+    )
+    assert odylith_benchmark_taxonomy.family_group_label("guidance_behavior") == "Grounding / Orchestration Control"
+
+    profile = odylith_context_engine_hot_path_delivery_runtime._impact_family_profile(  # noqa: SLF001
+        hot_path=True,
+        family_hint="guidance_behavior",
+    )
+
+    assert profile["allow_miss_recovery"] is False
+    assert profile["include_notes"] is False
+    assert profile["include_bugs"] is False
+    assert profile["include_code_neighbors"] is False
+    assert profile["include_components"] is False
+    assert profile["include_diagrams"] is False
+    assert profile["include_tests"] is False
+    assert profile["include_workstreams"] is False
+    assert (
+        runner._profile_uses_live_public_modes_for_selection(  # noqa: SLF001
+            profile="quick",
+            selected_families=["guidance_behavior"],
+        )
+        is False
+    )
+    assert (
+        runner._profile_uses_live_public_modes_for_selection(  # noqa: SLF001
+            profile="quick",
+            selected_families=["execution_engine"],
+        )
+        is True
+    )
+    assert runner._cache_profiles_for_selection(  # noqa: SLF001
+        profile="quick",
+        selected_families=["guidance_behavior"],
+        cache_profiles=["warm"],
+        explicit_cache_profile_selection=False,
+    ) == ["cold"]
+    assert runner._cache_profiles_for_selection(  # noqa: SLF001
+        profile="quick",
+        selected_families=["guidance_behavior"],
+        cache_profiles=["warm"],
+        explicit_cache_profile_selection=True,
+    ) == ["warm"]
+
+
+def test_discipline_family_filter_selects_only_discipline_cases() -> None:
+    scenarios = _load_normalized()
+    selection = runner._resolve_benchmark_scenario_selection(  # noqa: SLF001
+        all_scenarios=scenarios,
+        benchmark_profile=runner.BENCHMARK_PROFILE_QUICK,
+        families=["discipline"],
+    )
+    selected = selection["scenarios"]
+    selected_ids = {str(row.get("scenario_id", "")).strip() for row in selected}
+
+    assert selection["selection_strategy"] == "manual_selection"
+    assert selection["selected_families"] == {"discipline"}
+    assert len(selected) == 7
+    assert all(str(row.get("family", "")).strip() == "discipline" for row in selected)
+    assert selected_ids == {
+        "discipline-host-lane-parity-matrix",
+        "discipline-hard-law-zero-credit",
+        "discipline-unknown-pressure-adaptive-stance",
+        "discipline-mixed-pressure-affordance-ranking",
+        "discipline-learning-replay-tribunal-candidate",
+        "discipline-noise-suppression-silent-pass",
+        "discipline-benchmark-sovereignty-public-claim",
+    }
+
+
+def test_discipline_family_is_credit_safe_and_taxonomized() -> None:
+    assert odylith_benchmark_prompt_family_rules.family_zero_support_doc_expansion("discipline") is True
+    assert odylith_benchmark_prompt_family_rules.family_uses_curated_doc_overrides("discipline") is True
+    assert odylith_benchmark_prompt_family_rules.family_anchors_all_required_docs("discipline") is True
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path="odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+            family="discipline",
+        )
+        == 0
+    )
+    assert (
+        odylith_benchmark_prompt_family_rules.support_doc_family_rank(
+            path="src/odylith/runtime/governance/validate_discipline.py",
+            family="discipline",
+        )
+        == 0
+    )
+    assert odylith_benchmark_taxonomy.family_group_label("discipline") == "Grounding / Orchestration Control"
+    profile = odylith_context_engine_hot_path_delivery_runtime._impact_family_profile(  # noqa: SLF001
+        hot_path=True,
+        family_hint="discipline",
+    )
+
+    assert profile["allow_miss_recovery"] is False
+    assert profile["include_notes"] is False
+    assert profile["include_bugs"] is False
+    assert profile["include_code_neighbors"] is False
+    assert profile["include_components"] is False
+    assert profile["include_diagrams"] is False
+    assert profile["include_tests"] is False
+    assert profile["include_workstreams"] is False
+    assert (
+        runner._profile_uses_live_public_modes_for_selection(  # noqa: SLF001
+            profile="quick",
+            selected_families=["discipline"],
+        )
+        is False
+    )
+    assert runner._cache_profiles_for_selection(  # noqa: SLF001
+        profile="quick",
+        selected_families=["discipline"],
+        cache_profiles=["warm"],
+        explicit_cache_profile_selection=False,
+    ) == ["cold"]
+
+
+def test_guidance_behavior_validator_summary_prevents_hot_path_widening() -> None:
+    payload = {
+        "full_scan_recommended": True,
+        "route_ready": False,
+        "routing_confidence": "low",
+        "context_packet": {
+            "full_scan_recommended": True,
+            "route": {"narrowing_required": True},
+            "packet_quality": {"rc": "low", "i": "analysis"},
+            "retrieval_plan": {"selected_counts": "g1"},
+            "guidance_behavior_summary": {
+                "family": "guidance_behavior",
+                "status": "available",
+                "validator_command": "odylith validate guidance-behavior --repo-root .",
+            },
+        },
+    }
+
+    assert (
+        odylith_context_engine_hot_path_delivery_runtime._hot_path_auto_escalation_trigger(  # noqa: SLF001
+            packet_kind="impact",
+            family_hint="guidance_behavior",
+            payload=payload,
+        )
+        == ""
+    )
+    assert (
+        odylith_context_engine_hot_path_delivery_runtime._should_escalate_hot_path_to_session_brief(  # noqa: SLF001
+            payload=payload,
+            family_hint="guidance_behavior",
+            workstream_hint="",
+            validation_command_hints=["odylith validate guidance-behavior --repo-root ."],
+        )
+        == (False, [])
+    )
+    assert (
+        odylith_context_engine_hot_path_delivery_runtime._hot_path_selected_validation_count(payload)  # noqa: SLF001
+        == 1
+    )
+
+
+def test_guidance_behavior_observed_paths_stay_prompt_visible_only() -> None:
+    paths = runner._observed_packet_paths(  # noqa: SLF001
+        {
+            "context_packet": {
+                "guidance_behavior_summary": {
+                    "source_refs": [
+                        "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json"
+                    ],
+                    "related_guidance_refs": ["AGENTS.md"],
+                    "runtime_layer_contract": {
+                        "source_refs": [
+                            "src/odylith/runtime/context_engine/execution_engine_handshake.py"
+                        ]
+                    },
+                }
+            }
+        }
+    )
+
+    assert "AGENTS.md" in paths
+    assert "odylith/runtime/source/guidance-behavior-evaluation-corpus.v1.json" not in paths
+    assert "src/odylith/runtime/context_engine/execution_engine_handshake.py" not in paths
+
+
+def test_discipline_observed_paths_ignore_runtime_summary_metadata() -> None:
+    paths = runner._observed_packet_paths(  # noqa: SLF001
+        {
+            "context_packet": {
+                "discipline_summary": {
+                    "source_refs": [
+                        "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+                        "src/odylith/runtime/discipline",
+                    ],
+                }
+            }
+        }
+    )
+
+    assert "odylith/runtime/source/discipline-evaluation-corpus.v1.json" not in paths
+    assert "src/odylith/runtime/discipline" not in paths
+
+
+def test_benchmark_corpus_meets_seriousness_floor() -> None:
+    scenarios = _load_normalized()
+    implementation = [row for row in scenarios if str(row.get("kind", "")).strip() != "architecture"]
+    architecture = [row for row in scenarios if str(row.get("kind", "")).strip() == "architecture"]
+    write_plus_validator = [row for row in implementation if bool(row.get("needs_write")) and row.get("validation_commands")]
+    correctness_critical = [row for row in implementation if bool(row.get("correctness_critical"))]
+    mechanism_heavy = [row for row in implementation if str(row.get("family", "")).strip() in runner._MECHANISM_HEAVY_IMPLEMENTATION_FAMILIES]
+
+    family_counts: dict[str, int] = {}
+    for row in implementation:
+        family = str(row.get("family", "")).strip()
+        family_counts[family] = family_counts.get(family, 0) + 1
+
+    assert len(implementation) >= 60
+    assert len(architecture) >= 5
+    assert len(write_plus_validator) >= 35
+    assert len(correctness_critical) >= 12
+    assert len(mechanism_heavy) / len(implementation) <= 0.40
+    assert family_counts.get("api_contract_evolution", 0) >= 3
+    assert family_counts.get("stateful_bug_recovery", 0) >= 3
+    assert family_counts.get("external_dependency_recovery", 0) >= 3
+    assert family_counts.get("destructive_scope_control", 0) >= 3
+    assert family_counts.get("cross_file_feature", 0) + family_counts.get("merge_heavy_change", 0) >= 6
+
+
+def test_public_family_catalog_stays_aligned_with_tracked_corpus() -> None:
+    scenarios = _load_normalized()
+    implementation = [row for row in scenarios if str(row.get("kind", "")).strip() != "architecture"]
+    architecture = [row for row in scenarios if str(row.get("kind", "")).strip() == "architecture"]
+    write_plus_validator = [row for row in implementation if bool(row.get("needs_write")) and row.get("validation_commands")]
+    correctness_critical = [row for row in implementation if bool(row.get("correctness_critical"))]
+    mechanism_heavy = [
+        row
+        for row in implementation
+        if str(row.get("family", "")).strip() in runner._MECHANISM_HEAVY_IMPLEMENTATION_FAMILIES
+    ]
+
+    family_counts: dict[str, int] = {}
+    for row in implementation:
+        family = str(row.get("family", "")).strip()
+        family_counts[family] = family_counts.get(family, 0) + 1
+    family_counts["architecture"] = len(architecture)
+
+    catalog = (ROOT / "docs" / "benchmarks" / "FAMILIES_AND_EVALS.md").read_text(encoding="utf-8")
+    tracked = re.search(
+        r"`(\d+)` implementation scenarios plus `(\d+)` architecture scenarios, `(\d+)` total",
+        catalog,
+    )
+    assert tracked is not None
+    assert tuple(int(token) for token in tracked.groups()) == (
+        len(implementation),
+        len(architecture),
+        len(implementation) + len(architecture),
+    )
+
+    seriousness = re.search(
+        r"`(\d+)` write-plus-validator scenarios, `(\d+)` correctness-critical scenarios,\n\s+and a mechanism-heavy implementation share of `([0-9.]+)`",
+        catalog,
+    )
+    assert seriousness is not None
+    assert int(seriousness.group(1)) == len(write_plus_validator)
+    assert int(seriousness.group(2)) == len(correctness_critical)
+    assert float(seriousness.group(3)) == round(len(mechanism_heavy) / len(implementation), 3)
+
+    documented_family_counts = {
+        family: int(count)
+        for family, count in re.findall(r"\| `([^`]+)` \| (\d+) \|", catalog)
+    }
+    assert documented_family_counts == family_counts
+
+
+def test_benchmark_corpus_keeps_evidence_backed_odylith_assist_contract() -> None:
     corpus = _load(PUBLIC_CORPUS)
     program = dict(corpus.get("program", {}))
     contract = dict(program.get("closeout_contract", {}))
 
-    assert contract.get("odylith_brand_note") == "final_only_evidence_backed"
+    assert contract.get("odylith_brand_note") == "closeout_or_visibility_feedback_evidence_backed"
     assert contract.get("allowed_label") == "Odylith Assist:"
     assert contract.get("preferred_markdown_label") == "**Odylith Assist:**"
     assert contract.get("benchmark_tax_policy") == "metadata_only"
@@ -99,8 +583,10 @@ def test_benchmark_corpus_keeps_final_only_odylith_assist_closeout_contract() ->
     assert any("mid-task narration task-first" in rule or "weave Odylith facts into normal updates" in rule for rule in rules)
     assert any("Odylith Insight" in rule and "Odylith History" in rule and "Odylith Risks" in rule for rule in rules)
     assert any("at most one short Odylith Assist line" in rule for rule in rules)
+    assert any("explicit visibility feedback" in rule and "visible fallback" in rule for rule in rules)
     assert any("bold Markdown label" in rule for rule in rules)
-    assert any("Lead with the user win" in rule and "updated governance ids inline" in rule for rule in rules)
+    assert any("Lead with the user win" in rule and "updated governance IDs inline" in rule for rule in rules)
+    assert any("affected governance-contract IDs" in rule for rule in rules)
     assert any("broader unguided path" in rule for rule in rules)
     assert any("crisp, authentic, clear, simple, insightful" in rule for rule in rules)
     assert any(
@@ -193,3 +679,163 @@ def test_publication_benchmark_cases_preload_narrow_focused_checks() -> None:
 
     assert proof_checks == [proof["validation_commands"][1]]
     assert raw_checks == [raw["validation_commands"][0]]
+
+
+def test_live_preflight_evidence_case_declares_narrow_preflight_check_and_timeout_budget() -> None:
+    corpus = _load(PUBLIC_CORPUS)
+    scenarios = {
+        str(case.get("case_id", "")).strip(): case
+        for case in corpus.get("scenarios", [])
+        if isinstance(case, dict)
+    }
+
+    benchmark = dict(scenarios["live-preflight-evidence-disposable-workspace-contract"].get("benchmark", {}))
+    focused_checks = [str(token).strip() for token in benchmark.get("focused_local_checks", []) if str(token).strip()]
+
+    assert focused_checks == benchmark["validation_commands"]
+    assert float(benchmark.get("live_timeout_seconds", 0.0) or 0.0) == 420.0
+
+
+def test_focused_local_checks_stay_executable_commands() -> None:
+    invalid: list[tuple[str, str]] = []
+    for scenario in _load_normalized():
+        for raw in scenario.get("focused_local_checks", []) or []:
+            token = str(raw).strip()
+            if not token:
+                continue
+            if token.startswith(("odylith ", "PYTHONPATH=", ".venv/bin/", "./.venv/bin/", "python ", "/")):
+                continue
+            invalid.append((str(scenario.get("scenario_id", "")).strip(), token))
+
+    assert not invalid, f"focused_local_checks must stay executable, not prose: {invalid}"
+
+
+def test_packet_guardrail_noop_cases_use_validator_backed_commands() -> None:
+    scenarios = {str(row.get("scenario_id", "")).strip(): row for row in _load_normalized()}
+    for scenario_id in (
+        "broad-shared-guarding",
+        "cross-file-feature-budget-discipline",
+        "runtime-path-ambiguity",
+        "session-brief-broad-shared-guarding",
+        "session-brief-runtime-path-ambiguity",
+        "wave3-explicit-workstream",
+        "orchestration-control-advisory-loop",
+        "wave4-runtime-sparse-miss-recovery",
+    ):
+        scenario = scenarios[scenario_id]
+        assert scenario["allow_noop_completion"] is True
+        assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_docs_closeout_noop_case_uses_validator_backed_commands() -> None:
+    scenarios = {str(row.get("scenario_id", "")).strip(): row for row in _load_normalized()}
+    scenario = scenarios["benchmark-docs-and-readme-closeout"]
+    assert scenario["allow_noop_completion"] is True
+    assert scenario["focused_local_checks"] == scenario["validation_commands"]
+
+
+def test_correctness_critical_allow_noop_cases_declare_focused_local_checks() -> None:
+    missing: list[tuple[str, str]] = []
+    for scenario in _load_normalized():
+        if not bool(scenario.get("allow_noop_completion")):
+            continue
+        if not bool(scenario.get("correctness_critical")):
+            continue
+        focused_checks = [str(token).strip() for token in scenario.get("focused_local_checks", []) if str(token).strip()]
+        if not focused_checks:
+            missing.append(
+                (
+                    str(scenario.get("scenario_id", "")).strip(),
+                    str(scenario.get("family", "")).strip(),
+                )
+            )
+
+    assert not missing, f"correctness-critical allow-noop cases missing focused checks: {missing}"
+
+
+def test_allow_noop_cases_with_validators_declare_focused_local_checks() -> None:
+    missing: list[tuple[str, str]] = []
+    for scenario in _load_normalized():
+        if not bool(scenario.get("allow_noop_completion")):
+            continue
+        validation_commands = [str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()]
+        if not validation_commands:
+            continue
+        focused_checks = [str(token).strip() for token in scenario.get("focused_local_checks", []) if str(token).strip()]
+        if not focused_checks:
+            missing.append(
+                (
+                    str(scenario.get("scenario_id", "")).strip(),
+                    str(scenario.get("family", "")).strip(),
+                )
+            )
+
+    assert not missing, f"allow-noop validator-backed cases missing focused checks: {missing}"
+
+
+def test_cli_and_browser_contract_cases_allow_validator_backed_noop_completion() -> None:
+    scenarios = {
+        str(scenario.get("scenario_id", "")).strip(): scenario
+        for scenario in _load_normalized()
+    }
+
+    for scenario_id in (
+        "shell-and-compass-browser-reliability",
+        "tooling-dashboard-onboarding-browser-contract",
+        "cli-install-first-run-onboarding-contract",
+    ):
+        scenario = dict(scenarios[scenario_id])
+        validation_commands = [str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()]
+        focused_checks = [str(token).strip() for token in scenario.get("focused_local_checks", []) if str(token).strip()]
+
+        assert scenario.get("allow_noop_completion") is True
+        assert focused_checks == validation_commands
+
+
+def test_cross_surface_governance_sync_truth_allows_validator_backed_noop_completion() -> None:
+    scenarios = {
+        str(scenario.get("scenario_id", "")).strip(): scenario
+        for scenario in _load_normalized()
+    }
+    scenario = dict(scenarios["cross-surface-governance-sync-truth"])
+    validation_commands = [str(token).strip() for token in scenario.get("validation_commands", []) if str(token).strip()]
+    focused_checks = [str(token).strip() for token in scenario.get("focused_local_checks", []) if str(token).strip()]
+
+    assert scenario.get("allow_noop_completion") is True
+    assert focused_checks == validation_commands
+
+
+def test_odylith_on_prompt_payloads_stay_within_declared_benchmark_surfaces() -> None:
+    overreach: list[tuple[str, str, list[str]]] = []
+
+    for scenario in _load_normalized():
+        request = runner._prepare_live_scenario_request(  # noqa: SLF001
+            repo_root=ROOT,
+            scenario=scenario,
+            mode="odylith_on",
+            benchmark_profile="quick",
+        )
+        prompt_payload = dict(request.get("prompt_payload", {}))
+        observed_paths = odylith_benchmark_live_diagnostics.prompt_payload_observed_paths(
+            prompt_payload=prompt_payload
+        )
+        relevant_paths = {
+            str(token).strip()
+            for token in [
+                *(scenario.get("changed_paths", []) or []),
+                *(scenario.get("required_paths", []) or []),
+                *(scenario.get("supporting_paths", []) or []),
+            ]
+            if str(token).strip()
+        }
+        extras = [token for token in observed_paths if token not in relevant_paths]
+        if extras:
+            overreach.append(
+                (
+                    str(scenario.get("scenario_id", "")).strip(),
+                    str(scenario.get("family", "")).strip(),
+                    extras,
+                )
+            )
+
+    assert not overreach, f"odylith_on prompt payload overreach: {overreach}"

@@ -1,33 +1,61 @@
+"""Subagent Router Runtime Policy helpers for the Odylith orchestration layer."""
+
 from __future__ import annotations
 
-from typing import Any
-from typing import Mapping
-from typing import Sequence
+from typing import Any, Mapping, Sequence
 
-def bind(host_module: Any) -> None:
-    globals().update({
-        "RouterProfile": getattr(host_module, "RouterProfile"),
-        "TaskAssessment": getattr(host_module, "TaskAssessment"),
-        "TuningState": getattr(host_module, "TuningState"),
-        "_mapping_value": getattr(host_module, "_mapping_value"),
-        "_context_lookup": getattr(host_module, "_context_lookup"),
-        "_context_signal_bool": getattr(host_module, "_context_signal_bool"),
-        "_execution_profile_candidate": getattr(host_module, "_execution_profile_candidate"),
-        "_synthesized_execution_profile_candidate": getattr(host_module, "_synthesized_execution_profile_candidate"),
-        "_router_profile_from_token": getattr(host_module, "_router_profile_from_token"),
-        "_router_profile_from_runtime": getattr(host_module, "_router_profile_from_runtime"),
-        "_agent_role_for_assessment": getattr(host_module, "_agent_role_for_assessment"),
-        "_normalize_token": getattr(host_module, "_normalize_token"),
-        "_clamp_score": getattr(host_module, "_clamp_score"),
-        "_normalized_rate": getattr(host_module, "_normalized_rate"),
-        "_RUNTIME_EARNED_DEPTH_SELECTION_MODES": getattr(host_module, "_RUNTIME_EARNED_DEPTH_SELECTION_MODES"),
-        "_RUNTIME_SUPPORT_SELECTION_MODES": getattr(host_module, "_RUNTIME_SUPPORT_SELECTION_MODES"),
-        "_PROFILE_PRIORITY": getattr(host_module, "_PROFILE_PRIORITY"),
-        "_tuning_bias_for_profile": getattr(host_module, "_tuning_bias_for_profile"),
-        "_profile_reliability_summary": getattr(host_module, "_profile_reliability_summary"),
-        "_sanitize_user_facing_text": getattr(host_module, "_sanitize_user_facing_text"),
-        "_sanitize_user_facing_lines": getattr(host_module, "_sanitize_user_facing_lines"),
-    })
+from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.common import host_runtime as host_runtime_contract
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
+from odylith.runtime.execution_engine import runtime_lane_policy
+from odylith.runtime.orchestration import subagent_router_context_support
+from odylith.runtime.orchestration import subagent_router_profile_support
+
+RouterProfile = subagent_router_profile_support.RouterProfile
+_mapping_value = subagent_router_context_support._mapping_value
+_context_lookup = subagent_router_context_support._context_lookup
+_context_signal_bool = subagent_router_context_support._context_signal_bool
+_execution_profile_candidate = subagent_router_context_support._execution_profile_candidate
+_synthesized_execution_profile_candidate = subagent_router_context_support._synthesized_execution_profile_candidate
+_router_profile_from_token = subagent_router_profile_support.router_profile_from_token
+_router_profile_from_runtime = subagent_router_profile_support.router_profile_from_runtime
+_agent_role_for_assessment = subagent_router_profile_support.agent_role_for_assessment
+_clamp_score = subagent_router_profile_support.clamp_score
+_normalized_rate = subagent_router_context_support._normalized_rate
+_tuning_bias_for_profile = subagent_router_profile_support.tuning_bias_for_profile
+_profile_reliability_summary = subagent_router_profile_support.profile_reliability_summary
+_sanitize_user_facing_text = subagent_router_profile_support.sanitize_user_facing_text
+_sanitize_user_facing_lines = subagent_router_profile_support.sanitize_user_facing_lines
+_PROFILE_PRIORITY: dict[str, int] = {
+    "main_thread": 0,
+    agent_runtime_contract.ANALYSIS_MEDIUM_PROFILE: 1,
+    agent_runtime_contract.ANALYSIS_HIGH_PROFILE: 2,
+    agent_runtime_contract.FAST_WORKER_PROFILE: 3,
+    agent_runtime_contract.WRITE_MEDIUM_PROFILE: 4,
+    agent_runtime_contract.WRITE_HIGH_PROFILE: 5,
+    agent_runtime_contract.FRONTIER_HIGH_PROFILE: 6,
+    agent_runtime_contract.FRONTIER_XHIGH_PROFILE: 7,
+}
+_RUNTIME_EARNED_DEPTH_SELECTION_MODES: frozenset[str] = frozenset(
+    {
+        "critical_accuracy",
+        "deep_validation",
+        "implementation_primary",
+        "bounded_write",
+        "validation_focused",
+        "analysis_synthesis",
+        "architecture_grounding",
+        "architecture_change",
+    }
+)
+_RUNTIME_SUPPORT_SELECTION_MODES: frozenset[str] = frozenset(
+    {
+        "support_fast_lane",
+        "analysis_scout",
+        "validation_support",
+        "architecture_synthesis",
+    }
+)
 
 
 def _execution_profile_mapping(
@@ -37,118 +65,23 @@ def _execution_profile_mapping(
     evidence_pack: Mapping[str, Any],
     optimization_snapshot: Mapping[str, Any],
 ) -> dict[str, Any]:
-    latest_packet = _mapping_value(optimization_snapshot, "latest_packet")
-    optimization_latest_profile = {
-        key: value
-        for key, value in {
-            "profile": str(_context_lookup(latest_packet, "odylith_execution_profile") or "").strip(),
-            "model": str(_context_lookup(latest_packet, "odylith_execution_model") or "").strip(),
-            "reasoning_effort": str(_context_lookup(latest_packet, "odylith_execution_reasoning_effort") or "").strip(),
-            "agent_role": str(_context_lookup(latest_packet, "odylith_execution_agent_role") or "").strip(),
-            "selection_mode": str(_context_lookup(latest_packet, "odylith_execution_selection_mode") or "").strip(),
-            "delegate_preference": str(_context_lookup(latest_packet, "odylith_execution_delegate_preference") or "").strip(),
-            "source": (
-                str(_context_lookup(latest_packet, "odylith_execution_source") or "optimization_snapshot_latest_packet").strip()
-                if latest_packet
-                else ""
-            ),
-            "confidence": {
-                "score": int(_context_lookup(latest_packet, "odylith_execution_confidence_score") or 0),
-                "level": str(_context_lookup(latest_packet, "odylith_execution_confidence_level") or "").strip(),
-            },
-            "constraints": {
-                "route_ready": _context_signal_bool(_context_lookup(latest_packet, "odylith_execution_route_ready")),
-                "narrowing_required": _context_signal_bool(
-                    _context_lookup(latest_packet, "odylith_execution_narrowing_required")
-                ),
-                "spawn_worthiness": int(_context_lookup(latest_packet, "odylith_execution_spawn_worthiness") or 0),
-                "merge_burden": int(_context_lookup(latest_packet, "odylith_execution_merge_burden") or 0),
-                "reasoning_mode": str(_context_lookup(latest_packet, "odylith_execution_reasoning_mode") or "").strip(),
-            }
-            if latest_packet
-            else {},
-        }.items()
-        if (
-            value not in ("", [], {}, None)
-            and (
-                key not in {"confidence", "constraints"}
-                or (
-                    key == "confidence"
-                    and (int(value.get("score", 0) or 0) > 0 or str(value.get("level", "")).strip())
-                )
-                or (
-                    key == "constraints"
-                    and any(subvalue not in ("", [], {}, None, 0, False) for subvalue in value.values())
-                )
-            )
-        )
-    }
-    candidates = (
-        _execution_profile_candidate(root.get("odylith_execution_profile")),
-        _execution_profile_candidate(root.get("execution_profile")),
-        _execution_profile_candidate(context_packet.get("execution_profile")),
-        _execution_profile_candidate(_context_lookup(evidence_pack, "routing_handoff", "odylith_execution_profile")),
-        _execution_profile_candidate(_context_lookup(evidence_pack, "routing_handoff", "execution_profile")),
-        _execution_profile_candidate(optimization_snapshot.get("execution_profile")),
-        _execution_profile_candidate(_context_lookup(optimization_snapshot, "latest_packet", "odylith_execution_profile")),
-        optimization_latest_profile,
+    """Delegate execution-profile normalization to the shared context-support helper."""
+    return subagent_router_context_support._execution_profile_mapping(
+        root=root,
+        context_packet=context_packet,
+        evidence_pack=evidence_pack,
+        optimization_snapshot=optimization_snapshot,
     )
-    scored_candidates: list[tuple[int, int, dict[str, Any]]] = []
-    for index, candidate in enumerate(candidates):
-        if not candidate:
-            continue
-        confidence = dict(candidate.get("confidence", {})) if isinstance(candidate.get("confidence"), Mapping) else {}
-        constraints = dict(candidate.get("constraints", {})) if isinstance(candidate.get("constraints"), Mapping) else {}
-        richness = sum(
-            1
-            for key in ("profile", "model", "reasoning_effort", "agent_role", "selection_mode", "delegate_preference", "source")
-            if str(candidate.get(key, "")).strip()
-        )
-        if confidence:
-            richness += sum(
-                1 for key in ("score", "level") if str(confidence.get(key, "")).strip() or int(confidence.get(key, 0) or 0) > 0
-            )
-        if constraints:
-            richness += sum(1 for value in constraints.values() if value not in ("", [], {}, None, False))
-        scored_candidates.append((richness, index, candidate))
-    if not scored_candidates:
-        return _synthesized_execution_profile_candidate(context_packet=context_packet)
-    merged: dict[str, Any] = {}
-    for _, _, candidate in sorted(scored_candidates, key=lambda item: (item[0], item[1])):
-        for key, value in candidate.items():
-            if value in ("", [], {}, None, False):
-                continue
-            if isinstance(value, Mapping):
-                existing = dict(merged.get(key, {})) if isinstance(merged.get(key), Mapping) else {}
-                merged[key] = {
-                    **existing,
-                    **{subkey: subvalue for subkey, subvalue in value.items() if subvalue not in ("", [], {}, None, False)},
-                }
-                continue
-            merged[key] = value
-    profile = _router_profile_from_token(merged.get("profile"))
-    if profile is None:
-        profile = _router_profile_from_runtime(merged.get("model"), merged.get("reasoning_effort"))
-        if profile is not None:
-            merged["profile"] = profile.value
-    if profile is not None:
-        merged["model"] = profile.model
-        merged["reasoning_effort"] = profile.reasoning_effort
-    if not str(merged.get("profile", "")).strip():
-        synthesized = _synthesized_execution_profile_candidate(context_packet=context_packet)
-        if synthesized:
-            merged = {**synthesized, **merged}
-    return merged
 
 
 def _preferred_router_profile_from_execution_profile(profile: Mapping[str, Any]) -> RouterProfile | None:
-    explicit = _router_profile_from_token(profile.get("profile"))
-    if explicit is not None:
-        return explicit
-    return _router_profile_from_runtime(
-        profile.get("model"),
-        profile.get("reasoning_effort"),
-    )
+    """Resolve a concrete router profile from a normalized execution-profile mapping."""
+    candidate = subagent_router_context_support._preferred_router_profile_from_execution_profile(profile=profile)
+    return candidate if isinstance(candidate, RouterProfile) else None
+
+
+def _profile_runtime_fields(profile: RouterProfile) -> tuple[str, str]:
+    return subagent_router_profile_support.profile_runtime_fields(profile)
 
 
 def _decision_odylith_execution_profile(
@@ -156,6 +89,7 @@ def _decision_odylith_execution_profile(
     assessment: TaskAssessment,
     selected: RouterProfile | None = None,
 ) -> dict[str, Any]:
+    """Build the user-facing execution-profile payload attached to a routing decision."""
     summary = dict(assessment.context_signal_summary or {})
     recommended_profile = str(summary.get("odylith_execution_profile", "")).strip()
     if not recommended_profile:
@@ -174,11 +108,16 @@ def _decision_odylith_execution_profile(
         },
     }
     if selected is not None and selected is not RouterProfile.MAIN_THREAD:
+        model, reasoning_effort = _profile_runtime_fields(selected)
+        selected_model = model or str(summary.get("odylith_execution_model", "")).strip()
+        selected_reasoning_effort = reasoning_effort or str(
+            summary.get("odylith_execution_reasoning_effort", "")
+        ).strip()
         payload.update(
             {
                 "selected_profile": selected.value,
-                "selected_model": selected.model,
-                "selected_reasoning_effort": selected.reasoning_effort,
+                "selected_model": selected_model,
+                "selected_reasoning_effort": selected_reasoning_effort,
                 "selected_agent_role": _agent_role_for_assessment(assessment, profile=selected),
             }
         )
@@ -186,7 +125,11 @@ def _decision_odylith_execution_profile(
 
 
 def _odylith_execution_guard_reason(assessment: TaskAssessment) -> str:
+    """Explain why runtime-backed execution guidance should currently hold work local."""
     summary = dict(assessment.context_signal_summary or {})
+    governance_guard = runtime_lane_policy.delegation_guard(summary)
+    if governance_guard.blocked:
+        return governance_guard.reason
     recommended = _router_profile_from_token(summary.get("odylith_execution_profile", ""))
     confidence = _clamp_score(summary.get("odylith_execution_confidence_score", 0) or 0)
     source = _normalize_token(summary.get("odylith_execution_source", ""))
@@ -228,6 +171,7 @@ def _apply_odylith_execution_priors(
     assessment: TaskAssessment,
     allow_xhigh: bool,
 ) -> tuple[dict[str, float], list[str]]:
+    """Bias raw tier scores toward measured runtime guidance when the packet earned it."""
     summary = dict(assessment.context_signal_summary or {})
     recommended = _router_profile_from_token(summary.get("odylith_execution_profile", ""))
     confidence = _clamp_score(summary.get("odylith_execution_confidence_score", 0) or 0)
@@ -329,6 +273,8 @@ def _apply_odylith_execution_priors(
     runtime_depth_mode = selection_mode in _RUNTIME_EARNED_DEPTH_SELECTION_MODES
     runtime_support_mode = selection_mode in _RUNTIME_SUPPORT_SELECTION_MODES
 
+    # Start with the runtime recommendation, then let readiness, history, and
+    # advisory quality strengthen or erode that prior before we touch other tiers.
     recommended_delta = 0.18 * confidence
     if route_ready:
         recommended_delta += 0.12
@@ -402,6 +348,8 @@ def _apply_odylith_execution_priors(
         adjusted[recommended.value] = round(adjusted[recommended.value] - (0.45 * confidence), 3)
 
     if delegate_preference == "hold_local" or control_advisory_delegation == "hold_local_bias":
+        # A strong hold-local signal should drag the whole delegated ladder down, not
+        # merely lower the recommended tier by a token amount.
         global_penalty = 0.09 * confidence
         if not route_ready:
             global_penalty += 0.12
@@ -526,6 +474,7 @@ def _apply_odylith_execution_priors(
 
 
 def _score_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: TuningState) -> float:
+    """Score one router profile against the assessed slice characteristics."""
     tuning_bias = _tuning_bias_for_profile(profile, assessment, tuning)
     if profile is RouterProfile.MINI_MEDIUM:
         return (
@@ -663,6 +612,7 @@ def _score_profile(profile: RouterProfile, assessment: TaskAssessment, tuning: T
 
 
 def _score_margin(selected: RouterProfile, scorecard: Mapping[str, float]) -> float:
+    """Return the winning tier's margin over the best distinct runner-up."""
     ordered = sorted(scorecard.items(), key=lambda item: (item[1], _PROFILE_PRIORITY.get(item[0], 0)), reverse=True)
     if len(ordered) < 2:
         return round(float(scorecard.get(selected.value, 0.0) or 0.0), 3)
@@ -674,6 +624,7 @@ def _score_margin(selected: RouterProfile, scorecard: Mapping[str, float]) -> fl
 
 
 def _routing_confidence(selected: RouterProfile, assessment: TaskAssessment, scorecard: Mapping[str, float]) -> int:
+    """Convert the winning margin and slice posture into a 0-4 routing confidence."""
     confidence = assessment.base_confidence
     margin = _score_margin(selected, scorecard)
     if margin >= 2.5:
@@ -709,6 +660,7 @@ def _apply_accuracy_backstop(
     assessment: TaskAssessment,
     scorecard: Mapping[str, float],
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Promote fragile low-tier winners when the slice demands more accuracy."""
     routing_confidence = _routing_confidence(selected, assessment, scorecard)
     lines: list[str] = []
     if (
@@ -757,7 +709,10 @@ def _apply_accuracy_backstop(
         and assessment.accuracy_preference in {"accuracy", "max_accuracy", "maximum_accuracy"}
         and routing_confidence <= 1
     ):
-        lines.append("confidence backstop promoted low-confidence feature work from `codex_medium` to `codex_high`")
+        lines.append(
+            "confidence backstop promoted low-confidence feature work from "
+            f"`{RouterProfile.WRITE_MEDIUM.value}` to `{RouterProfile.WRITE_HIGH.value}`"
+        )
         selected = RouterProfile.CODEX_HIGH
         routing_confidence = _clamp_score(routing_confidence + 1)
     elif (
@@ -765,7 +720,10 @@ def _apply_accuracy_backstop(
         and (assessment.correctness_critical or assessment.task_family == "critical_change")
         and routing_confidence <= 1
     ):
-        lines.append("confidence backstop promoted low-confidence critical work from `codex_high` to `gpt54_high`")
+        lines.append(
+            "confidence backstop promoted low-confidence critical work from "
+            f"`{RouterProfile.WRITE_HIGH.value}` to `{RouterProfile.FRONTIER_HIGH.value}`"
+        )
         selected = RouterProfile.GPT54_HIGH
         routing_confidence = _clamp_score(routing_confidence + 1)
     elif (
@@ -774,13 +732,17 @@ def _apply_accuracy_backstop(
         and assessment.requested_depth >= 3
         and routing_confidence <= 1
     ):
-        lines.append("confidence backstop promoted low-confidence analysis from `mini_medium` to `mini_high`")
+        lines.append(
+            "confidence backstop promoted low-confidence analysis from "
+            f"`{RouterProfile.ANALYSIS_MEDIUM.value}` to `{RouterProfile.ANALYSIS_HIGH.value}`"
+        )
         selected = RouterProfile.MINI_HIGH
         routing_confidence = _clamp_score(routing_confidence + 1)
     return selected, routing_confidence, lines
 
 
 def _next_stronger_profile(profile: RouterProfile, assessment: TaskAssessment) -> RouterProfile:
+    """Choose the next stronger fallback tier for reliability escalation."""
     if profile in {RouterProfile.MINI_MEDIUM, RouterProfile.MINI_HIGH}:
         if assessment.needs_write:
             return (
@@ -819,6 +781,7 @@ def _apply_reliability_backstop(
     tuning: TuningState,
     routing_confidence: int,
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Escalate weak historical winners to a stronger tier when prior outcomes justify it."""
     summary = _profile_reliability_summary(selected, assessment, tuning)
     lines: list[str] = []
     if summary["total"] >= 2:
@@ -854,6 +817,7 @@ def _apply_odylith_execution_alignment(
     routing_confidence: int,
     allow_xhigh: bool,
 ) -> tuple[RouterProfile, int, list[str]]:
+    """Align the final tier with runtime guidance when history says the fit is stable."""
     summary = dict(assessment.context_signal_summary or {})
     recommended = _router_profile_from_token(summary.get("odylith_execution_profile", ""))
     confidence = _clamp_score(summary.get("odylith_execution_confidence_score", 0) or 0)
@@ -868,6 +832,8 @@ def _apply_odylith_execution_alignment(
         selected in {RouterProfile.GPT54_HIGH, RouterProfile.GPT54_XHIGH}
         and packet_alignment_state == "drifting"
     ):
+        # Drift in comparable slices caps the expensive frontier tiers even if the
+        # raw scorecard still likes them.
         capped_profiles = [
             profile
             for profile in (
@@ -896,6 +862,8 @@ def _apply_odylith_execution_alignment(
         and not assessment.correctness_critical
         and yield_state == "wasteful"
     ):
+        # Wasteful spend is treated similarly: keep the route on a cheaper proven lane
+        # unless correctness pressure explicitly overrides the caution.
         capped_profiles = [
             profile
             for profile in (
@@ -1005,6 +973,7 @@ def _top_score_lines(
     score_margin: float,
     backstop_lines: Sequence[str],
 ) -> list[str]:
+    """Summarize the dominant drivers, backstops, and tradeoffs behind the routed tier."""
     ordered = sorted(scorecard.items(), key=lambda item: (item[1], _PROFILE_PRIORITY.get(item[0], 0)), reverse=True)
     lines: list[str] = []
     if selected is RouterProfile.MAIN_THREAD:
@@ -1088,5 +1057,5 @@ def _top_score_lines(
     if routing_confidence <= 1:
         lines.append("manual review is recommended because the route confidence stayed low after assessment")
     if not allow_xhigh:
-        lines.append("`gpt-5.4 + xhigh` stayed gated because no critical-risk or prior-failure trigger was present")
+        lines.append("`frontier_xhigh` stayed gated because no critical-risk or prior-failure trigger was present")
     return _sanitize_user_facing_lines(lines)

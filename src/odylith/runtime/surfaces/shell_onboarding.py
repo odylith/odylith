@@ -9,18 +9,14 @@ import re
 from typing import Any
 from urllib.parse import urlparse
 
+from odylith.common.release_text import normalize_release_text as _normalize_release_note_text
 from odylith.install.state import load_install_state
 from odylith.install.state import load_upgrade_spotlight
 from odylith.install.state import load_version_pin
 from odylith.install.state import version_pin_path
 from odylith.runtime import release_notes
 
-STARTER_PROMPT = (
-    "Use Odylith to start this repo from one real code path. Pick one path that matters, then create the "
-    "first Radar item, first Registry boundary, and first Atlas map around that same path. First show me "
-    "5 bullets with the path you picked and why. Then create the Odylith files. Plain English. Real file "
-    "paths only. No IDs. Only write under odylith/."
-)
+STARTER_PROMPT = "Odylith, show me what you can do."
 AUTO_REFRESH_NOTE = "The shell refreshes itself as Odylith updates local surfaces."
 LATEST_INSTALL_COMMAND = "curl -fsSL https://odylith.ai/install.sh | bash"
 _LEGACY_CONSUMER_UPGRADE_VERSIONS = frozenset({"0.1.0", "0.1.1"})
@@ -191,7 +187,7 @@ def _release_story_note_link_label(
 ) -> str:
     if authored_notes is not None and authored_notes.note_link_label:
         return authored_notes.note_link_label
-    return "Open release note on GitHub"
+    return "Open release notes on GitHub"
 
 
 def _release_story_external_link_label(
@@ -664,21 +660,6 @@ def _release_note_paragraphs(body: str, *, limit: int) -> list[str]:
         if len(paragraphs) >= limit:
             break
     return paragraphs[:limit]
-
-
-def _normalize_release_note_text(value: Any, *, limit: int) -> str:
-    token = str(value or "").strip()
-    if not token:
-        return ""
-    token = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", token)
-    token = re.sub(r"<[^>]+>", "", token)
-    token = re.sub(r"[*_`>#]", "", token)
-    token = re.sub(r"\s+", " ", token).strip(" -:")
-    if len(token) > limit:
-        token = token[: limit - 3].rstrip() + "..."
-    return token
-
-
 def _has_backlog_ideas(repo_root: Path) -> bool:
     ideas_root = repo_root / "odylith" / "radar" / "source" / "ideas"
     if not ideas_root.is_dir():
@@ -1018,31 +999,16 @@ def _quick_steps(
     missing_component: bool,
     missing_atlas: bool,
 ) -> list[str]:
-    surfaces: list[str] = []
-    if missing_backlog:
-        surfaces.append("Radar")
-    if missing_component:
-        surfaces.append("Registry")
-    if missing_atlas:
-        surfaces.append("Atlas")
     if not focus_path and not component_label:
         return [
-            "Copy the starter prompt.",
-            "Paste it into Codex or Claude Code.",
-            "Try commands in the cheatsheet.",
+            "Copy prompt.",
+            "Run in Codex or Claude.",
+            "Open the cheatsheet.",
         ]
-    if not surfaces:
-        surface_list = "Odylith"
-    elif len(surfaces) == 1:
-        surface_list = surfaces[0]
-    elif len(surfaces) == 2:
-        surface_list = f"{surfaces[0]} and {surfaces[1]}"
-    else:
-        surface_list = f"{surfaces[0]}, {surfaces[1]}, and {surfaces[2]}"
     return [
-        "Copy the starter prompt.",
-        "Paste it into Codex or Claude Code.",
-        f"Let Odylith set up {surface_list}.",
+        "Copy prompt.",
+        "Run in Codex or Claude.",
+        "Map the repo.",
     ]
 
 

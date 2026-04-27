@@ -5,8 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from odylith.runtime.orchestration import odylith_chatter_delivery_runtime
-from odylith.runtime.orchestration import odylith_chatter_runtime
+from odylith.runtime.intervention_engine import delivery_runtime
+from odylith.runtime.intervention_engine import conversation_artifacts
+from odylith.runtime.intervention_engine import conversation_metrics
+from odylith.runtime.intervention_engine import conversation_runtime
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
 
 
@@ -57,7 +59,7 @@ def test_closeout_assist_builds_shortest_safe_path_line_semantically() -> None:
         evidence_cone_grounded=True,
     )
 
-    assist = odylith_chatter_runtime.compose_closeout_assist(
+    assist = conversation_runtime.compose_closeout_assist(
         request=request,
         decision=_decision(),
         adoption={
@@ -74,11 +76,10 @@ def test_closeout_assist_builds_shortest_safe_path_line_semantically() -> None:
     assert assist["preferred_markdown_label"] == "**Odylith Assist:**"
     assert assist["changed_path_source"] == "request_seed_paths"
     assert assist["updated_artifacts"] == []
-    assert assist["markdown_text"].startswith("**Odylith Assist:** kept this on the shortest safe path")
+    assert assist["markdown_text"].startswith("**Odylith Assist:** grounding the work to 3 candidate paths")
     assert "3 candidate paths" in assist["markdown_text"]
     assert "closing with 2 focused checks" in assist["markdown_text"]
-    assert "`odylith_off`" in assist["markdown_text"]
-    assert "broader unguided repo hunt" not in assist["markdown_text"]
+    assert "`odylith_off`" not in assist["markdown_text"]
 
 
 def test_closeout_assist_includes_linked_updated_governance_artifacts() -> None:
@@ -91,7 +92,7 @@ def test_closeout_assist_includes_linked_updated_governance_artifacts() -> None:
         evidence_cone_grounded=True,
     )
 
-    assist = odylith_chatter_runtime.compose_closeout_assist(
+    assist = conversation_runtime.compose_closeout_assist(
         request=request,
         decision=_decision(),
         adoption={
@@ -114,10 +115,189 @@ def test_closeout_assist_includes_linked_updated_governance_artifacts() -> None:
     assert assist["changed_path_source"] == "final_changed_paths"
     assert [row["id"] for row in assist["updated_artifacts"]] == ["B-031", "odylith-chatter"]
     assert [row["kind"] for row in assist["updated_artifacts"]] == ["workstream", "component"]
+    assert [row["id"] for row in assist["affected_contracts"]] == ["B-031", "odylith-chatter"]
+    assert "affected governance contracts" in assist["markdown_text"]
     assert "[B-031](?tab=radar&workstream=B-031)" in assist["markdown_text"]
     assert "[odylith-chatter](?tab=registry&component=odylith-chatter)" in assist["markdown_text"]
     assert "closing with 1 focused check" in assist["markdown_text"]
-    assert "governed record" in assist["markdown_text"]
+    assert "updating affected governance contracts" in assist["markdown_text"]
+
+
+def test_closeout_assist_names_contract_ids_without_changed_governance_paths() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Keep intervention UX visible across hosts.",
+        workstreams=["B-096"],
+        components=["governance-intervention-engine"],
+        validation_commands=["pytest -q tests/unit/runtime/test_intervention_engine.py"],
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+        repo_root=Path("/tmp"),
+    )
+
+    assert assist["eligible"] is True
+    assert assist["style"] == "governed_lane"
+    assert assist["updated_artifacts"] == []
+    assert [row["id"] for row in assist["affected_contracts"]] == ["B-096", "governance-intervention-engine"]
+    assert "staying inside affected governance contracts" in assist["markdown_text"]
+    assert "[B-096](?tab=radar&workstream=B-096)" in assist["markdown_text"]
+    assert "[governance-intervention-engine](?tab=registry&component=governance-intervention-engine)" in assist["markdown_text"]
+    assert "1 workstream" not in assist["markdown_text"]
+    assert "1 component" not in assist["markdown_text"]
+
+
+def test_closeout_assist_suppresses_scope_only_governance_context_without_current_turn_proof() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Why did that closeout mention B-096 at all?",
+        workstreams=["B-096"],
+        components=["governance-intervention-engine"],
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+        repo_root=Path("/tmp"),
+    )
+
+    assert assist["eligible"] is False
+    assert assist["suppressed_reason"] == "missing_user_facing_delta"
+    assert [row["id"] for row in assist["affected_contracts"]] == ["B-096", "governance-intervention-engine"]
+
+
+def test_closeout_assist_prefers_visibility_continuity_over_inherited_governance_scope() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt=(
+            "I still do not see any Odylith ambient highlights or interventions "
+            "visible in chat."
+        ),
+        workstreams=["B-096"],
+        components=["governance-intervention-engine"],
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+        repo_root=Path("/tmp"),
+    )
+
+    assert assist["eligible"] is True
+    assert assist["style"] == "visibility_continuity"
+    assert "kept Odylith visible in this chat so the brand promise is something the user can see" in assist["markdown_text"]
+
+
+def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_or_ids() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt=(
+            "I still do not see any Odylith ambient highlights or interventions "
+            "visible in chat."
+        ),
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+    )
+
+    assert assist["eligible"] is True
+    assert assist["style"] == "visibility_continuity"
+    assert assist["updated_artifacts"] == []
+    assert assist["affected_contracts"] == []
+    assert "kept Odylith visible in this chat so the brand promise is something the user can see" in assist["markdown_text"]
+    assert "candidate path" not in assist["markdown_text"]
+    assert "focused check" not in assist["markdown_text"]
+
+
+def test_closeout_assist_stays_silent_for_low_signal_grounded_turn_without_paths() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Thanks, that makes sense.",
+        needs_write=False,
+        evidence_cone_grounded=True,
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": False,
+            "requires_widening": False,
+        },
+    )
+
+    assert assist["eligible"] is False
+    assert assist["suppressed_reason"] == "missing_user_facing_delta"
+
+
+def test_closeout_assist_suppresses_routing_receipts_for_task_first_fast_lane() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt='Move the current release label next to the title "Task Contract, Event Ledger, and Hard-Constraint Promotion".',
+        candidate_paths=[
+            "src/app/release_card.tsx",
+            "src/app/release_card.css",
+        ],
+        validation_commands=["pytest -q tests/unit/app/test_release_card.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+        context_signals={
+            "execution_engine_commentary_mode": "task_first_minimal",
+            "execution_engine_suppress_routing_receipts": True,
+            "execution_engine_surface_fast_lane": True,
+        },
+    )
+
+    assist = conversation_runtime.compose_closeout_assist(
+        request=request,
+        decision=_decision(mode="parallel_write", delegated_leaf_count=2),
+        adoption={
+            "grounded": True,
+            "route_ready": True,
+            "grounded_delegate": True,
+            "requires_widening": False,
+        },
+    )
+
+    assert assist["eligible"] is True
+    assert assist["metrics"]["commentary_mode"] == "task_first_minimal"
+    assert assist["metrics"]["suppress_routing_receipts"] is True
+    assert assist["metrics"]["surface_fast_lane"] is True
+    assert "routing 2 bounded leaves" not in assist["markdown_text"]
+    assert "bounded leaves" not in assist["markdown_text"]
+    assert "keeping execution bounded across 2 focused slices" in assist["markdown_text"]
 
 
 def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> None:
@@ -125,7 +305,7 @@ def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> 
         prompt="Tighten the governed slice.",
         workstreams=["B-031"],
         components=["odylith-chatter"],
-        candidate_paths=["src/odylith/runtime/orchestration/odylith_chatter_runtime.py"],
+        candidate_paths=["src/odylith/runtime/intervention_engine/conversation_runtime.py"],
         needs_write=True,
         evidence_cone_grounded=True,
         context_signals={
@@ -138,7 +318,7 @@ def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> 
         },
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={
@@ -158,13 +338,17 @@ def test_conversation_bundle_prefers_real_risks_over_other_labeled_signals() -> 
 
     ambient = dict(bundle["ambient_signals"])
     closeout = dict(bundle["closeout_bundle"])
+    intervention = dict(bundle["intervention_bundle"])
 
     assert ambient["selected_signal"] == "risks"
     assert ambient["risks"]["eligible"] is True
     assert ambient["risks"]["render_hint"] == "explicit_label"
     assert "Odylith Risks:" in ambient["risks"]["markdown_text"]
+    assert intervention["render_policy"]["voice_contract"]["templated_or_mechanical_forbidden"] is True
     assert closeout["selected_supplemental"] == "risks"
     assert closeout["risks"]["render_hint"] == "supplemental_line"
+    assert closeout["markdown_text"].splitlines()[-1].startswith("**Odylith Assist:**")
+    assert closeout["markdown_text"].index("**Odylith Risks:**") < closeout["markdown_text"].index("**Odylith Assist:**")
     assert closeout["render_policy"]["max_lines"] == 2
     assert closeout["render_policy"]["benchmark_safe"] is True
 
@@ -178,7 +362,7 @@ def test_conversation_bundle_suppresses_history_when_no_strong_prior_exists() ->
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={
@@ -213,6 +397,10 @@ def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Pa
                         "proof_refs": [{"kind": "workstream", "value": "B-031", "label": "B-031", "surface": "radar"}],
                         "requires_approval": True,
                     },
+                    "claim_guard": {
+                        "highest_truthful_claim": "fixed in code",
+                        "blocked_terms": ["fixed", "cleared", "resolved"],
+                    },
                     "surface_contributions": [{"surface": "Radar"}],
                     "evidence_bundle": {
                         "evidence_refs": [{"kind": "component", "value": "component:odylith-chatter", "label": "odylith-chatter"}]
@@ -231,7 +419,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Pa
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -239,8 +427,191 @@ def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Pa
     )
 
     assert bundle["ambient_signals"]["selected_signal"] == "risks"
-    assert "Tribunal already has B-031 in unsafe closeout" in bundle["ambient_signals"]["risks"]["markdown_text"]
-    assert bundle["closeout_bundle"]["selected_supplemental"] == "risks"
+    assert "Tribunal already has B-031 flagged for unsafe closeout" in bundle["ambient_signals"]["risks"]["markdown_text"]
+    assert bundle["ambient_signals"]["claim_lint"]["highest_truthful_claim"] == "fixed in code"
+    assert bundle["closeout_bundle"]["render_policy"]["claim_terms_require_lint"] is True
+    assert bundle["closeout_bundle"]["selected_supplemental"] == ""
+
+
+def test_conversation_bundle_does_not_lint_live_verified_claims(tmp_path: Path) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-062",
+                    "scope_key": "workstream:B-062",
+                    "scope_label": "B-062",
+                    "case_refs": ["case-workstream-B-062"],
+                    "operator_readout": {"primary_scenario": "clear_path", "severity": "clear", "proof_refs": []},
+                    "proof_state": {
+                        "lane_id": "proof-state-control-plane",
+                        "current_blocker": "Lambda permission lifecycle on ecs-drift-monitor invoke",
+                        "first_failing_phase": "manifests-deploy",
+                        "frontier_phase": "post-manifests-smoke",
+                        "proof_status": "live_verified",
+                    },
+                    "claim_guard": {
+                        "highest_truthful_claim": "fixed live",
+                        "blocked_terms": [],
+                        "hosted_frontier_advanced": True,
+                    },
+                    "surface_contributions": [{"surface": "Compass"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [
+                {
+                    "id": "case-workstream-B-062",
+                    "scope_key": "workstream:B-062",
+                    "headline": "Live proof advanced",
+                    "brief": "The hosted run moved past the prior failing phase.",
+                    "claim_guard": {
+                        "highest_truthful_claim": "fixed live",
+                        "blocked_terms": [],
+                        "hosted_frontier_advanced": True,
+                    },
+                }
+            ],
+            "systemic_brief": {},
+        },
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-062.",
+        workstreams=["B-062"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = conversation_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["ambient_signals"]["claim_lint"]["status"] == "live_ok"
+    assert bundle["ambient_signals"]["claim_lint"]["blocked_terms"] == []
+    assert bundle["closeout_bundle"]["render_policy"]["claim_terms_require_lint"] is False
+
+
+def test_conversation_bundle_rewrites_unqualified_resolution_terms_in_closeout(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-062",
+                    "scope_key": "workstream:B-062",
+                    "scope_label": "B-062",
+                    "case_refs": ["case-workstream-B-062"],
+                    "operator_readout": {"primary_scenario": "false_priority", "severity": "watch", "proof_refs": []},
+                    "claim_guard": {
+                        "highest_truthful_claim": "fixed in code",
+                        "blocked_terms": ["fixed", "cleared", "resolved"],
+                        "hosted_frontier_advanced": False,
+                        "same_fingerprint_as_last_falsification": True,
+                        "claim_scope": "code_or_preview",
+                    },
+                    "surface_contributions": [{"surface": "Compass"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [],
+            "systemic_brief": {},
+        },
+    )
+
+    monkeypatch.setattr(
+        conversation_runtime,
+        "compose_closeout_assist",
+        lambda **_kwargs: {
+            "eligible": True,
+            "style": "test",
+            "label": "Odylith Assist:",
+            "preferred_markdown_label": "**Odylith Assist:**",
+            "text": "**Odylith Assist:** The blocker is fixed.",
+            "plain_text": "Odylith Assist: The blocker is fixed.",
+            "markdown_text": "**Odylith Assist:** The blocker is fixed.",
+            "user_win": "kept the proof honest",
+            "delta": "",
+            "proof": "",
+            "updated_artifacts": [],
+            "changed_path_source": "test",
+            "suppressed_reason": "",
+            "metrics": {},
+        },
+    )
+    request = orchestrator.OrchestrationRequest(
+        prompt="Tighten B-062.",
+        workstreams=["B-062"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+
+    bundle = conversation_runtime.compose_conversation_bundle(
+        request=request,
+        decision=_decision(),
+        adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
+        repo_root=tmp_path,
+    )
+
+    assert bundle["closeout_bundle"]["assist"]["markdown_text"] == "**Odylith Assist:** The blocker is fixed in code."
+    assert bundle["closeout_bundle"]["assist"]["plain_text"] == "Odylith Assist: The blocker is fixed in code."
+    assert bundle["ambient_signals"]["claim_lint"]["gate"]["state"] == "rewrite_or_block"
+    assert bundle["ambient_signals"]["claim_lint"]["forced_checks"][0]["answer"] == "yes"
+    assert bundle["closeout_bundle"]["claim_enforcement"]["closeout"]["assist"]["applied"] is True
+
+
+def test_delivery_signal_snapshot_preserves_scope_proof_state_resolution(tmp_path: Path) -> None:
+    _write_delivery_artifact(
+        tmp_path,
+        {
+            "version": "v4",
+            "scopes": [
+                {
+                    "scope_type": "workstream",
+                    "scope_id": "B-062",
+                    "scope_key": "workstream:B-062",
+                    "scope_label": "B-062",
+                    "proof_state_resolution": {
+                        "state": "ambiguous",
+                        "lane_ids": ["lane-a", "lane-b"],
+                    },
+                    "proof_state": {},
+                    "scope_signal": {
+                        "rank": 5,
+                        "rung": "R5",
+                        "token": "blocking_frontier",
+                        "label": "Blocking frontier",
+                        "budget_class": "escalated_reasoning",
+                        "promoted_default": True,
+                    },
+                    "claim_guard": {},
+                    "surface_contributions": [{"surface": "Compass"}],
+                    "evidence_bundle": {},
+                }
+            ],
+            "case_queue": [],
+            "systemic_brief": {},
+        },
+    )
+
+    snapshot = delivery_runtime.delivery_signal_snapshot(tmp_path)
+
+    assert snapshot["scopes_by_id"][("workstream", "B-062")]["proof_state_resolution"] == {
+        "state": "ambiguous",
+        "lane_ids": ["lane-a", "lane-b"],
+    }
+    assert snapshot["scopes_by_id"][("workstream", "B-062")]["scope_signal"]["rung"] == "R5"
+    assert snapshot["scopes_by_id"][("workstream", "B-062")]["scope_signal"]["budget_class"] == "escalated_reasoning"
 
 
 def test_conversation_bundle_reads_precomputed_tribunal_insight_signal(tmp_path: Path) -> None:
@@ -276,7 +647,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_insight_signal(tmp_path:
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -285,7 +656,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_insight_signal(tmp_path:
 
     assert bundle["ambient_signals"]["selected_signal"] == "insight"
     assert "authority and ownership gap" in bundle["ambient_signals"]["insight"]["markdown_text"]
-    assert "one more repo lap" in bundle["ambient_signals"]["insight"]["markdown_text"]
+    assert "Keep [B-031]" in bundle["ambient_signals"]["insight"]["markdown_text"]
 
 
 def test_conversation_bundle_reads_precomputed_tribunal_history_signal(tmp_path: Path) -> None:
@@ -316,7 +687,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_history_signal(tmp_path:
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -324,7 +695,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_history_signal(tmp_path:
     )
 
     assert bundle["ambient_signals"]["selected_signal"] == "history"
-    assert "diagnosed queue" in bundle["ambient_signals"]["history"]["markdown_text"]
+    assert "already has an active case here" in bundle["ambient_signals"]["history"]["markdown_text"]
 
 
 def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artifact(
@@ -332,7 +703,7 @@ def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artif
     tmp_path: Path,
 ) -> None:
     monkeypatch.setattr(
-        odylith_chatter_delivery_runtime,
+        delivery_runtime,
         "delivery_signal_snapshot",
         lambda repo_root: (_ for _ in ()).throw(AssertionError("explicit Tribunal signals should bypass cached artifact lookup")),
     )
@@ -361,7 +732,7 @@ def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artif
         },
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -369,7 +740,7 @@ def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artif
     )
 
     assert bundle["ambient_signals"]["selected_signal"] == "risks"
-    assert bundle["ambient_signals"]["risks"]["markdown_text"].startswith("**Odylith Risks:** Tribunal already has B-031 in unsafe closeout")
+    assert bundle["ambient_signals"]["risks"]["markdown_text"].startswith("**Odylith Risks:** Tribunal already has B-031 flagged for unsafe closeout")
     assert ".." not in bundle["ambient_signals"]["risks"]["markdown_text"]
 
 
@@ -388,7 +759,7 @@ def test_conversation_bundle_sanitizes_malformed_explicit_tribunal_payload() -> 
         },
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -431,7 +802,7 @@ def test_conversation_bundle_normalizes_string_latent_causes_from_delivery_artif
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -448,7 +819,7 @@ def test_conversation_bundle_skips_precomputed_tribunal_lookup_without_anchors(
     tmp_path: Path,
 ) -> None:
     monkeypatch.setattr(
-        odylith_chatter_delivery_runtime,
+        delivery_runtime,
         "delivery_signal_snapshot",
         lambda repo_root: (_ for _ in ()).throw(AssertionError("delivery artifact lookup should stay skipped")),
     )
@@ -459,7 +830,7 @@ def test_conversation_bundle_skips_precomputed_tribunal_lookup_without_anchors(
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -501,7 +872,7 @@ def test_closeout_supplemental_requires_assist_even_when_ambient_risk_is_real(tm
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": False, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -519,8 +890,8 @@ def test_conversation_bundle_reuses_metrics_and_context_scan_for_closeout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     counts = {"metrics": 0, "context_rows": 0}
-    original_metrics = odylith_chatter_runtime._evidence_metrics
-    original_context_rows = odylith_chatter_runtime._context_artifact_rows
+    original_metrics = conversation_metrics.evidence_metrics
+    original_context_rows = conversation_artifacts.context_artifact_rows
 
     def counting_metrics(*, request: object, decision: object, adoption: object) -> dict[str, object]:
         counts["metrics"] += 1
@@ -530,8 +901,8 @@ def test_conversation_bundle_reuses_metrics_and_context_scan_for_closeout(
         counts["context_rows"] += 1
         return original_context_rows(repo_root=repo_root, value=value)
 
-    monkeypatch.setattr(odylith_chatter_runtime, "_evidence_metrics", counting_metrics)
-    monkeypatch.setattr(odylith_chatter_runtime, "_context_artifact_rows", counting_context_rows)
+    monkeypatch.setattr(conversation_metrics, "evidence_metrics", counting_metrics)
+    monkeypatch.setattr(conversation_artifacts, "context_artifact_rows", counting_context_rows)
     request = orchestrator.OrchestrationRequest(
         prompt="Tighten the chatter contract.",
         workstreams=["B-031"],
@@ -541,7 +912,7 @@ def test_conversation_bundle_reuses_metrics_and_context_scan_for_closeout(
         context_signals={"context_packet": {"selected_id": "B-031"}},
     )
 
-    odylith_chatter_runtime.compose_conversation_bundle(
+    conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={"grounded": True, "route_ready": True, "grounded_delegate": False, "requires_widening": False},
@@ -566,7 +937,7 @@ def test_conversation_bundle_suppresses_redundant_closeout_insight_when_assist_a
         evidence_cone_grounded=True,
     )
 
-    bundle = odylith_chatter_runtime.compose_conversation_bundle(
+    bundle = conversation_runtime.compose_conversation_bundle(
         request=request,
         decision=_decision(),
         adoption={
@@ -640,7 +1011,7 @@ def test_orchestrator_threads_conversation_bundle_into_odylith_adoption(tmp_path
                     "parallelism_hint": "serial_preferred",
                 },
                 "odylith_execution_profile": {
-                    "profile": "codex_high",
+                    "profile": "write_high",
                     "model": "gpt-5.3-codex",
                     "reasoning_effort": "high",
                     "agent_role": "worker",
@@ -667,8 +1038,74 @@ def test_orchestrator_threads_conversation_bundle_into_odylith_adoption(tmp_path
     assert assist["eligible"] is True
     assert assist["label"] == "Odylith Assist:"
     assert assist["changed_path_source"] == "request_seed_paths"
-    assert assist["markdown_text"].startswith("**Odylith Assist:** kept this")
-    assert "odylith_off" in assist["markdown_text"]
+    assert assist["markdown_text"].startswith("**Odylith Assist:** grounding the work to 3 candidate paths")
+    assert "closing with 2 focused checks" in assist["markdown_text"]
     assert adoption["ambient_signals"]["selected_signal"] in {"", "insight", "history", "risks"}
     assert bundle["closeout_bundle"]["assist"]["label"] == "Odylith Assist:"
     assert bundle["closeout_bundle"]["render_policy"]["benchmark_safe"] is True
+
+
+def test_orchestrator_adoption_carries_execution_engine_targeting_and_presentation_policy(
+    tmp_path: Path,
+) -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Patch the consumer-safe UI binding slice.",
+        acceptance_criteria=[
+            "Keep the release-card UI binding change constrained to src/app/release_card.tsx.",
+        ],
+        candidate_paths=["src/app/release_card.tsx"],
+        validation_commands=["pytest -q tests/unit/app/test_release_card.py"],
+        task_kind="implementation",
+        phase="implementation",
+        needs_write=True,
+        evidence_cone_grounded=True,
+        context_signals={
+            "routing_handoff": {
+                "grounding": {"grounded": True, "score": 4},
+                "routing_confidence": "high",
+                "route_ready": True,
+                "native_spawn_ready": True,
+                "narrowing_required": False,
+            },
+            "target_resolution": {
+                "lane": "consumer",
+                "candidate_targets": [
+                    {"path": "src/app/release_card.tsx", "writable": True},
+                ],
+                "diagnostic_anchors": [
+                    {"kind": "workstream", "value": "B-073"},
+                ],
+                "has_writable_targets": True,
+                "requires_more_consumer_context": False,
+                "consumer_failover": "",
+            },
+            "presentation_policy": {
+                "commentary_mode": "task_first_minimal",
+                "suppress_routing_receipts": True,
+                "surface_fast_lane": True,
+            },
+            "execution_engine_summary": {
+                "execution_engine_component_id": "execution-engine",
+                "execution_engine_canonical_component_id": "execution-engine",
+                "execution_engine_identity_status": "canonical",
+                "execution_engine_target_component_status": "execution_engine",
+                "execution_engine_snapshot_reuse_status": "reused_context_packet_snapshot",
+            },
+        },
+    )
+
+    decision = orchestrator.orchestrate_prompt(request, repo_root=tmp_path)
+    adoption = dict(decision.odylith_adoption)
+
+    assert adoption["execution_engine_target_lane"] == "consumer"
+    assert adoption["execution_engine_has_writable_targets"] is True
+    assert adoption["execution_engine_requires_more_consumer_context"] is False
+    assert adoption["execution_engine_consumer_failover"] == ""
+    assert adoption["execution_engine_component_id"] == "execution-engine"
+    assert adoption["execution_engine_canonical_component_id"] == "execution-engine"
+    assert adoption["execution_engine_identity_status"] == "canonical"
+    assert adoption["execution_engine_target_component_status"] == "execution_engine"
+    assert adoption["execution_engine_snapshot_reuse_status"] == "reused_context_packet_snapshot"
+    assert adoption["execution_engine_commentary_mode"] == "task_first_minimal"
+    assert adoption["execution_engine_suppress_routing_receipts"] is True
+    assert adoption["execution_engine_surface_fast_lane"] is True

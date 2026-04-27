@@ -1,13 +1,12 @@
 ---
 status: finished
 idea_id: B-059
-title: Odylith Atlas Memory Substrate and Runtime Topology Refresh
+title: Atlas Memory Substrate and Runtime Topology Refresh
 date: 2026-04-07
 priority: P1
 commercial_value: 3
 product_impact: 5
 market_value: 3
-impacted_lanes: both
 impacted_parts: Atlas source diagrams, Mermaid catalog metadata, Registry diagram linkage, Atlas component coverage, and rendered Atlas navigation
 sizing: M
 complexity: Medium

@@ -1,13 +1,12 @@
 ---
 status: queued
 idea_id: B-055
-title: Odylith Lifecycle Plan Dirty Overlap Summary Defaults
+title: Lifecycle Plan Dirty Overlap Summary Defaults
 date: 2026-04-06
 priority: P2
 commercial_value: 3
 product_impact: 4
 market_value: 2
-impacted_lanes: both
 impacted_parts: install and sync lifecycle-plan output, dirty-overlap summarization, and verbose-mode expansion
 sizing: S
 complexity: Low
