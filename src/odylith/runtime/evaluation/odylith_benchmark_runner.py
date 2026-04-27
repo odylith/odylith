@@ -3960,6 +3960,9 @@ def _packet_result(
     )
     packet_summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
     packet_summary["packet_source"] = packet_source
+    packet_summary = odylith_benchmark_execution_engine.enrich_packet_summary_for_execution_engine_family(
+        summary=packet_summary, scenario=scenario
+    )
     measurement_payload = dict(payload)
     supplemented_doc_count = 0
     if _mode_uses_odylith(normalized_mode):

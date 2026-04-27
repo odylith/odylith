@@ -955,8 +955,10 @@ def _profile_runtime_fields(profile_token: str) -> tuple[str, str, str]:
 def _selected_execution_profile_payload(payload: Mapping[str, Any], reasoning_effort: str) -> dict[str, Any]:
     """Return route metadata with selected reasoning normalized for host surfaces."""
     profile = dict(payload)
-    if profile.get("selected_profile") and "selected_reasoning_effort" not in profile and reasoning_effort:
-        profile["selected_reasoning_effort"] = reasoning_effort
+    selected_profile = _normalize_token(profile.get("selected_profile"))
+    if selected_profile and "selected_reasoning_effort" not in profile:
+        _default_model, default_reasoning_effort, _default_role = _profile_runtime_fields(selected_profile)
+        profile["selected_reasoning_effort"] = _normalize_string(reasoning_effort) or default_reasoning_effort
     return profile
 
 

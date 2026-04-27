@@ -1075,7 +1075,14 @@ def _compact_hot_path_fallback_scan(
     context_packet: Mapping[str, Any],
     fallback_scan: Mapping[str, Any],
 ) -> dict[str, Any]:
-    if not bool(fallback_scan.get("performed")):
+    fallback_receipt = bool(
+        fallback_scan.get("performed")
+        or fallback_scan.get("recommended")
+        or fallback_scan.get("summary_only")
+        or full_scan_reason
+        or fallback_scan.get("reason")
+    )
+    if not fallback_receipt:
         return {}
     route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), context_engine_store.Mapping) else {}
     packet_state = str(context_packet.get("packet_state", "")).strip()

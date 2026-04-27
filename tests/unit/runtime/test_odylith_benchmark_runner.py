@@ -6035,6 +6035,46 @@ def test_execution_engine_runtime_surface_packet_fixture_keeps_phase_truth() -> 
     assert packet["execution_engine_snapshot_reuse_status"] == "built"
 
 
+def test_execution_engine_packet_fixture_overrides_stale_snapshot() -> None:
+    scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
+    scenario = next(
+        row
+        for row in scenarios
+        if row["scenario_id"] == "execution-engine-runtime-surface-phase-carry-through"
+    )
+    packet_source, payload, _adaptive = runner._build_packet_payload(  # noqa: SLF001
+        repo_root=REPO_ROOT,
+        scenario=scenario,
+        mode="odylith_on",
+        existing_paths=scenario["changed_paths"],
+    )
+    payload["execution_engine"] = {
+        "host_family": "unknown",
+        "mode": "recover",
+        "component_id": "execution-runtime",
+    }
+    payload = runner._apply_packet_fixture(  # noqa: SLF001
+        payload=payload,
+        scenario=scenario,
+        packet_source=packet_source,
+    )
+
+    summary = store._packet_summary_from_bootstrap_payload(payload)  # noqa: SLF001
+    summary = runner.odylith_benchmark_execution_engine.enrich_packet_summary_for_execution_engine_family(
+        summary=summary,
+        scenario=scenario,
+    )
+    expectation_ok, details = store._packet_satisfies_evaluation_expectations(  # noqa: SLF001
+        summary,
+        dict(scenario["expect"]),
+    )
+
+    assert expectation_ok is True, details
+    assert summary["execution_engine_mode"] == "verify"
+    assert summary["execution_engine_host_family"] == "codex"
+    assert summary["execution_engine_component_id"] == "execution-engine"
+
+
 def test_execution_engine_governance_slice_ambiguity_uses_narrowing_lane() -> None:
     scenarios = runner.load_benchmark_scenarios(repo_root=REPO_ROOT)
     scenario = next(

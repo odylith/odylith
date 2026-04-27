@@ -320,6 +320,32 @@ def test_prompt_payload_suppresses_broad_shared_paths_receipts_when_paths_remain
     assert trimmed["context_packet"]["retrieval_plan"].get("full_scan_reason") is None
 
 
+def test_compact_hot_path_fallback_scan_keeps_summary_only_receipt_without_paths() -> None:
+    fallback = store._compact_hot_path_fallback_scan(  # noqa: SLF001
+        full_scan_reason="adaptive_full_scan_fallback",
+        changed_paths=["AGENTS.md", "odylith/AGENTS.md"],
+        context_packet={
+            "packet_state": "gated_broad_scope",
+            "route": {
+                "route_ready": False,
+                "narrowing_required": True,
+            },
+        },
+        fallback_scan={
+            "recommended": True,
+            "summary_only": True,
+            "reason": "adaptive_full_scan_fallback",
+            "changed_paths": ["AGENTS.md", "odylith/AGENTS.md"],
+        },
+    )
+
+    assert fallback == {
+        "recommended": True,
+        "reason": "adaptive_full_scan_fallback",
+        "performed": True,
+    }
+
+
 def test_bootstrap_payload_compactor_drops_duplicate_path_receipts() -> None:
     payload = session_bootstrap_payload_compactor.compact_bootstrap_payload(
         {
