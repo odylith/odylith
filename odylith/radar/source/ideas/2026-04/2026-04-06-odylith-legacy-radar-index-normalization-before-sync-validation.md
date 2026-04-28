@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-053
 title: Legacy Radar Index Normalization Before Sync Validation
 date: 2026-04-06
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Once the runtime itself is recoverable, the next hard blocker is that migrated repos can still fail `sync` immediately on legacy Radar truth. Odylith should bridge that source format once before enforcing the stricter contract.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-28-legacy-radar-index-normalization-before-sync-validation.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-048
@@ -104,4 +104,9 @@ into the new contract.
 - whether future Radar schema upgrades should carry explicit version markers
 
 ## Outcome
-- Bound to `B-053` under `B-048`.
+- Closed for 0.1.12 after the sync preflight path gained a focused legacy
+  Radar normalizer that backfills missing required rationale bullets, removes
+  legacy `impacted_lanes` schema fields, preserves authored reasoning, and
+  now also creates a missing `## Reorder Rationale Log` section instead of
+  crashing on very old Radar indexes.
+- Bound to `B-053` under `B-048`; closes `CB-058`.

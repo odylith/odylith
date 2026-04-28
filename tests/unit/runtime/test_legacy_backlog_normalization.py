@@ -183,6 +183,54 @@ def test_normalize_legacy_backlog_index_trims_rationale_boundary_blank_lines(tmp
     assert "- ranking basis: score-based rank; no manual priority override.\n\n\n" not in text
 
 
+def test_normalize_legacy_backlog_index_adds_missing_reorder_rationale_section(tmp_path: Path) -> None:
+    repo_root = _seed_repo(
+        tmp_path,
+        founder_override="no",
+        rationale_lines=[],
+    )
+    backlog_index = repo_root / "odylith" / "radar" / "source" / "INDEX.md"
+    original = backlog_index.read_text(encoding="utf-8")
+    backlog_index.write_text(original.split("## Reorder Rationale Log", maxsplit=1)[0].rstrip() + "\n", encoding="utf-8")
+
+    result = legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=repo_root,
+        today=dt.date(2026, 4, 6),
+    )
+    text = backlog_index.read_text(encoding="utf-8")
+
+    assert result.changed is True
+    assert result.added_sections == ("B-101",)
+    assert "## Reorder Rationale Log" in text
+    assert "### B-101 (rank 1)" in text
+    assert "- why now: created as a new queued workstream for Legacy Sync Fix." in text
+    assert "- ranking basis: score-based rank; no manual priority override." in text
+
+
+def test_normalize_legacy_backlog_index_is_idempotent_after_bridge(tmp_path: Path) -> None:
+    repo_root = _seed_repo(
+        tmp_path,
+        founder_override="no",
+        rationale_lines=["- why now: keep the current explanation."],
+    )
+
+    first = legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=repo_root,
+        today=dt.date(2026, 4, 6),
+    )
+    backlog_index = repo_root / "odylith" / "radar" / "source" / "INDEX.md"
+    normalized = backlog_index.read_text(encoding="utf-8")
+
+    second = legacy_backlog_normalization.normalize_legacy_backlog_index(
+        repo_root=repo_root,
+        today=dt.date(2026, 4, 6),
+    )
+
+    assert first.changed is True
+    assert second.changed is False
+    assert backlog_index.read_text(encoding="utf-8") == normalized
+
+
 def test_backlog_next_action_prefers_metadata_repairs_over_hidden_rationale_noise() -> None:
     action = legacy_backlog_normalization.backlog_next_action(
         errors=(

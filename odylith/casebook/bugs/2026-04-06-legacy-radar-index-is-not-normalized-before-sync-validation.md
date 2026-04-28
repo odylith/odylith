@@ -1,6 +1,6 @@
 - Bug ID: CB-058
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-06
 
@@ -76,13 +76,18 @@
 - Preflight Checks: Inspect the legacy rationale parser, backlog authoring
   defaults, and priority-override review checkpoint rules before normalizing.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added: `tests/unit/runtime/test_legacy_backlog_normalization.py`
+  covers missing bullets, manual-override review checkpoint repair, legacy
+  table/schema stripping, missing `## Reorder Rationale Log` section creation,
+  and idempotent second-run behavior. `tests/unit/runtime/test_sync_cli_compat.py`
+  covers dashboard refresh and `odylith sync` preflight integration plus the
+  compact next-action summary.
 
 - Monitoring Updates: Watch sync failures for legacy-rationale signatures after
   the normalizer ships.
 
-- Residual Risk: Future Radar schema upgrades may still need explicit versioned
-  bridges.
+- Residual Risk: Future Radar schema upgrades still need explicit versioned
+  bridges instead of relying on this one legacy-shape normalizer.
 
 - Related Incidents/Bugs:
   [CB-024](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-31-radar-backlog-index-uses-absolute-workstation-links-and-breaks-clean-checkout-proof.md)
@@ -103,4 +108,5 @@
 - Runbook References: `odylith/radar/source/INDEX.md`,
   `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: 0.1.12 branch closeout; final commit recorded after this
+  governed chunk lands.
