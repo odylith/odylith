@@ -114,10 +114,6 @@ Last updated (UTC): 2026-04-28
 | CB-052 | 2026-04-04 | Registry live forensics miss source owned bundle mirror component activity | P1 | `src/odylith/runtime/governance/component_registry_intelligence.py`,
   Registry forensic coverage, `tribunal`, `remediator`, source-owned bundled
   runtime docs, Registry detail rendering. | Open | [2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md](2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md) |
-| CB-051 | 2026-04-03 | Upgrade spotlight live refresh updates version badge but keeps release note hidden | P1 | `src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js`,
-  `src/odylith/runtime/surfaces/shell_onboarding.py`, upgrade spotlight
-  dismissal/reopen contract, shell live-refresh browser path,
-  `tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`. | Open | [2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md](2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md) |
 | CB-049 | 2026-04-03 | Benchmark repair style live cases penalize validator backed no op completion | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`, live
@@ -429,6 +425,10 @@ Last updated (UTC): 2026-04-28
   `src/odylith/cli.py`, runtime-source derivation, self-host posture
   validation. | Closed | [2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md](2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md) |
 | CB-053 | 2026-04-05 | Memory substrate stale runtime reuse and projection scope thrash | P0 | `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`, `src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py`, `src/odylith/runtime/context_engine/odylith_context_engine.py`, `src/odylith/runtime/memory/odylith_memory_backend.py`, `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, memory freshness contracts, benchmark warm-cache preparation, local LanceDB and Tantivy runtime posture. | Closed | [2026-04-05-memory-substrate-stale-runtime-reuse-and-projection-scope-thrash.md](2026-04-05-memory-substrate-stale-runtime-reuse-and-projection-scope-thrash.md) |
+| CB-051 | 2026-04-03 | Upgrade spotlight live refresh updates version badge but keeps release note hidden | P1 | `src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js`,
+  `src/odylith/runtime/surfaces/shell_onboarding.py`, upgrade spotlight
+  dismissal/reopen contract, shell live-refresh browser path,
+  `tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`. | Closed | [2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md](2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md) |
 | CB-050 | 2026-04-03 | Compass explicit refresh fans into slow live scoped narration and leaves old deterministic brief visible on interrupt | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
   `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,

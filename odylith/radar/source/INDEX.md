@@ -1,6 +1,6 @@
 # Backlog Index
 
-Last updated (UTC): 2026-04-27
+Last updated (UTC): 2026-04-28
 ## Ranked Active Backlog
 
 | rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |
@@ -63,7 +63,6 @@ Last updated (UTC): 2026-04-27
 | - | B-097 | Casebook Bug Capture Fail-Closed Evidence Contract and Cross-Host Guidance Hardening | P0 | 100 | 5 | 5 | 4 | M | High | implementation | [casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening](odylith/radar/source/ideas/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md) |
 | - | B-126 | Conditional Release-Targeted Backlog Authoring | P1 | 100 | 4 | 4 | 3 | M | Medium | implementation | [conditional-release-targeted-backlog-authoring](odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md) |
 | - | B-071 | Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression | P0 | 95 | 5 | 5 | 4 | L | VeryHigh | implementation | [scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression](odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md) |
-| - | B-030 | Consumer Upgrade, Reinstall Recovery, and Shell Refresh | P1 | 92 | 4 | 5 | 4 | L | High | implementation | [odylith-consumer-upgrade-release-spotlight-and-shell-refresh](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md) |
 | - | B-064 | Radar Workstream Title Prefix Normalization | P2 | 90 | 2 | 3 | 2 | M | Medium | implementation | [radar-workstream-title-prefix-normalization](odylith/radar/source/ideas/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md) |
 | - | B-087 | Codex Project-Asset Parity, Mirror Hygiene, and Install Contract | P1 | 88 | 3 | 4 | 3 | L | Medium | implementation | [codex-project-asset-parity-mirror-hygiene-and-install-contract](odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md) |
 | - | B-091 | Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes | P0 | 87 | 4 | 5 | 4 | L | VeryHigh | implementation | [sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes](odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md) |
@@ -77,6 +76,7 @@ Last updated (UTC): 2026-04-27
 
 | rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| - | B-030 | Consumer Upgrade, Reinstall Recovery, and Shell Refresh | P1 | 92 | 4 | 5 | 4 | L | High | finished | [odylith-consumer-upgrade-release-spotlight-and-shell-refresh](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md) |
 | - | B-050 | Repair and Reinstall Converge After Partial Runtime Failure | P0 | 100 | 5 | 5 | 4 | M | High | finished | [odylith-repair-and-reinstall-converge-after-partial-runtime-failure](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md) |
 | - | B-127 | Migration Runtime Release Gate | P0 | 100 | 5 | 5 | 5 | L | High | finished | [migration-runtime-release-gate](odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md) |
 | - | B-096 | Conversation observation engine, governed proposal flow, and human intervention voice contract | P0 | 100 | 3 | 5 | 5 | L | High | finished | [conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract](odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md) |

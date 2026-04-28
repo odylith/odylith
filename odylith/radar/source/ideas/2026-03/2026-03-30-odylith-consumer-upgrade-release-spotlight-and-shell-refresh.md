@@ -1,5 +1,5 @@
 ---
-status: implementation
+status: finished
 idea_id: B-030
 title: Consumer Upgrade, Reinstall Recovery, and Shell Refresh
 date: 2026-03-30
@@ -14,7 +14,7 @@ ordering_score: 92
 ordering_rationale: Consumer release posture is healthy once landed, but the operator path still has friction and trust gaps: reinstall semantics are surprising, missing-launcher recovery is awkward, broad sync is too heavy for shell refresh, and Mermaid worker failure can read like a hang. Tightening the release-facing recovery and refresh contract now reduces both user confusion and the risk of agents giving the wrong operational advice.
 confidence: high
 founder_override: yes
-promoted_to_plan: odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md
 execution_model: standard
 workstream_type: standalone
 workstream_parent:
@@ -192,9 +192,15 @@ knows that immediately and recover cleanly when local state drifts.
   surfaces based on the strongest release highlight
 
 ## Outcome
-- Bound to `B-030`; implementation in progress.
+- Bound to `B-030`; finished on 2026-04-28 for the consumer install, upgrade,
+  reinstall, launcher recovery, and immediate shell-refresh release moment.
 - Default dashboard refresh now includes Compass, prints included versus excluded surfaces, and points at the exact Atlas follow-up command when Atlas is stale but skipped.
 - Atlas auto-update now fails fast on invalid Mermaid source with diagram id, source path, and parse-line context before the render batch begins.
 - Release-prep on 2026-04-07 authored the `v0.1.9` note and re-proved the
   welcome screen plus upgrade spotlight in headless Chromium so the launch
   moment stays anchored to real release copy.
+- `CB-051` is closed with browser proof that shell auto-refresh cannot advance
+  the toolbar version while suppressing the new version-scoped spotlight,
+  including the prior-dismissal edge case.
+- Broader steady-state freshness remains intentionally out of this closeout and
+  continues under `B-025`.

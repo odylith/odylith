@@ -1,6 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-27
+Last updated (UTC): 2026-04-28
 ## Active Plans
 
 | Plan | Status | Created | Updated | Backlog |
@@ -9,7 +9,6 @@ Last updated (UTC): 2026-04-27
 | `odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md` | In progress | 2026-03-31 | 2026-04-05 | `B-022` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md` | In progress | 2026-03-31 | 2026-04-05 | `B-038` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md` | In progress | 2026-03-29 | 2026-04-17 | `B-025` |
-| `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md` | In progress | 2026-03-30 | 2026-03-30 | `B-030` |
 | `odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md` | In progress | 2026-03-30 | 2026-03-30 | `B-033` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md` | In progress | 2026-04-01 | 2026-04-01 | `B-040` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-04-odylith-registry-source-mirror-forensic-coverage-alignment.md` | In progress | 2026-04-04 | 2026-04-04 | `B-045` |
@@ -36,6 +35,12 @@ Last updated (UTC): 2026-04-27
 | Plan | Status | Created | Updated | Backlog |
 | --- | --- | --- | --- | --- |
 
+
+## Recently Completed (2026-04-28)
+
+| Plan | Status | Created | Updated | Backlog |
+| --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md` | Done | 2026-03-30 | 2026-04-28 | `B-030` |
 
 ## Recently Completed (2026-04-27)
 
