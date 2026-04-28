@@ -95,7 +95,10 @@ def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) 
         session_id="codex-prompt-replay",
     )
 
-    assert rendered == "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---"
+    assert rendered == (
+        "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---\n\n"
+        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+    )
 
 
 def test_codex_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: Path) -> None:
@@ -158,7 +161,8 @@ def test_codex_prompt_system_message_prefers_pending_ambient_risk_over_observati
         "**Odylith Risks:** Prompt should surface this branded ambient beat first.\n"
         "\n"
         "**Odylith Observation:** Prompt should not hide the stronger ambient beat.\n"
-        "\n---"
+        "\n---\n\n"
+        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
     )
 
 
@@ -184,7 +188,9 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) 
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "src/odylith/cli.py" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "systemMessage" not in payload
+    assert payload["systemMessage"] == (
+        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+    )
 
 
 def test_main_emits_show_me_route_lock_without_running_prompt_observation(
@@ -296,7 +302,8 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
     assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
     assert "Odylith Observation:" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
-    assert payload["systemMessage"].endswith(f"\n{surface_runtime.LIVE_BOUNDARY}")
+    assert "\n---\n\n**Odylith Assist:** kept Odylith visible in this chat" in payload["systemMessage"]
+    assert payload["systemMessage"].rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
 
 
 def test_main_records_prompt_events_on_stable_thread_id_not_turn_id(
@@ -388,7 +395,10 @@ def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
     exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert capsys.readouterr().out == ""
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["systemMessage"] == (
+        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+    )
     snapshot = delivery_ledger.delivery_snapshot(
         repo_root=tmp_path,
         host_family="codex",

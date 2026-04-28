@@ -193,6 +193,7 @@ def compose_host_conversation_bundle(
         tribunal_summary=_mapping(context_signals.get("tribunal_summary")),
         visibility_summary=_mapping(context_signals.get("visibility_summary")),
         delivery_snapshot=_mapping(context_signals.get("delivery_snapshot")),
+        alignment_proof=_mapping(context_signals.get("alignment_proof")),
     )
     envelope_payload = dict(envelope)
     existing_observation = _mapping(bundle.get("observation"))

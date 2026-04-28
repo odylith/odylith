@@ -195,6 +195,12 @@ host observation points. The engine should:
   non-passthrough prompt-submit hooks use one shared prompt-visible Assist
   owner, while `Odylith, help` and `Odylith, show me what you can do` remain
   clean route locks with no host-authored capability prose.
+- v0.1.12 engine-alignment hardening preserves one explicit `alignment_proof`
+  through Codex and Claude prompt/checkpoint bundles. A visibility-recovery
+  beat cannot report `ready` unless Context Engine, Execution Engine,
+  Intervention Engine, Tribunal, Governance, Delivery, Memory Substrate, and
+  Subagent Orchestration are covered or policy-deferred; Discipline, Surface
+  DAG, and Analysis lanes stay quiet unless compact evidence is present.
 
 ## Validation
 - Focused runtime tests for the shared engine and both host integrations pass.
@@ -279,6 +285,12 @@ surface, and the brand contract must be governed as rigorously as the runtime.
   relevant, provider-free, preserved through memory packets, reflected in
   Execution Engine validation commands, and converted to at most one material
   intervention fact.
+- Keep regression tests proving `alignment_proof` is carried in host
+  observations, marks visibility-recovery engine lanes as ready only when the
+  required compact summaries are present, treats host-policy-gated native
+  subagent transport as policy-deferred rather than silently absent, and does
+  not claim optional Discipline, Surface DAG, or Analysis lanes without
+  evidence.
 
 ## Open Questions
 - Which update and reopen helper paths should be promoted from preview-only to

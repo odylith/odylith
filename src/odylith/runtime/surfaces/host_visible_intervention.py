@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
+from odylith.runtime.intervention_engine import conversation_closeout
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
@@ -53,6 +54,10 @@ def render_visible_intervention(
     """Render the exact Markdown an assistant should show when hooks are hidden."""
 
     normalized_phase = " ".join(str(phase or "").split()).strip().lower() or "stop_summary"
+    visibility_feedback = conversation_closeout.visibility_feedback_requested(
+        prompt=prompt,
+        assistant_summary=summary,
+    )
     if (
         normalized_phase
         in {"prompt_submit", "userpromptsubmit", "post_bash_checkpoint", "stop_summary"}
@@ -60,6 +65,7 @@ def render_visible_intervention(
             prompt=prompt,
             assistant_summary=summary,
         )
+        and not visibility_feedback
         and not changed_paths
         and include_closeout is None
     ):
@@ -67,7 +73,11 @@ def render_visible_intervention(
     proposal = normalized_phase not in {"prompt_submit", "userpromptsubmit", "stop_summary"}
     if include_proposal is not None:
         proposal = bool(include_proposal)
-    closeout = normalized_phase == "stop_summary" or normalized_phase in _PROMPT_SUBMIT_PHASES
+    closeout = (
+        normalized_phase == "stop_summary"
+        or normalized_phase in _PROMPT_SUBMIT_PHASES
+        or visibility_feedback
+    )
     if include_closeout is not None:
         closeout = bool(include_closeout)
     resolved_session = host_surface_runtime.normalized_session_id(session_id, host_family=host_family)

@@ -197,6 +197,15 @@ claiming ML calibration.
   artifacts and precomputed delivery intelligence; it must not invoke provider
   calls, full context-store expansion, or repo-wide search while deciding
   chat visibility.
+- `src/odylith/runtime/intervention_engine/alignment_proof.py`
+  Explicit engine-lane proof model for host-visible intervention alignment.
+  It turns the compact alignment context into a JSON-friendly lane summary
+  across Context Engine, Execution Engine, Tribunal, Intervention Engine,
+  Governance, Subagent Orchestration, Discipline, Surface DAGs, Delivery,
+  Analysis, and Memory Substrate. Required lanes must be covered or
+  policy-deferred before a visibility-recovery beat can report `status=ready`,
+  and the proof object records that the host path used local summaries only,
+  with no provider call or repo scan.
 - `src/odylith/runtime/intervention_engine/alignment_evidence.py`
   Reusable hot-path evidence normalizer for the intervention engine. It merges
   legacy packet summaries with Context Engine packet summaries, folds compact
@@ -304,8 +313,18 @@ claiming ML calibration.
   Fixed fields: `host_family`, `session_id`, `turn_phase`, `prompt_excerpt`,
   `assistant_summary`, `changed_paths`, `packet_summary`,
   `context_packet_summary`, `execution_engine_summary`, `memory_summary`,
-  `tribunal_summary`, `visibility_summary`, `delivery_snapshot`, and
+  `tribunal_summary`, `visibility_summary`, `delivery_snapshot`,
+  `alignment_proof`, and
   `active_target_refs`.
+- `Alignment Proof`
+  Compact, host-visible engine coverage proof carrying `proof_kind`, `status`,
+  `required_lanes`, `covered_lanes`, `missing_required_lanes`,
+  `hot_path_constraints`, and per-lane status rows. Visibility-recovery
+  prompts require the Context Engine, Execution Engine, Intervention Engine,
+  Tribunal, Governance, Delivery, Memory Substrate, and Subagent
+  Orchestration lanes to be covered or policy-deferred. Optional Discipline,
+  Surface DAG, and Analysis lanes stay `quiet` unless compact evidence is
+  present, so the engine does not fabricate cross-system proof.
 - `VisibleInterventionDecision`
   Compact broker output carrying `visible_markdown`, `developer_context`,
   `delivery_channel`, `delivery_status`, `proof_required`,
@@ -336,13 +355,14 @@ claiming ML calibration.
   Compact, non-public payload consumed by host surfaces before the broker
   decides visibility. Required fields are `context_packet`,
   `execution_engine_summary`, `memory_summary`, `visibility_summary`,
-  `delivery_snapshot`, and `tribunal_summary`. When an operator reports zero
-  ambient highlights, zero signals, invisible Observations/Proposals, or a
-  missing Assist, this context must infer the `B-096`/`CB-122` visibility
-  recurrence, include the Governance Intervention Engine plus Context Engine,
-  Execution Engine, memory backend, and Tribunal components, and force the
-  Execution Engine next move into a recover lane until chat-visible proof is
-  confirmed.
+  `delivery_snapshot`, `tribunal_summary`, and `alignment_proof`. When an
+  operator reports zero ambient highlights, zero signals, invisible
+  Observations/Proposals, or a missing Assist, this context must infer the
+  `B-096`/`CB-122` visibility recurrence, include the Governance Intervention
+  Engine plus Context Engine, Execution Engine, memory backend, and Tribunal
+  components, force the Execution Engine next move into a recover lane until
+  chat-visible proof is confirmed, and preserve the engine-lane proof through
+  Codex and Claude prompt/checkpoint bundles.
 - `GovernanceFact`
   Fixed fact classes: `history`, `governance_truth`, `invariant`,
   `topology`, and `capture_opportunity`.

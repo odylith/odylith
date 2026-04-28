@@ -136,7 +136,7 @@ def _split_visible_lines(value: Any) -> tuple[list[str], list[str]]:
                 body = normalize_block_string("\n".join(active))
                 if body:
                     for paragraph in _visible_paragraphs(body):
-                        if _visible_line_label(paragraph):
+                        if _visible_line_label(paragraph) == "assist":
                             outside_rows.append(paragraph)
                         else:
                             live_bodies.append(paragraph)
@@ -154,7 +154,7 @@ def _split_visible_lines(value: Any) -> tuple[list[str], list[str]]:
     if tail:
         if in_live_block:
             for paragraph in _visible_paragraphs(tail):
-                if _visible_line_label(paragraph):
+                if _visible_line_label(paragraph) == "assist":
                     outside_rows.append(paragraph)
                 else:
                     live_bodies.append(paragraph)

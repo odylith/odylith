@@ -163,6 +163,12 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
     memory = dict(observation["memory_summary"])
     tribunal = dict(observation["tribunal_summary"])
     visibility = dict(observation["visibility_summary"])
+    proof = dict(observation["alignment_proof"])
+    proof_lanes = {
+        row["lane_id"]: row
+        for row in proof["lanes"]
+        if isinstance(row, dict)
+    }
 
     assert context_packet["packet_state"] == "visibility_recovery"
     assert context_packet["workstreams"] == ["B-096"]
@@ -178,6 +184,16 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
     assert visibility["chat_visible_proof"] == "unproven_this_session"
     assert tribunal["source"] == "intervention_alignment_context"
     assert tribunal["case_queue"][0]["id"] == "CB-122"
+    assert proof["status"] == "ready"
+    assert proof["missing_required_lanes"] == []
+    assert proof_lanes["context_engine"]["status"] == "covered"
+    assert proof_lanes["execution_engine"]["status"] == "covered"
+    assert proof_lanes["tribunal"]["status"] == "covered"
+    assert proof_lanes["intervention_engine"]["status"] == "covered"
+    assert proof_lanes["governance"]["status"] == "covered"
+    assert proof_lanes["delivery"]["status"] == "covered"
+    assert proof_lanes["memory_substrate"]["status"] == "covered"
+    assert proof_lanes["subagent_orchestration"]["status"] == "policy_deferred"
 
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=tmp_path,

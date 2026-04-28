@@ -16,6 +16,7 @@ from typing import Sequence
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import odylith_runtime_surface_summary
 from odylith.runtime.execution_engine import runtime_surface_governance
+from odylith.runtime.intervention_engine import alignment_proof
 from odylith.runtime.intervention_engine import delivery_ledger
 from odylith.runtime.intervention_engine import delivery_runtime
 from odylith.runtime.intervention_engine import stream_state
@@ -518,9 +519,25 @@ def build_host_alignment_context(
         context_payload=context_payload,
         context_packet=context_packet,
     )
+    proof = alignment_proof.build_alignment_proof(
+        host_family=host,
+        turn_phase=phase,
+        visibility_failure=visibility_failure,
+        context_packet=context_packet,
+        execution_engine_summary=execution_summary,
+        memory_summary=memory_summary,
+        tribunal_summary=tribunal_summary,
+        visibility_summary=visibility_summary,
+        delivery_snapshot=delivery_snapshot,
+        components=resolved_components,
+        workstreams=resolved_workstreams,
+        bugs=bugs,
+        diagrams=diagrams,
+    )
     context_payload.update(
         {
             "tribunal_summary": tribunal_summary,
+            "alignment_proof": proof,
             "workstreams": resolved_workstreams,
             "components": resolved_components,
             "bugs": bugs,
@@ -532,6 +549,8 @@ def build_host_alignment_context(
                 "memory_event_count": int(memory_summary.get("recent_event_count") or 0),
                 "tribunal_signal_present": bool(tribunal_summary),
                 "delivery_visible_event_count": int(delivery_snapshot.get("visible_event_count") or 0),
+                "alignment_proof_status": proof.get("status"),
+                "alignment_proof_missing_required_lanes": proof.get("missing_required_lanes", []),
             },
         }
     )

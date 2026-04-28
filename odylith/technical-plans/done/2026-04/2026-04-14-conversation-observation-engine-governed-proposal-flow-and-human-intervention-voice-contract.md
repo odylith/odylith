@@ -2,7 +2,7 @@ Status: Done
 
 Created: 2026-04-14
 
-Updated: 2026-04-26
+Updated: 2026-04-28
 
 Backlog: B-096
 
@@ -167,6 +167,17 @@ Related Bugs:
   `85 passed`; headless intervention/onboarding browser matrix `28 passed`;
   `odylith validate guidance-behavior --repo-root .` and
   `odylith validate discipline --repo-root .` passed.
+- 2026-04-28: Added an explicit engine-alignment proof object to the host
+  intervention hot path. `alignment_proof` now travels inside the normalized
+  `ObservationEnvelope` and is preserved by both Codex/Claude prompt and
+  checkpoint bundle builders. The proof names required visibility-recovery
+  lanes, covered lanes, missing required lanes, policy-deferred subagent
+  orchestration, and local-summary-only constraints, so the UX cannot claim
+  cross-engine alignment from hidden or formatter-only inference.
+- Proof: focused alignment/host regression suite `47 passed` covering direct
+  proof construction, malformed/missing lane degradation, optional quiet lanes,
+  full zero-visible-signal complaint alignment, and shared prompt-bundle proof
+  preservation.
 
 ## Learnings
 - [ ] Odylith interventions are only compelling if the markdown block changes

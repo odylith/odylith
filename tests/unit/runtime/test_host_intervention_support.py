@@ -102,7 +102,33 @@ def test_render_prompt_system_message_appends_assist_for_visibility_feedback(tmp
     assert "**Odylith History:**" not in rendered
 
 
-def test_render_prompt_system_message_keeps_assist_hidden_for_generic_failure(tmp_path: Path) -> None:
+def test_prompt_bundle_preserves_engine_alignment_proof_for_visible_assist(tmp_path: Path) -> None:
+    bundle = host_intervention_support.build_prompt_conversation_bundle(
+        repo_root=tmp_path,
+        host_family="codex",
+        prompt="I still do not see any Odylith interventions or Assist in chat.",
+        session_id="prompt-proof",
+    )
+    proof = dict(bundle["observation"]["alignment_proof"])
+    lanes = {
+        row["lane_id"]: row
+        for row in proof["lanes"]
+        if isinstance(row, dict)
+    }
+
+    assert proof["proof_kind"] == "visibility_recovery"
+    assert proof["status"] == "ready"
+    assert proof["missing_required_lanes"] == []
+    assert lanes["context_engine"]["status"] == "covered"
+    assert lanes["execution_engine"]["status"] == "covered"
+    assert lanes["intervention_engine"]["status"] == "covered"
+    assert lanes["tribunal"]["status"] == "covered"
+    assert lanes["delivery"]["status"] == "covered"
+    assert lanes["memory_substrate"]["status"] == "covered"
+    assert lanes["subagent_orchestration"]["status"] == "policy_deferred"
+
+
+def test_render_prompt_system_message_keeps_shared_assist_visible_for_generic_failure(tmp_path: Path) -> None:
     rendered = host_intervention_support.render_prompt_system_message(
         repo_root=tmp_path,
         host_family="codex",
@@ -111,7 +137,8 @@ def test_render_prompt_system_message_keeps_assist_hidden_for_generic_failure(tm
     )
 
     assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
-    assert "**Odylith Assist:**" not in rendered
+    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
+    assert "kept Odylith visible in this chat so the brand promise is something the user can see" in rendered
 
 
 def test_render_prompt_system_message_suppresses_help_fast_path_and_replay(tmp_path: Path) -> None:

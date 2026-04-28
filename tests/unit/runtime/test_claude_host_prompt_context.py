@@ -93,7 +93,10 @@ def test_claude_prompt_system_message_replays_pending_chat_block(tmp_path: Path)
         session_id="claude-prompt-replay",
     )
 
-    assert rendered == "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---"
+    assert rendered == (
+        "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---\n\n"
+        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+    )
 
 
 def test_claude_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: Path) -> None:
@@ -156,7 +159,8 @@ def test_claude_prompt_system_message_prefers_pending_ambient_history_over_obser
         "**Odylith History:** Claude prompt should surface this branded ambient beat first.\n"
         "\n"
         "**Odylith Observation:** Claude prompt should not hide the stronger ambient beat.\n"
-        "\n---"
+        "\n---\n\n"
+        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
     )
 
 
@@ -313,7 +317,8 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
     assert exit_code == 0
     output = capsys.readouterr().out
     assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
-    assert output.rstrip().endswith(surface_runtime.LIVE_BOUNDARY)
+    assert "\n---\n\n**Odylith Assist:** kept Odylith visible in this chat" in output
+    assert output.rstrip().rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
     assert not output.lstrip().startswith("{")
 
 
@@ -358,7 +363,9 @@ def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
     exit_code = claude_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert capsys.readouterr().out == ""
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "**Odylith Assist:** kept Odylith visible in this chat" in payload["hookSpecificOutput"]["additionalContext"]
     snapshot = delivery_ledger.delivery_snapshot(
         repo_root=tmp_path,
         host_family="claude",

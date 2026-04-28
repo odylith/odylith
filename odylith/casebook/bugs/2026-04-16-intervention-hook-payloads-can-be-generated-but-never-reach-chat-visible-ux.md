@@ -48,6 +48,8 @@
 
 - Prevention: Regression tests must fail when a host payload carries only hidden context without assistant-render fallback, when ambient loses to a stale teaser after evidence matures, when low-signal short turns fabricate Assist, when explicit visibility-feedback turns fail to produce Assist, when Stop dedupe suppresses a label that was not actually shown, or when compatibility reports blur structured hook generation with chat-visible delivery. `intervention-status` must remain cheap enough to run before claiming a live session is active.
 
+- Follow-Up Prevention (2026-04-28 / 0.1.12): Host-visible intervention bundles now carry an `alignment_proof` object inside the normalized `ObservationEnvelope`. The proof requires Context Engine, Execution Engine, Intervention Engine, Tribunal, Governance, Delivery, Memory Substrate, and Subagent Orchestration lanes to be covered or policy-deferred before visibility-recovery output reports ready, while Discipline, Surface DAG, and Analysis lanes remain quiet unless compact evidence exists. Focused proof/host tests passed (`47 passed`) so future regressions cannot hide a broken engine chain behind visible Markdown.
+
 - Agent Guardrails: When host hook visibility is unproven, agents must render the Odylith visible-intervention Markdown or fallback block directly in chat instead of saying the engine is active.
 
 - Preflight Checks: Before claiming interventions are active, verify both structured hook generation and a chat-visible render path for the current host/session.

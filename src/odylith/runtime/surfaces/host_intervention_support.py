@@ -7,6 +7,7 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import alignment_context
+from odylith.runtime.intervention_engine import conversation_closeout
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import fact_producer_runtime
 from odylith.runtime.intervention_engine import host_surface_runtime
@@ -133,6 +134,16 @@ def prompt_visible_assist_text(bundle: Mapping[str, Any] | object) -> tuple[str,
     )
 
 
+def prompt_visibility_feedback_requested(bundle: Mapping[str, Any] | object) -> bool:
+    """Return whether the prompt explicitly reports missing Odylith visibility."""
+
+    observation = _alignment_mapping(bundle, "observation") if isinstance(bundle, Mapping) else {}
+    return conversation_closeout.visibility_feedback_requested(
+        prompt=observation.get("prompt_excerpt"),
+        assistant_summary=observation.get("assistant_summary", ""),
+    )
+
+
 def ensure_prompt_visible_assist_bundle(bundle: Mapping[str, Any] | object) -> dict[str, Any]:
     """Ensure prompt-submit rendering can close with one Assist line.
 
@@ -146,9 +157,14 @@ def ensure_prompt_visible_assist_bundle(bundle: Mapping[str, Any] | object) -> d
     if conversation_surface.render_closeout_text(updated, markdown=True):
         return updated
     markdown_text, plain_text = prompt_visible_assist_text(updated)
+    style = (
+        "prompt_visible_feedback"
+        if prompt_visibility_feedback_requested(updated)
+        else "prompt_visible_fallback"
+    )
     updated["closeout_bundle"] = {
         "eligible": True,
-        "style": "prompt_visible_fallback",
+        "style": style,
         "label": "Odylith Assist:",
         "preferred_markdown_label": "**Odylith Assist:**",
         "text": markdown_text,
@@ -210,6 +226,7 @@ def build_prompt_conversation_bundle(
         tribunal_summary=_alignment_mapping(alignment, "tribunal_summary"),
         visibility_summary=_alignment_mapping(alignment, "visibility_summary"),
         delivery_snapshot=_alignment_mapping(alignment, "delivery_snapshot"),
+        alignment_proof=_alignment_mapping(alignment, "alignment_proof"),
     )
     return conversation_surface.build_conversation_bundle(
         repo_root=root,
