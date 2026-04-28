@@ -2747,6 +2747,11 @@ def test_doctor_prints_last_upgrade_report_and_lock_note(monkeypatch, tmp_path: 
                     "fresh": True,
                     "timeout_detected": True,
                 },
+                "generated_change_manifest": {
+                    "path": "odylith/upgrade-generated-changes.v1.json",
+                    "generated_changed_count": 2,
+                    "content_fingerprint": "123456abcdef",
+                },
             }
         ),
         encoding="utf-8",
@@ -2783,6 +2788,7 @@ def test_doctor_prints_last_upgrade_report_and_lock_note(monkeypatch, tmp_path: 
     assert rc == 0
     assert "Last upgrade: succeeded_with_warnings at 2026-04-27T12:01:00+00:00" in captured
     assert "Last upgrade dashboard refresh: mode=launcher; fresh=yes; timeout_detected=yes" in captured
+    assert "Last upgrade generated changes: 2 generated path(s); manifest: odylith/upgrade-generated-changes.v1.json; fingerprint=123456abcdef" in captured
     assert "Rollback target: 1.2.3" in captured
     assert "Lock note: 200 zero-byte lock placeholders exist under .odylith/locks" in captured
 
@@ -3107,9 +3113,14 @@ def test_upgrade_json_writes_auditable_report_and_suppresses_refresh_stdout(
     assert payload["status"] == "succeeded"
     assert payload["final_state"]["active_version"] == "1.2.4"
     assert payload["dashboard_refresh"]["timeout_detected"] is True
+    assert payload["generated_change_manifest"]["path"] == "odylith/upgrade-generated-changes.v1.json"
+    assert payload["generated_change_manifest"]["generated_changed_count"] == 1
+    assert payload["generated_change_manifest"]["entries"][0]["path"] == "odylith/index.html"
     assert payload["plan"]["metadata"]["asset_digests"]["release-manifest.json"] == "abc123"
     assert "odylith/index.html" in payload["changed_paths"]
+    assert "odylith/upgrade-generated-changes.v1.json" in payload["changed_paths"]
     assert Path(payload["report_path"]).is_file()
+    assert (repo_root / "odylith" / "upgrade-generated-changes.v1.json").is_file()
 
 
 def test_migrate_legacy_install_dispatches_to_install_migration(monkeypatch, tmp_path: Path, capsys) -> None:

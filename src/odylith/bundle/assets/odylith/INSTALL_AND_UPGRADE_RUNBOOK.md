@@ -123,7 +123,13 @@
 - A previously staged version directory is reused only when its local runtime
   verification marker still matches the newly verified release evidence;
   drifted or partially trusted directories are discarded and restaged.
-- Normal upgrades must not rewrite tracked repo truth under `odylith/`; the only allowed consumer-tree refresh is `odylith/agents-guidelines/`.
+- When post-upgrade dashboard refresh changes generated Odylith surfaces,
+  upgrade writes `odylith/upgrade-generated-changes.v1.json` as a compact
+  tracked review manifest with surface categories, byte counts, SHA-256 hashes,
+  and a content fingerprint.
+- Runtime activation must not rewrite consumer source truth under `odylith/`.
+  Post-upgrade shell refresh may update generated Odylith surfaces, and that
+  generated churn must be summarized by the tracked generated-change manifest.
 - Migration-marked releases are blocked from the normal upgrade path.
 - `odylith rollback --previous` only targets previously verified local versions and may temporarily diverge from the repo pin.
 - `odylith version` and `odylith doctor` must report the active version and

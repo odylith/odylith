@@ -6,7 +6,6 @@ Last updated (UTC): 2026-04-28
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-134 | 2026-04-27 | Upgrade reviewability still needs generated change manifest and lock compaction | P2 | odylith | Open | [2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md](2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md) |
 | CB-126 | 2026-04-25 | Benchmark tree identity fix regrows oversized runner hotfile failure | P2 | benchmark | Open | [2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md](2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md) |
 | CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Resolved | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
 | CB-120 | 2026-04-16 | Dashboard shell diagnostic cockpit leaked into product render | P1 | dashboard | Resolved | [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md) |
@@ -197,6 +196,7 @@ Last updated (UTC): 2026-04-28
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-134 | 2026-04-27 | Upgrade reviewability still needs generated change manifest and lock compaction | P2 | odylith | Closed | [2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md](2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md) |
 | CB-133 | 2026-04-27 | Upgrade lifecycle output is not an auditable transaction | P1 | release | Closed | [2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md](2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md) |
 | CB-132 | 2026-04-27 | Starter guide first run layout buries the primary action | P1 | dashboard | Closed | [2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md](2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md) |
 | CB-131 | 2026-04-27 | Starter guide can reopen closed on same path reinstall | P1 | dashboard | Closed | [2026-04-27-starter-guide-can-reopen-closed-on-same-path-reinstall.md](2026-04-27-starter-guide-can-reopen-closed-on-same-path-reinstall.md) |

@@ -149,11 +149,17 @@ Other useful lifecycle commands:
   refresh failed after the version changed, rerun
   `./.odylith/bin/odylith dashboard refresh --repo-root .`; the active launcher
   is the authoritative post-upgrade refresh path.
+- When the post-upgrade dashboard refresh changes generated Odylith surfaces,
+  upgrade writes `odylith/upgrade-generated-changes.v1.json` as a compact
+  tracked review manifest with surface categories, byte counts, SHA-256 hashes,
+  and a content fingerprint. Review that file before opening large generated
+  JS or JSON diffs.
 - When the requested release already matches the active verified full-stack
   runtime, `odylith upgrade` treats that as already current and does not
   restage the live same-version runtime in place.
-- Normal upgrades must not rewrite tracked repo truth under `odylith/`; the
-  only allowed consumer-tree refresh is `odylith/agents-guidelines/`.
+- Runtime activation must not rewrite consumer source truth under `odylith/`.
+  Post-upgrade shell refresh may update generated Odylith surfaces, and that
+  generated churn must be summarized by the tracked generated-change manifest.
 - `odylith rollback --previous` only targets previously verified local
   versions and may temporarily diverge from the repo pin.
 

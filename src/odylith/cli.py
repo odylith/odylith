@@ -1284,6 +1284,17 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
     dashboard_details["fresh"] = refreshed
     post_upgrade_dirty_paths = upgrade_reporting.git_status_paths(repo_root=requested_repo_root)
     newly_dirty_paths = sorted(set(post_upgrade_dirty_paths) - set(pre_upgrade_dirty_paths))
+    generated_change_manifest = upgrade_reporting.write_generated_change_manifest(
+        repo_root=requested_repo_root,
+        changed_paths=newly_dirty_paths,
+        active_version=active_version,
+        previous_version=previous_version,
+        pinned_version=pinned_version,
+        dashboard_details=dashboard_details,
+    )
+    if bool(generated_change_manifest.get("changed")):
+        post_upgrade_dirty_paths = upgrade_reporting.git_status_paths(repo_root=requested_repo_root)
+        newly_dirty_paths = sorted(set(post_upgrade_dirty_paths) - set(pre_upgrade_dirty_paths))
     phases.append(
         upgrade_reporting.phase_payload(
             name="dashboard_refresh",
@@ -1311,6 +1322,7 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
         "phases": phases,
         "final_state": upgrade_reporting.upgrade_summary_payload(summary),
         "dashboard_refresh": upgrade_reporting.json_ready(dashboard_details),
+        "generated_change_manifest": upgrade_reporting.json_ready(generated_change_manifest),
         "pre_existing_dirty_paths": pre_upgrade_dirty_paths,
         "post_upgrade_dirty_paths": post_upgrade_dirty_paths,
         "changed_paths": newly_dirty_paths,
@@ -1324,6 +1336,13 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
         print(json.dumps(report, indent=2, sort_keys=True))
         return 0
     print(message)
+    if bool(generated_change_manifest.get("written")):
+        print(
+            "Generated change manifest: "
+            f"{generated_change_manifest.get('path')} "
+            f"({generated_change_manifest.get('generated_changed_count')} generated path(s), "
+            f"fingerprint {str(generated_change_manifest.get('content_fingerprint') or '')[:12]})."
+        )
     try:
         report_display = report_path.relative_to(requested_repo_root).as_posix()
     except ValueError:

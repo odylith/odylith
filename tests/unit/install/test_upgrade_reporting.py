@@ -56,6 +56,11 @@ def test_doctor_observability_lines_report_upgrade_and_lock_compaction_prompt(tm
                 "status": "succeeded_with_warnings",
                 "finished_at": "2026-04-27T12:01:00+00:00",
                 "dashboard_refresh": {"mode": "launcher", "fresh": True, "timeout_detected": True},
+                "generated_change_manifest": {
+                    "path": "odylith/upgrade-generated-changes.v1.json",
+                    "generated_changed_count": 3,
+                    "content_fingerprint": "abcdef1234567890",
+                },
             }
         ),
         encoding="utf-8",
@@ -70,8 +75,20 @@ def test_doctor_observability_lines_report_upgrade_and_lock_compaction_prompt(tm
         status=SimpleNamespace(last_known_good_version="1.2.3"),
     )
 
-    assert any("Last upgrade: succeeded_with_warnings at 2026-04-27T12:01:00+00:00" in line for line in lines)
-    assert any("Last upgrade dashboard refresh: mode=launcher; fresh=yes; timeout_detected=yes" in line for line in lines)
+    assert any(
+        "Last upgrade: succeeded_with_warnings at 2026-04-27T12:01:00+00:00" in line
+        for line in lines
+    )
+    assert any(
+        "Last upgrade dashboard refresh: mode=launcher; fresh=yes; timeout_detected=yes" in line
+        for line in lines
+    )
+    assert any(
+        "Last upgrade generated changes: 3 generated path(s); "
+        "manifest: odylith/upgrade-generated-changes.v1.json; fingerprint=abcdef123456"
+        in line
+        for line in lines
+    )
     assert "Rollback target: 1.2.3" in lines
     assert any("200 zero-byte lock placeholders exist under .odylith/locks" in line for line in lines)
     assert any("doctor --repo-root . --repair" in line for line in lines)
@@ -86,3 +103,85 @@ def test_git_status_paths_reports_unique_changed_paths(monkeypatch, tmp_path: Pa
     (tmp_path / ".git").mkdir()
 
     assert upgrade_reporting.git_status_paths(repo_root=tmp_path) == ["docs/new.md", "file-a.py", "new.py"]
+
+
+def test_generated_change_manifest_summarizes_generated_surfaces(tmp_path: Path) -> None:
+    radar_html = tmp_path / "odylith" / "radar" / "radar.html"
+    radar_html.parent.mkdir(parents=True)
+    radar_html.write_text("<!doctype html>\n", encoding="utf-8")
+    source_index = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
+    source_index.parent.mkdir(parents=True)
+    source_index.write_text("# source truth\n", encoding="utf-8")
+    bundle_mirror = tmp_path / "src" / "odylith" / "bundle" / "assets" / "odylith" / "radar" / "radar.html"
+    bundle_mirror.parent.mkdir(parents=True)
+    bundle_mirror.write_text("<!doctype html>\n", encoding="utf-8")
+
+    payload = upgrade_reporting.generated_change_manifest_payload(
+        repo_root=tmp_path,
+        changed_paths=[
+            "odylith/radar/radar.html",
+            "odylith/radar/source/INDEX.md",
+            "src/odylith/bundle/assets/odylith/radar/radar.html",
+        ],
+        active_version="1.2.4",
+        previous_version="1.2.3",
+        pinned_version="1.2.4",
+        dashboard_details={"mode": "launcher", "fresh": True, "stdout": "large generated renderer log"},
+    )
+
+    assert payload["generated_changed_count"] == 2
+    assert payload["by_category"]["radar"]["count"] == 1
+    assert payload["by_category"]["bundle_surface_mirror"]["count"] == 1
+    assert payload["entries"][0]["path"] == "odylith/radar/radar.html"
+    assert payload["other_changed_paths"] == ["odylith/radar/source/INDEX.md"]
+    assert payload["dashboard_refresh"] == {"mode": "launcher", "fresh": True}
+    assert len(str(payload["content_fingerprint"])) == 64
+
+
+def test_write_generated_change_manifest_is_stable_and_skips_non_generated_paths(tmp_path: Path) -> None:
+    source_index = tmp_path / "odylith" / "radar" / "source" / "INDEX.md"
+    source_index.parent.mkdir(parents=True)
+    source_index.write_text("# source truth\n", encoding="utf-8")
+
+    skipped = upgrade_reporting.write_generated_change_manifest(
+        repo_root=tmp_path,
+        changed_paths=["odylith/radar/source/INDEX.md"],
+        active_version="1.2.4",
+        previous_version="1.2.3",
+        pinned_version="1.2.4",
+        dashboard_details={},
+    )
+
+    assert skipped["written"] is False
+    assert not (tmp_path / "odylith" / "upgrade-generated-changes.v1.json").exists()
+
+    compass_payload = tmp_path / "odylith" / "compass" / "compass-payload.v1.js"
+    compass_payload.parent.mkdir(parents=True)
+    compass_payload.write_text("window.payload = {};\n", encoding="utf-8")
+
+    first = upgrade_reporting.write_generated_change_manifest(
+        repo_root=tmp_path,
+        changed_paths=["odylith/compass/compass-payload.v1.js"],
+        active_version="1.2.4",
+        previous_version="1.2.3",
+        pinned_version="1.2.4",
+        dashboard_details={"mode": "standalone", "fresh": True},
+    )
+    second = upgrade_reporting.write_generated_change_manifest(
+        repo_root=tmp_path,
+        changed_paths=["odylith/compass/compass-payload.v1.js"],
+        active_version="1.2.4",
+        previous_version="1.2.3",
+        pinned_version="1.2.4",
+        dashboard_details={"mode": "standalone", "fresh": True},
+    )
+
+    manifest_payload = json.loads(
+        (tmp_path / "odylith" / "upgrade-generated-changes.v1.json").read_text(encoding="utf-8")
+    )
+    assert first["written"] is True
+    assert first["changed"] is True
+    assert second["written"] is True
+    assert second["changed"] is False
+    assert manifest_payload["generated_changed_count"] == 1
+    assert manifest_payload["entries"][0]["category"] == "compass"

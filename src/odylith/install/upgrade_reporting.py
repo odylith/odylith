@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from datetime import datetime
@@ -9,6 +10,176 @@ from pathlib import Path
 from typing import Mapping
 
 from odylith.install.lock_hygiene import LOCK_NOTE_THRESHOLD, lock_hygiene_summary
+
+GENERATED_CHANGE_MANIFEST_REL = "odylith/upgrade-generated-changes.v1.json"
+
+_SURFACE_SOURCE_PREFIXES = (
+    "odylith/atlas/source/",
+    "odylith/casebook/bugs/",
+    "odylith/radar/source/",
+    "odylith/registry/source/",
+    "odylith/technical-plans/",
+)
+
+_DASHBOARD_MANIFEST_KEYS = (
+    "surfaces",
+    "mode",
+    "reason",
+    "command",
+    "returncode",
+    "success",
+    "fresh",
+    "timeout_detected",
+    "message",
+)
+
+
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _file_fingerprint(path: Path) -> tuple[int, str, int]:
+    try:
+        payload = path.read_bytes()
+    except OSError:
+        return 0, "", 0
+    return len(payload), _sha256_bytes(payload), payload.count(b"\n")
+
+
+def _generated_surface_category(path: str) -> str:
+    rel = path.strip().replace("\\", "/").lstrip("./")
+    if not rel or rel == GENERATED_CHANGE_MANIFEST_REL:
+        return ""
+    if rel.startswith(_SURFACE_SOURCE_PREFIXES):
+        return ""
+    if rel.startswith("src/odylith/bundle/assets/odylith/"):
+        return "bundle_surface_mirror"
+    if rel == "odylith/index.html" or rel.startswith("odylith/tooling-"):
+        return "tooling_shell"
+    for surface in ("atlas", "casebook", "compass", "radar", "registry"):
+        if rel.startswith(f"odylith/{surface}/"):
+            return surface
+    return ""
+
+
+def _compact_dashboard_details(details: Mapping[str, object] | None) -> dict[str, object]:
+    if not details:
+        return {}
+    return {key: json_ready(details[key]) for key in _DASHBOARD_MANIFEST_KEYS if key in details}
+
+
+def generated_change_manifest_payload(
+    *,
+    repo_root: Path,
+    changed_paths: list[str] | tuple[str, ...],
+    active_version: str,
+    previous_version: str,
+    pinned_version: str,
+    dashboard_details: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    entries: list[dict[str, object]] = []
+    other_changed_paths: list[str] = []
+    normalized_paths = {
+        str(path).strip().replace("\\", "/").lstrip("./")
+        for path in changed_paths
+        if str(path).strip()
+    }
+    for raw_path in sorted(normalized_paths):
+        if raw_path == GENERATED_CHANGE_MANIFEST_REL:
+            continue
+        category = _generated_surface_category(raw_path)
+        if not category:
+            other_changed_paths.append(raw_path)
+            continue
+        absolute_path = repo_root / raw_path
+        exists = absolute_path.exists()
+        byte_count, sha256, line_count = _file_fingerprint(absolute_path) if exists else (0, "", 0)
+        entries.append(
+            {
+                "path": raw_path,
+                "category": category,
+                "state": "present" if exists else "deleted",
+                "byte_count": byte_count,
+                "line_count": line_count,
+                "sha256": sha256,
+            }
+        )
+    by_category: dict[str, dict[str, int]] = {}
+    for entry in entries:
+        category = str(entry["category"])
+        bucket = by_category.setdefault(category, {"count": 0, "bytes": 0})
+        bucket["count"] += 1
+        bucket["bytes"] += int(entry["byte_count"])
+    fingerprint_source = {
+        "entries": entries,
+        "by_category": by_category,
+        "dashboard_refresh": _compact_dashboard_details(dashboard_details),
+    }
+    fingerprint = _sha256_bytes(json.dumps(fingerprint_source, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+    return {
+        "schema": "odylith.generated-change-manifest.v1",
+        "review_note": (
+            "Compact review manifest for generated Odylith surface churn. "
+            "Reviewers can inspect these hashes and counts before opening large generated JS/JSON diffs."
+        ),
+        "active_version": active_version,
+        "previous_version": previous_version,
+        "pinned_version": pinned_version,
+        "manifest_path": GENERATED_CHANGE_MANIFEST_REL,
+        "content_fingerprint": fingerprint,
+        "generated_changed_count": len(entries),
+        "generated_changed_bytes": sum(int(entry["byte_count"]) for entry in entries),
+        "by_category": by_category,
+        "entries": entries,
+        "other_changed_paths": other_changed_paths,
+        "dashboard_refresh": _compact_dashboard_details(dashboard_details),
+    }
+
+
+def write_generated_change_manifest(
+    *,
+    repo_root: Path,
+    changed_paths: list[str] | tuple[str, ...],
+    active_version: str,
+    previous_version: str,
+    pinned_version: str,
+    dashboard_details: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    payload = generated_change_manifest_payload(
+        repo_root=repo_root,
+        changed_paths=changed_paths,
+        active_version=active_version,
+        previous_version=previous_version,
+        pinned_version=pinned_version,
+        dashboard_details=dashboard_details,
+    )
+    manifest_path = repo_root / GENERATED_CHANGE_MANIFEST_REL
+    if int(payload["generated_changed_count"]) == 0:
+        return {
+            "path": GENERATED_CHANGE_MANIFEST_REL,
+            "written": False,
+            "changed": False,
+            "reason": "no generated surface changes",
+            "generated_changed_count": 0,
+            "generated_changed_bytes": 0,
+            "content_fingerprint": payload["content_fingerprint"],
+        }
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    previous = manifest_path.read_text(encoding="utf-8") if manifest_path.exists() else ""
+    changed = previous != rendered
+    if changed:
+        manifest_path.write_text(rendered, encoding="utf-8")
+    return {
+        "path": GENERATED_CHANGE_MANIFEST_REL,
+        "written": True,
+        "changed": changed,
+        "generated_changed_count": payload["generated_changed_count"],
+        "generated_changed_bytes": payload["generated_changed_bytes"],
+        "content_fingerprint": payload["content_fingerprint"],
+        "by_category": payload["by_category"],
+        "entries": payload["entries"],
+    }
 
 
 def json_ready(value: object) -> object:
@@ -149,6 +320,20 @@ def doctor_operational_observability_lines(*, repo_root: Path, status: object | 
             fresh = "yes" if bool(dashboard.get("fresh") or dashboard.get("success")) else "no"
             timed_out = "yes" if bool(dashboard.get("timeout_detected")) else "no"
             lines.append(f"Last upgrade dashboard refresh: mode={mode}; fresh={fresh}; timeout_detected={timed_out}")
+        generated_manifest = report.get("generated_change_manifest")
+        if isinstance(generated_manifest, Mapping):
+            manifest_path = str(generated_manifest.get("path") or "").strip()
+            try:
+                generated_count = int(generated_manifest.get("generated_changed_count") or 0)
+            except (TypeError, ValueError):
+                generated_count = 0
+            fingerprint = str(generated_manifest.get("content_fingerprint") or "").strip()
+            if manifest_path and generated_count:
+                lines.append(
+                    "Last upgrade generated changes: "
+                    f"{generated_count} generated path(s); manifest: {manifest_path}; "
+                    f"fingerprint={fingerprint[:12]}"
+                )
     if status is not None:
         rollback_target = str(getattr(status, "last_known_good_version", "") or "").strip()
         if rollback_target:

@@ -1,6 +1,6 @@
 - Bug ID: CB-134
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-27
 
@@ -38,11 +38,13 @@
 
 - Invariant Violated: Upgrade review should separate runtime activation from generated dashboard refresh and should explain or compact local lock-state accumulation.
 
-- Solution: Partial 0.1.12 fix landed: `odylith doctor` now reports large recursive `.odylith/locks` zero-byte placeholder accumulation, and `odylith doctor --repair` compacts stale placeholders while preserving the active `install.lock` and non-empty lock files. Remaining follow-up: add a tracked generated-change manifest or deterministic content-addressed dashboard summary for upgrade refreshes.
+- Solution: Closed in 0.1.12. `odylith doctor` reports large recursive `.odylith/locks` zero-byte placeholder accumulation, and `odylith doctor --repair` compacts stale placeholders while preserving the active `install.lock` and non-empty lock files. Upgrade now writes `odylith/upgrade-generated-changes.v1.json` when post-upgrade dashboard refresh changes generated Odylith surfaces. The manifest is tracked repo truth and summarizes generated paths by surface category, byte count, line count, SHA-256 hash, aggregate byte count, and content fingerprint. `upgrade --json` and the persisted `.odylith/runtime/logs/upgrade-*.json` report include the same manifest summary, and `doctor` surfaces the last upgrade generated-change manifest so operators can review compact evidence before opening large generated JS/JSON diffs.
 
-- Verification: Lock cleanup proof: `PYTHONPATH=src python3 -m odylith.cli doctor --repo-root . --repair` compacted 13,715 stale zero-byte lock placeholder(s) in the product repo, and the next doctor run reported healthy without the lock warning. Regression proof: `tests/unit/install/test_lock_hygiene.py`, `tests/unit/install/test_upgrade_reporting.py`, `tests/unit/test_cli.py`, and `tests/integration/install/test_manager.py` cover recursive lock inventory, stale-placeholder compaction, doctor warning copy, and repair behavior. Future fix should still prove deterministic generated manifest output and repeated no-op dashboard refresh stability.
+- Verification: Lock cleanup proof: `PYTHONPATH=src python3 -m odylith.cli doctor --repo-root . --repair` compacted 13,715 stale zero-byte lock placeholder(s) in the product repo, and the next doctor run reported healthy without the lock warning. Generated-change manifest proof: `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_upgrade_reporting.py` covers generated-surface classification, deterministic content fingerprints, tracked manifest writing, non-generated source-truth exclusion, and no-write behavior when only source truth changed. CLI proof: `PYTHONPATH=src python3 -m pytest -q tests/unit/test_cli.py -k 'upgrade_json_writes_auditable_report or doctor_prints_last_upgrade_report'` covers `upgrade --json` manifest inclusion, changed-path reviewability, and doctor readout of the last upgrade manifest. Compile proof: `PYTHONPATH=src python3 -m py_compile src/odylith/install/upgrade_reporting.py src/odylith/cli.py tests/unit/install/test_upgrade_reporting.py tests/unit/test_cli.py`.
 
-- Prevention: Keep generated-surface reviewability as an explicit 0.1.12 follow-up acceptance criterion, and keep local lock hygiene covered by doctor warning/repair tests so zero-byte placeholder accumulation cannot regress into operator-facing sludge.
+- Prevention: Keep generated-surface reviewability and local lock hygiene covered by regression tests. Upgrade reports must keep `generated_change_manifest` machine-readable, and generated dashboard refresh churn must stay summarized by `odylith/upgrade-generated-changes.v1.json` instead of leaving operators with only large generated payload diffs.
+
+- Regression Tests Added: `tests/unit/install/test_upgrade_reporting.py` covers generated-change manifest payloads, stable rewrite behavior, and source-truth exclusion. `tests/unit/test_cli.py` covers upgrade JSON manifest reporting and doctor generated-change observability.
 
 - Version/Build: Target release 0.1.12; split out after CB-133 landed the auditable report and doctor observability foundation.
 
