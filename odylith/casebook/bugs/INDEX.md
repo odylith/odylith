@@ -96,9 +96,6 @@ Last updated (UTC): 2026-04-28
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   benchmark progress finalization, benchmark cleanup/interruption handling,
   pinned-dogfood release proof, maintainer benchmark override contract. | Open | [2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md](2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md) |
-| CB-060 | 2026-04-06 | Lifecycle plans print full dirty overlap by default | P2 | `src/odylith/cli.py`,
-  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, lifecycle-plan
-  printers. | Open | [2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md](2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md) |
 | CB-052 | 2026-04-04 | Registry live forensics miss source owned bundle mirror component activity | P1 | `src/odylith/runtime/governance/component_registry_intelligence.py`,
   Registry forensic coverage, `tribunal`, `remediator`, source-owned bundled
   runtime docs, Registry detail rendering. | Open | [2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md](2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md) |
@@ -415,6 +412,9 @@ Last updated (UTC): 2026-04-28
 | CB-054 | 2026-04-06 | Macos runtime metadata files break managed runtime trust validation | P0 | `src/odylith/install/runtime_integrity.py`,
   `src/odylith/install/runtime.py`, managed runtime trust policy, feature-pack
   preflight. | Closed | [2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md](2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md) |
+| CB-060 | 2026-04-06 | Lifecycle plans print full dirty overlap by default | P2 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, lifecycle-plan
+  printers. | Closed | [2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md](2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md) |
 | CB-058 | 2026-04-06 | Legacy radar index is not normalized before sync validation | P0 | `src/odylith/runtime/governance/validate_backlog_contract.py`,
   `src/odylith/runtime/governance/backlog_authoring.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, Radar source
