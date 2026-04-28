@@ -161,7 +161,10 @@ host observation points. The engine should:
 - Stop-summary Assist stays visible from concrete validation/pass proof even
   when changed paths are unavailable, and does not claim artifact updates
   without changed-path or governed-target evidence.
-- Prompt-only evidence produces at most a teaser.
+- Prompt-only evidence produces at most a teaser plus the shared
+  prompt-visible `Odylith Assist:` line; if no stronger prompt beat is earned,
+  Assist alone keeps the host visibly on-contract for normal non-passthrough
+  prompts.
 - Corroborated evidence can produce one `Odylith Observation`.
 - Stable governed targets can produce one `Odylith Proposal`.
 - The markdown feels helpful, warm, simple, and human instead of templated or
@@ -188,6 +191,10 @@ host observation points. The engine should:
   material, stay quiet when passing, and remain provable through
   `odylith validate guidance-behavior` instead of being treated as detached
   governance paperwork.
+- v0.1.12 prompt visibility hardening keeps Codex and Claude aligned: normal
+  non-passthrough prompt-submit hooks use one shared prompt-visible Assist
+  owner, while `Odylith, help` and `Odylith, show me what you can do` remain
+  clean route locks with no host-authored capability prose.
 
 ## Validation
 - Focused runtime tests for the shared engine and both host integrations pass.

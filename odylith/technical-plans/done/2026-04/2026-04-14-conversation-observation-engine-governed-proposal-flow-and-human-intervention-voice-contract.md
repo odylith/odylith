@@ -152,6 +152,22 @@ Related Bugs:
   `B-108` adjudication corpus and advisory benchmark,
   `B-109` release proof.
 
+## v0.1.12 Follow-Up Hardening
+- 2026-04-28: Eliminated the prompt-visible Assist slop class left after the
+  v0.1.11 visibility work. The default prompt Assist line now has one shared
+  owner in `src/odylith/runtime/surfaces/host_intervention_support.py`, and
+  Codex prompt context, Claude prompt context, Claude prompt teaser, and manual
+  visible-intervention fallback all consume that owner instead of carrying
+  host-local defaults. Normal non-passthrough prompt submit now renders the
+  same `**Odylith Assist:**` line across Codex and Claude when no stronger
+  prompt beat is earned; help/show route locks still suppress narration and
+  preserve stdout-only behavior.
+- Proof: focused host/intervention suite `147 passed`; hygiene/source-bundle/
+  install-agent suite `74 passed`; install manager and bundle integration
+  `85 passed`; headless intervention/onboarding browser matrix `28 passed`;
+  `odylith validate guidance-behavior --repo-root .` and
+  `odylith validate discipline --repo-root .` passed.
+
 ## Learnings
 - [ ] Odylith interventions are only compelling if the markdown block changes
       the user's next move quickly. If the copy sounds like static compliance

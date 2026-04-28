@@ -142,9 +142,13 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   not collapse into self-referential proposal summaries.
 - At closeout, or when a visible-intervention fallback renders a prompt-submit
   or visibility-proof beat, you may add at most one short `Odylith Assist:`
-  line if it helps summarize what Odylith materially contributed. Prefer
-  `**Odylith Assist:**` when Markdown formatting is available; otherwise use
-  `Odylith Assist:`. Lead with the user win, link updated governance IDs inline
+  line if it helps summarize what Odylith materially contributed. The host
+  prompt-submit runtime is stricter: normal non-passthrough prompts get one
+  shared prompt-visible Assist line even when no stronger beat has matured,
+  while `Odylith, help` and `Odylith, show me what you can do` stay
+  stdout-clean. Prefer `**Odylith Assist:**` when Markdown formatting is
+  available; otherwise use `Odylith Assist:`. Lead with the user win, link
+  updated governance IDs inline
   when they were actually changed, and when no governed file moved, name the
   affected governance-contract IDs from bounded request or packet truth without
   calling them updated. Frame the edge against `odylith_off` or the broader

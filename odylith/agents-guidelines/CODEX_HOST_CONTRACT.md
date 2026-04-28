@@ -179,13 +179,16 @@
 - Codex prompt-context, stop-summary, and post-bash checkpoint lanes all feed
   the same shared conversation-observation core in
   `src/odylith/runtime/intervention_engine/`. Prompt submit may emit one
-  teaser sentence only; stop-summary or post-bash may upgrade that into a full
-  `**Odylith Observation**`; governed writes stay inside one confirmation-gated
-  `Odylith Proposal`.
+  earned teaser plus one shared `Odylith Assist:` visibility line for
+  non-passthrough prompts; stop-summary or post-bash may upgrade that into a
+  full `**Odylith Observation**`; governed writes stay inside one
+  confirmation-gated `Odylith Proposal`.
 - When prompt submit earns a teaser, Codex should carry that sentence in the
   hook `systemMessage` and also place an assistant-render fallback in
-  `hookSpecificOutput.additionalContext`. Prompt-time context should feel like
-  one gentle interjection, not a visible dump of narrowing scaffolding.
+  `hookSpecificOutput.additionalContext`. When no teaser is earned for a
+  normal non-passthrough prompt, the shared prompt-visible Assist line is the
+  fallback instead of silence. Prompt-time context should feel like one gentle
+  interjection, not a visible dump of narrowing scaffolding.
 - Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
   first-match route locks, not requests for a Codex-authored capability
   summary. When Codex hooks are available, `codex prompt-context` must emit

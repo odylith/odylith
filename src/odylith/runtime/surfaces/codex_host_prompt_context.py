@@ -147,6 +147,7 @@ def main(argv: list[str] | None = None) -> int:
         prompt=prompt,
         session_id=session_id,
     )
+    bundle = host_intervention_support.ensure_prompt_visible_assist_bundle(bundle)
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=args.repo_root,
         bundle=bundle,
@@ -154,8 +155,8 @@ def main(argv: list[str] | None = None) -> int:
         turn_phase="prompt_submit",
         session_id=session_id,
         include_proposal=False,
-        include_closeout=False,
-        developer_include_closeout=False,
+        include_closeout=True,
+        developer_include_closeout=True,
     )
     replay = host_intervention_support.preferred_live_replay_markdown(
         repo_root=args.repo_root,

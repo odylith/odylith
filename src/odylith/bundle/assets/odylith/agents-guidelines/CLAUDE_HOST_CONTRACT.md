@@ -186,15 +186,17 @@
 - Claude `UserPromptSubmit`, `Stop`, direct-edit `PostToolUse`, and Bash
   `PostToolUse` observation lanes all route through the shared
   `src/odylith/runtime/intervention_engine/` core. `UserPromptSubmit` may emit
-  one teaser sentence only; `Stop` or `PostToolUse` may upgrade that into a
-  full `**Odylith Observation**`; governed write suggestions stay inside one
+  one earned teaser plus one shared `Odylith Assist:` visibility line for
+  non-passthrough prompts; `Stop` or `PostToolUse` may upgrade that into a full
+  `**Odylith Observation**`; governed write suggestions stay inside one
   confirmation-gated `Odylith Proposal`.
 - Claude splits `UserPromptSubmit` into two hook commands on purpose:
   `prompt-context` returns discreet JSON `hookSpecificOutput.additionalContext`
   for anchor context and continuity, while `prompt-teaser` prints an earned
   teaser as plain stdout when the host exposes it. JSON additional context is
   discreet model context and now carries an assistant-render fallback so the
-  next assistant message can speak the teaser if the host hides hook output.
+  next assistant message can speak the teaser, or the shared prompt-visible
+  Assist line when no teaser is earned, if the host hides hook output.
 - Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
   first-match route locks, not requests for generic Claude Code capabilities.
   The `show-me-prompt-guard.py` `UserPromptSubmit` hook must forbid generic

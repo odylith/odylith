@@ -53,6 +53,7 @@ def main(argv: list[str] | None = None) -> int:
         prompt=prompt,
         session_id=session_id,
     )
+    bundle = host_intervention_support.ensure_prompt_visible_assist_bundle(bundle)
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=repo_root,
         bundle=bundle,
@@ -60,7 +61,7 @@ def main(argv: list[str] | None = None) -> int:
         turn_phase="prompt_submit",
         session_id=session_id,
         include_proposal=False,
-        include_closeout=False,
+        include_closeout=True,
         delivery_channel="stdout_teaser",
         delivery_status="best_effort_visible",
     )

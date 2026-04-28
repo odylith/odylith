@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from odylith import cli
+from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.surfaces import claude_host_post_edit_checkpoint
 from odylith.runtime.surfaces import claude_host_post_bash_checkpoint
 from odylith.runtime.surfaces import claude_host_prompt_context
@@ -78,6 +79,40 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
     assert codex_text == claude_text
 
 
+def test_cross_host_prompt_submit_system_message_keeps_assist_visible() -> None:
+    prompt = "Make the intervention visibility path reliable."
+    bundle = {
+        "observation": {
+            "host_family": "codex",
+            "turn_phase": "prompt_submit",
+            "session_id": "prompt-assist-parity",
+            "prompt_excerpt": prompt,
+        },
+        "intervention_bundle": {
+            "candidate": {"stage": "none", "suppressed_reason": "not_selected"},
+            "proposal": {"eligible": False, "suppressed_reason": "not_selected"},
+        },
+    }
+
+    codex_text = codex_host_prompt_context.render_codex_prompt_system_message(
+        prompt=prompt,
+        session_id="prompt-assist-parity",
+        conversation_bundle_override=bundle,
+    )
+    claude_text = claude_host_prompt_teaser.render_prompt_teaser(
+        prompt=prompt,
+        session_id="prompt-assist-parity",
+        conversation_bundle_override=bundle,
+    )
+
+    assert codex_text == claude_text
+    assert codex_text == (
+        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+    )
+    assert codex_host_prompt_context.render_codex_prompt_system_message(prompt="Odylith, help.") == ""
+    assert claude_host_prompt_teaser.render_prompt_teaser(prompt="Odylith, help.") == ""
+
+
 def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     monkeypatch,
     tmp_path: Path,
@@ -140,7 +175,14 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     assert codex_payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
     assert claude_visible_text in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert codex_payload["systemMessage"] == claude_visible_text
+    assert claude_visible_text.rstrip().endswith(
+        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+    )
     assert not claude_visible_text.lstrip().startswith("{")
+    codex_events = stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+    )
+    assert any(row.get("kind") == "assist_closeout" for row in codex_events)
 
 
 def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(

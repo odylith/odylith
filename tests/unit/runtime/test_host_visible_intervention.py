@@ -138,6 +138,25 @@ def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_pa
     _assert_user_facing_visible_voice(rendered)
 
 
+def test_visible_intervention_prompt_submit_defaults_to_assist_for_normal_prompt(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="Make this intervention path less brittle.",
+    )
+
+    assert rendered == (
+        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+    )
+    assert host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="Odylith, help.",
+    ) == ""
+
+
 def test_visible_intervention_prompt_submit_appends_assist_when_visible_markdown_renders(
     monkeypatch,
     tmp_path,

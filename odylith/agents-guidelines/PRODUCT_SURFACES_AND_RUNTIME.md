@@ -141,7 +141,10 @@
   source; anchor context and assistant-render fallback stay in the separate
   `prompt-context` JSON `additionalContext` hook. On Codex, the earned teaser
   stays in hook `systemMessage` plus `hookSpecificOutput.additionalContext`,
-  with the same assistant-render fallback for chat visibility.
+  with the same assistant-render fallback for chat visibility. For normal
+  non-passthrough prompts, both hosts also carry the shared prompt-visible
+  `Odylith Assist:` line; if no teaser is earned, Assist alone keeps Odylith
+  visible without inventing a stronger Observation.
 - Hook output generation is not chat visibility. The shipped contract is:
   hooks produce structured evidence and model/developer context; hosts may
   render hook `systemMessage` or stdout when they support it; if not, the
@@ -171,9 +174,9 @@
   see whether Teaser, Ambient Highlight, Observation, Proposal, and Assist are
   armed and whether this session has actually recorded a visible-ready beat.
 - Treat Teaser and Ambient Highlight as distinct product lanes. Prompt submit
-  is teaser-only; ambient highlights belong to checkpoint and stop recovery
-  once enough evidence exists, and they should not be starved by an older
-  teaser after the signal matures.
+  is teaser-plus-Assist only; ambient highlights belong to checkpoint and stop
+  recovery once enough evidence exists, and they should not be starved by an
+  older teaser after the signal matures.
 - Delivery-ledger state is derived from Compass intervention events. Do not
   create a second host-local truth store just to answer "is it active here?";
   add the missing delivery metadata to the existing stream event path.
