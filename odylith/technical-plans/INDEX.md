@@ -40,6 +40,7 @@ Last updated (UTC): 2026-04-28
 
 | Plan | Status | Created | Updated | Backlog |
 | --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-28-trust-bootstrap-warning-suppression-and-success-clarity.md` | Done | 2026-04-28 | 2026-04-28 | `B-056` |
 | `odylith/technical-plans/done/2026-04/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md` | Done | 2026-03-30 | 2026-04-28 | `B-030` |
 
 ## Recently Completed (2026-04-27)

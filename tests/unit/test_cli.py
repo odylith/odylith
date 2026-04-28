@@ -3353,6 +3353,41 @@ def test_version_reports_pinned_and_available(monkeypatch, tmp_path: Path, capsy
     assert "Installed locally: 1.2.2, 1.2.3" in output
 
 
+def test_version_reports_nonfatal_runtime_trust_warning(monkeypatch, tmp_path: Path, capsys) -> None:
+    def fake_version_status(*, repo_root: str) -> SimpleNamespace:
+        return SimpleNamespace(
+            repo_root=Path(repo_root),
+            repo_role="consumer_repo",
+            posture="pinned_release",
+            runtime_source="pinned_runtime",
+            runtime_source_detail="",
+            release_eligible=True,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.3",
+            active_version="1.2.3",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            available_versions=["1.2.3"],
+            runtime_trust_warnings=(
+                "Sigstore emitted expected non-fatal trust-root warning stream(s) "
+                "(severity=notice; verification_degraded=no), but artifact identity, issuer, provenance, "
+                "SBOM, and sha256 verification completed successfully.",
+            ),
+        )
+
+    monkeypatch.setattr(cli, "version_status", fake_version_status)
+
+    rc = cli.main(["version", "--repo-root", str(tmp_path)])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Trust warning: Sigstore emitted expected non-fatal trust-root warning stream(s)" in output
+    assert "verification_degraded=no" in output
+    assert "artifact identity, issuer, provenance, SBOM, and sha256 verification completed successfully" in output
+
+
 
 def test_subagent_router_dispatch_accepts_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}

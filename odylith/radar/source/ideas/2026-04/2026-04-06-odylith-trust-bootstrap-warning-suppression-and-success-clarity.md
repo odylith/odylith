@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-056
 title: Trust Bootstrap Warning Suppression and Success Clarity
 date: 2026-04-06
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Operators should not leave a successful verified install wondering whether the scary warning block was fatal. Quieting or translating benign verifier noise is a trust-polish fix for the exact moment Odylith claims supply-chain rigor.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-28-trust-bootstrap-warning-suppression-and-success-clarity.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-048
@@ -124,4 +124,18 @@ system actually verified. Right now those two states blur together.
   [CB-076](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-08-successful-pinned-runtime-verification-still-prints-scary-trusted-root-key-warning-noise.md)
 
 ## Outcome
-- Bound to `B-056` under `B-048`.
+- Bound to `B-056` under `B-048`; finished on 2026-04-28 as a reconciled
+  release-polish closeout.
+- Hosted installer verification and pinned-runtime release verification now
+  suppress allowlisted benign Sigstore/TUF warning streams, including the
+  wrapped `trust.py` `unsupported key type: 7` shape, only after verification
+  succeeds.
+- Successful verification emits calm success clarity that names the suppressed
+  non-fatal warning stream count and explains that identity, issuer,
+  provenance, SBOM, and sha256 checks kept final verification valid.
+- Unexpected verifier stderr and fatal verification failures still print in
+  full; the allowlist remains narrow.
+- `doctor` and `version` now surface non-fatal runtime trust warnings as
+  posture information with severity and `verification_degraded` detail.
+- Bound bugs `CB-061` and `CB-076` are closed, and the broader auditable
+  upgrade transaction follow-up is covered separately by closed `CB-133`.

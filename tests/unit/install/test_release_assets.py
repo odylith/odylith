@@ -1019,16 +1019,28 @@ def test_verify_sigstore_asset_preserves_unexpected_warning_alongside_wrapped_be
 def test_emit_sigstore_success_notice_reports_suppressed_warning_streams(capsys) -> None:  # noqa: ANN001
     release_assets._emit_sigstore_success_notice(  # noqa: SLF001
         [
-            release_assets.SigstoreVerificationResult(warnings_suppressed=True),
+            release_assets.SigstoreVerificationResult(
+                warnings_suppressed=True,
+                warning_summaries=(
+                    "unsupported trusted root key type 7 "
+                    "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)",
+                ),
+            ),
             release_assets.SigstoreVerificationResult(warnings_suppressed=False),
         ],
         context="release",
     )
+    output = capsys.readouterr().out
 
     assert (
         "Sigstore verification succeeded for the release assets; suppressed 1 expected non-fatal warning stream(s)."
-        in capsys.readouterr().out
+        in output
     )
+    assert (
+        "Final verification stayed valid because identity, issuer, provenance, SBOM, and sha256 checks passed."
+        in output
+    )
+    assert "unsupported trusted root key type 7 (severity=notice; verification_degraded=false" in output
 
 
 def test_verify_sigstore_asset_rejects_skip_override_outside_product_repo(monkeypatch, tmp_path: Path) -> None:
