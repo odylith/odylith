@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import shutil
 import sys
+import time
 import tomllib
 from pathlib import Path
 from types import SimpleNamespace
@@ -13,6 +15,7 @@ import pytest
 from odylith import cli
 from odylith.install import manager as install_manager_module
 from odylith.install import runtime
+from odylith.install.legacy_install_migration import migrate_legacy_install
 from odylith.install.runtime import runtime_verification_path
 from odylith.runtime.common import codex_cli_capabilities
 from odylith.install.manager import (
@@ -20,7 +23,7 @@ from odylith.install.manager import (
     evaluate_start_preflight,
     install_bundle,
     load_install_state,
-    migrate_legacy_install,
+    plan_upgrade_lifecycle,
     reinstall_install,
     rollback_install,
     set_agents_integration,
@@ -246,6 +249,19 @@ def _seed_verified_release_runtime(
         verification=verification_payload,
     )
     return version_root, bin_dir / "python"
+
+
+def _write_runtime_bundle_assets(version_root: Path, *, marker: str) -> None:
+    assets_root = (
+        version_root / "lib" / "python3.13" / "site-packages" / "odylith" / "bundle" / "assets"
+    )
+    product_skill = assets_root / "odylith" / "skills" / "odylith-show-me" / "SKILL.md"
+    project_skill = assets_root / "project-root" / ".agents" / "skills" / "odylith-show-me" / "SKILL.md"
+    claude_skill = assets_root / "project-root" / ".claude" / "skills" / "odylith-show-me" / "SKILL.md"
+    guideline = assets_root / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md"
+    for path in (product_skill, project_skill, claude_skill, guideline):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"{marker}\n", encoding="utf-8")
 
 
 def _seed_legacy_runtime(repo_root: Path, *, version: str = "1.2.3") -> Path:
@@ -1397,6 +1413,52 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert not (repo_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md").exists()
 
 
+def test_upgrade_resyncs_guidance_from_activated_runtime_assets(monkeypatch, tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+
+    def _fake_install_release_runtime(*, repo_root, repo, version="latest", activate=True):  # noqa: ANN001
+        assert repo == "odylith/odylith"
+        resolved_version = "1.0.0" if version == "latest" else str(version)
+        runtime_root, python = _seed_verified_release_runtime(Path(repo_root), version=resolved_version)
+        _write_runtime_bundle_assets(runtime_root, marker=f"runtime-assets-{resolved_version}")
+        if activate:
+            current = Path(repo_root) / ".odylith" / "runtime" / "current"
+            current.parent.mkdir(parents=True, exist_ok=True)
+            if current.exists() or current.is_symlink():
+                current.unlink()
+            current.symlink_to(runtime_root)
+        return SimpleNamespace(
+            version=resolved_version,
+            manifest={"repo_schema_version": 1, "migration_required": False},
+            python=python,
+            root=runtime_root,
+            verification={
+                "runtime_bundle_sha256": f"runtime-{resolved_version}",
+                "wheel_sha256": f"wheel-{resolved_version}",
+            },
+        )
+
+    monkeypatch.setattr(install_manager_module, "install_release_runtime", _fake_install_release_runtime)
+
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.0.0")
+    upgrade_install(repo_root=repo_root, release_repo="odylith/odylith", version="2.0.0", write_pin=True)
+
+    assert (repo_root / "odylith" / "skills" / "odylith-show-me" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "runtime-assets-2.0.0\n"
+    assert (repo_root / ".agents" / "skills" / "odylith-show-me" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "runtime-assets-2.0.0\n"
+    assert (repo_root / ".claude" / "skills" / "odylith-show-me" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "runtime-assets-2.0.0\n"
+    assert (repo_root / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md").read_text(
+        encoding="utf-8"
+    ) == "runtime-assets-2.0.0\n"
+
+
 def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and_activates_maintainer_overlay(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
@@ -1658,6 +1720,33 @@ def test_doctor_bundle_reports_detached_override_from_live_runtime_when_install_
     assert healthy is True
     assert "detached local override" in message.lower()
     assert "source-local" in str((repo_root / ".odylith" / "runtime" / "current").resolve())
+
+
+def test_doctor_repair_compacts_stale_zero_byte_lock_placeholders(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    nested_locks = repo_root / ".odylith" / "locks" / "odylith-context-engine"
+    nested_locks.mkdir(parents=True, exist_ok=True)
+    stale_one = nested_locks / "stale-one.lock"
+    stale_two = nested_locks / "stale-two.lock"
+    recent = nested_locks / "recent.lock"
+    active_install = repo_root / ".odylith" / "locks" / "install.lock"
+    for path in (stale_one, stale_two, recent, active_install):
+        path.touch()
+    old_time = time.time() - 7200
+    for path in (stale_one, stale_two, active_install):
+        os.utime(path, (old_time, old_time))
+
+    healthy, message = doctor_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", repair=True)
+
+    assert healthy is True
+    assert "Compacted 2 stale zero-byte lock placeholder(s)." in message
+    assert not stale_one.exists()
+    assert not stale_two.exists()
+    assert recent.exists()
+    assert active_install.exists()
 
 
 def test_doctor_bundle_reports_unverified_wrapped_runtime_for_product_repo(tmp_path: Path) -> None:
@@ -1949,6 +2038,73 @@ def test_doctor_bundle_rehydrates_missing_trust_for_detached_product_repo_pin(tm
     assert status.detached is True
     assert (trust_root / "1.2.3.env").is_file()
     assert (trust_root / "1.2.3.tree.v1.json").is_file()
+
+
+def test_upgrade_lifecycle_resolves_exact_latest_release_metadata(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "consumer"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=BUNDLE_ROOT, version="1.2.3")
+    release = SimpleNamespace(
+        version="1.2.4",
+        tag="v1.2.4",
+        html_url="https://example.com/releases/v1.2.4",
+        published_at="2026-04-27T12:00:00Z",
+        body="",
+        highlights=(),
+    )
+    monkeypatch.setattr(install_manager_module, "fetch_release", lambda **kwargs: release)
+    monkeypatch.setattr(
+        install_manager_module,
+        "fetch_release_manifest",
+        lambda **kwargs: {
+            "assets": {
+                "odylith-runtime-v1.2.4.tar.gz": {"sha256": "runtime-sha"},
+                "release-manifest.json": {"sha256": "manifest-sha"},
+            }
+        },
+    )
+
+    plan = plan_upgrade_lifecycle(repo_root=repo_root, release_repo="example/odylith")
+
+    assert plan.metadata["target_version"] == "1.2.4"
+    assert plan.metadata["target_tag"] == "v1.2.4"
+    assert plan.metadata["target_relation"] == "newer_than_active"
+    assert plan.metadata["operation"] == "mutating"
+    assert plan.metadata["release_url"] == "https://example.com/releases/v1.2.4"
+    assert plan.metadata["published_at"] == "2026-04-27T12:00:00Z"
+    assert plan.metadata["asset_digests"]["odylith-runtime-v1.2.4.tar.gz"] == "runtime-sha"
+    assert any("Target release: v1.2.4" in step.detail for step in plan.steps)
+
+
+def test_upgrade_lifecycle_is_noop_after_resolved_target_is_active(tmp_path: Path, monkeypatch) -> None:
+    repo_root = tmp_path / "consumer"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=BUNDLE_ROOT, version="1.2.4")
+    release = SimpleNamespace(
+        version="1.2.4",
+        tag="v1.2.4",
+        html_url="https://example.com/releases/v1.2.4",
+        published_at="2026-04-27T12:00:00Z",
+        body="",
+        highlights=(),
+    )
+    monkeypatch.setattr(install_manager_module, "fetch_release", lambda **kwargs: release)
+    monkeypatch.setattr(
+        install_manager_module,
+        "fetch_release_manifest",
+        lambda **kwargs: {"assets": {"release-manifest.json": {"sha256": "manifest-sha"}}},
+    )
+
+    plan = plan_upgrade_lifecycle(repo_root=repo_root, release_repo="example/odylith")
+
+    assert plan.metadata["operation"] == "no-op"
+    assert plan.metadata["target_relation"] == "already_current"
+    assert "no upgrade mutation is planned" in plan.headline.lower()
+    assert len(plan.steps) == 1
+    assert "No upgrade mutation is planned" in plan.steps[0].label
+    assert not any("v0.1.10 to v0.1.11" in step.label for step in plan.steps)
 
 
 def test_doctor_bundle_repairs_consumer_runtime_with_verified_release_not_host_python(tmp_path: Path) -> None:

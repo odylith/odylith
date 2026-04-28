@@ -33,6 +33,12 @@ def test_render_codex_prompt_context_returns_empty_without_anchor() -> None:
     assert codex_host_prompt_context.render_codex_prompt_context(prompt="Explain the change.") == ""
 
 
+def test_render_codex_prompt_context_returns_empty_for_show_me_fast_path() -> None:
+    assert codex_host_prompt_context.render_codex_prompt_context(
+        prompt="odylith, show me what you can do"
+    ) == ""
+
+
 def test_render_codex_prompt_context_can_surface_a_teaser_without_anchor() -> None:
     rendered = codex_host_prompt_context.render_codex_prompt_context(
         prompt="Design a conversation observation engine with governed proposal flow.",
@@ -181,7 +187,52 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) 
     assert "systemMessage" not in payload
 
 
-def test_main_prints_nothing_for_help_fast_path_even_with_pending_replay(
+def test_main_emits_show_me_route_lock_without_running_prompt_observation(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("show-me route lock should bypass prompt observation")
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "prompt": "odylith, show me what you can do",
+                    "session_id": "codex-show-main",
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        codex_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+
+    exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "Odylith Codex show-me first-match route lock" in additional_context
+    assert "must not write a hand-authored demonstration summary" in additional_context
+    assert "install posture" in additional_context
+    assert "dirty paths" in additional_context
+    assert "impact packets" in additional_context
+    assert "module counts" in additional_context
+    assert "tmp clone noise" in additional_context
+    assert "spawn policy" in additional_context
+    assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
+    assert "`odylith show --repo-root .`" in additional_context
+    assert "Return that stdout directly" in additional_context
+    assert "systemMessage" not in payload
+
+
+def test_main_emits_help_route_lock_without_pending_replay(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -206,7 +257,14 @@ def test_main_prints_nothing_for_help_fast_path_even_with_pending_replay(
     exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert capsys.readouterr().out == ""
+    payload = json.loads(capsys.readouterr().out)
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith Codex help first-match route lock" in additional_context
+    assert "host capability summary" in additional_context
+    assert "`./.odylith/bin/odylith --help`" in additional_context
+    assert "`odylith --help`" in additional_context
+    assert "stale replay" not in additional_context
+    assert "systemMessage" not in payload
 
 
 def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: Path, capsys) -> None:

@@ -1,5 +1,6 @@
 import argparse
 import json
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -1019,6 +1020,151 @@ def test_upgrade_dry_run_skips_upgrade_install(monkeypatch, tmp_path: Path, caps
 
     assert rc == 0
     assert "upgrade dry-run" in captured
+
+
+def test_upgrade_dry_run_prints_binding_target_metadata_and_verbose_paths(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_plan_upgrade_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured.update(kwargs)
+        return SimpleNamespace(
+            command="upgrade",
+            headline="Preview the Odylith upgrade lifecycle.",
+            metadata={
+                "target_version": "1.2.4",
+                "target_tag": "v1.2.4",
+                "target_relation": "newer_than_active",
+                "operation": "mutating",
+                "release_repo": "example/odylith",
+                "release_url": "https://example.com/releases/v1.2.4",
+                "published_at": "2026-04-27T12:00:00Z",
+                "verification_policy": "sigstore identity, OIDC issuer, provenance, SBOM, archive safety, and sha256 digest checks",
+                "asset_digests": {
+                    "odylith-runtime-v1.2.4.tar.gz": "abc123",
+                    "release-manifest.json": "def456",
+                },
+                "rollback_target": "1.2.3",
+                "rollback_command": "./.odylith/bin/odylith rollback --repo-root . --previous",
+                "rollback_scope": "runtime activation and repo-local launchers",
+                "migration_ids": (),
+                "migration_ledger": ".odylith/state/migrations/example.json",
+            },
+            steps=(
+                SimpleNamespace(
+                    label="Stage the verified managed runtime.",
+                    mutation_classes=("runtime_state",),
+                    paths=("one", "two", "three", "four", "five"),
+                    detail="Target release: v1.2.4.",
+                ),
+            ),
+            dirty_overlap=(),
+            notes=(),
+        )
+
+    monkeypatch.setattr(cli, "plan_upgrade_lifecycle", fake_plan_upgrade_lifecycle)
+    monkeypatch.setattr(
+        cli,
+        "upgrade_install",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("upgrade_install should not run during --dry-run")),
+    )
+
+    rc = cli.main(
+        [
+            "upgrade",
+            "--repo-root",
+            str(tmp_path),
+            "--release-repo",
+            "example/odylith",
+            "--dry-run",
+            "--verbose",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured["release_repo"] == "example/odylith"
+    assert "target_version: 1.2.4" in output
+    assert "release_url: https://example.com/releases/v1.2.4" in output
+    assert "odylith-runtime-v1.2.4.tar.gz: abc123" in output
+    assert "rollback_command: ./.odylith/bin/odylith rollback --repo-root . --previous" in output
+    assert "paths: one, two, three, four, five" in output
+    assert "+1 more" not in output
+
+
+def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    rc = cli.main([
+        "release",
+        "migration-gate",
+        "--repo-root",
+        str(repo_root),
+        "--target-version",
+        "0.1.12",
+        "--json",
+    ])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["ok"] is True
+    assert payload["schema_version"] == "odylith.release-migration-gate.v1"
+    assert payload["fixture_matrix"]["v0.1.11-visible-intervention-value-engine"]["dry_run"] is True
+    assert payload["ungated_lifecycle_paths"] == []
+
+
+def test_upgrade_dry_run_json_outputs_binding_plan(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(
+            command="upgrade",
+            headline="Already at the resolved verified release; no upgrade mutation is planned.",
+            metadata={
+                "target_version": "1.2.4",
+                "target_tag": "v1.2.4",
+                "operation": "no-op",
+                "asset_digests": {"release-manifest.json": "abc123"},
+                "scenario": "already_current_consumer",
+                "migration_plan": {
+                    "schema_version": "odylith.migration-plan.v1",
+                    "plan_fingerprint": "abc123",
+                },
+                "ledger_state": {"v0.1.11-visible-intervention-value-engine": "skipped"},
+                "blocked_reason": "",
+                "plan_fingerprint": "abc123",
+            },
+            steps=(
+                SimpleNamespace(
+                    label="No upgrade mutation is planned.",
+                    mutation_classes=(),
+                    paths=(),
+                    detail="Resolved target: v1.2.4.",
+                ),
+            ),
+            dirty_overlap=(),
+            notes=("Dry-run is idempotent after a completed upgrade.",),
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "upgrade_install",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("upgrade_install should not run during --dry-run")),
+    )
+
+    rc = cli.main(["upgrade", "--repo-root", str(tmp_path), "--dry-run", "--json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["schema"] == "odylith.upgrade.dry_run.v1"
+    assert payload["dry_run"] is True
+    assert payload["plan"]["metadata"]["target_tag"] == "v1.2.4"
+    assert payload["plan"]["metadata"]["operation"] == "no-op"
+    assert payload["plan"]["metadata"]["asset_digests"]["release-manifest.json"] == "abc123"
+    assert payload["scenario"] == "already_current_consumer"
+    assert payload["migration_plan"]["plan_fingerprint"] == "abc123"
+    assert payload["ledger_state"]["v0.1.11-visible-intervention-value-engine"] == "skipped"
 
 
 def test_dashboard_refresh_dispatches_selected_surfaces(monkeypatch, tmp_path: Path) -> None:
@@ -2554,6 +2700,93 @@ def test_doctor_prints_trust_degraded_wrapped_runtime_detail(monkeypatch, tmp_pa
     assert "not release-eligible" in captured.lower()
 
 
+def test_doctor_prints_nonfatal_runtime_trust_warning(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(cli, "doctor_bundle", lambda **kwargs: (True, "Odylith install is healthy."))
+    monkeypatch.setattr(
+        cli,
+        "version_status",
+        lambda **kwargs: SimpleNamespace(
+            repo_root=tmp_path,
+            repo_role="consumer_repo",
+            posture="pinned_release",
+            runtime_source="pinned_runtime",
+            runtime_source_detail="",
+            release_eligible=True,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.3",
+            active_version="1.2.3",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            available_versions=["1.2.3"],
+            runtime_trust_warnings=(
+                "Sigstore emitted expected non-fatal trust-root warning stream(s), but verification completed successfully.",
+            ),
+        ),
+    )
+
+    rc = cli.main(["doctor", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Doctor status: healthy with warnings" in captured
+    assert "Trust warning: Sigstore emitted expected non-fatal trust-root warning stream(s)" in captured
+
+
+def test_doctor_prints_last_upgrade_report_and_lock_note(monkeypatch, tmp_path: Path, capsys) -> None:
+    report_dir = tmp_path / ".odylith" / "runtime" / "logs"
+    report_dir.mkdir(parents=True)
+    (report_dir / "upgrade-20260427T120000Z.json").write_text(
+        json.dumps(
+            {
+                "status": "succeeded_with_warnings",
+                "finished_at": "2026-04-27T12:01:00+00:00",
+                "dashboard_refresh": {
+                    "mode": "launcher",
+                    "fresh": True,
+                    "timeout_detected": True,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    locks_dir = tmp_path / ".odylith" / "locks"
+    locks_dir.mkdir(parents=True)
+    for index in range(200):
+        (locks_dir / f"lock-{index}.lock").touch()
+    monkeypatch.setattr(cli, "doctor_bundle", lambda **kwargs: (True, "Odylith install is healthy."))
+    monkeypatch.setattr(
+        cli,
+        "version_status",
+        lambda **kwargs: SimpleNamespace(
+            repo_root=tmp_path,
+            repo_role="consumer_repo",
+            posture="pinned_release",
+            runtime_source="pinned_runtime",
+            runtime_source_detail="",
+            release_eligible=True,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.4",
+            active_version="1.2.4",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            available_versions=["1.2.3", "1.2.4"],
+        ),
+    )
+
+    rc = cli.main(["doctor", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Last upgrade: succeeded_with_warnings at 2026-04-27T12:01:00+00:00" in captured
+    assert "Last upgrade dashboard refresh: mode=launcher; fresh=yes; timeout_detected=yes" in captured
+    assert "Rollback target: 1.2.3" in captured
+    assert "Lock note: 200 zero-byte lock placeholders exist under .odylith/locks" in captured
+
+
 def test_install_dry_run_condenses_dirty_overlap_without_verbose(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
         cli,
@@ -2710,6 +2943,7 @@ def test_upgrade_dispatches_to_upgrade_install(monkeypatch, tmp_path: Path, caps
 
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True, text=True)
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
 
     def fake_upgrade_install(
@@ -2740,11 +2974,22 @@ def test_upgrade_dispatches_to_upgrade_install(monkeypatch, tmp_path: Path, caps
             release_url="https://example.com/releases/v1.2.3",
         )
 
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
     monkeypatch.setattr(cli, "upgrade_install", fake_upgrade_install)
 
-    def fake_refresh_dashboard_after_upgrade(*, repo_root: Path) -> tuple[bool, str]:
+    def fake_refresh_dashboard_after_upgrade(
+        *, repo_root: Path, emit_output: bool = True, details: dict[str, object] | None = None
+    ) -> tuple[bool, str]:
         refresh_capture["repo_root"] = repo_root
-        print("Refreshing Odylith dashboard surfaces so the local shell reflects the new release.")
+        refresh_capture["emit_output"] = emit_output
+        if details is not None:
+            details.update({"mode": "launcher", "success": True})
+        if emit_output:
+            print("Refreshing Odylith dashboard surfaces so the local shell reflects the new release.")
         return True, "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
 
     monkeypatch.setattr(
@@ -2777,6 +3022,94 @@ def test_upgrade_dispatches_to_upgrade_install(monkeypatch, tmp_path: Path, caps
     assert "- Sharper install messaging." in output
     assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output
     assert "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release." in output
+
+
+def test_upgrade_json_writes_auditable_report_and_suppresses_refresh_stdout(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True, text=True)
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(
+            command="upgrade",
+            headline="Preview the Odylith upgrade lifecycle.",
+            metadata={
+                "target_version": "1.2.4",
+                "target_tag": "v1.2.4",
+                "operation": "mutating",
+                "asset_digests": {"release-manifest.json": "abc123"},
+                "rollback_target": "1.2.3",
+            },
+            steps=(
+                SimpleNamespace(
+                    label="Stage the verified managed runtime.",
+                    mutation_classes=("runtime_state",),
+                    paths=(".odylith/install.json",),
+                    detail="Target release: v1.2.4.",
+                ),
+            ),
+            dirty_overlap=(),
+            notes=(),
+        ),
+    )
+
+    def fake_upgrade_install(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        (repo_root / "odylith").mkdir(exist_ok=True)
+        (repo_root / "odylith" / "index.html").write_text("<!doctype html>\n", encoding="utf-8")
+        return SimpleNamespace(
+            active_version="1.2.4",
+            launcher_path=repo_root / ".odylith" / "bin" / "odylith",
+            pin_changed=True,
+            pinned_version="1.2.4",
+            previous_version="1.2.3",
+            repo_role="consumer_repo",
+            followed_latest=True,
+            release_tag="v1.2.4",
+            release_body="",
+            release_highlights=(),
+            release_published_at="2026-04-27T12:00:00Z",
+            release_url="https://example.com/releases/v1.2.4",
+            verification={"sigstore_warning_count": 1},
+            retention_warnings=(),
+        )
+
+    monkeypatch.setattr(cli, "upgrade_install", fake_upgrade_install)
+
+    def fake_refresh_dashboard_after_upgrade(
+        *, repo_root: Path, emit_output: bool = True, details: dict[str, object] | None = None
+    ) -> tuple[bool, str]:
+        assert emit_output is False
+        assert repo_root == tmp_path / "repo"
+        if details is not None:
+            details.update(
+                {
+                    "mode": "launcher",
+                    "returncode": 0,
+                    "timeout_detected": True,
+                    "stdout": "shell-safe runtime timed out at 45s; standalone fallback succeeded",
+                    "success": True,
+                }
+            )
+        return True, "Dashboard refreshed."
+
+    monkeypatch.setattr(cli, "_refresh_dashboard_after_upgrade", fake_refresh_dashboard_after_upgrade)
+
+    rc = cli.main(["upgrade", "--repo-root", str(repo_root), "--json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["schema"] == "odylith.upgrade.report.v1"
+    assert payload["status"] == "succeeded"
+    assert payload["final_state"]["active_version"] == "1.2.4"
+    assert payload["dashboard_refresh"]["timeout_detected"] is True
+    assert payload["plan"]["metadata"]["asset_digests"]["release-manifest.json"] == "abc123"
+    assert "odylith/index.html" in payload["changed_paths"]
+    assert Path(payload["report_path"]).is_file()
 
 
 def test_migrate_legacy_install_dispatches_to_install_migration(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -2822,6 +3155,11 @@ def test_upgrade_reports_already_latest_verified_release(monkeypatch, tmp_path: 
 
     monkeypatch.setattr(
         cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
+    monkeypatch.setattr(
+        cli,
         "upgrade_install",
         lambda **kwargs: SimpleNamespace(
             active_version="1.2.3",
@@ -2859,6 +3197,11 @@ def test_upgrade_reports_already_on_tracked_self_host_pin(monkeypatch, tmp_path:
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
     refresh_capture: dict[str, object] = {}
 
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
     monkeypatch.setattr(
         cli,
         "upgrade_install",
@@ -2900,6 +3243,11 @@ def test_upgrade_refreshes_dashboard_for_product_repo_version_change_without_con
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
     refresh_capture: dict[str, object] = {}
 
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
     monkeypatch.setattr(
         cli,
         "upgrade_install",
@@ -2991,7 +3339,7 @@ def test_version_reports_pinned_and_available(monkeypatch, tmp_path: Path, capsy
     assert "Pinned: 1.2.3" in output
     assert "Active: 1.2.2" in output
     assert "Diverged from pin: yes" in output
-    assert "Available: 1.2.2, 1.2.3" in output
+    assert "Installed locally: 1.2.2, 1.2.3" in output
 
 
 

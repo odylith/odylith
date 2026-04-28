@@ -23,10 +23,10 @@ def _render_welcome_steps(title: str, items: Sequence[str]) -> str:
     if not items:
         return ""
     return (
-        '<section class="welcome-process-card">'
+        '<section class="welcome-card welcome-process-card">'
         '<div class="welcome-process-head">'
         f'<p class="welcome-card-kicker">{html.escape(title)}</p>'
-        '<p class="welcome-process-copy">Move from prompt to grounded work without leaving the shell.</p>'
+        '<p class="welcome-process-copy">The first run should produce a short repo report, not a candidate dump.</p>'
         "</div>"
         '<ol class="welcome-step-list welcome-step-list-process">'
         + "".join(
@@ -90,8 +90,8 @@ def _render_surface_explainers(explainers: Sequence[Mapping[str, Any]]) -> str:
     return (
         '<section class="welcome-explainer-strip" aria-label="What each Odylith surface does first">'
         '<div class="welcome-explainer-head">'
-        '<p class="welcome-kicker">Core Surfaces</p>'
-        '<h3 class="welcome-explainer-title">What the core surfaces do first</h3>'
+        '<p class="welcome-kicker">Mental Model</p>'
+        '<h3 class="welcome-explainer-title">How Odylith thinks about a repo</h3>'
         "</div>"
         '<div class="welcome-explainer-grid">'
         f'{"".join(cards)}'
@@ -138,7 +138,7 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
     subhead = str(welcome_state.get("subhead", "")).strip() or "Start with one prompt and let Odylith open one real code path."
 
     notices_html = "".join(_render_welcome_notice(notice) for notice in notices)
-    steps_html = _render_welcome_steps("Three quick steps", quick_steps)
+    steps_html = _render_welcome_steps("What happens next", quick_steps)
     explainers_raw = welcome_state.get("surface_explainers")
     explainers = (
         tuple(dict(item) for item in explainers_raw if isinstance(item, Mapping))
@@ -146,17 +146,9 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
         else ()
     )
     explainers_html = _render_surface_explainers(explainers)
-    hero_badges_html = (
-        '<div class="welcome-hero-badges">'
-        '<span>Starter prompt ready</span>'
-        '<span>Repo-native setup</span>'
-        '<span>Cheatsheet built in</span>'
-        "</div>"
-    )
     auto_refresh_html = f'<p class="welcome-refresh-note">{html.escape(auto_refresh_note)}</p>' if auto_refresh_note else ""
-    launchpad_grid_class = "welcome-launchpad-grid welcome-launchpad-grid-single" if not notices_html else "welcome-launchpad-grid"
-    launchpad_notices_column_html = (
-        '<div class="welcome-launchpad-column">'
+    notices_stack_html = (
+        '<div class="welcome-notice-stack" aria-label="First-run notices">'
         f"{notices_html}"
         "</div>"
         if notices_html
@@ -166,20 +158,20 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
         '<section class="welcome-prompt-card">'
         '<div class="welcome-prompt-copy">'
         '<div class="welcome-prompt-head">'
-        '<p class="welcome-card-kicker">Copy this into your agent</p>'
-        '<p class="welcome-prompt-intro">Ask Odylith for the repo-aware tour, then choose the first useful path from there.</p>'
+        '<p class="welcome-card-kicker">Start here</p>'
+        '<h3 class="welcome-card-title">Ask for the repo-aware tour</h3>'
+        '<p class="welcome-prompt-intro">Paste this into Codex or Claude. The answer should be short, grounded, and specific to this repo.</p>'
         "</div>"
-        f"{steps_html}"
         '<div class="welcome-prompt-block">'
         f'<p class="welcome-prompt-text"><strong>"{html.escape(starter_prompt)}"</strong></p>'
-        "</div>"
-        f"{auto_refresh_html}"
-        '<p id="welcomeCopyStatus" class="welcome-copy-status" aria-live="polite"></p>'
         "</div>"
         '<div class="welcome-action-row">'
         '<button id="welcomeCopyPrompt" type="button" class="welcome-button" '
         f'data-welcome-copy="true" data-copy-text="{html.escape(starter_prompt, quote=True)}" '
         'data-copy-status="Prompt copied. Paste it into your agent.">Copy prompt</button>'
+        "</div>"
+        f"{auto_refresh_html}"
+        '<p id="welcomeCopyStatus" class="welcome-copy-status" aria-live="polite"></p>'
         "</div>"
         "</section>"
     )
@@ -187,24 +179,21 @@ def render_welcome_state_html(payload: Mapping[str, Any]) -> str:
         '<section id="shellWelcomeState" class="welcome-state welcome-state-launchpad" aria-label="Odylith first-run welcome state"'
         f' data-welcome-dismiss-key="{html.escape(dismiss_key, quote=True)}">'
         '<button id="welcomeDismiss" type="button" class="welcome-shell-dismiss" aria-label="Hide starter guide" title="Hide starter guide">&times;</button>'
-        '<div class="welcome-launchpad-shell">'
-        '<section class="welcome-launchpad-hero">'
-        '<div class="welcome-launchpad-main">'
+        '<div class="welcome-guide-shell">'
+        '<header class="welcome-guide-header">'
         '<div class="welcome-state-head">'
-        '<p class="welcome-kicker">First Run</p>'
+        '<p class="welcome-kicker">First run</p>'
         f'<h2 class="welcome-title">{html.escape(headline)}</h2>'
         f'<p class="welcome-subhead">{html.escape(subhead)}</p>'
         "</div>"
-        f"{hero_badges_html}"
-        "</div>"
+        '<p class="welcome-guide-outcome">Goal: get one clean next prompt before creating any Odylith records.</p>'
+        "</header>"
+        f"{notices_stack_html}"
+        '<section class="welcome-guide-grid">'
         f"{prompt_card_html}"
+        f"{steps_html}"
         "</section>"
-        f'<section class="{launchpad_grid_class}">'
-        f"{launchpad_notices_column_html}"
-        '<div class="welcome-launchpad-column">'
         f"{explainers_html}"
-        "</div>"
-        "</section>"
         "</div>"
         "</section>"
     )

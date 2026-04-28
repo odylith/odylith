@@ -45,6 +45,16 @@ _RADAR_REDIRECT_ABORT_RE = re.compile(
 )
 
 
+def _current_release_label() -> str:
+    payload = json.loads((_REPO_ROOT / "odylith" / "radar" / "traceability-graph.v1.json").read_text(encoding="utf-8"))
+    current = payload.get("current_release")
+    if isinstance(current, dict):
+        label = str(current.get("display_label") or current.get("version") or "").strip()
+        if label:
+            return label
+    return "current"
+
+
 def test_browser_thread_preserves_skip_outcomes() -> None:
     with pytest.raises(pytest.skip.Exception):
         _run_in_browser_thread(lambda: pytest.skip("Playwright Chromium is not installed"))
@@ -305,6 +315,7 @@ def test_compass_desktop_layout_keeps_main_and_right_rail_separated(browser_cont
 
 def test_compass_and_radar_target_release_cards_show_labeled_release_version(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
+    current_release_label = _current_release_label()
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
     response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
     assert response is not None and response.ok
@@ -322,13 +333,13 @@ def test_compass_and_radar_target_release_cards_show_labeled_release_version(bro
     compass_release_label = compass.locator(".stat.stat-release-only .kpi-label").first.inner_text().strip()
     compass_release = compass.locator(".stat.stat-release-only .kpi-value").first.inner_text().strip()
     assert compass_release_label == "TARGET RELEASE"
-    assert compass_release == "0.1.11"
+    assert compass_release == current_release_label
     assert compass.locator(".stat .kpi-label", has_text="NEXT RELEASE").count() == 0
     assert compass.locator("#release-groups .execution-wave-section").count() >= 2
     release_targets_text = compass.locator("#release-groups").inner_text().strip()
     assert "Target Release" in release_targets_text
-    assert "0.1.12" in release_targets_text
-    assert "Next release target across active workstreams." in release_targets_text
+    assert current_release_label in release_targets_text
+    assert "release target across active workstreams." in release_targets_text
 
     page.locator("#tab-radar").click()
     radar = page.frame_locator("#frame-radar")
@@ -336,7 +347,7 @@ def test_compass_and_radar_target_release_cards_show_labeled_release_version(bro
     radar_release_label = radar.locator(".stats .stat.stat-release-only .label").first.inner_text().strip()
     radar_release = radar.locator(".stats .stat.stat-release-only .value").first.inner_text().strip()
     assert radar_release_label == "TARGET RELEASE"
-    assert radar_release == "0.1.11"
+    assert radar_release == current_release_label
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 

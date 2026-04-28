@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 import re
 from typing import Any
+from typing import Mapping
 from urllib.parse import urlparse
 
 from odylith.common.release_text import normalize_release_text as _normalize_release_note_text
@@ -256,8 +257,10 @@ def build_welcome_state(*, repo_root: Path) -> dict[str, Any]:
     missing_component = not _has_component_specs(root)
     missing_atlas = not _has_atlas_diagrams(root)
     notices = _welcome_notices(root=root)
+    install_key = _welcome_install_key(root=root)
     dismiss_key = _welcome_dismiss_key(
         focus_path=focus_path,
+        install_key=install_key,
         missing_backlog=missing_backlog,
         missing_component=missing_component,
         missing_atlas=missing_atlas,
@@ -318,8 +321,11 @@ def build_welcome_state(*, repo_root: Path) -> dict[str, Any]:
 
     return {
         "show": True,
-        "headline": "Start Odylith from one real code path",
-        "subhead": "Open the cheatsheet drawer on the left and try out commands in this repo.",
+        "headline": "Odylith is installed",
+        "subhead": (
+            "Copy one prompt into Codex or Claude. Odylith will inspect this repo, explain the safe first moves, "
+            "and stay quiet when evidence is weak."
+        ),
         "dismiss_key": dismiss_key,
         "starter_prompt": STARTER_PROMPT,
         "auto_refresh_note": AUTO_REFRESH_NOTE,
@@ -380,6 +386,7 @@ def build_welcome_state(*, repo_root: Path) -> dict[str, Any]:
 def _welcome_dismiss_key(
     *,
     focus_path: str,
+    install_key: str,
     missing_backlog: bool,
     missing_component: bool,
     missing_atlas: bool,
@@ -399,8 +406,22 @@ def _welcome_dismiss_key(
             f"component={int(bool(missing_component))}",
             f"atlas={int(bool(missing_atlas))}",
             f"notices={notice_titles}",
+            f"install={install_key or 'none'}",
         )
     )
+
+
+def _welcome_install_key(*, root: Path) -> str:
+    state = _install_state(root)
+    active_version = str(state.get("active_version") or "").strip()
+    installed_utc = str(state.get("installed_utc") or "").strip()
+    versions = state.get("installed_versions")
+    if active_version and isinstance(versions, Mapping):
+        active_entry = versions.get(active_version)
+        if isinstance(active_entry, Mapping):
+            installed_utc = str(active_entry.get("installed_utc") or installed_utc).strip()
+    token = "|".join(part for part in (active_version, installed_utc) if part)
+    return _slugify(token) or "none"
 
 
 def build_release_spotlight(*, repo_root: Path) -> dict[str, Any]:
@@ -985,6 +1006,10 @@ def _surface_explainers(*, focus_path: str, component_label: str) -> list[dict[s
             "sentence": "Atlas keeps architecture visible with diagrams of topology and flow.",
         },
         {
+            "surface": "Casebook",
+            "sentence": "Casebook keeps bugs and regressions durable so failures do not disappear into chat.",
+        },
+        {
             "surface": "Compass",
             "sentence": "Compass keeps briefs and timelines so the next move stays clear.",
         },
@@ -1001,14 +1026,14 @@ def _quick_steps(
 ) -> list[str]:
     if not focus_path and not component_label:
         return [
-            "Copy prompt.",
-            "Run in Codex or Claude.",
-            "Open the cheatsheet.",
+            "Paste the prompt into Codex or Claude.",
+            "Read the empty-repo report.",
+            "Name a path or feature when you are ready.",
         ]
     return [
-        "Copy prompt.",
-        "Run in Codex or Claude.",
-        "Map the repo.",
+        "Paste the prompt into Codex or Claude.",
+        "Read the repo-aware report.",
+        "Choose the first grounded next move.",
     ]
 
 

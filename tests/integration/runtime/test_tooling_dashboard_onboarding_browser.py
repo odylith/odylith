@@ -82,6 +82,7 @@ def _seed_consumer_repo(
     existing_truth: bool = False,
     active_version: str = "1.2.3",
     activation_history: list[str] | None = None,
+    installed_utc: str = "",
 ) -> None:
     _seed_shell_assets(repo_root)
     (repo_root / ".git").mkdir(parents=True, exist_ok=True)
@@ -92,8 +93,10 @@ def _seed_consumer_repo(
         payload={
             "active_version": active_version,
             "activation_history": activation_history or [active_version],
+            "installed_utc": installed_utc,
             "installed_versions": {
                 active_version: {
+                    "installed_utc": installed_utc,
                     "runtime_root": str(repo_root / ".odylith" / "runtime" / "versions" / active_version),
                     "verification": {"wheel_sha256": f"wheel-{active_version}"},
                 }
@@ -298,6 +301,7 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
     with _repo_browser_context(repo_root) as (base_url, context):
         page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
         _install_clipboard_probe(page)
+        page.set_viewport_size({"width": 1440, "height": 900})
         response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
         assert response is not None and response.ok
 
@@ -308,7 +312,8 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         assert page.locator("#upgradeReopen").is_hidden()
         assert page.locator("#welcomeReopen").is_hidden()
         assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
-        assert page.locator(".welcome-title").inner_text().strip() == "Start Odylith from one real code path"
+        assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
+        assert page.locator(".welcome-card-title").inner_text().strip() == "Ask for the repo-aware tour"
         assert page.locator(".welcome-chip").count() == 0
         assert page.locator(".welcome-card-slice").count() == 0
         assert page.locator(".welcome-slice-path code").count() == 0
@@ -316,37 +321,49 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
 
         handle_box = page.locator("#gridBriefToggle").bounding_box()
         welcome_box = welcome.bounding_box()
-        launchpad_grid_box = page.locator(".welcome-launchpad-grid").bounding_box()
+        launchpad_grid_box = page.locator(".welcome-guide-grid").bounding_box()
         explainer_box = page.locator(".welcome-explainer-strip").bounding_box()
+        prompt_box = page.locator(".welcome-prompt-card").bounding_box()
+        process_box = page.locator(".welcome-process-card").bounding_box()
         assert handle_box is not None
         assert welcome_box is not None
         assert launchpad_grid_box is not None
         assert explainer_box is not None
+        assert prompt_box is not None
+        assert process_box is not None
         assert welcome_box["x"] >= (handle_box["x"] + handle_box["width"] - 1)
         assert abs(explainer_box["x"] - launchpad_grid_box["x"]) < 2
         assert abs(explainer_box["width"] - launchpad_grid_box["width"]) < 2
+        assert abs(prompt_box["y"] - process_box["y"]) < 2
+        assert explainer_box["y"] > prompt_box["y"]
+        assert explainer_box["y"] + explainer_box["height"] <= 900
         step_labels = [
             label.strip()
             for label in page.locator(".welcome-step-process .welcome-step-copy").all_inner_texts()
         ]
-        assert step_labels == ["Copy prompt.", "Run in Codex or Claude.", "Map the repo."]
+        assert step_labels == [
+            "Paste the prompt into Codex or Claude.",
+            "Read the repo-aware report.",
+            "Choose the first grounded next move.",
+        ]
         step_metrics = page.evaluate(
             "() => Array.from(document.querySelectorAll('.welcome-step-process')).map((node) => {"
             "  const card = node.getBoundingClientRect();"
             "  const index = node.querySelector('.welcome-step-index').getBoundingClientRect();"
             "  const copy = node.querySelector('.welcome-step-copy').getBoundingClientRect();"
             "  return {"
-            "    height: card.height,"
-            "    cardCenter: card.left + card.width / 2,"
-            "    indexCenter: index.left + index.width / 2,"
-            "    copyCenter: copy.left + copy.width / 2"
+            "    cardRight: card.right,"
+            "    indexLeft: index.left,"
+            "    indexRight: index.right,"
+            "    copyLeft: copy.left,"
+            "    copyRight: copy.right"
             "  };"
             "})"
         )
-        assert max(item["height"] for item in step_metrics) - min(item["height"] for item in step_metrics) <= 1
         for item in step_metrics:
-            assert abs(item["indexCenter"] - item["cardCenter"]) <= 1
-            assert abs(item["copyCenter"] - item["cardCenter"]) <= 1
+            assert item["indexLeft"] < item["copyLeft"]
+            assert item["indexRight"] < item["copyLeft"]
+            assert item["copyRight"] <= item["cardRight"]
 
         _click_visible(page.locator("#welcomeCopyPrompt"))
         page.locator("#welcomeCopyStatus", has_text="Prompt copied. Paste it into your agent.").wait_for(
@@ -384,6 +401,98 @@ def test_first_install_launchpad_stays_primary_path_and_never_leaks_upgrade_popu
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def test_first_install_launchpad_reopens_after_same_path_reinstall(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "same-path-reinstall"
+    repo_root.mkdir()
+    _seed_consumer_repo(
+        repo_root,
+        focus_path="src/billing",
+        existing_truth=False,
+        active_version="1.2.3",
+        activation_history=["1.2.3"],
+        installed_utc="2026-04-01T00:00:00+00:00",
+    )
+    _render_shell(repo_root, monkeypatch)
+
+    with _repo_browser_context(repo_root) as (base_url, context):
+        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+        page.locator("#shellWelcomeState").wait_for(timeout=15000)
+        assert page.locator("#welcomeReopen").is_hidden()
+
+        _click_visible(page.locator("#welcomeDismiss"))
+        page.locator("#welcomeReopen", has_text="Starter Guide").wait_for(timeout=15000)
+
+        _seed_consumer_repo(
+            repo_root,
+            focus_path="src/billing",
+            existing_truth=False,
+            active_version="1.2.3",
+            activation_history=["1.2.3"],
+            installed_utc="2026-04-27T20:03:21+00:00",
+        )
+        _render_shell(repo_root, monkeypatch)
+        response = page.goto(base_url + "/odylith/index.html?fresh-install=1", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+        page.locator("#shellWelcomeState").wait_for(timeout=15000)
+        assert page.locator("#shellWelcomeState").get_attribute("aria-hidden") in {None, "false"}
+        assert page.locator("#welcomeReopen").is_hidden()
+
+        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_first_install_launchpad_keeps_git_notice_and_mental_model_visible(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = tmp_path / "git-missing-welcome"
+    repo_root.mkdir()
+    _seed_consumer_repo(
+        repo_root,
+        focus_path="src/billing",
+        existing_truth=False,
+        active_version="1.2.3",
+        activation_history=["1.2.3"],
+    )
+    shutil.rmtree(repo_root / ".git")
+    _render_shell(repo_root, monkeypatch)
+
+    with _repo_browser_context(repo_root) as (base_url, context):
+        page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+        page.set_viewport_size({"width": 2048, "height": 1000})
+        response = page.goto(base_url + "/odylith/index.html", wait_until="domcontentloaded")
+        assert response is not None and response.ok
+
+        welcome = page.locator("#shellWelcomeState")
+        welcome.wait_for(timeout=15000)
+        assert page.locator(".welcome-card-notice .welcome-card-kicker", has_text="Git missing").is_visible()
+        assert page.locator(".welcome-explainer-title").inner_text().strip() == "How Odylith thinks about a repo"
+
+        metrics = page.evaluate(
+            "() => {"
+            "  const box = (selector) => {"
+            "    const rect = document.querySelector(selector).getBoundingClientRect();"
+            "    return {top: rect.top, right: rect.right, bottom: rect.bottom, height: rect.height};"
+            "  };"
+            "  return {"
+            "    welcome: box('#shellWelcomeState'),"
+            "    title: box('.welcome-title'),"
+            "    notice: box('.welcome-card-notice'),"
+            "    prompt: box('.welcome-prompt-card'),"
+            "    explainer: box('.welcome-explainer-strip'),"
+            "    scrollWidth: document.documentElement.scrollWidth,"
+            "    clientWidth: document.documentElement.clientWidth"
+            "  };"
+            "}"
+        )
+        assert metrics["scrollWidth"] <= metrics["clientWidth"] + 1
+        assert metrics["title"]["height"] < 64
+        assert metrics["notice"]["top"] > metrics["title"]["bottom"]
+        assert metrics["prompt"]["top"] > metrics["notice"]["bottom"]
+        assert metrics["explainer"]["bottom"] <= 1000
+        assert metrics["welcome"]["right"] <= 2048
+
+        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_first_install_launchpad_fits_narrow_viewport(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     repo_root = tmp_path / "consumer-narrow-welcome"
     repo_root.mkdir()
@@ -404,7 +513,7 @@ def test_first_install_launchpad_fits_narrow_viewport(tmp_path: Path, monkeypatc
 
         welcome = page.locator("#shellWelcomeState")
         welcome.wait_for(timeout=15000)
-        assert page.locator(".welcome-title").inner_text().strip() == "Start Odylith from one real code path"
+        assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
         assert page.locator(".welcome-prompt-text").inner_text().strip() == '"Odylith, show me what you can do."'
         assert page.locator("#welcomeCopyPrompt").is_visible()
 
@@ -717,7 +826,7 @@ def test_incremental_upgrade_suppresses_starter_guide_until_the_user_reopens_it(
 
         _click_visible(page.locator("#welcomeReopen"))
         page.locator("#shellWelcomeState").wait_for(timeout=15000)
-        assert page.locator(".welcome-title").inner_text().strip() == "Start Odylith from one real code path"
+        assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
 
         _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -1228,7 +1337,7 @@ def test_cli_install_renders_a_browser_valid_first_run_launchpad(tmp_path: Path,
         assert response is not None and response.ok
         page.locator("#shellWelcomeState").wait_for(timeout=15000)
         assert page.locator(".toolbar-version").inner_text().strip() == "v1.2.3"
-        assert page.locator(".welcome-title").inner_text().strip() == "Start Odylith from one real code path"
+        assert page.locator(".welcome-title").inner_text().strip() == "Odylith is installed"
         assert page.locator("#shellUpgradeSpotlight").count() == 0
         assert page.locator(".welcome-card-slice").count() == 0
         assert page.locator(".welcome-slice-path code").count() == 0
@@ -1376,6 +1485,28 @@ def test_cli_upgrade_renders_a_browser_valid_incremental_upgrade_note(tmp_path: 
 
     refresh_capture: dict[str, object] = {}
 
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: type(
+            "LifecyclePlan",
+            (),
+            {
+                "command": "upgrade",
+                "headline": "Upgrade from v1.2.2 to v1.2.3.",
+                "steps": (),
+                "dirty_overlap": (),
+                "notes": (),
+                "metadata": {
+                    "target_version": "1.2.3",
+                    "target_tag": "v1.2.3",
+                    "scenario": "healthy_pinned_consumer",
+                    "operation": "mutating",
+                    "ledger_state": {},
+                },
+            },
+        )(),
+    )
     monkeypatch.setattr(cli, "upgrade_install", fake_upgrade_install)
     monkeypatch.setattr(
         cli.sync_workstream_artifacts,

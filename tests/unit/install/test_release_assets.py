@@ -934,6 +934,10 @@ def test_verify_sigstore_asset_suppresses_expected_non_fatal_warnings(monkeypatc
     )
 
     assert result.warnings_suppressed is True
+    assert result.warning_count == 2
+    assert "TUF offline-mode notice" in result.warning_summaries[0]
+    assert "unsupported trusted root key type 7" in result.warning_summaries[1]
+    assert result.verification_degraded is False
     assert capsys.readouterr().err == ""
 
 
@@ -967,6 +971,12 @@ def test_verify_sigstore_asset_suppresses_wrapped_trusted_root_warning(monkeypat
     )
 
     assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    assert result.warning_summaries == (
+        "unsupported trusted root key type 7 "
+        "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)",
+    )
+    assert result.verification_degraded is False
     assert capsys.readouterr().err == ""
 
 

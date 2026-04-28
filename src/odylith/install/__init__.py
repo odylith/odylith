@@ -21,7 +21,7 @@ _EXPORTS: dict[str, tuple[str, str]] = {
     "install_release_runtime": ("odylith.install.runtime", "install_release_runtime"),
     "load_consumer_profile": ("odylith.runtime.common.consumer_profile", "load_consumer_profile"),
     "load_install_state": ("odylith.install.manager", "load_install_state"),
-    "migrate_legacy_install": ("odylith.install.manager", "migrate_legacy_install"),
+    "migrate_legacy_install": ("odylith.install.legacy_install_migration", "migrate_legacy_install"),
     "plan_install_lifecycle": ("odylith.install.manager", "plan_install_lifecycle"),
     "plan_reinstall_lifecycle": ("odylith.install.manager", "plan_reinstall_lifecycle"),
     "plan_upgrade_lifecycle": ("odylith.install.manager", "plan_upgrade_lifecycle"),

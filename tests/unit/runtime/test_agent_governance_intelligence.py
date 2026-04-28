@@ -88,6 +88,16 @@ def test_collect_implementation_evidence_paths_filters_governance_noise(tmp_path
     )
 
 
+def test_collect_meaningful_changed_paths_ignores_os_metadata_noise(tmp_path: Path) -> None:
+    paths = governance.collect_meaningful_changed_paths(
+        repo_root=tmp_path,
+        changed_paths=("infra/.DS_Store", ".DS_Store", "src/service/app.py"),
+        include_git=False,
+    )
+
+    assert paths == ["src/service/app.py"]
+
+
 def test_collect_meaningful_activity_evidence_ignores_generated_only_events(tmp_path: Path) -> None:
     ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas"
     ideas_root.mkdir(parents=True, exist_ok=True)

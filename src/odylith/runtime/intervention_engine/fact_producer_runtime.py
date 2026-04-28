@@ -105,8 +105,17 @@ def normalized_passthrough_prompt(value: Any) -> str:
 
 def is_passthrough_prompt(value: Any) -> bool:
     """Return whether a prompt should print CLI/demo stdout without narration."""
+    return bool(passthrough_prompt_kind(value))
+
+
+def passthrough_prompt_kind(value: Any) -> str:
+    """Return the first-match passthrough route kind for prompt-only CLI lanes."""
     token = normalized_passthrough_prompt(value)
-    return token in _HELP_PROMPT_TOKENS or token in _SHOW_PROMPT_TOKENS
+    if token in _HELP_PROMPT_TOKENS:
+        return "help"
+    if token in _SHOW_PROMPT_TOKENS:
+        return "show"
+    return ""
 
 
 def is_cli_help_output(value: Any) -> bool:
@@ -483,4 +492,5 @@ __all__ = [
     "is_passthrough_prompt",
     "joined_prompt_surface",
     "normalized_passthrough_prompt",
+    "passthrough_prompt_kind",
 ]

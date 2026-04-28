@@ -1,0 +1,575 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from odylith.install import migration_runtime
+from odylith.install.value_engine_migration import (
+    MIGRATION_ID,
+    VALUE_CORPUS_RELATIVE_PATH,
+    record_visible_intervention_value_engine_migration_satisfied,
+)
+
+FIXTURE_COVERAGE_TOKENS = ("dry_run", "apply", "rerun", "stale_ledger", "skipped_version")
+MIGRATION_FIXTURE_COVERAGE_MARKERS = (
+    "legacy-odyssey-root-migration:dry_run",
+    "legacy-odyssey-root-migration:apply",
+    "legacy-odyssey-root-migration:rerun",
+    "legacy-odyssey-root-migration:stale_ledger",
+    "legacy-odyssey-root-migration:skipped_version",
+    "v0.1.11-visible-intervention-value-engine:dry_run",
+    "v0.1.11-visible-intervention-value-engine:apply",
+    "v0.1.11-visible-intervention-value-engine:rerun",
+    "v0.1.11-visible-intervention-value-engine:stale_ledger",
+    "v0.1.11-visible-intervention-value-engine:skipped_version",
+)
+
+
+def _seed_repo(repo_root: Path, *, active_version: str = "0.1.10") -> None:
+    (repo_root / "AGENTS.md").write_text("# Repo\n", encoding="utf-8")
+    (repo_root / "odylith" / "runtime" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / ".odylith" / "bin").mkdir(parents=True, exist_ok=True)
+    (repo_root / ".odylith" / "bin" / "odylith").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    (repo_root / ".odylith" / "install.json").write_text(
+        json.dumps(
+            {
+                "active_version": active_version,
+                "last_known_good_version": active_version,
+                "activation_history": ["0.1.9", active_version],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "odylith-product.v1",
+                "odylith_version": active_version,
+                "repo_schema_version": 1,
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_install_state(repo_root: Path, payload: dict[str, object]) -> None:
+    (repo_root / ".odylith").mkdir(parents=True, exist_ok=True)
+    (repo_root / ".odylith" / "install.json").write_text(
+        json.dumps(payload, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _seed_current_runtime(repo_root: Path, *, version: str, verification: dict[str, object] | None = None) -> Path:
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / version
+    version_root.mkdir(parents=True, exist_ok=True)
+    current = repo_root / ".odylith" / "runtime" / "current"
+    current.parent.mkdir(parents=True, exist_ok=True)
+    if current.exists() or current.is_symlink():
+        current.unlink()
+    current.symlink_to(version_root)
+    if verification is not None:
+        (version_root / "runtime-verification.v1.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "odylith-runtime-verification.v1",
+                    "version": version,
+                    "verification": verification,
+                },
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+    return version_root
+
+
+def test_registered_value_engine_definition_has_release_gate_fixture_coverage() -> None:
+    definition = next(
+        item for item in migration_runtime.registered_migrations() if item.migration_id == MIGRATION_ID
+    )
+
+    assert definition.migration_id == MIGRATION_ID
+    assert definition.introduced_version == "0.1.11"
+    assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
+    assert definition.automatic is True
+
+
+def _decision_for(plan: migration_runtime.MigrationPlan, migration_id: str) -> migration_runtime.MigrationDecision:
+    return next(decision for decision in plan.decisions if decision.migration_id == migration_id)
+
+
+def test_classifies_first_install_without_install_shape(tmp_path: Path) -> None:
+    scenario = migration_runtime.classify_repo_migration_scenario(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+    )
+
+    assert scenario.scenario == migration_runtime.SCENARIO_FIRST_INSTALL
+    assert scenario.state["install_state_exists"] is False
+
+
+def test_classifies_source_local_as_release_migration_blocked(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="product_repo",
+        previous_version="source-local",
+        target_version="0.1.12",
+        source_repo=True,
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_DETACHED_SOURCE_LOCAL
+    assert plan.blocked
+    assert "source-local" in plan.blocked_reason
+
+
+def test_missing_pin_blocks_release_migration_with_repair_command(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / "odylith" / "runtime" / "source" / "product-version.v1.json").unlink()
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_MISSING_INVALID_PIN
+    assert plan.blocked
+    assert "repo pin is missing or invalid" in plan.blocked_reason
+
+
+def test_missing_launcher_blocks_release_migration_as_repair_only(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / ".odylith" / "bin" / "odylith").unlink()
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_MISSING_LAUNCHER
+    assert ".odylith/bin/odylith" in plan.blocked[0].planned_paths
+    assert "launcher is missing" in plan.blocked_reason
+
+
+def test_legacy_odyssey_roots_are_planned_and_applied_first(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.md").write_text("# Repo\n", encoding="utf-8")
+    (tmp_path / "odyssey" / "runtime" / "source").mkdir(parents=True)
+    (tmp_path / "odyssey" / "runtime" / "source" / "product-version.v1.json").write_text(
+        '{"schema_version":"odyssey-product.v1","odyssey_version":"0.1.10","repo_schema_version":1}\n',
+        encoding="utf-8",
+    )
+    (tmp_path / ".odyssey" / "bin").mkdir(parents=True)
+    (tmp_path / ".odyssey" / "bin" / "odyssey").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    (tmp_path / ".odyssey" / "install.json").write_text(
+        '{"active_version":"0.1.10","last_known_good_version":"0.1.10","activation_history":["0.1.9","0.1.10"]}\n',
+        encoding="utf-8",
+    )
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_LEGACY_ODYSSEY
+    assert plan.selected[0].migration_id == migration_runtime.LEGACY_ROOT_MIGRATION_ID
+    results = migration_runtime.apply_repo_state_migrations(plan=plan)
+    assert results[0].migration_id == migration_runtime.LEGACY_ROOT_MIGRATION_ID
+    assert (tmp_path / "odylith").is_dir()
+    assert not (tmp_path / "odyssey").exists()
+    assert (tmp_path / results[0].ledger_path).is_file()
+
+
+def test_product_repo_pinned_dogfood_is_not_reported_as_consumer_noop(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / ".odylith" / "install.json").write_text(
+        '{"active_version":"0.1.11","last_known_good_version":"0.1.11","activation_history":["0.1.10","0.1.11"]}\n',
+        encoding="utf-8",
+    )
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="product_repo",
+        previous_version="0.1.11",
+        target_version="0.1.11",
+        pinned_version="0.1.11",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD
+    assert plan.no_op is True
+    assert "maintainer release gates" in _decision_for(plan, MIGRATION_ID).reason
+
+
+def test_product_repo_dogfood_is_not_blocked_by_missing_wrapped_runtime_verification(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.11")
+    _seed_current_runtime(tmp_path, version="0.1.11")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="product_repo",
+        previous_version="0.1.11",
+        target_version="0.1.11",
+        pinned_version="0.1.11",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD
+    assert not plan.blocked
+
+
+def test_consumer_runtime_without_verification_blocks_same_version_release_migration(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.11")
+    _seed_current_runtime(tmp_path, version="0.1.11")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.11",
+        target_version="0.1.11",
+        pinned_version="0.1.11",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_RUNTIME_VERIFICATION_MISSING
+    assert plan.blocked
+    assert "verification evidence is missing" in plan.blocked_reason
+
+
+def test_staged_target_runtime_without_verification_blocks_before_activation(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.10")
+    staged_runtime = tmp_path / ".odylith" / "runtime" / "versions" / "0.1.12"
+    staged_runtime.mkdir(parents=True)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+        runtime_root=staged_runtime,
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_RUNTIME_VERIFICATION_MISSING
+    assert "verification evidence is missing" in plan.blocked_reason
+
+
+def test_staged_target_runtime_accepts_installer_verification_evidence(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.10")
+    staged_runtime = tmp_path / ".odylith" / "runtime" / "versions" / "0.1.12"
+    staged_runtime.mkdir(parents=True)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+        runtime_root=staged_runtime,
+        runtime_verification={"wheel_sha256": "verified-by-installer"},
+    )
+
+    assert plan.scenario.scenario != migration_runtime.SCENARIO_RUNTIME_VERIFICATION_MISSING
+    assert plan.blocked_reason == ""
+    assert plan.scenario.state["runtime_verification_present"] is True
+
+
+def test_missing_install_state_blocks_release_migration_as_repair_only(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    (tmp_path / ".odylith" / "install.json").unlink()
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_MISSING_INSTALL_STATE
+    assert ".odylith/install.json" in plan.blocked[0].planned_paths
+    assert "install state is missing" in plan.blocked_reason
+
+
+def test_stale_install_state_blocks_release_migration_with_pointer_paths(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.9")
+    _seed_current_runtime(tmp_path, version="0.1.10", verification={"wheel_sha256": "runtime-0.1.10"})
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_STALE_INSTALL_STATE
+    assert ".odylith/runtime/current" in plan.blocked[0].planned_paths
+    assert "install state disagree" in plan.blocked_reason
+
+
+def test_partial_failed_upgrade_blocks_before_release_migration(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    _write_install_state(
+        tmp_path,
+        {
+            "active_version": "0.1.10",
+            "last_known_good_version": "0.1.9",
+            "activation_history": ["0.1.9", "0.1.10"],
+        },
+    )
+    logs_dir = tmp_path / ".odylith" / "runtime" / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    (logs_dir / "upgrade-20260427T120000Z.json").write_text(
+        '{"schema_version":"odylith.upgrade-report.v1","status":"failed","failed_phase":"runtime_activation"}\n',
+        encoding="utf-8",
+    )
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_PARTIAL_FAILED_UPGRADE
+    assert "previous upgrade failed" in plan.blocked_reason
+
+
+def test_repo_schema_mismatch_blocks_until_schema_migration_is_registered(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+        release_manifest={"repo_schema_version": 2},
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_REPO_SCHEMA_MISMATCH
+    assert "repo_schema_version does not match" in plan.blocked_reason
+
+
+def test_repo_schema_mismatch_outranks_migration_required(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+        release_manifest={"migration_required": True, "repo_schema_version": 2},
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_REPO_SCHEMA_MISMATCH
+    assert "repo_schema_version does not match" in plan.blocked_reason
+
+
+def test_rollback_target_missing_blocks_replacing_active_runtime(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    _write_install_state(
+        tmp_path,
+        {
+            "active_version": "0.1.10",
+            "last_known_good_version": "0.1.10",
+            "activation_history": ["0.1.10"],
+        },
+    )
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_ROLLBACK_TARGET_MISSING
+    assert "rollback target" in plan.blocked_reason
+
+
+def test_previous_version_does_not_drive_live_state_classification(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.12")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+        pinned_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_ALREADY_CURRENT_CONSUMER
+    assert not any(
+        decision.migration_id == f"repo-state:{migration_runtime.SCENARIO_STALE_INSTALL_STATE}"
+        for decision in plan.blocked
+    )
+
+
+def test_lock_cache_sludge_is_reported_without_blocking_release_migration(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    locks_dir = tmp_path / ".odylith" / "locks"
+    locks_dir.mkdir(parents=True, exist_ok=True)
+    for index in range(migration_runtime.LOCK_NOTE_THRESHOLD):
+        (locks_dir / f"placeholder-{index}.lock").touch()
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_LOCK_CACHE_SLUDGE
+    assert plan.scenario.state["zero_byte_lock_files"] == migration_runtime.LOCK_NOTE_THRESHOLD
+    assert not any(decision.migration_id.startswith("repo-state:") for decision in plan.blocked)
+
+
+def test_generated_surfaces_stale_are_reported_separately_from_release_migration(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.11")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.11",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_GENERATED_SURFACE_STALE
+    assert plan.scenario.state["generated_surface_stale"] is True
+    assert not any(decision.migration_id.startswith("repo-state:") for decision in plan.blocked)
+
+
+def test_selects_value_engine_migration_when_corpus_is_missing(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert [decision.state for decision in plan.selected] == [migration_runtime.STATE_SELECTED]
+    assert plan.ledger_state[MIGRATION_ID] == migration_runtime.STATE_SELECTED
+    assert plan.no_op is False
+
+
+def test_reports_satisfied_unrecorded_when_clean_artifacts_have_no_ledger(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    corpus = tmp_path / VALUE_CORPUS_RELATIVE_PATH
+    corpus.parent.mkdir(parents=True, exist_ok=True)
+    corpus.write_text('{"schema_version":"value-corpus-test"}\n', encoding="utf-8")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert [decision.state for decision in plan.selected] == [migration_runtime.STATE_SATISFIED_UNRECORDED]
+    results = migration_runtime.apply_release_migrations(plan=plan)
+    assert results[0].state == migration_runtime.STATE_SATISFIED_UNRECORDED
+    assert (tmp_path / results[0].ledger_path).is_file()
+
+
+def test_stale_ledger_blocks_normal_upgrade(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+    ledger = tmp_path / ".odylith/state/migrations/v0.1.11-visible-intervention-value-engine.v1.json"
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    ledger.write_text("{not json", encoding="utf-8")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.blocked[0].state == migration_runtime.STATE_LEDGER_STALE
+    assert "stale" in plan.blocked_reason
+
+
+def test_complete_ledger_skips_value_engine_rerun(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.11")
+    corpus = tmp_path / VALUE_CORPUS_RELATIVE_PATH
+    corpus.parent.mkdir(parents=True, exist_ok=True)
+    corpus.write_text('{"schema_version":"value-corpus-test"}\n', encoding="utf-8")
+    record_visible_intervention_value_engine_migration_satisfied(
+        repo_root=tmp_path,
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.11",
+        target_version="0.1.12",
+    )
+
+    assert plan.no_op is True
+    assert _decision_for(plan, MIGRATION_ID).reason.startswith("ledger and verification")
+
+
+def test_migration_required_without_registered_target_blocks(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.9",
+        target_version="0.1.10",
+        release_manifest={"migration_required": True, "repo_schema_version": 1},
+    )
+
+    assert plan.blocked
+    assert "no registered migration" in plan.blocked_reason
+
+
+def test_migration_required_with_registered_target_uses_value_engine_plan(tmp_path: Path) -> None:
+    _seed_repo(tmp_path)
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+        release_manifest={"migration_required": True, "repo_schema_version": 1},
+    )
+
+    assert plan.satisfies_manifest_requirement() is True
+    assert _decision_for(plan, MIGRATION_ID).state == migration_runtime.STATE_SELECTED
+    assert "no registered migration" not in plan.blocked_reason
+
+
+def test_release_gate_reports_registered_migrations_and_no_lifecycle_bypass() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+
+    report = migration_runtime.validate_release_migration_gate(
+        repo_root=repo_root,
+        target_version="0.1.12",
+    )
+
+    assert report.ok is True
+    assert not report.ungated_lifecycle_paths
+    assert report.fixture_matrix[migration_runtime.LEGACY_ROOT_MIGRATION_ID]["apply"] is True
+    assert report.fixture_matrix[MIGRATION_ID]["dry_run"] is True
+    assert report.fixture_matrix[MIGRATION_ID]["stale_ledger"] is True
+
+
+def test_release_gate_blocks_migration_required_manifest_without_definition(tmp_path: Path) -> None:
+    report = migration_runtime.validate_release_migration_gate(
+        repo_root=tmp_path,
+        target_version="0.1.10",
+        release_manifest={"migration_required": True, "repo_schema_version": 1},
+    )
+
+    assert report.ok is False
+    assert any("no registered migration definition" in item for item in report.blocked_manual_migrations)
+    assert json.loads(json.dumps(report.as_dict()))["ok"] is False

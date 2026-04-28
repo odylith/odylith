@@ -140,11 +140,14 @@ Scope: applies to Odylith paths under `odylith/`.
   Proposal, and Assist readiness; hook payload generation alone is not enough.
 - A plain `Odylith, help` request is the CLI help fast path. Use the first
   available `odylith --help` command and print stdout only.
-- A plain `Odylith, show me what you can do` request is the advisory
-  `odylith show` repo-capability demo. It is not a request to prove
-  intervention UX, diagnose install posture, run `start`, run `doctor`, or
+- A plain `Odylith, show me what you can do` request is a first-match route
+  lock for the advisory `odylith show` repo-capability demo. It is not a
+  request to prove intervention UX, diagnose install posture, run `start`, run
+  `doctor`, run `version`, inspect dirty paths, summarize context packets,
+  count modules, discuss tmp clone noise, explain routed-spawn policy, or
   explain missing launcher state. Use the first available show command and
-  print stdout only.
+  print stdout only. Do not replace stdout with a hand-written "here's what
+  Odylith demonstrated" summary.
 - Existing Codex and Claude sessions may not hot-reload changed hooks,
   guidance, or source-local runtime code. After changing intervention
   visibility behavior, prove it in a newly started or explicitly reloaded

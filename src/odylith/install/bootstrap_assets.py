@@ -13,7 +13,6 @@ from typing import Any, Mapping
 from odylith.install.agents import GUIDANCE_FILENAMES, update_guidance_file
 from odylith.install.fs import atomic_write_text
 from odylith.install.state import DEFAULT_REPO_SCHEMA_VERSION, version_pin_path, write_version_pin
-from odylith.install.value_engine_migration import migrate_visible_intervention_value_engine
 from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.common import codex_cli_capabilities
 from odylith.runtime.common.guidance_paths import existing_top_level_guidance_paths
@@ -432,45 +431,23 @@ def refresh_consumer_managed_guidance(
 ) -> None:
     if str(repo_role).strip() == PRODUCT_REPO_ROLE:
         return
+    source_product_root = _managed_product_root(product_root)
+    source_project_root = _managed_project_root_assets_root(source_product_root)
     atomic_write_text(repo_root / "odylith" / "AGENTS.md", customer_bootstrap_guidance(), encoding="utf-8")
     atomic_write_text(repo_root / "odylith" / "CLAUDE.md", customer_bootstrap_claude_source(), encoding="utf-8")
-    sync_managed_project_root_assets(repo_root=repo_root)
-    sync_managed_scoped_guidance(repo_root=repo_root)
-    sync_managed_agents_guidelines(repo_root=repo_root)
-    sync_managed_skills(repo_root=repo_root)
-    sync_managed_release_notes(repo_root=repo_root, version=version, product_root=product_root)
+    sync_managed_project_root_assets(repo_root=repo_root, source_root=source_project_root)
+    sync_managed_scoped_guidance(repo_root=repo_root, product_root=source_product_root)
+    sync_managed_agents_guidelines(repo_root=repo_root, product_root=source_product_root)
+    sync_managed_skills(repo_root=repo_root, product_root=source_product_root)
+    sync_managed_release_notes(repo_root=repo_root, version=version, product_root=source_product_root)
     if include_brand:
-        sync_managed_surface_brand(repo_root=repo_root)
+        sync_managed_surface_brand(repo_root=repo_root, product_root=source_product_root)
 
 
 def sync_consumer_casebook_bug_index(*, repo_root: Path, repo_role: str) -> None:
     if str(repo_role).strip() == PRODUCT_REPO_ROLE:
         return
     sync_casebook_bug_index.sync_casebook_bug_index(repo_root=repo_root, migrate_bug_ids=True)
-
-
-def value_engine_migration_payload(
-    *,
-    repo_root: Path,
-    repo_role: str,
-    previous_version: str,
-    target_version: str,
-    runtime_root: Path | None,
-) -> dict[str, object]:
-    if str(repo_role).strip() == PRODUCT_REPO_ROLE:
-        return {
-            "migration_id": "v0.1.11-visible-intervention-value-engine",
-            "applied": False,
-            "previous_version": str(previous_version or "").strip(),
-            "target_version": str(target_version or "").strip(),
-            "skipped_reason": "product_repo_source_truth",
-        }
-    return migrate_visible_intervention_value_engine(
-        repo_root=repo_root,
-        previous_version=previous_version,
-        target_version=target_version,
-        runtime_root=runtime_root,
-    ).as_dict()
 
 
 def ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str = CONSUMER_REPO_ROLE) -> None:
@@ -529,8 +506,21 @@ def ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str =
         write_version_pin(repo_root=repo_root, version=version, repo_schema_version=DEFAULT_REPO_SCHEMA_VERSION)
 
 
-def sync_managed_agents_guidelines(*, repo_root: Path) -> None:
-    source_root = bundled_product_root() / "agents-guidelines"
+def _managed_product_root(product_root: Path | None = None) -> Path:
+    candidate = Path(product_root).expanduser() if product_root is not None else bundled_product_root()
+    return candidate if candidate.is_dir() else bundled_product_root()
+
+
+def _managed_project_root_assets_root(product_root: Path | None = None) -> Path:
+    if product_root is not None:
+        candidate = Path(product_root).expanduser().parent / "project-root"
+        if candidate.is_dir():
+            return candidate
+    return bundled_project_root_assets_root()
+
+
+def sync_managed_agents_guidelines(*, repo_root: Path, product_root: Path | None = None) -> None:
+    source_root = _managed_product_root(product_root) / "agents-guidelines"
     if not source_root.is_dir():
         return
     target_root = repo_root / "odylith" / "agents-guidelines"
@@ -543,8 +533,8 @@ def sync_managed_agents_guidelines(*, repo_root: Path) -> None:
         shutil.copy2(source_path, target_path)
 
 
-def sync_managed_scoped_guidance(*, repo_root: Path) -> None:
-    source_root = bundled_product_root()
+def sync_managed_scoped_guidance(*, repo_root: Path, product_root: Path | None = None) -> None:
+    source_root = _managed_product_root(product_root)
     target_root = repo_root / "odylith"
     target_root.mkdir(parents=True, exist_ok=True)
     for source_path in source_root.rglob("*"):
@@ -584,8 +574,8 @@ def prune_removed_project_root_skill_shims(*, source_root: Path, target_root: Pa
                 candidate.rmdir()
 
 
-def sync_managed_project_root_assets(*, repo_root: Path) -> None:
-    source_root = bundled_project_root_assets_root()
+def sync_managed_project_root_assets(*, repo_root: Path, source_root: Path | None = None) -> None:
+    source_root = Path(source_root).expanduser() if source_root is not None else bundled_project_root_assets_root()
     if not source_root.is_dir():
         return
     target_root = Path(repo_root).resolve()
@@ -617,8 +607,8 @@ def write_effective_claude_project_settings(*, repo_root: Path) -> None:
     claude_cli_capabilities.write_effective_claude_project_settings(repo_root=target_root)
 
 
-def sync_managed_skills(*, repo_root: Path) -> None:
-    source_root = bundled_product_root() / "skills"
+def sync_managed_skills(*, repo_root: Path, product_root: Path | None = None) -> None:
+    source_root = _managed_product_root(product_root) / "skills"
     if not source_root.is_dir():
         return
     target_root = repo_root / "odylith" / "skills"
@@ -631,8 +621,8 @@ def sync_managed_skills(*, repo_root: Path) -> None:
         shutil.copy2(source_path, target_path)
 
 
-def sync_managed_surface_brand(*, repo_root: Path) -> None:
-    source_root = bundled_product_root() / "surfaces" / "brand"
+def sync_managed_surface_brand(*, repo_root: Path, product_root: Path | None = None) -> None:
+    source_root = _managed_product_root(product_root) / "surfaces" / "brand"
     if not source_root.is_dir():
         return
     target_root = repo_root / "odylith" / "surfaces" / "brand"

@@ -236,15 +236,15 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Mission-control deck for delivery state, architectural truth, defect intelligence, evidence trails, and runtime posture." not in html
     assert "tab-icon" not in html
     assert "Proof Gate Closeout And Shared Test Recovery" not in html
-    assert "Start Odylith from one real code path" in html
+    assert "Odylith is installed" in html
     assert "Copy prompt" in html
-    assert "welcome-launchpad-hero" in html
-    assert "Open the cheatsheet drawer on the left and try out commands in this repo." in html
-    assert "Three quick steps" in html
+    assert "welcome-guide-grid" in html
+    assert "Copy one prompt into Codex or Claude. Odylith will inspect this repo" in html
+    assert "What happens next" in html
     assert "Odylith, show me what you can do." in html
-    assert "Copy prompt." in html
-    assert "Run in Codex or Claude." in html
-    assert "Open the cheatsheet." in html
+    assert "Paste the prompt into Codex or Claude." in html
+    assert "Read the empty-repo report." in html
+    assert "Name a path or feature when you are ready." in html
     assert "Copy the Odylith prompt." not in html
     assert "Run it in Codex or Claude Code." not in html
     assert "Open the cheatsheet drawer on the left side of the screen and try out commands." not in html
@@ -261,7 +261,6 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "src/app" not in html
     assert "services/api" not in html
     assert "What Odylith already sees" not in html
-    assert "What happens next" not in html
     assert 'aria-label="Hide starter guide"' in html
     assert "Hide for now" not in html
     assert "Starter Guide" in html
@@ -277,10 +276,11 @@ def test_render_tooling_dashboard_uses_repo_owned_shell_metadata(tmp_path: Path,
     assert "Open Radar view" not in html
     assert "Open Registry view" not in html
     assert "Open Atlas view" not in html
-    assert "What the core surfaces do first" in html
+    assert "How Odylith thinks about a repo" in html
     assert "Radar keeps a clear backlog so the repo always has one governed next step." in html
     assert "Registry is the component ledger for boundaries, ownership, and contracts." in html
     assert "Atlas keeps architecture visible with diagrams of topology and flow." in html
+    assert "Casebook keeps bugs and regressions durable so failures do not disappear into chat." in html
     assert "Compass keeps briefs and timelines so the next move stays clear." in html
     assert "the first real code path you choose" not in html
     assert 'id="themeToggle"' not in html

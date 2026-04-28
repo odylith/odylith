@@ -10,6 +10,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.install.fs import atomic_write_text, display_path
 from odylith.install.managed_runtime import managed_runtime_site_packages_roots
+from odylith.install.versioning import is_at_least, is_before, normalize_version
 from odylith.runtime.common.product_assets import bundled_product_root
 
 MIGRATION_ID = "v0.1.11-visible-intervention-value-engine"
@@ -62,36 +63,49 @@ class ValueEngineMigrationResult:
         }
 
 
-def _normalize_version(value: str) -> str:
-    """Normalize version tokens so callers may pass `v0.x.y` or `0.x.y`."""
-    return str(value or "").strip().lstrip("v")
+@dataclass(frozen=True)
+class ValueEngineMigrationInspection:
+    """Evidence used by the migration runtime to plan the value-engine cutover."""
 
+    migration_id: str
+    previous_version: str
+    target_version: str
+    target_in_window: bool
+    previous_requires_migration: bool
+    legacy_artifacts_present: bool
+    value_corpus_present: bool
+    ledger_exists: bool
+    ledger_valid: bool
+    ledger_stale_reason: str
+    ledger_path: str
+    planned_paths: tuple[str, ...]
 
-def _version_key(value: str) -> tuple[int, int, int, str]:
-    """Build a sortable key for semantic-ish version comparisons."""
-    token = _normalize_version(value)
-    parts = token.split(".", 2)
-    if len(parts) < 3:
-        return (-1, -1, -1, token)
-    try:
-        major = int(parts[0])
-        minor = int(parts[1])
-        patch_raw = parts[2]
-        patch_token = "".join(ch for ch in patch_raw if ch.isdigit())
-        suffix = patch_raw[len(patch_token):]
-        return (major, minor, int(patch_token or 0), suffix)
-    except ValueError:
-        return (-1, -1, -1, token)
+    @property
+    def verification_passed(self) -> bool:
+        """Return whether the recorded migration still matches the desired state."""
+        if not self.ledger_valid:
+            return False
+        if self.target_in_window and not self.value_corpus_present:
+            return False
+        return not self.legacy_artifacts_present
 
-
-def _is_at_least(value: str, baseline: str) -> bool:
-    """Return whether one normalized version is at least the baseline."""
-    return _version_key(value) >= _version_key(baseline)
-
-
-def _is_before(value: str, baseline: str) -> bool:
-    """Return whether one normalized version is strictly before the baseline."""
-    return bool(_normalize_version(value)) and _version_key(value) < _version_key(baseline)
+    def as_dict(self) -> dict[str, Any]:
+        """Return the inspection as a JSON-serializable payload."""
+        return {
+            "migration_id": self.migration_id,
+            "previous_version": self.previous_version,
+            "target_version": self.target_version,
+            "target_in_window": self.target_in_window,
+            "previous_requires_migration": self.previous_requires_migration,
+            "legacy_artifacts_present": self.legacy_artifacts_present,
+            "value_corpus_present": self.value_corpus_present,
+            "ledger_exists": self.ledger_exists,
+            "ledger_valid": self.ledger_valid,
+            "ledger_stale_reason": self.ledger_stale_reason,
+            "ledger_path": self.ledger_path,
+            "planned_paths": list(self.planned_paths),
+            "verification_passed": self.verification_passed,
+        }
 
 
 def _ledger_path(*, repo_root: Path) -> Path:
@@ -165,6 +179,35 @@ def _write_ledger(*, repo_root: Path, payload: Mapping[str, Any]) -> str:
     return display_path(repo_root=repo_root, path=path)
 
 
+def _read_ledger(*, repo_root: Path) -> tuple[bool, str]:
+    """Return whether the ledger is parseable and belongs to this migration."""
+    path = _ledger_path(repo_root=repo_root)
+    if not path.is_file():
+        return False, "missing"
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return False, f"unreadable ledger: {exc.__class__.__name__}"
+    if not isinstance(payload, Mapping):
+        return False, "ledger payload is not an object"
+    if str(payload.get("migration_id") or "").strip() != MIGRATION_ID:
+        return False, "ledger migration_id mismatch"
+    if str(payload.get("schema_version") or "").strip() != MIGRATION_SCHEMA_VERSION:
+        return False, "ledger schema_version mismatch"
+    return True, ""
+
+
+def _planned_paths(*, repo_root: Path, runtime_root: Path | None) -> tuple[str, ...]:
+    """Return every path the value-engine migration may inspect or mutate."""
+    paths = [
+        _ledger_path(repo_root=repo_root),
+        repo_root / VALUE_CORPUS_RELATIVE_PATH,
+        *_old_source_artifact_paths(repo_root=repo_root),
+        *_old_runtime_artifact_paths(runtime_root=runtime_root),
+    ]
+    return tuple(dict.fromkeys(display_path(repo_root=repo_root, path=path) for path in paths))
+
+
 def _should_apply_migration(
     *,
     previous_version: str,
@@ -174,13 +217,13 @@ def _should_apply_migration(
     ledger_exists: bool,
 ) -> bool:
     """Return whether the migration still needs to run for this install posture."""
-    return _is_at_least(target_version, TARGET_VERSION) and (
-        not previous_version
-        or _is_before(previous_version, TARGET_VERSION)
-        or _artifact_exists(source_artifacts)
-        or _artifact_exists(runtime_artifacts)
-        or not ledger_exists
-    )
+    if not is_at_least(target_version, TARGET_VERSION):
+        return False
+    if _artifact_exists(source_artifacts) or _artifact_exists(runtime_artifacts):
+        return True
+    if ledger_exists:
+        return False
+    return not previous_version or is_before(previous_version, TARGET_VERSION)
 
 
 def migrate_visible_intervention_value_engine(
@@ -192,8 +235,8 @@ def migrate_visible_intervention_value_engine(
 ) -> ValueEngineMigrationResult:
     """Apply the v0.1.11 value-engine migration when the install is in scope."""
     root = Path(repo_root).expanduser().resolve()
-    target = _normalize_version(target_version)
-    previous = _normalize_version(previous_version)
+    target = normalize_version(target_version)
+    previous = normalize_version(previous_version)
     runtime = Path(runtime_root).expanduser().resolve() if runtime_root is not None else None
     source_artifacts = _old_source_artifact_paths(repo_root=root)
     runtime_artifacts = _old_runtime_artifact_paths(runtime_root=runtime)
@@ -243,11 +286,138 @@ def migrate_visible_intervention_value_engine(
     )
 
 
+def inspect_visible_intervention_value_engine_migration(
+    *,
+    repo_root: str | Path,
+    previous_version: str = "",
+    target_version: str = "",
+    runtime_root: str | Path | None = None,
+) -> ValueEngineMigrationInspection:
+    """Inspect the v0.1.11 migration state without writing local state."""
+    root = Path(repo_root).expanduser().resolve()
+    target = normalize_version(target_version)
+    previous = normalize_version(previous_version)
+    runtime = Path(runtime_root).expanduser().resolve() if runtime_root is not None else None
+    source_artifacts = _old_source_artifact_paths(repo_root=root)
+    runtime_artifacts = _old_runtime_artifact_paths(runtime_root=runtime)
+    ledger_path = _ledger_path(repo_root=root)
+    ledger_valid, ledger_stale_reason = _read_ledger(repo_root=root)
+    return ValueEngineMigrationInspection(
+        migration_id=MIGRATION_ID,
+        previous_version=previous,
+        target_version=target,
+        target_in_window=is_at_least(target, TARGET_VERSION),
+        previous_requires_migration=not previous or is_before(previous, TARGET_VERSION),
+        legacy_artifacts_present=_artifact_exists(source_artifacts) or _artifact_exists(runtime_artifacts),
+        value_corpus_present=(root / VALUE_CORPUS_RELATIVE_PATH).is_file(),
+        ledger_exists=ledger_path.is_file(),
+        ledger_valid=ledger_valid,
+        ledger_stale_reason="" if ledger_valid or not ledger_path.is_file() else ledger_stale_reason,
+        ledger_path=display_path(repo_root=root, path=ledger_path),
+        planned_paths=_planned_paths(repo_root=root, runtime_root=runtime),
+    )
+
+
+def record_visible_intervention_value_engine_migration_satisfied(
+    *,
+    repo_root: str | Path,
+    previous_version: str = "",
+    target_version: str = "",
+    runtime_root: str | Path | None = None,
+    repo_scenario: str = "",
+    plan_fingerprint: str = "",
+) -> ValueEngineMigrationResult:
+    """Record a no-op ledger when the desired value-engine state is already present."""
+    root = Path(repo_root).expanduser().resolve()
+    target = normalize_version(target_version)
+    previous = normalize_version(previous_version)
+    inspection = inspect_visible_intervention_value_engine_migration(
+        repo_root=root,
+        previous_version=previous,
+        target_version=target,
+        runtime_root=runtime_root,
+    )
+    if not inspection.target_in_window:
+        return ValueEngineMigrationResult(
+            migration_id=MIGRATION_ID,
+            applied=False,
+            previous_version=previous,
+            target_version=target,
+            skipped_reason="target_not_in_v0_1_11_migration_window",
+            ledger_path=inspection.ledger_path,
+        )
+    if inspection.legacy_artifacts_present:
+        raise ValueError("cannot record value-engine migration as satisfied while legacy signal-ranker artifacts remain")
+    if not inspection.value_corpus_present:
+        raise ValueError("cannot record value-engine migration as satisfied before the value-engine corpus exists")
+    payload = {
+        "schema_version": MIGRATION_SCHEMA_VERSION,
+        "migration_id": MIGRATION_ID,
+        "applied": False,
+        "satisfied_unrecorded": True,
+        "previous_version": previous,
+        "target_version": target,
+        "repo_scenario": str(repo_scenario or "").strip(),
+        "plan_fingerprint": str(plan_fingerprint or "").strip(),
+        "removed_paths": [],
+        "written_paths": [],
+        "verification_result": {
+            "status": "passed",
+            "legacy_artifacts_present": False,
+            "value_corpus_present": True,
+        },
+        "runtime_posture": "deterministic_utility_v1",
+        "backward_compatibility": "cut_hard",
+        "notes": "Desired value-engine migration state was already present; the migration runtime wrote the missing ledger.",
+    }
+    ledger_path = _write_ledger(repo_root=root, payload=payload)
+    return ValueEngineMigrationResult(
+        migration_id=MIGRATION_ID,
+        applied=False,
+        previous_version=previous,
+        target_version=target,
+        skipped_reason="satisfied_unrecorded_ledger_written",
+        ledger_path=ledger_path,
+    )
+
+
+def visible_intervention_value_engine_migration_pending(
+    *,
+    repo_root: str | Path,
+    previous_version: str = "",
+    target_version: str = "",
+    runtime_root: str | Path | None = None,
+) -> bool:
+    """Return whether the v0.1.11 migration would still write local state."""
+    root = Path(repo_root).expanduser().resolve()
+    target = normalize_version(target_version)
+    previous = normalize_version(previous_version)
+    runtime = Path(runtime_root).expanduser().resolve() if runtime_root is not None else None
+    return _should_apply_migration(
+        previous_version=previous,
+        target_version=target,
+        source_artifacts=_old_source_artifact_paths(repo_root=root),
+        runtime_artifacts=_old_runtime_artifact_paths(runtime_root=runtime),
+        ledger_exists=_ledger_path(repo_root=root).is_file(),
+    )
+
+
+def visible_intervention_value_engine_migration_ledger_path(*, repo_root: str | Path) -> str:
+    """Return the repo-relative ledger path for dry-run and doctor reporting."""
+    root = Path(repo_root).expanduser().resolve()
+    return display_path(repo_root=root, path=_ledger_path(repo_root=root))
+
+
 __all__ = [
     "MIGRATION_ID",
     "MIGRATION_SCHEMA_VERSION",
     "TARGET_VERSION",
     "VALUE_CORPUS_RELATIVE_PATH",
+    "ValueEngineMigrationInspection",
     "ValueEngineMigrationResult",
+    "inspect_visible_intervention_value_engine_migration",
     "migrate_visible_intervention_value_engine",
+    "record_visible_intervention_value_engine_migration_satisfied",
+    "visible_intervention_value_engine_migration_ledger_path",
+    "visible_intervention_value_engine_migration_pending",
 ]

@@ -12,9 +12,10 @@ import sys
 import webbrowser
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Sequence
+from typing import Mapping, Sequence
 
 from odylith import __version__
+from odylith.install import migration_runtime, upgrade_reporting
 from odylith.runtime.common.dirty_overlap import summarize_dirty_overlap
 from odylith.runtime.common.command_surface import (
     ensure_nested_subcommand_repo_root_args,
@@ -559,6 +560,58 @@ def _print_lifecycle_plan(plan: object, *, dry_run: bool, verbose: bool = False)
     print(f"{command} {'dry-run' if dry_run else 'plan'}")
     if headline:
         print(f"- summary: {headline}")
+    metadata = dict(getattr(plan, "metadata", {}) or {})
+    if metadata:
+        target_fields = (
+            ("target_version", "target_version"),
+            ("target_tag", "target_tag"),
+            ("target_relation", "relation_to_active"),
+            ("operation", "operation"),
+            ("release_repo", "release_repo"),
+            ("release_url", "release_url"),
+            ("published_at", "published_at"),
+        )
+        print("- target:")
+        for key, label in target_fields:
+            value = str(metadata.get(key) or "").strip()
+            if value:
+                print(f"  {label}: {value}")
+        scenario = str(metadata.get("scenario") or "").strip()
+        if scenario:
+            print(f"  scenario: {scenario}")
+        ledger_state = metadata.get("ledger_state")
+        if isinstance(ledger_state, Mapping) and ledger_state:
+            print("  ledger_state:")
+            for migration_id in sorted(str(key) for key in ledger_state):
+                print(f"    {migration_id}: {ledger_state.get(migration_id)}")
+        blocked_reason = str(metadata.get("blocked_reason") or "").strip()
+        if blocked_reason:
+            print(f"  blocked_reason: {blocked_reason}")
+        verification_policy = str(metadata.get("verification_policy") or "").strip()
+        if verification_policy:
+            print(f"  verification_policy: {verification_policy}")
+        asset_digests = metadata.get("asset_digests")
+        if isinstance(asset_digests, Mapping) and asset_digests:
+            print("  asset_digests:")
+            for asset_name in sorted(str(key) for key in asset_digests):
+                digest = str(asset_digests.get(asset_name) or "").strip()
+                if digest:
+                    print(f"    {asset_name}: {digest}")
+        migration_ids = tuple(str(item).strip() for item in metadata.get("migration_ids", ()) or () if str(item).strip())
+        if migration_ids:
+            print(f"  migration_ids: {', '.join(migration_ids)}")
+        migration_ledger = str(metadata.get("migration_ledger") or "").strip()
+        if migration_ledger:
+            print(f"  migration_ledger: {migration_ledger}")
+        rollback_target = str(metadata.get("rollback_target") or "").strip()
+        rollback_command = str(metadata.get("rollback_command") or "").strip()
+        rollback_scope = str(metadata.get("rollback_scope") or "").strip()
+        if rollback_target:
+            print(f"  rollback_target: {rollback_target}")
+        if rollback_command:
+            print(f"  rollback_command: {rollback_command}")
+        if rollback_scope:
+            print(f"  rollback_scope: {rollback_scope}")
     for index, step in enumerate(steps, start=1):
         label = str(getattr(step, "label", "") or "").strip()
         mutation_classes = ", ".join(str(token).strip() for token in getattr(step, "mutation_classes", ()) or () if str(token).strip())
@@ -568,8 +621,9 @@ def _print_lifecycle_plan(plan: object, *, dry_run: bool, verbose: bool = False)
         if mutation_classes:
             print(f"  mutation_classes: {mutation_classes}")
         if paths:
-            preview = ", ".join(paths[:4])
-            suffix = "" if len(paths) <= 4 else f", +{len(paths) - 4} more"
+            preview_paths = paths if verbose else paths[:4]
+            preview = ", ".join(preview_paths)
+            suffix = "" if verbose or len(paths) <= 4 else f", +{len(paths) - 4} more"
             print(f"  paths: {preview}{suffix}")
         if detail:
             print(f"  detail: {detail}")
@@ -700,16 +754,39 @@ def _prepare_consumer_upgrade_spotlight(*, repo_root: Path, summary: object, sou
     return True
 
 
-def _refresh_dashboard_after_upgrade(*, repo_root: Path) -> tuple[bool, str]:
-    print("Refreshing Odylith dashboard surfaces so the local shell reflects the new release.")
+def _refresh_dashboard_after_upgrade(
+    *,
+    repo_root: Path,
+    emit_output: bool = True,
+    details: dict[str, object] | None = None,
+) -> tuple[bool, str]:
+    if emit_output:
+        print("Refreshing Odylith dashboard surfaces so the local shell reflects the new release.")
+    if details is not None:
+        details.update(
+            {
+                "surfaces": list(_DEFAULT_DASHBOARD_REFRESH_SURFACES),
+                "success": False,
+            }
+        )
     launcher_path = (repo_root / ".odylith" / "bin" / "odylith").resolve()
     if not launcher_path.is_file():
+        if details is not None:
+            details.update(
+                {
+                    "mode": "standalone",
+                    "reason": "repo-local launcher missing",
+                    "command": "refresh_dashboard_surfaces(runtime_mode=auto)",
+                }
+            )
         render_rc = _sync_workstream_artifacts().refresh_dashboard_surfaces(
             repo_root=repo_root,
             surfaces=_DEFAULT_DASHBOARD_REFRESH_SURFACES,
             runtime_mode="auto",
             atlas_sync=False,
         )
+        if details is not None:
+            details.update({"returncode": render_rc, "success": render_rc == 0})
         if render_rc != 0:
             return (
                 False,
@@ -725,6 +802,13 @@ def _refresh_dashboard_after_upgrade(*, repo_root: Path) -> tuple[bool, str]:
         "--surfaces",
         _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV,
     ]
+    if details is not None:
+        details.update(
+            {
+                "mode": "launcher",
+                "command": command,
+            }
+        )
     try:
         completed = subprocess.run(
             command,
@@ -733,16 +817,29 @@ def _refresh_dashboard_after_upgrade(*, repo_root: Path) -> tuple[bool, str]:
             capture_output=True,
             text=True,
         )
-    except OSError:
+    except OSError as exc:
+        if details is not None:
+            details.update({"error": str(exc), "success": False})
         return (
             False,
             "Odylith upgrade succeeded, but dashboard refresh failed. Retry with `./.odylith/bin/odylith dashboard refresh --repo-root .`.",
         )
-    if completed.stdout:
+    combined_output = f"{completed.stdout}\n{completed.stderr}".lower()
+    if details is not None:
+        details.update(
+            {
+                "returncode": completed.returncode,
+                "stdout": completed.stdout,
+                "stderr": completed.stderr,
+                "timeout_detected": "timeout" in combined_output or "timed out" in combined_output,
+                "success": completed.returncode == 0,
+            }
+        )
+    if emit_output and completed.stdout:
         sys.stdout.write(completed.stdout)
         if not str(completed.stdout).endswith("\n"):
             sys.stdout.write("\n")
-    if completed.stderr:
+    if emit_output and completed.stderr:
         sys.stderr.write(completed.stderr)
         if not str(completed.stderr).endswith("\n"):
             sys.stderr.write("\n")
@@ -1014,20 +1111,15 @@ def _cmd_reinstall(args: argparse.Namespace) -> int:
 
 def _cmd_upgrade(args: argparse.Namespace) -> int:
     requested_repo_root = Path(args.repo_root).expanduser().resolve()
-    lifecycle_plan = plan_upgrade_lifecycle(
-        repo_root=requested_repo_root,
-        version=str(args.target_version or "").strip(),
-        source_repo=args.source_repo or None,
-        write_pin=bool(args.write_pin),
-    )
-    _print_lifecycle_plan(lifecycle_plan, dry_run=bool(getattr(args, "dry_run", False)))
-    if bool(getattr(args, "dry_run", False)):
-        return 0
+    output_json = bool(getattr(args, "json", False))
+    phases: list[dict[str, object]] = []
+    command_started_at = datetime.now(UTC)
+    plan_started_at = datetime.now(UTC)
     try:
-        summary = upgrade_install(
-            repo_root=args.repo_root,
-            release_repo=args.release_repo,
-            version=args.target_version,
+        lifecycle_plan = plan_upgrade_lifecycle(
+            repo_root=requested_repo_root,
+            version=str(args.target_version or "").strip(),
+            release_repo=str(args.release_repo or "").strip() or _authoritative_release_repo(),
             source_repo=args.source_repo or None,
             write_pin=bool(args.write_pin),
         )
@@ -1037,7 +1129,108 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    _print_legacy_migration_summary(summary)
+    plan_finished_at = datetime.now(UTC)
+    phases.append(
+        upgrade_reporting.phase_payload(
+            name="plan",
+            started_at=plan_started_at,
+            finished_at=plan_finished_at,
+            status="ok",
+        )
+    )
+    dry_run = bool(getattr(args, "dry_run", False))
+    if output_json and dry_run:
+        plan_payload = upgrade_reporting.lifecycle_plan_payload(lifecycle_plan)
+        metadata = dict(plan_payload.get("metadata", {}) or {})
+        print(
+            json.dumps(
+                {
+                    "schema": "odylith.upgrade.dry_run.v1",
+                    "status": "planned",
+                    "repo_root": str(requested_repo_root),
+                    "dry_run": True,
+                    "scenario": metadata.get("scenario", ""),
+                    "migration_plan": metadata.get("migration_plan", {}),
+                    "migration_results": [],
+                    "ledger_state": metadata.get("ledger_state", {}),
+                    "blocked_reason": metadata.get("blocked_reason", ""),
+                    "plan_fingerprint": metadata.get("plan_fingerprint", ""),
+                    "plan": plan_payload,
+                    "phases": phases,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+    if not output_json:
+        _print_lifecycle_plan(
+            lifecycle_plan,
+            dry_run=dry_run,
+            verbose=bool(getattr(args, "verbose", False)),
+        )
+    if bool(getattr(args, "dry_run", False)):
+        return 0
+    pre_upgrade_dirty_paths = upgrade_reporting.git_status_paths(repo_root=requested_repo_root)
+    upgrade_started_at = datetime.now(UTC)
+    try:
+        summary = upgrade_install(
+            repo_root=args.repo_root,
+            release_repo=args.release_repo,
+            version=args.target_version,
+            source_repo=args.source_repo or None,
+            write_pin=bool(args.write_pin),
+        )
+    except ValueError as exc:
+        if output_json:
+            print(
+                json.dumps(
+                    {
+                        "schema": "odylith.upgrade.report.v1",
+                        "status": "failed",
+                        "repo_root": str(requested_repo_root),
+                        "error": str(exc),
+                        "plan": upgrade_reporting.lifecycle_plan_payload(lifecycle_plan),
+                        "phases": phases,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+        else:
+            print(str(exc), file=sys.stderr)
+        return 2
+    except RuntimeError as exc:
+        if output_json:
+            print(
+                json.dumps(
+                    {
+                        "schema": "odylith.upgrade.report.v1",
+                        "status": "failed",
+                        "repo_root": str(requested_repo_root),
+                        "error": str(exc),
+                        "plan": upgrade_reporting.lifecycle_plan_payload(lifecycle_plan),
+                        "phases": phases,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+        else:
+            print(str(exc), file=sys.stderr)
+        return 1
+    upgrade_finished_at = datetime.now(UTC)
+    phases.append(
+        upgrade_reporting.phase_payload(
+            name="upgrade",
+            started_at=upgrade_started_at,
+            finished_at=upgrade_finished_at,
+            status="ok",
+            details=upgrade_reporting.upgrade_summary_payload(summary),
+        )
+    )
+    if not output_json:
+        _print_legacy_migration_summary(summary)
 
     source_repo = str(args.source_repo or "").strip()
     repo_role = str(getattr(summary, "repo_role", "") or "").strip()
@@ -1046,40 +1239,98 @@ def _cmd_upgrade(args: argparse.Namespace) -> int:
     previous_version = str(summary.previous_version or "").strip()
     pinned_version = str(summary.pinned_version or "").strip()
 
-    if source_repo:
-        print(f"Odylith is now running from local source repo {Path(str(args.source_repo)).expanduser().resolve()}.")
-    else:
-        if previous_version and previous_version != active_version:
-            if summary.pin_changed and pinned_version == active_version:
-                print(f"Upgraded Odylith from {previous_version} to {active_version} and advanced the repo pin.")
-            else:
-                print(f"Upgraded Odylith from {previous_version} to {active_version}.")
+    if not output_json:
+        if source_repo:
+            print(f"Odylith is now running from local source repo {Path(str(args.source_repo)).expanduser().resolve()}.")
         else:
-            if summary.pin_changed and pinned_version == active_version:
-                if followed_latest and repo_role != "product_repo":
-                    print(f"Odylith is already on the latest verified release: {active_version}. Advanced the repo pin to match.")
+            if previous_version and previous_version != active_version:
+                if summary.pin_changed and pinned_version == active_version:
+                    print(f"Upgraded Odylith from {previous_version} to {active_version} and advanced the repo pin.")
                 else:
-                    print(f"Odylith is already on {active_version}. Advanced the repo pin to match.")
-            elif followed_latest and repo_role != "product_repo":
-                print(f"Odylith is already on the latest verified release: {active_version}.")
-            elif not str(args.target_version or "").strip() and repo_role == "product_repo":
-                print(f"Odylith is already on the tracked self-host pin: {active_version}.")
+                    print(f"Upgraded Odylith from {previous_version} to {active_version}.")
             else:
-                print(f"Odylith is already on {active_version}.")
-        if not (summary.pin_changed and pinned_version == active_version):
-            if summary.pin_changed:
-                print(f"Repo pin updated to {pinned_version}.")
-            else:
-                print(f"Repo pin remains {pinned_version}.")
-        _print_release_highlights(summary)
-    print(f"Repo-local launcher: {summary.launcher_path}")
+                if summary.pin_changed and pinned_version == active_version:
+                    if followed_latest and repo_role != "product_repo":
+                        print(f"Odylith is already on the latest verified release: {active_version}. Advanced the repo pin to match.")
+                    else:
+                        print(f"Odylith is already on {active_version}. Advanced the repo pin to match.")
+                elif followed_latest and repo_role != "product_repo":
+                    print(f"Odylith is already on the latest verified release: {active_version}.")
+                elif not str(args.target_version or "").strip() and repo_role == "product_repo":
+                    print(f"Odylith is already on the tracked self-host pin: {active_version}.")
+                else:
+                    print(f"Odylith is already on {active_version}.")
+            if not (summary.pin_changed and pinned_version == active_version):
+                if summary.pin_changed:
+                    print(f"Repo pin updated to {pinned_version}.")
+                else:
+                    print(f"Repo pin remains {pinned_version}.")
+            _print_release_highlights(summary)
+        print(f"Repo-local launcher: {summary.launcher_path}")
     _prepare_consumer_upgrade_spotlight(
         repo_root=requested_repo_root,
         summary=summary,
         source_repo=source_repo,
     )
-    _refreshed, message = _refresh_dashboard_after_upgrade(repo_root=requested_repo_root)
+    dashboard_details: dict[str, object] = {}
+    dashboard_started_at = datetime.now(UTC)
+    refreshed, message = _refresh_dashboard_after_upgrade(
+        repo_root=requested_repo_root,
+        emit_output=not output_json,
+        details=dashboard_details,
+    )
+    dashboard_finished_at = datetime.now(UTC)
+    dashboard_details["message"] = message
+    dashboard_details["fresh"] = refreshed
+    post_upgrade_dirty_paths = upgrade_reporting.git_status_paths(repo_root=requested_repo_root)
+    newly_dirty_paths = sorted(set(post_upgrade_dirty_paths) - set(pre_upgrade_dirty_paths))
+    phases.append(
+        upgrade_reporting.phase_payload(
+            name="dashboard_refresh",
+            started_at=dashboard_started_at,
+            finished_at=dashboard_finished_at,
+            status="ok" if refreshed else "warning",
+            details=dashboard_details,
+        )
+    )
+    command_finished_at = datetime.now(UTC)
+    report: dict[str, object] = {
+        "schema": "odylith.upgrade.report.v1",
+        "status": "succeeded" if refreshed else "succeeded_with_warnings",
+        "repo_root": str(requested_repo_root),
+        "started_at": command_started_at.isoformat(),
+        "finished_at": command_finished_at.isoformat(),
+        "duration_seconds": round((command_finished_at - command_started_at).total_seconds(), 3),
+        "plan": upgrade_reporting.lifecycle_plan_payload(lifecycle_plan),
+        "scenario": dict(getattr(summary, "migration_plan", {}) or {}).get("scenario", {}),
+        "migration_plan": getattr(summary, "migration_plan", {}) or {},
+        "migration_results": list(getattr(summary, "migration_results", ()) or ()),
+        "ledger_state": dict(getattr(summary, "migration_plan", {}) or {}).get("ledger_state", {}),
+        "blocked_reason": dict(getattr(summary, "migration_plan", {}) or {}).get("blocked_reason", ""),
+        "plan_fingerprint": dict(getattr(summary, "migration_plan", {}) or {}).get("plan_fingerprint", ""),
+        "phases": phases,
+        "final_state": upgrade_reporting.upgrade_summary_payload(summary),
+        "dashboard_refresh": upgrade_reporting.json_ready(dashboard_details),
+        "pre_existing_dirty_paths": pre_upgrade_dirty_paths,
+        "post_upgrade_dirty_paths": post_upgrade_dirty_paths,
+        "changed_paths": newly_dirty_paths,
+    }
+    report_path = upgrade_reporting.write_upgrade_report(
+        repo_root=requested_repo_root,
+        report=report,
+        started_at=command_started_at,
+    )
+    if output_json:
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 0
     print(message)
+    try:
+        report_display = report_path.relative_to(requested_repo_root).as_posix()
+    except ValueError:
+        report_display = str(report_path)
+    print(f"Upgrade report: {report_display}")
+    print("Rollback scope: runtime activation and repo-local launchers. Use git to revert repo-owned generated surfaces or guidance changes.")
+    print("Rollback command: `./.odylith/bin/odylith rollback --repo-root . --previous`")
     print("Odylith keeps the active runtime and one rollback target locally.")
     _print_retention_warnings(summary)
     return 0
@@ -1144,7 +1395,11 @@ def _cmd_version(args: argparse.Namespace) -> int:
     print(f"Last known good: {status.last_known_good_version or 'unknown'}")
     print(f"Detached: {'yes' if status.detached else 'no'}")
     print(f"Diverged from pin: {'yes' if status.diverged_from_pin else 'no'}")
-    print(f"Available: {available}")
+    for warning in tuple(getattr(status, "runtime_trust_warnings", ()) or ()):
+        warning_text = str(warning).strip()
+        if warning_text:
+            print(f"Trust warning: {warning_text}")
+    print(f"Installed locally: {available}")
     return 0
 
 
@@ -1175,6 +1430,15 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
         detail = str(getattr(status, "runtime_source_detail", "") or "").strip()
         if detail:
             print(f"Runtime detail: {detail}", file=stream)
+        trust_warnings = tuple(
+            str(warning).strip()
+            for warning in getattr(status, "runtime_trust_warnings", ()) or ()
+            if str(warning).strip()
+        )
+        if trust_warnings and healthy:
+            print("Doctor status: healthy with warnings", file=stream)
+        for warning in trust_warnings:
+            print(f"Trust warning: {warning}", file=stream)
         print(f"Release eligible: {release_eligible}", file=stream)
         print(f"Context engine mode: {status.context_engine_mode}", file=stream)
         print(
@@ -1186,6 +1450,16 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
             ),
             file=stream,
         )
+    for line in upgrade_reporting.doctor_operational_observability_lines(
+        repo_root=Path(args.repo_root).expanduser().resolve(),
+        status=status,
+    ):
+        print(line, file=stream)
+    for line in migration_runtime.doctor_migration_observability_lines(
+        repo_root=Path(args.repo_root).expanduser().resolve(),
+        status=status,
+    ):
+        print(line, file=stream)
     print(message, file=stream)
     return 0 if healthy else 1
 
@@ -1393,6 +1667,35 @@ def _forward_backend_help(*, module_name: str, repo_root: str, forwarded: Sequen
 
 
 def _cmd_release(args: argparse.Namespace) -> int:
+    if args.release_command == "migration-gate":
+        report = migration_runtime.validate_release_migration_gate(
+            repo_root=args.repo_root,
+            target_version=str(getattr(args, "target_version", "") or "").strip(),
+        )
+        if bool(getattr(args, "json", False)):
+            print(json.dumps(report.as_dict(), indent=2, sort_keys=True))
+        else:
+            print("release migration-gate")
+            print(f"- status: {'passed' if report.ok else 'failed'}")
+            print("- registered migrations:")
+            for definition in report.registered_migrations:
+                print(f"  - {definition.migration_id}: {definition.from_version_range} -> {definition.to_version_range}")
+            print("- fixture matrix:")
+            for migration_id, fixtures in sorted(report.fixture_matrix.items()):
+                passed = [name for name, ok in fixtures.items() if ok]
+                missing = [name for name, ok in fixtures.items() if not ok]
+                print(f"  - {migration_id}: passed={', '.join(passed) or 'none'}; missing={', '.join(missing) or 'none'}")
+            if report.blocked_manual_migrations:
+                print("- blocked manual migrations:")
+                for item in report.blocked_manual_migrations:
+                    print(f"  - {item}")
+            if report.ungated_lifecycle_paths:
+                print("- ungated lifecycle paths:")
+                for item in report.ungated_lifecycle_paths:
+                    print(f"  - {item}")
+            for note in report.notes:
+                print(f"- note: {note}")
+        return 0 if report.ok else 1
     if args.release_command in {"create", "update", "add", "remove", "move"} and not _forwarded_has_flag(
         args.forwarded,
         "--dry-run",
@@ -1854,10 +2157,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Do not auto-open `odylith/index.html` in a browser after a successful first local install.",
     )
 
-    upgrade = subparsers.add_parser("upgrade", help="Stage and activate the pinned Odylith runtime without rewriting repo-owned truth.")
+    upgrade = subparsers.add_parser(
+        "upgrade",
+        help="Advance to the latest verified Odylith release by default, write the consumer pin, and activate the managed runtime.",
+    )
     upgrade.add_argument("--repo-root", default=".", help="Consumer repository root.")
     upgrade.add_argument("--release-repo", default=_authoritative_release_repo(), help="GitHub release repository.")
-    upgrade.add_argument("--to", dest="target_version", default="", help="Explicit target version. Requires --write-pin when it differs from the repo pin.")
+    upgrade.add_argument(
+        "--to",
+        dest="target_version",
+        default="",
+        help=(
+            "Explicit target version. Plain consumer upgrades without --to follow the latest verified release and write the pin; "
+            "use --write-pin when adopting an explicit target that should replace the tracked repo pin."
+        ),
+    )
     upgrade.add_argument("--version", dest="target_version", help=argparse.SUPPRESS)
     upgrade.add_argument("--write-pin", action="store_true", help="Maintainer workflow: write the requested version into odylith/runtime/source/product-version.v1.json.")
     upgrade.add_argument(
@@ -1865,6 +2179,8 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Preview the upgrade mutation plan without writing files.",
     )
+    upgrade.add_argument("--verbose", action="store_true", help="Print full planned path lists instead of abbreviated summaries.")
+    upgrade.add_argument("--json", action="store_true", help="Emit the upgrade dry-run or execution report as JSON.")
     upgrade.add_argument(
         "--source-repo",
         default="",
@@ -2048,6 +2364,13 @@ def build_parser() -> argparse.ArgumentParser:
         child_parser = release_subparsers.add_parser(command, help=help_text)
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
         child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    release_migration_gate = release_subparsers.add_parser(
+        "migration-gate",
+        help="Validate registered release migrations, fixture coverage, and lifecycle bypasses.",
+    )
+    release_migration_gate.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    release_migration_gate.add_argument("--target-version", default="", help="Release version under migration-gate review.")
+    release_migration_gate.add_argument("--json", action="store_true", help="Emit the migration gate report as JSON.")
 
     program = subparsers.add_parser("program", help="Create and maintain umbrella execution-wave programs.")
     program_subparsers = program.add_subparsers(dest="program_command", required=True)
@@ -2461,6 +2784,10 @@ def main(argv: list[str] | None = None) -> int:
             )
         if tokens[0] == "release" and len(tokens) >= 2:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
+            if tokens[1] == "migration-gate":
+                parser = build_parser()
+                args = parser.parse_args(tokens)
+                return _cmd_release(args)
             if _help_requested(forwarded):
                 parser = build_parser()
                 args = parser.parse_args(tokens)

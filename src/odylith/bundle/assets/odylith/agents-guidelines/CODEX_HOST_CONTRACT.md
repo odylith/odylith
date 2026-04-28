@@ -186,6 +186,17 @@
   hook `systemMessage` and also place an assistant-render fallback in
   `hookSpecificOutput.additionalContext`. Prompt-time context should feel like
   one gentle interjection, not a visible dump of narrowing scaffolding.
+- Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
+  first-match route locks, not requests for a Codex-authored capability
+  summary. When Codex hooks are available, `codex prompt-context` must emit
+  discreet `additionalContext` that locks the route before normal prompt
+  observation. Baseline `AGENTS.md` and `.agents/skills/odylith-show-me` must
+  enforce the same stdout-only contract when hooks are unavailable. The show
+  route must forbid hand-written "here's what Odylith demonstrated" summaries,
+  install-posture narration, dirty-path analysis, context-packet summaries,
+  module-count scans, tmp-clone warnings, spawn-policy notes, and follow-up
+  questions. Codex must run the first available repo-root show/help command,
+  return stdout only, or report the shortest actionable Odylith blocker.
 - Post-bash checkpoint is the primary intervention source lane. When the
   recovered bundle earns a live intervention block, Codex should emit that
   visible block in hook `systemMessage` and duplicate the full

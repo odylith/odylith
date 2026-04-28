@@ -233,6 +233,15 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["B-101", "next", "--from-release", "current"],
     },
     {
+        "path": ("release", "migration-gate"),
+        "argv": lambda root: ["release", "migration-gate", f"--repo-root={root}", "--target-version", "0.1.12", "--json"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "migration-gate"
+        and getattr(args, "target_version", "") == "0.1.12"
+        and bool(getattr(args, "json", False)),
+    },
+    {
         "path": ("compass", "log"),
         "argv": lambda root: ["compass", "log", f"--repo-root={root}"],
         "handler": "_cmd_compass_log",

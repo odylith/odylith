@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-27
+Last updated (UTC): 2026-04-28
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-134 | 2026-04-27 | Upgrade reviewability still needs generated change manifest and lock compaction | P2 | odylith | Open | [2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md](2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md) |
 | CB-126 | 2026-04-25 | Benchmark tree identity fix regrows oversized runner hotfile failure | P2 | benchmark | Open | [2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md](2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md) |
 | CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Resolved | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
 | CB-120 | 2026-04-16 | Dashboard shell diagnostic cockpit leaked into product render | P1 | dashboard | Resolved | [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md) |
@@ -196,6 +197,13 @@ Last updated (UTC): 2026-04-27
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-133 | 2026-04-27 | Upgrade lifecycle output is not an auditable transaction | P1 | release | Closed | [2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md](2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md) |
+| CB-132 | 2026-04-27 | Starter guide first run layout buries the primary action | P1 | dashboard | Closed | [2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md](2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md) |
+| CB-131 | 2026-04-27 | Starter guide can reopen closed on same path reinstall | P1 | dashboard | Closed | [2026-04-27-starter-guide-can-reopen-closed-on-same-path-reinstall.md](2026-04-27-starter-guide-can-reopen-closed-on-same-path-reinstall.md) |
+| CB-135 | 2026-04-27 | Scattered migration logic makes upgrade state non authoritative | P0 | migration-runtime | Closed | [2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md](2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md) |
+| CB-128 | 2026-04-27 | Odylith show can treat managed install assets as repo source | P2 | odylith | Closed | [2026-04-27-odylith-show-can-treat-managed-install-assets-as-repo-source.md](2026-04-27-odylith-show-can-treat-managed-install-assets-as-repo-source.md) |
+| CB-130 | 2026-04-27 | Codex show me prompt can answer with hand written odylith demonstration summary | P2 | odylith-chatter | Closed | [2026-04-27-codex-show-me-prompt-can-answer-with-hand-written-odylith-demonstration-summary.md](2026-04-27-codex-show-me-prompt-can-answer-with-hand-written-odylith-demonstration-summary.md) |
+| CB-129 | 2026-04-27 | Claude show me prompt can answer as generic claude code instead of odylith show | P2 | odylith-chatter | Closed | [2026-04-27-claude-show-me-prompt-can-answer-as-generic-claude-code-instead-of-odylith-show.md](2026-04-27-claude-show-me-prompt-can-answer-as-generic-claude-code-instead-of-odylith-show.md) |
 | CB-127 | 2026-04-25 | Cli help stdout can trigger out of context odylith observation | P1 | governance-intervention-engine | Closed | [2026-04-25-cli-help-stdout-can-trigger-out-of-context-odylith-observation.md](2026-04-25-cli-help-stdout-can-trigger-out-of-context-odylith-observation.md) |
 | CB-125 | 2026-04-25 | Benchmark proof identity includes mutable ignored runtime aliases | P1 | benchmark | Closed | [2026-04-25-benchmark-proof-identity-includes-mutable-ignored-runtime-aliases.md](2026-04-25-benchmark-proof-identity-includes-mutable-ignored-runtime-aliases.md) |
 | CB-124 | 2026-04-24 | Benchmark disposable worktrees resolve validators against a non benchmark ready | P1 | benchmark | Closed | [2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md](2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md) |

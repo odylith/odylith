@@ -109,6 +109,11 @@ def test_show_me_prompt_guard_routes_first_demo_without_launcher(tmp_path: Path)
     payload = json.loads(completed.stdout)
     additional_context = payload["hookSpecificOutput"]["additionalContext"]
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "route lock" in additional_context
+    assert "must not answer as generic Claude Code" in additional_context
+    assert "list Claude tool, skill, or memory inventories" in additional_context
+    assert "list repository files" in additional_context
+    assert "report branch cleanliness" in additional_context
     assert "odylith-show-me" in additional_context
     assert "PYTHONPATH=src python -m odylith.cli show --repo-root ." not in additional_context
     assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
@@ -116,6 +121,25 @@ def test_show_me_prompt_guard_routes_first_demo_without_launcher(tmp_path: Path)
     assert "capture stdout only" in additional_context
     assert "`intervention-status`, `visible-intervention`" in additional_context
     assert "launcher-state explanations" in additional_context
+    assert "shortest actionable Odylith show blocker" in additional_context
+
+
+def test_show_me_prompt_guard_routes_lowercase_comma_demo(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    completed = _run_hook(
+        "show-me-prompt-guard.py",
+        repo_root,
+        payload={"prompt": "odylith, show me what you can do"},
+    )
+
+    assert completed.returncode == 0
+    payload = json.loads(completed.stdout)
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith show-me first-match route lock" in additional_context
+    assert "must not answer as generic Claude Code" in additional_context
+    assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
 
 
 def test_show_me_prompt_guard_routes_help_without_diagnostics(tmp_path: Path) -> None:
@@ -133,7 +157,8 @@ def test_show_me_prompt_guard_routes_help_without_diagnostics(tmp_path: Path) ->
     payload = json.loads(completed.stdout)
     additional_context = payload["hookSpecificOutput"]["additionalContext"]
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert "Odylith help first-match route" in additional_context
+    assert "Odylith help first-match route lock" in additional_context
+    assert "not generic Claude capabilities" in additional_context
     assert "`./.odylith/bin/odylith --help`" in additional_context
     assert "`odylith --help`" in additional_context
     assert "`start`, `show`, `doctor`, `version`" in additional_context

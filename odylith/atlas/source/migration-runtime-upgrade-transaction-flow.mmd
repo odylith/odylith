@@ -1,0 +1,24 @@
+flowchart TB
+    operator["Operator command<br/>install / upgrade / reinstall / doctor / release migration-gate"]
+    resolver["Resolve target release<br/>version, manifest, schema, verification inputs"]
+    classifier["Repo scenario classifier<br/>pin, launcher, state, runtime pointer, ledger, source-local, legacy roots"]
+    registry["Migration registry<br/>MigrationDefinition contracts"]
+    planner["MigrationPlan<br/>selected, skipped, blocked, satisfied-unrecorded, ledger-stale"]
+    dryrun["Dry-run and JSON report<br/>scenario, write set, rollback scope, plan fingerprint"]
+    apply["Upgrade/apply execution<br/>uses the same plan"]
+    ledger["Durable migration ledger<br/>predicate evidence, planned/actual writes, verification"]
+    doctor["Doctor observability<br/>pending, blocked, stale, repair-only cleanup"]
+    gate["Release migration gate<br/>manifest coverage, fixtures, bypass scan"]
+    block["Fail closed before runtime mutation"]
+    surfaces["Post-upgrade surfaces<br/>dashboard refresh is separate from migration"]
+
+    operator --> resolver --> classifier --> registry --> planner
+    planner --> dryrun
+    planner --> apply
+    planner --> doctor
+    planner --> gate
+    planner -->|"blocked or ledger_stale"| block
+    apply -->|"selected automatic migration"| ledger
+    apply -->|"satisfied_unrecorded"| ledger
+    apply --> surfaces
+    gate -->|"missing definition, missing fixture, direct bypass"| block

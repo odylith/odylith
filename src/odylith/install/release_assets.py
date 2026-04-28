@@ -96,6 +96,9 @@ class ReleaseInfo:
 @dataclass(frozen=True)
 class SigstoreVerificationResult:
     warnings_suppressed: bool = False
+    warning_count: int = 0
+    warning_summaries: tuple[str, ...] = ()
+    verification_degraded: bool = False
 
 
 @dataclass(frozen=True)
@@ -260,6 +263,21 @@ def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") 
     )
 
 
+def fetch_release_manifest(*, repo_root: str | Path, repo: str, release: ReleaseInfo) -> dict[str, Any]:
+    """Fetch the release manifest without staging assets, for auditable dry-run plans."""
+    try:
+        manifest_asset = release.assets["release-manifest.json"]
+    except KeyError as exc:
+        raise ValueError(f"release manifest asset missing for {release.tag}") from exc
+    _validate_release_asset_url(repo_root=repo_root, url=manifest_asset.download_url)
+    with _urlopen_release_url(manifest_asset.download_url, timeout=_URL_TIMEOUT_SECONDS) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("release manifest must be a JSON object")
+    _validate_manifest(manifest=payload, release=release, repo=repo)
+    return payload
+
+
 def download_verified_release(*, repo_root: str | Path, repo: str, version: str = "latest") -> VerifiedRelease:
     release = fetch_release(repo_root=repo_root, repo=repo, version=version)
     runtime_platform = require_managed_runtime_platform()
@@ -383,6 +401,10 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
         "runtime_bundle_sha256": runtime_bundle_sha256,
         "sbom_sha256": _sha256_file(sbom_path),
         "signer_identity": expected_signer_identity(repo=repo),
+        "sigstore_warning_count": _sigstore_warning_count(verification_results),
+        "sigstore_warning_status": _sigstore_warning_status(verification_results),
+        "sigstore_warning_summaries": _sigstore_warning_summaries(verification_results),
+        "sigstore_verification_degraded": _sigstore_verification_degraded(verification_results),
         "wheel_sha256": wheel_sha256,
     }
     return VerifiedRelease(
@@ -502,6 +524,10 @@ def download_verified_feature_pack(
         "runtime_bundle_platform": runtime_platform.slug,
         "sbom_sha256": _sha256_file(sbom_path),
         "signer_identity": expected_signer_identity(repo=repo),
+        "sigstore_warning_count": _sigstore_warning_count(verification_results),
+        "sigstore_warning_status": _sigstore_warning_status(verification_results),
+        "sigstore_warning_summaries": _sigstore_warning_summaries(verification_results),
+        "sigstore_verification_degraded": _sigstore_verification_degraded(verification_results),
     }
     return VerifiedFeaturePack(
         asset_name=feature_pack_asset.name,
@@ -556,7 +582,12 @@ def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_pat
         return SigstoreVerificationResult(warnings_suppressed=False)
     stderr_lines = _fold_sigstore_warning_lines(stderr)
     if all(_is_benign_sigstore_warning(line) for line in stderr_lines):
-        return SigstoreVerificationResult(warnings_suppressed=True)
+        return SigstoreVerificationResult(
+            warnings_suppressed=True,
+            warning_count=len(stderr_lines),
+            warning_summaries=tuple(_sigstore_warning_summary(line) for line in stderr_lines),
+            verification_degraded=False,
+        )
     print(stderr, file=sys.stderr)
     return SigstoreVerificationResult(warnings_suppressed=False)
 
@@ -585,12 +616,51 @@ def _normalize_sigstore_result(result: SigstoreVerificationResult | None) -> Sig
     return SigstoreVerificationResult(warnings_suppressed=False)
 
 
+def _sigstore_warning_summary(line: str) -> str:
+    normalized = re.sub(r"\s+", " ", str(line or "").strip())
+    if re.search(r"unsupported(?:\s+\S+:\d+)?\s+key type:\s*7", normalized, re.IGNORECASE):
+        return (
+            "unsupported trusted root key type 7 "
+            "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)"
+        )
+    if re.search(r"\btuf\b.*\boffline\b|\boffline\b.*\btuf\b", normalized, re.IGNORECASE):
+        return "TUF offline-mode notice (severity=notice; verification_degraded=false)"
+    return normalized
+
+
+def _sigstore_warning_count(results: list[SigstoreVerificationResult]) -> int:
+    return sum(result.warning_count or (1 if result.warnings_suppressed else 0) for result in results)
+
+
+def _sigstore_warning_summaries(results: list[SigstoreVerificationResult]) -> list[str]:
+    summaries: list[str] = []
+    for result in results:
+        for summary in result.warning_summaries:
+            token = str(summary).strip()
+            if token and token not in summaries:
+                summaries.append(token)
+    return summaries
+
+
+def _sigstore_warning_status(results: list[SigstoreVerificationResult]) -> str:
+    return "suppressed_non_fatal" if any(result.warnings_suppressed for result in results) else "none"
+
+
+def _sigstore_verification_degraded(results: list[SigstoreVerificationResult]) -> bool:
+    return any(result.verification_degraded for result in results)
+
+
 def _emit_sigstore_success_notice(results: list[SigstoreVerificationResult], *, context: str) -> None:
     suppressed_count = sum(1 for result in results if result.warnings_suppressed)
     if suppressed_count <= 0:
         return
+    summaries = _sigstore_warning_summaries(results)
+    detail = f" Details: {'; '.join(summaries)}." if summaries else ""
     print(
-        f"Sigstore verification succeeded for the {context} assets; suppressed {suppressed_count} expected non-fatal warning stream(s)."
+        "Trust notice: Sigstore verification succeeded for the "
+        f"{context} assets; suppressed {suppressed_count} expected non-fatal warning stream(s). "
+        "Final verification stayed valid because identity, issuer, provenance, SBOM, and sha256 checks passed."
+        f"{detail}"
     )
 
 

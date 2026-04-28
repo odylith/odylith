@@ -173,6 +173,9 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     registry_path = tmp_path / "odylith" / "registry" / "source" / "component_registry.v1.json"
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
     entry = registry["components"][0]
+    assert entry["category"] == "governance_engine"
+    assert entry["qualification"] == "candidate"
+    assert entry["sources"] == ["manifest"]
     assert entry["what_it_is"] == (
         "Logical component registered through `odylith component register` "
         "with `src/odylith/runtime/governance` as its initial evidence anchor."

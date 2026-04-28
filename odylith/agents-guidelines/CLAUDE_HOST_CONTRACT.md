@@ -195,6 +195,16 @@
   teaser as plain stdout when the host exposes it. JSON additional context is
   discreet model context and now carries an assistant-render fallback so the
   next assistant message can speak the teaser if the host hides hook output.
+- Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
+  first-match route locks, not requests for generic Claude Code capabilities.
+  The `show-me-prompt-guard.py` `UserPromptSubmit` hook must forbid generic
+  Claude identity answers, Claude tool, skill, and memory lists, docs or
+  repository-file inspection, branch-cleanliness reports, and follow-up
+  questions. Claude must run the first available repo-root command, return
+  stdout only, or report the shortest actionable Odylith blocker. The generated `.claude/settings.json`
+  allowlist must include `Bash(./.odylith/bin/odylith show:*)` and
+  `Bash(./.odylith/bin/odylith --help:*)` so the route is executable without a
+  detour through host capability prose.
 - `PostToolUse` is the primary intervention source lane. When the recovered
   bundle earns a live intervention block, Claude should emit that visible
   block through hook `systemMessage` and carry the full

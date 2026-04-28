@@ -1,5 +1,5 @@
 ---
 name: odylith-show-me
-description: Show what Odylith can do for this repo by analyzing it and returning the clean advisory demo output.
+description: Use when the operator asks what Odylith can do for a repo, requests an advisory repo demo, or asks for the clean scenario-aware show-me output.
 ---
 @../../../odylith/skills/odylith-show-me/SKILL.md

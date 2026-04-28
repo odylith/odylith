@@ -1027,6 +1027,33 @@
       ],
       "subcomponents": [],
       "product_layer": "intelligence"
+    },
+    {
+      "component_id": "migration-runtime",
+      "name": "Migration Runtime",
+      "kind": "library",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [],
+      "path_prefixes": [
+        "src/odylith/install/migration_runtime.py"
+      ],
+      "workstreams": [
+        "B-127"
+      ],
+      "diagrams": [
+        "D-042"
+      ],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Install-owned migration planning, ledger, doctor-observability, and release-gate runtime for Odylith install and upgrade paths.",
+      "why_tracked": "Keeps release migration behavior authoritative and auditable so dry-run, apply, reinstall, doctor, and release gates cannot derive migration state independently.",
+      "spec_ref": "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "subcomponents": [],
+      "product_layer": "cli_bootstrap"
     }
   ]
 }

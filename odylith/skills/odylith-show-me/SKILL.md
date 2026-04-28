@@ -7,6 +7,12 @@ exploration request. Works identically on Claude Code and Codex.
 Do not use this skill for `Odylith, help`. That request should route directly
 to the CLI help output and print stdout only.
 
+This is a first-match route lock. If you have not run a show command and
+captured stdout, do not answer. Never replace `odylith show` stdout with a
+hand-written "here's what Odylith demonstrated" summary, install diagnosis,
+dirty-path analysis, impact-packet recap, module-count scan, tmp-clone warning,
+spawn-policy note, or follow-up question.
+
 1. Run the first available show command and capture stdout only:
    - Installed or dogfood repo with launcher:
      `./.odylith/bin/odylith show --repo-root .`
@@ -21,9 +27,8 @@ to the CLI help output and print stdout only.
    from stderr. If every show command fails, report only the shortest actionable
    blocker.
 4. Print the full stdout directly in your response as-is. Do not summarize,
-   reformat, or wrap it in a code block. The output is already written in
-   plain English and should be shown verbatim so the operator sees exactly
-   what Odylith said.
+   diagnose, reformat, or wrap it in a code block. Do not add bullets before
+   or after it. The scenario-aware output is already written as a trust-first action report with a short mental-model line and should be shown verbatim so the operator sees exactly what Odylith said.
 5. If the operator wants to create everything at once, run the same selected
    command with `--apply`, for example
    `./.odylith/bin/odylith show --repo-root . --apply`.

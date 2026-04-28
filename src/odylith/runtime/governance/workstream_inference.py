@@ -282,6 +282,8 @@ def _is_generated_or_global_token(token: str) -> bool:
     normalized = str(token or "").strip().lower()
     if not normalized:
         return True
+    if normalized == ".ds_store" or normalized.endswith("/.ds_store"):
+        return True
     if _is_generated_or_global_bundle_source_mirror(normalized):
         return True
     if _is_global_coordination_token(normalized):

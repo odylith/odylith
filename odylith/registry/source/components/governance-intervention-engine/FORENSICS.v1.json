@@ -9,10 +9,10 @@
     "empty_reasons": [],
     "explicit_event_count": 111,
     "mapped_workstream_evidence_count": 90,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 29,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 111
+    "timeline_event_count": 112
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -37,6 +37,28 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "claude/settings.json",
+        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+        "src/odylith/bundle/assets/project-root/.claude/settings.json",
+        "src/odylith/runtime/common/claude_cli_capabilities.py",
+        "src/odylith/runtime/intervention_engine/fact_producer_runtime.py",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py"
+      ],
+      "confidence": "high",
+      "event_index": 378,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "governance-intervention-engine"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: claude/settings.json, odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md +5 more",
+      "ts_iso": "2026-04-27T13:13:46-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

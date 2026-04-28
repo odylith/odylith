@@ -1,6 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-04-26
+Last updated (UTC): 2026-04-27
 ## Active Plans
 
 | Plan | Status | Created | Updated | Backlog |
@@ -30,6 +30,7 @@ Last updated (UTC): 2026-04-26
 | `odylith/technical-plans/in-progress/2026-04/2026-04-12-benchmark-full-product-contract-live-lane-fairness-and-real-world-corpus-hardening.md` | In progress | 2026-04-12 | 2026-04-12 | `B-093` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md` | In progress | 2026-04-15 | 2026-04-15 | `B-097` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md` | In progress | 2026-04-18 | 2026-04-18 | `B-126` |
+| `odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md` | In progress | 2026-04-27 | 2026-04-27 | `B-127` |
 
 ## Parked Plans
 

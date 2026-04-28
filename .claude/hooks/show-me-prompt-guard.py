@@ -59,25 +59,28 @@ def _is_help_prompt(prompt: object) -> bool:
 def _additional_context(project_dir: Path) -> str:
     del project_dir
     return (
-        "Odylith show-me first-match route: this prompt asks for the advisory "
-        "`odylith show` repo-capability demo, not install, runtime, intervention, "
-        "or visibility diagnostics. Prefer the `odylith-show-me` skill if it is "
-        "available. If the skill is not available, run the first command that works "
-        "from the repo root and capture stdout only: "
+        "Odylith show-me first-match route lock: this prompt asks for the advisory "
+        "`odylith show` repo-capability demo. You must not answer as generic Claude "
+        "Code, list Claude tool, skill, or memory inventories, inspect docs, list "
+        "repository files, "
+        "report branch cleanliness, or ask what the user wants. Use the "
+        "`odylith-show-me` skill if it is available. Otherwise run the first command "
+        "that works from the repo root and capture stdout only: "
         "`./.odylith/bin/odylith show --repo-root .`; "
         "`odylith show --repo-root .`. Return that stdout directly. Do not run "
         "`start`, `doctor`, `version`, `intervention-status`, `visible-intervention`, "
         "host compatibility checks, or launcher-state explanations unless the user "
-        "explicitly asks for diagnostics."
+        "explicitly asks for diagnostics. If neither command can run, report only "
+        "the shortest actionable Odylith show blocker."
     )
 
 
 def _help_additional_context(project_dir: Path) -> str:
     del project_dir
     return (
-        "Odylith help first-match route: this prompt asks for the CLI help surface, "
-        "not install, runtime, intervention, launcher, or repo diagnosis. Run the "
-        "first command that works from the repo root and capture stdout only: "
+        "Odylith help first-match route lock: this prompt asks for the CLI help surface, "
+        "not generic Claude capabilities, install, runtime, intervention, launcher, or "
+        "repo diagnosis. Run the first command that works from the repo root and capture stdout only: "
         "`./.odylith/bin/odylith --help`; `odylith --help`. Return that stdout "
         "directly. Do not run `start`, `show`, `doctor`, `version`, "
         "`intervention-status`, `visible-intervention`, host compatibility checks, "

@@ -3181,7 +3181,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -3193,6 +3193,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -4124,7 +4125,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4136,6 +4137,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -4232,7 +4234,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4244,6 +4246,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -4338,7 +4341,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4350,6 +4353,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -4482,7 +4486,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4494,6 +4498,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -4598,7 +4603,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4610,6 +4615,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -4823,7 +4829,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4835,6 +4841,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -4931,7 +4938,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -4943,6 +4950,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -5177,7 +5185,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -5189,6 +5197,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -6715,7 +6724,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -6727,6 +6736,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -6805,7 +6815,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -6817,6 +6827,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -6895,7 +6906,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -6907,6 +6918,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -6985,7 +6997,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -6997,6 +7009,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -7075,7 +7088,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -7087,6 +7100,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -7165,7 +7179,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -7177,6 +7191,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -7255,7 +7270,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -7267,6 +7282,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -7345,7 +7361,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -7357,6 +7373,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -7435,7 +7452,7 @@
       "active_release_id": "release-0-1-12",
       "active_release": {
         "release_id": "release-0-1-12",
-        "status": "planning",
+        "status": "active",
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
@@ -7447,6 +7464,7 @@
         "shipped_utc": "",
         "closed_utc": "",
         "aliases": [
+          "current",
           "next"
         ],
         "active_workstreams": [
@@ -7503,7 +7521,7 @@
   "releases": [
     {
       "release_id": "release-0-1-11",
-      "status": "active",
+      "status": "shipped",
       "version": "0.1.11",
       "tag": "v0.1.11",
       "name": "",
@@ -7512,11 +7530,9 @@
       "display_label": "0.1.11",
       "notes": "",
       "created_utc": "2026-04-08",
-      "shipped_utc": "",
+      "shipped_utc": "2026-04-27",
       "closed_utc": "",
-      "aliases": [
-        "current"
-      ],
+      "aliases": [],
       "active_workstreams": [],
       "completed_workstreams": [
         "B-061",
@@ -7557,13 +7573,13 @@
         "B-117"
       ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-      "terminal": false,
+      "terminal": true,
       "active_workstream_count": 0,
       "completed_workstream_count": 36
     },
     {
       "release_id": "release-0-1-12",
-      "status": "planning",
+      "status": "active",
       "version": "0.1.12",
       "tag": "v0.1.12",
       "name": "",
@@ -7575,6 +7591,7 @@
       "shipped_utc": "",
       "closed_utc": "",
       "aliases": [
+        "current",
         "next"
       ],
       "active_workstreams": [
@@ -7606,68 +7623,8 @@
   ],
   "release_aliases": {
     "current": {
-      "release_id": "release-0-1-11",
-      "status": "active",
-      "version": "0.1.11",
-      "tag": "v0.1.11",
-      "name": "",
-      "inherited_name": "Governed Execution Goes Multi-Host",
-      "effective_name": "0.1.11",
-      "display_label": "0.1.11",
-      "notes": "",
-      "created_utc": "2026-04-08",
-      "shipped_utc": "",
-      "closed_utc": "",
-      "aliases": [
-        "current"
-      ],
-      "active_workstreams": [],
-      "completed_workstreams": [
-        "B-061",
-        "B-062",
-        "B-063",
-        "B-066",
-        "B-067",
-        "B-068",
-        "B-069",
-        "B-072",
-        "B-073",
-        "B-074",
-        "B-075",
-        "B-076",
-        "B-077",
-        "B-078",
-        "B-079",
-        "B-082",
-        "B-096",
-        "B-099",
-        "B-100",
-        "B-101",
-        "B-102",
-        "B-103",
-        "B-104",
-        "B-105",
-        "B-106",
-        "B-107",
-        "B-108",
-        "B-109",
-        "B-110",
-        "B-111",
-        "B-112",
-        "B-113",
-        "B-114",
-        "B-115",
-        "B-116",
-        "B-117"
-      ],
-      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-      "terminal": false,
-      "active_workstream_count": 0,
-      "completed_workstream_count": 36
-    },
-    "next": {
       "release_id": "release-0-1-12",
-      "status": "planning",
+      "status": "active",
       "version": "0.1.12",
       "tag": "v0.1.12",
       "name": "",
@@ -7679,6 +7636,50 @@
       "shipped_utc": "",
       "closed_utc": "",
       "aliases": [
+        "current",
+        "next"
+      ],
+      "active_workstreams": [
+        "B-070",
+        "B-083",
+        "B-084",
+        "B-085",
+        "B-087",
+        "B-088",
+        "B-092",
+        "B-093",
+        "B-097",
+        "B-118",
+        "B-119",
+        "B-120",
+        "B-121",
+        "B-122",
+        "B-123",
+        "B-124",
+        "B-125",
+        "B-126"
+      ],
+      "completed_workstreams": [],
+      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "terminal": false,
+      "active_workstream_count": 18,
+      "completed_workstream_count": 0
+    },
+    "next": {
+      "release_id": "release-0-1-12",
+      "status": "active",
+      "version": "0.1.12",
+      "tag": "v0.1.12",
+      "name": "",
+      "inherited_name": "",
+      "effective_name": "0.1.12",
+      "display_label": "0.1.12",
+      "notes": "",
+      "created_utc": "2026-04-09",
+      "shipped_utc": "",
+      "closed_utc": "",
+      "aliases": [
+        "current",
         "next"
       ],
       "active_workstreams": [
@@ -7709,68 +7710,8 @@
     }
   },
   "current_release": {
-    "release_id": "release-0-1-11",
-    "status": "active",
-    "version": "0.1.11",
-    "tag": "v0.1.11",
-    "name": "",
-    "inherited_name": "Governed Execution Goes Multi-Host",
-    "effective_name": "0.1.11",
-    "display_label": "0.1.11",
-    "notes": "",
-    "created_utc": "2026-04-08",
-    "shipped_utc": "",
-    "closed_utc": "",
-    "aliases": [
-      "current"
-    ],
-    "active_workstreams": [],
-    "completed_workstreams": [
-      "B-061",
-      "B-062",
-      "B-063",
-      "B-066",
-      "B-067",
-      "B-068",
-      "B-069",
-      "B-072",
-      "B-073",
-      "B-074",
-      "B-075",
-      "B-076",
-      "B-077",
-      "B-078",
-      "B-079",
-      "B-082",
-      "B-096",
-      "B-099",
-      "B-100",
-      "B-101",
-      "B-102",
-      "B-103",
-      "B-104",
-      "B-105",
-      "B-106",
-      "B-107",
-      "B-108",
-      "B-109",
-      "B-110",
-      "B-111",
-      "B-112",
-      "B-113",
-      "B-114",
-      "B-115",
-      "B-116",
-      "B-117"
-    ],
-    "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-    "terminal": false,
-    "active_workstream_count": 0,
-    "completed_workstream_count": 36
-  },
-  "next_release": {
     "release_id": "release-0-1-12",
-    "status": "planning",
+    "status": "active",
     "version": "0.1.12",
     "tag": "v0.1.12",
     "name": "",
@@ -7782,6 +7723,50 @@
     "shipped_utc": "",
     "closed_utc": "",
     "aliases": [
+      "current",
+      "next"
+    ],
+    "active_workstreams": [
+      "B-070",
+      "B-083",
+      "B-084",
+      "B-085",
+      "B-087",
+      "B-088",
+      "B-092",
+      "B-093",
+      "B-097",
+      "B-118",
+      "B-119",
+      "B-120",
+      "B-121",
+      "B-122",
+      "B-123",
+      "B-124",
+      "B-125",
+      "B-126"
+    ],
+    "completed_workstreams": [],
+    "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+    "terminal": false,
+    "active_workstream_count": 18,
+    "completed_workstream_count": 0
+  },
+  "next_release": {
+    "release_id": "release-0-1-12",
+    "status": "active",
+    "version": "0.1.12",
+    "tag": "v0.1.12",
+    "name": "",
+    "inherited_name": "",
+    "effective_name": "0.1.12",
+    "display_label": "0.1.12",
+    "notes": "",
+    "created_utc": "2026-04-09",
+    "shipped_utc": "",
+    "closed_utc": "",
+    "aliases": [
+      "current",
       "next"
     ],
     "active_workstreams": [
@@ -10199,11 +10184,12 @@
       "type": "release",
       "label": "0.1.12",
       "release_id": "release-0-1-12",
-      "status": "planning",
+      "status": "active",
       "version": "0.1.12",
       "tag": "v0.1.12",
       "name": "0.1.12",
       "aliases": [
+        "current",
         "next"
       ],
       "file": "odylith/radar/source/releases/releases.v1.json"
@@ -14210,5 +14196,5 @@
     "warning_count": 5,
     "warning_item_count": 5
   },
-  "generated_utc": "2026-04-26 22:58:07Z"
+  "generated_utc": "2026-04-27 20:31:02Z"
 }

@@ -76,8 +76,8 @@ def _build_registry_entry(
         "component_id": component_id,
         "name": label,
         "kind": kind,
-        "category": "detected",
-        "qualification": "detected",
+        "category": "governance_engine",
+        "qualification": "candidate",
         "aliases": [],
         "path_prefixes": [path] if path else [],
         "workstreams": [],
@@ -93,8 +93,9 @@ def _build_registry_entry(
             "path prefixes seed evidence and can be tightened as the contract becomes clearer."
         ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
-        "sources": ["detected"],
+        "sources": ["manifest"],
         "subcomponents": [],
+        "product_layer": "cli_bootstrap",
     }
 
 

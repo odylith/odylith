@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.install import manager
+from odylith.install.gitignore_rules import ensure_odylith_gitignore_entry
 
 
 def test_manager_bootstrap_assets_live_in_support_owner() -> None:
@@ -16,7 +17,7 @@ def test_manager_bootstrap_assets_live_in_support_owner() -> None:
 
 
 def test_ensure_odylith_gitignore_entry_writes_all_local_state_rules(tmp_path: Path) -> None:
-    updated = manager._ensure_odylith_gitignore_entry(repo_root=tmp_path)  # noqa: SLF001
+    updated = ensure_odylith_gitignore_entry(repo_root=tmp_path)
 
     assert updated is True
     text = (tmp_path / ".gitignore").read_text(encoding="utf-8")
@@ -28,7 +29,7 @@ def test_ensure_odylith_gitignore_entry_backfills_refresh_state_rule(tmp_path: P
     path = tmp_path / ".gitignore"
     path.write_text("/.odylith/\n", encoding="utf-8")
 
-    updated = manager._ensure_odylith_gitignore_entry(repo_root=tmp_path)  # noqa: SLF001
+    updated = ensure_odylith_gitignore_entry(repo_root=tmp_path)
 
     assert updated is True
     lines = path.read_text(encoding="utf-8").splitlines()
@@ -45,7 +46,7 @@ def test_ensure_odylith_gitignore_entry_is_noop_when_rules_already_present(tmp_p
         encoding="utf-8",
     )
 
-    updated = manager._ensure_odylith_gitignore_entry(repo_root=tmp_path)  # noqa: SLF001
+    updated = ensure_odylith_gitignore_entry(repo_root=tmp_path)
 
     assert updated is False
     assert path.read_text(encoding="utf-8") == (

@@ -371,6 +371,8 @@ _BAKED_HOOK_DEFAULT_PERMISSIONS_ALLOWLIST: tuple[str, ...] = (
     "Bash(./.odylith/bin/odylith start:*)",
     "Bash(./.odylith/bin/odylith context:*)",
     "Bash(./.odylith/bin/odylith query:*)",
+    "Bash(./.odylith/bin/odylith show:*)",
+    "Bash(./.odylith/bin/odylith --help:*)",
     "Bash(./.odylith/bin/odylith version:*)",
     "Bash(./.odylith/bin/odylith doctor:*)",
     "Bash(./.odylith/bin/odylith sync:*)",

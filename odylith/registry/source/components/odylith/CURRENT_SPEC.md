@@ -260,10 +260,18 @@ Public docs should describe these commands, not direct module entrypoints.
 - `odylith version` and `odylith doctor` must report:
   `Repo role`, `Posture`, `Runtime source`, `Release eligible`,
   `Context engine mode`, and `Context engine pack`.
+- `odylith version` must label local runtime inventory as installed-local
+  state rather than remote availability; remote release eligibility belongs to
+  upgrade/check flows, not the cached-version list.
 - When a pinned managed runtime is still runnable but trust evidence has
   drifted, `odylith version` and `odylith doctor` must describe the same
   trust-degraded wrapped-runtime posture instead of letting doctor fall back to
   a generic failure summary.
+- When release verification succeeds with non-fatal trust-root warning noise,
+  `odylith version` and `odylith doctor` must surface one explicit warning
+  with severity, degraded-state, and warning-summary detail that says final
+  verification stayed valid, instead of repeating alarming raw verifier
+  streams or hiding the nuance behind a plain healthy result.
 - `odylith validate self-host-posture --mode local-runtime` validates the live
   maintainer checkout posture against the active runtime pointer.
 - `odylith validate self-host-posture --mode release --expected-tag vX.Y.Z`
@@ -282,6 +290,16 @@ Public docs should describe these commands, not direct module entrypoints.
    result, and atomically switches `.odylith/runtime/current` without rewriting
    tracked customer truth.
    The only allowed consumer-tree refresh is `odylith/agents-guidelines/`.
+   `odylith upgrade --dry-run` is a binding plan: it resolves the exact target
+   release, relation to the active runtime, release URL, published timestamp,
+   verification policy, asset digests, rollback target, planned migrations,
+   and write paths before mutation.
+   A repeated dry-run after pinned, active, last-known-good, and migration
+   markers already match the resolved target must say no mutation is planned.
+   `odylith upgrade --json` emits a machine-readable execution report, and a
+   mutating upgrade also persists that report under
+   `.odylith/runtime/logs/upgrade-<timestamp>.json` with phase timings,
+   dashboard-refresh/fallback details, verification evidence, and final state.
    `odylith upgrade --source-repo ...` is an explicit detached development
    override and always activates `source-local` rather than a repo-pinned
    release.
@@ -484,6 +502,12 @@ Public docs should describe these commands, not direct module entrypoints.
   asset name and digest.
 - Same-version upgrade must not restage the already live runtime in place.
   Safe same-version restage belongs to `odylith doctor --repo-root . --repair`.
+- Upgrade dry-run output must not list already-completed migrations or stale
+  marker paths as pending work; idempotent repeated plans are part of the
+  operator trust contract.
+- Upgrade closeout must print rollback scope and the supported rollback
+  command so operators know which parts are runtime activation, repo pin,
+  generated surfaces, or ordinary git review responsibility.
 - After successful install, upgrade, or rollback, Odylith retains only the
   active runtime, one rollback target, and the matching cached release
   payloads.
@@ -519,6 +543,12 @@ Public docs should describe these commands, not direct module entrypoints.
 - `odylith version` and `odylith doctor` must report context-engine mode and
   managed context-engine pack state in addition to repo role, posture, runtime
   source, and release eligibility.
+- `odylith doctor` must also surface local operational observability when it
+  exists: the latest persisted upgrade report, last dashboard-refresh mode and
+  timeout/freshness status, rollback target, non-fatal trust warnings, and any
+  unusually large zero-byte lock accumulation under `.odylith/locks`.
+  `odylith doctor --repair` must compact stale zero-byte lock placeholders
+  while preserving the active `install.lock` and non-empty lock files.
 - Active runtime pointers and launcher fallbacks must stay inside
   `.odylith/runtime/versions/`; Odylith must not follow drifted runtime
   pointers into arbitrary host paths.
@@ -634,6 +664,8 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Tightened that quick-update lane again so explicit truth-only selective sync slices skip the runtime governance-packet planner and broad backlog preflight when the changed paths already determine the owned surfaces, source-truth bundle mirroring stays scoped to the explicit files instead of rescanning git, and single-surface Radar/Registry/Casebook refreshes stay on the in-process runtime fast path when the local LanceDB/Tantivy backend is ready. The same-day source-local proof came back at `radar refresh: 1.78s` wall, `registry refresh: 5.03s` wall, `casebook refresh: 1.67s` warm wall, `atlas refresh --atlas-sync: 0.35s` wall, and a four-surface selective sync at `6.9s` sync-reported / `7.33s` wall while the memory backend still reported `ready: true`. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-14: Added a low-RAM-aware command-scoped `RuntimeReadSession`, one shared byte-budgeted process cache for hot runtime facts, an incremental `odylith show` import-graph manifest under `.odylith/runtime/latency-cache/`, fingerprint-gated no-op dashboard refresh reuse, and a shared Claude/Codex SessionStart stale-brief queue so repeated reads and refreshes stop widening into redundant work while the same LanceDB/Tantivy and surface-freshness invariants stay intact. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-18: Hardened the governed sync executor after B-110 QA exposed a structured-refresh return bug: callable sync steps now coerce pass/fail/queued dictionaries into explicit exit status, preserve queued refreshes as non-failures, and fail closed on malformed counters or failed structured payloads. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-27: Hardened the 0.1.12 upgrade lifecycle around CB-133 so upgrade dry-run resolves exact release metadata and digests, repeated current-target plans become no-op, `upgrade --json` writes an auditable report, version reports installed-local inventory, doctor surfaces non-fatal trust warnings, and closeout prints rollback scope. (Plan: [B-030](odylith/radar/radar.html?view=plan&workstream=B-030))
+- 2026-04-27: Split upgrade transaction reporting and doctor observability out of the oversized CLI path, added recursive lock-hygiene repair for stale `.odylith/locks` placeholders, and proved the product repo cleanup path by compacting 13,715 stale zero-byte lock placeholders before a clean doctor readout. (Plan: [B-030](odylith/radar/radar.html?view=plan&workstream=B-030); Casebook: CB-134)
 - 2026-04-14: Hardened the Codex post-bash governed-refresh lane so command-scoped selective sync stays exact under dirty worktrees, rename/move operations, shell control and redirection tails, and explicit inline `python -c` / `node -e` file-write one-liners, while Claude preserved the direct exact-path `PostToolUse` lane as the parity reference. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-14: Re-profiled the old worst-row CLI lanes on the live source-local runtime and confirmed the earlier screenshot-class latency is stale: `dashboard refresh` now measures `7.75s` cold / `0.98s` warm, `context-engine warmup` `5.00s` cold / `1.47s` warm, `show` `1.03s` cold / `0.53s` warm, `governance-slice` `0.89s`, `query` `1.45s` cold / `1.37s` warm, `context-engine query` `1.40s` cold / `1.32s` warm, and `claude session-start` `1.96s` cold / `2.14s` warm. `impact` remains the main cold-path outlier at `5.65s` cold / `1.90s` warm. (Plan: [B-091](odylith/radar/radar.html?view=plan&workstream=B-091))
 - 2026-04-14: Narrowed the repo-root Codex skill surface to explicit command shims for the high-frequency CLI lane so routine governance upkeep defaults back to `AGENTS.md`, the launcher, and truthful help instead of a mirrored specialist skill stack. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))

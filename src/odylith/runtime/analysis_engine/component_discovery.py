@@ -68,7 +68,7 @@ def discover_components_from_imports(
     test_prefixes = ("tests/", "test/", "scripts/", "spec/", "benchmark/")
     source_arts = [a for a in artifacts if not any(a.path.startswith(p) for p in test_prefixes)]
     if not source_arts:
-        source_arts = artifacts
+        return []
 
     module_prefix = _find_common_prefix(source_arts)
     component_groups = _group_into_components(source_arts, module_prefix)

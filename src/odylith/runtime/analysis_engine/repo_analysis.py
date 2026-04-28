@@ -11,9 +11,11 @@ from typing import Any, Sequence
 from odylith.runtime.analysis_engine.types import (
     ComponentSuggestion,
     DiagramSuggestion,
+    ImportArtifact,
     IssueSuggestion,
     RepoIdentity,
     ScanContext,
+    SourceSummary,
     WorkstreamSuggestion,
     slugify,
     humanize,
@@ -33,15 +35,55 @@ NOISE_DIRS = frozenset({
     ".next", ".nuxt", ".cache", ".turbo",
     "vendor", "deps", ".deps",
 })
-REPO_ROOT_SKIP = frozenset({"odylith"})
+REPO_ROOT_NOISE_DIRS = frozenset({"tmp", "temp", "scratch"})
+MANAGED_ODYLITH_ROOT = "odylith"
+SOURCE_CATEGORY_APP = "app"
+SOURCE_CATEGORY_SUPPORT = "support"
+SOURCE_CATEGORY_TEST = "test"
+SOURCE_CATEGORY_INFRA = "infra"
+SOURCE_CATEGORY_MANAGED = "managed"
+SOURCE_CATEGORY_GENERATED = "generated"
+SOURCE_CATEGORY_ROOT_NOISE = "root_noise"
+SOURCE_CATEGORY_DOCS = "docs"
+SOURCE_CATEGORY_METADATA = "metadata"
+SOURCE_CATEGORY_OTHER = "other"
+_MANAGED_ODYLITH_MARKERS = frozenset({
+    "AGENTS.md",
+    "CLAUDE.md",
+    "agents-guidelines",
+    "atlas",
+    "casebook",
+    "compass",
+    "radar",
+    "registry",
+    "release-notes",
+    "skills",
+    "surfaces",
+})
 _SOURCE_ROOTS = ("src", "lib", "packages", "apps", "services", "backend", "frontend", "server", "api", "cmd")
+_SOURCE_EXTS = frozenset({".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs", ".java", ".rb"})
 _WRAPPER_NAMES = frozenset({
     "src", "lib", "libs", "pkg", "packages", "apps", "app", "cmd",
     "internal", "modules", "main",
 })
+_TEST_DIR_NAMES = frozenset({"tests", "test", "__tests__", "spec", "specs"})
+_SUPPORT_DIR_NAMES = _TEST_DIR_NAMES | frozenset({
+    "scripts", "script", "tools", "tooling", "benchmarks", "benchmark", "fixtures", "mocks",
+})
 _INFRA_DIR_NAMES = frozenset({
     "ci", "docker", "k8s", "kubernetes", "terraform", "infra",
-    "deployment", "deploy", ".github", "migrations",
+    "deployment", "deploy", ".github", ".gitlab", ".circleci", "migrations",
+})
+_INFRA_EXTS = frozenset({".tf", ".tfvars", ".hcl", ".yaml", ".yml"})
+_DOC_EXTS = frozenset({".md", ".mdx", ".rst", ".txt", ".adoc"})
+_DOC_FILENAMES = frozenset({"readme", "readme.md", "readme.rst", "readme.txt", "changelog.md", "license"})
+_METADATA_FILENAMES = frozenset({
+    "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", "package.json",
+    "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "go.mod", "go.sum",
+    "cargo.toml", "cargo.lock", "pom.xml", "build.gradle", "gemfile",
+})
+_GENERATED_DIR_NAMES = NOISE_DIRS | frozenset({
+    "generated", "gen", ".pytest_cache", ".mypy_cache", ".ruff_cache",
 })
 
 _LABEL_PATTERNS: list[tuple[set[str], str]] = [
@@ -197,7 +239,7 @@ def discover_components_fallback(repo_root: Path, identity: RepoIdentity) -> lis
     if identity.monorepo and identity.workspace_dirs:
         return _discover_monorepo_components(repo_root, identity)
     module_root = _find_module_level(repo_root)
-    children = _source_children(module_root)
+    children = _source_children(module_root, repo_root=repo_root)
     components: list[ComponentSuggestion] = []
     for child in children[:8]:
         comp = _analyze_module(child, repo_root)
@@ -212,7 +254,7 @@ def _discover_monorepo_components(repo_root: Path, identity: RepoIdentity) -> li
     for pattern in identity.workspace_dirs:
         for match_path in sorted(glob_mod.glob(str(repo_root / pattern)))[:6]:
             match = Path(match_path)
-            if match.is_dir():
+            if match.is_dir() and not is_ignored_source_path(match, repo_root=repo_root):
                 comp = _analyze_module(match, repo_root)
                 if comp:
                     components.append(comp)
@@ -223,14 +265,14 @@ def _find_module_level(repo_root: Path) -> Path:
     source_root = None
     for name in _SOURCE_ROOTS:
         candidate = repo_root / name
-        if candidate.is_dir() and _has_source_files(candidate):
+        if candidate.is_dir() and _has_source_files(candidate, repo_root=repo_root):
             source_root = candidate
             break
     if source_root is None:
         return repo_root
     current = source_root
     for _ in range(5):
-        children = _source_children(current)
+        children = _source_children(current, repo_root=repo_root)
         if len(children) >= 2:
             return current
         if len(children) == 1:
@@ -240,26 +282,32 @@ def _find_module_level(repo_root: Path) -> Path:
     return current
 
 
-def _source_children(directory: Path) -> list[Path]:
+def _source_children(directory: Path, *, repo_root: Path | None = None) -> list[Path]:
     skip = NOISE_DIRS | {n for n in directory.parts if n.startswith(".")}
     children: list[Path] = []
     try:
         for entry in sorted(directory.iterdir(), key=lambda p: p.name.lower()):
             name = entry.name
-            if not entry.is_dir() or name.startswith(".") or name.startswith("__") or name in skip:
+            if (
+                not entry.is_dir()
+                or name.startswith(".")
+                or name.startswith("__")
+                or name in skip
+                or is_ignored_source_path(entry, repo_root=repo_root)
+            ):
                 continue
-            if _has_source_files(entry):
+            if _has_source_files(entry, repo_root=repo_root):
                 children.append(entry)
     except OSError:
         pass
     return children
 
 
-def _has_source_files(directory: Path) -> bool:
+def _has_source_files(directory: Path, *, repo_root: Path | None = None) -> bool:
     count = 0
     try:
         for entry in directory.rglob("*"):
-            if entry.is_file() and entry.suffix in {".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs", ".java", ".rb"}:
+            if entry.is_file() and source_file_role(entry, repo_root=repo_root or directory) == SOURCE_CATEGORY_APP:
                 count += 1
                 if count >= 2:
                     return True
@@ -268,17 +316,237 @@ def _has_source_files(directory: Path) -> bool:
     return count > 0
 
 
+def is_ignored_source_path(path: Path, *, repo_root: Path) -> bool:
+    """Return true when a path is tooling, generated, or managed Odylith state.
+
+    Root-level ``odylith/`` is skipped only when it looks like an installed or
+    self-governance tree. A real application package named ``odylith`` remains
+    scannable when those managed markers are absent.
+    """
+    category = classify_repo_path(path, repo_root=repo_root)
+    if category == SOURCE_CATEGORY_OTHER:
+        return path.is_file()
+    return category in {
+        SOURCE_CATEGORY_INFRA,
+        SOURCE_CATEGORY_MANAGED,
+        SOURCE_CATEGORY_GENERATED,
+        SOURCE_CATEGORY_ROOT_NOISE,
+        SOURCE_CATEGORY_DOCS,
+        SOURCE_CATEGORY_METADATA,
+    }
+
+
+def source_file_role(path: Path, *, repo_root: Path) -> str:
+    """Return the source role used by import scanning and candidate gates."""
+    category = classify_repo_path(path, repo_root=repo_root)
+    if category in {SOURCE_CATEGORY_APP, SOURCE_CATEGORY_SUPPORT, SOURCE_CATEGORY_TEST}:
+        return category
+    return ""
+
+
+def classify_repo_path(path: Path, *, repo_root: Path) -> str:
+    """Classify a repo path before `odylith show` trusts it as app source."""
+    parts = _relative_parts(path, repo_root=repo_root)
+    if not parts:
+        return SOURCE_CATEGORY_OTHER
+    name = parts[-1].lower()
+    suffix = path.suffix.lower()
+
+    if parts[0] in REPO_ROOT_NOISE_DIRS:
+        return SOURCE_CATEGORY_ROOT_NOISE
+    if _is_managed_odylith_root_path(parts, repo_root=repo_root):
+        return SOURCE_CATEGORY_MANAGED
+    if _is_infra_path(parts, suffix=suffix):
+        return SOURCE_CATEGORY_INFRA
+    if any(part in _GENERATED_DIR_NAMES for part in parts):
+        return SOURCE_CATEGORY_GENERATED
+    if any(part.startswith(".") for part in parts):
+        return SOURCE_CATEGORY_GENERATED
+    if name in _METADATA_FILENAMES:
+        return SOURCE_CATEGORY_METADATA
+    if name in _DOC_FILENAMES or suffix in _DOC_EXTS or (parts[0] == "docs"):
+        return SOURCE_CATEGORY_DOCS
+    if any(part in _TEST_DIR_NAMES for part in parts) or _looks_like_test_file(name):
+        return SOURCE_CATEGORY_TEST
+    if any(part in _SUPPORT_DIR_NAMES for part in parts):
+        return SOURCE_CATEGORY_SUPPORT if suffix in _SOURCE_EXTS else SOURCE_CATEGORY_OTHER
+    if path.is_file() and suffix in _SOURCE_EXTS:
+        return SOURCE_CATEGORY_APP
+    return SOURCE_CATEGORY_OTHER
+
+
+def summarize_source_inventory(repo_root: Path, scan_ctx: ScanContext | None = None) -> SourceSummary:
+    """Count trusted source categories for scenario-aware `odylith show` output."""
+    summary = SourceSummary()
+    try:
+        paths = list(repo_root.rglob("*"))
+    except OSError:
+        paths = []
+    for entry in paths:
+        if not entry.is_file():
+            continue
+        summary.total_files += 1
+        category = classify_repo_path(entry, repo_root=repo_root)
+        if category == SOURCE_CATEGORY_INFRA:
+            summary.infra_files += 1
+        elif category == SOURCE_CATEGORY_MANAGED:
+            summary.managed_files += 1
+        elif category == SOURCE_CATEGORY_GENERATED:
+            summary.generated_files += 1
+        elif category == SOURCE_CATEGORY_ROOT_NOISE:
+            summary.root_noise_files += 1
+        elif category == SOURCE_CATEGORY_DOCS:
+            summary.docs_files += 1
+        elif category == SOURCE_CATEGORY_METADATA:
+            summary.metadata_files += 1
+        elif category == SOURCE_CATEGORY_OTHER:
+            summary.other_files += 1
+    if scan_ctx:
+        summary.app_modules = len(scan_ctx.app_files)
+        summary.support_modules = len(scan_ctx.support_files)
+        summary.test_modules = len(scan_ctx.test_files)
+    return summary
+
+
+def build_app_boundary_suggestion(
+    repo_root: Path,
+    identity: RepoIdentity,
+    artifacts: Sequence[ImportArtifact],
+    *,
+    anchor_path: str = "",
+    label_hint: str = "",
+) -> ComponentSuggestion | None:
+    """Build one conservative component candidate from stable app-source evidence."""
+    member_paths = tuple(sorted(artifact.path for artifact in artifacts))
+    if len(member_paths) < 3:
+        return None
+    anchor = anchor_path or _common_anchor(member_paths)
+    label = _safe_component_label(repo_root, identity, anchor_path=anchor, label_hint=label_hint)
+    return ComponentSuggestion(
+        component_id=slugify(label),
+        label=label,
+        path=anchor,
+        description=f"{len(member_paths)} app source files. Stable enough to name as a governed boundary.",
+        n_modules=len(member_paths),
+        member_paths=member_paths,
+        evidence=(f"{len(member_paths)} app source files anchored at `{anchor}`",),
+        confidence="high" if len(member_paths) >= 5 else "medium",
+    )
+
+
+def discover_workspace_app_components(
+    repo_root: Path,
+    identity: RepoIdentity,
+    artifacts: Sequence[ImportArtifact],
+) -> list[ComponentSuggestion]:
+    """Suggest monorepo workspace boundaries only when each has enough app source."""
+    if not identity.monorepo or not identity.workspace_dirs:
+        return []
+    import glob as glob_mod
+
+    components: list[ComponentSuggestion] = []
+    seen_paths: set[str] = set()
+    for pattern in identity.workspace_dirs:
+        for match_path in sorted(glob_mod.glob(str(repo_root / pattern)))[:12]:
+            match = Path(match_path)
+            if not match.is_dir() or is_ignored_source_path(match, repo_root=repo_root):
+                continue
+            rel = match.relative_to(repo_root).as_posix()
+            if rel in seen_paths:
+                continue
+            workspace_artifacts = [artifact for artifact in artifacts if artifact.path.startswith(rel + "/")]
+            component = build_app_boundary_suggestion(
+                repo_root,
+                identity,
+                workspace_artifacts,
+                anchor_path=rel,
+                label_hint=match.name,
+            )
+            if component:
+                components.append(component)
+                seen_paths.add(rel)
+    return components[:8]
+
+
+def _relative_parts(path: Path, *, repo_root: Path) -> tuple[str, ...]:
+    if repo_root is None:
+        return ()
+    try:
+        return path.relative_to(repo_root).parts
+    except ValueError:
+        return ()
+
+
+def _is_infra_path(parts: tuple[str, ...], *, suffix: str) -> bool:
+    if any(part in _INFRA_DIR_NAMES for part in parts):
+        return True
+    return suffix in _INFRA_EXTS
+
+
+def _looks_like_test_file(name: str) -> bool:
+    return (
+        name.startswith("test_")
+        or name.endswith("_test.py")
+        or ".test." in name
+        or ".spec." in name
+        or name.endswith("_test.go")
+    )
+
+
+def _common_anchor(member_paths: Sequence[str]) -> str:
+    directories = [path.split("/")[:-1] for path in member_paths if path]
+    if not directories:
+        return member_paths[0] if member_paths else ""
+    common: list[str] = []
+    for column in zip(*directories):
+        first = column[0]
+        if all(part == first for part in column):
+            common.append(first)
+        else:
+            break
+    return "/".join(common) if common else member_paths[0].split("/")[0]
+
+
+def _safe_component_label(
+    repo_root: Path,
+    identity: RepoIdentity,
+    *,
+    anchor_path: str,
+    label_hint: str,
+) -> str:
+    candidates = [label_hint, *reversed(anchor_path.split("/")), identity.name, repo_root.name]
+    for raw in candidates:
+        token = str(raw or "").strip()
+        if not token:
+            continue
+        if token.lower() == "app":
+            return "Application"
+        if token.lower() in _WRAPPER_NAMES:
+            continue
+        label = humanize(slugify(token))
+        if label and label.lower() not in _WRAPPER_NAMES:
+            return label
+    return f"{humanize(slugify(identity.name or repo_root.name)) or 'Application'} App"
+
+
+def _is_managed_odylith_root_path(parts: tuple[str, ...], *, repo_root: Path) -> bool:
+    if not parts or parts[0] != MANAGED_ODYLITH_ROOT:
+        return False
+    managed_root = repo_root / MANAGED_ODYLITH_ROOT
+    return any((managed_root / marker).exists() for marker in _MANAGED_ODYLITH_MARKERS)
+
+
 def _analyze_module(directory: Path, repo_root: Path) -> ComponentSuggestion | None:
     rel_path = directory.relative_to(repo_root).as_posix()
     subdirs, source_files = [], []
     try:
         for entry in sorted(directory.iterdir(), key=lambda p: p.name.lower()):
             name = entry.name
-            if name.startswith(".") or name.startswith("__"):
+            if name.startswith(".") or name.startswith("__") or is_ignored_source_path(entry, repo_root=repo_root):
                 continue
             if entry.is_dir() and name not in NOISE_DIRS:
                 subdirs.append(name)
-            elif entry.is_file() and entry.suffix in {".py", ".ts", ".js", ".go", ".rs", ".java"}:
+            elif entry.is_file() and source_file_role(entry, repo_root=repo_root) == SOURCE_CATEGORY_APP:
                 source_files.append(entry.stem)
     except OSError:
         return None
@@ -333,7 +601,7 @@ def suggest_workstreams(
 ) -> list[WorkstreamSuggestion]:
     progress("Analyzing governance gaps...")
     workstreams: list[WorkstreamSuggestion] = []
-    repo_name = identity.name or repo_root.name
+    repo_name = display_repo_name(repo_root, identity)
     n = len(components)
 
     if n >= 2 and not governed.get("components"):
@@ -351,10 +619,11 @@ def suggest_workstreams(
                 description="Tracking coverage as a workstream ensures it lands as governed delivery.",
             ))
     if not identity.description or len(identity.description) < 30:
-        stack = ", ".join(identity.frameworks[:2]) or ", ".join(identity.languages[:2]) or "this codebase"
+        stack = ", ".join(identity.frameworks[:2]) or ", ".join(identity.languages[:2])
+        contract_target = f"{stack} contracts" if stack else "this codebase's contracts"
         workstreams.append(WorkstreamSuggestion(
             title=f"Document the {repo_name} Architecture and Component Contracts",
-            description=f"No substantive README yet. Documenting the {stack} contracts prevents knowledge loss.",
+            description=f"No substantive README yet. Documenting {contract_target} prevents knowledge loss.",
         ))
     if not _has_ci(repo_root):
         workstreams.append(WorkstreamSuggestion(
@@ -362,6 +631,15 @@ def suggest_workstreams(
             description="No CI configuration found. Release governance ensures changes are validated before merging.",
         ))
     return workstreams[:4]
+
+
+def display_repo_name(repo_root: Path, identity: RepoIdentity) -> str:
+    """Return a human repo label without leaking temp-folder noise."""
+    name = str(identity.name or repo_root.name or "").strip()
+    lowered = name.lower()
+    if lowered.startswith("tmp.") or lowered.startswith("tmp-"):
+        return "Application"
+    return name or "Application"
 
 
 def _has_ci(repo_root: Path) -> bool:

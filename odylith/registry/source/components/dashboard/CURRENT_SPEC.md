@@ -276,6 +276,11 @@ the child surfaces.
 - The bottom-right recovery dock is for global shell reopen actions such as the
   starter guide or upgrade spotlight. Do not add per-surface status reopen
   buttons there.
+- First-run Starter Guide is an activation path, not a marketing hero. It must
+  keep one primary prompt obvious, keep repo-condition notices compact and near
+  the decision they affect, and teach the Radar, Registry, Atlas, Casebook, and
+  Compass mental model in the first desktop view. Browser proof must cover the
+  normal first-run flow, a Git-missing repo, and narrow viewport fit.
 - Product dashboard DOM must not contain `system-status-shell`, legacy stat-grid
   selector families, `odylith-recorder-*`, `odylith-chart-*`, ECharts
   hydration, or legacy `odylith_drawer` rendering paths.
@@ -360,6 +365,7 @@ This section captures synchronized requirement and contract signals derived from
 ## Feature History
 - 2026-04-17: Remembered the Compass Programs card-shape contract in Dashboard governance so visible program records stay as release-like inner cards rather than borderless rows inside the outer Programs container. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))
 - 2026-04-18: Hardened dashboard refresh structured-result handling so queued child refreshes remain non-failures, failed structured refresh payloads without an explicit `rc` fail closed, and selective sync no longer crashes or falsely passes when Compass or Radar refresh actions return dictionaries. (Plan: [B-110](odylith/radar/radar.html?view=plan&workstream=B-110))
+- 2026-04-27: Reframed first-run Starter Guide as a compact activation panel with one primary prompt, compact repo-condition notices, and visible Radar/Registry/Atlas/Casebook/Compass mental model proof for 0.1.12 onboarding. (Plan: [B-030](odylith/radar/radar.html?view=plan&workstream=B-030))
 - 2026-03-26: Bound the shell host to Odylith's own product-governance records so the public repo can render and audit its own surface boundary. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-03-27: Added self-host posture payload fields so the shell can expose product-repo dogfood and release posture without inventing a second status model. (Plan: [B-004](odylith/radar/radar.html?view=plan&workstream=B-004))
 - 2026-04-07: Clarified the shell freshness contract so Compass owns its normal stale-runtime disclosure in-frame, the shell reserves status cards for failure-only or cross-surface posture, and the recovery dock no longer carries per-surface `Show status` reopen buttons. (Plan: [B-025](odylith/radar/radar.html?view=plan&workstream=B-025))

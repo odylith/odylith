@@ -3840,9 +3840,15 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
     source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
 
     traceability_payload = json.loads(traceability_path.read_text(encoding="utf-8"))
+    current_release = traceability_payload.get("current_release")
+    current_release = current_release if isinstance(current_release, dict) else {}
+    release_id = str(current_release.get("release_id") or "release-0-1-11").strip()
+    release_label = str(current_release.get("display_label") or current_release.get("version") or "0.1.11").strip()
+    release_version = str(current_release.get("version") or release_label).strip()
+    release_tag = str(current_release.get("tag") or f"v{release_version}").strip()
     traceability_payload["generated_utc"] = "2026-04-10T12:00:00Z"
     for release in traceability_payload.get("releases", []):
-        if str(release.get("release_id", "")).strip() != "release-0-1-11":
+        if str(release.get("release_id", "")).strip() != release_id:
             continue
         release["active_workstreams"] = ["B-068"]
         release["completed_workstreams"] = ["B-061", "B-062", "B-063", "B-067"]
@@ -3855,21 +3861,21 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
             row["status"] = "finished"
             row["active_release_id"] = ""
             row["active_release"] = {}
-            row["release_history_summary"] = "Removed from 0.1.11"
+            row["release_history_summary"] = f"Removed from {release_label}"
         if idea_id == "B-068":
             row["status"] = "implementation"
-            row["active_release_id"] = "release-0-1-11"
+            row["active_release_id"] = release_id
             row["active_release"] = {
-                "release_id": "release-0-1-11",
+                "release_id": release_id,
                 "status": "active",
-                "version": "0.1.11",
-                "tag": "v0.1.11",
-                "display_label": "0.1.11",
+                "version": release_version,
+                "tag": release_tag,
+                "display_label": release_label,
                 "aliases": ["current"],
                 "active_workstreams": ["B-068"],
                 "completed_workstreams": ["B-061", "B-062", "B-063", "B-067"],
             }
-            row["release_history_summary"] = "Active: 0.1.11 · Added to 0.1.11"
+            row["release_history_summary"] = f"Active: {release_label} · Added to {release_label}"
     traceability_path.write_text(json.dumps(traceability_payload, indent=2) + "\n", encoding="utf-8")
 
     assert render_compass_dashboard.main(
@@ -3892,8 +3898,8 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
     runtime_payload["release_summary"] = {
         "catalog": [
             {
-                "release_id": "release-0-1-11",
-                "display_label": "0.1.11",
+                "release_id": release_id,
+                "display_label": release_label,
                 "status": "active",
                 "aliases": ["current"],
                 "active_workstreams": ["B-067"],
@@ -3901,8 +3907,8 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
             }
         ],
         "current_release": {
-            "release_id": "release-0-1-11",
-            "display_label": "0.1.11",
+            "release_id": release_id,
+            "display_label": release_label,
             "status": "active",
             "aliases": ["current"],
             "active_workstreams": ["B-067"],
@@ -3917,13 +3923,13 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
             "title": "Context Engine Module Decomposition and Boundary Hardening",
             "status": "implementation",
             "release": {
-                "release_id": "release-0-1-11",
-                "display_label": "0.1.11",
+                "release_id": release_id,
+                "display_label": release_label,
                 "aliases": ["current"],
                 "active_workstreams": ["B-067"],
                 "completed_workstreams": ["B-061", "B-062", "B-063"],
             },
-            "release_history_summary": "Active: 0.1.11 · Added to 0.1.11",
+            "release_history_summary": f"Active: {release_label} · Added to {release_label}",
             "plan": {"progress_ratio": 0.0},
         }
     ]
@@ -3951,11 +3957,11 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
                 compass.locator("#status-banner").wait_for(timeout=15000)
                 banner_text = compass.locator("#status-banner").inner_text().strip()
-                assert "Release truth for 0.1.11 now targets B-068" in banner_text
+                assert f"Release truth for {release_label} now targets B-068" in banner_text
                 assert "B-067" in banner_text
 
                 release_section = compass.locator("#release-groups details.execution-wave-section").filter(
-                    has=compass.locator(".execution-wave-section-title", has_text="0.1.11")
+                    has=compass.locator(".execution-wave-section-title", has_text=release_label)
                 ).first
                 release_section.wait_for(timeout=15000)
                 if release_section.get_attribute("open") is None:
