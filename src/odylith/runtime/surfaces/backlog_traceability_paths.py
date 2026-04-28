@@ -23,12 +23,15 @@ TRACEABILITY_BUCKETS: tuple[str, ...] = (
 _PATH_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)\)")
 _PATH_CODE_RE = re.compile(r"`([^`\n]+)`")
 _CHECKBOX_PREFIX_RE = re.compile(r"^\[(?:x|X| )\]\s*")
+_LINE_SUFFIX_RE = re.compile(r"^(?P<path>.+?):\d+(?::\d+)?$")
+_BUCKET_LOOKUP = {label.casefold(): label for label in TRACEABILITY_BUCKETS}
 
 
 def is_traceability_section(title: str) -> bool:
     """Return whether a markdown section title is the plan traceability block."""
 
-    return str(title or "").strip().lower() == TRACEABILITY_SECTION_NAME.lower()
+    normalized = str(title or "").strip().rstrip(":").strip().lower()
+    return normalized == TRACEABILITY_SECTION_NAME.lower()
 
 
 def extract_path_tokens(text: str) -> list[str]:
@@ -37,6 +40,8 @@ def extract_path_tokens(text: str) -> list[str]:
     tokens: list[str] = []
     for match in _PATH_LINK_RE.finditer(str(text or "")):
         token = str(match.group(1)).strip()
+        if token.startswith("<") and token.endswith(">"):
+            token = token[1:-1].strip()
         if token:
             tokens.append(token)
     for match in _PATH_CODE_RE.finditer(str(text or "")):
@@ -46,10 +51,42 @@ def extract_path_tokens(text: str) -> list[str]:
     return tokens
 
 
+def _canonical_bucket(label: str) -> str:
+    candidate = str(label or "").strip().rstrip(":").strip().casefold()
+    return _BUCKET_LOOKUP.get(candidate, "")
+
+
+def _strip_path_decorators(token: str) -> str:
+    stripped = str(token or "").strip()
+    for separator in ("#", "?"):
+        stripped = stripped.split(separator, 1)[0].strip()
+    line_match = _LINE_SUFFIX_RE.fullmatch(stripped)
+    if line_match is not None:
+        stripped = str(line_match.group("path") or "").strip()
+    return stripped
+
+
 def normalize_path(*, repo_root: Path, token: str) -> str:
     """Normalize one traceability path token into a repo-relative display path."""
 
-    return backlog_rich_text.normalize_inline_repo_token(repo_root=repo_root, token=token)
+    root = Path(repo_root).resolve()
+    normalized = backlog_rich_text.normalize_inline_repo_token(
+        repo_root=root,
+        token=_strip_path_decorators(token),
+    )
+    if not normalized:
+        return ""
+    candidate = Path(normalized)
+    if candidate.is_absolute():
+        return ""
+    try:
+        relative = (root / normalized).resolve().relative_to(root)
+    except ValueError:
+        return ""
+    collapsed = relative.as_posix().strip()
+    if not collapsed or collapsed == ".":
+        return ""
+    return collapsed
 
 
 def collect_plan_paths(
@@ -73,11 +110,12 @@ def collect_plan_paths(
         stripped = str(line or "").strip()
         if stripped.startswith("### "):
             candidate = stripped[4:].strip()
-            bucket = candidate if candidate in grouped else None
+            bucket = _canonical_bucket(candidate) or None
             continue
         if bucket is None or not stripped:
             continue
-        if not stripped.lstrip().startswith("- "):
+        marker = stripped.lstrip()[:2]
+        if marker not in {"- ", "* "}:
             continue
         body = stripped.lstrip()[2:].strip()
         body = _CHECKBOX_PREFIX_RE.sub("", body).strip()

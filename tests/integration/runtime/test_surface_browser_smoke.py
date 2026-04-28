@@ -147,6 +147,32 @@ def _first_backlog_document_workstream_id(view: str) -> str:
     return str(match.group(1))
 
 
+def _load_backlog_document_shard(path: Path) -> dict[str, object]:
+    text = path.read_text(encoding="utf-8")
+    payload = text.split(" || {}, ", 1)[1].rsplit(");", 1)[0]
+    loaded = json.loads(payload)
+    assert isinstance(loaded, dict)
+    return loaded
+
+
+def _first_traceable_plan_workstream_id() -> str:
+    for path in sorted((_REPO_ROOT / "odylith" / "radar").glob("backlog-document-shard-*.v1.js")):
+        for key, raw_document in _load_backlog_document_shard(path).items():
+            html = (
+                str(raw_document.get("html", ""))
+                if isinstance(raw_document, dict)
+                else str(raw_document or "")
+            )
+            if (
+                key.startswith("plan:")
+                and 'class="trace-groups"' in html
+                and 'class="trace-link"' in html
+                and 'class="trace-link trace-link-missing"' in html
+            ):
+                return key.split(":", 1)[1]
+    raise AssertionError("expected at least one Radar plan document with existing and missing traceability cards")
+
+
 def _wait_for_radar_standalone_document(page, *, workstream_id: str, view: str, timeout: int = 15000) -> None:  # noqa: ANN001
     _wait_for_shell_query_param(page, tab="radar", key="workstream", value=workstream_id, timeout=timeout)
     _wait_for_shell_query_param(page, tab="radar", key="view", value=view, timeout=timeout)
@@ -908,6 +934,64 @@ def test_radar_plan_entrypoint_redirects_into_shell_standalone_plan_view(browser
 
     _discard_external_mermaid_cdn_failures(failed_requests)
     _discard_radar_redirect_abort_failures(failed_requests)
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_radar_plan_traceability_cards_stay_bounded_on_mobile_and_desktop(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    workstream_id = _first_traceable_plan_workstream_id()
+    page.set_viewport_size({"width": 390, "height": 844})
+
+    response = page.goto(
+        base_url + f"/odylith/index.html?tab=radar&workstream={quote(workstream_id, safe='')}&view=plan",
+        wait_until="domcontentloaded",
+    )
+    assert response is not None and response.ok
+
+    def _assert_traceability_cards_fit() -> None:
+        radar = page.frame_locator("#frame-radar")
+        radar.locator(".trace-groups").wait_for(timeout=15000)
+        assert radar.locator(".trace-group").count() >= 1
+        assert radar.locator(".trace-link").count() >= 2
+        assert radar.locator(".trace-link-missing").count() >= 1
+        trace_paths = [text.strip() for text in radar.locator(".trace-path").all_inner_texts()]
+        assert trace_paths
+        assert not [text for text in trace_paths if ".." in text or text.startswith(("http://", "https://"))]
+        style_rows = radar.locator(".trace-path").evaluate_all(
+            """nodes => nodes.map((node) => {
+              const style = window.getComputedStyle(node);
+              return {
+                overflow: style.overflow,
+                textOverflow: style.textOverflow,
+                whiteSpace: style.whiteSpace
+              };
+            })"""
+        )
+        assert style_rows
+        assert all(row["overflow"] == "hidden" for row in style_rows)
+        assert all(row["textOverflow"] == "ellipsis" for row in style_rows)
+        assert all(row["whiteSpace"] == "nowrap" for row in style_rows)
+        overflow_rows = radar.locator(".trace-link").evaluate_all(
+            """nodes => nodes
+              .map((node) => {
+                const parent = node.closest(".trace-group").getBoundingClientRect();
+                const box = node.getBoundingClientRect();
+                return {left: box.left, right: box.right, parentLeft: parent.left, parentRight: parent.right};
+              })
+              .filter((row) => row.left < row.parentLeft - 1 || row.right > row.parentRight + 1)"""
+        )
+        assert overflow_rows == []
+
+    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="plan")
+    _assert_traceability_cards_fit()
+
+    page.set_viewport_size({"width": 1440, "height": 920})
+    page.reload(wait_until="domcontentloaded")
+    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="plan")
+    _assert_traceability_cards_fit()
+
+    _discard_external_mermaid_cdn_failures(failed_requests)
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
