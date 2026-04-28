@@ -11,6 +11,7 @@ from typing import Sequence
 
 from odylith.runtime.evaluation import odylith_benchmark_graphs
 from odylith.runtime.evaluation import odylith_benchmark_runner
+from odylith.runtime.evaluation import odylith_benchmark_tree_identity as tree_identity_runtime
 
 
 _LIVE_SNAPSHOT_PATH = Path("docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md")
@@ -507,7 +508,7 @@ def _default_report_path(repo_root: Path, filename: str) -> Path:
 
 
 def _validate_selected_report(*, repo_root: Path, path: Path, report: Mapping[str, Any]) -> None:
-    if not odylith_benchmark_runner.benchmark_report_matches_current_tree(repo_root=repo_root, report=report):
+    if not tree_identity_runtime.benchmark_report_matches_current_tree(repo_root=repo_root, report=report):
         raise ValueError(
             f"benchmark publication refused `{path}` because it does not match the current repo tree identity"
         )

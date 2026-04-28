@@ -11,6 +11,7 @@ from odylith.install.manager import product_source_version
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+from odylith.runtime.evaluation import odylith_benchmark_tree_identity as tree_identity_runtime
 from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation.benchmark_snapshot_fallbacks import (
     load_release_baseline_summary,
@@ -121,7 +122,10 @@ def _eligible_release_report(report: Mapping[str, Any]) -> bool:
 
 def _resolve_candidate_summary(*, repo_root: Path) -> tuple[dict[str, Any] | None, str]:
     candidate_report = runner.load_latest_benchmark_report(repo_root=repo_root)
-    if candidate_report and runner.benchmark_report_matches_current_tree(repo_root=repo_root, report=candidate_report):
+    if candidate_report and tree_identity_runtime.benchmark_report_matches_current_tree(
+        repo_root=repo_root,
+        report=candidate_report,
+    ):
         return _summary_with_version(
             runner.compact_report_summary(candidate_report),
             product_version=_report_product_version(candidate_report),

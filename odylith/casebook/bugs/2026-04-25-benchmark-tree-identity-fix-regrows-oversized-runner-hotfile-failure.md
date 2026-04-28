@@ -1,6 +1,6 @@
 - Bug ID: CB-126
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-25
 
@@ -40,11 +40,11 @@
 
 - Root Cause: Tree identity filtering was implemented directly in odylith_benchmark_runner.py instead of a focused helper module, so a valid publication fix still violated the anti-slop hotfile contract.
 
-- Solution: Move tree identity filtering into src/odylith/runtime/evaluation/odylith_benchmark_tree_identity.py and have the runner call that focused owner.
+- Solution: Move tree identity filtering and current-tree report matching into src/odylith/runtime/evaluation/odylith_benchmark_tree_identity.py and have the runner, shard merge, publication, and compare paths call that focused owner directly.
 
 - Rollback/Forward Fix: Forward fix only; reverting would reopen CB-125 publication identity failures.
 
-- Verification: Focused hotfile and tree-identity tests passed with 9 passed; affected shard retries on head 1cfca107 passed with zero odylith_on failures; final merged proof report 44f2a3d83d2c9975 has 164 odylith_on rows and zero row failures.
+- Verification: Focused hotfile and tree-identity tests passed with 9 passed; affected shard retries on head 1cfca107 passed with zero odylith_on failures; final merged proof report 44f2a3d83d2c9975 has 164 odylith_on rows and zero row failures. The 0.1.12 cleanup pass then moved the remaining tree-identity contract out of the runner, reduced odylith_benchmark_runner.py from 8561 to 8429 LOC, and passed 355 focused benchmark, shard-merge, publication, compare, prompt-payload, corpus, and hygiene tests.
 
 - Prevention: When fixing benchmark publication logic, keep helper ownership outside the runner unless the change is truly runner control flow, and run the hotfile inventory test before rerunning proof.
 
@@ -52,7 +52,7 @@
 
 - Preflight Checks: Run tests/unit/runtime/test_hygiene.py::test_runtime_hotfile_inventory_stays_explicit_and_non_expanding with the tree-identity and publication tests before launching proof shards.
 
-- Regression Tests Added: tests/unit/runtime/test_odylith_benchmark_tree_identity.py plus the existing runtime hotfile inventory test covered the extraction boundary.
+- Regression Tests Added: tests/unit/runtime/test_odylith_benchmark_tree_identity.py plus the existing runtime hotfile inventory test covered the extraction boundary; benchmark publication, compare, shard merge, and runner tests now import the tree-identity owner instead of monkeypatching runner-local identity helpers.
 
 - Monitoring Updates: Final proof notes preserve the shard 1 and shard 12 hotfile failures as real product regressions, distinct from infra-only shard retries.
 
@@ -71,4 +71,4 @@
 
 - Runbook References: - odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md
 
-- Fix Commit/PR: 1cfca107 on branch 2026/freedom/v0.1.11
+- Fix Commit/PR: 1cfca107 on branch 2026/freedom/v0.1.11; 0.1.12 owner-completion cleanup on branch 2026/freedom/v0.1.12.

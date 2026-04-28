@@ -205,7 +205,7 @@ INTERVENTION_CONTRACT_BUNDLE_EXPECTATIONS: tuple[tuple[str, bool], ...] = (
     ),
 )
 RUNTIME_HOTFILE_LIMITS = {
-    "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": 8561,
+    "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": 8429,
     "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py": 4174,
     "src/odylith/runtime/orchestration/subagent_orchestrator.py": 3490,
     "src/odylith/runtime/surfaces/render_mermaid_catalog.py": 3346,
@@ -1108,6 +1108,41 @@ def test_benchmark_runner_uses_runtime_posture_owner_directly() -> None:
     assert "def _prime_benchmark_runtime_cache(" not in runner_text
     assert "benchmark_runtime_posture_runtime.runtime_posture_summary(" in runner_text
     assert "benchmark_runtime_posture_runtime.prime_benchmark_runtime_cache(" in runner_text
+
+
+def test_benchmark_tree_identity_has_focused_owner() -> None:
+    runner_path = ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_runner.py"
+    owner_path = (
+        ROOT
+        / "src"
+        / "odylith"
+        / "runtime"
+        / "evaluation"
+        / "odylith_benchmark_tree_identity.py"
+    )
+    owner_text = owner_path.read_text(encoding="utf-8")
+    runner_text = runner_path.read_text(encoding="utf-8")
+    assert "def benchmark_tree_identity(" in owner_text
+    assert "def benchmark_report_matches_current_tree(" in owner_text
+    assert "def report_snapshot_overlay_paths(" in owner_text
+    for fragment in (
+        "def benchmark_tree_identity(",
+        "def benchmark_report_matches_current_tree(",
+        "def _report_snapshot_overlay_paths(",
+        "def _dirty_repo_paths(",
+        "def _snapshot_overlay_fingerprint(",
+    ):
+        assert fragment not in runner_text, f"tree-identity ownership regressed into runner: {fragment}"
+    for path in (
+        runner_path,
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "benchmark_compare.py",
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_publication.py",
+        ROOT / "src" / "odylith" / "runtime" / "evaluation" / "odylith_benchmark_shard_merge.py",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert "odylith_benchmark_tree_identity" in text, path.relative_to(ROOT)
+        assert "runner.benchmark_report_matches_current_tree(" not in text
+        assert "runner.benchmark_tree_identity(" not in text
 
 
 def test_session_brief_runtime_uses_dossier_compaction_owner_directly() -> None:

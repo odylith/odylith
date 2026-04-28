@@ -17,6 +17,7 @@ from odylith.runtime.common.value_coercion import mapping_copy as _mapping
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+from odylith.runtime.evaluation import odylith_benchmark_tree_identity as tree_identity_runtime
 
 
 def _list_of_strings(value: Any) -> list[str]:
@@ -53,7 +54,7 @@ def _report_identity(report: Mapping[str, Any]) -> dict[str, Any]:
         "git_branch": str(report.get("git_branch", "")).strip(),
         "git_commit": str(report.get("git_commit", "")).strip(),
         "git_dirty": bool(report.get("git_dirty")),
-        "repo_dirty_paths": runner._dedupe_strings(  # noqa: SLF001
+        "repo_dirty_paths": tree_identity_runtime.dedupe_path_strings(
             [
                 str(token).strip()
                 for token in report.get("repo_dirty_paths", [])
@@ -530,8 +531,8 @@ def merge_shard_reports(
             candidate_mode=runner._ODYLITH_ON_MODE,  # noqa: SLF001
             latency_probes=latency_probes,
         )
-        snapshot_overlay_paths = runner._report_snapshot_overlay_paths(published_scenarios)  # noqa: SLF001
-        tree_identity = runner.benchmark_tree_identity(  # noqa: SLF001
+        snapshot_overlay_paths = tree_identity_runtime.report_snapshot_overlay_paths(published_scenarios)
+        tree_identity = tree_identity_runtime.benchmark_tree_identity(
             repo_root=root,
             selection=dict(progress_payload.get("selection", {})),
             snapshot_paths=snapshot_overlay_paths,

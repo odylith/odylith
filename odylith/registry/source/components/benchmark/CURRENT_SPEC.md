@@ -30,10 +30,10 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-04-25
+Last updated: 2026-04-28
 
 
-Last updated (UTC): 2026-04-18
+Last updated (UTC): 2026-04-28
 
 ## Purpose
 Benchmark is Odylith's local proof subsystem for measuring whether Odylith-on
@@ -794,6 +794,9 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-04-28 · Implementation:** v0.1.12 anti-slop hardening moved benchmark tree identity, snapshot overlay fingerprinting, dirty-path filtering, and current-tree report matching into `odylith_benchmark_tree_identity.py`; runner, shard merge, publication, and compare callers now use that focused owner directly instead of runner-local helpers.
+  - Scope: B-093, CB-126
+  - Evidence: src/odylith/runtime/evaluation/odylith_benchmark_tree_identity.py, src/odylith/runtime/evaluation/odylith_benchmark_runner.py, tests/unit/runtime/test_odylith_benchmark_tree_identity.py, tests/unit/runtime/test_hygiene.py
 - **2026-04-25 · Implementation:** v0.1.11 benchmark reproof published proof report 44f2a3d83d2c9975 and diagnostic report 9dcae95d5bb62c75 on head 1cfca107 after fixing CB-125 and CB-126.
   - Scope: B-093
   - Evidence: docs/benchmarks/GROUNDING_BENCHMARK_SNAPSHOT.md, docs/benchmarks/LIVE_BENCHMARK_SNAPSHOT.md +1 more

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.evaluation import odylith_benchmark_publication as publication
+from odylith.runtime.evaluation import odylith_benchmark_tree_identity as tree_identity_runtime
 
 
 def _report(
@@ -232,11 +233,7 @@ def test_publication_main_refuses_explicit_stale_report(monkeypatch, tmp_path: P
     diagnostic_path = tmp_path / "diagnostic.json"
     live_path.write_text(json.dumps(live_report), encoding="utf-8")
     diagnostic_path.write_text(json.dumps(diagnostic_report), encoding="utf-8")
-    monkeypatch.setattr(
-        publication.odylith_benchmark_runner,
-        "benchmark_report_matches_current_tree",
-        lambda **kwargs: False,
-    )
+    monkeypatch.setattr(tree_identity_runtime, "benchmark_report_matches_current_tree", lambda **kwargs: False)
 
     try:
         publication.main(
