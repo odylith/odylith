@@ -96,7 +96,20 @@ More on the execution engine:
 
 ## Tribunal
 
-One of Odylith's core strengths is that it can take one blocked or ambiguous repo posture, run ten specialist actors over the same grounded evidence, and force an adjudicated case before the agent acts. Tribunal is the engine for that step. It is not the first-turn grounding path. It runs in higher-level delivery-intelligence flows such as odylith sync, governed surface refresh, and evaluation or benchmark paths when Odylith needs to explain a live blocker, conflict, failure, or ambiguous posture in a workstream, component, or diagram.
+Tribunal is Odylith's structured diagnosis engine. It is what Odylith uses when
+the repo is no longer a cold-start mystery, but the current posture is still
+blocked, ambiguous, disputed, or risky enough that a normal "just continue"
+agent move would be a bad bet. The Context Engine answers what is true and
+relevant. The Execution Engine answers what move is admissible. Tribunal
+answers a different question: **what is actually going on here, what rival
+explanation could still be true, and what check would discriminate between
+them?**
+
+Tribunal does not run on every turn and it is not the first-turn grounding
+path. It runs inside higher-level delivery-intelligence flows such as
+`odylith sync`, governed surface refresh, and evaluation or benchmark paths
+when Odylith needs to explain a live blocker, conflict, failure, or ambiguous
+posture in a workstream, component, or diagram.
 
 <p align="center">
   <img
@@ -106,12 +119,34 @@ One of Odylith's core strengths is that it can take one blocked or ambiguous rep
   />
 </p>
 
-- It builds a grounded case file for the blocked scope.
-- It runs specialist review and adjudicates one explicit read of the problem.
-- It hands bounded remediation forward with validation and rollback guards.
+The pipeline is deliberately closer to an engineering review board than a
+generic summarizer:
+
+1. Delivery intelligence identifies live actionable scopes and filters out
+   clear-path work.
+2. Tribunal ranks candidates by scope type, scenario, severity, decision debt,
+   governance lag, blast radius, and stable identity tie-breaks.
+3. It builds a dossier for each focused case: subject, decision at stake,
+   observations, evidence quality, proof refs, explanation facts, and compact
+   evidence items.
+4. Ten fixed actors review the same dossier: observer, ownership resolver,
+   causal analyst, policy judge, normative judge, adversary, counterfactual
+   analyst, gap analyst, risk analyst, and prescriber.
+5. The adjudicator synthesizes one case form with a leading explanation,
+   strongest rival, risk if wrong, discriminating next check, confidence,
+   actor influence, and maintainer brief.
+6. Optional provider enrichment can refine only named fields, and only when the
+   result cites grounded evidence. Deterministic reasoning remains the baseline
+   and provider failure degrades explicitly.
+7. Remediator turns the adjudicated prescription into one bounded correction
+   packet with validation, rollback, and stale guards.
+8. The case queue, systemic brief, and correction packet feed the shell,
+   Compass, Registry, benchmarks, and downstream intervention surfaces.
 
 More on Tribunal and the product control plane:
-[Odylith Product Components](odylith/PRODUCT_COMPONENTS.md)
+[Tribunal and Remediation](odylith/runtime/TRIBUNAL_AND_REMEDIATION.md),
+[Tribunal Component Spec](odylith/registry/source/components/tribunal/CURRENT_SPEC.md),
+and [Odylith Product Components](odylith/PRODUCT_COMPONENTS.md)
 
 ## Surface Tour
 

@@ -273,22 +273,13 @@
         "Risks to watch: No critical blockers are surfaced; the main seam to track is still sync checkpoint quality as it resumes."
       ],
       "B-054": [
-        "Completed in this window: Sync failure summary dedup and next-action routing closed cleanly. That trimmed duplicate noise and put operators on a shared path when failures repeat.",
-        "Current execution: Execution is focused on surfacing top unique failure classes, counting duplicates, and routing operators to the next distinct action based on what actually failed.",
-        "Next planned: Capture the next verified checkpoint for B-054 so this lane keeps proving forward, not just carrying completed language.",
-        "Risks to watch: No critical blockers are currently surfaced. The main watch is the usual one: keep the signal fresh so routing keeps matching observed failures."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-055": [
-        "Completed in this window: Lifecycle Plan Dirty Overlap Summary Defaults landed cleanly in this window. Default behavior is now bounded and predictable instead of dumping everything by default.",
-        "Current execution: Execution is aligned on defaulting to counts and representative paths, with full listings behind an explicit verbose mode. That keeps output useful for routine checks while still allowing full detail when asked for.",
-        "Next planned: Capture the next verified checkpoint for this lane now, so the finish stays anchored to fresh proof instead of static wording.",
-        "Risks to watch: No critical blockers are surfaced. The seam to watch is checkpoint cadence, because that is what keeps this default behavior truly trustworthy over time."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-056": [
-        "Completed in this window: Trust bootstrap warning suppression and success clarity closed cleanly in this window. Verification output is now quieter on expected noise and clearer when things succeed.",
-        "Current execution: Execution is on capturing verifier stderr, allowing only permit-listed benign warnings, and always printing one explicit success line on verification pass. That makes pass/fail interpretation straightforward.",
-        "Next planned: Next is to capture the next verified checkpoint for B-056, so this lane keeps its proof trail live instead of resting on a finished state.",
-        "Risks to watch: No critical blockers are currently surfaced. The remaining watch is straightforward: keep the suppression rules tight and avoid hiding meaningful failures."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-057": [
         "Nothing moved in this window: B-057 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -366,10 +357,7 @@
         "Nothing moved in this window: B-095 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-096": [
-        "Completed in this window: Conversation observation, governed proposal flow, and human intervention voice contract closed cleanly in this window. The room now has a real checkpoint rather than unfinished wiring language.",
-        "Current execution: Execution is moving the shared intervention runtime implementation and host observation points so Codex and Claude can share governed behavior instead of diverging on observation output.",
-        "Next planned: Next follow-through sits in the B-096 execution context for the next checkpoint, keeping the implementation lane contiguous and easy to verify.",
-        "Risks to watch: No critical blockers are currently surfaced. The lane looks stable, with most fragility at operational edges once the contract is exercised more broadly."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-098": [
         "Nothing moved in this window: B-098 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -464,7 +452,7 @@
         "Nothing moved in this window: B-021 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-022": [
-        "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-025": [
         "Nothing moved in this window: B-025 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -689,16 +677,10 @@
         "Risks to watch: No critical blockers are surfaced; watch for how next checkpoints preserve the dedup and action-routing behavior under new failures."
       ],
       "B-055": [
-        "Completed in this window: Lifecycle plan dirty overlap summary defaults closed cleanly in this window; default output is now bounded and predictable.",
-        "Current execution: Current direction remains the same: show counts and representative paths by default, with full listings intentionally behind verbose mode.",
-        "Next planned: Next planned checkpoint is the next verified proof capture for B-055, extending the live evidence window.",
-        "Risks to watch: No critical blockers are currently surfaced. This looks stable, with the usual expectation that freshness and evidence quality are kept current."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-056": [
-        "Completed in this window: Trust bootstrap warning suppression and success clarity closed cleanly in this window, removing some noisy false positives from verification output.",
-        "Current execution: Execution is aligned on captured verifier stderr, allowlisted warning suppression only, and a single explicit success line when checks pass.",
-        "Next planned: Next planned step is capturing the next verified checkpoint for B-056, keeping this improvement from stalling in documentation-only momentum.",
-        "Risks to watch: No critical blockers are currently surfaced. The risk is only that verification signal quality drifts if suppression and success-line guarantees are not continuously re-validated."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-057": [
         "Nothing moved in this window: B-057 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -881,7 +863,7 @@
         "Nothing moved in this window: B-125 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-127": [
-        "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ]
     }
   },
@@ -2499,384 +2481,57 @@
       },
       "B-054": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "9040e27b01bac404b80dbdeb3451b0f652f80bad2e1bd75e49a6110b62da4ad7",
-        "generated_utc": "2026-04-28T22:56:43Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Sync failure summary dedup and next-action routing closed cleanly. That trimmed duplicate noise and put operators on a shared path when failures repeat.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Execution is focused on surfacing top unique failure classes, counting duplicates, and routing operators to the next distinct action based on what actually failed.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint for B-054 so this lane keeps proving forward, not just carrying completed language.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced. The main watch is the usual one: keep the signal fresh so routing keeps matching observed failures.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: sync failure summary dedup and next action routing.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-054"
-            ]
-          },
-          "F-002": {
-            "text": "Close B-054 sync failure summaries.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-054"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed for B-054.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-054"
-            ]
-          },
-          "F-004": {
-            "text": "Land Summarize top unique failure classes, count duplicates, and route operators to the next distinct action based on what actually failed; Sync Failure Summary Dedup and Next-Action Routing (B-054) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-054"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 7/7; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-054"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-054"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Sync Failure Summary Dedup and Next-Action Routing (B-054).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-054"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-054"
-            ]
-          }
-        },
         "substrate_fingerprint": "9040e27b01bac404b80dbdeb3451b0f652f80bad2e1bd75e49a6110b62da4ad7",
-        "bundle_fingerprint": "e167e110948b81a2e4612d174cbee5cccd44fa48aa8567345c58717b199f6d77",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "9040e27b01bac404b80dbdeb3451b0f652f80bad2e1bd75e49a6110b62da4ad7"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-28T22:56:43Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-055": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "e403a9f27b14ed748674c9f88d1f3140a72fee19f67411048eb346aa71cd81bd",
-        "generated_utc": "2026-04-28T22:56:43Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Lifecycle Plan Dirty Overlap Summary Defaults landed cleanly in this window. Default behavior is now bounded and predictable instead of dumping everything by default.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Execution is aligned on defaulting to counts and representative paths, with full listings behind an explicit verbose mode. That keeps output useful for routine checks while still allowing full detail when asked for.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Capture the next verified checkpoint for this lane now, so the finish stays anchored to fresh proof instead of static wording.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are surfaced. The seam to watch is checkpoint cadence, because that is what keeps this default behavior truly trustworthy over time.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: lifecycle plan dirty overlap summary defaults.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-002": {
-            "text": "Close B-055 lifecycle dirty overlap.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-003": {
-            "text": "Close B-054 sync failure summaries.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-004": {
-            "text": "Land Default to counts plus representative paths, then keep the full listing behind an explicit verbose mode; Lifecycle Plan Dirty Overlap Summary Defaults (B-055) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 8/8; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Lifecycle Plan Dirty Overlap Summary Defaults (B-055).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-055"
-            ]
-          }
-        },
         "substrate_fingerprint": "e403a9f27b14ed748674c9f88d1f3140a72fee19f67411048eb346aa71cd81bd",
-        "bundle_fingerprint": "e167e110948b81a2e4612d174cbee5cccd44fa48aa8567345c58717b199f6d77",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "e403a9f27b14ed748674c9f88d1f3140a72fee19f67411048eb346aa71cd81bd"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-28T22:56:43Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-056": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "58782fb5d66f87777ee125ec44d8d6dd044915106f3d25825ab0cc116375c91f",
-        "generated_utc": "2026-04-28T22:56:43Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Trust bootstrap warning suppression and success clarity closed cleanly in this window. Verification output is now quieter on expected noise and clearer when things succeed.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Execution is on capturing verifier stderr, allowing only permit-listed benign warnings, and always printing one explicit success line on verification pass. That makes pass/fail interpretation straightforward.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Next is to capture the next verified checkpoint for B-056, so this lane keeps its proof trail live instead of resting on a finished state.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced. The remaining watch is straightforward: keep the suppression rules tight and avoid hiding meaningful failures.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: trust bootstrap warning suppression and success clarity.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-002": {
-            "text": "Close B-056 trust warning clarity.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-003": {
-            "text": "Plan milestone completed: trust bootstrap warning suppression and success clarity closed for B-056.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-004": {
-            "text": "Capture verifier stderr, suppress only allowlisted benign warnings, and always print one explicit success line when verification succeeded; Trust Bootstrap Warning Suppression and Success Clarity (B-056) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 11/11; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Trust Bootstrap Warning Suppression and Success Clarity (B-056).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-056"
-            ]
-          }
-        },
         "substrate_fingerprint": "58782fb5d66f87777ee125ec44d8d6dd044915106f3d25825ab0cc116375c91f",
-        "bundle_fingerprint": "e167e110948b81a2e4612d174cbee5cccd44fa48aa8567345c58717b199f6d77",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "58782fb5d66f87777ee125ec44d8d6dd044915106f3d25825ab0cc116375c91f"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-28T22:56:43Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-057": {
         "status": "unavailable",
@@ -3215,138 +2870,21 @@
       },
       "B-096": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "b037b6f5316130aab0e9b2ff45e6e1e44d6240782f943e511db99f0bb3c5eb2b",
-        "generated_utc": "2026-04-28T22:56:43Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Conversation observation, governed proposal flow, and human intervention voice contract closed cleanly in this window. The room now has a real checkpoint rather than unfinished wiring language.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Execution is moving the shared intervention runtime implementation and host observation points so Codex and Claude can share governed behavior instead of diverging on observation output.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Next follow-through sits in the B-096 execution context for the next checkpoint, keeping the implementation lane contiguous and easy to verify.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced. The lane looks stable, with most fragility at operational edges once the contract is exercised more broadly.",
-                "fact_ids": [
-                  "F-009"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: conversation observation engine governed proposal flow and human intervention voice contract.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-096"
-            ]
-          },
-          "F-002": {
-            "text": "Harden 0.1.12 migration and onboarding UX gates.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-096"
-            ]
-          },
-          "F-003": {
-            "text": "Added intervention alignment proof contract.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-096"
-            ]
-          },
-          "F-004": {
-            "text": "Ship a first-class shared runtime package under `src/odylith/runtime/intervention_engine/` and wire it into Codex and Claude host observation points; Conversation observation engine, governed proposal flow, and human intervention voice contract (B-096) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-096"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 145/145; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-096"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-096"
-            ]
-          },
-          "F-007": {
-            "text": "Execution wave context: under B-096.",
-            "section_key": "current_execution",
-            "kind": "topology",
-            "workstreams": [
-              "B-096"
-            ]
-          },
-          "F-008": {
-            "text": "Execution wave context: under B-096.",
-            "section_key": "next_planned",
-            "kind": "unblock_context",
-            "workstreams": [
-              "B-096"
-            ]
-          },
-          "F-009": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-096"
-            ]
-          }
-        },
         "substrate_fingerprint": "b037b6f5316130aab0e9b2ff45e6e1e44d6240782f943e511db99f0bb3c5eb2b",
-        "bundle_fingerprint": "e167e110948b81a2e4612d174cbee5cccd44fa48aa8567345c58717b199f6d77",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "b037b6f5316130aab0e9b2ff45e6e1e44d6240782f943e511db99f0bb3c5eb2b"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-28T22:56:43Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-098": {
         "status": "unavailable",
@@ -3789,19 +3327,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "d678cef9fa715e3e2d333e02f99dbba62279176b2e07f99b4d08aa605fe32f7b",
+        "substrate_fingerprint": "d678cef9fa715e3e2d333e02f99dbba62279176b2e07f99b4d08aa605fe32f7b",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-28T22:56:43Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief stayed on wallet-safe local truth",
-          "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       },
@@ -5406,257 +4942,39 @@
       },
       "B-055": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "fc274ce71db24a092bb7e6c40910e1c3aad0444af3b28ed9ed1b554d12ea819c",
-        "generated_utc": "2026-04-28T22:56:43Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Lifecycle plan dirty overlap summary defaults closed cleanly in this window; default output is now bounded and predictable.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Current direction remains the same: show counts and representative paths by default, with full listings intentionally behind verbose mode.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Next planned checkpoint is the next verified proof capture for B-055, extending the live evidence window.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced. This looks stable, with the usual expectation that freshness and evidence quality are kept current.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: lifecycle plan dirty overlap summary defaults.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-002": {
-            "text": "Release v0.1.11.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-003": {
-            "text": "Close B-055 lifecycle dirty overlap.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-004": {
-            "text": "Land Default to counts plus representative paths, then keep the full listing behind an explicit verbose mode; Lifecycle Plan Dirty Overlap Summary Defaults (B-055) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 8/8; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Lifecycle Plan Dirty Overlap Summary Defaults (B-055).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-055"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-055"
-            ]
-          }
-        },
         "substrate_fingerprint": "fc274ce71db24a092bb7e6c40910e1c3aad0444af3b28ed9ed1b554d12ea819c",
-        "bundle_fingerprint": "e167e110948b81a2e4612d174cbee5cccd44fa48aa8567345c58717b199f6d77",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "fc274ce71db24a092bb7e6c40910e1c3aad0444af3b28ed9ed1b554d12ea819c"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-28T22:56:43Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-056": {
         "schema_version": "v25",
-        "status": "ready",
-        "source": "provider",
+        "status": "unavailable",
+        "source": "unavailable",
         "fingerprint": "5ee70f1136b0ab64f2374d7a08e0a76513cff7922cbd5e11116ef05d41819a1c",
-        "generated_utc": "2026-04-28T22:56:43Z",
-        "sections": [
-          {
-            "key": "completed",
-            "label": "Completed in this window",
-            "bullets": [
-              {
-                "text": "Trust bootstrap warning suppression and success clarity closed cleanly in this window, removing some noisy false positives from verification output.",
-                "fact_ids": [
-                  "F-001"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "current_execution",
-            "label": "Current execution",
-            "bullets": [
-              {
-                "text": "Execution is aligned on captured verifier stderr, allowlisted warning suppression only, and a single explicit success line when checks pass.",
-                "fact_ids": [
-                  "F-004"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "next_planned",
-            "label": "Next planned",
-            "bullets": [
-              {
-                "text": "Next planned step is capturing the next verified checkpoint for B-056, keeping this improvement from stalling in documentation-only momentum.",
-                "fact_ids": [
-                  "F-007"
-                ]
-              }
-            ]
-          },
-          {
-            "key": "risks_to_watch",
-            "label": "Risks to watch",
-            "bullets": [
-              {
-                "text": "No critical blockers are currently surfaced. The risk is only that verification signal quality drifts if suppression and success-line guarantees are not continuously re-validated.",
-                "fact_ids": [
-                  "F-008"
-                ]
-              }
-            ]
-          }
-        ],
-        "evidence_lookup": {
-          "F-001": {
-            "text": "Closed cleanly in this window: trust bootstrap warning suppression and success clarity.",
-            "section_key": "completed",
-            "kind": "plan_completion",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-002": {
-            "text": "Release v0.1.11.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-003": {
-            "text": "Close B-056 trust warning clarity.",
-            "section_key": "completed",
-            "kind": "execution_highlight",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-004": {
-            "text": "Capture verifier stderr, suppress only allowlisted benign warnings, and always print one explicit success line when verification succeeded; Trust Bootstrap Warning Suppression and Success Clarity (B-056) is completed.",
-            "section_key": "current_execution",
-            "kind": "direction",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-005": {
-            "text": "Checklist is 11/11; execution checklist closure is complete for the scoped plan.",
-            "section_key": "current_execution",
-            "kind": "checklist",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-006": {
-            "text": "ETA is projected at roughly 0 days (high confidence).",
-            "section_key": "current_execution",
-            "kind": "timeline",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-007": {
-            "text": "Immediate forcing function is to capture the next verified checkpoint for Trust Bootstrap Warning Suppression and Success Clarity (B-056).",
-            "section_key": "next_planned",
-            "kind": "fallback_next",
-            "workstreams": [
-              "B-056"
-            ]
-          },
-          "F-008": {
-            "text": "No critical blockers are currently surfaced.",
-            "section_key": "risks_to_watch",
-            "kind": "risk_posture",
-            "workstreams": [
-              "B-056"
-            ]
-          }
-        },
         "substrate_fingerprint": "5ee70f1136b0ab64f2374d7a08e0a76513cff7922cbd5e11116ef05d41819a1c",
-        "bundle_fingerprint": "e167e110948b81a2e4612d174cbee5cccd44fa48aa8567345c58717b199f6d77",
-        "provider_decision": "provider_called",
-        "last_successful_narration_fingerprint": "5ee70f1136b0ab64f2374d7a08e0a76513cff7922cbd5e11116ef05d41819a1c"
+        "bundle_fingerprint": "",
+        "provider_decision": "provider_deferred",
+        "last_successful_narration_fingerprint": "",
+        "generated_utc": "2026-04-28T22:56:43Z",
+        "sections": [],
+        "diagnostics": {
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        },
+        "evidence_lookup": {}
       },
       "B-057": {
         "status": "unavailable",
@@ -7127,19 +6445,17 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "9e0d1681e8745021dca1c3bddb35c984055f5b254d2b2d113db8fbaf5edba60e",
+        "substrate_fingerprint": "9e0d1681e8745021dca1c3bddb35c984055f5b254d2b2d113db8fbaf5edba60e",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-04-28T22:56:43Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief stayed on wallet-safe local truth",
-          "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
         },
         "evidence_lookup": {}
       }

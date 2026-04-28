@@ -11,3 +11,5 @@ __pycache__/
 .claude/hooks/__pycache__/
 .odylith/
 odylith/compass/runtime/refresh-state.v1.json
+.tmp/
+.tmp-pytest-cache-browser-contracti/
