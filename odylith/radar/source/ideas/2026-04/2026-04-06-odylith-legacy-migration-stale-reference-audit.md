@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-052
 title: Legacy Migration Stale Reference Audit
 date: 2026-04-06
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Migration should not silently declare success while stale `odyssey` truth survives in governed docs and plans. Auditing that drift without rewriting user docs is the narrow honest bridge.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-28-legacy-migration-stale-reference-audit.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-048
@@ -101,4 +101,8 @@ Migration is only honest if it admits what it did not normalize.
   references separately
 
 ## Outcome
-- Bound to `B-052` under `B-048`.
+- Closed for 0.1.12 after the stale-reference audit was proven on migration
+  and CLI summary paths, then hardened so generated dashboards, runtime/cache
+  state, migration ledgers, root temp clones, vendor trees, and build outputs
+  do not bury source-truth references.
+- Bound to `B-052` under `B-048`; closes `CB-057`.

@@ -102,8 +102,6 @@ Last updated (UTC): 2026-04-28
 | CB-060 | 2026-04-06 | Lifecycle plans print full dirty overlap by default | P2 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, lifecycle-plan
   printers. | Open | [2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md](2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md) |
-| CB-057 | 2026-04-06 | Legacy migration omits stale odyssey reference audit | P1 | `src/odylith/install/manager.py`, migration summary and
-  reporting, tracked-text audit policy. | Open | [2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md](2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md) |
 | CB-052 | 2026-04-04 | Registry live forensics miss source owned bundle mirror component activity | P1 | `src/odylith/runtime/governance/component_registry_intelligence.py`,
   Registry forensic coverage, `tribunal`, `remediator`, source-owned bundled
   runtime docs, Registry detail rendering. | Open | [2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md](2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md) |
@@ -421,6 +419,8 @@ Last updated (UTC): 2026-04-28
   `src/odylith/runtime/governance/backlog_authoring.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, Radar source
   upgrade bridge. | Closed | [2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md](2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md) |
+| CB-057 | 2026-04-06 | Legacy migration omits stale odyssey reference audit | P1 | `src/odylith/install/manager.py`, migration summary and
+  reporting, tracked-text audit policy. | Closed | [2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md](2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md) |
 | CB-056 | 2026-04-06 | Doctor and version disagree on wrapped runtime trust degradation | P1 | `src/odylith/install/manager.py`,
   `src/odylith/cli.py`, runtime-source derivation, self-host posture
   validation. | Closed | [2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md](2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md) |

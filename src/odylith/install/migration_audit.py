@@ -34,8 +34,60 @@ _TEXT_FILE_SUFFIXES = frozenset(
 _EXCLUDED_PREFIXES = (
     ".git/",
     ".odylith/cache/",
+    ".odylith/locks/",
+    ".odylith/logs/",
     ".odylith/runtime/",
     ".odylith/state/migration/",
+    ".odylith/state/migrations/",
+    ".cache/",
+    ".mypy_cache/",
+    ".pytest_cache/",
+    ".ruff_cache/",
+    ".venv/",
+    "__pycache__/",
+    "build/",
+    "dist/",
+    "node_modules/",
+    "scratch/",
+    "temp/",
+    "tmp/",
+    "venv/",
+)
+_GENERATED_SURFACE_EXACT_PATHS = frozenset(
+    {
+        "odylith/index.html",
+        "odylith/tooling-app.v1.js",
+        "odylith/tooling-payload.v1.js",
+        "odylith/atlas/atlas.html",
+        "odylith/atlas/mermaid-app.v1.js",
+        "odylith/atlas/mermaid-payload.v1.js",
+        "odylith/casebook/casebook-app.v1.js",
+        "odylith/casebook/casebook-payload.v1.js",
+        "odylith/casebook/casebook.html",
+        "odylith/compass/compass-app.v1.js",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass.html",
+        "odylith/compass/compass-runtime-truth.v1.js",
+        "odylith/radar/backlog-app.v1.js",
+        "odylith/radar/backlog-payload.v1.js",
+        "odylith/radar/radar.html",
+        "odylith/radar/standalone-pages.v1.js",
+        "odylith/radar/traceability-autofix-report.v1.json",
+        "odylith/radar/traceability-graph.v1.json",
+        "odylith/registry/registry-app.v1.js",
+        "odylith/registry/registry-payload.v1.js",
+        "odylith/registry/registry.html",
+    }
+)
+_GENERATED_SURFACE_PREFIXES = (
+    "odylith/atlas/source/catalog/",
+    "odylith/casebook/casebook-detail-shard-",
+    "odylith/compass/runtime/",
+    "odylith/radar/backlog-detail-shard-",
+    "odylith/radar/backlog-document-shard-",
+    "odylith/radar/source/ui/",
+    "odylith/registry/registry-detail-shard-",
+    "odylith/runtime/",
 )
 
 
@@ -111,8 +163,17 @@ def _include_candidate(relative_path: str) -> bool:
         return False
     if any(normalized == prefix[:-1] or normalized.startswith(prefix) for prefix in _EXCLUDED_PREFIXES):
         return False
+    if _is_generated_surface_path(normalized):
+        return False
     suffix = Path(normalized).suffix.lower()
     return suffix in _TEXT_FILE_SUFFIXES
+
+
+def _is_generated_surface_path(relative_path: str) -> bool:
+    normalized = str(relative_path or "").strip().strip("/").lower()
+    if normalized in _GENERATED_SURFACE_EXACT_PATHS:
+        return True
+    return any(normalized.startswith(prefix) for prefix in _GENERATED_SURFACE_PREFIXES)
 
 
 def _render_report(*, root: Path, hits: Iterable[tuple[str, int, str]]) -> str:
@@ -126,7 +187,10 @@ def _render_report(*, root: Path, hits: Iterable[tuple[str, int, str]]) -> str:
         "",
     ]
     if not hit_rows:
-        lines.append("No stale `odyssey` references were found in tracked text files outside managed runtime and cache trees.")
+        lines.append(
+            "No stale `odyssey` references were found in tracked text files "
+            "outside managed runtime, cache, generated, and vendor trees."
+        )
         lines.append("")
         return "\n".join(lines)
     current_path = ""

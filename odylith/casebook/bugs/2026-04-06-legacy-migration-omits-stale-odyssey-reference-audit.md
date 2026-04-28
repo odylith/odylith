@@ -1,6 +1,6 @@
 - Bug ID: CB-057
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-06
 
@@ -74,10 +74,17 @@
 - Preflight Checks: Restrict the audit to tracked text files and exclude
   generated runtime/cache state.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added: `tests/unit/install/test_migration_audit.py` covers
+  tracked-text scanning, managed runtime/cache/report exclusion, generated
+  surface exclusion, source-truth inclusion, no-git fallback scanning, root
+  temp clone exclusion, vendor/build-output exclusion, and migration ledger
+  exclusion. `tests/integration/install/test_manager.py` covers migration
+  summary audit persistence without rewriting user docs. `tests/unit/test_cli.py`
+  covers the compact CLI summary and report path.
 
 - Monitoring Updates: Track how often migration audits still report stale
-  `odyssey` references after the bridge ships.
+  `odyssey` references after the bridge ships; generated dashboard matches
+  should not dominate the report.
 
 - Residual Risk: Some stale references may remain intentionally historical and
   should stay reported, not silently rewritten.
@@ -99,4 +106,5 @@
 
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: 0.1.12 branch closeout; final commit recorded after this
+  governed chunk lands.
