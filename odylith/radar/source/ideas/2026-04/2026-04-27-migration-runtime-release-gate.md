@@ -1,4 +1,4 @@
-status: implementation
+status: finished
 
 idea_id: B-127
 
@@ -28,7 +28,7 @@ confidence: High
 
 founder_override: no
 
-promoted_to_plan: odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md
 
 execution_model: standard
 
@@ -114,8 +114,8 @@ migration failures.
 - `git diff --check`, `py_compile` on touched runtime/install/test files, `odylith casebook validate`, and `odylith validate component-registry` passed.
 
 ## Rollout
-- Land in 0.1.12 as the gating runtime for install/upgrade/reinstall migration
-  behavior.
+- Landed in 0.1.12 as the gating runtime for install/upgrade/reinstall
+  migration behavior.
 
 ## Why Now
 This slice is active enough that it should exist as explicit backlog truth now.
@@ -149,3 +149,14 @@ Migration becomes the first gating function for a release: upgrade dry-run, upgr
 ## Open Questions
 - Whether 0.1.13 should fold migration-gate into a broader maintainer preflight
   wrapper; 0.1.12 keeps it focused and explicit.
+
+## Outcome
+- Completed and closed on 2026-04-27.
+- Implemented the governed `migration-runtime` Registry component, migration
+  definitions, shared plan/result contracts, release migration gate, doctor
+  observability, durable ledgers, legacy Odyssey root migration routing,
+  staged runtime verification evidence handling, and v0.1.11 value-engine
+  migration routing through the registry.
+- Split remaining generated-surface reviewability into CB-134 so B-127 stays
+  scoped to release migration gating rather than dashboard refresh diff
+  ergonomics.

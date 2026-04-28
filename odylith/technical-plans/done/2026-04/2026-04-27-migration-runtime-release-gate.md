@@ -1,4 +1,4 @@
-Status: In progress
+Status: Done
 Created: 2026-04-27
 Updated: 2026-04-27
 Backlog: B-127
@@ -128,6 +128,13 @@ makes the transaction safe.
   rollback target, generated-surface staleness, lock/cache sludge,
   source-local, product dogfood, legacy roots, migration-required registered
   targets, and migration-required unknown targets.
+
+## Closure
+- Closed on 2026-04-27 after the branch-level QA pass proved full pytest,
+  focused migration/install suites, release migration gate, doctor, Casebook,
+  component-registry, py_compile, and diff hygiene.
+- Remaining generated dashboard reviewability is intentionally tracked outside
+  this migration gate in CB-134.
 
 ## Open Questions
 - [x] Whether the final release gate should be part of a broader maintainer
