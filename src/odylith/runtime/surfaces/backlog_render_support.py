@@ -13,7 +13,6 @@ from urllib.parse import quote
 
 from odylith.runtime.common import repo_path_resolver
 from odylith.runtime.surfaces import backlog_rich_text
-from odylith.runtime.surfaces import render_backlog_ui_html_runtime
 from odylith.runtime.surfaces import surface_path_helpers
 
 _DATE_TOKEN_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -179,4 +178,4 @@ def _rewrite_section_text(*, repo_root: Path, text: str) -> str:
 def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
     """Render markdown body lines through the shared backlog HTML formatter."""
 
-    return render_backlog_ui_html_runtime._render_section_body(repo_root=repo_root, lines=lines)
+    return backlog_rich_text.render_section_body(repo_root=repo_root, lines=lines)

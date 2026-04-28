@@ -206,7 +206,7 @@ INTERVENTION_CONTRACT_BUNDLE_EXPECTATIONS: tuple[tuple[str, bool], ...] = (
 )
 RUNTIME_HOTFILE_LIMITS = {
     "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": 8429,
-    "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py": 4174,
+    "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py": 4085,
     "src/odylith/runtime/orchestration/subagent_orchestrator.py": 3490,
     "src/odylith/runtime/surfaces/render_mermaid_catalog.py": 3346,
     "src/odylith/runtime/surfaces/render_registry_dashboard.py": 3313,
@@ -1212,6 +1212,7 @@ def test_selected_runtime_extracts_do_not_rebind_host_modules() -> None:
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_runtime_signals.py",
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_subtasks_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_assessment_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "backlog_traceability_paths.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "backlog_rich_text.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "backlog_detail_pages.py",
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_outcome_digest_runtime.py",

@@ -8,8 +8,8 @@ from pathlib import Path
 from odylith.runtime.governance import validate_backlog_contract as contract
 from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import backlog_render_support
+from odylith.runtime.surfaces import backlog_traceability_paths
 from odylith.runtime.surfaces import dashboard_ui_primitives
-from odylith.runtime.surfaces import render_backlog_ui_html_runtime
 
 
 def _render_idea_spec_html(
@@ -582,7 +582,7 @@ def _render_plan_html(
             f"</section>"
         )
         for title, lines in sections
-        if title.strip().lower() != render_backlog_ui_html_runtime._TRACEABILITY_SECTION_NAME.lower()
+        if not backlog_traceability_paths.is_traceability_section(title)
     )
     if not section_html:
         section_html = "<section class=\"block\"><h2>Content</h2><p>No markdown sections found.</p></section>"
@@ -597,12 +597,12 @@ def _render_plan_html(
         if idea_ui_href
         else "<span>No linked workstream page</span>"
     )
-    plan_traceability = render_backlog_ui_html_runtime._collect_plan_traceability_paths(
+    plan_traceability = backlog_traceability_paths.collect_plan_paths(
         repo_root=repo_root,
         sections=sections,
     )
     traceability_group_html = ""
-    for label in render_backlog_ui_html_runtime._TRACEABILITY_BUCKETS:
+    for label in backlog_traceability_paths.TRACEABILITY_BUCKETS:
         paths = plan_traceability.get(label, [])
         if not paths:
             continue

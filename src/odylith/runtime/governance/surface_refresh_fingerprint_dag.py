@@ -22,6 +22,15 @@ _REGISTRY_RENDERER_INPUTS = (
     Path("src/odylith/runtime/surfaces/render_registry_dashboard.py"),
     Path("src/odylith/runtime/surfaces/registry_forensic_evidence_ui.py"),
 )
+_RADAR_RENDERER_INPUTS = (
+    Path("src/odylith/runtime/surfaces/backlog_detail_pages.py"),
+    Path("src/odylith/runtime/surfaces/backlog_render_support.py"),
+    Path("src/odylith/runtime/surfaces/backlog_rich_text.py"),
+    Path("src/odylith/runtime/surfaces/backlog_traceability_paths.py"),
+    Path("src/odylith/runtime/surfaces/render_backlog_ui.py"),
+    Path("src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py"),
+    Path("src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py"),
+)
 
 
 def can_reuse_surface_refresh(
@@ -99,12 +108,26 @@ def record_surface_refresh(
 def surface_input_fingerprint(*, repo_root: Path, surface: str, atlas_sync: bool) -> str:
     root = Path(repo_root).resolve()
     token = str(surface).strip().lower()
-    if token in {"compass", "radar", "tooling_shell"}:
+    if token in {"compass", "tooling_shell"}:
         return odylith_context_cache.fingerprint_payload(
             {
                 "surface": token,
                 "atlas_sync": bool(atlas_sync),
                 "projection": default_surface_projection_input_fingerprint(repo_root=root),
+                "delivery": odylith_context_cache.path_signature(
+                    root / "odylith/runtime/delivery_intelligence.v4.json",
+                ),
+            }
+        )
+    if token == "radar":
+        return odylith_context_cache.fingerprint_payload(
+            {
+                "surface": token,
+                "atlas_sync": bool(atlas_sync),
+                "projection": default_surface_projection_input_fingerprint(repo_root=root),
+                "renderer": odylith_context_cache.fingerprint_paths(
+                    [root / relative_path for relative_path in _RADAR_RENDERER_INPUTS]
+                ),
                 "delivery": odylith_context_cache.path_signature(
                     root / "odylith/runtime/delivery_intelligence.v4.json",
                 ),
