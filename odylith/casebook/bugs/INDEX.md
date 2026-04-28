@@ -99,9 +99,6 @@ Last updated (UTC): 2026-04-28
 | CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
   presentation and next-action routing. | Open | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
-| CB-054 | 2026-04-06 | Macos runtime metadata files break managed runtime trust validation | P0 | `src/odylith/install/runtime_integrity.py`,
-  `src/odylith/install/runtime.py`, managed runtime trust policy, feature-pack
-  preflight. | Open | [2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md](2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md) |
 | CB-060 | 2026-04-06 | Lifecycle plans print full dirty overlap by default | P2 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, lifecycle-plan
   printers. | Open | [2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md](2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md) |
@@ -421,6 +418,9 @@ Last updated (UTC): 2026-04-28
   `tests/integration/runtime/test_surface_browser_deep.py`,
   `tests/integration/runtime/test_surface_browser_smoke.py`, and
   `tests/integration/runtime/test_surface_browser_ux_audit.py`. | Closed | [2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md](2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md) |
+| CB-054 | 2026-04-06 | Macos runtime metadata files break managed runtime trust validation | P0 | `src/odylith/install/runtime_integrity.py`,
+  `src/odylith/install/runtime.py`, managed runtime trust policy, feature-pack
+  preflight. | Closed | [2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md](2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md) |
 | CB-056 | 2026-04-06 | Doctor and version disagree on wrapped runtime trust degradation | P1 | `src/odylith/install/manager.py`,
   `src/odylith/cli.py`, runtime-source derivation, self-host posture
   validation. | Closed | [2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md](2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md) |

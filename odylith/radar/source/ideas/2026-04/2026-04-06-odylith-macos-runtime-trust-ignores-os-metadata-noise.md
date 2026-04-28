@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-049
 title: macOS Runtime Trust Ignores OS Metadata Noise
 date: 2026-04-06
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: A trusted runtime that fails closed on `.DS_Store` is not actually robust on macOS. This is the first hard blocker because it prevents install, repair, and feature-pack activation from using the runtime Odylith itself just staged.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-28-macos-runtime-trust-metadata-noise.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-048
@@ -99,4 +99,17 @@ blind spot.
   trust manifest instead of code policy
 
 ## Outcome
-- Bound to `B-049` under `B-048`.
+- Bound to `B-049` under `B-048`; finished on 2026-04-28 as a release-lifecycle
+  trust-policy closeout.
+- Runtime metadata filtering is owned by `runtime_tree_policy.py`, not by
+  scattered install-manager conditionals.
+- Managed runtime trust manifests and integrity checks ignore only explicit
+  macOS metadata noise: `.DS_Store` and AppleDouble `._*` entries.
+- Runtime health checks and feature-pack installation scrub those metadata
+  entries before trust validation, so common Finder noise no longer blocks
+  repair, reinstall, or feature-pack activation.
+- Unexpected dotfiles and other non-allowlisted runtime entries still fail
+  closed as real drift.
+- `CB-054` is closed with focused regression coverage in
+  `tests/unit/install/test_runtime_metadata_policy.py` and the existing
+  runtime health/feature-pack tests.
