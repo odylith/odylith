@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-04-28T03:20:07Z",
+  "generated_utc": "2026-04-28T04:33:04Z",
   "release_summary": {
     "catalog": [
       {
@@ -312,19 +312,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 17,
           "eta_days": null,
           "eta_confidence": "low"
@@ -340,11 +340,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 50,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
-            "index": 50,
+            "index": 52,
             "band": "Medium"
           }
         },
@@ -4121,19 +4121,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 3,
+            "commit_count": 6,
+            "local_change_count": 1,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 5,
-            "local_change_count": 3,
+            "commit_count": 6,
+            "local_change_count": 1,
             "file_touch_count": 1686
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-04-27T20:20:06-07:00",
+          "last_activity_iso": "2026-04-27T21:26:50-07:00",
           "age_days": 30,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -4221,6 +4221,180 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-005"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-063",
+        "title": "Release Planning and Workstream Targeting",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
+          "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
+          "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
+          "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
+          "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
+          "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "atlas",
+            "name": "Atlas"
+          },
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "radar",
+            "name": "Radar"
+          },
+          {
+            "component_id": "release",
+            "name": "Release"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.11",
+        "plan": {
+          "created": "2026-04-08",
+          "updated": "2026-04-08",
+          "all_total_tasks": 63,
+          "all_done_tasks": 63,
+          "total_tasks": 28,
+          "done_tasks": 28,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 28/28",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 1686
+          },
+          "48h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 1686
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-08",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
+          "age_days": 19,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [
+            "B-065"
+          ],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 55,
+          "24h": {
+            "index": 75,
+            "band": "High"
+          },
+          "48h": {
+            "index": 75,
+            "band": "High"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "contract-level",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 22,
+            "decision_evidence": true,
+            "explicit_count": 129,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 59,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 116,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 3,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-063"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-063"
           }
         ],
         "proof_summary_lines": []
@@ -4317,19 +4491,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           }
         },
         "timeline": {
           "start_date": "2026-03-26",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 32,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -4473,19 +4647,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           }
         },
         "timeline": {
           "start_date": "2026-03-27",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 31,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -4633,19 +4807,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1686
           }
         },
         "timeline": {
           "start_date": "2026-03-27",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 31,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -4793,19 +4967,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1686
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 28,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -4898,180 +5072,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-063",
-        "title": "Release Planning and Workstream Targeting",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
-          "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
-          "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
-          "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
-          "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
-          "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "atlas",
-            "name": "Atlas"
-          },
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "radar",
-            "name": "Radar"
-          },
-          {
-            "component_id": "release",
-            "name": "Release"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.11",
-        "plan": {
-          "created": "2026-04-08",
-          "updated": "2026-04-08",
-          "all_total_tasks": 63,
-          "all_done_tasks": 63,
-          "total_tasks": 28,
-          "done_tasks": 28,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 28/28",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 1686
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 1686
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-08",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
-          "age_days": 19,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [
-            "B-065"
-          ],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 55,
-          "24h": {
-            "index": 73,
-            "band": "High"
-          },
-          "48h": {
-            "index": 73,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "contract-level",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 22,
-            "decision_evidence": true,
-            "explicit_count": 129,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 59,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 116,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 3,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-063"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-063"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-069",
         "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
         "status": "finished",
@@ -5139,19 +5139,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 18,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -5169,11 +5169,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 86,
+            "index": 88,
             "band": "High"
           },
           "48h": {
-            "index": 86,
+            "index": 88,
             "band": "High"
           }
         },
@@ -5246,6 +5246,161 @@
         "proof_summary_lines": []
       },
       {
+        "idea_id": "B-050",
+        "title": "Repair and Reinstall Converge After Partial Runtime Failure",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "After a partial repair or reinstall failure, Odylith can leave target-version backups, failed staging trees, or stale wrapper state behind. The next repair attempt then hits secondary errors such as `Directory not empty` instead of converging.",
+          "customer": "- Primary: operators relying on `doctor --repair` or `reinstall --latest` to recover the repo in place.",
+          "proposed_solution": "- extract target-version residue cleanup around runtime staging - remove or reuse stale `.backup-*`, failed staging directories, and stale wrapper outputs safely - prove repeated repair and reinstall converge after injected partial failure",
+          "opportunity": "Make recovery idempotent so repeating the supported command always moves the repo toward one valid runtime state.",
+          "why_now": "The reported failure chain shows the current recovery contract is not idempotent.",
+          "founder_pov": "Repair has to be boring. If the second run is worse than the first, Odylith is teaching operators not to trust its own recovery commands."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "release",
+            "name": "Release"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "",
+        "plan": {
+          "created": "2026-04-27",
+          "updated": "2026-04-27",
+          "all_total_tasks": 20,
+          "all_done_tasks": 20,
+          "total_tasks": 15,
+          "done_tasks": 15,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 15/15",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 1,
+            "local_change_count": 2,
+            "file_touch_count": 1658
+          },
+          "48h": {
+            "commit_count": 1,
+            "local_change_count": 2,
+            "file_touch_count": 1658
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-27",
+          "last_activity_iso": "2026-04-27T21:33:02-07:00",
+          "age_days": 0,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 42,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 42,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "contract-level",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 16,
+            "decision_evidence": true,
+            "explicit_count": 105,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 46,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 105,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 2,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-050"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-050"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
         "idea_id": "B-025",
         "title": "Cross-Surface Runtime Freshness and UX Browser Hardening",
         "status": "implementation",
@@ -5312,19 +5467,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           },
           "48h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 29,
           "eta_days": 5,
           "eta_confidence": "high"
@@ -5340,11 +5495,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 47,
+            "index": 48,
             "band": "Medium"
           },
           "48h": {
-            "index": 47,
+            "index": 48,
             "band": "Medium"
           }
         },
@@ -5491,19 +5646,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           },
           "48h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 18,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -5519,11 +5674,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 83,
+            "index": 84,
             "band": "High"
           },
           "48h": {
-            "index": 83,
+            "index": 84,
             "band": "High"
           }
         },
@@ -6888,19 +7043,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           },
           "48h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 18,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -7076,19 +7231,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 2,
-            "local_change_count": 1,
+            "commit_count": 3,
+            "local_change_count": 0,
             "file_touch_count": 1682
           },
           "48h": {
-            "commit_count": 2,
-            "local_change_count": 1,
+            "commit_count": 3,
+            "local_change_count": 0,
             "file_touch_count": 1682
           }
         },
         "timeline": {
           "start_date": "2026-04-12",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 15,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -7104,11 +7259,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 35,
+            "index": 37,
             "band": "Low"
           },
           "48h": {
-            "index": 35,
+            "index": 37,
             "band": "Low"
           }
         },
@@ -18516,161 +18671,6 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-049"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-050",
-        "title": "Repair and Reinstall Converge After Partial Runtime Failure",
-        "status": "queued",
-        "priority": "P0",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "After a partial repair or reinstall failure, Odylith can leave target-version backups, failed staging trees, or stale wrapper state behind. The next repair attempt then hits secondary errors such as `Directory not empty` instead of converging.",
-          "customer": "- Primary: operators relying on `doctor --repair` or `reinstall --latest` to recover the repo in place.",
-          "proposed_solution": "- extract target-version residue cleanup around runtime staging - remove or reuse stale `.backup-*`, failed staging directories, and stale wrapper outputs safely - prove repeated repair and reinstall converge after injected partial failure",
-          "opportunity": "Make recovery idempotent so repeating the supported command always moves the repo toward one valid runtime state.",
-          "why_now": "The reported failure chain shows the current recovery contract is not idempotent.",
-          "founder_pov": "Repair has to be boring. If the second run is worse than the first, Odylith is teaching operators not to trust its own recovery commands."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
-          "plan_file": ""
-        },
-        "registry_components": [
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "release",
-            "name": "Release"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "",
-        "plan": {
-          "created": "",
-          "updated": "",
-          "all_total_tasks": 0,
-          "all_done_tasks": 0,
-          "total_tasks": 0,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.0,
-          "display_progress_label": "0% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "not_started",
-          "checklist_label": "",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 1,
-            "local_change_count": 0,
-            "file_touch_count": 1656
-          },
-          "48h": {
-            "commit_count": 1,
-            "local_change_count": 0,
-            "file_touch_count": 1656
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-06",
-          "last_activity_iso": "2026-04-26T22:04:43-07:00",
-          "age_days": 21,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 38,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 38,
-            "band": "Low"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "contract-level",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 16,
-            "decision_evidence": true,
-            "explicit_count": 105,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 46,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 105,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 2,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-050"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-050"
           }
         ],
         "proof_summary_lines": []
@@ -26237,19 +26237,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 17,
           "eta_days": null,
           "eta_confidence": "low"
@@ -26265,11 +26265,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 50,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
-            "index": 50,
+            "index": 52,
             "band": "Medium"
           }
         },
@@ -29979,178 +29979,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-005",
-        "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. Install and upgrade need to stay full-stack by default, but the asset transport and retention model must become lighter and more deterministic.",
-          "customer": "- Primary: Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on stale or oversized payload assumptions. - Secondary: downstream repo maintainers who need full Odylith on first install without stalled downloads, repeated large upgrade churn, or hidden dependence on machine Python.",
-          "proposed_solution": "Restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller managed assets. ### Wave 1: Reset the source-of-truth narrative - lower the product source version floor and repo pin back to `0.1.0` - clear sticky local release-session state - rewrite README, backlog, plans, bugs, and component specs so they no longer describe `0.1.x` rehearsal tags as the canonical published product history ### Wave 2: Split transport, keep full-stack install - keep the consumer contract full-stack by default for `odylith install` and normal `odylith upgrade` - keep the hosted installer one-command and non-interactive so Odylith, not the developer, figures out the environment and the right managed assets - preserve a zero-friction install UX by letting the installer find the repo root automatically and by avoiding setup choices or branching install flows - package the runtime as a smaller base managed runtime plus a separately versioned managed context-engine pack so release uploads/downloads stop stalling on one monolithic artifact - reuse an unchanged context-engine pack across upgrades when its asset digest matches, and prune older staged runtimes plus release caches after each successful install, upgrade, or rollback - keep the maintainer wheel-build path explicitly Hatch-based so the canonical publication contract is consistent between local preflight and GitHub Actions ### Wave 3: Block on local hosted-asset proof - make `make release-preflight` build the full local release asset set before dispatch - prove `install -> version -> doctor -> sync` against the generated installer and local hosted-style assets - prove `previous -> target -> rollback -> re-upgrade` whenever a prior hosted preview exists for the relaunch line - keep cache writes, runtime restaging, and activation handoff crash-safe by committing files atomically, syncing swap directories, and validating nested repo-root installer execution before dispatch - keep first install fail-closed until the full stack passes activation smoke, and treat same-version upgrade as a no-op or repair case instead of restaging the live runtime in place",
-          "opportunity": "By resetting the release line locally, splitting the runtime into smaller managed assets while keeping install full-stack by default, and proving the generated installer against local hosted-style assets before dispatch, Odylith can relaunch on a much tighter operator contract.",
-          "why_now": "The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete.",
-          "founder_pov": "Users should get the full power of Odylith by default. The right fix is not to ship a weaker install, but to ship full Odylith through smaller, faster, reusable managed assets."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
-          "plan_file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "dashboard",
-            "name": "Dashboard"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "registry",
-            "name": "Registry"
-          },
-          {
-            "component_id": "release",
-            "name": "Release"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "",
-        "plan": {
-          "created": "2026-03-28",
-          "updated": "2026-03-28",
-          "all_total_tasks": 94,
-          "all_done_tasks": 94,
-          "total_tasks": 42,
-          "done_tasks": 42,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 42/42",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 5,
-            "local_change_count": 3,
-            "file_touch_count": 1685
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 3,
-            "file_touch_count": 1686
-          }
-        },
-        "timeline": {
-          "start_date": "2026-03-28",
-          "last_activity_iso": "2026-04-27T20:20:06-07:00",
-          "age_days": 30,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 55,
-          "24h": {
-            "index": 75,
-            "band": "High"
-          },
-          "48h": {
-            "index": 75,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 22,
-            "decision_evidence": true,
-            "explicit_count": 131,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 61,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 134,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 4,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-005"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-005"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-096",
         "title": "Conversation observation engine, governed proposal flow, and human intervention voice contract",
         "status": "finished",
@@ -30989,6 +30817,178 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-096"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-005",
+        "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. Install and upgrade need to stay full-stack by default, but the asset transport and retention model must become lighter and more deterministic.",
+          "customer": "- Primary: Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on stale or oversized payload assumptions. - Secondary: downstream repo maintainers who need full Odylith on first install without stalled downloads, repeated large upgrade churn, or hidden dependence on machine Python.",
+          "proposed_solution": "Restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller managed assets. ### Wave 1: Reset the source-of-truth narrative - lower the product source version floor and repo pin back to `0.1.0` - clear sticky local release-session state - rewrite README, backlog, plans, bugs, and component specs so they no longer describe `0.1.x` rehearsal tags as the canonical published product history ### Wave 2: Split transport, keep full-stack install - keep the consumer contract full-stack by default for `odylith install` and normal `odylith upgrade` - keep the hosted installer one-command and non-interactive so Odylith, not the developer, figures out the environment and the right managed assets - preserve a zero-friction install UX by letting the installer find the repo root automatically and by avoiding setup choices or branching install flows - package the runtime as a smaller base managed runtime plus a separately versioned managed context-engine pack so release uploads/downloads stop stalling on one monolithic artifact - reuse an unchanged context-engine pack across upgrades when its asset digest matches, and prune older staged runtimes plus release caches after each successful install, upgrade, or rollback - keep the maintainer wheel-build path explicitly Hatch-based so the canonical publication contract is consistent between local preflight and GitHub Actions ### Wave 3: Block on local hosted-asset proof - make `make release-preflight` build the full local release asset set before dispatch - prove `install -> version -> doctor -> sync` against the generated installer and local hosted-style assets - prove `previous -> target -> rollback -> re-upgrade` whenever a prior hosted preview exists for the relaunch line - keep cache writes, runtime restaging, and activation handoff crash-safe by committing files atomically, syncing swap directories, and validating nested repo-root installer execution before dispatch - keep first install fail-closed until the full stack passes activation smoke, and treat same-version upgrade as a no-op or repair case instead of restaging the live runtime in place",
+          "opportunity": "By resetting the release line locally, splitting the runtime into smaller managed assets while keeping install full-stack by default, and proving the generated installer against local hosted-style assets before dispatch, Odylith can relaunch on a much tighter operator contract.",
+          "why_now": "The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete.",
+          "founder_pov": "Users should get the full power of Odylith by default. The right fix is not to ship a weaker install, but to ship full Odylith through smaller, faster, reusable managed assets."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
+          "plan_file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "dashboard",
+            "name": "Dashboard"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "registry",
+            "name": "Registry"
+          },
+          {
+            "component_id": "release",
+            "name": "Release"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "",
+        "plan": {
+          "created": "2026-03-28",
+          "updated": "2026-03-28",
+          "all_total_tasks": 94,
+          "all_done_tasks": 94,
+          "total_tasks": 42,
+          "done_tasks": 42,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 42/42",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 6,
+            "local_change_count": 1,
+            "file_touch_count": 1685
+          },
+          "48h": {
+            "commit_count": 6,
+            "local_change_count": 1,
+            "file_touch_count": 1686
+          }
+        },
+        "timeline": {
+          "start_date": "2026-03-28",
+          "last_activity_iso": "2026-04-27T21:26:50-07:00",
+          "age_days": 30,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 55,
+          "24h": {
+            "index": 75,
+            "band": "High"
+          },
+          "48h": {
+            "index": 75,
+            "band": "High"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 22,
+            "decision_evidence": true,
+            "explicit_count": 131,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 61,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 134,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 4,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-005"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-005"
           }
         ],
         "proof_summary_lines": []
@@ -32006,6 +32006,180 @@
         "proof_summary_lines": []
       },
       {
+        "idea_id": "B-063",
+        "title": "Release Planning and Workstream Targeting",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
+          "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
+          "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
+          "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
+          "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
+          "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "atlas",
+            "name": "Atlas"
+          },
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "radar",
+            "name": "Radar"
+          },
+          {
+            "component_id": "release",
+            "name": "Release"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.11",
+        "plan": {
+          "created": "2026-04-08",
+          "updated": "2026-04-08",
+          "all_total_tasks": 63,
+          "all_done_tasks": 63,
+          "total_tasks": 28,
+          "done_tasks": 28,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 28/28",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 1686
+          },
+          "48h": {
+            "commit_count": 6,
+            "local_change_count": 0,
+            "file_touch_count": 1686
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-08",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
+          "age_days": 19,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [
+            "B-065"
+          ],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 55,
+          "24h": {
+            "index": 75,
+            "band": "High"
+          },
+          "48h": {
+            "index": 75,
+            "band": "High"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "contract-level",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 22,
+            "decision_evidence": true,
+            "explicit_count": 129,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 59,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 116,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 3,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-063"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-063"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
         "idea_id": "B-001",
         "title": "Product Self-Governance and Repo Boundary",
         "status": "finished",
@@ -32097,19 +32271,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           }
         },
         "timeline": {
           "start_date": "2026-03-26",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 32,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -32253,19 +32427,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           }
         },
         "timeline": {
           "start_date": "2026-03-27",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 31,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -32413,19 +32587,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1686
           }
         },
         "timeline": {
           "start_date": "2026-03-27",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 31,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -32573,19 +32747,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 2,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1686
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 28,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -32678,180 +32852,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-063",
-        "title": "Release Planning and Workstream Targeting",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
-          "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
-          "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
-          "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
-          "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
-          "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "atlas",
-            "name": "Atlas"
-          },
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "radar",
-            "name": "Radar"
-          },
-          {
-            "component_id": "release",
-            "name": "Release"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.11",
-        "plan": {
-          "created": "2026-04-08",
-          "updated": "2026-04-08",
-          "all_total_tasks": 63,
-          "all_done_tasks": 63,
-          "total_tasks": 28,
-          "done_tasks": 28,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 28/28",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 1686
-          },
-          "48h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 1686
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-08",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
-          "age_days": 19,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [
-            "B-065"
-          ],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 55,
-          "24h": {
-            "index": 73,
-            "band": "High"
-          },
-          "48h": {
-            "index": 73,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "contract-level",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 22,
-            "decision_evidence": true,
-            "explicit_count": 129,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 59,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 116,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 3,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-063"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-063"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-069",
         "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
         "status": "finished",
@@ -32919,19 +32919,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 4,
-            "local_change_count": 1,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
+            "commit_count": 5,
+            "local_change_count": 0,
             "file_touch_count": 1685
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-04-27T20:14:31-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 18,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -32949,11 +32949,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 86,
+            "index": 88,
             "band": "High"
           },
           "48h": {
-            "index": 86,
+            "index": 88,
             "band": "High"
           }
         },
@@ -33021,6 +33021,161 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-069"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-050",
+        "title": "Repair and Reinstall Converge After Partial Runtime Failure",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "After a partial repair or reinstall failure, Odylith can leave target-version backups, failed staging trees, or stale wrapper state behind. The next repair attempt then hits secondary errors such as `Directory not empty` instead of converging.",
+          "customer": "- Primary: operators relying on `doctor --repair` or `reinstall --latest` to recover the repo in place.",
+          "proposed_solution": "- extract target-version residue cleanup around runtime staging - remove or reuse stale `.backup-*`, failed staging directories, and stale wrapper outputs safely - prove repeated repair and reinstall converge after injected partial failure",
+          "opportunity": "Make recovery idempotent so repeating the supported command always moves the repo toward one valid runtime state.",
+          "why_now": "The reported failure chain shows the current recovery contract is not idempotent.",
+          "founder_pov": "Repair has to be boring. If the second run is worse than the first, Odylith is teaching operators not to trust its own recovery commands."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "release",
+            "name": "Release"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "",
+        "plan": {
+          "created": "2026-04-27",
+          "updated": "2026-04-27",
+          "all_total_tasks": 20,
+          "all_done_tasks": 20,
+          "total_tasks": 15,
+          "done_tasks": 15,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 15/15",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 1,
+            "local_change_count": 2,
+            "file_touch_count": 1658
+          },
+          "48h": {
+            "commit_count": 1,
+            "local_change_count": 2,
+            "file_touch_count": 1658
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-27",
+          "last_activity_iso": "2026-04-27T21:33:02-07:00",
+          "age_days": 0,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 42,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 42,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "contract-level",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 16,
+            "decision_evidence": true,
+            "explicit_count": 105,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 46,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 105,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 2,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-050"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-050"
           }
         ],
         "proof_summary_lines": []
@@ -33915,19 +34070,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           },
           "48h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 29,
           "eta_days": 5,
           "eta_confidence": "high"
@@ -33943,11 +34098,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 47,
+            "index": 48,
             "band": "Medium"
           },
           "48h": {
-            "index": 47,
+            "index": 48,
             "band": "Medium"
           }
         },
@@ -34094,19 +34249,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           },
           "48h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 18,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -34122,11 +34277,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 83,
+            "index": 84,
             "band": "High"
           },
           "48h": {
-            "index": 83,
+            "index": 84,
             "band": "High"
           }
         },
@@ -35491,19 +35646,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           },
           "48h": {
-            "commit_count": 3,
-            "local_change_count": 1,
+            "commit_count": 4,
+            "local_change_count": 0,
             "file_touch_count": 1683
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 18,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -35679,19 +35834,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 2,
-            "local_change_count": 1,
+            "commit_count": 3,
+            "local_change_count": 0,
             "file_touch_count": 1682
           },
           "48h": {
-            "commit_count": 2,
-            "local_change_count": 1,
+            "commit_count": 3,
+            "local_change_count": 0,
             "file_touch_count": 1682
           }
         },
         "timeline": {
           "start_date": "2026-04-12",
-          "last_activity_iso": "2026-04-27T20:12:39-07:00",
+          "last_activity_iso": "2026-04-27T20:22:32-07:00",
           "age_days": 15,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -35707,11 +35862,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 35,
+            "index": 37,
             "band": "Low"
           },
           "48h": {
-            "index": 35,
+            "index": 37,
             "band": "Low"
           }
         },
@@ -45406,161 +45561,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-050",
-        "title": "Repair and Reinstall Converge After Partial Runtime Failure",
-        "status": "queued",
-        "priority": "P0",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "After a partial repair or reinstall failure, Odylith can leave target-version backups, failed staging trees, or stale wrapper state behind. The next repair attempt then hits secondary errors such as `Directory not empty` instead of converging.",
-          "customer": "- Primary: operators relying on `doctor --repair` or `reinstall --latest` to recover the repo in place.",
-          "proposed_solution": "- extract target-version residue cleanup around runtime staging - remove or reuse stale `.backup-*`, failed staging directories, and stale wrapper outputs safely - prove repeated repair and reinstall converge after injected partial failure",
-          "opportunity": "Make recovery idempotent so repeating the supported command always moves the repo toward one valid runtime state.",
-          "why_now": "The reported failure chain shows the current recovery contract is not idempotent.",
-          "founder_pov": "Repair has to be boring. If the second run is worse than the first, Odylith is teaching operators not to trust its own recovery commands."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
-          "plan_file": ""
-        },
-        "registry_components": [
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "release",
-            "name": "Release"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "",
-        "plan": {
-          "created": "",
-          "updated": "",
-          "all_total_tasks": 0,
-          "all_done_tasks": 0,
-          "total_tasks": 0,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.0,
-          "display_progress_label": "0% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "not_started",
-          "checklist_label": "",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 1,
-            "local_change_count": 0,
-            "file_touch_count": 1656
-          },
-          "48h": {
-            "commit_count": 1,
-            "local_change_count": 0,
-            "file_touch_count": 1656
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-06",
-          "last_activity_iso": "2026-04-26T22:04:43-07:00",
-          "age_days": 21,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 38,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 38,
-            "band": "Low"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "contract-level",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 16,
-            "decision_evidence": true,
-            "explicit_count": 105,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 46,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 105,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 2,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-050"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-050"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-052",
         "title": "Legacy Migration Stale Reference Audit",
         "status": "queued",
@@ -52163,19 +52163,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 17,
         "eta_days": null,
         "eta_confidence": "low"
@@ -52191,11 +52191,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 50,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
-          "index": 50,
+          "index": 52,
           "band": "Medium"
         }
       },
@@ -55905,178 +55905,6 @@
       "proof_summary_lines": []
     },
     {
-      "idea_id": "B-005",
-      "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. Install and upgrade need to stay full-stack by default, but the asset transport and retention model must become lighter and more deterministic.",
-        "customer": "- Primary: Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on stale or oversized payload assumptions. - Secondary: downstream repo maintainers who need full Odylith on first install without stalled downloads, repeated large upgrade churn, or hidden dependence on machine Python.",
-        "proposed_solution": "Restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller managed assets. ### Wave 1: Reset the source-of-truth narrative - lower the product source version floor and repo pin back to `0.1.0` - clear sticky local release-session state - rewrite README, backlog, plans, bugs, and component specs so they no longer describe `0.1.x` rehearsal tags as the canonical published product history ### Wave 2: Split transport, keep full-stack install - keep the consumer contract full-stack by default for `odylith install` and normal `odylith upgrade` - keep the hosted installer one-command and non-interactive so Odylith, not the developer, figures out the environment and the right managed assets - preserve a zero-friction install UX by letting the installer find the repo root automatically and by avoiding setup choices or branching install flows - package the runtime as a smaller base managed runtime plus a separately versioned managed context-engine pack so release uploads/downloads stop stalling on one monolithic artifact - reuse an unchanged context-engine pack across upgrades when its asset digest matches, and prune older staged runtimes plus release caches after each successful install, upgrade, or rollback - keep the maintainer wheel-build path explicitly Hatch-based so the canonical publication contract is consistent between local preflight and GitHub Actions ### Wave 3: Block on local hosted-asset proof - make `make release-preflight` build the full local release asset set before dispatch - prove `install -> version -> doctor -> sync` against the generated installer and local hosted-style assets - prove `previous -> target -> rollback -> re-upgrade` whenever a prior hosted preview exists for the relaunch line - keep cache writes, runtime restaging, and activation handoff crash-safe by committing files atomically, syncing swap directories, and validating nested repo-root installer execution before dispatch - keep first install fail-closed until the full stack passes activation smoke, and treat same-version upgrade as a no-op or repair case instead of restaging the live runtime in place",
-        "opportunity": "By resetting the release line locally, splitting the runtime into smaller managed assets while keeping install full-stack by default, and proving the generated installer against local hosted-style assets before dispatch, Odylith can relaunch on a much tighter operator contract.",
-        "why_now": "The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete.",
-        "founder_pov": "Users should get the full power of Odylith by default. The right fix is not to ship a weaker install, but to ship full Odylith through smaller, faster, reusable managed assets."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
-        "plan_file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "compass",
-          "name": "Compass"
-        },
-        {
-          "component_id": "dashboard",
-          "name": "Dashboard"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        },
-        {
-          "component_id": "registry",
-          "name": "Registry"
-        },
-        {
-          "component_id": "release",
-          "name": "Release"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "2026-03-28",
-        "updated": "2026-03-28",
-        "all_total_tasks": 94,
-        "all_done_tasks": 94,
-        "total_tasks": 42,
-        "done_tasks": 42,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 42/42",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 5,
-          "local_change_count": 3,
-          "file_touch_count": 1685
-        },
-        "48h": {
-          "commit_count": 5,
-          "local_change_count": 3,
-          "file_touch_count": 1686
-        }
-      },
-      "timeline": {
-        "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-27T20:20:06-07:00",
-        "age_days": 30,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 55,
-        "24h": {
-          "index": 75,
-          "band": "High"
-        },
-        "48h": {
-          "index": 75,
-          "band": "High"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 22,
-          "decision_evidence": true,
-          "explicit_count": 131,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 61,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 134,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 4,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-005"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-005"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
       "idea_id": "B-096",
       "title": "Conversation observation engine, governed proposal flow, and human intervention voice contract",
       "status": "finished",
@@ -56915,6 +56743,178 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-096"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-005",
+      "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith's current repo narrative and release lane still carry abandoned `0.1.x` rehearsal history, and the runtime payloads remain too large and too sticky for a credible preview relaunch. Install and upgrade need to stay full-stack by default, but the asset transport and retention model must become lighter and more deterministic.",
+        "customer": "- Primary: Odylith maintainers who need a clean restart at `v0.1.0`, a canonical hosted-asset proof before dispatch, and a release lane that fails closed on stale or oversized payload assumptions. - Secondary: downstream repo maintainers who need full Odylith on first install without stalled downloads, repeated large upgrade churn, or hidden dependence on machine Python.",
+        "proposed_solution": "Restart the public line at `v0.1.0`, rewrite local repo truth to treat the old `0.1.x` sequence as abandoned prelaunch rehearsal, and make the new preview lane ship as a full-stack install assembled from smaller managed assets. ### Wave 1: Reset the source-of-truth narrative - lower the product source version floor and repo pin back to `0.1.0` - clear sticky local release-session state - rewrite README, backlog, plans, bugs, and component specs so they no longer describe `0.1.x` rehearsal tags as the canonical published product history ### Wave 2: Split transport, keep full-stack install - keep the consumer contract full-stack by default for `odylith install` and normal `odylith upgrade` - keep the hosted installer one-command and non-interactive so Odylith, not the developer, figures out the environment and the right managed assets - preserve a zero-friction install UX by letting the installer find the repo root automatically and by avoiding setup choices or branching install flows - package the runtime as a smaller base managed runtime plus a separately versioned managed context-engine pack so release uploads/downloads stop stalling on one monolithic artifact - reuse an unchanged context-engine pack across upgrades when its asset digest matches, and prune older staged runtimes plus release caches after each successful install, upgrade, or rollback - keep the maintainer wheel-build path explicitly Hatch-based so the canonical publication contract is consistent between local preflight and GitHub Actions ### Wave 3: Block on local hosted-asset proof - make `make release-preflight` build the full local release asset set before dispatch - prove `install -> version -> doctor -> sync` against the generated installer and local hosted-style assets - prove `previous -> target -> rollback -> re-upgrade` whenever a prior hosted preview exists for the relaunch line - keep cache writes, runtime restaging, and activation handoff crash-safe by committing files atomically, syncing swap directories, and validating nested repo-root installer execution before dispatch - keep first install fail-closed until the full stack passes activation smoke, and treat same-version upgrade as a no-op or repair case instead of restaging the live runtime in place",
+        "opportunity": "By resetting the release line locally, splitting the runtime into smaller managed assets while keeping install full-stack by default, and proving the generated installer against local hosted-style assets before dispatch, Odylith can relaunch on a much tighter operator contract.",
+        "why_now": "The release reset and payload split were the shortest path to a release line that is operationally credible instead of merely locally implemented, and that preview-relaunch work is now complete.",
+        "founder_pov": "Users should get the full power of Odylith by default. The right fix is not to ship a weaker install, but to ship full Odylith through smaller, faster, reusable managed assets."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
+        "plan_file": "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "compass",
+          "name": "Compass"
+        },
+        {
+          "component_id": "dashboard",
+          "name": "Dashboard"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        },
+        {
+          "component_id": "registry",
+          "name": "Registry"
+        },
+        {
+          "component_id": "release",
+          "name": "Release"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "2026-03-28",
+        "updated": "2026-03-28",
+        "all_total_tasks": 94,
+        "all_done_tasks": 94,
+        "total_tasks": 42,
+        "done_tasks": 42,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 42/42",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 6,
+          "local_change_count": 1,
+          "file_touch_count": 1685
+        },
+        "48h": {
+          "commit_count": 6,
+          "local_change_count": 1,
+          "file_touch_count": 1686
+        }
+      },
+      "timeline": {
+        "start_date": "2026-03-28",
+        "last_activity_iso": "2026-04-27T21:26:50-07:00",
+        "age_days": 30,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 55,
+        "24h": {
+          "index": 75,
+          "band": "High"
+        },
+        "48h": {
+          "index": 75,
+          "band": "High"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 22,
+          "decision_evidence": true,
+          "explicit_count": 131,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 61,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 134,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 4,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-005"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-005"
         }
       ],
       "proof_summary_lines": []
@@ -57932,6 +57932,180 @@
       "proof_summary_lines": []
     },
     {
+      "idea_id": "B-063",
+      "title": "Release Planning and Workstream Targeting",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
+        "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
+        "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
+        "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
+        "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
+        "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "atlas",
+          "name": "Atlas"
+        },
+        {
+          "component_id": "compass",
+          "name": "Compass"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        },
+        {
+          "component_id": "radar",
+          "name": "Radar"
+        },
+        {
+          "component_id": "release",
+          "name": "Release"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "Removed from 0.1.11",
+      "plan": {
+        "created": "2026-04-08",
+        "updated": "2026-04-08",
+        "all_total_tasks": 63,
+        "all_done_tasks": 63,
+        "total_tasks": 28,
+        "done_tasks": 28,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 28/28",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 1686
+        },
+        "48h": {
+          "commit_count": 6,
+          "local_change_count": 0,
+          "file_touch_count": 1686
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-08",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
+        "age_days": 19,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [
+          "B-065"
+        ],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 55,
+        "24h": {
+          "index": 75,
+          "band": "High"
+        },
+        "48h": {
+          "index": 75,
+          "band": "High"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "contract-level",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 22,
+          "decision_evidence": true,
+          "explicit_count": 129,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 59,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 116,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 3,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-063"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-063"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
       "idea_id": "B-001",
       "title": "Product Self-Governance and Repo Boundary",
       "status": "finished",
@@ -58023,19 +58197,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 32,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -58179,19 +58353,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 31,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -58339,19 +58513,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1686
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 31,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -58499,19 +58673,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1686
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 28,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -58604,180 +58778,6 @@
       "proof_summary_lines": []
     },
     {
-      "idea_id": "B-063",
-      "title": "Release Planning and Workstream Targeting",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
-        "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
-        "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
-        "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
-        "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
-        "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
-        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "atlas",
-          "name": "Atlas"
-        },
-        {
-          "component_id": "compass",
-          "name": "Compass"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        },
-        {
-          "component_id": "radar",
-          "name": "Radar"
-        },
-        {
-          "component_id": "release",
-          "name": "Release"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "Removed from 0.1.11",
-      "plan": {
-        "created": "2026-04-08",
-        "updated": "2026-04-08",
-        "all_total_tasks": 63,
-        "all_done_tasks": 63,
-        "total_tasks": 28,
-        "done_tasks": 28,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 28/28",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 1686
-        },
-        "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 1686
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-08",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
-        "age_days": 19,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [
-          "B-065"
-        ],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 55,
-        "24h": {
-          "index": 73,
-          "band": "High"
-        },
-        "48h": {
-          "index": 73,
-          "band": "High"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "contract-level",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 22,
-          "decision_evidence": true,
-          "explicit_count": 129,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 59,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 116,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 3,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-063"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-063"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
       "idea_id": "B-069",
       "title": "Cross-Host Contract Hardening and Codex-Claude Separation",
       "status": "finished",
@@ -58845,19 +58845,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 18,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -58875,11 +58875,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 86,
+          "index": 88,
           "band": "High"
         },
         "48h": {
-          "index": 86,
+          "index": 88,
           "band": "High"
         }
       },
@@ -58947,6 +58947,161 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-069"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-050",
+      "title": "Repair and Reinstall Converge After Partial Runtime Failure",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "After a partial repair or reinstall failure, Odylith can leave target-version backups, failed staging trees, or stale wrapper state behind. The next repair attempt then hits secondary errors such as `Directory not empty` instead of converging.",
+        "customer": "- Primary: operators relying on `doctor --repair` or `reinstall --latest` to recover the repo in place.",
+        "proposed_solution": "- extract target-version residue cleanup around runtime staging - remove or reuse stale `.backup-*`, failed staging directories, and stale wrapper outputs safely - prove repeated repair and reinstall converge after injected partial failure",
+        "opportunity": "Make recovery idempotent so repeating the supported command always moves the repo toward one valid runtime state.",
+        "why_now": "The reported failure chain shows the current recovery contract is not idempotent.",
+        "founder_pov": "Repair has to be boring. If the second run is worse than the first, Odylith is teaching operators not to trust its own recovery commands."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "release",
+          "name": "Release"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "2026-04-27",
+        "updated": "2026-04-27",
+        "all_total_tasks": 20,
+        "all_done_tasks": 20,
+        "total_tasks": 15,
+        "done_tasks": 15,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 15/15",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 1,
+          "local_change_count": 2,
+          "file_touch_count": 1658
+        },
+        "48h": {
+          "commit_count": 1,
+          "local_change_count": 2,
+          "file_touch_count": 1658
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-27",
+        "last_activity_iso": "2026-04-27T21:33:02-07:00",
+        "age_days": 0,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 42,
+          "band": "Medium"
+        },
+        "48h": {
+          "index": 42,
+          "band": "Medium"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "contract-level",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 16,
+          "decision_evidence": true,
+          "explicit_count": 105,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 46,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 105,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 2,
+          "unsafe_closeout": false,
+          "verified_completion": false
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-050"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-050"
         }
       ],
       "proof_summary_lines": []
@@ -59841,19 +59996,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 29,
         "eta_days": 5,
         "eta_confidence": "high"
@@ -59869,11 +60024,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 47,
+          "index": 48,
           "band": "Medium"
         },
         "48h": {
-          "index": 47,
+          "index": 48,
           "band": "Medium"
         }
       },
@@ -60020,19 +60175,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 18,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60048,11 +60203,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 83,
+          "index": 84,
           "band": "High"
         },
         "48h": {
-          "index": 83,
+          "index": 84,
           "band": "High"
         }
       },
@@ -61417,19 +61572,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 18,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61605,19 +61760,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
-          "local_change_count": 1,
+          "commit_count": 3,
+          "local_change_count": 0,
           "file_touch_count": 1682
         },
         "48h": {
-          "commit_count": 2,
-          "local_change_count": 1,
+          "commit_count": 3,
+          "local_change_count": 0,
           "file_touch_count": 1682
         }
       },
       "timeline": {
         "start_date": "2026-04-12",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 15,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61633,11 +61788,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 35,
+          "index": 37,
           "band": "Low"
         },
         "48h": {
-          "index": 35,
+          "index": 37,
           "band": "Low"
         }
       },
@@ -71332,161 +71487,6 @@
       "proof_summary_lines": []
     },
     {
-      "idea_id": "B-050",
-      "title": "Repair and Reinstall Converge After Partial Runtime Failure",
-      "status": "queued",
-      "priority": "P0",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "After a partial repair or reinstall failure, Odylith can leave target-version backups, failed staging trees, or stale wrapper state behind. The next repair attempt then hits secondary errors such as `Directory not empty` instead of converging.",
-        "customer": "- Primary: operators relying on `doctor --repair` or `reinstall --latest` to recover the repo in place.",
-        "proposed_solution": "- extract target-version residue cleanup around runtime staging - remove or reuse stale `.backup-*`, failed staging directories, and stale wrapper outputs safely - prove repeated repair and reinstall converge after injected partial failure",
-        "opportunity": "Make recovery idempotent so repeating the supported command always moves the repo toward one valid runtime state.",
-        "why_now": "The reported failure chain shows the current recovery contract is not idempotent.",
-        "founder_pov": "Repair has to be boring. If the second run is worse than the first, Odylith is teaching operators not to trust its own recovery commands."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
-        "plan_file": ""
-      },
-      "registry_components": [
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "release",
-          "name": "Release"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "",
-        "updated": "",
-        "all_total_tasks": 0,
-        "all_done_tasks": 0,
-        "total_tasks": 0,
-        "done_tasks": 0,
-        "progress_ratio": 0.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.0,
-        "display_progress_label": "0% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "not_started",
-        "checklist_label": "",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 1,
-          "local_change_count": 0,
-          "file_touch_count": 1656
-        },
-        "48h": {
-          "commit_count": 1,
-          "local_change_count": 0,
-          "file_touch_count": 1656
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-06",
-        "last_activity_iso": "2026-04-26T22:04:43-07:00",
-        "age_days": 21,
-        "eta_days": null,
-        "eta_confidence": "low"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 38,
-          "band": "Low"
-        },
-        "48h": {
-          "index": 38,
-          "band": "Low"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "contract-level",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 16,
-          "decision_evidence": true,
-          "explicit_count": 105,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 46,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 105,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 2,
-          "unsafe_closeout": false,
-          "verified_completion": false
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-050"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-050"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
       "idea_id": "B-052",
       "title": "Legacy Migration Stale Reference Audit",
       "status": "queued",
@@ -78420,19 +78420,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 29,
         "eta_days": 5,
         "eta_confidence": "high"
@@ -78448,11 +78448,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 47,
+          "index": 48,
           "band": "Medium"
         },
         "48h": {
-          "index": 47,
+          "index": 48,
           "band": "Medium"
         }
       },
@@ -80020,19 +80020,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 18,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -80048,11 +80048,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 83,
+          "index": 84,
           "band": "High"
         },
         "48h": {
-          "index": 83,
+          "index": 84,
           "band": "High"
         }
       },
@@ -80230,19 +80230,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 17,
         "eta_days": null,
         "eta_confidence": "low"
@@ -80258,11 +80258,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 50,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
-          "index": 50,
+          "index": 52,
           "band": "Medium"
         }
       },
@@ -82798,19 +82798,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         }
       },
       "timeline": {
         "start_date": "2026-03-26",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 32,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -83141,19 +83141,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 31,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -83301,19 +83301,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1686
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 31,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -83473,19 +83473,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 3,
+          "commit_count": 6,
+          "local_change_count": 1,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 3,
+          "commit_count": 6,
+          "local_change_count": 1,
           "file_touch_count": 1686
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-04-27T20:20:06-07:00",
+        "last_activity_iso": "2026-04-27T21:26:50-07:00",
         "age_days": 30,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -86614,19 +86614,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1686
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 28,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -89325,7 +89325,7 @@
     {
       "idea_id": "B-050",
       "title": "Repair and Reinstall Converge After Partial Runtime Failure",
-      "status": "queued",
+      "status": "finished",
       "priority": "P0",
       "sizing": "M",
       "complexity": "High",
@@ -89341,7 +89341,7 @@
       },
       "links": {
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
-        "plan_file": ""
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md"
       },
       "registry_components": [
         {
@@ -89357,39 +89357,39 @@
       "release": {},
       "release_history_summary": "",
       "plan": {
-        "created": "",
-        "updated": "",
-        "all_total_tasks": 0,
-        "all_done_tasks": 0,
-        "total_tasks": 0,
-        "done_tasks": 0,
-        "progress_ratio": 0.0,
+        "created": "2026-04-27",
+        "updated": "2026-04-27",
+        "all_total_tasks": 20,
+        "all_done_tasks": 20,
+        "total_tasks": 15,
+        "done_tasks": 15,
+        "progress_ratio": 1.0,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.0,
-        "display_progress_label": "0% progress",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
         "display_progress_state": "percent",
-        "progress_classification": "not_started",
-        "checklist_label": "",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 15/15",
         "next_tasks": []
       },
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
-          "file_touch_count": 1656
+          "local_change_count": 2,
+          "file_touch_count": 1658
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
-          "file_touch_count": 1656
+          "local_change_count": 2,
+          "file_touch_count": 1658
         }
       },
       "timeline": {
-        "start_date": "2026-04-06",
-        "last_activity_iso": "2026-04-26T22:04:43-07:00",
-        "age_days": 21,
-        "eta_days": null,
-        "eta_confidence": "low"
+        "start_date": "2026-04-27",
+        "last_activity_iso": "2026-04-27T21:33:02-07:00",
+        "age_days": 0,
+        "eta_days": 0,
+        "eta_confidence": "high"
       },
       "lineage": {
         "reopens": [],
@@ -89402,12 +89402,12 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 38,
-          "band": "Low"
+          "index": 42,
+          "band": "Medium"
         },
         "48h": {
-          "index": 38,
-          "band": "Low"
+          "index": 42,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -91419,19 +91419,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
+          "commit_count": 6,
+          "local_change_count": 0,
           "file_touch_count": 1686
         },
         "48h": {
-          "commit_count": 5,
-          "local_change_count": 1,
+          "commit_count": 6,
+          "local_change_count": 0,
           "file_touch_count": 1686
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 19,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -91449,11 +91449,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         },
         "48h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         }
       },
@@ -92227,19 +92227,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 4,
-          "local_change_count": 1,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
+          "commit_count": 5,
+          "local_change_count": 0,
           "file_touch_count": 1685
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-27T20:14:31-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 18,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -92257,11 +92257,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 86,
+          "index": 88,
           "band": "High"
         },
         "48h": {
-          "index": 86,
+          "index": 88,
           "band": "High"
         }
       },
@@ -93497,19 +93497,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         },
         "48h": {
-          "commit_count": 3,
-          "local_change_count": 1,
+          "commit_count": 4,
+          "local_change_count": 0,
           "file_touch_count": 1683
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 18,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -94813,19 +94813,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 2,
-          "local_change_count": 1,
+          "commit_count": 3,
+          "local_change_count": 0,
           "file_touch_count": 1682
         },
         "48h": {
-          "commit_count": 2,
-          "local_change_count": 1,
+          "commit_count": 3,
+          "local_change_count": 0,
           "file_touch_count": 1682
         }
       },
       "timeline": {
         "start_date": "2026-04-12",
-        "last_activity_iso": "2026-04-27T20:12:39-07:00",
+        "last_activity_iso": "2026-04-27T20:22:32-07:00",
         "age_days": 15,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -94841,11 +94841,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 35,
+          "index": 37,
           "band": "Low"
         },
         "48h": {
-          "index": 35,
+          "index": 37,
           "band": "Low"
         }
       },
@@ -103909,12 +103909,14 @@
     "24h": [
       "B-005",
       "B-030",
+      "B-050",
       "B-063",
       "B-127"
     ],
     "48h": [
       "B-005",
       "B-030",
+      "B-050",
       "B-063",
       "B-096",
       "B-099",
@@ -103935,12 +103937,14 @@
     "24h": [
       "B-005",
       "B-030",
+      "B-050",
       "B-063",
       "B-127"
     ],
     "48h": [
       "B-005",
       "B-030",
+      "B-050",
       "B-063",
       "B-096",
       "B-099",
@@ -105336,24 +105340,30 @@
         }
       },
       "B-050": {
-        "rank": 1,
-        "rung": "R1",
-        "token": "background_trace",
-        "label": "Background trace",
+        "rank": 3,
+        "rung": "R3",
+        "token": "active_scope",
+        "label": "Active scope",
         "reasons": [
-          "The signal fans across too many scopes to promote directly.",
-          "Recent signal exists, but it is not strong enough to promote by default."
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Meaningful scope-local implementation evidence is present."
         ],
-        "caps": [
-          "broad_fanout"
-        ],
-        "promoted_default": false,
-        "budget_class": "cache_only",
+        "caps": [],
+        "promoted_default": true,
+        "budget_class": "fast_simple",
         "feature_vector": {
           "has_any_signal": true,
-          "window_inactive": false,
-          "governance_only_local_change": false,
-          "broad_fanout": true
+          "verified_completion": true,
+          "narrow_verified_signal": true,
+          "meaningful_scope_activity": true,
+          "decision_evidence": false,
+          "implementation_evidence": false,
+          "open_warning": false,
+          "cross_surface_conflict": false,
+          "stale_authority": false,
+          "unsafe_closeout": false,
+          "proof_blocker": false
         }
       },
       "B-051": {
@@ -108027,24 +108037,30 @@
         }
       },
       "B-050": {
-        "rank": 1,
-        "rung": "R1",
-        "token": "background_trace",
-        "label": "Background trace",
+        "rank": 3,
+        "rung": "R3",
+        "token": "active_scope",
+        "label": "Active scope",
         "reasons": [
-          "The signal fans across too many scopes to promote directly.",
-          "Recent signal exists, but it is not strong enough to promote by default."
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Meaningful scope-local implementation evidence is present."
         ],
-        "caps": [
-          "broad_fanout"
-        ],
-        "promoted_default": false,
-        "budget_class": "cache_only",
+        "caps": [],
+        "promoted_default": true,
+        "budget_class": "fast_simple",
         "feature_vector": {
           "has_any_signal": true,
-          "window_inactive": false,
-          "governance_only_local_change": false,
-          "broad_fanout": true
+          "verified_completion": true,
+          "narrow_verified_signal": true,
+          "meaningful_scope_activity": true,
+          "decision_evidence": false,
+          "implementation_evidence": false,
+          "open_warning": false,
+          "cross_surface_conflict": false,
+          "stale_authority": false,
+          "unsafe_closeout": false,
+          "proof_blocker": false
         }
       },
       "B-051": {

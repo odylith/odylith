@@ -1,6 +1,6 @@
 - Bug ID: CB-055
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-06
 
@@ -29,13 +29,20 @@
   restore flow. It does not sweep leftover target-version residue from earlier
   failed attempts before restaging the runtime.
 
-- Solution: Add narrow target-version residue cleanup for `.backup-*`, failed
+- Solution: Added narrow target-version residue cleanup for `.backup-*`, failed
   staging directories, and stale wrapper outputs before retrying replacement.
-  Prove repeated repair and reinstall converge after injected partial failure.
+  The cleanup is literal-name based, scoped to the requested target version, and
+  invoked before wrapped-runtime creation, runtime repair selection, and managed
+  release restaging.
 
-- Verification: Unit and integration tests should inject partial staging
-  residue, rerun repair or reinstall, and prove the repo returns to a single
-  healthy pinned runtime.
+- Verification:
+  - `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_runtime.py -k 'cleanup_runtime_versions_residue or install_release_runtime_cleans_stale_backup or install_release_runtime_replaces_stale_wrapper or doctor_runtime_repair_converges'`
+    passed (`5 passed, 37 deselected`).
+  - `PYTHONPATH=src python3 -m pytest -q tests/integration/install/test_manager.py -k 'reinstall_install_converges_repeatedly_with_stale_target_residue or reinstall_install_repairs_same_version_runtime_when_upgrade_requires_doctor'`
+    passed (`2 passed, 80 deselected`).
+  - Closing validation also ran the focused install/runtime suite, Casebook,
+    Radar backlog, technical-plan, component-registry, py_compile, and diff
+    hygiene checks.
 
 - Prevention: Release-lifecycle code needs characterization tests for
   interrupted staging and retry convergence, not only first-pass success.
@@ -78,13 +85,20 @@
 - Preflight Checks: Inspect runtime replacement, backup handling, and launcher
   regeneration before widening any cleanup rule.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added:
+  `test_cleanup_runtime_versions_residue_limits_scope_to_target_version`,
+  `test_cleanup_runtime_versions_residue_matches_literal_version_names`,
+  `test_install_release_runtime_cleans_stale_backup_and_stage_residue`,
+  `test_install_release_runtime_replaces_stale_wrapper_target`,
+  `test_doctor_runtime_repair_converges_with_target_residue`,
+  `test_reinstall_install_converges_repeatedly_with_stale_target_residue`.
 
 - Monitoring Updates: Watch repeated repair attempts for backup-residue and
   staging-residue failure signatures.
 
-- Residual Risk: Unexpected cross-version residue could still need explicit
-  handling if later release lanes widen staging topology.
+- Residual Risk: Low. Future residue classes still need explicit prefix
+  registration; the cleanup intentionally refuses broad or cross-version
+  deletion.
 
 - Related Incidents/Bugs:
   [CB-003](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-28-first-install-and-same-version-upgrade-mutate-live-runtime-before-fail-closed-proof.md),
@@ -107,4 +121,4 @@
 
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: 0.1.12 branch closeout commit for B-050/CB-055.

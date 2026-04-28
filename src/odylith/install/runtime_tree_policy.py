@@ -7,6 +7,9 @@ from pathlib import Path
 from odylith.install.fs import remove_path
 
 _IGNORED_RUNTIME_METADATA_FILENAMES = frozenset({".DS_Store"})
+_RUNTIME_RESIDUE_PREFIXES = ("backup", "stage", "staging")
+
+
 def is_ignored_runtime_tree_entry(*, version_root: Path, candidate: Path) -> bool:
     try:
         relative_path = candidate.relative_to(version_root)
@@ -40,11 +43,13 @@ def cleanup_runtime_versions_residue(versions_dir: Path, *, version: str) -> tup
     normalized_version = str(version or "").strip()
     if not normalized_version:
         return ()
+    residue_prefixes = tuple(f".{normalized_version}.{kind}-" for kind in _RUNTIME_RESIDUE_PREFIXES)
     removed: list[str] = []
-    for pattern in (f".{normalized_version}.backup-*", f".{normalized_version}.stage-*"):
-        for candidate in sorted(versions_dir.glob(pattern)):
-            if not candidate.exists() and not candidate.is_symlink():
-                continue
-            remove_path(candidate)
-            removed.append(str(candidate))
+    for candidate in sorted(versions_dir.iterdir(), key=lambda path: path.name):
+        if not candidate.name.startswith(residue_prefixes):
+            continue
+        if not candidate.exists() and not candidate.is_symlink():
+            continue
+        remove_path(candidate)
+        removed.append(str(candidate))
     return tuple(removed)

@@ -99,9 +99,6 @@ Last updated (UTC): 2026-04-28
 | CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
   presentation and next-action routing. | Open | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
-| CB-055 | 2026-04-06 | Repair and reinstall do not converge after partial runtime failure | P0 | `src/odylith/install/runtime.py`,
-  `src/odylith/install/manager.py`, runtime replacement helpers, repair
-  lifecycle, reinstall flow. | Open | [2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md](2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md) |
 | CB-054 | 2026-04-06 | Macos runtime metadata files break managed runtime trust validation | P0 | `src/odylith/install/runtime_integrity.py`,
   `src/odylith/install/runtime.py`, managed runtime trust policy, feature-pack
   preflight. | Open | [2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md](2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md) |
@@ -419,6 +416,9 @@ Last updated (UTC): 2026-04-28
   `src/odylith/install/manager.py`, and public install and upgrade guidance. | Closed | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
 | CB-061 | 2026-04-06 | Successful trust bootstrap still prints scary non fatal warnings | P1 | `src/odylith/install/release_assets.py`,
   `src/odylith/cli.py`, install and repair success messaging, release-note copy. | Closed | [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md) |
+| CB-055 | 2026-04-06 | Repair and reinstall do not converge after partial runtime failure | P0 | `src/odylith/install/runtime.py`,
+  `src/odylith/install/manager.py`, runtime replacement helpers, repair
+  lifecycle, reinstall flow. | Closed | [2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md](2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md) |
 | CB-062 | 2026-04-06 | Radar topology deep links fall through to stale filtered selection and browser proof misses disclosure gated routes | P0 | `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
   bundled Radar `backlog-app.v1.js` mirrors, Radar explicit-selection routing,
   and the Playwright browser proof lane in

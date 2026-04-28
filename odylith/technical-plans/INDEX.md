@@ -41,6 +41,7 @@ Last updated (UTC): 2026-04-27
 
 | Plan | Status | Created | Updated | Backlog |
 | --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md` | Done | 2026-04-27 | 2026-04-27 | `B-050` |
 | `odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md` | Done | 2026-04-27 | 2026-04-27 | `B-127` |
 
 ## Recently Completed (2026-04-26)
