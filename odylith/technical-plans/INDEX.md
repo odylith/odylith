@@ -40,6 +40,7 @@ Last updated (UTC): 2026-04-28
 
 | Plan | Status | Created | Updated | Backlog |
 | --- | --- | --- | --- | --- |
+| `odylith/technical-plans/done/2026-04/2026-04-28-sync-failure-summary-dedup-and-next-action-routing.md` | Done | 2026-04-28 | 2026-04-28 | `B-054` |
 | `odylith/technical-plans/done/2026-04/2026-04-28-legacy-migration-stale-reference-audit.md` | Done | 2026-04-28 | 2026-04-28 | `B-052` |
 | `odylith/technical-plans/done/2026-04/2026-04-28-legacy-radar-index-normalization-before-sync-validation.md` | Done | 2026-04-28 | 2026-04-28 | `B-053` |
 | `odylith/technical-plans/done/2026-04/2026-04-28-macos-runtime-trust-metadata-noise.md` | Done | 2026-04-28 | 2026-04-28 | `B-049` |

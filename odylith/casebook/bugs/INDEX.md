@@ -96,9 +96,6 @@ Last updated (UTC): 2026-04-28
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   benchmark progress finalization, benchmark cleanup/interruption handling,
   pinned-dogfood release proof, maintainer benchmark override contract. | Open | [2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md](2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md) |
-| CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
-  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
-  presentation and next-action routing. | Open | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
 | CB-060 | 2026-04-06 | Lifecycle plans print full dirty overlap by default | P2 | `src/odylith/cli.py`,
   `src/odylith/runtime/governance/sync_workstream_artifacts.py`, lifecycle-plan
   printers. | Open | [2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md](2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md) |
@@ -401,6 +398,9 @@ Last updated (UTC): 2026-04-28
 | CB-064 | 2026-04-07 | Hosted installer upgrades runtime without advancing repo pin | P1 | hosted installer publication flow,
   `src/odylith/cli.py`, install manager pin-alignment semantics in
   `src/odylith/install/manager.py`, and public install and upgrade guidance. | Closed | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
+| CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
+  presentation and next-action routing. | Closed | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
 | CB-061 | 2026-04-06 | Successful trust bootstrap still prints scary non fatal warnings | P1 | `src/odylith/install/release_assets.py`,
   `src/odylith/cli.py`, install and repair success messaging, release-note copy. | Closed | [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md) |
 | CB-055 | 2026-04-06 | Repair and reinstall do not converge after partial runtime failure | P0 | `src/odylith/install/runtime.py`,

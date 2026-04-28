@@ -1,6 +1,6 @@
 - Bug ID: CB-059
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-06
 
@@ -73,10 +73,17 @@
 - Preflight Checks: Inspect current sync failure text and validator outputs
   before designing the compact summary shape.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added: `tests/unit/runtime/test_sync_failure_summary.py`
+  covers duplicate failure counting, long-tail suppression, next-action routing
+  for metadata/rationale/table/fallback backlog-contract failures, and
+  execution-step failures using their own repair command instead of rerunning
+  the same failed sync. `tests/unit/runtime/test_sync_cli_compat.py` covers
+  the sync preflight terminal output with duplicate counts and representative
+  anchors.
 
 - Monitoring Updates: Watch sync failures for repeated-command guidance after
-  the summary router ships.
+  the summary router ships; repair-class failures should name the repair
+  command, not the failed sync command.
 
 - Residual Risk: Very large failure sets may still need a saved full report in
   a later wave.
@@ -99,4 +106,5 @@
 
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: 0.1.12 branch closeout; final commit recorded after this
+  governed chunk lands.
