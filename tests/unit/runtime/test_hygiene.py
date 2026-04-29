@@ -207,7 +207,7 @@ INTERVENTION_CONTRACT_BUNDLE_EXPECTATIONS: tuple[tuple[str, bool], ...] = (
 RUNTIME_HOTFILE_LIMITS = {
     "src/odylith/runtime/evaluation/odylith_benchmark_runner.py": 8429,
     "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py": 4085,
-    "src/odylith/runtime/orchestration/subagent_orchestrator.py": 3490,
+    "src/odylith/runtime/orchestration/subagent_orchestrator.py": 3364,
     "src/odylith/runtime/surfaces/render_mermaid_catalog.py": 3346,
     "src/odylith/runtime/surfaces/render_registry_dashboard.py": 3313,
     "src/odylith/runtime/context_engine/odylith_architecture_mode.py": 3289,
@@ -974,6 +974,7 @@ def test_subagent_router_runtime_policy_no_longer_uses_bind_shims() -> None:
 def test_subagent_orchestrator_runtime_no_longer_uses_bind_shims() -> None:
     paths = (
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py",
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_local_gates.py",
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_odylith_runtime.py",
     )
     for path in paths:
@@ -1325,6 +1326,7 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
             "def _normalized_rate(",
         ),
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py": ("def _int_value(",),
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_local_gates.py": ("def _int_value(",),
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_context_support.py": (
             "def _int_value(",
             "def _dedupe_strings(",

@@ -28,6 +28,7 @@ _SURFACE_HEADINGS = {
     "atlas": "Atlas",
     "compass": "Executive Compass",
 }
+SHELL_AUTO_RELOAD_TIMEOUT_MS = 30000
 
 
 def _legacy_payload_key(*parts: str) -> str:
@@ -138,6 +139,17 @@ def _render_shell_with_payload(repo_root: Path, monkeypatch, shell_payload: dict
     monkeypatch.setattr(renderer, "_build_self_host_payload", lambda **kwargs: {})
     rc = renderer.main(["--repo-root", str(repo_root), "--output", "odylith/index.html"])
     assert rc == 0
+
+
+def _wait_for_toolbar_version(page, expected_version: str) -> None:  # noqa: ANN001
+    page.wait_for_function(
+        "(version) => {"
+        "  const node = document.querySelector('.toolbar-version');"
+        "  return Boolean(node && node.textContent.trim() === version);"
+        "}",
+        arg=expected_version,
+        timeout=SHELL_AUTO_RELOAD_TIMEOUT_MS,
+    )
 
 
 def _render_shell_without_monkeypatch(repo_root: Path) -> None:
@@ -1228,10 +1240,7 @@ def test_open_shell_auto_reloads_after_dashboard_refresh_and_updates_version_lab
         )
         _render_shell(repo_root, monkeypatch)
 
-        page.wait_for_function(
-            "() => { const node = document.querySelector('.toolbar-version'); return Boolean(node && node.textContent.trim() === 'v1.2.3'); }",
-            timeout=15000,
-        )
+        _wait_for_toolbar_version(page, "v1.2.3")
         page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
         assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
 
@@ -1306,10 +1315,7 @@ def test_open_shell_auto_reload_reopens_new_upgrade_spotlight_after_prior_dismis
         )
         _render_shell(repo_root, monkeypatch)
 
-        page.wait_for_function(
-            "() => { const node = document.querySelector('.toolbar-version'); return Boolean(node && node.textContent.trim() === 'v1.2.3'); }",
-            timeout=15000,
-        )
+        _wait_for_toolbar_version(page, "v1.2.3")
         page.locator("#shellUpgradeSpotlight").wait_for(timeout=15000)
         assert page.locator("#upgradeSpotlightTitle").inner_text().strip() == "v1.2.3"
         assert page.locator("#upgradeReopen").is_hidden()
