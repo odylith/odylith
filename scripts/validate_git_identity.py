@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -13,6 +15,9 @@ from typing import Sequence
 
 EXPECTED_NAME = "freedom-research"
 EXPECTED_EMAIL = "freedom@freedompreetham.org"
+EXPECTED_GITHUB_LOGIN = EXPECTED_NAME
+EXPECTED_GITHUB_REPOSITORY = "odylith/odylith"
+EXPECTED_GITHUB_PERMISSIONS = frozenset({"ADMIN", "MAINTAIN", "WRITE"})
 EXPECTED_HISTORY_AUTHOR_NAMES = frozenset({EXPECTED_NAME, "Freedom Preetham"})
 EXPECTED_LOCAL_CONFIG = {
     "user.name": EXPECTED_NAME,
@@ -33,6 +38,20 @@ def _run_git(repo_root: Path, *args: str) -> str:
     if completed.returncode != 0:
         stderr = completed.stderr.strip() or completed.stdout.strip() or "unknown git failure"
         raise RuntimeError(f"git {' '.join(args)} failed: {stderr}")
+    return completed.stdout.strip()
+
+
+def _run_command(repo_root: Path, args: Sequence[str]) -> str:
+    completed = subprocess.run(
+        list(args),
+        cwd=repo_root,
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        stderr = completed.stderr.strip() or completed.stdout.strip() or "unknown command failure"
+        raise RuntimeError(f"{' '.join(args)} failed: {stderr}")
     return completed.stdout.strip()
 
 
@@ -121,6 +140,42 @@ def validate_commit_history(repo_root: Path, *, revisions: Sequence[str], includ
     return failures
 
 
+def validate_github_identity(repo_root: Path) -> list[str]:
+    if shutil.which("gh") is None:
+        return ["GitHub CLI `gh` is required before pushing from this repository"]
+
+    user_raw = _run_command(repo_root, ["gh", "api", "user"])
+    try:
+        user = json.loads(user_raw)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"gh api user returned invalid JSON: {exc}") from exc
+
+    failures: list[str] = []
+    login = str(user.get("login") or "")
+    email = str(user.get("email") or "")
+    if login != EXPECTED_GITHUB_LOGIN:
+        failures.append(f"GitHub login must be {EXPECTED_GITHUB_LOGIN!r} (found {login!r})")
+    if email != EXPECTED_EMAIL:
+        failures.append(f"GitHub email must be {EXPECTED_EMAIL!r} (found {email!r})")
+
+    permission_raw = _run_command(
+        repo_root,
+        ["gh", "repo", "view", EXPECTED_GITHUB_REPOSITORY, "--json", "viewerPermission"],
+    )
+    try:
+        permission_payload = json.loads(permission_raw)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"gh repo view returned invalid JSON: {exc}") from exc
+    permission = str(permission_payload.get("viewerPermission") or "")
+    if permission not in EXPECTED_GITHUB_PERMISSIONS:
+        expected = ", ".join(sorted(EXPECTED_GITHUB_PERMISSIONS))
+        failures.append(
+            f"GitHub permission for {EXPECTED_GITHUB_REPOSITORY} must be one of {{{expected}}} "
+            f"(found {permission!r})"
+        )
+    return failures
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Validate that Odylith maintainer git identity stays pinned to freedom-research.",
@@ -148,6 +203,12 @@ def _build_parser() -> argparse.ArgumentParser:
         nargs="*",
         help="Revision selectors for git log. Defaults to HEAD when omitted.",
     )
+
+    github_parser = subparsers.add_parser(
+        "github",
+        help="Validate the authenticated GitHub CLI account before push operations.",
+    )
+    github_parser.add_argument("--repo-root", type=Path, default=Path("."), help="Repository root.")
     return parser
 
 
@@ -157,6 +218,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if args.command == "config":
             failures = validate_local_identity(repo_root)
+        elif args.command == "github":
+            failures = validate_github_identity(repo_root)
         else:
             failures = validate_commit_history(
                 repo_root,

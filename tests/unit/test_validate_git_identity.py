@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -113,3 +114,45 @@ def test_history_validation_accepts_historical_author_alias_with_github_committe
     _run("git", "commit", "-m", "merged", cwd=repo, env=env)
 
     assert module.main(["history", "--repo-root", str(repo), "HEAD"]) == 0
+
+
+def test_github_validation_accepts_canonical_account(tmp_path: Path, monkeypatch) -> None:
+    module = _load_module()
+    repo = _init_repo(tmp_path)
+
+    monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/gh" if name == "gh" else None)
+
+    def fake_run_command(repo_root: Path, args: list[str]) -> str:
+        assert repo_root == repo
+        if args == ["gh", "api", "user"]:
+            return json.dumps({"login": EXPECTED_NAME, "email": EXPECTED_EMAIL})
+        if args == ["gh", "repo", "view", "odylith/odylith", "--json", "viewerPermission"]:
+            return json.dumps({"viewerPermission": "ADMIN"})
+        raise AssertionError(args)
+
+    monkeypatch.setattr(module, "_run_command", fake_run_command)
+
+    assert module.main(["github", "--repo-root", str(repo)]) == 0
+
+
+def test_github_validation_rejects_wrong_account(tmp_path: Path, monkeypatch, capsys) -> None:
+    module = _load_module()
+    repo = _init_repo(tmp_path)
+
+    monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/gh" if name == "gh" else None)
+
+    def fake_run_command(repo_root: Path, args: list[str]) -> str:
+        assert repo_root == repo
+        if args == ["gh", "api", "user"]:
+            return json.dumps({"login": "wrong-account", "email": "wrong@example.com"})
+        if args == ["gh", "repo", "view", "odylith/odylith", "--json", "viewerPermission"]:
+            return json.dumps({"viewerPermission": "READ"})
+        raise AssertionError(args)
+
+    monkeypatch.setattr(module, "_run_command", fake_run_command)
+
+    assert module.main(["github", "--repo-root", str(repo)]) == 1
+    stderr = capsys.readouterr().err
+    assert "GitHub login must be 'freedom-research'" in stderr
+    assert "GitHub email must be 'freedom@freedompreetham.org'" in stderr
+    assert "GitHub permission for odylith/odylith must be" in stderr
