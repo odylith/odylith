@@ -7,12 +7,16 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.common.value_coercion import int_value
+from odylith.runtime.context_engine import governance_signal_codec
 
 __all__ = (
     "count_or_list_len",
+    "embedded_governance_signal",
     "fallback_anchor_commands",
     "fallback_scan_commands",
     "normalized_string_list",
+    "routing_governance_obligations",
+    "routing_validation_bundle",
     "shell_quote",
     "truncate",
 )
@@ -49,6 +53,58 @@ def count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: s
         list_count,
         int_value(payload.get(count_key)),
     )
+
+
+def embedded_governance_signal(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Expand compact governance signals nested under a context packet payload."""
+
+    context_packet = dict(payload.get("context_packet", {})) if isinstance(payload.get("context_packet"), Mapping) else {}
+    route = dict(context_packet.get("route", {})) if isinstance(context_packet.get("route"), Mapping) else {}
+    return governance_signal_codec.expand_governance_signal(
+        dict(route.get("governance", {})) if isinstance(route.get("governance"), Mapping) else {}
+    )
+
+
+def routing_validation_bundle(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the explicit or embedded routing validation bundle."""
+
+    if isinstance(payload.get("validation_bundle"), Mapping):
+        return dict(payload.get("validation_bundle", {}))
+    governance = embedded_governance_signal(payload)
+    compact: dict[str, Any] = {}
+    for key in (
+        "recommended_command_count",
+        "strict_gate_command_count",
+        "plan_binding_required",
+        "governed_surface_sync_required",
+    ):
+        value = governance.get(key)
+        if value not in ("", [], {}, None, False):
+            compact[key] = value
+    return compact
+
+
+def routing_governance_obligations(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the explicit or embedded routing governance obligations."""
+
+    if isinstance(payload.get("governance_obligations"), Mapping):
+        return dict(payload.get("governance_obligations", {}))
+    governance = embedded_governance_signal(payload)
+    compact: dict[str, Any] = {}
+    for key in (
+        "touched_workstream_count",
+        "primary_workstream_id",
+        "touched_component_count",
+        "primary_component_id",
+        "required_diagram_count",
+        "linked_bug_count",
+        "closeout_doc_count",
+        "workstream_state_action_count",
+    ):
+        value = governance.get(key)
+        if value not in ("", [], {}, None, False):
+            compact[key] = value
+    return compact
 
 
 def shell_quote(value: str) -> str:

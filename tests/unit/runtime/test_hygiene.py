@@ -222,7 +222,7 @@ RUNTIME_HOTFILE_LIMITS = {
     "src/odylith/runtime/context_engine/tooling_context_packet_builder.py": 2534,
     "src/odylith/runtime/surfaces/dashboard_ui_primitives.py": 2521,
     "src/odylith/runtime/reasoning/tribunal_engine.py": 2469,
-    "src/odylith/runtime/context_engine/tooling_context_routing.py": 2158,
+    "src/odylith/runtime/context_engine/tooling_context_routing.py": 1923,
     "src/odylith/runtime/governance/validate_backlog_contract.py": 2158,
     "src/odylith/runtime/surfaces/compass_standup_brief_batch.py": 2076,
     "src/odylith/runtime/context_engine/odylith_context_engine_runtime_learning_runtime.py": 1996,
@@ -1263,6 +1263,9 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
             "def _fallback_anchor_commands(",
             "def _fallback_scan_commands(",
             "def _truncate(",
+            "def _routing_validation_bundle(",
+            "def _routing_governance_obligations(",
+            "def build_narrowing_guidance(",
         ),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_budgeting.py": ("def _int_value(", "def _mapping_value("),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_builder.py": (

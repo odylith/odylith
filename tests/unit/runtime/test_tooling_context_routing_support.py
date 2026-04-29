@@ -56,3 +56,27 @@ def test_fallback_scan_commands_keep_default_grounding_command() -> None:
 
     assert command == r"rg --files | rg 'AGENTS\.md|CLAUDE\.md|odylith/(AGENTS|CLAUDE)\.md|pyproject\.toml'"
     assert followup == "if [ -f AGENTS.md ]; then sed -n '1,200p' AGENTS.md; else sed -n '1,200p' CLAUDE.md; fi"
+
+
+def test_routing_validation_and_governance_fall_back_to_embedded_compact_signal() -> None:
+    payload = {
+        "context_packet": {
+            "route": {
+                "governance": {
+                    "sg": 2,
+                    "pb": True,
+                    "cd": 1,
+                    "wa": 3,
+                }
+            }
+        }
+    }
+
+    assert support.routing_validation_bundle(payload) == {
+        "strict_gate_command_count": 2,
+        "plan_binding_required": True,
+    }
+    assert support.routing_governance_obligations(payload) == {
+        "closeout_doc_count": 1,
+        "workstream_state_action_count": 3,
+    }
