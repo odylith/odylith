@@ -279,6 +279,24 @@ def test_write_effective_codex_hooks_refuses_symlink(tmp_path: Path) -> None:
     assert not hooks_path.with_name("hooks.json.odylith-preimage.bak").exists()
 
 
+def test_write_effective_codex_assets_refuse_symlinked_codex_directory(tmp_path: Path) -> None:
+    external_codex_root = tmp_path / "external-codex"
+    external_codex_root.mkdir()
+    external_config = external_codex_root / "config.toml"
+    external_hooks = external_codex_root / "hooks.json"
+    external_config.write_text('[model]\nprovider = "bedrock"\n', encoding="utf-8")
+    external_hooks.write_text('{"UserPromptSubmit":[]}\n', encoding="utf-8")
+    (tmp_path / ".codex").symlink_to(external_codex_root, target_is_directory=True)
+
+    codex_cli_capabilities.write_effective_codex_project_config(repo_root=tmp_path)
+    codex_cli_capabilities.write_effective_codex_hooks(repo_root=tmp_path)
+
+    assert external_config.read_text(encoding="utf-8") == '[model]\nprovider = "bedrock"\n'
+    assert external_hooks.read_text(encoding="utf-8") == '{"UserPromptSubmit":[]}\n'
+    assert not (external_codex_root / "config.toml.odylith-preimage.bak").exists()
+    assert not (external_codex_root / "hooks.json.odylith-preimage.bak").exists()
+
+
 def test_project_root_skill_prune_preserves_user_custom_skills(tmp_path: Path) -> None:
     source_root = tmp_path / "source"
     target_root = tmp_path / "repo"
@@ -298,3 +316,108 @@ def test_project_root_skill_prune_preserves_user_custom_skills(tmp_path: Path) -
 
     assert custom_skill.read_text(encoding="utf-8") == "# team custom\n"
     assert not retired_skill.exists()
+
+
+def test_sync_managed_project_root_assets_refuses_symlinked_managed_file(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source_hook = source_root / ".claude" / "hooks" / "odylith_support.py"
+    source_hook.parent.mkdir(parents=True)
+    source_hook.write_text("# managed hook\n", encoding="utf-8")
+    repo_root = tmp_path / "repo"
+    external_hook = tmp_path / "external-hook.py"
+    external_hook.write_text("# user hook\n", encoding="utf-8")
+    target_hook = repo_root / ".claude" / "hooks" / "odylith_support.py"
+    target_hook.parent.mkdir(parents=True)
+    target_hook.symlink_to(external_hook)
+
+    bootstrap_assets.sync_managed_project_root_assets(
+        repo_root=repo_root,
+        source_root=source_root,
+        activate_host_settings=False,
+    )
+
+    assert target_hook.is_symlink()
+    assert external_hook.read_text(encoding="utf-8") == "# user hook\n"
+
+
+def test_sync_managed_project_root_assets_refuses_symlinked_managed_directory(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    (source_root / ".claude").mkdir(parents=True)
+    (source_root / ".claude" / "CLAUDE.md").write_text("# managed claude\n", encoding="utf-8")
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    external_claude_root = tmp_path / "external-claude"
+    external_claude_root.mkdir()
+    (repo_root / ".claude").symlink_to(external_claude_root, target_is_directory=True)
+
+    bootstrap_assets.sync_managed_project_root_assets(
+        repo_root=repo_root,
+        source_root=source_root,
+        activate_host_settings=False,
+    )
+
+    assert (repo_root / ".claude").is_symlink()
+    assert not (external_claude_root / "CLAUDE.md").exists()
+
+
+def test_sync_managed_project_root_assets_refuses_symlinked_skill_prune_root(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    source_skill = source_root / ".agents" / "skills" / "odylith-start" / "SKILL.md"
+    source_skill.parent.mkdir(parents=True)
+    source_skill.write_text("# odylith-start\n", encoding="utf-8")
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    external_skills_root = tmp_path / "external-skills"
+    retired_skill = external_skills_root / "odylith-subagent-router" / "SKILL.md"
+    retired_skill.parent.mkdir(parents=True)
+    retired_skill.write_text("# external retired shim\n", encoding="utf-8")
+    (repo_root / ".agents").mkdir()
+    (repo_root / ".agents" / "skills").symlink_to(external_skills_root, target_is_directory=True)
+
+    bootstrap_assets.sync_managed_project_root_assets(
+        repo_root=repo_root,
+        source_root=source_root,
+        activate_host_settings=False,
+    )
+
+    assert retired_skill.read_text(encoding="utf-8") == "# external retired shim\n"
+
+
+def test_sync_managed_release_notes_refuses_symlinked_target_root(tmp_path: Path) -> None:
+    product_root = tmp_path / "product" / "odylith"
+    source_notes = product_root / "runtime" / "source" / "release-notes"
+    source_notes.mkdir(parents=True)
+    (source_notes / "v1.2.3.md").write_text("# v1.2.3\n", encoding="utf-8")
+    repo_root = tmp_path / "repo"
+    repo_notes_parent = repo_root / "odylith" / "runtime" / "source"
+    repo_notes_parent.mkdir(parents=True)
+    external_notes = tmp_path / "external-release-notes"
+    external_notes.mkdir()
+    keep_file = external_notes / "keep.md"
+    keep_file.write_text("# keep\n", encoding="utf-8")
+    (repo_notes_parent / "release-notes").symlink_to(external_notes, target_is_directory=True)
+
+    bootstrap_assets.sync_managed_release_notes(
+        repo_root=repo_root,
+        version="1.2.3",
+        product_root=product_root,
+    )
+
+    assert keep_file.read_text(encoding="utf-8") == "# keep\n"
+    assert not (external_notes / "v1.2.3.md").exists()
+
+
+def test_sync_managed_agents_guidelines_refuses_symlinked_odylith_root(tmp_path: Path) -> None:
+    product_root = tmp_path / "product" / "odylith"
+    source_guidelines = product_root / "agents-guidelines"
+    source_guidelines.mkdir(parents=True)
+    (source_guidelines / "SECURITY.md").write_text("# managed security\n", encoding="utf-8")
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    external_odylith_root = tmp_path / "external-odylith"
+    external_odylith_root.mkdir()
+    (repo_root / "odylith").symlink_to(external_odylith_root, target_is_directory=True)
+
+    bootstrap_assets.sync_managed_agents_guidelines(repo_root=repo_root, product_root=product_root)
+
+    assert not (external_odylith_root / "agents-guidelines" / "SECURITY.md").exists()

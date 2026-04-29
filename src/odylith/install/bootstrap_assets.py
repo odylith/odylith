@@ -535,23 +535,54 @@ def _managed_project_root_assets_root(product_root: Path | None = None) -> Path:
     return bundled_project_root_assets_root()
 
 
+def _path_has_repo_local_symlink(*, repo_root: Path, path: Path) -> bool:
+    root = Path(repo_root).resolve()
+    candidate = Path(path)
+    try:
+        relative_path = candidate.relative_to(root)
+    except ValueError:
+        return True
+    current = root
+    for part in relative_path.parts:
+        current = current / part
+        if current.is_symlink():
+            return True
+    return False
+
+
+def _copy_managed_asset(*, source_path: Path, repo_root: Path, target_path: Path) -> None:
+    root = Path(repo_root).resolve()
+    destination = Path(target_path)
+    if _path_has_repo_local_symlink(repo_root=root, path=destination.parent):
+        return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if _path_has_repo_local_symlink(repo_root=root, path=destination):
+        return
+    shutil.copy2(source_path, destination)
+
+
 def sync_managed_agents_guidelines(*, repo_root: Path, product_root: Path | None = None) -> None:
     source_root = _managed_product_root(product_root) / "agents-guidelines"
     if not source_root.is_dir():
         return
-    target_root = repo_root / "odylith" / "agents-guidelines"
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith" / "agents-guidelines"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name == ".DS_Store":
             continue
         target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_path)
 
 
 def sync_managed_scoped_guidance(*, repo_root: Path, product_root: Path | None = None) -> None:
     source_root = _managed_product_root(product_root)
-    target_root = repo_root / "odylith"
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name not in GUIDANCE_FILENAMES:
@@ -560,13 +591,14 @@ def sync_managed_scoped_guidance(*, repo_root: Path, product_root: Path | None =
         if len(relative_path.parts) == 1:
             continue
         target_path = target_root / relative_path
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_path)
 
 
 def prune_removed_project_root_skill_shims(*, source_root: Path, target_root: Path) -> None:
     source_skills_root = source_root / ".agents" / "skills"
     target_skills_root = target_root / ".agents" / "skills"
+    if _path_has_repo_local_symlink(repo_root=target_root, path=target_skills_root):
+        return
     if not target_skills_root.exists():
         return
     expected_files = (
@@ -611,8 +643,7 @@ def sync_managed_project_root_assets(
         if relative_path in _GENERATED_HOST_CONFIG_RELATIVE_PATHS:
             continue
         target_path = target_root / relative_path
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        _copy_managed_asset(source_path=source_path, repo_root=target_root, target_path=target_path)
     prune_removed_project_root_skill_shims(source_root=source_root, target_root=target_root)
     if activate_host_settings:
         write_effective_codex_project_config(repo_root=target_root)
@@ -622,7 +653,7 @@ def sync_managed_project_root_assets(
 def write_effective_codex_project_config(*, repo_root: Path) -> None:
     target_root = Path(repo_root).resolve()
     codex_root = target_root / ".codex"
-    if not codex_root.is_dir():
+    if not codex_root.is_dir() or _path_has_repo_local_symlink(repo_root=target_root, path=codex_root):
         return
     codex_cli_capabilities.write_effective_codex_project_config(repo_root=target_root)
     codex_cli_capabilities.write_effective_codex_hooks(repo_root=target_root)
@@ -631,7 +662,7 @@ def write_effective_codex_project_config(*, repo_root: Path) -> None:
 def write_effective_claude_project_settings(*, repo_root: Path) -> None:
     target_root = Path(repo_root).resolve()
     claude_root = target_root / ".claude"
-    if not claude_root.is_dir():
+    if not claude_root.is_dir() or _path_has_repo_local_symlink(repo_root=target_root, path=claude_root):
         return
     claude_cli_capabilities.write_effective_claude_project_settings(repo_root=target_root)
 
@@ -640,33 +671,40 @@ def sync_managed_skills(*, repo_root: Path, product_root: Path | None = None) ->
     source_root = _managed_product_root(product_root) / "skills"
     if not source_root.is_dir():
         return
-    target_root = repo_root / "odylith" / "skills"
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith" / "skills"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name == ".DS_Store":
             continue
         target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_path)
 
 
 def sync_managed_surface_brand(*, repo_root: Path, product_root: Path | None = None) -> None:
     source_root = _managed_product_root(product_root) / "surfaces" / "brand"
     if not source_root.is_dir():
         return
-    target_root = repo_root / "odylith" / "surfaces" / "brand"
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith" / "surfaces" / "brand"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name == ".DS_Store":
             continue
         target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_path)
 
 
 def sync_managed_release_notes(*, repo_root: Path, version: str = "", product_root: Path | None = None) -> None:
     source_root = (product_root or bundled_product_root()) / "runtime" / "source" / "release-notes"
-    target_root = repo_root / "odylith" / "runtime" / "source" / "release-notes"
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith" / "runtime" / "source" / "release-notes"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for candidate in target_root.iterdir():
         if candidate.is_symlink() or candidate.is_file():
@@ -681,4 +719,4 @@ def sync_managed_release_notes(*, repo_root: Path, version: str = "", product_ro
     source_path = source_root / f"v{normalized_version}.md"
     if not source_path.is_file() or source_path.name == ".DS_Store":
         return
-    shutil.copy2(source_path, target_root / source_path.name)
+    _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_root / source_path.name)

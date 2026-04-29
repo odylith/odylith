@@ -44,7 +44,7 @@
 
 - Rollback/Forward Fix: Forward-fix in 0.1.12. Do not reuse 0.1.11; keep GA release immutable and roll this into the active 0.1.12 branch.
 
-- Verification: 0.1.12 branch now has unit coverage for Claude credential/env/hook/permission preservation, invalid JSON refusal, symlink refusal, Codex hook merge, Codex config preservation, and Codex invalid JSON/symlink refusal. Install integration coverage proves install and upgrade preserve Claude/Codex host settings when runtime download fails before activation, and merge host settings only after verified runtime activation. Focused install manager, host asset, bundle, mirror, hygiene, and host contract suites passed on 2026-04-29.
+- Verification: 0.1.12 branch now has unit coverage for Claude credential/env/hook/permission preservation, invalid JSON refusal, direct settings symlink refusal, symlinked `.claude/` directory refusal, Codex hook merge, Codex config preservation, Codex invalid JSON/direct symlink refusal, symlinked `.codex/` directory refusal, symlinked managed project-root file refusal, symlinked managed project-root directory refusal, symlinked `.agents/skills` prune-root refusal, symlinked product-tree guidance refusal, and symlinked release-notes cleanup refusal. Install integration coverage proves install and upgrade preserve Claude/Codex host settings when runtime download fails before activation, and merge host settings only after verified runtime activation. Focused install manager, host asset, bundle, mirror, hygiene, browser, migration-gate, and host contract suites passed on 2026-04-29.
 
 - Closure Evidence: Implemented shared additive host settings helpers, skipped generated host config during raw project-root asset copy, disabled host settings activation during pre-runtime bootstrap/upgrade refresh, kept post-success activation additive, and preserved first preimage backups beside regular user-owned settings files.
 
@@ -54,9 +54,17 @@
   the original Claude SSL failure into an executable destructive-write inventory
   owned by the migration gate. The covered classes are:
   - Claude settings pre-verification writes, additive merge shape preservation,
-    invalid JSON/symlink refusal, and first-preimage backup stability.
+    invalid JSON/direct symlink refusal, symlinked `.claude/` project-root
+    refusal, and first-preimage backup stability.
   - Codex config preservation, hooks additive merge, and invalid
-    JSON/symlink refusal.
+    JSON/direct symlink refusal, plus symlinked `.codex/` project-root
+    refusal.
+  - Managed project-root asset copy refusal when `.claude/`, `.codex/`,
+    `.agents/`, individual managed files, or retired-shim cleanup roots are
+    symlinked into external locations.
+  - Managed product-tree asset copy and release-note cleanup refusal when the
+    destination `odylith/` path or release-note root is symlinked into external
+    locations.
   - `.agents/skills` pruning limited to known retired Odylith shims so custom
     user skills survive install/upgrade refresh.
   - Root guidance managed-block edits that preserve surrounding repo guidance.
@@ -81,6 +89,19 @@
   and added focused fixtures for Claude/Codex merge edge cases, custom skill
   preservation, legacy conflict blockers, and migration-gate destructive-write
   proof coverage.
+
+- Additional Fix: Managed asset sync now uses a shared repo-local destination
+  safety check before copying or deleting install-managed files. It refuses
+  symlinked ancestors and symlinked destination files for `.claude/`, `.codex/`,
+  `.agents/`, `odylith/agents-guidelines`, `odylith/skills`,
+  `odylith/surfaces/brand`, and release-note refresh targets. Claude and Codex
+  effective settings writers also refuse symlinked project settings roots.
+
+- Additional Verification 2026-04-29: `release migration-gate --json` passed
+  with 21 destructive-write scenarios covered. Focused host asset and migration
+  tests passed with 61 tests; broader install lifecycle tests passed with 167
+  tests; source-bundle mirror/hygiene passed with 52 tests; dashboard/browser
+  onboarding passed with 65 tests.
 
 - Agent Guardrails: Do not hand-edit or overwrite user host settings to make Odylith hooks work. Treat AI host config as customer data and preserve unknown keys, hooks, permissions, comments where possible, and preimages.
 

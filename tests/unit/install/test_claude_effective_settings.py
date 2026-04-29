@@ -217,3 +217,17 @@ def test_write_effective_claude_project_settings_refuses_symlink(tmp_path: Path)
 
     assert external_settings.read_text(encoding="utf-8") == '{"env":{"AWS_PROFILE":"do-not-touch"}}\n'
     assert not settings_path.with_name("settings.json.odylith-preimage.bak").exists()
+
+
+def test_write_effective_claude_project_settings_refuses_symlinked_claude_directory(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, with_claude_root=False)
+    external_claude_root = tmp_path / "external-claude"
+    external_claude_root.mkdir()
+    external_settings = external_claude_root / "settings.json"
+    external_settings.write_text('{"env":{"AWS_PROFILE":"external"}}\n', encoding="utf-8")
+    (tmp_path / ".claude").symlink_to(external_claude_root, target_is_directory=True)
+
+    claude_cli_capabilities.write_effective_claude_project_settings(repo_root=tmp_path)
+
+    assert external_settings.read_text(encoding="utf-8") == '{"env":{"AWS_PROFILE":"external"}}\n'
+    assert not (external_claude_root / "settings.json.odylith-preimage.bak").exists()

@@ -586,6 +586,8 @@ def write_effective_claude_project_settings(
     """Merge Odylith's effective `.claude/settings.json` contract to disk."""
     resolved_root = _resolve_repo_root(repo_root)
     target_path = _project_settings_path(resolved_root)
+    if target_path.parent.is_symlink():
+        return target_path
     target_path.parent.mkdir(parents=True, exist_ok=True)
     existing = host_project_settings.load_json_object_for_update(target_path)
     if existing is None:

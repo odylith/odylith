@@ -440,6 +440,8 @@ def write_effective_codex_project_config(
     """Write Odylith Codex config only when no user config would be replaced."""
     resolved_root = _resolve_repo_root(repo_root)
     target_path = resolved_root / ".codex" / "config.toml"
+    if target_path.parent.is_symlink():
+        return target_path
     target_path.parent.mkdir(parents=True, exist_ok=True)
     rendered = render_effective_codex_project_config(repo_root=resolved_root, capabilities=capabilities)
     if target_path.is_symlink():
@@ -463,6 +465,8 @@ def write_effective_codex_project_config(
 def write_effective_codex_hooks(*, repo_root: Path | str) -> Path:
     resolved_root = _resolve_repo_root(repo_root)
     target_path = resolved_root / ".codex" / "hooks.json"
+    if target_path.parent.is_symlink():
+        return target_path
     target_path.parent.mkdir(parents=True, exist_ok=True)
     existing = host_project_settings.load_json_object_for_update(target_path)
     if existing is None:

@@ -54,6 +54,11 @@ contract.
   root/state migration conflicts, runtime activation, ledger idempotency,
   repair-only lock cleanup, and generated-surface separation as adoption-risk
   guardrails with required proof markers.
+- Host-config and managed-asset destructive-write scenarios include symlinked
+  project roots, symlinked managed files, symlinked cleanup roots, and symlinked
+  product-tree targets. Install, upgrade, reinstall, and repair must skip those
+  writes instead of following external dotfile-manager or enterprise-managed
+  paths.
 - Legacy `odyssey` root migration must preflight conflicts before moving or
   deleting either root. If an existing `odylith/` or `.odylith/` path would be
   overwritten or discarded, the migration plan blocks and direct apply raises
@@ -79,8 +84,11 @@ contract.
   write fixture coverage, and release-gate output.
 - Unit: `tests/unit/install/test_claude_effective_settings.py` and
   `tests/unit/install/test_codex_project_assets.py` cover host settings
-  additive merge, invalid JSON/symlink refusal, preimage stability, existing
-  Codex config preservation, and custom `.agents/skills` preservation.
+  additive merge, invalid JSON/direct symlink refusal, symlinked `.claude/` and
+  `.codex/` project-root refusal, preimage stability, existing Codex config
+  preservation, custom `.agents/skills` preservation, symlinked managed asset
+  destination refusal, symlinked skill-prune root refusal, and symlinked
+  release-note cleanup refusal.
 - Unit: `tests/unit/install/test_versioning.py`,
   `tests/unit/install/test_lock_hygiene.py`, and
   `tests/unit/install/test_upgrade_reporting.py` cover shared version ordering,
@@ -101,3 +109,4 @@ contract.
 - 2026-04-27: Hardened the 0.1.12 gate with legacy Odyssey repo-state migration, active-versus-historical version separation, explicit fixture markers, shared install versioning, and expanded scenario coverage. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-135)
 - 2026-04-27: Added staged-runtime verification evidence to the migration plan contract after the full QA pass exposed false verification-missing blocks in upgrade integration fixtures. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-135)
 - 2026-04-29: Added destructive-write scenario inventory and gate proof after CB-136 showed install could destroy host AI settings under enterprise SSL failure; also blocked legacy root/state conflict overwrites and narrowed `.agents/skills` pruning to known retired Odylith shims. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)
+- 2026-04-29: Expanded CB-136 from direct settings overwrite into symlinked host/project managed-asset protection; the release gate now proves 21 destructive-write scenarios, including symlinked `.claude/`, `.codex/`, `.agents/`, `odylith/`, and release-note target paths. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)

@@ -70,6 +70,15 @@ _SCENARIOS: tuple[DestructiveWriteScenario, ...] = (
         ),
     ),
     DestructiveWriteScenario(
+        scenario_id="host.claude.symlinked-project-root",
+        surface=".claude/",
+        lifecycle_paths=("install", "reinstall", "upgrade", "doctor --repair"),
+        data_at_risk="external Claude project settings directories such as dotfile-manager or enterprise-managed config",
+        unsafe_failure_mode="write Odylith settings through a symlinked .claude directory into external host config",
+        required_guardrail="treat symlinked host config directories as externally owned and leave them untouched",
+        proof_markers=("test_write_effective_claude_project_settings_refuses_symlinked_claude_directory",),
+    ),
+    DestructiveWriteScenario(
         scenario_id="host.claude.preimage-stability",
         surface=".claude/settings.json.odylith-preimage.bak",
         lifecycle_paths=("install", "reinstall", "upgrade", "doctor --repair"),
@@ -115,6 +124,15 @@ _SCENARIOS: tuple[DestructiveWriteScenario, ...] = (
         ),
     ),
     DestructiveWriteScenario(
+        scenario_id="host.codex.symlinked-project-root",
+        surface=".codex/",
+        lifecycle_paths=("install", "reinstall", "upgrade", "doctor --repair"),
+        data_at_risk="external Codex project settings directories such as dotfile-manager or enterprise-managed config",
+        unsafe_failure_mode="write Odylith config or hooks through a symlinked .codex directory into external host config",
+        required_guardrail="treat symlinked host config directories as externally owned and leave them untouched",
+        proof_markers=("test_write_effective_codex_assets_refuse_symlinked_codex_directory",),
+    ),
+    DestructiveWriteScenario(
         scenario_id="host.codex.skill-prune",
         surface=".agents/skills",
         lifecycle_paths=("install", "reinstall", "upgrade", "doctor --repair"),
@@ -122,6 +140,31 @@ _SCENARIOS: tuple[DestructiveWriteScenario, ...] = (
         unsafe_failure_mode="delete every skill not present in the Odylith curated bundle",
         required_guardrail="prune only known retired Odylith shims, never arbitrary user skills",
         proof_markers=("test_project_root_skill_prune_preserves_user_custom_skills",),
+    ),
+    DestructiveWriteScenario(
+        scenario_id="managed.project-root-linked-targets",
+        surface=".claude/, .codex/, .agents/",
+        lifecycle_paths=("install", "reinstall", "upgrade", "doctor --repair"),
+        data_at_risk="external files reached by symlinked managed project-root assets or symlinked skill cleanup roots",
+        unsafe_failure_mode="copy managed assets or prune retired shims through symlinked repo paths into external files",
+        required_guardrail="skip managed asset writes and cleanup whenever the destination path contains a symlink",
+        proof_markers=(
+            "test_sync_managed_project_root_assets_refuses_symlinked_managed_file",
+            "test_sync_managed_project_root_assets_refuses_symlinked_managed_directory",
+            "test_sync_managed_project_root_assets_refuses_symlinked_skill_prune_root",
+        ),
+    ),
+    DestructiveWriteScenario(
+        scenario_id="managed.product-tree-linked-targets",
+        surface="odylith/ managed guidance, skills, brand, and release-note assets",
+        lifecycle_paths=("install", "reinstall", "upgrade", "doctor --repair"),
+        data_at_risk="external product-tree files reached by symlinked odylith/ paths",
+        unsafe_failure_mode="copy or clean install-managed Odylith assets through symlinked target roots",
+        required_guardrail="skip managed product-tree writes and release-note cleanup whenever the destination path contains a symlink",
+        proof_markers=(
+            "test_sync_managed_release_notes_refuses_symlinked_target_root",
+            "test_sync_managed_agents_guidelines_refuses_symlinked_odylith_root",
+        ),
     ),
     DestructiveWriteScenario(
         scenario_id="guidance.root-managed-block",
