@@ -7,7 +7,6 @@ searchable/filterable local view.
 
 from __future__ import annotations
 
-import argparse
 import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -21,6 +20,7 @@ from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import render_casebook_dashboard_cli
 from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.common import stable_generated_utc
@@ -29,22 +29,6 @@ from odylith.runtime.context_engine import odylith_context_engine_store
 
 _CASEBOOK_DETAIL_SHARD_SIZE = 32
 _CASEBOOK_REFRESH_GUARD_KEY = "casebook-dashboard-render"
-
-
-def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        prog="odylith sync",
-        description="Render odylith/casebook/casebook.html from the bug knowledge base.",
-    )
-    parser.add_argument("--repo-root", default=".")
-    parser.add_argument("--output", default="odylith/casebook/casebook.html")
-    parser.add_argument(
-        "--runtime-mode",
-        choices=("auto", "standalone", "daemon"),
-        default="auto",
-        help="Use the local runtime projection store when available for bug rows.",
-    )
-    return parser.parse_args(argv)
 
 
 def _refresh_guard_watched_paths() -> tuple[str, ...]:
@@ -854,6 +838,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       margin-bottom: 8px;
       cursor: pointer;
       color: inherit;
+      white-space: normal;
+      overflow-wrap: anywhere;
       transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
     }}
     .bug-row:hover {{
@@ -874,9 +860,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       margin-bottom: 7px;
     }}
     .bug-row-head > *:first-child {{
+      flex: 1 1 auto;
       min-width: 0;
     }}
     .bug-row-date {{
+      flex: 0 0 auto;
       white-space: nowrap;
     }}
 .bug-row-meta,
@@ -1081,7 +1069,13 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .detail-links {{
       align-items: flex-start;
     }}
-
+    .bug-row-meta .list-chip,
+    .detail-meta .meta-chip {{
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.2;
+    }}
     .bug-row-meta::-webkit-scrollbar,
     .detail-meta::-webkit-scrollbar,
     .detail-links::-webkit-scrollbar,
@@ -2287,7 +2281,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       detailPane.innerHTML = `
         <section class="detail-head">
           <div class="detail-headline">
-            <h1 class="detail-title">${{escapeHtml(detail.title || detail.bug_key || "Bug detail")}}</h1>
+            <h2 class="detail-title">${{escapeHtml(detail.title || detail.bug_key || "Bug detail")}}</h2>
           </div>
           ${{summaryFacts ? `<div class="summary-facts" role="list">${{summaryFacts}}</div>` : ""}}
           ${{summary}}
@@ -2433,7 +2427,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = _parse_args(argv)
+    args = render_casebook_dashboard_cli.parse_args(argv)
     repo_root = Path(str(args.repo_root)).resolve()
     output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.output))
     validation = casebook_source_validation.validate_casebook_sources(repo_root=repo_root)

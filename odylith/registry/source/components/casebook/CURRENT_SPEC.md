@@ -52,6 +52,9 @@ and source evidence.
   Rebuilds `INDEX.md` from markdown bug files.
 - `src/odylith/runtime/surfaces/render_casebook_dashboard.py`
   Renders the Casebook dashboard from the bug snapshot.
+- `src/odylith/runtime/surfaces/render_casebook_dashboard_cli.py`
+  Owns the renderer CLI argument contract so dashboard rendering does not keep
+  growing the already-large browser projection owner.
 
 ## Bug Markdown Model
 Casebook bug files are semi-structured markdown documents with metadata fields
@@ -179,6 +182,7 @@ It is the product learning archive, not just a list of open bugs.
 - `odylith governance sync-casebook-bug-index --repo-root .`
 - `odylith sync --repo-root . --check-only`
 - `PYTHONPATH=src python -m odylith.runtime.surfaces.render_casebook_dashboard --repo-root . --output odylith/casebook/casebook.html`
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_casebook_dashboard.py tests/integration/runtime/test_casebook_sort_browser.py`
 
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.

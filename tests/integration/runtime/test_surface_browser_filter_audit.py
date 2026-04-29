@@ -94,7 +94,7 @@ def test_casebook_filter_audit_accepts_compact_bug_ids_and_normalized_titles(bro
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
 
     first_bug = casebook.locator("button.bug-row").first
     bug_route = str(first_bug.get_attribute("data-bug") or "").strip()

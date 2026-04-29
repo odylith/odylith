@@ -558,7 +558,8 @@ def test_shell_tab_matrix_keeps_single_visible_pane_in_compact_viewport(compact_
         _wait_for_shell_tab(page, tab)
         assert page.locator(tab_selector).get_attribute("aria-selected") == "true"
         _assert_single_visible_pane(page, frame_selector)
-        page.frame_locator(frame_selector).locator("h1", has_text=heading_text).wait_for(timeout=15000)
+        heading_selector = ".hero-title" if tab == "casebook" else "h1"
+        page.frame_locator(frame_selector).locator(heading_selector, has_text=heading_text).wait_for(timeout=15000)
         src = str(page.locator(frame_selector).get_attribute("src") or "")
         assert route_fragment in src
 
@@ -989,7 +990,7 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     filter_geometry = casebook.locator(".filters-bar").evaluate(
         """node => {
             const bar = node.getBoundingClientRect();
@@ -1061,7 +1062,7 @@ def test_casebook_first_bug_rows_load_details_without_dead_shards(browser_contex
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
 
     sample_rows = casebook.locator("button.bug-row").evaluate_all(
         """nodes => nodes.slice(0, 6).map((node) => ({
@@ -1191,7 +1192,7 @@ def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_
                 assert response is not None and response.ok
 
                 casebook = page.frame_locator("#frame-casebook")
-                casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+                casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
                 _wait_for_shell_query_param(page, tab="casebook", key="bug", value="CB-999")
                 casebook.locator("#detailPane .detail-title", has_text="Proof control primary").wait_for(timeout=15000)
                 casebook.locator("#detailPane .section-heading", has_text="Proof Control Panel").wait_for(timeout=15000)
@@ -3066,7 +3067,7 @@ def test_casebook_detail_stacks_cleanly_in_compact_viewport(compact_browser_cont
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
 
     first_bug = casebook.locator("button.bug-row").first
     bug_route = str(first_bug.get_attribute("data-bug") or "").strip()

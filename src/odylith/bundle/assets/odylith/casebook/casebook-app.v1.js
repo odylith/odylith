@@ -1062,7 +1062,7 @@ const DATA = window["__ODYLITH_CASEBOOK_DATA__"] || {};
       detailPane.innerHTML = `
         <section class="detail-head">
           <div class="detail-headline">
-            <h1 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h1>
+            <h2 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h2>
           </div>
           ${summaryFacts ? `<div class="summary-facts" role="list">${summaryFacts}</div>` : ""}
           ${summary}

@@ -6,6 +6,7 @@ Last updated (UTC): 2026-04-29
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-138 | 2026-04-29 | Casebook list clips long consumer bug cards | P2 | casebook | Fixed Pending Release | [2026-04-29-casebook-list-clips-long-consumer-bug-cards.md](2026-04-29-casebook-list-clips-long-consumer-bug-cards.md) |
 | CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Resolved | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
 | CB-120 | 2026-04-16 | Dashboard shell diagnostic cockpit leaked into product render | P1 | dashboard | Resolved | [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md) |
 | CB-119 | 2026-04-16 | Benchmark live proof conflates support paths write targets and read only sandbox | P1 | benchmark | Open | [2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md](2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md) |

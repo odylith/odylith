@@ -122,12 +122,18 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));" in html
     assert "padding: 10px 12px;" in html
     assert "Odylith Agent Learnings" in app_js
+    assert '<h2 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h2>' in app_js
+    assert '<h1 class="detail-title">' not in app_js
     assert "Human Readout" not in app_js
     assert "Nearby Change Guidance" not in app_js
     assert "Inspect Next" not in app_js
     assert ".component-subtitle, .ref-meta {" in html
     assert "font-size: var(--surface-identifier-font-size, 14px);" in html
     assert "font-weight: var(--surface-identifier-font-weight, 500);" in html
+    assert "white-space: normal;" in html
+    assert ".bug-row-meta .list-chip," in html
+    assert ".detail-meta .meta-chip {" in html
+    assert "overflow-wrap: anywhere;" in html
     assert ".bug-row-kicker {" in html
     assert ".bug-row-kicker, .detail-kicker {" not in html
     assert "text-transform: uppercase;" in html

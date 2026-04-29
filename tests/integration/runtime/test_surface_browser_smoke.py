@@ -228,7 +228,7 @@ def test_surface_entrypoints_redirect_into_shell_and_load_requested_surface(brow
     surfaces = (
         ("/odylith/radar/radar.html", "radar", "#frame-radar", "h1", "Backlog Workstream Radar"),
         ("/odylith/registry/registry.html", "registry", "#frame-registry", "h1", "Component Registry"),
-        ("/odylith/casebook/casebook.html", "casebook", "#frame-casebook", "h1", "Casebook"),
+        ("/odylith/casebook/casebook.html", "casebook", "#frame-casebook", ".hero-title", "Casebook"),
         ("/odylith/atlas/atlas.html", "atlas", "#frame-atlas", "h1", "Atlas"),
         ("/odylith/compass/compass.html", "compass", "#frame-compass", "h1", "Executive Compass"),
     )
@@ -255,7 +255,7 @@ def test_tooling_shell_routes_into_all_child_surfaces(browser_context) -> None: 
     tab_expectations = (
         ("#tab-radar", "#frame-radar", "h1", "Backlog Workstream Radar"),
         ("#tab-registry", "#frame-registry", "h1", "Component Registry"),
-        ("#tab-casebook", "#frame-casebook", "h1", "Casebook"),
+        ("#tab-casebook", "#frame-casebook", ".hero-title", "Casebook"),
         ("#tab-atlas", "#frame-atlas", "h1", "Atlas"),
         ("#tab-compass", "#frame-compass", "h1", "Executive Compass"),
     )
@@ -654,14 +654,14 @@ def test_shell_cross_tab_hops_keep_compass_global_runtime_fresh(browser_context)
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
     _assert_compass_live_state(compass, window_token="24h")
 
-    for tab_selector, frame_selector, heading_text in (
-        ("#tab-registry", "#frame-registry", "Component Registry"),
-        ("#tab-casebook", "#frame-casebook", "Casebook"),
-        ("#tab-atlas", "#frame-atlas", "Atlas"),
-        ("#tab-radar", "#frame-radar", "Backlog Workstream Radar"),
+    for tab_selector, frame_selector, heading_selector, heading_text in (
+        ("#tab-registry", "#frame-registry", "h1", "Component Registry"),
+        ("#tab-casebook", "#frame-casebook", ".hero-title", "Casebook"),
+        ("#tab-atlas", "#frame-atlas", "h1", "Atlas"),
+        ("#tab-radar", "#frame-radar", "h1", "Backlog Workstream Radar"),
     ):
         page.locator(tab_selector).click()
-        page.frame_locator(frame_selector).locator("h1", has_text=heading_text).wait_for(timeout=15000)
+        page.frame_locator(frame_selector).locator(heading_selector, has_text=heading_text).wait_for(timeout=15000)
 
     page.locator("#tab-compass").click()
     _wait_for_shell_tab(page, "compass")
@@ -814,7 +814,7 @@ def test_casebook_selection_and_shell_history_stay_routable(browser_context) -> 
 
     assert page.locator("#tab-casebook").get_attribute("aria-selected") == "true"
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
 
     first_bug = casebook.locator("button.bug-row").first
     first_bug.wait_for(timeout=15000)
@@ -868,7 +868,7 @@ def test_casebook_counts_match_bug_index_after_shell_navigation(browser_context)
     page.locator("#tab-casebook").click()
     _wait_for_shell_tab(page, "casebook")
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     _assert_casebook_counts(
         casebook,
         expected_open_total=expected_open_total,
@@ -888,7 +888,7 @@ def test_casebook_entrypoint_counts_match_bug_index_after_reload(browser_context
     page.wait_for_url(re.compile(r".*/odylith/index\.html\?tab=casebook([&#].*|$)"), timeout=15000)
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     _assert_casebook_counts(
         casebook,
         expected_open_total=expected_open_total,
@@ -1250,7 +1250,7 @@ def test_invalid_surface_routes_fall_back_to_valid_detail_selection(browser_cont
     response = page.goto(base_url + f"/odylith/index.html?tab=casebook&bug={invalid_bug}", wait_until="domcontentloaded")
     assert response is not None and response.ok
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     casebook_active = casebook.locator("button.bug-row.active")
     casebook_active.wait_for(timeout=15000)
     casebook_active_bug = str(casebook_active.first.get_attribute("data-bug") or "").strip()

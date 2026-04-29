@@ -103,7 +103,7 @@ def test_casebook_sort_control_orders_rows_and_round_trips_url_state(browser_con
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     casebook.locator("#sortFilter").wait_for(timeout=15000)
 
     assert casebook.locator("#sortFilter").input_value() == "newest"
@@ -138,7 +138,7 @@ def test_casebook_workstream_action_chips_omit_radar_prefix(browser_context) -> 
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     rows = casebook.locator("button.bug-row")
     row_count = min(rows.count(), 40)
     found_workstream_chip = False

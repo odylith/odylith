@@ -73,6 +73,7 @@ Related Bugs:
 - [2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-compass-programs-can-regrow-a-redundant-nested-inner-card.md)
 - [2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-14-compass-rolling-timeline-audit-can-hide-prior-day-window-activity-behind-selecte.md)
 - [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md)
+- [2026-04-29-casebook-list-clips-long-consumer-bug-cards.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-29-casebook-list-clips-long-consumer-bug-cards.md)
 - no related Casebook-specific bug record exists yet for detail-view field repetition or header-collapse regressions; keep the failure mode visible in this plan and handoff until it is formalized
 - April 16 follow-on: the live CB-120 screenshot exposed bad source truth in
       `Reproducibility`; all Casebook records now keep that field to one compact
@@ -174,6 +175,9 @@ Related Bugs:
       above child surfaces, including the legacy snapshot slab, recorder tape,
       chart DOM, and ECharts hydration. CB-120 now fixes that as a product
       invariant breach, not as polish.
+- [x] Casebook selector rows could inherit native button whitespace and clip
+      long consumer bug titles, summaries, and status chips in the list column
+      even though Casebook source validation passed.
 - [ ] Compass is still below release bar after the maintained-global narration
       follow-on. The bounded hot exact-reuse lane now measures `0.3s`
       internal (`0.73s` wall), the rebuilt cold shell-safe lane measures
@@ -354,6 +358,9 @@ Related Bugs:
 - [x] Casebook detail headers keep the selected bug id in the summary-facts
       band and must not also render a standalone `CB-###` kicker above the
       title.
+- [x] Casebook selector rows wrap long titles, summaries, and status chips
+      without hidden horizontal clipping in desktop and compact browser proof,
+      and selected bug detail titles do not create a second page-level `h1`.
 - [x] Compass `Release Targets` member cards keep the workstream title on a
       dedicated second row under the ID/status chip row; short titles must not
       collapse back into the first row.
@@ -533,6 +540,10 @@ Related Bugs:
 - [x] `python -m playwright install chromium`
 - [x] `pytest tests/unit/runtime/test_render_tooling_dashboard.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py tests/unit/runtime/test_tooling_dashboard_runtime_builder.py tests/unit/runtime/test_tooling_dashboard_template_context.py -q`
 - [x] `pytest tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_never_renders_internal_status_across_tabs -q`
+- [x] `python -m py_compile src/odylith/runtime/surfaces/render_casebook_dashboard.py src/odylith/runtime/surfaces/render_casebook_dashboard_cli.py tests/unit/runtime/test_render_casebook_dashboard.py tests/integration/runtime/test_casebook_list_layout_browser.py tests/integration/runtime/surface_browser_test_support.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_ux_audit.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_casebook_dashboard.py tests/unit/runtime/test_source_bundle_mirror.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_casebook_list_layout_browser.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_surface_browser_layout_audit.py tests/integration/runtime/test_surface_browser_filter_audit.py tests/integration/runtime/test_surface_browser_ux_audit.py tests/integration/runtime/test_surface_browser_deep.py tests/integration/runtime/test_context_execution_alignment_browser.py tests/integration/runtime/test_intervention_visibility_browser.py tests/integration/runtime/test_compass_browser_regression_matrix.py tests/integration/runtime/test_atlas_sort_browser.py tests/integration/runtime/test_casebook_sort_browser.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py tests/integration/runtime/test_casebook_list_layout_browser.py`
 
 ## Rollout/Communication
 - [ ] Note the Casebook regression explicitly so future Compass or shell
@@ -774,6 +785,10 @@ Related Bugs:
       recorder/chart CSS, and Playwright injects legacy diagnostic
       payload keys while proving Radar, Registry, Casebook, Atlas, and Compass
       render without those strings or selectors.
+- [x] April 29 Casebook selector follow-on closes CB-138: row buttons opt back
+      into normal wrapping, metadata chips wrap inside list and detail meta,
+      selected bug titles render as `h2`, and focused desktop/compact long-row
+      browser proof now guards the regression.
 - [x] April 7 Compass closeout follow-on reconciles the remaining open Compass
       claims with code-level proof: global changed-packet cache recovery stays
       disabled, self-host/install posture remains part of the standup-brief
