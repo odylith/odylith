@@ -1949,6 +1949,7 @@ def upgrade_install(
                 active_version=current_version,
             ),
             product_root=_bundled_product_root_for_runtime(current_runtime_root(repo_root=root)),
+            activate_host_settings=False,
         )
 
         if source_repo:

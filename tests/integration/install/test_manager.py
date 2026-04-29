@@ -798,6 +798,134 @@ def test_install_bundle_derives_effective_codex_config_from_local_capabilities(m
     assert (repo_root / ".odylith" / "runtime" / "current").is_symlink()
 
 
+def test_install_bundle_preserves_host_settings_when_runtime_download_fails(monkeypatch, tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    claude_settings_path = repo_root / ".claude" / "settings.json"
+    codex_config_path = repo_root / ".codex" / "config.toml"
+    codex_hooks_path = repo_root / ".codex" / "hooks.json"
+    claude_settings_path.parent.mkdir(parents=True)
+    codex_config_path.parent.mkdir(parents=True)
+    original_claude_settings = json.dumps(
+        {
+            "env": {"AWS_PROFILE": "production"},
+            "hooks": {"UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 user.py"}]}]},
+        },
+        indent=2,
+        sort_keys=True,
+    ) + "\n"
+    original_codex_config = '[model]\nprovider = "bedrock"\n'
+    original_codex_hooks = '{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"python3 user.py"}]}]}\n'
+    claude_settings_path.write_text(original_claude_settings, encoding="utf-8")
+    codex_config_path.write_text(original_codex_config, encoding="utf-8")
+    codex_hooks_path.write_text(original_codex_hooks, encoding="utf-8")
+
+    def _raise_ssl_failure(**kwargs):  # noqa: ANN003
+        del kwargs
+        raise RuntimeError("ssl certificate verify failed")
+
+    monkeypatch.setattr(install_manager_module, "install_release_runtime", _raise_ssl_failure)
+
+    with pytest.raises(RuntimeError, match="ssl certificate verify failed"):
+        install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+
+    assert claude_settings_path.read_text(encoding="utf-8") == original_claude_settings
+    assert codex_config_path.read_text(encoding="utf-8") == original_codex_config
+    assert codex_hooks_path.read_text(encoding="utf-8") == original_codex_hooks
+    assert not claude_settings_path.with_name("settings.json.odylith-preimage.bak").exists()
+    assert not codex_hooks_path.with_name("hooks.json.odylith-preimage.bak").exists()
+
+
+def test_install_bundle_merges_host_settings_after_verified_runtime_activation(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    claude_settings_path = repo_root / ".claude" / "settings.json"
+    codex_config_path = repo_root / ".codex" / "config.toml"
+    codex_hooks_path = repo_root / ".codex" / "hooks.json"
+    claude_settings_path.parent.mkdir(parents=True)
+    codex_config_path.parent.mkdir(parents=True)
+    claude_settings_path.write_text(
+        json.dumps(
+            {
+                "env": {"AWS_PROFILE": "production"},
+                "hooks": {"UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 user.py"}]}]},
+                "permissions": {"allow": ["Bash(aws:*)"]},
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    codex_config_path.write_text('[model]\nprovider = "bedrock"\n', encoding="utf-8")
+    codex_hooks_path.write_text(
+        '{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"python3 user.py"}]}]}\n',
+        encoding="utf-8",
+    )
+
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+
+    claude_settings = json.loads(claude_settings_path.read_text(encoding="utf-8"))
+    assert claude_settings["env"] == {"AWS_PROFILE": "production"}
+    assert "Bash(aws:*)" in claude_settings["permissions"]["allow"]
+    assert "Bash(./.odylith/bin/odylith claude:*)" in claude_settings["permissions"]["allow"]
+    claude_prompt_commands = [
+        hook["command"]
+        for group in claude_settings["hooks"]["UserPromptSubmit"]
+        for hook in group.get("hooks", [])
+    ]
+    assert "python3 user.py" in claude_prompt_commands
+    assert any("claude prompt-context" in command for command in claude_prompt_commands)
+
+    codex_hooks = json.loads(codex_hooks_path.read_text(encoding="utf-8"))
+    codex_prompt_commands = [
+        hook["command"]
+        for group in codex_hooks["UserPromptSubmit"]
+        for hook in group.get("hooks", [])
+    ]
+    assert "python3 user.py" in codex_prompt_commands
+    assert any("codex prompt-context" in command for command in codex_prompt_commands)
+    assert codex_config_path.read_text(encoding="utf-8") == '[model]\nprovider = "bedrock"\n'
+    assert claude_settings_path.with_name("settings.json.odylith-preimage.bak").is_file()
+    assert codex_hooks_path.with_name("hooks.json.odylith-preimage.bak").is_file()
+
+
+def test_upgrade_preserves_host_settings_when_runtime_download_fails(monkeypatch, tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    claude_settings_path = repo_root / ".claude" / "settings.json"
+    codex_config_path = repo_root / ".codex" / "config.toml"
+    codex_hooks_path = repo_root / ".codex" / "hooks.json"
+    original_claude_settings = '{"env":{"AWS_PROFILE":"production"},"hooks":{"UserPromptSubmit":[]}}\n'
+    original_codex_config = '[model]\nprovider = "bedrock"\n'
+    original_codex_hooks = '{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"python3 user.py"}]}]}\n'
+    claude_settings_path.write_text(original_claude_settings, encoding="utf-8")
+    codex_config_path.write_text(original_codex_config, encoding="utf-8")
+    codex_hooks_path.write_text(original_codex_hooks, encoding="utf-8")
+
+    def _raise_ssl_failure(**kwargs):  # noqa: ANN003
+        del kwargs
+        raise RuntimeError("ssl certificate verify failed")
+
+    monkeypatch.setattr(install_manager_module, "install_release_runtime", _raise_ssl_failure)
+
+    with pytest.raises(RuntimeError, match="ssl certificate verify failed"):
+        upgrade_install(
+            repo_root=repo_root,
+            release_repo="odylith/odylith",
+            version="1.2.4",
+            write_pin=True,
+        )
+
+    assert claude_settings_path.read_text(encoding="utf-8") == original_claude_settings
+    assert codex_config_path.read_text(encoding="utf-8") == original_codex_config
+    assert codex_hooks_path.read_text(encoding="utf-8") == original_codex_hooks
+
+
 def test_bundle_surfaces_ship_stable_product_bundle_assets() -> None:
     project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")).get("project", {})
     current_version = str(project.get("version", "")).strip()
@@ -2429,7 +2557,8 @@ def test_upgrade_smoke_runs_with_scrubbed_python_environment(tmp_path: Path, mon
     captured: dict[str, object] = {}
 
     def _fake_run(*args, **kwargs):  # noqa: ANN001
-        captured["env"] = kwargs.get("env")
+        if kwargs.get("env") is not None:
+            captured["env"] = kwargs.get("env")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(install_manager_module.subprocess, "run", _fake_run)
@@ -2466,7 +2595,8 @@ def test_install_smoke_runs_with_scrubbed_python_environment(tmp_path: Path, mon
     captured: dict[str, object] = {}
 
     def _fake_run(*args, **kwargs):  # noqa: ANN001
-        captured["env"] = kwargs.get("env")
+        if kwargs.get("env") is not None:
+            captured["env"] = kwargs.get("env")
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(install_manager_module.subprocess, "run", _fake_run)

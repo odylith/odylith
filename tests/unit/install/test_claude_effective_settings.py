@@ -91,3 +91,78 @@ def test_write_effective_claude_project_settings_no_op_when_claude_root_missing(
     install_manager._write_effective_claude_project_settings(repo_root=tmp_path)
 
     assert not (tmp_path / ".claude" / "settings.json").exists()
+
+
+def test_write_effective_claude_project_settings_merges_without_destroying_user_settings(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, with_claude_root=True)
+    settings_path = tmp_path / ".claude" / "settings.json"
+    original_payload = {
+        "env": {
+            "ANTHROPIC_MODEL": "bedrock",
+            "AWS_PROFILE": "production",
+        },
+        "hooks": {
+            "UserPromptSubmit": [
+                {
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": "python3 custom_prompt_hook.py",
+                            "timeout": 3,
+                        }
+                    ]
+                }
+            ]
+        },
+        "permissions": {
+            "allow": ["Bash(aws:*)"],
+            "deny": ["Bash(rm -rf:*)"],
+        },
+        "statusLine": {
+            "type": "command",
+            "command": "python3 custom_statusline.py",
+        },
+    }
+    settings_path.write_text(json.dumps(original_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    install_manager._write_effective_claude_project_settings(repo_root=tmp_path)
+
+    payload = json.loads(settings_path.read_text(encoding="utf-8"))
+    assert payload["env"] == original_payload["env"]
+    assert payload["statusLine"] == original_payload["statusLine"]
+    assert payload["permissions"]["deny"] == original_payload["permissions"]["deny"]
+    assert "Bash(aws:*)" in payload["permissions"]["allow"]
+    assert "Bash(./.odylith/bin/odylith claude:*)" in payload["permissions"]["allow"]
+    prompt_commands = [
+        hook["command"]
+        for group in payload["hooks"]["UserPromptSubmit"]
+        for hook in group.get("hooks", [])
+    ]
+    assert "python3 custom_prompt_hook.py" in prompt_commands
+    assert any("claude prompt-context" in command for command in prompt_commands)
+    backup_path = settings_path.with_name("settings.json.odylith-preimage.bak")
+    assert json.loads(backup_path.read_text(encoding="utf-8")) == original_payload
+
+
+def test_write_effective_claude_project_settings_refuses_invalid_json(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, with_claude_root=True)
+    settings_path = tmp_path / ".claude" / "settings.json"
+    settings_path.write_text("{not json\n", encoding="utf-8")
+
+    install_manager._write_effective_claude_project_settings(repo_root=tmp_path)
+
+    assert settings_path.read_text(encoding="utf-8") == "{not json\n"
+    assert not settings_path.with_name("settings.json.odylith-preimage.bak").exists()
+
+
+def test_write_effective_claude_project_settings_refuses_symlink(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, with_claude_root=True)
+    external_settings = tmp_path / "external-claude-settings.json"
+    external_settings.write_text('{"env":{"AWS_PROFILE":"do-not-touch"}}\n', encoding="utf-8")
+    settings_path = tmp_path / ".claude" / "settings.json"
+    settings_path.symlink_to(external_settings)
+
+    install_manager._write_effective_claude_project_settings(repo_root=tmp_path)
+
+    assert external_settings.read_text(encoding="utf-8") == '{"env":{"AWS_PROFILE":"do-not-touch"}}\n'
+    assert not settings_path.with_name("settings.json.odylith-preimage.bak").exists()

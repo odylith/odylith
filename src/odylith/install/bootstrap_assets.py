@@ -21,6 +21,11 @@ from odylith.runtime.governance import sync_casebook_bug_index
 
 PRODUCT_REPO_ROLE = "product_repo"
 CONSUMER_REPO_ROLE = "consumer_repo"
+_GENERATED_HOST_CONFIG_RELATIVE_PATHS = {
+    Path(".claude") / "settings.json",
+    Path(".codex") / "config.toml",
+    Path(".codex") / "hooks.json",
+}
 
 
 def repo_root_guidance_source() -> str:
@@ -428,6 +433,7 @@ def refresh_consumer_managed_guidance(
     include_brand: bool,
     version: str = "",
     product_root: Path | None = None,
+    activate_host_settings: bool = True,
 ) -> None:
     if str(repo_role).strip() == PRODUCT_REPO_ROLE:
         return
@@ -435,7 +441,11 @@ def refresh_consumer_managed_guidance(
     source_project_root = _managed_project_root_assets_root(source_product_root)
     atomic_write_text(repo_root / "odylith" / "AGENTS.md", customer_bootstrap_guidance(), encoding="utf-8")
     atomic_write_text(repo_root / "odylith" / "CLAUDE.md", customer_bootstrap_claude_source(), encoding="utf-8")
-    sync_managed_project_root_assets(repo_root=repo_root, source_root=source_project_root)
+    sync_managed_project_root_assets(
+        repo_root=repo_root,
+        source_root=source_project_root,
+        activate_host_settings=activate_host_settings,
+    )
     sync_managed_scoped_guidance(repo_root=repo_root, product_root=source_product_root)
     sync_managed_agents_guidelines(repo_root=repo_root, product_root=source_product_root)
     sync_managed_skills(repo_root=repo_root, product_root=source_product_root)
@@ -479,6 +489,7 @@ def ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str =
         repo_role=repo_role,
         include_brand=True,
         version=version,
+        activate_host_settings=False,
     )
     shell_source_path = repo_root / "odylith" / "runtime" / "source" / "tooling_shell.v1.json"
     if not shell_source_path.exists():
@@ -574,7 +585,12 @@ def prune_removed_project_root_skill_shims(*, source_root: Path, target_root: Pa
                 candidate.rmdir()
 
 
-def sync_managed_project_root_assets(*, repo_root: Path, source_root: Path | None = None) -> None:
+def sync_managed_project_root_assets(
+    *,
+    repo_root: Path,
+    source_root: Path | None = None,
+    activate_host_settings: bool = True,
+) -> None:
     source_root = Path(source_root).expanduser() if source_root is not None else bundled_project_root_assets_root()
     if not source_root.is_dir():
         return
@@ -582,12 +598,16 @@ def sync_managed_project_root_assets(*, repo_root: Path, source_root: Path | Non
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name == ".DS_Store":
             continue
-        target_path = target_root / source_path.relative_to(source_root)
+        relative_path = source_path.relative_to(source_root)
+        if relative_path in _GENERATED_HOST_CONFIG_RELATIVE_PATHS:
+            continue
+        target_path = target_root / relative_path
         target_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source_path, target_path)
     prune_removed_project_root_skill_shims(source_root=source_root, target_root=target_root)
-    write_effective_codex_project_config(repo_root=target_root)
-    write_effective_claude_project_settings(repo_root=target_root)
+    if activate_host_settings:
+        write_effective_codex_project_config(repo_root=target_root)
+        write_effective_claude_project_settings(repo_root=target_root)
 
 
 def write_effective_codex_project_config(*, repo_root: Path) -> None:

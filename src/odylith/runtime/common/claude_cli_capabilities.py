@@ -25,7 +25,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from odylith.install.fs import atomic_write_text
+from odylith.runtime.common import host_project_settings
 
 
 _CLAUDE_VERSION_RE = re.compile(r"(?P<version>\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.\-]+)?)")
@@ -538,18 +538,61 @@ def render_effective_claude_project_settings(
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
+def _is_odylith_statusline(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    command = str(value.get("command") or "")
+    return "odylith" in command or ".claude/statusline.sh" in command
+
+
+def merge_effective_claude_project_settings(
+    existing: dict[str, Any],
+    odylith_payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Merge Odylith hooks without removing user Claude settings."""
+    merged = dict(existing)
+    if "$schema" not in merged and "$schema" in odylith_payload:
+        merged["$schema"] = odylith_payload["$schema"]
+
+    merged_hooks = host_project_settings.merge_hook_map(
+        merged.get("hooks"),
+        odylith_payload.get("hooks") if isinstance(odylith_payload.get("hooks"), dict) else {},
+    )
+    if isinstance(merged_hooks, dict):
+        merged["hooks"] = merged_hooks
+
+    odylith_permissions = odylith_payload.get("permissions")
+    permissions = merged.get("permissions")
+    if permissions is None:
+        permissions = {}
+    if isinstance(permissions, dict) and isinstance(odylith_permissions, dict):
+        merged_permissions = dict(permissions)
+        merged_permissions["allow"] = host_project_settings.merge_unique_strings(
+            merged_permissions.get("allow"),
+            odylith_permissions.get("allow") if isinstance(odylith_permissions.get("allow"), list) else [],
+        )
+        merged["permissions"] = merged_permissions
+
+    if "statusLine" not in merged or _is_odylith_statusline(merged.get("statusLine")):
+        merged["statusLine"] = odylith_payload.get("statusLine")
+    return merged
+
+
 def write_effective_claude_project_settings(
     *,
     repo_root: Path | str,
     capabilities: ClaudeCliCapabilitySnapshot | None = None,
 ) -> Path:
-    """Write the deterministic effective `.claude/settings.json` to disk."""
+    """Merge Odylith's effective `.claude/settings.json` contract to disk."""
     resolved_root = _resolve_repo_root(repo_root)
     target_path = _project_settings_path(resolved_root)
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    atomic_write_text(
-        target_path,
-        render_effective_claude_project_settings(repo_root=resolved_root, capabilities=capabilities),
-        encoding="utf-8",
+    existing = host_project_settings.load_json_object_for_update(target_path)
+    if existing is None:
+        return target_path
+    odylith_payload = json.loads(
+        render_effective_claude_project_settings(repo_root=resolved_root, capabilities=capabilities)
     )
+    merged = merge_effective_claude_project_settings(existing, odylith_payload)
+    host_project_settings.atomic_write_json_object(target_path, merged)
     return target_path

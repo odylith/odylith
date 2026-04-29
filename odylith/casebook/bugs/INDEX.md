@@ -1,6 +1,6 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-28
+Last updated (UTC): 2026-04-29
 
 ## Open Bugs
 
@@ -173,6 +173,7 @@ Last updated (UTC): 2026-04-28
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-136 | 2026-04-29 | Install overwrites claude settings before verified runtime activation | P0 | migration-runtime | Closed | [2026-04-29-install-overwrites-claude-settings-before-verified-runtime-activation.md](2026-04-29-install-overwrites-claude-settings-before-verified-runtime-activation.md) |
 | CB-134 | 2026-04-27 | Upgrade reviewability still needs generated change manifest and lock compaction | P2 | odylith | Closed | [2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md](2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md) |
 | CB-133 | 2026-04-27 | Upgrade lifecycle output is not an auditable transaction | P1 | release | Closed | [2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md](2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md) |
 | CB-132 | 2026-04-27 | Starter guide first run layout buries the primary action | P1 | dashboard | Closed | [2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md](2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md) |
