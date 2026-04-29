@@ -2,96 +2,15 @@
 
 from __future__ import annotations
 
-import shlex
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import host_runtime as host_runtime_contract
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
 from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.context_engine import governance_signal_codec
+from odylith.runtime.context_engine import tooling_context_routing_support as routing_support
 from odylith.runtime.context_engine import tooling_context_routing_spawn_policy
-
-
-def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    rows: list[str] = []
-    for item in values:
-        token = str(item or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-    return rows
-
-
-def _truncate(text: str, *, max_chars: int = 140) -> str:
-    normalized = " ".join(str(text or "").strip().split())
-    if len(normalized) <= max_chars:
-        return normalized
-    return normalized[: max(0, max_chars - 1)].rstrip() + "…"
-
-def _normalized_string_list(value: Any) -> list[str]:
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return [str(item).strip() for item in value if str(item).strip()]
-    token = str(value or "").strip()
-    return [token] if token else []
-
-
-def _shell_quote(value: str) -> str:
-    return shlex.quote(str(value or "").strip())
-
-
-def _fallback_anchor_commands(anchor: Mapping[str, Any]) -> tuple[str, str]:
-    value = str(anchor.get("value", "")).strip()
-    if not value:
-        return "", ""
-    next_command = f"./.odylith/bin/odylith context --repo-root . {_shell_quote(value)}"
-    anchor_kind = str(anchor.get("kind", "")).strip()
-    followup = ""
-    if anchor_kind in {"doc", "path"} or "/" in value:
-        followup = f"sed -n '1,200p' {_shell_quote(value)}"
-    return next_command, followup
-
-
-def _fallback_scan_commands(*, fallback_scan: Mapping[str, Any], retained_paths: Sequence[str]) -> tuple[str, str]:
-    query = str(fallback_scan.get("query", "")).strip()
-    candidate_paths = _dedupe_strings(
-        [
-            *_normalized_string_list(fallback_scan.get("changed_paths")),
-            *(str(token).strip() for token in retained_paths if str(token).strip()),
-        ]
-    )
-    followup = ""
-    if candidate_paths:
-        followup = f"sed -n '1,200p' {_shell_quote(candidate_paths[0])}"
-    if query and candidate_paths:
-        scoped_paths = " ".join(_shell_quote(path) for path in candidate_paths[:4])
-        return f"rg -n --context 2 {_shell_quote(query)} -- {scoped_paths}", followup
-    if query:
-        return f"rg -n --context 2 {_shell_quote(query)} .", ""
-    if candidate_paths:
-        pattern = "|".join(
-            str(path).replace("\\", "\\\\").replace(".", r"\.")
-            for path in candidate_paths[:4]
-        )
-        return f"rg --files | rg {_shell_quote(pattern)}", followup
-    return (
-        r"rg --files | rg 'AGENTS\.md|CLAUDE\.md|odylith/(AGENTS|CLAUDE)\.md|pyproject\.toml'",
-        "if [ -f AGENTS.md ]; then sed -n '1,200p' AGENTS.md; else sed -n '1,200p' CLAUDE.md; fi",
-    )
-
-
-def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
-    value = payload.get(list_key)
-    list_count = (
-        len([row for row in value if row not in ("", [], {}, None)])
-        if isinstance(value, list)
-        else len(_normalized_string_list(value))
-    )
-    return max(
-        list_count,
-        _int_value(payload.get(count_key)),
-    )
 
 
 def _embedded_governance_signal(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -480,7 +399,7 @@ def _compact_guidance_rows(rows: Sequence[Mapping[str, Any]], *, limit: int = 4)
                 "chunk_id": chunk_id,
                 "note_kind": str(row.get("note_kind", "")).strip(),
                 "title": str(row.get("title", "")).strip(),
-                "summary": _truncate(str(row.get("summary", "")).strip(), max_chars=120),
+                "summary": routing_support.truncate(str(row.get("summary", "")).strip(), max_chars=120),
                 "canonical_source": str(row.get("canonical_source", "")).strip(),
                 "risk_class": str(row.get("risk_class", "")).strip(),
                 "match_tier": str(evidence_summary.get("match_tier", row.get("match_tier", ""))).strip(),
@@ -1234,9 +1153,9 @@ def build_narrowing_guidance(
     )
     retained_paths = _dedupe_strings(
         [
-            *_normalized_string_list(payload.get("changed_paths")),
-            *_normalized_string_list(payload.get("explicit_paths")),
-            *_normalized_string_list(retrieval_plan.get("anchor_paths")),
+            *routing_support.normalized_string_list(payload.get("changed_paths")),
+            *routing_support.normalized_string_list(payload.get("explicit_paths")),
+            *routing_support.normalized_string_list(retrieval_plan.get("anchor_paths")),
         ]
     )
     has_direct_guidance = bool(
@@ -1244,12 +1163,12 @@ def build_narrowing_guidance(
         or _int_value(selected_counts.get("guidance")) > 0
     )
     has_validation_contract = bool(
-        _normalized_string_list(payload.get("recommended_commands"))
+        routing_support.normalized_string_list(payload.get("recommended_commands"))
         or (
             isinstance(payload.get("recommended_tests"), list)
             and any(isinstance(row, Mapping) for row in payload.get("recommended_tests", []))
         )
-        or _count_or_list_len(
+        or routing_support.count_or_list_len(
             validation_bundle,
             list_key="strict_gate_commands",
             count_key="strict_gate_command_count",
@@ -1257,7 +1176,7 @@ def build_narrowing_guidance(
         > 0
     )
     has_governance_contract = bool(
-        _count_or_list_len(
+        routing_support.count_or_list_len(
             governance_obligations,
             list_key="closeout_docs",
             count_key="closeout_doc_count",
@@ -1304,9 +1223,9 @@ def build_narrowing_guidance(
     if suppress_degraded_receipt:
         reason = "Current shared/control-plane context still needs one concrete code, manifest, or contract anchor."
     if required and next_best_anchors:
-        next_fallback_command, next_fallback_followup = _fallback_anchor_commands(next_best_anchors[0])
+        next_fallback_command, next_fallback_followup = routing_support.fallback_anchor_commands(next_best_anchors[0])
     if required and not next_fallback_command and not suppress_degraded_receipt:
-        next_fallback_command, next_fallback_followup = _fallback_scan_commands(
+        next_fallback_command, next_fallback_followup = routing_support.fallback_scan_commands(
             fallback_scan=fallback_scan,
             retained_paths=retained_paths,
         )
@@ -1476,7 +1395,7 @@ def build_routing_handoff(
         selected_test_count=len([row for row in tests if isinstance(row, Mapping)]),
         selected_command_count=len([str(token).strip() for token in commands if str(token).strip()]),
         selected_doc_count=len([str(token).strip() for token in docs if str(token).strip()]),
-        strict_gate_command_count=_count_or_list_len(
+        strict_gate_command_count=routing_support.count_or_list_len(
             validation_bundle,
             list_key="strict_gate_commands",
             count_key="strict_gate_command_count",
@@ -1607,7 +1526,7 @@ def build_routing_handoff(
             selected_test_count=len([row for row in tests if isinstance(row, Mapping)]),
             selected_command_count=len([str(token).strip() for token in commands if str(token).strip()]),
             selected_doc_count=len([str(token).strip() for token in docs if str(token).strip()]),
-            strict_gate_command_count=_count_or_list_len(
+            strict_gate_command_count=routing_support.count_or_list_len(
                 validation_bundle,
                 list_key="strict_gate_commands",
                 count_key="strict_gate_command_count",
@@ -1999,7 +1918,7 @@ def build_routing_handoff(
         selected_test_count=len([row for row in tests if isinstance(row, Mapping)]),
         selected_command_count=len([str(token).strip() for token in commands if str(token).strip()]),
         selected_doc_count=len([str(token).strip() for token in docs if str(token).strip()]),
-        strict_gate_command_count=_count_or_list_len(
+        strict_gate_command_count=routing_support.count_or_list_len(
             validation_bundle,
             list_key="strict_gate_commands",
             count_key="strict_gate_command_count",
