@@ -50,6 +50,8 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
                     "Workaround": "Ignore the repeated lower sections.",
                     "Rollback/Forward Fix": "Forward fix only.",
                     "Verification": "Render the surface and inspect the selected bug in a browser.",
+                    "GitHub Issue(s)": "[odylith/odylith#21](https://github.com/odylith/odylith/issues/21)",
+                    "External Issue(s)": "[Linear ODY-21](https://linear.app/odylith/issue/ODY-21)",
                     "Agent Guardrails": "Do not repeat the same field content in the top brief and the lower learnings band.",
                     "Preflight Checks": "Inspect the selected bug detail in the rendered shell before shipping.",
                 },
@@ -141,10 +143,15 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "padding: var(--surface-deep-link-button-padding, 4px 12px);" in html
     assert "font-size: var(--surface-deep-link-button-font-size, 11px);" in html
     assert "font-weight: var(--surface-deep-link-button-font-weight, 700);" in html
+    assert "function externalIssueLinks(detail)" in app_js
+    assert '"GitHub Issue(s)"' in app_js
+    assert '"External Issue(s)"' in app_js
+    assert '${externalIssueActions.length ? renderActionChipGroup(externalIssueActions) : ""}' in app_js
     assert 'data-summary-field="${escapeHtml(label)}"' in app_js
     assert '<div class="summary-facts" role="list">${summaryFacts}</div>' in app_js
     assert '["Bug ID", row.bug_id || "-"]' in app_js
     assert '${detail.bug_id ? `<p class="detail-kicker">${escapeHtml(detail.bug_id)}</p>` : ""}' not in app_js
+    assert app_js.index('${externalIssueActions.length ? renderActionChipGroup(externalIssueActions) : ""}') < app_js.index("${sourceLink}")
     assert app_js.index('<div class="summary-facts" role="list">${summaryFacts}</div>') < app_js.index("${summary}")
     assert "function normalizeSearchToken(value)" in app_js
     assert "function canonicalizeBugIdToken(value)" in app_js

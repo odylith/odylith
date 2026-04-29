@@ -1589,6 +1589,12 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       return chips ? `<div class="link-group">${{chips}}</div>` : "";
     }}
 
+    function externalIssueLinks(detail) {{
+      const fields = detail && detail.fields && typeof detail.fields === "object" ? detail.fields : {{}};
+      const value = ["GitHub Issue(s)", "External Issue(s)", "Vendor Issue(s)", "Upstream Issue(s)"].map((name) => String(fields[name] || "")).join(" ");
+      const issuePattern = /\\[([^\\]]+)\\]\\((https?:\\/\\/[^)\\s]+)\\)|\\b([A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+)#(\\d+)\\b|https:\\/\\/github\\.com\\/([A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+)\\/issues\\/(\\d+)/g;
+      return [...value.matchAll(issuePattern)].map((match) => {{ const label = match[1] || (match[3] ? `${{match[3]}}#${{match[4]}}` : `${{match[5]}}#${{match[6]}}`); const href = match[2] || (match[3] ? `https://github.com/${{match[3]}}/issues/${{match[4]}}` : match[0]); return {{ label, href, tooltip: "Open linked external issue" }}; }});
+    }}
     function renderLinkRow(label, items) {{
       const chips = renderActionChipGroup(items);
       if (!chips) return "";
@@ -2028,9 +2034,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       if (totalFields) {{
         chips.push(`<span class="meta-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}">Intel ${{capturedCount}}/${{totalFields}}</span>`);
       }}
-      const sourceLink = detail.source_href
-        ? actionChipHtml("Source markdown", detail.source_href)
-        : `<span class="meta-chip muted">Source markdown missing</span>`;
+      const externalIssueActions = externalIssueLinks(detail);
+      const sourceLink = detail.source_href ? actionChipHtml("Source markdown", detail.source_href) : `<span class="meta-chip muted">Source markdown missing</span>`;
       const summaryText = String(detail.summary || detailFieldValue("Description") || detailFieldValue("Impact") || "").trim();
       const summary = summaryText ? `<p class="detail-summary">${{escapeHtml(summaryText)}}</p>` : "";
       const summaryFacts = [...detailCoreRows(detail), ...detailSupportingRows(detail)]
@@ -2287,6 +2292,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           ${{summary}}
           <div class="detail-meta">${{chips.join("")}}</div>
           <div class="detail-links">
+            ${{externalIssueActions.length ? renderActionChipGroup(externalIssueActions) : ""}}
             ${{sourceLink}}
             ${{workstreamLinks.length ? renderActionChipGroup(workstreamLinks) : ""}}
           </div>

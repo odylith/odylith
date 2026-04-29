@@ -10,6 +10,7 @@ from odylith import cli
 from odylith.runtime.governance import bug_authoring
 from odylith.runtime.governance import github_issue_cli
 from odylith.runtime.governance import github_issue_pipeline
+from odylith.runtime.governance import github_issue_references
 from odylith.runtime.governance.github_issue_transport import GitHubPipelineError
 
 
@@ -148,6 +149,12 @@ def test_parse_issue_reference_accepts_url_shorthand_and_number() -> None:
     }
     assert github_issue_pipeline.parse_issue_reference("odylith/odylith#21").number == 21
     assert github_issue_pipeline.parse_issue_reference("21", default_repo="odylith/odylith").repo == "odylith/odylith"
+    assert github_issue_references.format_issue_markdown_link(repo="odylith/odylith", number=21) == (
+        "[odylith/odylith#21](https://github.com/odylith/odylith/issues/21)"
+    )
+    assert github_issue_references.extract_issue_tokens(
+        "[odylith/odylith#21](https://github.com/odylith/odylith/issues/21)"
+    ) == ("odylith/odylith#21",)
 
 
 def test_issue_21_triage_matches_cb136_and_drafts_requested_labels(tmp_path: Path) -> None:
@@ -164,7 +171,7 @@ def test_issue_21_triage_matches_cb136_and_drafts_requested_labels(tmp_path: Pat
     assert plan.suspected_component == "migration-runtime"
     assert [candidate.bug_id for candidate in plan.duplicate_casebook_candidates] == ["CB-136"]
     assert plan.recommended_governance_mutation.fields == {
-        "GitHub Issue(s)": "odylith/odylith#21",
+        "GitHub Issue(s)": "[odylith/odylith#21](https://github.com/odylith/odylith/issues/21)",
         "GitHub Status": "fixed_pending_release",
         "Fixed In": "0.1.12",
         "Public Response": "pending",
@@ -252,7 +259,7 @@ def test_apply_governance_updates_casebook_without_public_github_writes(tmp_path
 
     assert changed == (bug_path,)
     text = bug_path.read_text(encoding="utf-8")
-    assert "- GitHub Issue(s): odylith/odylith#21" in text
+    assert "- GitHub Issue(s): [odylith/odylith#21](https://github.com/odylith/odylith/issues/21)" in text
     assert "- GitHub Status: fixed_pending_release" in text
     assert "- Fixed In: 0.1.12" in text
     assert "- Public Response: pending" in text

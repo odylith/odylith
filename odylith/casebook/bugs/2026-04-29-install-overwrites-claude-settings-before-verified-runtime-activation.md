@@ -128,7 +128,7 @@
 - tests/unit/install/test_migration_runtime.py
 - tests/integration/install/test_manager.py
 
-- GitHub Issue(s): odylith/odylith#21
+- GitHub Issue(s): [odylith/odylith#21](https://github.com/odylith/odylith/issues/21)
 
 - GitHub Status: fixed_pending_release
 

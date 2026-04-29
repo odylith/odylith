@@ -161,3 +161,28 @@ def test_casebook_workstream_action_chips_omit_radar_prefix(browser_context) -> 
 
     assert found_workstream_chip, "expected at least one Casebook workstream chip"
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_casebook_github_issue_action_chip_links_to_public_issue(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=casebook&bug=CB-136", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    casebook = page.frame_locator("#frame-casebook")
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator('button.bug-row.active[data-bug="CB-136"]').wait_for(timeout=15000)
+    labels = casebook.locator("#detailPane a.action-chip").evaluate_all(
+        """nodes => nodes.map((node) => ({
+          label: (node.textContent || "").trim(),
+          href: node.getAttribute("href") || "",
+          target: node.getAttribute("target") || "",
+        }))"""
+    )
+
+    assert labels[0] == {
+        "label": "odylith/odylith#21",
+        "href": "https://github.com/odylith/odylith/issues/21",
+        "target": "_top",
+    }
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

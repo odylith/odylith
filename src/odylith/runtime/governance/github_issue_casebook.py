@@ -14,6 +14,7 @@ from odylith.runtime.governance.github_issue_models import CasebookMatch
 from odylith.runtime.governance.github_issue_models import DEFAULT_FIXED_VERSION
 from odylith.runtime.governance.github_issue_models import GovernanceMutationPlan
 from odylith.runtime.governance.github_issue_references import extract_issue_tokens
+from odylith.runtime.governance.github_issue_references import format_issue_markdown_link
 from odylith.runtime.governance.github_issue_references import format_issue_token
 from odylith.runtime.governance.github_issue_references import normalize_version
 from odylith.runtime.governance.github_issue_transport import GitHubPipelineError
@@ -67,7 +68,7 @@ def match_casebook_issue(*, repo_root: Path, issue: Mapping[str, object], repo: 
     for record in iter_casebook_records(repo_root):
         rel_path = record.path.relative_to(repo_root).as_posix()
         fields = record.fields
-        if issue_token in fields.get("GitHub Issue(s)", ""):
+        if issue_token in extract_issue_tokens(fields.get("GitHub Issue(s)", "")):
             matches.append(CasebookMatch(fields.get("Bug ID", ""), rel_path, fields.get("Status", ""), 1.0, "explicit_github_link"))
             continue
         record_words = set(_WORD_RE.findall(" ".join(fields.values()).lower()))
@@ -102,7 +103,7 @@ def build_governance_plan(
         casebook_id=match.bug_id,
         casebook_path=match.path,
         fields={
-            "GitHub Issue(s)": format_issue_token(repo=str(issue["repo"]), number=int(issue["number"])),
+            "GitHub Issue(s)": format_issue_markdown_link(repo=str(issue["repo"]), number=int(issue["number"])),
             "GitHub Status": "fixed_pending_release",
             "Fixed In": fixed_version,
             "Public Response": "pending",

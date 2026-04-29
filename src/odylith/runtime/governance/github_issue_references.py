@@ -10,6 +10,7 @@ from odylith.runtime.governance.github_issue_models import IssueReference
 
 ISSUE_TOKEN_RE = re.compile(r"(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)#(?P<number>\d+)")
 _ISSUE_URL_RE = re.compile(r"^https://github\.com/(?P<repo>[^/]+/[^/]+)/issues/(?P<number>\d+)(?:[/?#].*)?$")
+_ISSUE_URL_SCAN_RE = re.compile(r"https://github\.com/(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/(?P<number>\d+)")
 
 
 def parse_issue_reference(reference: str, *, default_repo: str = DEFAULT_GITHUB_REPO) -> IssueReference:
@@ -30,11 +31,27 @@ def parse_issue_reference(reference: str, *, default_repo: str = DEFAULT_GITHUB_
 
 
 def extract_issue_tokens(value: str) -> tuple[str, ...]:
-    return tuple(f"{match.group('repo')}#{match.group('number')}" for match in ISSUE_TOKEN_RE.finditer(value or ""))
+    return tuple(
+        dedupe(
+            [
+                *(f"{match.group('repo')}#{match.group('number')}" for match in ISSUE_TOKEN_RE.finditer(value or "")),
+                *(f"{match.group('repo')}#{match.group('number')}" for match in _ISSUE_URL_SCAN_RE.finditer(value or "")),
+            ]
+        )
+    )
 
 
 def format_issue_token(*, repo: str, number: int) -> str:
     return f"{repo}#{number}"
+
+
+def format_issue_url(*, repo: str, number: int) -> str:
+    return f"https://github.com/{repo}/issues/{number}"
+
+
+def format_issue_markdown_link(*, repo: str, number: int) -> str:
+    token = format_issue_token(repo=repo, number=number)
+    return f"[{token}]({format_issue_url(repo=repo, number=number)})"
 
 
 def normalize_version(value: str) -> str:
