@@ -130,12 +130,24 @@ system actually verified. Right now those two states blur together.
   suppress allowlisted benign Sigstore/TUF warning streams, including the
   wrapped `trust.py` `unsupported key type: 7` shape, only after verification
   succeeds.
-- Successful verification emits calm success clarity that names the suppressed
-  non-fatal warning stream count and explains that identity, issuer,
-  provenance, SBOM, and sha256 checks kept final verification valid.
+- Install, reinstall, and upgrade success paths keep the trusted-root warning
+  completely out of stdout/stderr. Suppressed warning details are metadata-only
+  during install and remain available through explicit diagnostic/reporting
+  surfaces.
 - Unexpected verifier stderr and fatal verification failures still print in
   full; the allowlist remains narrow.
 - `doctor` and `version` now surface non-fatal runtime trust warnings as
   posture information with severity and `verification_degraded` detail.
 - Bound bugs `CB-061` and `CB-076` are closed, and the broader auditable
   upgrade transaction follow-up is covered separately by closed `CB-133`.
+
+## 2026-04-29 Regression Closure
+- Operator feedback showed the managed install path could still surface
+  `WARNING Failed to load a trusted root key: unsupported trust.py:177 key type:
+  7` during install, and the prior closeout was not strict enough about the
+  full install output boundary.
+- `CB-137` closed the recurrence by hardening both the hosted bootstrap shell
+  and managed runtime verifier: both fold Rich/logging line wraps, strip ANSI
+  styling, suppress stdout-emitted or stderr-emitted trusted-root warning
+  streams after successful verification, and reserve warning details for
+  structured metadata and explicit diagnostics.

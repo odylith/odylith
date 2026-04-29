@@ -64,7 +64,7 @@ def _run_verify_sigstore_identity(
     *,
     tmp_path: Path,
     install_script_text: str,
-    stderr_text: str,
+    stderr_text: str = "",
     stdout_text: str = "",
     exit_code: int = 0,
 ) -> subprocess.CompletedProcess[str]:
@@ -74,7 +74,7 @@ def _run_verify_sigstore_identity(
     bundle_path = tmp_path / "asset.txt.sigstore.json"
     shell_block = _extract_shell_block(
         install_script_text,
-        "sigstore_stderr_is_benign() {",
+        "sigstore_normalize_line() {",
         'release_version="${ODYLITH_VERSION:-latest}"',
     )
     asset_path.write_text("payload\n", encoding="utf-8")
@@ -172,8 +172,10 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'say "Working in repo: $repo_root."' in text
     assert 'say "No setup questions. Odylith will pick the right managed assets for this machine."' in text
     assert 'say "Your repo\'s own Python toolchain stays untouched."' in text
-    assert "sigstore_stderr_is_benign() {" in text
-    assert "sigstore_stderr_is_continuation() {" in text
+    assert "sigstore_normalize_line() {" in text
+    assert "sigstore_log_is_benign() {" in text
+    assert "sigstore_log_is_continuation() {" in text
+    assert "emit_sigstore_log() {" in text
     assert "verify_sigstore_identity() {" in text
     assert (
         "grep -Eiq '(WARNING[[:space:]]+)?(Failed to load a trusted root key:[[:space:]]*)?"
@@ -181,8 +183,10 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
         in text
     )
     assert "grep -Eiq 'tuf.*offline|offline.*tuf'" in text
+    assert '>"$stdout_path" 2>"$stderr_path"' in text
     assert 'stripped="${line#"${line%%[![:space:]]*}"}"' in text
-    assert 'sigstore_stderr_is_continuation "$folded" "$line" "$stripped"' in text
+    assert 'line="$(sigstore_normalize_line "$line")"' in text
+    assert 'sigstore_log_is_continuation "$folded" "$line" "$stripped"' in text
     assert 'folded="$folded $stripped"' in text
     assert 'step "Fetching the secure bootstrap runtime"' in text
     assert 'step "Verifying signed release evidence"' in text
@@ -405,6 +409,78 @@ def test_generated_install_script_verify_sigstore_identity_suppresses_unindented
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
     assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_ansi_trusted_root_warning(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text=(
+            "\x1b[33mWARNING\x1b[0m  Failed to load a trusted root key: unsupported \x1b[2mtrust.py:177\x1b[0m\n"
+            "         \x1b[2mkey type: 7\x1b[0m\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_stdout_trusted_root_warning(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stdout_text=(
+            "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+            "         key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_preserves_success_stdout(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stdout_text="OK: asset verified\n",
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == "OK: asset verified\n"
     assert completed.stderr == ""
 
 

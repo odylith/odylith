@@ -1078,6 +1078,87 @@ def test_verify_sigstore_asset_suppresses_unindented_trusted_root_continuation(
     assert captured.err == ""
 
 
+def test_verify_sigstore_asset_suppresses_ansi_rich_trusted_root_warning(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": (
+                    "\x1b[33mWARNING\x1b[0m  Failed to load a trusted root key: unsupported "
+                    "\x1b[2mtrust.py:177\x1b[0m\n"
+                    "         \x1b[2mkey type: 7\x1b[0m\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    assert result.warning_summaries == (
+        "unsupported trusted root key type 7 "
+        "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)",
+    )
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_verify_sigstore_asset_suppresses_stdout_trusted_root_warning(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": (
+                    "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+                    "         key type: 7\n"
+                ),
+                "stderr": "",
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
 def test_verify_sigstore_asset_preserves_unexpected_warning_alongside_wrapped_benign_warning(
     monkeypatch, tmp_path: Path, capsys
 ) -> None:

@@ -70,6 +70,7 @@ _BENIGN_SIGSTORE_WARNING_PATTERNS = (
     re.compile(r"\btuf\b.*\boffline\b", re.IGNORECASE),
     re.compile(r"\boffline\b.*\btuf\b", re.IGNORECASE),
 )
+_ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
 
 @dataclass(frozen=True)
@@ -578,31 +579,38 @@ def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_pat
         details = stderr or stdout or "sigstore verification failed"
         raise ValueError(f"failed to verify {asset_path.name}: {details}")
     stderr = completed.stderr.strip()
-    if not stderr:
+    stdout = completed.stdout.strip()
+    if not stderr and not stdout:
         return SigstoreVerificationResult(warnings_suppressed=False)
-    stderr_lines = _fold_sigstore_warning_lines(stderr)
-    if all(_is_benign_sigstore_warning(line) for line in stderr_lines):
+    warning_lines = [*_fold_sigstore_warning_lines(stderr), *_fold_sigstore_warning_lines(stdout)]
+    if warning_lines and all(_is_benign_sigstore_warning(line) for line in warning_lines):
         return SigstoreVerificationResult(
             warnings_suppressed=True,
-            warning_count=len(stderr_lines),
-            warning_summaries=tuple(_sigstore_warning_summary(line) for line in stderr_lines),
+            warning_count=len(warning_lines),
+            warning_summaries=tuple(_sigstore_warning_summary(line) for line in warning_lines),
             verification_degraded=False,
         )
-    print(stderr, file=sys.stderr)
+    if stderr:
+        print(stderr, file=sys.stderr)
     return SigstoreVerificationResult(warnings_suppressed=False)
 
 
 def _fold_sigstore_warning_lines(stderr: str) -> list[str]:
     folded: list[str] = []
     for raw_line in str(stderr or "").splitlines():
-        stripped = raw_line.strip()
+        line = _strip_sigstore_control_sequences(raw_line)
+        stripped = line.strip()
         if not stripped:
             continue
-        if folded and _is_sigstore_warning_continuation(previous=folded[-1], raw_line=raw_line, stripped=stripped):
+        if folded and _is_sigstore_warning_continuation(previous=folded[-1], raw_line=line, stripped=stripped):
             folded[-1] = f"{folded[-1]} {stripped}"
             continue
         folded.append(stripped)
     return folded
+
+
+def _strip_sigstore_control_sequences(text: str) -> str:
+    return _ANSI_ESCAPE_RE.sub("", str(text or "")).replace("\r", "")
 
 
 def _is_sigstore_warning_continuation(*, previous: str, raw_line: str, stripped: str) -> bool:
@@ -616,7 +624,7 @@ def _is_sigstore_warning_continuation(*, previous: str, raw_line: str, stripped:
 
 
 def _is_benign_sigstore_warning(line: str) -> bool:
-    normalized = re.sub(r"\s+", " ", str(line or "").strip())
+    normalized = re.sub(r"\s+", " ", _strip_sigstore_control_sequences(str(line or "")).strip())
     return any(pattern.search(normalized) is not None for pattern in _BENIGN_SIGSTORE_WARNING_PATTERNS)
 
 
@@ -627,7 +635,7 @@ def _normalize_sigstore_result(result: SigstoreVerificationResult | None) -> Sig
 
 
 def _sigstore_warning_summary(line: str) -> str:
-    normalized = re.sub(r"\s+", " ", str(line or "").strip())
+    normalized = re.sub(r"\s+", " ", _strip_sigstore_control_sequences(str(line or "")).strip())
     if re.search(r"unsupported(?:\s+\S+:\d+)?\s+key type:\s*7", normalized, re.IGNORECASE):
         return (
             "unsupported trusted root key type 7 "

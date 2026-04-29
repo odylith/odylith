@@ -338,14 +338,16 @@ governed subsystem.
   spawn semantics or a discovered `codex` binary, the test must force or mock
   that contract explicitly so GitHub-hosted runners prove the same truth.
 - Successful verification output must stay calm across every shipped release
-  lane, not only the hosted installer shell. If pinned dogfood, consumer
-  rehearsal, or GA gate still prints allowlisted trust-warning noise such as
-  `unsupported key type: 7` before healthy `OK:` asset lines, the warning
-  suppression slice is incomplete and stays open for the next release. Wrapped
-  verifier stderr continuations must be folded before benign-warning matching
-  so `Failed to load a trusted root key: unsupported ...` followed by
-  `key type: 7` stays quiet on successful verification instead of scaring
-  operators.
+  lane, not only the hosted installer shell. Hosted install, reinstall, upgrade,
+  pinned dogfood, consumer rehearsal, and GA gates must not print allowlisted
+  trust-warning noise such as `unsupported key type: 7`, `trust.py:177`, or
+  `Failed to load a trusted root key` during successful install or upgrade.
+  Bootstrap shell and managed-runtime verification must capture both stdout and
+  stderr, strip ANSI/Rich styling before benign-warning matching, and fold
+  wrapped continuations so `Failed to load a trusted root key: unsupported ...`
+  followed by `key type: 7` stays quiet. Suppressed warning details belong in
+  structured verification metadata and explicit diagnostics, not install
+  success-path output.
 - Release assets are authoritative only when the signed manifest, provenance,
   and SBOM all verify for the canonical signer identity.
 - Consumer posture must reject maintainer-only localhost asset overrides and
