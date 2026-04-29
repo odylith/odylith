@@ -112,6 +112,7 @@ makes the transaction safe.
 - [x] `PYTHONPATH=src python3 -m odylith.cli doctor --repo-root .` passed and reported migration scenario plus ledger state.
 - [x] `PYTHONPATH=src python3 -m odylith.cli release migration-gate --repo-root . --target-version 0.1.12 --json` passed with `ok=true`.
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_github_issue_pipeline.py` passed with 12 tests.
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_github_issue_pipeline.py` passed with 19 tests after the GitHub issue pipeline boundary-hardening follow-up.
 - [x] `PYTHONPATH=src python3 -m odylith.cli github --repo-root . issue triage 21 --repo odylith/odylith --json` produced a draft-only P0/data-loss/install plan matching CB-136.
 - [x] `PYTHONPATH=src python3 -m odylith.cli github --repo-root . issue release-closeout --repo odylith/odylith --release current --json` reported odylith/odylith#21 pending release, with validation evidence present and no closure before public release availability.
 - [x] `git diff --check`
@@ -128,6 +129,12 @@ makes the transaction safe.
 - The GitHub issue pipeline now owns issue fetch, classification, Casebook
   linkage, public label/comment drafts, and fixed-in-release closeout for
   linked public issues.
+- The GitHub issue pipeline is now split into durable phase owners: models,
+  reference parsing, Casebook/release truth, classification/public-response
+  policy, REST transport, orchestration, and CLI adaptation. Public GitHub
+  apply fails closed without a linked Casebook record, and release closeout
+  blocks closure when public release artifacts exist but issue state cannot be
+  confirmed open.
 - `upgrade --dry-run --json` exposes `scenario`, `migration_plan`,
   `migration_results`, `ledger_state`, `blocked_reason`, and
   `plan_fingerprint`.

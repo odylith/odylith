@@ -27,6 +27,17 @@ _BENCHMARK_IMPACT_COMPANION_DOC_EXPANSION_PATHS = {
     "tests/unit/runtime/test_odylith_benchmark_runner.py",
 }
 
+def _anchor_identity_after_path_lift(anchors_payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Preserve anchor truth when prompt path lists move out of the context packet."""
+
+    anchor_quality = str(anchors_payload.get("anchor_quality", "")).strip()
+    compact: dict[str, Any] = {}
+    if anchor_quality == "shared_only":
+        compact["anchor_quality"] = anchor_quality
+    if bool(anchors_payload.get("has_non_shared_anchor")) or anchor_quality in {"explicit", "non_shared", ""}:
+        compact["has_non_shared_anchor"] = True
+    return compact
+
 def _compact_hot_path_runtime_packet(
     *,
     packet_kind: str,
@@ -733,7 +744,9 @@ def _trim_route_ready_hot_path_prompt_payload(
             changed_anchor_paths = context_engine_store._normalized_string_list(anchors_payload.get("changed_paths"))
             current_changed_paths = context_engine_store._normalized_string_list(trimmed.get("changed_paths"))
             if current_changed_paths and changed_anchor_paths:
+                anchor_identity_payload = _anchor_identity_after_path_lift(anchors_payload)
                 anchors_payload.pop("changed_paths", None)
+                anchors_payload = {**anchor_identity_payload, **anchors_payload}
                 if anchors_payload:
                     context_packet_payload["anchors"] = anchors_payload
                 else:
@@ -825,7 +838,9 @@ def _trim_route_ready_hot_path_prompt_payload(
                     if isinstance(context_packet_payload.get("anchors"), Mapping)
                     else {}
                 )
+                anchor_identity_payload = _anchor_identity_after_path_lift(anchors_payload)
                 anchors_payload.pop("changed_paths", None)
+                anchors_payload = {**anchor_identity_payload, **anchors_payload}
                 if anchors_payload:
                     context_packet_payload["anchors"] = anchors_payload
                 else:

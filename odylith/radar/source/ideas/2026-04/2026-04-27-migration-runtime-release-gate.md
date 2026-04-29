@@ -122,6 +122,7 @@ labels, public comments, and release closure cannot drift apart.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_release_assets.py tests/unit/install/test_release_bootstrap.py tests/integration/install/test_manager.py tests/integration/install/test_lifecycle_simulator.py` passed with 167 tests after the symlinked managed-asset guard follow-up.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py` passed with 52 tests after the symlinked managed-asset guard follow-up.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_github_issue_pipeline.py` passed with 12 tests after the GitHub issue intake and release-closeout pipeline follow-up.
+- `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_github_issue_pipeline.py` passed with 19 tests after the GitHub issue pipeline boundary-hardening follow-up; coverage now includes no-Casebook public-write blocking, missing managed-label creation, unknown issue-state release-closeout blocking, cross-repo closeout filtering, and structural boundary ownership.
 - `PYTHONPATH=src python3 -m odylith.cli github --repo-root . issue release-closeout --repo odylith/odylith --release current --json` reported CB-136 as pending release with validation evidence and no close eligibility while release-0-1-12 remains active.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py tests/unit/runtime/test_shell_onboarding.py` passed with 65 tests after the symlinked managed-asset guard follow-up.
 - `PYTHONPATH=src python3 -m odylith.cli upgrade --repo-root . --dry-run --json` passed and reported `scenario=product_repo_pinned_dogfood`.
@@ -180,3 +181,8 @@ Migration becomes the first gating function for a release: upgrade dry-run, upgr
   destructive-write scenarios are now gate-visible JSON, custom `.agents/skills`
   are preserved, legacy root/state conflicts block before mutation, and the
   migration-runtime component spec records those guardrails.
+- Extended the closed workstream on 2026-04-29 with GitHub issue pipeline
+  boundary hardening: issue intake is split into models, reference parsing,
+  Casebook/release truth, policy, transport, orchestration, and CLI owners;
+  public GitHub apply now fails closed without a Casebook match; and release
+  closeout blocks closure when issue state is unknown.

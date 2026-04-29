@@ -306,6 +306,7 @@
         "bug-casebook"
       ],
       "path_prefixes": [
+        "src/odylith/runtime/surfaces/render_casebook_dashboard_cli.py",
         "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
         "odylith/casebook/bugs/INDEX.md"
       ],
@@ -1064,8 +1065,12 @@
       "qualification": "curated",
       "aliases": [],
       "path_prefixes": [
+        "src/odylith/runtime/governance/github_issue_casebook.py",
         "src/odylith/runtime/governance/github_issue_cli.py",
+        "src/odylith/runtime/governance/github_issue_models.py",
         "src/odylith/runtime/governance/github_issue_pipeline.py",
+        "src/odylith/runtime/governance/github_issue_policy.py",
+        "src/odylith/runtime/governance/github_issue_references.py",
         "src/odylith/runtime/governance/github_issue_transport.py"
       ],
       "workstreams": [

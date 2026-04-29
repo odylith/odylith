@@ -9,6 +9,7 @@ from odylith.runtime.evaluation import odylith_ablation
 from odylith.runtime.context_engine import tooling_context_packet_completion as packet_completion
 from odylith.runtime.context_engine import tooling_context_packet_preflight as packet_preflight
 from odylith.runtime.governance import delivery_intelligence_engine
+from odylith.runtime.governance import guidance_behavior_runtime
 from odylith.runtime.governance import proof_state
 
 

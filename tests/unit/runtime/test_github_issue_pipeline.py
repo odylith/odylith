@@ -4,10 +4,13 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+import pytest
+
 from odylith import cli
 from odylith.runtime.governance import bug_authoring
 from odylith.runtime.governance import github_issue_cli
 from odylith.runtime.governance import github_issue_pipeline
+from odylith.runtime.governance.github_issue_transport import GitHubPipelineError
 
 
 ISSUE_21 = {
@@ -27,6 +30,16 @@ ISSUE_21 = {
             "Data Loss: Original hooks, permissions, and AWS credentials overwritten.",
         ]
     ),
+}
+
+GENERIC_ISSUE = {
+    "number": 22,
+    "title": "[Bug] Upgrade reinstall output is confusing",
+    "html_url": "https://github.com/odylith/odylith/issues/22",
+    "state": "open",
+    "user": {"login": "operator"},
+    "labels": [],
+    "body": "Upgrade and reinstall are noisy, but no linked Casebook evidence exists yet.",
 }
 
 
@@ -167,6 +180,64 @@ def test_issue_21_triage_matches_cb136_and_drafts_requested_labels(tmp_path: Pat
     assert "type:trust" not in plan.recommended_github_mutation.labels_to_add
 
 
+def test_triage_without_casebook_match_blocks_public_github_apply(tmp_path: Path) -> None:
+    plan = github_issue_pipeline.build_triage_plan(
+        issue=GENERIC_ISSUE,
+        repo_root=tmp_path,
+        repo="odylith/odylith",
+        existing_labels=(),
+    )
+
+    assert plan.recommended_governance_mutation.action == "blocked"
+    assert plan.recommended_github_mutation.close_decision == "blocked"
+    assert "Casebook" in plan.recommended_github_mutation.blocked_reason
+    assert "status:needs-repro" in plan.recommended_github_mutation.labels_to_add
+    assert "release:0.1.12" not in plan.recommended_github_mutation.labels_to_add
+
+    with pytest.raises(GitHubPipelineError):
+        github_issue_pipeline.apply_github_plan(
+            repo="odylith/odylith",
+            issue_number=22,
+            plan=plan.recommended_github_mutation,
+            transport=FakeGitHubTransport(),
+        )
+
+
+def test_triage_reports_creation_for_missing_standard_bug_label(tmp_path: Path) -> None:
+    _write_cb136(tmp_path)
+    issue = {**ISSUE_21, "labels": []}
+    plan = github_issue_pipeline.build_triage_plan(
+        issue=issue,
+        repo_root=tmp_path,
+        repo="odylith/odylith",
+        existing_labels=(),
+    )
+
+    assert "bug" in [label.name for label in plan.recommended_github_mutation.labels_to_create]
+    assert "bug" in plan.recommended_github_mutation.labels_to_add
+
+
+def test_triage_does_not_recreate_existing_labels(tmp_path: Path) -> None:
+    _write_cb136(tmp_path)
+    existing = (
+        {"name": "bug"},
+        {"name": "severity:P0"},
+        {"name": "type:data-loss"},
+        {"name": "type:install"},
+        {"name": "component:migration-runtime"},
+        {"name": "release:0.1.12"},
+        {"name": "status:fixed-pending-release"},
+    )
+    plan = github_issue_pipeline.build_triage_plan(
+        issue=ISSUE_21,
+        repo_root=tmp_path,
+        repo="odylith/odylith",
+        existing_labels=existing,
+    )
+
+    assert plan.recommended_github_mutation.labels_to_create == ()
+
+
 def test_apply_governance_updates_casebook_without_public_github_writes(tmp_path: Path) -> None:
     bug_path = _write_cb136(tmp_path)
     fake = FakeGitHubTransport()
@@ -246,6 +317,33 @@ def test_cli_apply_github_records_labels_and_comment_only_when_explicit(tmp_path
     assert fake.closed == []
 
 
+def test_cli_apply_github_without_casebook_match_fails_closed(tmp_path: Path, monkeypatch, capsys) -> None:
+    fake = FakeGitHubTransport(issues=(GENERIC_ISSUE,), labels=())
+    monkeypatch.setattr(github_issue_cli, "build_transport", lambda: fake)
+
+    rc = cli.main(
+        [
+            "github",
+            "--repo-root",
+            str(tmp_path),
+            "issue",
+            "triage",
+            "22",
+            "--repo",
+            "odylith/odylith",
+            "--apply-github",
+            "--json",
+        ]
+    )
+
+    output = capsys.readouterr()
+    assert rc == 2
+    assert "No matching Casebook record" in output.err
+    assert fake.created_labels == []
+    assert fake.added_labels == []
+    assert fake.comments == []
+
+
 def test_sweep_processes_open_issues_deterministically(tmp_path: Path) -> None:
     _write_cb136(tmp_path)
     fake = FakeGitHubTransport(
@@ -316,6 +414,57 @@ def test_release_closeout_closes_only_after_shipped_release_is_public(tmp_path: 
     assert plan.pending == ()
     assert [item.issue for item in plan.closable] == ["odylith/odylith#21"]
     assert plan.closable[0].github_mutation.close_decision == "close"
+
+
+def test_release_closeout_blocks_public_release_when_issue_state_is_unknown(tmp_path: Path) -> None:
+    class ReleaseOnlyTransport(FakeGitHubTransport):
+        def get_issue(self, *, repo: str, number: int) -> Mapping[str, Any]:
+            raise GitHubPipelineError("issue state unavailable")
+
+    bug_path = _write_cb136(tmp_path)
+    bug_path.write_text(
+        bug_path.read_text(encoding="utf-8")
+        + "- GitHub Issue(s): odylith/odylith#21\n\n"
+        + "- GitHub Status: fixed_pending_release\n\n"
+        + "- Fixed In: 0.1.12\n\n"
+        + "- Public Response: pending\n",
+        encoding="utf-8",
+    )
+    _write_releases(tmp_path, status="shipped")
+
+    plan = github_issue_pipeline.build_release_closeout_plan(
+        repo_root=tmp_path,
+        release="current",
+        repo="odylith/odylith",
+        transport=ReleaseOnlyTransport(release_tags=("v0.1.12",)),
+    )
+
+    assert [item.casebook_id for item in plan.blocked] == ["CB-136"]
+    assert "issue state" in plan.blocked[0].github_mutation.blocked_reason
+
+
+def test_release_closeout_ignores_linked_issues_from_other_repositories(tmp_path: Path) -> None:
+    bug_path = _write_cb136(tmp_path)
+    bug_path.write_text(
+        bug_path.read_text(encoding="utf-8")
+        + "- GitHub Issue(s): other/repo#21\n\n"
+        + "- GitHub Status: fixed_pending_release\n\n"
+        + "- Fixed In: 0.1.12\n\n"
+        + "- Public Response: pending\n",
+        encoding="utf-8",
+    )
+    _write_releases(tmp_path, status="shipped")
+
+    plan = github_issue_pipeline.build_release_closeout_plan(
+        repo_root=tmp_path,
+        release="current",
+        repo="odylith/odylith",
+        transport=FakeGitHubTransport(release_tags=("v0.1.12",)),
+    )
+
+    assert plan.pending == ()
+    assert plan.closable == ()
+    assert plan.blocked == ()
 
 
 def test_release_closeout_blocks_p0_without_validation_evidence(tmp_path: Path) -> None:
@@ -415,3 +564,12 @@ def test_bug_capture_accepts_github_linkage_optional_fields_in_payload(tmp_path:
     )
 
     assert result.bug_id == "CB-001"
+
+
+def test_pipeline_boundary_keeps_policy_and_casebook_owners_separate() -> None:
+    pipeline_source = Path("src/odylith/runtime/governance/github_issue_pipeline.py").read_text(encoding="utf-8")
+
+    assert "MANAGED_LABELS" not in pipeline_source
+    assert "casebook_source_validation" not in pipeline_source
+    assert "re.compile" not in pipeline_source
+    assert len(pipeline_source.splitlines()) < 250

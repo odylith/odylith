@@ -112,7 +112,12 @@ def looks_like_teaser_live_text(value: str) -> bool:
     return "Odylith" in body
 
 
-def merge_replay_with_closeout(*, replay: str, closeout_text: str) -> str:
+def merge_replay_with_closeout(
+    *,
+    replay: str,
+    closeout_text: str,
+    supplemental_inside_live_with_assist: bool = False,
+) -> str:
     """Combine replayed live blocks with a closeout without duplicating assists."""
     visible_replay = str(replay or "").strip()
     closeout = str(closeout_text or "").strip()
@@ -120,7 +125,11 @@ def merge_replay_with_closeout(*, replay: str, closeout_text: str) -> str:
         return visibility_contract.compose_visible_markdown(closeout)
     if not closeout or "Odylith Assist:" in visible_replay or "**Odylith Assist:**" in visible_replay:
         return visibility_contract.compose_visible_markdown(visible_replay)
-    return visibility_contract.compose_visible_markdown(visible_replay, closeout)
+    return visibility_contract.compose_visible_markdown(
+        visible_replay,
+        closeout,
+        supplemental_inside_live_with_assist=supplemental_inside_live_with_assist,
+    )
 
 
 def prompt_visible_assist_text(bundle: Mapping[str, Any] | object) -> tuple[str, str]:
@@ -277,7 +286,11 @@ def render_prompt_system_message(
     )
     if replay:
         closeout_text = conversation_surface.render_closeout_text(bundle, markdown=True)
-        return merge_replay_with_closeout(replay=replay, closeout_text=closeout_text)
+        return merge_replay_with_closeout(
+            replay=replay,
+            closeout_text=closeout_text,
+            supplemental_inside_live_with_assist=True,
+        )
     visible = decision.visible_markdown or conversation_surface.render_live_text(
         bundle,
         markdown=False,
