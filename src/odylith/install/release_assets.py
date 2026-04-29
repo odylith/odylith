@@ -573,26 +573,40 @@ def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_pat
         text=True,
         env=scrubbed_python_env(),
     )
+    stderr_non_benign, stderr_warning_lines = _split_sigstore_log_lines(completed.stderr)
+    stdout_non_benign, stdout_warning_lines = _split_sigstore_log_lines(completed.stdout)
+    warning_lines = [*stderr_warning_lines, *stdout_warning_lines]
     if completed.returncode != 0:
-        stderr = completed.stderr.strip()
-        stdout = completed.stdout.strip()
-        details = stderr or stdout or "sigstore verification failed"
+        details = "\n".join([*stderr_non_benign, *stdout_non_benign]).strip() or "sigstore verification failed"
         raise ValueError(f"failed to verify {asset_path.name}: {details}")
-    stderr = completed.stderr.strip()
-    stdout = completed.stdout.strip()
-    if not stderr and not stdout:
+    if not stderr_non_benign and not warning_lines:
         return SigstoreVerificationResult(warnings_suppressed=False)
-    warning_lines = [*_fold_sigstore_warning_lines(stderr), *_fold_sigstore_warning_lines(stdout)]
-    if warning_lines and all(_is_benign_sigstore_warning(line) for line in warning_lines):
+    if warning_lines and not stderr_non_benign:
         return SigstoreVerificationResult(
             warnings_suppressed=True,
             warning_count=len(warning_lines),
             warning_summaries=tuple(_sigstore_warning_summary(line) for line in warning_lines),
             verification_degraded=False,
         )
-    if stderr:
-        print(stderr, file=sys.stderr)
-    return SigstoreVerificationResult(warnings_suppressed=False)
+    if stderr_non_benign:
+        print("\n".join(stderr_non_benign), file=sys.stderr)
+    return SigstoreVerificationResult(
+        warnings_suppressed=False,
+        warning_count=len(warning_lines),
+        warning_summaries=tuple(_sigstore_warning_summary(line) for line in warning_lines),
+        verification_degraded=False,
+    )
+
+
+def _split_sigstore_log_lines(text: str) -> tuple[list[str], list[str]]:
+    non_benign: list[str] = []
+    benign: list[str] = []
+    for line in _fold_sigstore_warning_lines(text):
+        if _is_benign_sigstore_warning(line):
+            benign.append(line)
+        else:
+            non_benign.append(line)
+    return non_benign, benign
 
 
 def _fold_sigstore_warning_lines(stderr: str) -> list[str]:
@@ -618,6 +632,8 @@ def _is_sigstore_warning_continuation(*, previous: str, raw_line: str, stripped:
         return True
     previous_normalized = re.sub(r"\s+", " ", str(previous or "").strip()).lower()
     stripped_normalized = re.sub(r"\s+", " ", str(stripped or "").strip()).lower()
+    if previous_normalized in {"warning", "warning:"}:
+        return stripped_normalized.startswith("failed to load a trusted root key")
     if "failed to load a trusted root key" not in previous_normalized:
         return False
     return stripped_normalized.startswith(("key type:", "unsupported ", "trust.py:"))

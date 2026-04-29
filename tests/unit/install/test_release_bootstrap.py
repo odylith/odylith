@@ -184,6 +184,8 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     )
     assert "grep -Eiq 'tuf.*offline|offline.*tuf'" in text
     assert '>"$stdout_path" 2>"$stderr_path"' in text
+    assert 'cat "$stdout_path"' not in text
+    assert 'cat "$stderr_path"' not in text
     assert 'stripped="${line#"${line%%[![:space:]]*}"}"' in text
     assert 'line="$(sigstore_normalize_line "$line")"' in text
     assert 'sigstore_log_is_continuation "$folded" "$line" "$stripped"' in text
@@ -482,6 +484,94 @@ def test_generated_install_script_verify_sigstore_identity_preserves_success_std
     assert completed.returncode == 0, completed.stderr or completed.stdout
     assert completed.stdout == "OK: asset verified\n"
     assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_warning_with_success_stdout(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stdout_text="OK: asset verified\n",
+        stderr_text=(
+            "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+            "         key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == "OK: asset verified\n"
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_split_warning_label(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text=(
+            "WARNING\n"
+            "Failed to load a trusted root key: unsupported trust.py:177\n"
+            "key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_filters_benign_warning_on_failure(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        exit_code=2,
+        stderr_text=(
+            "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+            "         key type: 7\n"
+            "error: certificate identity mismatch\n"
+        ),
+    )
+
+    assert completed.returncode == 2
+    assert completed.stdout == ""
+    assert "certificate identity mismatch" in completed.stderr
+    assert "trusted root key" not in completed.stderr
+    assert "trust.py:177" not in completed.stderr
+    assert "key type: 7" not in completed.stderr
 
 
 def test_generated_install_script_verify_sigstore_identity_preserves_unexpected_warning(tmp_path: Path) -> None:

@@ -42,6 +42,15 @@
 
 - Hardening Follow-Up: A second QA pass expanded the invariant from stderr-only to the full install output boundary. Hosted bootstrap now captures and filters both Sigstore stdout and stderr, strips ANSI control styling before matching, suppresses the trusted-root warning even when Rich emits colored `WARNING`/`trust.py:177` fragments, and still preserves non-benign success stdout such as `OK: asset verified`. Managed runtime verification now strips ANSI control styling and classifies benign trusted-root warnings from either captured stream without replaying them during install.
 
+- Third Hardening Follow-Up: A 2026-04-29 challenge exposed two remaining
+  leak paths. First, managed Python verification could replay stderr when a
+  benign trusted-root warning appeared alongside non-benign success stdout.
+  Second, the hosted bootstrap failure branch still raw-catted Sigstore stdout
+  and stderr before exiting. Both paths now filter benign trusted-root warning
+  fragments per stream before any success or failure output is emitted, and
+  split Rich labels such as `WARNING` on one line followed by the trusted-root
+  message on the next line are folded and suppressed.
+
 - Workaround: None acceptable for 0.1.12. Operators should not have to set Sigstore bypass flags or mentally ignore warning text during install.
 
 - Rollback/Forward Fix: Forward-fix in 0.1.12; 0.1.11 stays GA and immutable.
@@ -50,7 +59,7 @@
 
 - Preflight Checks: Inspect both `scripts/release/publish_release_assets.py` and `src/odylith/install/release_assets.py` before claiming trusted-root warning suppression is fixed; the bootstrap shell and managed Python verifier are separate output boundaries.
 
-- Regression Tests Added: `tests/unit/install/test_release_bootstrap.py` covers hosted install shell suppression for classic wrapped, Rich wrapped, ANSI-styled Rich output, stdout-emitted warnings, and unindented trusted-root continuations while preserving non-benign success stdout and unexpected verifier warnings. `tests/unit/install/test_release_assets.py` covers managed verifier suppression for the same classes plus ANSI stripping, stdout-emitted trusted-root warnings, and release download metadata-only reporting with clean stdout/stderr.
+- Regression Tests Added: `tests/unit/install/test_release_bootstrap.py` covers hosted install shell suppression for classic wrapped, Rich wrapped, ANSI-styled Rich output, stdout-emitted warnings, success stdout plus warning stderr, split `WARNING` labels, filtered failure output, and unindented trusted-root continuations while preserving non-benign success stdout and unexpected verifier warnings. `tests/unit/install/test_release_assets.py` covers managed verifier suppression for the same classes plus ANSI stripping, stdout-emitted trusted-root warnings, success stdout plus warning stderr, split `WARNING` labels, failure-detail filtering, and release download metadata-only reporting with clean stdout/stderr.
 
 - Monitoring Updates: Watch install, reinstall, upgrade, and bootstrap failure reports for `trusted root key`, `trust.py:177`, `key type: 7`, and `Trust notice:` appearing in success-path output.
 

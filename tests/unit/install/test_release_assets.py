@@ -1159,6 +1159,123 @@ def test_verify_sigstore_asset_suppresses_stdout_trusted_root_warning(
     assert captured.err == ""
 
 
+def test_verify_sigstore_asset_suppresses_trusted_root_warning_when_success_stdout_present(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "OK: asset verified\n",
+                "stderr": (
+                    "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+                    "         key type: 7\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_verify_sigstore_asset_suppresses_split_warning_label(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": (
+                    "WARNING\n"
+                    "Failed to load a trusted root key: unsupported trust.py:177\n"
+                    "key type: 7\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_verify_sigstore_asset_filters_trusted_root_warning_from_failure_details(
+    monkeypatch, tmp_path: Path
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 1,
+                "stdout": "",
+                "stderr": (
+                    "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+                    "         key type: 7\n"
+                    "error: certificate identity mismatch\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    with pytest.raises(ValueError) as exc_info:
+        release_assets.verify_sigstore_asset(
+            repo_root=tmp_path,
+            asset_path=asset_path,
+            bundle_path=bundle_path,
+            repo="odylith/odylith",
+        )
+
+    message = str(exc_info.value)
+    assert "certificate identity mismatch" in message
+    assert "trusted root key" not in message
+    assert "trust.py:177" not in message
+    assert "key type: 7" not in message
+
+
 def test_verify_sigstore_asset_preserves_unexpected_warning_alongside_wrapped_benign_warning(
     monkeypatch, tmp_path: Path, capsys
 ) -> None:
