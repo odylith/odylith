@@ -4,6 +4,9 @@ import json
 import tomllib
 from pathlib import Path
 
+from odylith.install import bootstrap_assets
+from odylith.runtime.common import codex_cli_capabilities
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 LIVE_CLAUDE_ROOT = REPO_ROOT / ".claude"
@@ -15,6 +18,7 @@ INSTALL_AND_CONTRACT_MODULES = (
     REPO_ROOT / "src" / "odylith" / "install" / "__init__.py",
     REPO_ROOT / "src" / "odylith" / "install" / "agents.py",
     REPO_ROOT / "src" / "odylith" / "install" / "archive_safety.py",
+    REPO_ROOT / "src" / "odylith" / "install" / "destructive_write_scenarios.py",
     REPO_ROOT / "src" / "odylith" / "install" / "manager.py",
     REPO_ROOT / "src" / "odylith" / "install" / "migration_audit.py",
     REPO_ROOT / "src" / "odylith" / "install" / "paths.py",
@@ -207,3 +211,90 @@ def test_codex_command_skill_sources_exist_for_curated_cli_surface() -> None:
     for relative_path in CODEX_COMMAND_SKILLS:
         skill_name = Path(relative_path).parts[0]
         assert (REPO_ROOT / "odylith" / "skills" / skill_name / "SKILL.md").is_file()
+
+
+def test_write_effective_codex_project_config_preserves_existing_user_config(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.md").write_text("# Repo\n", encoding="utf-8")
+    config_path = tmp_path / ".codex" / "config.toml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    original = '[model]\nprovider = "bedrock"\nname = "claude-sonnet"\n'
+    config_path.write_text(original, encoding="utf-8")
+
+    codex_cli_capabilities.write_effective_codex_project_config(repo_root=tmp_path)
+
+    assert config_path.read_text(encoding="utf-8") == original
+    assert not config_path.with_name("config.toml.odylith-preimage.bak").exists()
+
+
+def test_write_effective_codex_hooks_merges_without_destroying_user_hooks(tmp_path: Path) -> None:
+    hooks_path = tmp_path / ".codex" / "hooks.json"
+    hooks_path.parent.mkdir(parents=True, exist_ok=True)
+    original_payload = {
+        "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 user_prompt.py"}]}],
+        "Stop": [{"hooks": [{"type": "command", "command": "python3 user_stop.py"}]}],
+    }
+    hooks_path.write_text(json.dumps(original_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    codex_cli_capabilities.write_effective_codex_hooks(repo_root=tmp_path)
+
+    payload = json.loads(hooks_path.read_text(encoding="utf-8"))
+    prompt_commands = [
+        hook["command"]
+        for group in payload["UserPromptSubmit"]
+        for hook in group.get("hooks", [])
+    ]
+    stop_commands = [
+        hook["command"]
+        for group in payload["Stop"]
+        for hook in group.get("hooks", [])
+    ]
+    assert "python3 user_prompt.py" in prompt_commands
+    assert any("codex prompt-context" in command for command in prompt_commands)
+    assert "python3 user_stop.py" in stop_commands
+    assert any("codex stop-summary" in command for command in stop_commands)
+    assert json.loads(hooks_path.with_name("hooks.json.odylith-preimage.bak").read_text(encoding="utf-8")) == original_payload
+
+
+def test_write_effective_codex_hooks_refuses_invalid_json(tmp_path: Path) -> None:
+    hooks_path = tmp_path / ".codex" / "hooks.json"
+    hooks_path.parent.mkdir(parents=True, exist_ok=True)
+    hooks_path.write_text("{not json\n", encoding="utf-8")
+
+    codex_cli_capabilities.write_effective_codex_hooks(repo_root=tmp_path)
+
+    assert hooks_path.read_text(encoding="utf-8") == "{not json\n"
+    assert not hooks_path.with_name("hooks.json.odylith-preimage.bak").exists()
+
+
+def test_write_effective_codex_hooks_refuses_symlink(tmp_path: Path) -> None:
+    external_hooks = tmp_path / "external-hooks.json"
+    external_hooks.write_text('{"UserPromptSubmit":[]}\n', encoding="utf-8")
+    hooks_path = tmp_path / ".codex" / "hooks.json"
+    hooks_path.parent.mkdir(parents=True, exist_ok=True)
+    hooks_path.symlink_to(external_hooks)
+
+    codex_cli_capabilities.write_effective_codex_hooks(repo_root=tmp_path)
+
+    assert external_hooks.read_text(encoding="utf-8") == '{"UserPromptSubmit":[]}\n'
+    assert not hooks_path.with_name("hooks.json.odylith-preimage.bak").exists()
+
+
+def test_project_root_skill_prune_preserves_user_custom_skills(tmp_path: Path) -> None:
+    source_root = tmp_path / "source"
+    target_root = tmp_path / "repo"
+    (source_root / ".agents" / "skills" / "odylith-start").mkdir(parents=True)
+    (source_root / ".agents" / "skills" / "odylith-start" / "SKILL.md").write_text(
+        "# odylith-start\n",
+        encoding="utf-8",
+    )
+    custom_skill = target_root / ".agents" / "skills" / "team-custom" / "SKILL.md"
+    custom_skill.parent.mkdir(parents=True, exist_ok=True)
+    custom_skill.write_text("# team custom\n", encoding="utf-8")
+    retired_skill = target_root / ".agents" / "skills" / "odylith-subagent-router" / "SKILL.md"
+    retired_skill.parent.mkdir(parents=True, exist_ok=True)
+    retired_skill.write_text("# retired\n", encoding="utf-8")
+
+    bootstrap_assets.prune_removed_project_root_skill_shims(source_root=source_root, target_root=target_root)
+
+    assert custom_skill.read_text(encoding="utf-8") == "# team custom\n"
+    assert not retired_skill.exists()

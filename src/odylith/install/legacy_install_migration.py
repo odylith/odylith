@@ -83,6 +83,21 @@ def legacy_operation_in_progress(*, repo_root: Path) -> bool:
     return False
 
 
+def legacy_migration_conflicts(*, repo_root: Path) -> tuple[str, ...]:
+    """Return existing Odylith paths that a legacy migration must not overwrite."""
+    root = Path(repo_root).expanduser().resolve()
+    conflicts: list[str] = []
+    conflicts.extend(
+        _tree_conflicts(
+            source_root=root / "odyssey",
+            target_root=root / "odylith",
+            target_label="odylith",
+        )
+    )
+    conflicts.extend(_state_root_conflicts(old_state_root=root / ".odyssey", new_state_root=root / ".odylith"))
+    return tuple(sorted(dict.fromkeys(conflicts)))
+
+
 def migrate_legacy_install_if_needed(*, repo_root: Path) -> MigrationSummary | None:
     """Apply the legacy root migration only when old roots are present."""
     root = Path(repo_root).expanduser().resolve()
@@ -113,6 +128,12 @@ def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
             removed_paths=(),
             stale_reference_audit=None,
             already_migrated=True,
+        )
+
+    conflicts = legacy_migration_conflicts(repo_root=root)
+    if conflicts:
+        raise RuntimeError(
+            "legacy migration would overwrite existing Odylith paths: " + ", ".join(conflicts)
         )
 
     moved_paths: list[str] = []
@@ -297,6 +318,68 @@ def _rewrite_legacy_text_tree(root: Path) -> None:
         return
     for path in sorted(root.rglob("*")):
         _rewrite_text_file(path)
+
+
+def _tree_conflicts(*, source_root: Path, target_root: Path, target_label: str) -> tuple[str, ...]:
+    if not source_root.exists() or not target_root.exists():
+        return ()
+    conflicts: list[str] = []
+    for source_path in sorted(source_root.rglob("*")):
+        relative = source_path.relative_to(source_root)
+        target_path = target_root / relative
+        if source_path.is_dir() and not source_path.is_symlink() and target_path.is_dir() and not target_path.is_symlink():
+            continue
+        if target_path.exists() or target_path.is_symlink():
+            suffix = relative.as_posix()
+            conflicts.append(f"{target_label}/{suffix}" if suffix else target_label)
+    return tuple(conflicts)
+
+
+def _state_root_conflicts(*, old_state_root: Path, new_state_root: Path) -> tuple[str, ...]:
+    if not old_state_root.exists() or not new_state_root.exists() or _is_transient_odylith_state_root(new_state_root):
+        return ()
+    conflicts: list[str] = []
+    for old_name, new_name in (("odyssey", "odylith"), ("odyssey-bootstrap", "odylith-bootstrap")):
+        _append_conflict_if_both_exist(
+            conflicts,
+            source_path=old_state_root / "bin" / old_name,
+            target_path=new_state_root / "bin" / new_name,
+            display_path=f".odylith/bin/{new_name}",
+        )
+    legacy_versions_root = old_state_root / "runtime" / "versions"
+    new_versions_root = new_state_root / "runtime" / "versions"
+    if legacy_versions_root.is_dir():
+        for version_root in sorted(legacy_versions_root.iterdir(), key=lambda path: path.name):
+            _append_conflict_if_both_exist(
+                conflicts,
+                source_path=version_root,
+                target_path=new_versions_root / version_root.name,
+                display_path=f".odylith/runtime/versions/{version_root.name}",
+            )
+    for relative_path in (
+        Path("runtime") / "current",
+        Path("install.json"),
+        Path("consumer-profile.json"),
+        Path("install-ledger.v1.jsonl"),
+    ):
+        _append_conflict_if_both_exist(
+            conflicts,
+            source_path=old_state_root / relative_path,
+            target_path=new_state_root / relative_path,
+            display_path=f".odylith/{relative_path.as_posix()}",
+        )
+    return tuple(conflicts)
+
+
+def _append_conflict_if_both_exist(
+    conflicts: list[str],
+    *,
+    source_path: Path,
+    target_path: Path,
+    display_path: str,
+) -> None:
+    if (source_path.exists() or source_path.is_symlink()) and (target_path.exists() or target_path.is_symlink()):
+        conflicts.append(display_path)
 
 
 def _merge_legacy_tree(

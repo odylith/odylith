@@ -26,6 +26,11 @@ _GENERATED_HOST_CONFIG_RELATIVE_PATHS = {
     Path(".codex") / "config.toml",
     Path(".codex") / "hooks.json",
 }
+_RETIRED_PROJECT_ROOT_SKILL_SHIMS = frozenset(
+    {
+        "odylith-subagent-router",
+    }
+)
 
 
 def repo_root_guidance_source() -> str:
@@ -578,11 +583,15 @@ def prune_removed_project_root_skill_shims(*, source_root: Path, target_root: Pa
             continue
         if candidate.is_file():
             relative = candidate.relative_to(target_skills_root).as_posix()
-            if relative not in expected_files:
+            skill_name = Path(relative).parts[0] if Path(relative).parts else ""
+            if relative not in expected_files and skill_name in _RETIRED_PROJECT_ROOT_SKILL_SHIMS:
                 candidate.unlink()
         elif candidate.is_dir():
-            with contextlib.suppress(OSError):
-                candidate.rmdir()
+            relative_dir = candidate.relative_to(target_skills_root)
+            skill_name = relative_dir.parts[0] if relative_dir.parts else ""
+            if skill_name in _RETIRED_PROJECT_ROOT_SKILL_SHIMS:
+                with contextlib.suppress(OSError):
+                    candidate.rmdir()
 
 
 def sync_managed_project_root_assets(

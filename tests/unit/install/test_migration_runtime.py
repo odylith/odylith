@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.install import migration_runtime
 from odylith.install.value_engine_migration import (
     MIGRATION_ID,
@@ -189,6 +191,60 @@ def test_legacy_odyssey_roots_are_planned_and_applied_first(tmp_path: Path) -> N
     assert (tmp_path / "odylith").is_dir()
     assert not (tmp_path / "odyssey").exists()
     assert (tmp_path / results[0].ledger_path).is_file()
+
+
+def test_legacy_odyssey_product_conflict_blocks_before_overwrite(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.md").write_text("# Repo\n", encoding="utf-8")
+    target_guidance = tmp_path / "odylith" / "AGENTS.md"
+    target_guidance.parent.mkdir(parents=True)
+    target_guidance.write_text("# Current Odylith guidance\n", encoding="utf-8")
+    source_guidance = tmp_path / "odyssey" / "AGENTS.md"
+    source_guidance.parent.mkdir(parents=True)
+    source_guidance.write_text("# Legacy Odyssey guidance\n", encoding="utf-8")
+    (tmp_path / ".odyssey" / "install.json").parent.mkdir(parents=True)
+    (tmp_path / ".odyssey" / "install.json").write_text('{"active_version":"0.1.10"}\n', encoding="utf-8")
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_LEGACY_ODYSSEY
+    assert plan.blocked
+    assert "would overwrite existing Odylith paths" in plan.blocked_reason
+    assert "odylith/AGENTS.md" in plan.blocked_reason
+    with pytest.raises(ValueError, match="would overwrite"):
+        migration_runtime.apply_repo_state_migrations(plan=plan)
+    assert target_guidance.read_text(encoding="utf-8") == "# Current Odylith guidance\n"
+    assert source_guidance.read_text(encoding="utf-8") == "# Legacy Odyssey guidance\n"
+
+
+def test_legacy_odyssey_state_conflict_blocks_before_deleting_state(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.md").write_text("# Repo\n", encoding="utf-8")
+    old_state = tmp_path / ".odyssey" / "install.json"
+    new_state = tmp_path / ".odylith" / "install.json"
+    old_state.parent.mkdir(parents=True)
+    new_state.parent.mkdir(parents=True)
+    old_state.write_text('{"active_version":"0.1.10","launcher_path":".odyssey/bin/odyssey"}\n', encoding="utf-8")
+    new_state.write_text('{"active_version":"0.1.11","launcher_path":".odylith/bin/odylith"}\n', encoding="utf-8")
+    (tmp_path / "odyssey").mkdir()
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.10",
+        target_version="0.1.12",
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_LEGACY_ODYSSEY
+    assert plan.blocked
+    assert ".odylith/install.json" in plan.blocked_reason
+    with pytest.raises(ValueError, match="would overwrite"):
+        migration_runtime.apply_repo_state_migrations(plan=plan)
+    assert old_state.read_text(encoding="utf-8") == '{"active_version":"0.1.10","launcher_path":".odyssey/bin/odyssey"}\n'
+    assert new_state.read_text(encoding="utf-8") == '{"active_version":"0.1.11","launcher_path":".odylith/bin/odylith"}\n'
 
 
 def test_product_repo_pinned_dogfood_is_not_reported_as_consumer_noop(tmp_path: Path) -> None:
@@ -561,6 +617,13 @@ def test_release_gate_reports_registered_migrations_and_no_lifecycle_bypass() ->
     assert report.fixture_matrix[migration_runtime.LEGACY_ROOT_MIGRATION_ID]["apply"] is True
     assert report.fixture_matrix[MIGRATION_ID]["dry_run"] is True
     assert report.fixture_matrix[MIGRATION_ID]["stale_ledger"] is True
+    assert report.destructive_write_matrix["host.claude.preverified-settings"][
+        "test_install_bundle_preserves_host_settings_when_runtime_download_fails"
+    ] is True
+    assert report.destructive_write_matrix["migration.legacy-product-conflict"][
+        "test_legacy_odyssey_product_conflict_blocks_before_overwrite"
+    ] is True
+    assert "destructive_write_scenarios" in report.as_dict()
 
 
 def test_release_gate_blocks_migration_required_manifest_without_definition(tmp_path: Path) -> None:

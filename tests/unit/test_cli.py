@@ -1111,6 +1111,10 @@ def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
     assert payload["ok"] is True
     assert payload["schema_version"] == "odylith.release-migration-gate.v1"
     assert payload["fixture_matrix"]["v0.1.11-visible-intervention-value-engine"]["dry_run"] is True
+    assert payload["destructive_write_matrix"]["host.claude.preverified-settings"][
+        "test_install_bundle_preserves_host_settings_when_runtime_download_fails"
+    ] is True
+    assert payload["destructive_write_scenarios"]
     assert payload["ungated_lifecycle_paths"] == []
 
 

@@ -415,6 +415,32 @@ def test_migrate_legacy_install_merges_into_existing_odylith_roots(tmp_path: Pat
     assert str(install_payload["launcher_path"]).endswith(".odylith/bin/odylith")
 
 
+def test_migrate_legacy_install_blocks_existing_odylith_path_conflicts(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    current_guidance = repo_root / "odylith" / "AGENTS.md"
+    current_guidance.parent.mkdir(parents=True, exist_ok=True)
+    current_guidance.write_text("# Current Odylith guidance\n", encoding="utf-8")
+    legacy_guidance = repo_root / "odyssey" / "AGENTS.md"
+    legacy_guidance.parent.mkdir(parents=True, exist_ok=True)
+    legacy_guidance.write_text("# Legacy Odyssey guidance\n", encoding="utf-8")
+    legacy_state = repo_root / ".odyssey" / "install.json"
+    current_state = repo_root / ".odylith" / "install.json"
+    legacy_state.parent.mkdir(parents=True, exist_ok=True)
+    current_state.parent.mkdir(parents=True, exist_ok=True)
+    legacy_state.write_text('{"active_version":"0.1.10"}\n', encoding="utf-8")
+    current_state.write_text('{"active_version":"0.1.11"}\n', encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="would overwrite existing Odylith paths"):
+        migrate_legacy_install(repo_root=repo_root)
+
+    assert current_guidance.read_text(encoding="utf-8") == "# Current Odylith guidance\n"
+    assert legacy_guidance.read_text(encoding="utf-8") == "# Legacy Odyssey guidance\n"
+    assert current_state.read_text(encoding="utf-8") == '{"active_version":"0.1.11"}\n'
+    assert legacy_state.read_text(encoding="utf-8") == '{"active_version":"0.1.10"}\n'
+
+
 def test_migrate_legacy_install_rewrites_absolute_current_runtime_symlink(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()

@@ -1704,6 +1704,16 @@ def _cmd_release(args: argparse.Namespace) -> int:
                 passed = [name for name, ok in fixtures.items() if ok]
                 missing = [name for name, ok in fixtures.items() if not ok]
                 print(f"  - {migration_id}: passed={', '.join(passed) or 'none'}; missing={', '.join(missing) or 'none'}")
+            destructive_missing = [
+                scenario_id
+                for scenario_id, markers in sorted(report.destructive_write_matrix.items())
+                if any(not ok for ok in markers.values())
+            ]
+            print(
+                "- destructive-write scenarios: "
+                f"covered={len(report.destructive_write_matrix) - len(destructive_missing)}; "
+                f"missing={', '.join(destructive_missing) or 'none'}"
+            )
             if report.blocked_manual_migrations:
                 print("- blocked manual migrations:")
                 for item in report.blocked_manual_migrations:

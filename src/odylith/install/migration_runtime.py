@@ -14,7 +14,13 @@ from odylith.install.legacy_install_migration import (
     LEGACY_ROOT_MIGRATION_ID,
     MigrationSummary as LegacyMigrationSummary,
     legacy_layout_present,
+    legacy_migration_conflicts,
     migrate_legacy_install,
+)
+from odylith.install.destructive_write_scenarios import (
+    destructive_write_fixture_matrix,
+    destructive_write_scenarios,
+    missing_destructive_write_proofs,
 )
 from odylith.install.lock_hygiene import LOCK_NOTE_THRESHOLD, lock_hygiene_summary
 from odylith.install.runtime import current_runtime_root, current_runtime_version, runtime_verification_evidence
@@ -272,6 +278,7 @@ class ReleaseMigrationGateReport:
     registered_migrations: tuple[MigrationDefinition, ...]
     covered_version_ranges: tuple[str, ...]
     fixture_matrix: dict[str, dict[str, bool]]
+    destructive_write_matrix: dict[str, dict[str, bool]]
     blocked_manual_migrations: tuple[str, ...]
     ungated_lifecycle_paths: tuple[str, ...]
     notes: tuple[str, ...]
@@ -284,6 +291,8 @@ class ReleaseMigrationGateReport:
             "registered_migrations": [definition.as_dict() for definition in self.registered_migrations],
             "covered_version_ranges": list(self.covered_version_ranges),
             "fixture_matrix": dict(self.fixture_matrix),
+            "destructive_write_scenarios": [scenario.as_dict() for scenario in destructive_write_scenarios()],
+            "destructive_write_matrix": dict(self.destructive_write_matrix),
             "blocked_manual_migrations": list(self.blocked_manual_migrations),
             "ungated_lifecycle_paths": list(self.ungated_lifecycle_paths),
             "notes": list(self.notes),
@@ -551,6 +560,18 @@ def _legacy_root_decision(*, repo_root: Path, scenario: RepoMigrationScenario) -
             rollback_scope=definition.rollback_scope,
             validation_commands=definition.validation_commands,
             evidence={"legacy_layout_present": False},
+        )
+    conflicts = legacy_migration_conflicts(repo_root=repo_root)
+    if conflicts:
+        return MigrationDecision(
+            migration_id=LEGACY_ROOT_MIGRATION_ID,
+            state=STATE_BLOCKED,
+            reason="legacy odyssey migration would overwrite existing Odylith paths: " + ", ".join(conflicts),
+            ledger_path=ledger_path,
+            planned_paths=definition.write_set,
+            rollback_scope=definition.rollback_scope,
+            validation_commands=definition.validation_commands,
+            evidence={"legacy_layout_present": True, "conflicts": list(conflicts)},
         )
     return MigrationDecision(
         migration_id=LEGACY_ROOT_MIGRATION_ID,
@@ -906,7 +927,11 @@ def apply_repo_state_migrations(*, plan: MigrationPlan) -> tuple[MigrationResult
         scenario=plan.scenario,
         selected=tuple(decision for decision in plan.selected if decision.migration_id == LEGACY_ROOT_MIGRATION_ID),
         skipped=(),
-        blocked=tuple(decision for decision in plan.blocked if decision.migration_id.startswith("repo-state:")),
+        blocked=tuple(
+            decision
+            for decision in plan.blocked
+            if decision.migration_id == LEGACY_ROOT_MIGRATION_ID or decision.migration_id.startswith("repo-state:")
+        ),
         release_manifest_migration_required=plan.release_manifest_migration_required,
         no_op=not any(decision.migration_id == LEGACY_ROOT_MIGRATION_ID for decision in plan.selected),
         plan_fingerprint=plan.plan_fingerprint,
@@ -1098,6 +1123,8 @@ def validate_release_migration_gate(
         missing = [fixture for fixture, present in coverage.items() if not present]
         if missing:
             blocked_manual.append(f"{migration_id} fixture coverage missing: {', '.join(missing)}")
+    destructive_matrix = destructive_write_fixture_matrix(repo_root=root)
+    blocked_manual.extend(missing_destructive_write_proofs(repo_root=root))
     ungated = _ungated_lifecycle_paths(root)
     covered_ranges = tuple(
         f"{definition.migration_id}: {definition.from_version_range} -> {definition.to_version_range}"
@@ -1105,6 +1132,7 @@ def validate_release_migration_gate(
     )
     notes = (
         "Release migration gate checks registry definitions, fixture coverage, and lifecycle bypasses.",
+        "Destructive-write guardrails are tracked as first-class adoption-risk fixtures.",
         "Generated dashboard refresh is intentionally outside migration scope.",
     )
     return ReleaseMigrationGateReport(
@@ -1112,6 +1140,7 @@ def validate_release_migration_gate(
         registered_migrations=definitions,
         covered_version_ranges=covered_ranges,
         fixture_matrix=matrix,
+        destructive_write_matrix=destructive_matrix,
         blocked_manual_migrations=tuple(blocked_manual),
         ungated_lifecycle_paths=ungated,
         notes=notes,
@@ -1146,6 +1175,8 @@ __all__ = [
     "apply_release_migrations",
     "append_migration_ledger_snapshot",
     "classify_repo_migration_scenario",
+    "destructive_write_fixture_matrix",
+    "destructive_write_scenarios",
     "doctor_migration_observability_lines",
     "legacy_value_engine_payload",
     "legacy_migration_summary",

@@ -50,6 +50,38 @@
 
 - Prevention: Host settings files are user-owned extension points, not managed templates. Future project-root asset sync must keep generated config writers additive and transaction-gated.
 
+- Data-Loss Class Matrix: The 2026-04-29 follow-up generalized this bug from
+  the original Claude SSL failure into an executable destructive-write inventory
+  owned by the migration gate. The covered classes are:
+  - Claude settings pre-verification writes, additive merge shape preservation,
+    invalid JSON/symlink refusal, and first-preimage backup stability.
+  - Codex config preservation, hooks additive merge, and invalid
+    JSON/symlink refusal.
+  - `.agents/skills` pruning limited to known retired Odylith shims so custom
+    user skills survive install/upgrade refresh.
+  - Root guidance managed-block edits that preserve surrounding repo guidance.
+  - Consumer governance source truth preservation during starter/bundle refresh.
+  - Legacy `odyssey` product-root and state-root conflict detection before
+    any move/delete can overwrite existing `odylith` paths.
+  - Runtime activation atomicity, stale ledger blocking,
+    satisfied-unrecorded no-op ledger repair, lock/cache repair-only posture,
+    and generated-surface refresh separation from release migration.
+
+- Additional Fix: Legacy root migration now preflights collisions between
+  `odyssey/` and `odylith/`, plus mapped `.odyssey/` and `.odylith/` state
+  paths. A conflict is planned as a blocked migration and direct migration
+  apply raises before either root is moved or deleted.
+
+- Additional Fix: Project-root skill pruning no longer deletes arbitrary
+  user-authored `.agents/skills/*` entries. It only removes known retired
+  Odylith shims such as `odylith-subagent-router`.
+
+- Additional Verification: Added `destructive_write_scenarios` as executable
+  release-gate inventory, exposed it through `release migration-gate` JSON,
+  and added focused fixtures for Claude/Codex merge edge cases, custom skill
+  preservation, legacy conflict blockers, and migration-gate destructive-write
+  proof coverage.
+
 - Agent Guardrails: Do not hand-edit or overwrite user host settings to make Odylith hooks work. Treat AI host config as customer data and preserve unknown keys, hooks, permissions, comments where possible, and preimages.
 
 - Preflight Checks: Before changing install project-root assets, inspect bootstrap_assets.py, claude_cli_capabilities.py, codex_cli_capabilities.py, tests/unit/install/test_claude_effective_settings.py, tests/unit/install/test_codex_project_assets.py, and tests/integration/install/test_manager.py.
@@ -64,7 +96,13 @@
 
 - Related Incidents/Bugs: CB-003 release atomicity/data-loss class; CB-134 generated reviewability and lock cleanup; CB-137 migration runtime gate adoption risk.
 
-- Code References: - src/odylith/install/bootstrap_assets.py
+- Code References: - src/odylith/install/destructive_write_scenarios.py
+- src/odylith/install/bootstrap_assets.py
+- src/odylith/install/legacy_install_migration.py
+- src/odylith/install/migration_runtime.py
 - src/odylith/runtime/common/claude_cli_capabilities.py
 - src/odylith/runtime/common/codex_cli_capabilities.py
+- tests/unit/install/test_claude_effective_settings.py
+- tests/unit/install/test_codex_project_assets.py
+- tests/unit/install/test_migration_runtime.py
 - tests/integration/install/test_manager.py

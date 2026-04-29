@@ -79,6 +79,11 @@ The runtime also owns legacy Odyssey root migration, separates live active
 state from historical migration range, and treats lock/cache sludge and
 generated dashboard staleness as repair or refresh signals rather than release
 migration failures.
+The 2026-04-29 CB-136 follow-up adds an executable destructive-write scenario
+matrix to the release gate so migration proof now covers host settings,
+project-root skill pruning, governance source preservation, legacy root/state
+conflict blocking, runtime activation atomicity, ledger idempotency,
+repair-only cleanup, and generated-surface separation.
 
 ## Scope
 - Add the migration runtime contracts and registry.
@@ -108,6 +113,7 @@ migration failures.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/unit/install/test_codex_project_assets.py tests/unit/install/test_claude_effective_settings.py` passed with 66 tests.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_show_capabilities.py tests/unit/runtime/test_incremental_import_graph.py` passed with 24 tests.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py tests/unit/runtime/test_shell_onboarding.py` passed with 64 tests.
+- `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_claude_effective_settings.py tests/unit/install/test_codex_project_assets.py tests/unit/install/test_migration_runtime.py` passed with 54 tests after the CB-136 destructive-write matrix follow-up.
 - `PYTHONPATH=src python3 -m odylith.cli upgrade --repo-root . --dry-run --json` passed and reported `scenario=product_repo_pinned_dogfood`.
 - `PYTHONPATH=src python3 -m odylith.cli doctor --repo-root .` passed and reported migration scenario plus ledger state.
 - `PYTHONPATH=src python3 -m odylith.cli release migration-gate --repo-root . --target-version 0.1.12 --json` passed with `ok=true`.
@@ -160,3 +166,7 @@ Migration becomes the first gating function for a release: upgrade dry-run, upgr
 - Split remaining generated-surface reviewability into CB-134 so B-127 stays
   scoped to release migration gating rather than dashboard refresh diff
   ergonomics.
+- Extended the closed workstream on 2026-04-29 with CB-136 class coverage:
+  destructive-write scenarios are now gate-visible JSON, custom `.agents/skills`
+  are preserved, legacy root/state conflicts block before mutation, and the
+  migration-runtime component spec records those guardrails.

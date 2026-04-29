@@ -144,6 +144,57 @@ def test_write_effective_claude_project_settings_merges_without_destroying_user_
     assert json.loads(backup_path.read_text(encoding="utf-8")) == original_payload
 
 
+def test_write_effective_claude_project_settings_preserves_nonstandard_user_shapes(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, with_claude_root=True)
+    settings_path = tmp_path / ".claude" / "settings.json"
+    original_payload = {
+        "env": {"AWS_PROFILE": "production"},
+        "hooks": ["custom-host-shape"],
+        "permissions": {
+            "allow": "Bash(aws:*)",
+            "deny": "Bash(rm -rf:*)",
+            "ask": ["Bash(git push:*)"],
+        },
+        "mcpServers": {"corp": {"command": "corp-mcp"}},
+        "model": "bedrock-sonnet",
+        "statusLine": "custom statusline shape",
+    }
+    settings_path.write_text(json.dumps(original_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    install_manager._write_effective_claude_project_settings(repo_root=tmp_path)
+
+    payload = json.loads(settings_path.read_text(encoding="utf-8"))
+    assert payload["env"] == original_payload["env"]
+    assert payload["hooks"] == original_payload["hooks"]
+    assert payload["permissions"]["allow"] == original_payload["permissions"]["allow"]
+    assert payload["permissions"]["deny"] == original_payload["permissions"]["deny"]
+    assert payload["permissions"]["ask"] == original_payload["permissions"]["ask"]
+    assert payload["mcpServers"] == original_payload["mcpServers"]
+    assert payload["model"] == original_payload["model"]
+    assert payload["statusLine"] == original_payload["statusLine"]
+
+
+def test_write_effective_claude_project_settings_keeps_first_preimage_backup(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, with_claude_root=True)
+    settings_path = tmp_path / ".claude" / "settings.json"
+    original_payload = {
+        "env": {"AWS_PROFILE": "production"},
+        "hooks": {"UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 user.py"}]}]},
+    }
+    settings_path.write_text(json.dumps(original_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    install_manager._write_effective_claude_project_settings(repo_root=tmp_path)
+    first_backup = settings_path.with_name("settings.json.odylith-preimage.bak").read_text(encoding="utf-8")
+    mutated_payload = json.loads(settings_path.read_text(encoding="utf-8"))
+    mutated_payload["env"] = {"AWS_PROFILE": "staging"}
+    settings_path.write_text(json.dumps(mutated_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    install_manager._write_effective_claude_project_settings(repo_root=tmp_path)
+
+    assert settings_path.with_name("settings.json.odylith-preimage.bak").read_text(encoding="utf-8") == first_backup
+    assert json.loads(first_backup) == original_payload
+
+
 def test_write_effective_claude_project_settings_refuses_invalid_json(tmp_path: Path) -> None:
     _seed_repo(tmp_path, with_claude_root=True)
     settings_path = tmp_path / ".claude" / "settings.json"
