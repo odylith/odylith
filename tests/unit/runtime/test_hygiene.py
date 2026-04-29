@@ -219,7 +219,6 @@ RUNTIME_HOTFILE_LIMITS = {
     "src/odylith/runtime/governance/delivery_intelligence_engine.py": 2898,
     "src/odylith/runtime/governance/component_registry_intelligence.py": 2775,
     "src/odylith/runtime/surfaces/render_casebook_dashboard.py": 2593,
-    "src/odylith/runtime/context_engine/tooling_context_packet_builder.py": 2534,
     "src/odylith/runtime/surfaces/dashboard_ui_primitives.py": 2521,
     "src/odylith/runtime/reasoning/tribunal_engine.py": 2469,
     "src/odylith/runtime/context_engine/tooling_context_routing.py": 1923,

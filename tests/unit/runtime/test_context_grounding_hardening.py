@@ -11,6 +11,7 @@ from odylith.runtime.context_engine import odylith_context_engine_hot_path_runti
 from odylith.runtime.context_engine import odylith_context_engine_hot_path_scope_runtime as hot_path_scope
 from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime as projection_search_runtime
 from odylith.runtime.context_engine import tooling_context_packet_builder
+from odylith.runtime.context_engine import tooling_context_packet_finalization
 from odylith.runtime.context_engine import session_bootstrap_payload_compactor
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 
@@ -596,7 +597,7 @@ def test_finalized_session_brief_payload_compactor_drops_runtime_scaffolding() -
 
 
 def test_prune_hot_path_finalize_base_payload_for_bootstrap_session_keeps_only_delivery_fields() -> None:
-    compact = tooling_context_packet_builder._prune_hot_path_finalize_base_payload(  # noqa: SLF001
+    compact = tooling_context_packet_finalization.prune_hot_path_finalize_base_payload(
         packet_kind="bootstrap_session",
         packet_state="gated_ambiguous",
         base_payload={
