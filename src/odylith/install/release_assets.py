@@ -62,7 +62,11 @@ _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_RETRY_ATTEMPTS = 3
 _DOWNLOAD_RETRYABLE_HTTP_CODES = {408, 429, 500, 502, 503, 504}
 _BENIGN_SIGSTORE_WARNING_PATTERNS = (
-    re.compile(r"unsupported(?:\s+\S+:\d+)?\s+key type:\s*7", re.IGNORECASE),
+    re.compile(
+        r"(?:warning\s+)?(?:failed to load a trusted root key:\s*)?"
+        r"unsupported(?:\s+\S+:\d+)?\s+key type:\s*7",
+        re.IGNORECASE,
+    ),
     re.compile(r"\btuf\b.*\boffline\b", re.IGNORECASE),
     re.compile(r"\boffline\b.*\btuf\b", re.IGNORECASE),
 )
@@ -363,8 +367,6 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
             )
         )
     )
-    _emit_sigstore_success_notice(verification_results, context="release")
-
     wheel_sha256 = _sha256_file(wheel_path)
     expected_wheel_sha = str(manifest["assets"][wheel_asset.name]["sha256"]).strip()
     if wheel_sha256 != expected_wheel_sha:
@@ -497,8 +499,6 @@ def download_verified_feature_pack(
             verify_sigstore_asset(repo_root=repo_root, asset_path=feature_pack_path, bundle_path=feature_pack_bundle_path, repo=repo)
         )
     )
-    _emit_sigstore_success_notice(verification_results, context="feature-pack")
-
     feature_pack_sha256 = _sha256_file(feature_pack_path)
     expected_feature_pack_sha = str(manifest["assets"][feature_pack_asset.name]["sha256"]).strip()
     if feature_pack_sha256 != expected_feature_pack_sha:
@@ -598,11 +598,21 @@ def _fold_sigstore_warning_lines(stderr: str) -> list[str]:
         stripped = raw_line.strip()
         if not stripped:
             continue
-        if folded and raw_line[:1].isspace():
+        if folded and _is_sigstore_warning_continuation(previous=folded[-1], raw_line=raw_line, stripped=stripped):
             folded[-1] = f"{folded[-1]} {stripped}"
             continue
         folded.append(stripped)
     return folded
+
+
+def _is_sigstore_warning_continuation(*, previous: str, raw_line: str, stripped: str) -> bool:
+    if raw_line[:1].isspace():
+        return True
+    previous_normalized = re.sub(r"\s+", " ", str(previous or "").strip()).lower()
+    stripped_normalized = re.sub(r"\s+", " ", str(stripped or "").strip()).lower()
+    if "failed to load a trusted root key" not in previous_normalized:
+        return False
+    return stripped_normalized.startswith(("key type:", "unsupported ", "trust.py:"))
 
 
 def _is_benign_sigstore_warning(line: str) -> bool:
@@ -648,20 +658,6 @@ def _sigstore_warning_status(results: list[SigstoreVerificationResult]) -> str:
 
 def _sigstore_verification_degraded(results: list[SigstoreVerificationResult]) -> bool:
     return any(result.verification_degraded for result in results)
-
-
-def _emit_sigstore_success_notice(results: list[SigstoreVerificationResult], *, context: str) -> None:
-    suppressed_count = sum(1 for result in results if result.warnings_suppressed)
-    if suppressed_count <= 0:
-        return
-    summaries = _sigstore_warning_summaries(results)
-    detail = f" Details: {'; '.join(summaries)}." if summaries else ""
-    print(
-        "Trust notice: Sigstore verification succeeded for the "
-        f"{context} assets; suppressed {suppressed_count} expected non-fatal warning stream(s). "
-        "Final verification stayed valid because identity, issuer, provenance, SBOM, and sha256 checks passed."
-        f"{detail}"
-    )
 
 
 def download_asset(*, repo_root: str | Path, asset: ReleaseAsset, destination: Path) -> Path:
