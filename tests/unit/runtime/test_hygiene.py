@@ -1303,6 +1303,11 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator_support.py": (
             "def _float_value(",
             "def _dedupe_strings(",
+            "def _normalize_list(",
+            "def _normalize_context_signals(",
+            "def _mapping_lookup(",
+            "def _nested_mapping(",
+            "def _normalized_rate(",
         ),
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_orchestrator.py": ("def _int_value(",),
         ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_context_support.py": (
@@ -1310,8 +1315,23 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
             "def _dedupe_strings(",
             "def _normalize_string(",
             "def _normalize_token(",
+            "def _normalize_list(",
+            "def _normalize_context_signals(",
+            "def _mapping_value(",
+            "def _context_lookup(",
+            "def _normalized_rate(",
         ),
-        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router.py": ("def _int_value(",),
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router.py": (
+            "def _int_value(",
+            "def _normalize_list(",
+            "def _normalize_context_signals(",
+            "def _mapping_value(",
+            "def _context_lookup(",
+            "def _normalized_rate(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "orchestration" / "subagent_router_execution_engine_runtime.py": (
+            "def _context_lookup(",
+        ),
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_standup_brief_batch.py": ("def _mapping(",),
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "compass_standup_brief_substrate.py": ("def _mapping(",),
     }

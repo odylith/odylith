@@ -12,6 +12,7 @@ from odylith.runtime.common.value_coercion import normalize_string_list
 from odylith.runtime.common.value_coercion import normalize_token
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.execution_engine import runtime_surface_governance
+from odylith.runtime.orchestration.subagent_signal_normalization import context_lookup
 
 
 def execution_engine_summary_from_context_sources(
@@ -36,16 +37,6 @@ def execution_engine_summary_from_context_sources(
     return runtime_surface_governance.summary_fields_from_execution_engine(compact)
 
 
-def _context_lookup(payload: Mapping[str, Any], *path: str) -> Any:
-    """Traverse nested execution-engine mappings with raw dict lookup."""
-    current: Any = payload
-    for key in path:
-        if not isinstance(current, Mapping):
-            return None
-        current = current.get(key)
-    return current
-
-
 def _preferred_value(summary: Mapping[str, Any], key: str, *fallbacks: Any) -> Any:
     """Prefer a summary field and fall back to the first non-empty alternative."""
     if key in summary:
@@ -67,9 +58,9 @@ def _summary_signal_value(
     return _preferred_value(
         execution_engine_summary,
         key,
-        _context_lookup(root, key),
-        _context_lookup(context_signals, key),
-        _context_lookup(context_signals, f"latest_{key}"),
+        context_lookup(root, key),
+        context_lookup(context_signals, key),
+        context_lookup(context_signals, f"latest_{key}"),
     )
 
 

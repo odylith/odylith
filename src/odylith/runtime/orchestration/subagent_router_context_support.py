@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 from odylith.runtime.common.value_coercion import int_value as _int_value
-from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
 from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
 from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.common import agent_runtime_contract
@@ -16,33 +15,14 @@ from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.memory import tooling_memory_contracts
 from odylith.runtime.orchestration import subagent_router_profile_support
+from odylith.runtime.orchestration.subagent_signal_normalization import context_lookup as _context_lookup
+from odylith.runtime.orchestration.subagent_signal_normalization import mapping_value as _mapping_value
+from odylith.runtime.orchestration.subagent_signal_normalization import normalize_context_signals as _normalize_context_signals
+from odylith.runtime.orchestration.subagent_signal_normalization import normalize_list as _normalize_list
+from odylith.runtime.orchestration.subagent_signal_normalization import normalized_rate as _normalized_rate
 
 _SCORE_MIN = 0
 _SCORE_MAX = 4
-
-
-def _normalize_list(value: Any) -> list[str]:
-    """Return a normalized string list from a sequence or scalar signal value."""
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return [_normalize_string(item) for item in value if _normalize_string(item)]
-    token = _normalize_string(value)
-    return [token] if token else []
-
-
-def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
-    """Prefer explicit counts but fall back to the length of a list-shaped field."""
-    value = _mapping_value(payload, list_key)
-    return max(
-        len(value) if isinstance(value, list) else len(_normalize_list(value)),
-        _int_value(_mapping_value(payload, count_key)),
-    )
-
-
-def _normalize_context_signals(value: Any) -> dict[str, Any]:
-    """Normalize a context-signal mapping to string keys without losing raw values."""
-    if not isinstance(value, Mapping):
-        return {}
-    return {_normalize_string(key): raw for key, raw in value.items() if _normalize_string(key)}
 
 
 def _embedded_governance_signal(context_packet: Mapping[str, Any]) -> dict[str, Any]:
@@ -128,49 +108,10 @@ def _surface_refs_from_context(
     return compact
 
 
-def _mapping_value(payload: Mapping[str, Any], key: str) -> Any:
-    """Look up a normalized key, including compact aliases used by packet codecs."""
-    wanted = _normalize_token(key)
-    for raw_key, raw_value in payload.items():
-        if _normalize_token(raw_key) == wanted:
-            return raw_value
-    alias = {
-        "parallelism_hint": "p",
-        "reasoning_bias": "b",
-        "routing_confidence": "rc",
-        "intent_family": "i",
-        "intent_mode": "m",
-        "intent_critical_path": "cp",
-        "intent_confidence": "ic",
-        "intent_explicit": "ix",
-        "context_richness": "cr",
-        "accuracy_posture": "ap",
-        "utility_score": "us",
-        "context_density_level": "cd",
-        "reasoning_readiness_level": "rr",
-    }.get(wanted, "")
-    if alias:
-        for raw_key, raw_value in payload.items():
-            if _normalize_token(raw_key) == alias:
-                return raw_value
-    return None
-
-
 def _context_signal_root(context_signals: Mapping[str, Any]) -> Mapping[str, Any]:
     """Return the nested routing handoff when present, else the raw context mapping."""
     nested = _mapping_value(context_signals, "routing_handoff")
     return nested if isinstance(nested, Mapping) else context_signals
-
-
-def _context_lookup(payload: Mapping[str, Any], *path: str) -> Any:
-    """Traverse a normalized path through nested context mappings."""
-    current: Any = payload
-    for key in path:
-        if not isinstance(current, Mapping):
-            return None
-        current = _mapping_value(current, key)
-    return current
-
 
 def _context_signal_score(value: Any) -> int:
     """Coerce heterogeneous signal shapes onto the router's 0-4 score ladder."""
@@ -235,20 +176,6 @@ def _scaled_numeric_signal(value: Any) -> int:
             return _clamp_score(round(numeric / 25.0))
         return _clamp_score(numeric)
     return _context_signal_score(value)
-
-
-def _normalized_rate(value: Any) -> float:
-    """Normalize a ratio or percentage-like value onto the inclusive 0.0-1.0 range."""
-    if isinstance(value, bool):
-        return 1.0 if value else 0.0
-    try:
-        numeric = float(value or 0.0)
-    except (TypeError, ValueError):
-        return 0.0
-    if numeric > 1.0:
-        numeric = numeric / 100.0 if numeric <= 100.0 else 1.0
-    return max(0.0, min(1.0, numeric))
-
 
 def _latency_pressure_signal(value: Any) -> int:
     """Bucket latency measurements into the router's 0-4 pressure scale."""

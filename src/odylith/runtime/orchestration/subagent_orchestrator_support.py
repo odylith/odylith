@@ -14,6 +14,11 @@ from odylith.runtime.common.value_coercion import normalize_token as _normalize_
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.memory import tooling_memory_contracts
 from odylith.runtime.orchestration import subagent_router as leaf_router
+from odylith.runtime.orchestration.subagent_signal_normalization import mapping_value as _mapping_lookup
+from odylith.runtime.orchestration.subagent_signal_normalization import nested_mapping as _nested_mapping
+from odylith.runtime.orchestration.subagent_signal_normalization import normalize_context_signals as _normalize_context_signals
+from odylith.runtime.orchestration.subagent_signal_normalization import normalize_list as _normalize_list
+from odylith.runtime.orchestration.subagent_signal_normalization import normalized_rate as _normalized_rate
 
 _GOVERNANCE_GROUNDING_KEYWORDS: tuple[str, ...] = (
     "governance",
@@ -43,21 +48,6 @@ _ARCHITECTURE_GROUNDING_KEYWORDS: tuple[str, ...] = (
     "tenant boundary",
 )
 _CODEX_HOT_PATH_PROFILE = agent_runtime_contract.AGENT_HOT_PATH_PROFILE
-
-
-def _normalize_list(value: Any) -> list[str]:
-    """Normalize scalar-or-sequence inputs into a cleaned string list."""
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return [_normalize_string(item) for item in value if _normalize_string(item)]
-    token = _normalize_string(value)
-    return [token] if token else []
-
-
-def _normalize_context_signals(value: Any) -> dict[str, Any]:
-    """Normalize context-signal mappings to stable string keys."""
-    if not isinstance(value, Mapping):
-        return {}
-    return {_normalize_string(key): raw for key, raw in value.items() if _normalize_string(key)}
 
 
 def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -97,44 +87,6 @@ def _sanitize_user_facing_lines(values: Sequence[str]) -> list[str]:
     return leaf_router._sanitize_user_facing_lines(values)  # noqa: SLF001
 
 
-def _mapping_lookup(payload: Mapping[str, Any], key: str) -> Any:
-    """Read a mapping key with support for compact packet-quality aliases."""
-    wanted = _normalize_token(key)
-    for raw_key, raw_value in payload.items():
-        if _normalize_token(raw_key) == wanted:
-            return raw_value
-    alias = {
-        "parallelism_hint": "p",
-        "reasoning_bias": "b",
-        "routing_confidence": "rc",
-        "intent_family": "i",
-        "intent_mode": "m",
-        "intent_critical_path": "cp",
-        "intent_confidence": "ic",
-        "intent_explicit": "ix",
-        "context_richness": "cr",
-        "accuracy_posture": "ap",
-        "utility_score": "us",
-        "context_density_level": "cd",
-        "reasoning_readiness_level": "rr",
-    }.get(wanted, "")
-    if alias:
-        for raw_key, raw_value in payload.items():
-            if _normalize_token(raw_key) == alias:
-                return raw_value
-    return None
-
-
-def _nested_mapping(payload: Mapping[str, Any], *path: str) -> dict[str, Any]:
-    """Traverse nested mappings using alias-aware lookup at each step."""
-    current: Any = payload
-    for key in path:
-        if not isinstance(current, Mapping):
-            return {}
-        current = _mapping_lookup(current, key)
-    return dict(current) if isinstance(current, Mapping) else {}
-
-
 def _execution_profile_mapping(value: Any) -> dict[str, Any]:
     """Normalize execution-profile memory into router-friendly runtime fields."""
     profile = tooling_memory_contracts.execution_profile_mapping(value)
@@ -147,12 +99,6 @@ def _execution_profile_mapping(value: Any) -> dict[str, Any]:
     profile["model"] = selected.model
     profile["reasoning_effort"] = selected.reasoning_effort
     return profile
-def _normalized_rate(value: Any) -> float:
-    """Clamp percent-like or ratio-like inputs to the inclusive `[0, 1]` range."""
-    numeric = _float_value(value)
-    if numeric > 1.0:
-        numeric = numeric / 100.0 if numeric <= 100.0 else 1.0
-    return max(0.0, min(1.0, numeric))
 
 
 def _request_seed_paths(request: Any) -> list[str]:
