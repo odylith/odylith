@@ -442,6 +442,44 @@
         "B-069",
         "B-087"
       ]
+    },
+    {
+      "chunk_id": "github-issue-pipeline-draft-first-closeout",
+      "note_kind": "workflow",
+      "canonical_source": "odylith/agents-guidelines/GITHUB_ISSUE_PIPELINE.md",
+      "chunk_path": "odylith/agents-guidelines/GITHUB_ISSUE_PIPELINE.md",
+      "title": "GitHub Issue Pipeline",
+      "section": "Draft-first issue intake and release closeout",
+      "summary": "Fetch GitHub issues, classify them, link Casebook truth, draft public labels/comments, and close only after public release availability with explicit apply.",
+      "tags": [
+        "github",
+        "casebook",
+        "release-closeout"
+      ],
+      "task_families": [
+        "casebook_bug_capture",
+        "component_governance",
+        "release_publication"
+      ],
+      "risk_class": "public_response_drift",
+      "component_affinity": [
+        "github-issue-pipeline",
+        "migration-runtime"
+      ],
+      "path_prefixes": [
+        "src/odylith/runtime/governance/github_issue",
+        "odylith/casebook/bugs/",
+        "odylith/agents-guidelines/"
+      ],
+      "path_refs": [
+        "odylith/agents-guidelines/GITHUB_ISSUE_PIPELINE.md",
+        "odylith/skills/odylith-github-issue-triage/SKILL.md",
+        "odylith/skills/odylith-github-release-closeout/SKILL.md",
+        "odylith/registry/source/components/github-issue-pipeline/CURRENT_SPEC.md"
+      ],
+      "workstreams": [
+        "B-127"
+      ]
     }
   ]
 }

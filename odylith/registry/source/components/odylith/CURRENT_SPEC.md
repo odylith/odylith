@@ -111,6 +111,9 @@ remediation, and rendering.
 - `odylith sync`
 - `odylith dashboard refresh`
 - `odylith release ...`
+- `odylith github issue triage ...`
+- `odylith github issue sweep ...`
+- `odylith github issue release-closeout ...`
 - `odylith governance ...`
 - `odylith validate ...`
 - `odylith validate self-host-posture ...`
@@ -152,7 +155,8 @@ Public docs should describe these commands, not direct module entrypoints.
 - Repo-root `.agents/skills/` must stay a curated command-shim surface for the
   high-frequency Odylith CLI lane: `start`, `context`, `query`,
   `session-brief`, `sync`, `version`, `doctor`, `compass log`, and
-  `compass refresh`.
+  `compass refresh`, plus the public GitHub issue intake and release-closeout
+  commands that keep upstream issue handling draft-first.
 - Specialist governance, packet, registry, diagram, and orchestration
   workflows remain under `odylith/skills/` rather than being mirrored into the
   default Codex discovery path.
@@ -672,3 +676,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-14: Extended the consumer-lane fast path so common governed authoring commands (`bug capture`, `backlog create`, `component register`, `atlas scaffold`, `compass log`) forward backend help and the installed guidance keeps shim and fallback plumbing out of normal user-facing narration. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
 - 2026-04-14: Tightened the forwarded-help contract so Atlas public help surfaces keep the real `odylith atlas ...` command name and user-facing descriptions instead of leaking `cli.py`, `__main__.py`, or refresh-wrapper copy. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
 - 2026-04-14: Reframed the host guidance so the default lane stays shared across Codex and Claude Code, while Codex-only advice is limited to capability-gated project-asset optimizations such as `odylith codex compatibility`. (Plan: [B-088](odylith/radar/radar.html?view=plan&workstream=B-088))
+- 2026-04-29: Added `odylith github issue ...` as the draft-first public issue intake and release-closeout command lane, with Codex/Claude skills and guidance mirrors for Casebook-linked GitHub issue handling. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127); Casebook: CB-136)

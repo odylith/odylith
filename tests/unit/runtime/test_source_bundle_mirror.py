@@ -164,6 +164,44 @@ def test_repo_governance_docs_preserve_watcher_and_brief_contract_in_bundle_mirr
             / "SKILL.md",
             "never turn an ordinary restart into a foreground provider refresh",
         ),
+        (
+            repo_root / "odylith" / "agents-guidelines" / "GITHUB_ISSUE_PIPELINE.md",
+            repo_root
+            / "src"
+            / "odylith"
+            / "bundle"
+            / "assets"
+            / "odylith"
+            / "agents-guidelines"
+            / "GITHUB_ISSUE_PIPELINE.md",
+            "Public writes require `--apply-github`.",
+        ),
+        (
+            repo_root / "odylith" / "skills" / "odylith-github-issue-triage" / "SKILL.md",
+            repo_root
+            / "src"
+            / "odylith"
+            / "bundle"
+            / "assets"
+            / "odylith"
+            / "skills"
+            / "odylith-github-issue-triage"
+            / "SKILL.md",
+            "Issue #21 should classify as `P0`, `type:data-loss`, `type:install`, and",
+        ),
+        (
+            repo_root / "odylith" / "skills" / "odylith-github-release-closeout" / "SKILL.md",
+            repo_root
+            / "src"
+            / "odylith"
+            / "bundle"
+            / "assets"
+            / "odylith"
+            / "skills"
+            / "odylith-github-release-closeout"
+            / "SKILL.md",
+            "Do not close issues before the release is marked shipped locally",
+        ),
     )
 
     for live_path, mirror_path, expected_snippet in checks:

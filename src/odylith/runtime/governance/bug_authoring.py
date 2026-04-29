@@ -60,10 +60,15 @@ _OPTIONAL_FIELD_SPECS: tuple[tuple[str, str], ...] = (
     ("config_flags", "Config/Flags"),
     ("customer_comms", "Customer Comms"),
     ("related_incidents_bugs", "Related Incidents/Bugs"),
+    ("github_issues", "GitHub Issue(s)"),
+    ("github_status", "GitHub Status"),
+    ("fixed_in", "Fixed In"),
+    ("public_response", "Public Response"),
     ("code_references", "Code References"),
     ("runbook_references", "Runbook References"),
     ("fix_commit_pr", "Fix Commit/PR"),
 )
+_PLACEHOLDER_ALLOWED_OPTIONAL_FIELDS = frozenset({"public_response"})
 
 
 def _slugify(value: str) -> str:
@@ -276,7 +281,7 @@ def _validate_capture_inputs(
         value = _normalize_capture_value(optional_fields.get(arg_name, ""))
         if not value:
             continue
-        if _field_looks_placeholder(value):
+        if arg_name not in _PLACEHOLDER_ALLOWED_OPTIONAL_FIELDS and _field_looks_placeholder(value):
             placeholder_flags.append(f"--{arg_name.replace('_', '-')}")
             continue
         cleaned_optional[arg_name] = value
@@ -395,6 +400,10 @@ def capture_bug(
     config_flags: str = "",
     customer_comms: str = "",
     related_incidents_bugs: str = "",
+    github_issues: str = "",
+    github_status: str = "",
+    fixed_in: str = "",
+    public_response: str = "",
     code_references: Sequence[str] = (),
     runbook_references: Sequence[str] = (),
     fix_commit_pr: str = "",
@@ -460,6 +469,10 @@ def capture_bug(
             "config_flags": config_flags,
             "customer_comms": customer_comms,
             "related_incidents_bugs": related_incidents_bugs,
+            "github_issues": github_issues,
+            "github_status": github_status,
+            "fixed_in": fixed_in,
+            "public_response": public_response,
             "code_references": _normalize_multiline_reference(
                 field_name="code_references",
                 values=code_references,
@@ -576,6 +589,10 @@ def capture_bug_from_payload(
             "related_incidents_bugs",
             mapping.get("related_incidents_bugs", ""),
         ),
+        github_issues=_normalize_payload_scalar("github_issues", mapping.get("github_issues", "")),
+        github_status=_normalize_payload_scalar("github_status", mapping.get("github_status", "")),
+        fixed_in=_normalize_payload_scalar("fixed_in", mapping.get("fixed_in", "")),
+        public_response=_normalize_payload_scalar("public_response", mapping.get("public_response", "")),
         code_references=_normalize_reference_values("code_references", mapping.get("code_references")),
         runbook_references=_normalize_reference_values("runbook_references", mapping.get("runbook_references")),
         fix_commit_pr=_normalize_payload_scalar("fix_commit_pr", mapping.get("fix_commit_pr", "")),
@@ -625,6 +642,10 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--config-flags", default="", help="Relevant config or flag posture.")
     parser.add_argument("--customer-comms", default="", help="Customer communication posture, if any.")
     parser.add_argument("--related-incidents-bugs", default="", help="Related incident or bug references.")
+    parser.add_argument("--github-issues", default="", help="Linked GitHub issue references such as owner/repo#21.")
+    parser.add_argument("--github-status", default="", help="GitHub issue status: confirmed, fixed_pending_release, fixed_released, closed, or needs_info.")
+    parser.add_argument("--fixed-in", default="", help="Product version that fixes the linked GitHub issue.")
+    parser.add_argument("--public-response", default="", help="Public response state: pending, posted, close_pending, or closed.")
     parser.add_argument("--code-reference", action="append", default=[], help="Code reference to include. Repeatable.")
     parser.add_argument("--runbook-reference", action="append", default=[], help="Runbook reference to include. Repeatable.")
     parser.add_argument("--fix-commit-pr", default="", help="Fix commit or PR reference, if known.")
@@ -672,6 +693,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             config_flags=str(args.config_flags).strip(),
             customer_comms=str(args.customer_comms).strip(),
             related_incidents_bugs=str(args.related_incidents_bugs).strip(),
+            github_issues=str(args.github_issues).strip(),
+            github_status=str(args.github_status).strip(),
+            fixed_in=str(args.fixed_in).strip(),
+            public_response=str(args.public_response).strip(),
             code_references=tuple(args.code_reference),
             runbook_references=tuple(args.runbook_reference),
             fix_commit_pr=str(args.fix_commit_pr).strip(),

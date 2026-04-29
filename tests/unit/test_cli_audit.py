@@ -179,6 +179,13 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--title", "Fixture bug"],
     },
     {
+        "path": ("github",),
+        "argv": lambda root: ["github", f"--repo-root={root}", "issue", "triage", "21", "--repo", "odylith/odylith"],
+        "handler": "_cmd_github",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and list(getattr(args, "forwarded", [])) == ["issue", "triage", "21", "--repo", "odylith/odylith"],
+    },
+    {
         "path": ("release", "list"),
         "argv": lambda root: ["release", "list", f"--repo-root={root}"],
         "handler": "_cmd_release",

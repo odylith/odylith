@@ -83,7 +83,24 @@ def test_bug_capture_help_forwards_backend_flags(capsys) -> None:
     assert "--failure-signature" in output
     assert "--trigger-path" in output
     assert "--detected-by" in output
+    assert "--github-issues" in output
+    assert "--github-status" in output
+    assert "--fixed-in" in output
+    assert "--public-response" in output
     assert "--dry-run" in output
+    assert "--json" in output
+
+
+def test_github_issue_triage_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["github", "issue", "triage", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith github issue triage" in output
+    assert "--apply-governance" in output
+    assert "--apply-github" in output
+    assert "--repo" in output
     assert "--json" in output
 
 

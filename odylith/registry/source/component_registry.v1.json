@@ -80,7 +80,8 @@
         "subagent-router",
         "subagent-orchestrator",
         "tribunal",
-        "remediator"
+        "remediator",
+        "github-issue-pipeline"
       ]
     },
     {
@@ -1049,6 +1050,33 @@
       "what_it_is": "Install-owned migration planning, ledger, doctor-observability, and release-gate runtime for Odylith install and upgrade paths.",
       "why_tracked": "Keeps release migration behavior authoritative and auditable so dry-run, apply, reinstall, doctor, and release gates cannot derive migration state independently.",
       "spec_ref": "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+      "sources": [
+        "manifest"
+      ],
+      "subcomponents": [],
+      "product_layer": "cli_bootstrap"
+    },
+    {
+      "component_id": "github-issue-pipeline",
+      "name": "GitHub Issue Pipeline",
+      "kind": "governance_engine",
+      "category": "governance_engine",
+      "qualification": "curated",
+      "aliases": [],
+      "path_prefixes": [
+        "src/odylith/runtime/governance/github_issue_cli.py",
+        "src/odylith/runtime/governance/github_issue_pipeline.py",
+        "src/odylith/runtime/governance/github_issue_transport.py"
+      ],
+      "workstreams": [
+        "B-127"
+      ],
+      "diagrams": [],
+      "owner": "product",
+      "status": "active",
+      "what_it_is": "Draft-first GitHub issue intake and release-closeout pipeline for Odylith maintainer issue handling.",
+      "why_tracked": "Keeps public issue handling tied to Casebook truth, release validation, and explicit GitHub write approval so confirmed bugs do not drift between GitHub, governance records, and release closeout.",
+      "spec_ref": "odylith/registry/source/components/github-issue-pipeline/CURRENT_SPEC.md",
       "sources": [
         "manifest"
       ],

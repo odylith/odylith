@@ -127,3 +127,11 @@
 - tests/unit/install/test_codex_project_assets.py
 - tests/unit/install/test_migration_runtime.py
 - tests/integration/install/test_manager.py
+
+- GitHub Issue(s): odylith/odylith#21
+
+- GitHub Status: fixed_pending_release
+
+- Fixed In: 0.1.12
+
+- Public Response: pending

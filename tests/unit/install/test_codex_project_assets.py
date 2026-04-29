@@ -51,6 +51,8 @@ CODEX_COMMAND_SKILLS = {
     "odylith-casebook-bug-capture/SKILL.md",
     "odylith-casebook-bug-preflight/SKILL.md",
     "odylith-code-hygiene-guard/SKILL.md",
+    "odylith-github-issue-triage/SKILL.md",
+    "odylith-github-release-closeout/SKILL.md",
     "odylith-guidance-behavior/SKILL.md",
     "odylith-discipline/SKILL.md",
 }

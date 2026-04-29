@@ -181,10 +181,26 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 ## Routing
 - Shared anti-slop and decomposition policy: `../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md`
 - Maintainer coding standards: `agents-guidelines/CODING_STANDARDS.md`
+- GitHub issue intake and release closeout: `../agents-guidelines/GITHUB_ISSUE_PIPELINE.md`
 - Release benchmark publishing: `agents-guidelines/RELEASE_BENCHMARKS.md`
 - Canonical release order: `../MAINTAINER_RELEASE_RUNBOOK.md`
 
 ## Skills
 - `../skills/odylith-code-hygiene-guard/`
+- `../skills/odylith-github-issue-triage/`
+- `../skills/odylith-github-release-closeout/`
 - `skills/fail-closed-code-hygiene/`
 - `skills/release-benchmark-publishing/`
+
+## GitHub Issue Handling
+- Public issue handling must run through fetch, classify, governance-link,
+  draft-GitHub-update, and apply-only-with-approval.
+- Start with
+  `odylith github issue triage <issue-url-or-number> --repo odylith/odylith --json`.
+- Use `--apply-governance` only after the Casebook match and fixed-in-release
+  fields are correct.
+- Use `--apply-github` only after the maintainer accepts the exact labels,
+  comment body, and close decision.
+- During release closeout, run
+  `odylith github issue release-closeout --release current --json`; do not
+  close public issues before the release is publicly available.

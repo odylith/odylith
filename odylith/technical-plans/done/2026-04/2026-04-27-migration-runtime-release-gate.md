@@ -77,6 +77,9 @@ makes the transaction safe.
       runtime instead of adding new formatter-only inference.
 - [x] Add Atlas coverage for the transaction flow and update the component spec
       with ownership and proof obligations.
+- [x] Add GitHub issue intake and release closeout as the public-feedback gate
+      for this adoption-risk lane, with CB-136 linked to odylith/odylith#21
+      and closure blocked until v0.1.12 is public.
 
 ## Non-Goals
 - Do not redesign dashboard refresh reviewability in this slice.
@@ -108,9 +111,12 @@ makes the transaction safe.
 - [x] `PYTHONPATH=src python3 -m odylith.cli upgrade --repo-root . --dry-run --json` passed and reported `scenario=product_repo_pinned_dogfood`.
 - [x] `PYTHONPATH=src python3 -m odylith.cli doctor --repo-root .` passed and reported migration scenario plus ledger state.
 - [x] `PYTHONPATH=src python3 -m odylith.cli release migration-gate --repo-root . --target-version 0.1.12 --json` passed with `ok=true`.
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_github_issue_pipeline.py` passed with 12 tests.
+- [x] `PYTHONPATH=src python3 -m odylith.cli github --repo-root . issue triage 21 --repo odylith/odylith --json` produced a draft-only P0/data-loss/install plan matching CB-136.
+- [x] `PYTHONPATH=src python3 -m odylith.cli github --repo-root . issue release-closeout --repo odylith/odylith --release current --json` reported odylith/odylith#21 pending release, with validation evidence present and no closure before public release availability.
 - [x] `git diff --check`
 - [x] `./.odylith/bin/odylith casebook validate --repo-root .` passed with 134 records checked.
-- [x] `./.odylith/bin/odylith validate component-registry --repo-root .` passed with 27 components and 391 events.
+- [x] `./.odylith/bin/odylith validate component-registry --repo-root .` passed with 28 components and 399 events after the GitHub issue pipeline follow-up.
 
 ## Implementation Notes
 - `release migration-gate` reports the registered migrations, covered version
@@ -119,6 +125,9 @@ makes the transaction safe.
   plans and applies through `migration_runtime`. Legacy root migration is owned
   by `legacy_install_migration.py` and invoked through the repo-state migration
   plan.
+- The GitHub issue pipeline now owns issue fetch, classification, Casebook
+  linkage, public label/comment drafts, and fixed-in-release closeout for
+  linked public issues.
 - `upgrade --dry-run --json` exposes `scenario`, `migration_plan`,
   `migration_results`, `ledger_state`, `blocked_reason`, and
   `plan_fingerprint`.

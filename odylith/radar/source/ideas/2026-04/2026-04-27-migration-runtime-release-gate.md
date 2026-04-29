@@ -85,6 +85,9 @@ project-root skill pruning, symlinked host/project managed-asset destinations,
 governance source preservation, legacy root/state conflict blocking, runtime
 activation atomicity, ledger idempotency, repair-only cleanup, and
 generated-surface separation.
+The GitHub issue pipeline follow-up adds public issue intake and release
+closeout to the same 0.1.12 adoption-risk lane so GitHub issue #21, CB-136,
+labels, public comments, and release closure cannot drift apart.
 
 ## Scope
 - Add the migration runtime contracts and registry.
@@ -118,6 +121,8 @@ generated-surface separation.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_claude_effective_settings.py tests/unit/install/test_codex_project_assets.py tests/unit/install/test_migration_runtime.py` passed with 61 tests after the symlinked host/project managed-asset follow-up.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/install/test_release_assets.py tests/unit/install/test_release_bootstrap.py tests/integration/install/test_manager.py tests/integration/install/test_lifecycle_simulator.py` passed with 167 tests after the symlinked managed-asset guard follow-up.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py` passed with 52 tests after the symlinked managed-asset guard follow-up.
+- `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_github_issue_pipeline.py` passed with 12 tests after the GitHub issue intake and release-closeout pipeline follow-up.
+- `PYTHONPATH=src python3 -m odylith.cli github --repo-root . issue release-closeout --repo odylith/odylith --release current --json` reported CB-136 as pending release with validation evidence and no close eligibility while release-0-1-12 remains active.
 - `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py tests/unit/runtime/test_shell_onboarding.py` passed with 65 tests after the symlinked managed-asset guard follow-up.
 - `PYTHONPATH=src python3 -m odylith.cli upgrade --repo-root . --dry-run --json` passed and reported `scenario=product_repo_pinned_dogfood`.
 - `PYTHONPATH=src python3 -m odylith.cli doctor --repo-root .` passed and reported migration scenario plus ledger state.

@@ -121,6 +121,7 @@ _CODEX_HOST_COMMAND_MODULES = {
 _SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
 _COMPONENT_AUTHORING_MODULE = "odylith.runtime.governance.component_authoring"
 _BUG_AUTHORING_MODULE = "odylith.runtime.governance.bug_authoring"
+_GITHUB_ISSUE_PIPELINE_MODULE = "odylith.runtime.governance.github_issue_cli"
 
 
 def _load_module(name: str):
@@ -1678,6 +1679,13 @@ def _cmd_bug(args: argparse.Namespace) -> int:
     )
 
 
+def _cmd_github(args: argparse.Namespace) -> int:
+    return _run_module_main(
+        _GITHUB_ISSUE_PIPELINE_MODULE,
+        ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+    )
+
+
 def _forward_backend_help(*, module_name: str, repo_root: str, forwarded: Sequence[str]) -> int:
     return _run_module_main(
         module_name,
@@ -2463,6 +2471,10 @@ def build_parser() -> argparse.ArgumentParser:
     bug_capture.add_argument("--repo-root", default=".", help="Consumer repository root.")
     bug_capture.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
+    github = subparsers.add_parser("github", help="Draft-first GitHub issue intake and release closeout.")
+    github.add_argument("--repo-root", default=".", help="Consumer repository root.")
+    github.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
     casebook_surface = subparsers.add_parser("casebook", help="Refresh Casebook without widening into full sync.")
     casebook_subparsers = casebook_surface.add_subparsers(dest="casebook_command", required=True)
     casebook_refresh = casebook_subparsers.add_parser(
@@ -3030,6 +3042,8 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_owned_surface_refresh(args, surface="registry")
     if args.command == "bug":
         return _cmd_bug(args)
+    if args.command == "github":
+        return _cmd_github(args)
     if args.command == "casebook" and args.casebook_command == "refresh":
         return _cmd_owned_surface_refresh(args, surface="casebook")
     if args.command == "casebook" and args.casebook_command == "validate":
