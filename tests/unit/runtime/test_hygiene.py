@@ -1024,6 +1024,10 @@ def test_context_engine_bind_shims_are_eliminated_from_remaining_extracts() -> N
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_query_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_projection_search_runtime.py",
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "odylith_context_engine_runtime_learning_runtime.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_builder.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_completion.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_context_views.py",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_preflight.py",
     )
     for path in paths:
         text = path.read_text(encoding="utf-8")
@@ -1267,11 +1271,12 @@ def test_selected_hot_paths_use_common_value_coercion_helpers() -> None:
             "def build_narrowing_guidance(",
         ),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_budgeting.py": ("def _int_value(", "def _mapping_value("),
-        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_builder.py": (
-            "def _int_value(",
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_context_views.py": (
             "def _mapping_value(",
-            "def _normalize_token(",
             "def _string_rows(",
+        ),
+        ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_packet_preflight.py": (
+            "def _int_value(",
         ),
         ROOT / "src" / "odylith" / "runtime" / "context_engine" / "tooling_context_retrieval.py": (
             "def _int_value(",

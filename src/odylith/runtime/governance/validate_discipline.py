@@ -64,10 +64,14 @@ PLATFORM_LAYER_TOKENS: tuple[dict[str, Any], ...] = (
     {
         "layer": "context_engine",
         "source_tokens": {
-            "src/odylith/runtime/context_engine/tooling_context_packet_builder.py": (
+            "src/odylith/runtime/context_engine/tooling_context_packet_preflight.py": (
                 "discipline_runtime.summary_for_packet",
                 "discipline_summary",
                 "discipline_runtime.commands_with_validator",
+            ),
+            "src/odylith/runtime/context_engine/tooling_context_packet_builder.py": (
+                "packet_preflight.build_packet_preflight",
+                "packet_preflight.enrich_packet_payload",
             ),
             "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py": (
                 "discipline_summary",
