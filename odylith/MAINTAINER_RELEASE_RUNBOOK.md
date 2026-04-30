@@ -206,6 +206,10 @@ Run the targets in this order.
   reviving active targeting.
 - `make release-session-show`
   Show the raw sticky release-session payload under `.odylith/locks/`.
+- `make local-release-assets [VERSION=X.Y.Z] [DIST=/tmp/odylith-local-release-X.Y.Z]`
+  Build a local hosted-release asset directory for maintainer-only fresh
+  install smoke testing. Serve that directory from localhost and install with
+  the printed `ODYLITH_RELEASE_*` environment in a separate test repo.
 - `make release-preflight [VERSION=X.Y.Z]`
   Session initializer and canonical preflight gate.
 - `make release-dispatch`

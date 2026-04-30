@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import UTC, datetime
 import importlib
+import io
 import json
 import os
 import subprocess
@@ -45,6 +47,7 @@ _FIRST_RUN_SURFACE_OUTPUTS = (
 )
 _DEFAULT_DASHBOARD_REFRESH_SURFACES = ("tooling_shell", "radar", "compass")
 _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV = ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
+_BOOTSTRAP_RUNTIME_PRESTAGED_ENV = "ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED"
 _CONTEXT_ENGINE_MODULE = "odylith.runtime.context_engine.odylith_context_engine"
 _VERSION_TRUTH_MODULE = "odylith.runtime.governance.version_truth"
 _BENCHMARK_COMPARE_MODULE = "odylith.runtime.evaluation.benchmark_compare"
@@ -468,6 +471,35 @@ def _first_run_shell_repair_message(*, proceed_with_bootstrap_overlap: bool, rep
     )
 
 
+def _run_first_run_full_sync(
+    *,
+    repo_root: Path,
+    proceed_with_bootstrap_overlap: bool,
+    sync_workstream_artifacts: object,
+) -> int:
+    args = _first_run_full_sync_args(
+        repo_root=repo_root,
+        proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
+    )
+    if not proceed_with_bootstrap_overlap:
+        return int(sync_workstream_artifacts.main(args))
+
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    with redirect_stdout(stdout), redirect_stderr(stderr):
+        rc = int(sync_workstream_artifacts.main(args))
+    if rc == 0:
+        print("First-run Odylith surfaces rendered.")
+        return 0
+    out_text = stdout.getvalue()
+    err_text = stderr.getvalue()
+    if out_text:
+        print(out_text, end="")
+    if err_text:
+        print(err_text, file=sys.stderr, end="")
+    return rc
+
+
 def _bootstrap_first_run_surfaces(*, repo_root: Path, proceed_with_bootstrap_overlap: bool = False) -> int:
     resolved_repo_root = Path(repo_root).expanduser().resolve()
     missing_surfaces = _missing_first_run_surfaces(repo_root=resolved_repo_root)
@@ -477,11 +509,10 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path, proceed_with_bootstrap_ove
     # On a fresh install, jump straight to the full sync instead of printing a
     # transient missing-surface failure that the sync is about to resolve.
     if any(path != shell_path for path in missing_surfaces):
-        return sync_workstream_artifacts.main(
-            _first_run_full_sync_args(
-                repo_root=resolved_repo_root,
-                proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
-            )
+        return _run_first_run_full_sync(
+            repo_root=resolved_repo_root,
+            proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
+            sync_workstream_artifacts=sync_workstream_artifacts,
         )
     render_rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=resolved_repo_root,
@@ -491,11 +522,10 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path, proceed_with_bootstrap_ove
     )
     remaining_missing = _missing_first_run_surfaces(repo_root=resolved_repo_root)
     if remaining_missing:
-        full_sync_rc = sync_workstream_artifacts.main(
-            _first_run_full_sync_args(
-                repo_root=resolved_repo_root,
-                proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
-            )
+        full_sync_rc = _run_first_run_full_sync(
+            repo_root=resolved_repo_root,
+            proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
+            sync_workstream_artifacts=sync_workstream_artifacts,
         )
         if full_sync_rc == 0:
             return 0
@@ -938,6 +968,7 @@ def _cmd_install_common(
         adopt_latest=adopt_latest,
         align_pin=align_pin,
         target_version=target_version,
+        bootstrap_runtime_prestaged=_env_flag_enabled(_BOOTSTRAP_RUNTIME_PRESTAGED_ENV),
     )
     _print_lifecycle_plan(
         lifecycle_plan,

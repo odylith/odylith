@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+requested_version="${1:-${VERSION:-$(current_source_version)}}"
+dist_arg="${2:-${DIST:-}}"
+require_version "$requested_version"
+home_dir="${HOME:-}"
+
+if [[ -z "$dist_arg" ]]; then
+  dist_dir="${TMPDIR:-/tmp}/odylith-local-release-${requested_version}"
+elif [[ "$dist_arg" == /* ]]; then
+  dist_dir="$dist_arg"
+else
+  dist_dir="$odylith_repo_root/$dist_arg"
+fi
+
+case "$dist_dir" in
+  ""|"/"|"$home_dir"|"$odylith_repo_root"|"$odylith_host_repo_root")
+    die "refusing unsafe DIST for local release assets: ${dist_dir:-<empty>}"
+    ;;
+esac
+
+rm -rf "$dist_dir"
+mkdir -p "$dist_dir"
+
+"$odylith_python" -m hatch build --target wheel "$dist_dir"
+"$odylith_python" scripts/release/publish_release_assets.py \
+  --repo odylith/odylith \
+  --tag "v${requested_version}" \
+  --dist-dir "$dist_dir" \
+  --allow-local
+
+cat <<EOF
+local release assets ready
+- version: ${requested_version}
+- dist: ${dist_dir}
+
+Serve this build:
+  cd "${dist_dir}"
+  python3 -m http.server 8123 --bind 127.0.0.1
+
+Fresh-install it from another terminal:
+  export ODYLITH_RELEASE_BASE_URL=http://127.0.0.1:8123
+  export ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST=1
+  export ODYLITH_RELEASE_SKIP_SIGSTORE_VERIFY=1
+  export ODYLITH_RELEASE_MAINTAINER_ROOT="${odylith_repo_root}"
+  export ODYLITH_VERSION=${requested_version}
+  bash "${dist_dir}/install.sh"
+EOF

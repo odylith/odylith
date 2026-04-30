@@ -1,4 +1,4 @@
-.PHONY: help validate dev-validate dev-refresh license-audit lane-show benchmark-analysis release-version-preview release-version-show release-session-show release-session-clear release-candidate release-preflight release-dispatch dogfood-activate consumer-rehearsal ga-gate
+.PHONY: help validate dev-validate dev-refresh license-audit lane-show benchmark-analysis release-version-preview release-version-show release-session-show release-session-clear local-release-assets release-candidate release-preflight release-dispatch dogfood-activate consumer-rehearsal ga-gate
 
 help:
 	@./bin/help
@@ -32,6 +32,9 @@ release-session-show:
 
 release-session-clear:
 	@./bin/release-session-clear
+
+local-release-assets:
+	@./bin/local-release-assets "$(VERSION)" "$(DIST)"
 
 release-candidate:
 	@./bin/release-candidate "$(VERSION)"

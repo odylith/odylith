@@ -148,6 +148,8 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "Intel macOS and Windows are not supported in this release." in text
     assert "say() {" in text
     assert "step() {" in text
+    assert 'if [[ "${odylith_step_seen:-0}" == "1" ]]; then' in text
+    assert "odylith_step_seen=1" in text
     assert "banner() {" in text
     assert "require_command() {" in text
     assert "detect_repo_root() {" in text
@@ -195,8 +197,9 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'step "Activating Odylith"' in text
     assert 'say "Finishing the full Odylith setup inside the managed runtime."' in text
     assert 'say "First install may take a minute. Later upgrades reuse unchanged runtime layers so routine updates stay lean."' in text
+    assert 'ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
     assert 'say "Odylith is live."' in text
-    assert 'say \'Quick posture check: ./.odylith/bin/odylith version --repo-root "$repo_root"\'' in text
+    assert 'say "Quick posture check: ./.odylith/bin/odylith version --repo-root $repo_root"' in text
     assert "runtime-members.txt" in text
     assert "managed runtime bundle contains unexpected member path" in text
     assert "managed runtime bundle contains unsafe member path" in text
@@ -859,6 +862,26 @@ def test_release_preflight_uses_isolated_temp_dist_dir() -> None:
     assert 'ODYLITH_RELEASE_PREFLIGHT_DIST_DIR="$dist_dir"' in shared
     assert 'glob.glob(os.path.join(dist_dir, "*.whl"))' in shared
     assert 'scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"' in shared
+
+
+def test_local_release_assets_target_builds_maintainer_installable_assets() -> None:
+    text = (REPO_ROOT / "bin" / "local-release-assets").read_text(encoding="utf-8")
+    makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
+    help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
+
+    assert "local-release-assets:" in makefile
+    assert './bin/local-release-assets "$(VERSION)" "$(DIST)"' in makefile
+    assert 'requested_version="${1:-${VERSION:-$(current_source_version)}}"' in text
+    assert 'dist_dir="${TMPDIR:-/tmp}/odylith-local-release-${requested_version}"' in text
+    assert 'rm -rf "$dist_dir"' in text
+    assert '"$odylith_python" -m hatch build --target wheel "$dist_dir"' in text
+    assert 'scripts/release/publish_release_assets.py \\' in text
+    assert '--tag "v${requested_version}"' in text
+    assert '--dist-dir "$dist_dir"' in text
+    assert "--allow-local" in text
+    assert "ODYLITH_RELEASE_BASE_URL=http://127.0.0.1:8123" in text
+    assert 'ODYLITH_RELEASE_MAINTAINER_ROOT="${odylith_repo_root}"' in text
+    assert "make local-release-assets" in help_text
 
 
 def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> None:

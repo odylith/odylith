@@ -1,6 +1,7 @@
 import argparse
 import json
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -482,6 +483,8 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
 
     def fake_full_sync(argv: list[str]) -> int:
         sync_capture["argv"] = argv
+        print("workstream sync impact plan")
+        print("- dirty_overlap: bootstrap internals that should stay hidden")
         _seed_first_run_surfaces(tmp_path)
         return 0
 
@@ -502,6 +505,9 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
     ]
     assert "Odylith 1.2.3 is ready" in output.out
     assert "Rendering first-run Odylith surfaces" in output.out
+    assert "First-run Odylith surfaces rendered." in output.out
+    assert "workstream sync impact plan" not in output.out
+    assert "bootstrap internals" not in output.out
     assert "Dashboard:" in output.out
     assert "Added Odylith local-state ignore rules to the root `.gitignore`" in output.out
     assert "Repo-root AGENTS now activates Odylith guidance, skills, and route-ready native delegation candidates" in output.out
@@ -514,6 +520,27 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
     assert cli.shell_onboarding.STARTER_PROMPT in output.out
     assert "use `odylith/index.html` as the first-run Odylith launchpad" in output.out
     assert "doctor --repo-root . --repair" in output.out
+
+
+def test_first_run_surface_bootstrap_replays_sync_output_on_failure(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    def fake_full_sync(argv: list[str]) -> int:  # noqa: ARG001
+        print("workstream sync blocked")
+        print("contract failure details", file=sys.stderr)
+        return 2
+
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "main", fake_full_sync)
+
+    rc = cli._bootstrap_first_run_surfaces(  # noqa: SLF001
+        repo_root=tmp_path,
+        proceed_with_bootstrap_overlap=True,
+    )
+    output = capsys.readouterr()
+
+    assert rc == 2
+    assert "workstream sync blocked" in output.out
+    assert "contract failure details" in output.err
 
 
 def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -1000,6 +1027,7 @@ def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, 
         "adopt_latest": False,
         "align_pin": True,
         "target_version": "1.2.4",
+        "bootstrap_runtime_prestaged": False,
     }
     assert captured["install_kwargs"] == {
         "repo_root": str(tmp_path),
@@ -1008,6 +1036,22 @@ def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, 
         "align_pin": True,
     }
     assert "Repo pin updated to 1.2.4." in output
+
+
+def test_install_dry_run_passes_bootstrap_runtime_prestaged_env(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_plan_install_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured.update(kwargs)
+        return SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=())
+
+    monkeypatch.setenv("ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED", "1")
+    monkeypatch.setattr(cli, "plan_install_lifecycle", fake_plan_install_lifecycle)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--dry-run"])
+
+    assert rc == 0
+    assert captured["bootstrap_runtime_prestaged"] is True
 
 
 def test_reinstall_defaults_to_latest_verified_release(monkeypatch, tmp_path: Path, capsys) -> None:

@@ -120,9 +120,11 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 ## Migration Observer Needs
 - `migration-observer:0.1.12:guidance-and-skills:5edfb8f61a7a`
 - `migration-observer:0.1.12:operator-cli-contracts:5048d0eb61c4`
+- `migration-observer:0.1.12:operator-cli-contracts:11746f52d642`
 - `migration-observer:0.1.12:public-docs-and-release-guidance:3d374298bec4`
 - `migration-observer:0.1.12:browser-surfaces:742e1bb597ab`
 - `migration-observer:0.1.12:install-managed-assets:9431818775c2`
+- `migration-observer:0.1.12:install-managed-assets:d14d06cf271a`
 
 ## 0.1.12 Upgrade Assessment
 - First-run install and sync overlap: existing 0.1.11 consumer repos can safely
@@ -221,6 +223,15 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   `ODYLITH_UPGRADE_CHECK_URL` at an approved mirror, tune interval/timeout with
   the documented env vars, or use `--upgrade-check-offline`. This is advisory
   only; `odylith upgrade` remains the signed verified release path.
+- First-run install transcript hygiene: the hosted installer now marks the
+  just-unpacked managed runtime as bootstrap-owned before calling the install
+  lifecycle, so fresh installs no longer report thousands of runtime files as
+  dirty user work. The first-run surface sync remains fail-open for diagnostic
+  output, but successful bootstrap sync emits a compact success line instead
+  of the full 23-step governance plan, managed-asset overlap preview, and
+  benign empty-repo warnings. Existing installed repos do not need migration;
+  the change affects new installs and future hosted refresh/upgrade handoff
+  transcript shape.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.

@@ -265,7 +265,36 @@ def _lifecycle_step(
     )
 
 
-def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[str, ...]:
+def _status_path_from_porcelain_line(line: str) -> str:
+    token = str(line or "").rstrip()
+    if len(token) <= 3:
+        return ""
+    path_token = token[3:].strip()
+    if " -> " in path_token:
+        path_token = path_token.rsplit(" -> ", 1)[-1].strip()
+    return path_token.strip('"')
+
+
+def _matches_path_prefix(path: str, prefixes: Sequence[str]) -> bool:
+    normalized_path = str(path or "").strip().lstrip("./")
+    if not normalized_path:
+        return False
+    for prefix in prefixes:
+        normalized_prefix = str(prefix or "").strip().lstrip("./")
+        if not normalized_prefix:
+            continue
+        trimmed_prefix = normalized_prefix.rstrip("/")
+        if normalized_path == trimmed_prefix or normalized_path.startswith(trimmed_prefix + "/"):
+            return True
+    return False
+
+
+def _dirty_overlap_for_paths(
+    *,
+    repo_root: Path,
+    paths: Sequence[str],
+    exclude_prefixes: Sequence[str] = (),
+) -> tuple[str, ...]:
     normalized = tuple(dict.fromkeys(str(token).strip() for token in paths if str(token).strip()))
     if not normalized or not _git_repo_present(repo_root=repo_root):
         return ()
@@ -286,7 +315,16 @@ def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[
     )
     if completed.returncode != 0:
         return ()
-    return tuple(line.rstrip() for line in str(completed.stdout or "").splitlines() if line.strip())
+    exclusions = tuple(str(token).strip() for token in exclude_prefixes if str(token).strip())
+    rows = []
+    for line in str(completed.stdout or "").splitlines():
+        row = line.rstrip()
+        if not row.strip():
+            continue
+        if exclusions and _matches_path_prefix(_status_path_from_porcelain_line(row), exclusions):
+            continue
+        rows.append(row)
+    return tuple(rows)
 
 
 def _lifecycle_plan(
@@ -297,11 +335,13 @@ def _lifecycle_plan(
     notes: Sequence[str] = (),
     repo_root: Path,
     metadata: Mapping[str, object] | None = None,
+    dirty_overlap_exclude_prefixes: Sequence[str] = (),
 ) -> LifecyclePlan:
     normalized_steps = tuple(steps)
     dirty_overlap = _dirty_overlap_for_paths(
         repo_root=repo_root,
         paths=[path for step in normalized_steps for path in step.paths],
+        exclude_prefixes=dirty_overlap_exclude_prefixes,
     )
     return LifecyclePlan(
         command=str(command).strip(),
@@ -405,9 +445,10 @@ def plan_install_lifecycle(
     adopt_latest: bool = False,
     align_pin: bool = False,
     target_version: str = "",
+    bootstrap_runtime_prestaged: bool = False,
 ) -> LifecyclePlan:
     root = _repo_root(repo_root, require_agents=False)
-    first_install = not load_install_state(repo_root=root)
+    first_install = not install_state_path(repo_root=root).is_file()
     missing_surfaces = [
         token
         for token in _FIRST_RUN_SURFACE_TARGETS
@@ -426,42 +467,44 @@ def plan_install_lifecycle(
         )
     steps.extend(
         [
-        _lifecycle_step(
-            "Materialize the repo-owned Odylith bootstrap tree and managed guidance.",
-            "managed_guidance",
-            "repo_owned_truth",
-            paths=(
-                "AGENTS.md",
-                "CLAUDE.md",
-                ".claude/",
-                ".codex/",
-                ".agents/skills/",
-                ".gitignore",
-                "odylith/AGENTS.md",
-                "odylith/CLAUDE.md",
-                "odylith/agents-guidelines/",
-                "odylith/skills/",
-                "odylith/runtime/source/",
-                "odylith/radar/source/",
-                "odylith/technical-plans/",
-                "odylith/registry/source/",
-                "odylith/atlas/source/",
+            _lifecycle_step(
+                "Materialize the repo-owned Odylith bootstrap tree and managed guidance.",
+                "managed_guidance",
+                "repo_owned_truth",
+                paths=(
+                    "AGENTS.md",
+                    "CLAUDE.md",
+                    ".claude/",
+                    ".codex/",
+                    ".agents/skills/",
+                    ".gitignore",
+                    "odylith/AGENTS.md",
+                    "odylith/CLAUDE.md",
+                    "odylith/agents-guidelines/",
+                    "odylith/skills/",
+                    "odylith/runtime/source/",
+                    "odylith/radar/source/",
+                    "odylith/technical-plans/",
+                    "odylith/registry/source/",
+                    "odylith/atlas/source/",
+                ),
+                detail=(
+                    "First install seeds the repo-owned Odylith truth tree; later installs rematerialize the "
+                    "managed guidance layer."
+                ),
             ),
-            detail="First install seeds the repo-owned Odylith truth tree; later installs rematerialize the managed guidance layer.",
-        ),
-        _lifecycle_step(
-            "Stage or reuse the Odylith-managed runtime and refresh the repo-local launchers.",
-            "runtime_state",
-            paths=(
-                ".odylith/install.json",
-                ".odylith/bin/odylith",
-                ".odylith/bin/odylith-bootstrap",
-                ".odylith/runtime/current",
-                ".odylith/runtime/versions/",
-                ".odylith/",
+            _lifecycle_step(
+                "Stage or reuse the Odylith-managed runtime and refresh the repo-local launchers.",
+                "runtime_state",
+                paths=(
+                    ".odylith/install.json",
+                    ".odylith/bin/odylith",
+                    ".odylith/bin/odylith-bootstrap",
+                    ".odylith/runtime/current",
+                    ".odylith/runtime/versions/",
+                ),
+                detail="This keeps Odylith itself on the managed runtime without touching the repo's own application toolchain.",
             ),
-            detail="This keeps Odylith itself on the managed runtime without touching the repo's own application toolchain.",
-        ),
         ]
     )
     if adopt_latest:
@@ -512,6 +555,7 @@ def plan_install_lifecycle(
         steps=steps,
         notes=notes,
         repo_root=root,
+        dirty_overlap_exclude_prefixes=(".odylith/runtime/",) if first_install and bootstrap_runtime_prestaged else (),
     )
 
 

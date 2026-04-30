@@ -28,6 +28,9 @@ make release-version-show
 make release-session-show
   Show the raw sticky release-session fields under .odylith/locks/.
 
+make local-release-assets [VERSION=X.Y.Z] [DIST=/tmp/odylith-local-release-X.Y.Z]
+  Build local installable release assets for maintainer smoke testing without dispatching a release.
+
 make release-candidate [VERSION=X.Y.Z]
   Run the shared non-publishing release-proof lane on the current clean checkout and compare benchmarks against the last shipped release baseline.
 

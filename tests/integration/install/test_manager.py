@@ -24,6 +24,7 @@ from odylith.install.manager import (
     evaluate_start_preflight,
     install_bundle,
     load_install_state,
+    plan_install_lifecycle,
     plan_upgrade_lifecycle,
     reinstall_install,
     rollback_install,
@@ -346,6 +347,39 @@ def _seed_legacy_runtime(repo_root: Path, *, version: str = "1.2.3") -> Path:
         current.unlink()
     current.symlink_to(Path("versions") / version)
     return version_root
+
+
+def test_plan_install_lifecycle_ignores_bootstrap_staged_runtime_overlap(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    captured_exclusions: list[tuple[str, ...]] = []
+
+    def fake_dirty_overlap_for_paths(**kwargs) -> tuple[str, ...]:  # noqa: ANN003
+        exclusions = tuple(kwargs.get("exclude_prefixes", ()) or ())
+        captured_exclusions.append(exclusions)
+        if exclusions:
+            return ("?? AGENTS.md",)
+        return ("?? .odylith/runtime/versions/1.2.3/bin/odylith", "?? AGENTS.md")
+
+    monkeypatch.setattr(install_manager_module, "_dirty_overlap_for_paths", fake_dirty_overlap_for_paths)
+
+    clean_bootstrap_plan = plan_install_lifecycle(
+        repo_root=repo_root,
+        target_version="1.2.3",
+        bootstrap_runtime_prestaged=True,
+    )
+    raw_plan = plan_install_lifecycle(
+        repo_root=repo_root,
+        target_version="1.2.3",
+        bootstrap_runtime_prestaged=False,
+    )
+
+    assert captured_exclusions == [(".odylith/runtime/",), ()]
+    assert clean_bootstrap_plan.dirty_overlap == ("?? AGENTS.md",)
+    assert all(".odylith/runtime/" not in line for line in clean_bootstrap_plan.dirty_overlap)
+    assert any(".odylith/runtime/versions/1.2.3/bin/odylith" in line for line in raw_plan.dirty_overlap)
 
 
 def test_migrate_legacy_install_rewrites_roots_and_purges_volatile_state(tmp_path: Path) -> None:
