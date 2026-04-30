@@ -522,6 +522,50 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
     assert "doctor --repo-root . --repair" in output.out
 
 
+def test_hosted_first_install_uses_compact_progress_labels(monkeypatch, tmp_path: Path, capsys) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+
+    monkeypatch.setenv("ODYLITH_INSTALL_COMPACT", "1")
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=True,
+            created_guidance_files=("AGENTS.md", "CLAUDE.md"),
+            git_repo_present=True,
+            gitignore_updated=True,
+        ),
+    )
+
+    def fake_full_sync(argv: list[str]) -> int:  # noqa: ARG001
+        print("workstream sync impact plan")
+        print("- dirty_overlap: bootstrap internals that should stay hidden")
+        _seed_first_run_surfaces(tmp_path)
+        return 0
+
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "main", fake_full_sync)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--no-open"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "write  Adding Odylith files." in output
+    assert "draw   Building the dashboard." in output
+    assert "done   Dashboard ready." in output
+    assert "ready  Odylith 1.2.3 is installed." in output
+    assert f"open   {tmp_path / 'odylith' / 'index.html'}" in output
+    assert "start  In Codex or Claude Code, ask: Odylith, show me what you can do." in output
+    assert "install plan" not in output
+    assert "dirty_overlap" not in output
+    assert "workstream sync impact plan" not in output
+    assert "Created root guidance files" not in output
+    assert "Repo-root AGENTS now activates" not in output
+    assert "Full Odylith is installed by default" not in output
+
+
 def test_first_run_surface_bootstrap_replays_sync_output_on_failure(
     monkeypatch, tmp_path: Path, capsys
 ) -> None:

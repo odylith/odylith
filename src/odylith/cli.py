@@ -48,6 +48,7 @@ _FIRST_RUN_SURFACE_OUTPUTS = (
 _DEFAULT_DASHBOARD_REFRESH_SURFACES = ("tooling_shell", "radar", "compass")
 _DEFAULT_DASHBOARD_REFRESH_SURFACES_CSV = ",".join(_DEFAULT_DASHBOARD_REFRESH_SURFACES)
 _BOOTSTRAP_RUNTIME_PRESTAGED_ENV = "ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED"
+_INSTALL_COMPACT_ENV = "ODYLITH_INSTALL_COMPACT"
 _CONTEXT_ENGINE_MODULE = "odylith.runtime.context_engine.odylith_context_engine"
 _VERSION_TRUTH_MODULE = "odylith.runtime.governance.version_truth"
 _BENCHMARK_COMPARE_MODULE = "odylith.runtime.evaluation.benchmark_compare"
@@ -476,6 +477,7 @@ def _run_first_run_full_sync(
     repo_root: Path,
     proceed_with_bootstrap_overlap: bool,
     sync_workstream_artifacts: object,
+    compact: bool = False,
 ) -> int:
     args = _first_run_full_sync_args(
         repo_root=repo_root,
@@ -489,7 +491,10 @@ def _run_first_run_full_sync(
     with redirect_stdout(stdout), redirect_stderr(stderr):
         rc = int(sync_workstream_artifacts.main(args))
     if rc == 0:
-        print("First-run Odylith surfaces rendered.")
+        if compact:
+            _print_install_progress("done", "Dashboard ready.")
+        else:
+            print("First-run Odylith surfaces rendered.")
         return 0
     out_text = stdout.getvalue()
     err_text = stderr.getvalue()
@@ -500,7 +505,12 @@ def _run_first_run_full_sync(
     return rc
 
 
-def _bootstrap_first_run_surfaces(*, repo_root: Path, proceed_with_bootstrap_overlap: bool = False) -> int:
+def _bootstrap_first_run_surfaces(
+    *,
+    repo_root: Path,
+    proceed_with_bootstrap_overlap: bool = False,
+    compact: bool = False,
+) -> int:
     resolved_repo_root = Path(repo_root).expanduser().resolve()
     missing_surfaces = _missing_first_run_surfaces(repo_root=resolved_repo_root)
     shell_path = resolved_repo_root / "odylith" / "index.html"
@@ -513,6 +523,7 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path, proceed_with_bootstrap_ove
             repo_root=resolved_repo_root,
             proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
             sync_workstream_artifacts=sync_workstream_artifacts,
+            compact=compact,
         )
     render_rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
         repo_root=resolved_repo_root,
@@ -526,6 +537,7 @@ def _bootstrap_first_run_surfaces(*, repo_root: Path, proceed_with_bootstrap_ove
             repo_root=resolved_repo_root,
             proceed_with_bootstrap_overlap=proceed_with_bootstrap_overlap,
             sync_workstream_artifacts=sync_workstream_artifacts,
+            compact=compact,
         )
         if full_sync_rc == 0:
             return 0
@@ -540,6 +552,10 @@ def _is_first_install(*, repo_root: Path) -> bool:
 def _env_flag_enabled(name: str) -> bool:
     token = str(os.environ.get(name) or "").strip().lower()
     return token not in {"", "0", "false", "no", "off"}
+
+
+def _print_install_progress(label: str, message: str) -> None:
+    print(f"{str(label).strip():<6} {str(message).strip()}")
 
 
 def _interactive_browser_launch_possible() -> bool:
@@ -963,6 +979,11 @@ def _cmd_install_common(
     align_pin = bool(getattr(args, "align_pin", False))
     release_repo = str(getattr(args, "release_repo", _authoritative_release_repo()) or _authoritative_release_repo()).strip()
     target_version = str(getattr(args, "version", "") or getattr(args, "target_version", "") or "").strip()
+    compact_output = (
+        _env_flag_enabled(_INSTALL_COMPACT_ENV)
+        and not bool(getattr(args, "dry_run", False))
+        and not bool(getattr(args, "verbose", False))
+    )
     lifecycle_plan = plan_install_lifecycle(
         repo_root=requested_repo_root,
         adopt_latest=adopt_latest,
@@ -970,11 +991,14 @@ def _cmd_install_common(
         target_version=target_version,
         bootstrap_runtime_prestaged=_env_flag_enabled(_BOOTSTRAP_RUNTIME_PRESTAGED_ENV),
     )
-    _print_lifecycle_plan(
-        lifecycle_plan,
-        dry_run=bool(getattr(args, "dry_run", False)),
-        verbose=bool(getattr(args, "verbose", False)),
-    )
+    if compact_output:
+        _print_install_progress("write", "Adding Odylith files.")
+    else:
+        _print_lifecycle_plan(
+            lifecycle_plan,
+            dry_run=bool(getattr(args, "dry_run", False)),
+            verbose=bool(getattr(args, "verbose", False)),
+        )
     if bool(getattr(args, "dry_run", False)):
         return 0
     summary = install_bundle(
@@ -988,13 +1012,16 @@ def _cmd_install_common(
     final_launcher_path = summary.launcher_path
     missing_surfaces = _missing_first_run_surfaces(repo_root=summary.repo_root)
     if missing_surfaces:
-        if first_install:
+        if compact_output:
+            _print_install_progress("draw", "Building the dashboard.")
+        elif first_install:
             print("Rendering first-run Odylith surfaces so the local shell is immediately usable.")
         else:
             print("Refreshing missing Odylith surfaces so the local shell stays usable.")
         render_rc = _bootstrap_first_run_surfaces(
             repo_root=summary.repo_root,
             proceed_with_bootstrap_overlap=first_install,
+            compact=compact_output,
         )
         remaining_missing = _missing_first_run_surfaces(repo_root=summary.repo_root)
         if render_rc != 0 or remaining_missing:
@@ -1036,6 +1063,20 @@ def _cmd_install_common(
         _refreshed, refresh_message = _refresh_dashboard_after_upgrade(repo_root=summary.repo_root)
         print(refresh_message)
     dashboard_path = summary.repo_root / "odylith" / "index.html"
+    opened_dashboard, open_message = _maybe_open_dashboard_in_browser(
+        dashboard_path=dashboard_path,
+        enabled=first_install and not bool(args.no_open),
+    )
+    if compact_output:
+        _print_install_progress("ready", f"Odylith {final_version} is installed.")
+        _print_install_progress("open", str(dashboard_path))
+        _print_install_progress("start", f"In Codex or Claude Code, ask: {_module_attr('odylith.runtime.surfaces.shell_onboarding', 'STARTER_PROMPT')}")
+        if opened_dashboard:
+            _print_install_progress("open", "Browser opened to odylith/index.html.")
+        elif open_message:
+            _print_install_progress("open", open_message)
+        _print_retention_warnings(summary)
+        return 0
     if first_install:
         print(f"Odylith {final_version} is ready in {summary.repo_root / 'odylith'}.")
     elif adopt_latest:
@@ -1085,10 +1126,6 @@ def _cmd_install_common(
     _print_grounding_quickstart()
     print("Starter prompt:")
     print(_format_bold(_module_attr("odylith.runtime.surfaces.shell_onboarding", "STARTER_PROMPT")))
-    opened_dashboard, open_message = _maybe_open_dashboard_in_browser(
-        dashboard_path=dashboard_path,
-        enabled=first_install and not bool(args.no_open),
-    )
     if opened_dashboard:
         print("Opened `odylith/index.html` in your browser.")
     elif open_message:

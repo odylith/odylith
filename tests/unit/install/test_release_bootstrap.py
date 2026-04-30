@@ -148,9 +148,10 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "Intel macOS and Windows are not supported in this release." in text
     assert "say() {" in text
     assert "step() {" in text
-    assert 'if [[ "${odylith_step_seen:-0}" == "1" ]]; then' in text
-    assert "odylith_step_seen=1" in text
+    assert "printf '  %-6s %s\\n' \"$label\" \"$message\"" in text
     assert "banner() {" in text
+    assert 'if [[ "${ODYLITH_INSTALL_BANNER:-0}" != "1" ]]; then' in text
+    assert "printf 'Odylith\\n'" in text
     assert "require_command() {" in text
     assert "detect_repo_root() {" in text
     assert 'local candidate git_candidate="" start_dir' in text
@@ -166,14 +167,13 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "repo_root_reason='guidance'" in text
     assert "repo_root_reason='git'" in text
     assert "repo_root_reason='folder'" in text
-    assert "No root AGENTS.md, CLAUDE.md, or .claude/CLAUDE.md was found above this directory. Odylith will create the root guidance entrypoints at the detected Git root and sync the managed Claude and Codex project assets there." in text
-    assert "No enclosing AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, or .git was found. Odylith will treat the current folder as the repo root and create root AGENTS.md, root CLAUDE.md, and managed project-root Claude and Codex assets here." in text
-    assert "Git-aware features stay limited until this folder is backed by Git." in text
-    assert "working-tree intelligence, background autospawn, and git-fsmonitor watcher help stay reduced for now." in text
-    assert 'say "Odylith is getting this repo ready."' in text
-    assert 'say "Working in repo: $repo_root."' in text
-    assert 'say "No setup questions. Odylith will pick the right managed assets for this machine."' in text
-    assert 'say "Your repo\'s own Python toolchain stays untouched."' in text
+    assert "setup  Adding Odylith guidance to this Git repo." in text
+    assert "setup  Adding Odylith guidance to this folder." in text
+    assert "Git-aware help turns on after this folder has a .git directory." in text
+    assert 'say "Preparing this repo."' in text
+    assert 'say "repo   $repo_root"' in text
+    assert 'say "host   $platform_name."' in text
+    assert 'say "safe   Your repo\'s own toolchain stays untouched."' in text
     assert "sigstore_normalize_line() {" in text
     assert "sigstore_log_is_benign() {" in text
     assert "sigstore_log_is_continuation() {" in text
@@ -192,14 +192,12 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert 'line="$(sigstore_normalize_line "$line")"' in text
     assert 'sigstore_log_is_continuation "$folded" "$line" "$stripped"' in text
     assert 'folded="$folded $stripped"' in text
-    assert 'step "Fetching the secure bootstrap runtime"' in text
-    assert 'step "Verifying signed release evidence"' in text
-    assert 'step "Activating Odylith"' in text
-    assert 'say "Finishing the full Odylith setup inside the managed runtime."' in text
-    assert 'say "First install may take a minute. Later upgrades reuse unchanged runtime layers so routine updates stay lean."' in text
-    assert 'ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
-    assert 'say "Odylith is live."' in text
-    assert 'say "Quick posture check: ./.odylith/bin/odylith version --repo-root $repo_root"' in text
+    assert 'step "fetch" "Downloading Odylith."' in text
+    assert 'step "check" "Checking the release."' in text
+    assert 'step "setup" "Installing local runtime."' in text
+    assert 'say "setup  Writing repo files and launchers."' in text
+    assert 'ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
+    assert 'say "done   Install finished."' in text
     assert "runtime-members.txt" in text
     assert "managed runtime bundle contains unexpected member path" in text
     assert "managed runtime bundle contains unsafe member path" in text

@@ -120,7 +120,7 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 ## Migration Observer Needs
 - `migration-observer:0.1.12:guidance-and-skills:5edfb8f61a7a`
 - `migration-observer:0.1.12:operator-cli-contracts:5048d0eb61c4`
-- `migration-observer:0.1.12:operator-cli-contracts:11746f52d642`
+- `migration-observer:0.1.12:operator-cli-contracts:8bd155b023a8`
 - `migration-observer:0.1.12:public-docs-and-release-guidance:3d374298bec4`
 - `migration-observer:0.1.12:browser-surfaces:742e1bb597ab`
 - `migration-observer:0.1.12:install-managed-assets:9431818775c2`
@@ -232,6 +232,13 @@ Add a migration observer to the migration-runtime release gate. It scans changed
   benign empty-repo warnings. Existing installed repos do not need migration;
   the change affects new installs and future hosted refresh/upgrade handoff
   transcript shape.
+- First-run install compact mode: hosted fresh installs now use short progress
+  labels for the active work (`fetch`, `check`, `setup`, `write`, `draw`,
+  `done`, `ready`, `open`, `start`) and keep lifecycle plans, overlap lists,
+  path-heavy guidance, and long onboarding copy out of the default first-time
+  transcript. Explicit CLI `--dry-run` and `--verbose` remain the detailed
+  safety/debug lanes, so maintainers keep observability without making the
+  default installer feel like an internal migration trace.
 
 ## Test Strategy
 - Unit-test surface classification without relying on Git state.
