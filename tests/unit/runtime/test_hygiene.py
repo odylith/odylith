@@ -894,6 +894,90 @@ def test_codex_show_me_route_lock_guidance_stays_in_contract_and_bundle() -> Non
         assert "return stdout only, or report the shortest actionable Odylith blocker" in normalized
 
 
+def test_uninstall_guidance_rejects_raw_deletion_escape_hatches() -> None:
+    paths = (
+        ROOT / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+    )
+    for path in paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert "./.odylith/bin/odylith uninstall --repo-root ." in normalized
+        assert "rm -rf" in normalized
+        assert "shutil.rmtree" in normalized
+        assert "hook" in normalized and "bypass" in normalized
+        assert (
+            "without a commit/snapshot preflight" in normalized
+            or "do not pause for a commit/snapshot preflight" in normalized
+        )
+        assert (
+            "preserving `.odylith/` launcher and audit state" in normalized
+            or "preserves `.odylith/` launcher and audit state" in normalized
+        )
+
+
+def test_claude_hook_guidance_keeps_post_tool_and_stop_quiet() -> None:
+    claude_paths = (
+        ROOT / "AGENTS.md",
+        ROOT / "CLAUDE.md",
+        ROOT / "odylith" / "AGENTS.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "PRODUCT_SURFACES_AND_RUNTIME.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "PRODUCT_SURFACES_AND_RUNTIME.md",
+    )
+    for path in claude_paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert "Claude" in normalized, f"Claude lane missing in {path.relative_to(ROOT)}"
+        assert (
+            "PostToolUse hooks stay silent on success" in normalized
+            or "successful edit and Bash checkpoints must produce no transcript text" in normalized
+            or "successful PostToolUse refreshes produce no visible text" in normalized
+        )
+        assert "Claude Stop is memory/logging only" in normalized or "Stop is a memory/logging lane" in normalized
+        if "agents-guidelines" in path.as_posix():
+            assert "product-repo IDs" in normalized or "product-repo workstream ids, or Casebook ids" in normalized
+            assert "transcript-proof state" in normalized or "internal visibility-proof state" in normalized
+        assert "Stop is the fallback closeout and live-note recovery lane" not in normalized
+        assert "PostToolUse is the primary intervention source lane" not in normalized
+        assert "can surface the same visible Observation/Proposal beat" not in normalized
+
+
+def test_component_register_recovery_guidance_rejects_registry_json_hand_edits() -> None:
+    paths = (
+        ROOT / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLI_FIRST_POLICY.md",
+        ROOT / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "odylith" / "runtime" / "source" / "release-notes" / "v0.1.12.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLI_FIRST_POLICY.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CLAUDE_HOST_CONTRACT.md",
+        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "runtime" / "source" / "release-notes" / "v0.1.12.md",
+    )
+    for path in paths:
+        normalized = " ".join(path.read_text(encoding="utf-8").split())
+        assert "0.1.11" in normalized, f"0.1.11 drift context missing in {path.relative_to(ROOT)}"
+        assert "component-register" in normalized or "component register" in normalized, (
+            f"component register context missing in {path.relative_to(ROOT)}"
+        )
+        assert "component_registry.v1.json" in normalized, f"Registry manifest path missing in {path.relative_to(ROOT)}"
+        assert "doctor --repo-root . --repair" in normalized, f"doctor repair path missing in {path.relative_to(ROOT)}"
+        assert "hand-edit" in normalized, f"hand-edit rejection missing in {path.relative_to(ROOT)}"
+
+
 def test_runtime_hotfile_inventory_stays_explicit_and_non_expanding() -> None:
     observed: dict[str, int] = {}
     for path in (ROOT / "src" / "odylith" / "runtime").rglob("*.py"):

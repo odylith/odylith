@@ -185,6 +185,27 @@ _SCENARIOS: tuple[DestructiveWriteScenario, ...] = (
         proof_markers=("test_install_bundle_preserves_legacy_odylith_created_truth_in_customer_tree",),
     ),
     DestructiveWriteScenario(
+        scenario_id="governance.first-install-authoring-order",
+        surface="Registry, Radar, Atlas, Casebook, Compass, release, and execution-wave records",
+        lifecycle_paths=("install", "sync", "dashboard refresh"),
+        data_at_risk="first-run governance source truth and rendered browser surfaces",
+        unsafe_failure_mode="allow first governance records to succeed only in one hidden command order",
+        required_guardrail="prove every first-run surface authoring order and dependent governance record family before release",
+        proof_markers=("test_first_install_governance_records_can_be_created_in_every_surface_order",),
+    ),
+    DestructiveWriteScenario(
+        scenario_id="uninstall.customer-odylith-tree",
+        surface="odylith/",
+        lifecycle_paths=("uninstall",),
+        data_at_risk="repo-owned Odylith governance truth and external files reachable through a linked odylith/ path",
+        unsafe_failure_mode="leave broken dashboard surfaces after uninstall or follow a linked odylith/ target during removal",
+        required_guardrail="uninstall detaches root guidance, removes the repo-local odylith/ entry, preserves .odylith audit/runtime state, and unlinks odylith/ symlinks without following them",
+        proof_markers=(
+            "test_uninstall_bundle_detaches_and_removes_customer_odylith_tree",
+            "test_uninstall_bundle_unlinks_symlinked_odylith_without_following_target",
+        ),
+    ),
+    DestructiveWriteScenario(
         scenario_id="migration.legacy-product-conflict",
         surface="odyssey/ -> odylith/",
         lifecycle_paths=("migrate-legacy-install", "upgrade", "reinstall"),
@@ -292,6 +313,7 @@ def _default_fixture_paths(repo_root: Path) -> tuple[Path, ...]:
         Path("tests/unit/install/test_codex_project_assets.py"),
         Path("tests/unit/install/test_migration_runtime.py"),
         Path("tests/integration/install/test_manager.py"),
+        Path("tests/integration/install/test_first_install_governance_order_matrix.py"),
         Path("tests/unit/install/test_agents.py"),
     )
 

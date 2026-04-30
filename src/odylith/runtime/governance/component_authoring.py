@@ -7,6 +7,7 @@ under `components/<id>/`.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import re
 from dataclasses import dataclass
@@ -111,6 +112,7 @@ def _build_spec_template(
         if path
         else "It is initially anchored by maintainer review."
     )
+    history_date = dt.date.today().isoformat()
     return f"""# {label}
 
 ## Overview
@@ -124,6 +126,10 @@ def _build_spec_template(
 - **Evidence anchor**: `{path}`
 - **Kind**: {kind}
 - **Status**: active
+
+## Feature History
+
+- {history_date}: Registered `{component_id}` through `odylith component register`.
 
 ## Contract
 

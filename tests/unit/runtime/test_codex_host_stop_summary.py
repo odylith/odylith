@@ -283,7 +283,7 @@ def test_render_codex_stop_summary_replaces_teaser_with_unseen_live_beat(tmp_pat
                 "candidate": {
                     "stage": "teaser",
                     "suppressed_reason": "",
-                    "teaser_text": "Odylith Observation: the visible Odylith moment still needs to reach chat.",
+                    "teaser_text": "Odylith Observation: the Odylith note still needs to reach chat.",
                 },
                 "proposal": {"eligible": False, "suppressed_reason": ""},
             },
@@ -298,7 +298,7 @@ def test_render_codex_stop_summary_replaces_teaser_with_unseen_live_beat(tmp_pat
     assert "Odylith is tracking this signal" not in rendered
 
 
-def test_main_emits_system_message_for_visible_stop_surface(
+def test_main_stays_silent_without_pending_stop_replay(
     monkeypatch,
     tmp_path: Path,
 ) -> None:
@@ -329,10 +329,7 @@ def test_main_emits_system_message_for_visible_stop_surface(
     exit_code = codex_host_stop_summary.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    payload = json.loads(buffer.getvalue())
-    assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."
-    assert payload["decision"] == "block"
-    assert "**Odylith Assist:** kept this grounded." in payload["reason"]
+    assert buffer.getvalue() == ""
 
 
 def test_main_replays_pending_chat_blocks_before_stop_assist(
@@ -399,9 +396,9 @@ def test_main_replays_pending_chat_blocks_before_stop_assist(
         "**Odylith Observation:** Stop must replay this before Assist.\n"
         "\n---\n\n"
         "**Odylith Assist:** kept this grounded."
-    )
-    assert payload["decision"] == "block"
-    assert payload["reason"].startswith("Before ending")
+        )
+    assert "decision" not in payload
+    assert "reason" not in payload
 
 
 def test_main_suppresses_cli_help_stop_replay(monkeypatch, tmp_path: Path) -> None:
@@ -462,6 +459,4 @@ def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(
     exit_code = codex_host_stop_summary.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    payload = json.loads(buffer.getvalue())
-    assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."
-    assert "decision" not in payload
+    assert buffer.getvalue() == ""

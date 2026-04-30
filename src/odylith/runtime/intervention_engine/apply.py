@@ -194,12 +194,9 @@ def _apply_atlas_create(*, repo_root: Path, action: Mapping[str, Any]) -> dict[s
     backlog_refs = payload.get("related_backlog")
     plan_refs = payload.get("related_plans")
     doc_refs = payload.get("related_docs")
-    if not isinstance(backlog_refs, list) or not backlog_refs:
-        raise ValueError("Atlas create requires `related_backlog` in the proposal payload")
-    if not isinstance(plan_refs, list) or not plan_refs:
-        raise ValueError("Atlas create requires `related_plans` in the proposal payload")
-    if not isinstance(doc_refs, list) or not doc_refs:
-        raise ValueError("Atlas create requires `related_docs` in the proposal payload")
+    backlog_refs = backlog_refs if isinstance(backlog_refs, list) else []
+    plan_refs = plan_refs if isinstance(plan_refs, list) else []
+    doc_refs = doc_refs if isinstance(doc_refs, list) else []
     catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
     diagram_id = _next_diagram_id(catalog_path)
     slug = _normalize_string(payload.get("slug")) or _normalize_string(action.get("target_id")).replace("proposed:", "") or "governed-observation"

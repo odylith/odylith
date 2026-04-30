@@ -87,7 +87,7 @@ def test_render_claude_compatibility_includes_capability_truth(tmp_path: Path) -
     assert "Statusline command wired: yes" in rendered
     assert "Subagent lifecycle hooks wired: yes" in rendered
     assert "Project slash commands present: yes" in rendered
-    assert "Assistant-render fallback for chat-visible UX: yes" in rendered
+    assert "Assistant-render recovery for chat-visible UX: yes" in rendered
     assert "Overall posture: baseline_safe_assistant_visible_ready" in rendered
     assert "may not hot-reload changed project settings" in rendered
 

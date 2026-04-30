@@ -165,6 +165,13 @@ def active_runtime_read_session() -> RuntimeReadSession | None:
     return _ACTIVE_RUNTIME_READ_SESSION.get()
 
 
+def clear_active_runtime_read_session(*, repo_root: Path | None = None) -> None:
+    """Clear the active runtime read session when it belongs to the requested repo."""
+    session = active_runtime_read_session()
+    if session is not None and (repo_root is None or session.matches_repo(Path(repo_root).resolve())):
+        session.clear()
+
+
 @contextmanager
 def activate_runtime_read_session(
     *,
@@ -190,6 +197,7 @@ __all__ = [
     "RuntimeReadSession",
     "activate_runtime_read_session",
     "active_runtime_read_session",
+    "clear_active_runtime_read_session",
     "runtime_cache_budget_policy",
     "shared_process_cache_view",
     "shared_process_hot_cache",

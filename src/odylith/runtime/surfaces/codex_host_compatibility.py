@@ -22,7 +22,7 @@ def _report_notes(report: CodexCompatibilityReport) -> list[str]:
         "Repo-scoped `.codex/` and `.agents/skills/` surfaces are best-effort enhancements and must not be required for core operation.",
         "Trusted-project approval is required before `.codex/hooks.json` and `.codex/agents/*.toml` activate in Codex.",
         "Existing Codex sessions may not hot-reload changed hooks, guidance, or source-local runtime code; restart the session or render `odylith codex visible-intervention` directly before claiming another open chat is visibly active.",
-        "`odylith codex intervention-status` is the low-latency session proof for static readiness, active UX lanes, delivery-ledger state, and the visible fallback smoke command.",
+        "`odylith codex intervention-status` is the low-latency session proof for static readiness, active UX lanes, delivery-ledger state, and the visible recovery smoke command.",
         "Version compatibility is capability-based and does not pin a maximum Codex version.",
     ]
     if report.codex_available and report.codex_version:
@@ -45,7 +45,7 @@ def _report_notes(report: CodexCompatibilityReport) -> list[str]:
             "Codex intervention hooks are wired for prompt teaser, Bash checkpoint intervention blocks, and Stop closeout sources."
         )
         notes.append(
-            "Chat visibility is completed by the assistant-render fallback inside `additionalContext`; hook `systemMessage` may carry the same visible block, including Assist when that moment already earned closeout continuity, but it is not alone treated as a visible-chat proof."
+            "Chat visibility is completed by assistant-rendered recovery text; hidden host context can carry the same block, including Assist when that note already earned closeout continuity, but it is not alone treated as user-visible chat."
         )
     else:
         missing = []
@@ -96,7 +96,7 @@ def render_codex_compatibility(report: CodexCompatibilityReport) -> str:
         f"UserPromptSubmit prompt-context hook wired: {'yes' if report.supports_user_prompt_submit_hook else 'no'}",
         f"PostToolUse post-bash-checkpoint hook wired for Bash: {'yes' if report.supports_post_bash_checkpoint_hook else 'no'}",
         f"Stop stop-summary hook wired: {'yes' if report.supports_stop_summary_hook else 'no'}",
-        "Assistant-render fallback for chat-visible UX: yes",
+        "Assistant-render recovery for chat-visible UX: yes",
         f"Live prompt-input probe: {probe_label}",
         f"Version policy: {report.future_version_policy}",
         f"Overall posture: {report.overall_posture}",

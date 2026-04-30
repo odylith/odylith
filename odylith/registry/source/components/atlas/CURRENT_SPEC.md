@@ -114,10 +114,17 @@ It also supports `--all-stale` to refresh diagrams selected by the global
 freshness contract rather than by path changes alone.
 
 ### Scaffold
-`scaffold_mermaid_diagram.py` creates a new catalog entry and, optionally, a
-starter `.mmd` source file. It enforces that backlog, plan, and doc links are
-present because Atlas diagrams are supposed to be governed artifacts, not
-orphan visual assets.
+`scaffold_mermaid_diagram.py` creates a new catalog entry and starter `.mmd`
+source file. Atlas supports an Atlas-first flow: a new diagram may start as a
+visible `draft` with empty Radar, plan, and doc link lists when the operator
+asks for topology before the rest of the governance stack exists. These entries
+carry `link_state: atlas_first_draft` and must still have components plus
+non-empty `change_watch_paths`; later Registry/Radar/plan work should tighten
+the same catalog entry instead of forcing a new diagram.
+
+Strict callers can pass `--require-links` to preserve the older fail-closed
+behavior when at least one Radar backlog path, technical-plan path, and doc path
+must be present before the catalog write.
 
 ## Freshness And Review Semantics
 Atlas tracks freshness explicitly:
@@ -186,6 +193,9 @@ diagram dump.
 - Review-only refresh must not rewrite Mermaid assets just because a watched
   path churned. Atlas should refresh freshness truth without pretending that
   unchanged diagrams were regenerated.
+- Missing SVG or PNG render artifacts make a diagram stale even when the review
+  date is current, so a newly scaffolded Atlas-first draft is selected for
+  render and becomes visible on the Atlas surface.
 - Stale diagrams can be reported or made to fail validation depending on the
   caller posture.
 - If Atlas evidence is weak, Context Engine architecture packets should surface

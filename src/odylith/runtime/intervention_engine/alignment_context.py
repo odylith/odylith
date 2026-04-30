@@ -13,6 +13,7 @@ from typing import Any
 from typing import Mapping
 from typing import Sequence
 
+from odylith.runtime.common.repo_shape import is_product_repo_shape
 from odylith.runtime.context_engine import execution_engine_handshake
 from odylith.runtime.context_engine import odylith_runtime_surface_summary
 from odylith.runtime.execution_engine import runtime_surface_governance
@@ -323,62 +324,56 @@ def _execution_summary(
 def _tribunal_signals(
     *,
     visibility_failure: bool,
+    product_repo: bool,
     workstreams: Sequence[str],
     components: Sequence[str],
     bugs: Sequence[str],
 ) -> dict[str, Any]:
     if not visibility_failure:
         return {}
+    case_queue = []
+    if product_repo and _VISIBILITY_BUG in bugs:
+        case_queue = [
+            {
+                "id": _VISIBILITY_BUG,
+                "scope_key": f"component:{_INTERVENTION_COMPONENT}",
+                "headline": "Odylith visibility reports ready while chat shows no clean Odylith output",
+                "brief": "Hidden host messages do not count as delivered to the user.",
+                "systemic_theme_tags": ["chat_visibility", "visible_output"],
+            }
+        ]
     return {
         "scope_signals": [
             {
-                "scope_type": "workstream",
-                "scope_id": _VISIBILITY_WORKSTREAM,
-                "scope_key": f"workstream:{_VISIBILITY_WORKSTREAM}",
-                "scope_label": "Conversation observation and governed proposal flow",
+                "scope_type": "component",
+                "scope_id": _INTERVENTION_COMPONENT if product_repo else "odylith-runtime",
+                "scope_key": (
+                    f"component:{_INTERVENTION_COMPONENT}"
+                    if product_repo
+                    else "component:odylith-runtime"
+                ),
+                "scope_label": "Odylith visibility",
                 "case_refs": _normalize_string_list(bugs, limit=4),
                 "operator_readout": {
                     "primary_scenario": "chat_visibility_regression",
                     "severity": "p0",
-                    "issue": "Odylith is ready to speak, but this chat has not shown the Odylith moment yet.",
-                    "action": "Show the next Odylith Observation or Assist in the assistant reply so the user can follow it.",
-                },
-            },
-            {
-                "scope_type": "component",
-                "scope_id": _INTERVENTION_COMPONENT,
-                "scope_key": f"component:{_INTERVENTION_COMPONENT}",
-                "scope_label": "Governance Intervention Engine",
-                "case_refs": _normalize_string_list(bugs, limit=4),
-                "operator_readout": {
-                    "primary_scenario": "visibility_broker_required",
-                    "severity": "p0",
-                    "issue": "Odylith needs one consistent visible lane before the UX can be called active.",
-                    "action": "Use the shared visibility decision across context, execution, memory, and review signals.",
+                    "issue": "The user says Odylith output is not visible in this chat.",
+                    "action": "Answer in normal assistant text and do not rely on hidden host channels.",
                 },
             },
         ],
-        "case_queue": [
-            {
-                "id": _VISIBILITY_BUG,
-                "scope_key": f"component:{_INTERVENTION_COMPONENT}",
-                "headline": "Odylith visibility reports ready while chat shows zero visible Odylith moments",
-                "brief": "Treat unseen Odylith moments as not delivered until the Markdown appears in chat.",
-                "systemic_theme_tags": ["chat_visibility", "brand_signal", "visible_moment"],
-            }
-        ],
+        "case_queue": case_queue,
         "systemic_brief": {
-            "headline": "Odylith must be seen before it counts.",
+            "headline": "Odylith output must be visible in the current chat before it counts.",
             "summary": (
-                "Context, execution, memory, and review signals need to produce one clear Odylith moment "
-                "that appears in the chat where the user can read it."
+                "Visibility recovery should produce short assistant text in the same chat the user is reading."
             ),
             "latent_causes": [
-                "unseen Odylith moment counted as product success",
-                "host surfaces using different visibility rules",
-                "chat never showed the branded closeout",
+                "hidden host channel counted as user-visible output",
+                "visibility recovery used product-internal wording",
+                "chat never showed a concise user-facing line",
             ],
-            "systemic_theme_tags": ["chat_visibility", "brand_signal", "visible_moment"],
+            "systemic_theme_tags": ["chat_visibility", "visible_output"],
         },
         "source": "intervention_alignment_context",
         "workstreams": _normalize_string_list(workstreams, limit=4),
@@ -432,18 +427,23 @@ def build_host_alignment_context(
         prompt=prompt,
         summary=summary,
     )
+    product_repo = is_product_repo_shape(repo_root=root)
     resolved_workstreams = _merge_strings(
         workstreams,
-        [_VISIBILITY_WORKSTREAM] if visibility_failure else [],
+        [_VISIBILITY_WORKSTREAM] if visibility_failure and product_repo else [],
         limit=8,
     )
     resolved_components = _merge_strings(
         components,
-        _ALIGNMENT_COMPONENTS if visibility_failure else [],
+        _ALIGNMENT_COMPONENTS
+        if visibility_failure and product_repo
+        else [_INTERVENTION_COMPONENT]
+        if visibility_failure
+        else [],
         limit=8,
     )
-    bugs = [_VISIBILITY_BUG] if visibility_failure else []
-    diagrams = [_VISIBILITY_DIAGRAM] if visibility_failure else []
+    bugs = [_VISIBILITY_BUG] if visibility_failure and product_repo else []
+    diagrams = [_VISIBILITY_DIAGRAM] if visibility_failure and product_repo else []
     paths = _normalize_string_list(changed_paths, limit=12)
     delivery_snapshot = delivery_ledger.delivery_snapshot(
         repo_root=root,
@@ -500,6 +500,7 @@ def build_host_alignment_context(
     )
     tribunal_signals = _tribunal_signals(
         visibility_failure=visibility_failure,
+        product_repo=product_repo,
         workstreams=resolved_workstreams,
         components=resolved_components,
         bugs=bugs,

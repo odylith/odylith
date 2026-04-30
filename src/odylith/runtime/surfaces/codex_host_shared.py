@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.common import agent_runtime_contract
+from odylith.runtime.surfaces import bash_guard_policy
 from odylith.runtime.surfaces import claude_host_shared
 
 
@@ -32,13 +33,6 @@ _ACTION_TOKEN_RE = re.compile(
 )
 _MARKDOWN_TOKEN_RE = re.compile(r"[*_`]+")
 _CODE_FENCE_RE = re.compile(r"```.*?```", re.DOTALL)
-_BLOCK_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
-    (re.compile(r"(^|\s)rm\s+-rf(\s|$)"), "Destructive recursive deletion is blocked by repo policy."),
-    (re.compile(r"git\s+reset\s+--hard(\s|$)"), "Hard reset is blocked by repo policy."),
-    (re.compile(r"git\s+checkout\s+--(\s|$)"), "Discarding tracked changes with checkout is blocked by repo policy."),
-    (re.compile(r"git\s+push\s+--force(?:-with-lease)?(\s|$)"), "Force-push is blocked by repo policy."),
-    (re.compile(r"git\s+clean\s+-fdx(\s|$)"), "Full working-tree cleanup is blocked by repo policy."),
-)
 _EDIT_LIKE_RE = re.compile(
     r"\b("
     r"apply_patch|cp|mv|touch|mkdir|sed\s+-i|perl\s+-0pi|tee|cat\s+>|python3?\s+-c|node\s+-e"
@@ -277,13 +271,7 @@ def risk_lines(payload: Mapping[str, Any] | None) -> list[str]:
 
 
 def blocked_bash_reason(command: str) -> str:
-    token = str(command or "").strip()
-    if not token:
-        return ""
-    for pattern, reason in _BLOCK_PATTERNS:
-        if pattern.search(token):
-            return reason
-    return ""
+    return bash_guard_policy.blocked_bash_reason(command)
 
 
 def edit_like_bash(command: str) -> bool:

@@ -6,6 +6,7 @@ from pathlib import Path
 from odylith.runtime.common import log_compass_timeline_event
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import component_authoring
+from odylith.runtime.governance import validate_component_registry_contract
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 
@@ -145,6 +146,10 @@ def test_backlog_create_refreshes_radar_surface(tmp_path: Path, monkeypatch) -> 
 
 def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypatch) -> None:
     calls: list[dict[str, object]] = []
+    catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_path.write_text(json.dumps({"version": "v1", "diagrams": []}) + "\n", encoding="utf-8")
+    (tmp_path / "odylith" / "radar" / "source" / "ideas").mkdir(parents=True, exist_ok=True)
     monkeypatch.setattr(
         component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
@@ -193,6 +198,10 @@ def test_component_register_refreshes_registry_surface(tmp_path: Path, monkeypat
     spec_text = spec_path.read_text(encoding="utf-8")
     assert "**Logical boundary**" in spec_text
     assert "**Evidence anchor**: `src/odylith/runtime/governance`" in spec_text
+    assert (
+        validate_component_registry_contract.main(["--repo-root", str(tmp_path)])
+        == 0
+    )
 
 
 def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeypatch) -> None:
@@ -248,6 +257,102 @@ def test_atlas_scaffold_refreshes_atlas_with_shared_lane(tmp_path: Path, monkeyp
             "operation_label": "Atlas scaffold",
         }
     ]
+
+
+def test_atlas_scaffold_allows_atlas_first_draft_without_governance_links(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+    catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_path.write_text(json.dumps({"version": "v1", "diagrams": []}) + "\n", encoding="utf-8")
+    code_path = tmp_path / "src" / "demo"
+    code_path.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(
+        scaffold_mermaid_diagram.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **kwargs: calls.append(dict(kwargs)),
+    )
+
+    rc = scaffold_mermaid_diagram.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--diagram-id",
+            "D-100",
+            "--slug",
+            "demo-boundary-map",
+            "--title",
+            "Demo Boundary Map",
+            "--kind",
+            "flowchart",
+            "--owner",
+            "product",
+            "--summary",
+            "Atlas-first boundary draft.",
+            "--component",
+            "Demo::Logical boundary for the demo package.",
+            "--code",
+            "src/demo",
+        ]
+    )
+
+    payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+    entry = payload["diagrams"][0]
+    source_text = (tmp_path / "odylith" / "atlas" / "source" / "demo-boundary-map.mmd").read_text(
+        encoding="utf-8"
+    )
+    assert rc == 0
+    assert entry["status"] == "draft"
+    assert entry["link_state"] == "atlas_first_draft"
+    assert entry["related_backlog"] == []
+    assert entry["related_plans"] == []
+    assert entry["related_docs"] == []
+    assert entry["change_watch_paths"] == ["src/demo"]
+    assert 'diagram["Demo Boundary Map"]' in source_text
+    assert "Link Radar, plan, and docs as governance matures" in source_text
+    assert calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "surface": "atlas",
+            "operation_label": "Atlas scaffold",
+        }
+    ]
+
+
+def test_atlas_scaffold_can_still_require_governance_links(tmp_path: Path, monkeypatch) -> None:
+    catalog_path = tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_path.write_text(json.dumps({"version": "v1", "diagrams": []}) + "\n", encoding="utf-8")
+    monkeypatch.setattr(
+        scaffold_mermaid_diagram.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **_kwargs: None,
+    )
+
+    rc = scaffold_mermaid_diagram.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--diagram-id",
+            "D-101",
+            "--slug",
+            "strict-boundary-map",
+            "--title",
+            "Strict Boundary Map",
+            "--kind",
+            "flowchart",
+            "--owner",
+            "product",
+            "--summary",
+            "Strict boundary draft.",
+            "--require-links",
+        ]
+    )
+
+    assert rc == 2
+    assert json.loads(catalog_path.read_text(encoding="utf-8"))["diagrams"] == []
 
 
 def test_compass_log_refreshes_compass_surface(tmp_path: Path, monkeypatch) -> None:

@@ -24,10 +24,10 @@ _LIVE_BLOCK_LABELS: tuple[str, ...] = (
     "Odylith Risks:",
 )
 _PROMPT_VISIBLE_ASSIST_MARKDOWN = (
-    "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+    "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
 )
 _PROMPT_VISIBLE_ASSIST_PLAIN = (
-    "Odylith Assist: kept Odylith visible in this chat so the brand promise is something the user can see."
+    "Odylith Assist: surfaced this visibility issue in normal chat where you can inspect it."
 )
 
 
@@ -159,7 +159,7 @@ def ensure_prompt_visible_assist_bundle(bundle: Mapping[str, Any] | object) -> d
     Prompt hooks may be the only user-visible Odylith lane in a host session.
     This keeps the default Assist text owned by the shared host prompt support
     layer instead of duplicating it across Codex, Claude, and the manual
-    visible-intervention fallback.
+    visible-intervention recovery.
     """
 
     updated = dict(bundle) if isinstance(bundle, Mapping) else {}

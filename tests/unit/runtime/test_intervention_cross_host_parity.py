@@ -107,7 +107,7 @@ def test_cross_host_prompt_submit_system_message_keeps_assist_visible() -> None:
 
     assert codex_text == claude_text
     assert codex_text == (
-        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
     )
     assert codex_host_prompt_context.render_codex_prompt_system_message(prompt="Odylith, help.") == ""
     assert claude_host_prompt_teaser.render_prompt_teaser(prompt="Odylith, help.") == ""
@@ -172,11 +172,11 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     assert cli.main(["claude", "prompt-teaser", "--repo-root", str(tmp_path)]) == 0
     claude_visible_text = capsys.readouterr().out
 
-    assert codex_payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
+    assert codex_payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery recovery:")
     assert claude_visible_text in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert codex_payload["systemMessage"] == claude_visible_text
     assert claude_visible_text.rstrip().endswith(
-        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
     )
     assert not claude_visible_text.lstrip().startswith("{")
     codex_events = stream_state.load_recent_intervention_events(
@@ -185,7 +185,7 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     assert any(row.get("kind") == "assist_closeout" for row in codex_events)
 
 
-def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
+def test_cross_host_checkpoint_cli_dispatch_stays_silent_for_successful_checkpoints(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -222,7 +222,7 @@ def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
     )
 
     assert cli.main(["codex", "post-bash-checkpoint", "--repo-root", str(tmp_path)]) == 0
-    codex_payload = json.loads(capsys.readouterr().out)
+    assert capsys.readouterr().out == ""
 
     monkeypatch.setattr(
         "sys.stdin",
@@ -240,17 +240,9 @@ def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
         "run_odylith",
         lambda **kwargs: None,
     )
-    monkeypatch.setattr(
-        claude_host_post_edit_checkpoint,
-        "_post_edit_bundle",
-        lambda **kwargs: bundle,
-    )
 
     assert cli.main(["claude", "post-edit-checkpoint", "--repo-root", str(tmp_path)]) == 0
-    claude_payload = json.loads(capsys.readouterr().out)
-
-    assert codex_payload["hookSpecificOutput"]["additionalContext"] == claude_payload["additionalContext"]
-    assert codex_payload["systemMessage"] == claude_payload["systemMessage"]
+    assert capsys.readouterr().out == ""
 
     monkeypatch.setattr(
         "sys.stdin",
@@ -276,17 +268,9 @@ def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
         "command_scoped_governed_paths",
         lambda **kwargs: [],
     )
-    monkeypatch.setattr(
-        claude_host_post_bash_checkpoint,
-        "_post_bash_bundle",
-        lambda **kwargs: bundle,
-    )
 
     assert cli.main(["claude", "post-bash-checkpoint", "--repo-root", str(tmp_path)]) == 0
-    claude_bash_payload = json.loads(capsys.readouterr().out)
-
-    assert codex_payload["hookSpecificOutput"]["additionalContext"] == claude_bash_payload["additionalContext"]
-    assert codex_payload["systemMessage"] == claude_bash_payload["systemMessage"]
+    assert capsys.readouterr().out == ""
 
 
 def test_cross_host_stop_rendering_stays_consistent_for_same_bundle(tmp_path: Path) -> None:

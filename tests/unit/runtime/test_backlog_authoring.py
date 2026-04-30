@@ -234,6 +234,42 @@ def test_backlog_create_dry_run_batch_is_non_mutating_and_deterministic(tmp_path
     assert not any(path.name.startswith("2026-03-30-second-queued-item") for path in ideas_root.rglob("*.md"))
 
 
+def test_backlog_create_can_create_umbrella_with_children_topology(tmp_path: Path, monkeypatch) -> None:
+    _seed_backlog_repo(tmp_path)
+    monkeypatch.setattr(backlog_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **kwargs: None)
+
+    rc = backlog_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Fresh install umbrella program",
+            "--title",
+            "Fresh install child one",
+            "--title",
+            "Fresh install child two",
+            "--workstream-type",
+            "umbrella",
+            *_grounded_backlog_args(),
+        ]
+    )
+
+    assert rc == 0
+    ideas_root = tmp_path / "odylith" / "radar" / "source" / "ideas"
+    umbrella_text = next(ideas_root.rglob("*fresh-install-umbrella-program*.md")).read_text(encoding="utf-8")
+    child_one_text = next(ideas_root.rglob("*fresh-install-child-one*.md")).read_text(encoding="utf-8")
+    child_two_text = next(ideas_root.rglob("*fresh-install-child-two*.md")).read_text(encoding="utf-8")
+    assert "idea_id: B-102" in umbrella_text
+    assert "workstream_type: umbrella" in umbrella_text
+    assert "workstream_children: B-103, B-104" in umbrella_text
+    assert "idea_id: B-103" in child_one_text
+    assert "workstream_type: child" in child_one_text
+    assert "workstream_parent: B-102" in child_one_text
+    assert "idea_id: B-104" in child_two_text
+    assert "workstream_type: child" in child_two_text
+    assert "workstream_parent: B-102" in child_two_text
+
+
 def test_backlog_create_requires_override_review_date(tmp_path: Path, capsys) -> None:
     _seed_backlog_repo(tmp_path)
 

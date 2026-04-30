@@ -40,5 +40,5 @@ signals, and benchmark sovereignty.
   - consumer lane uses the installed managed runtime and diagnosis-first
     Odylith product-fix posture
   - pinned dogfood proves the shipped runtime in the product repo
-  - detached `source-local` is maintainer-only proof for unreleased
+  - detached `source-local` is product-repo proof for unreleased
     `src/odylith/*` changes

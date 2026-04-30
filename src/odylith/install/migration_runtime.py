@@ -23,6 +23,10 @@ from odylith.install.destructive_write_scenarios import (
     missing_destructive_write_proofs,
 )
 from odylith.install.lock_hygiene import LOCK_NOTE_THRESHOLD, lock_hygiene_summary
+from odylith.install.migration_observer import (
+    SurfaceMigrationObserverReport,
+    observe_surface_migration_needs,
+)
 from odylith.install.runtime import current_runtime_root, current_runtime_version, runtime_verification_evidence
 from odylith.install.state import (
     DEFAULT_REPO_SCHEMA_VERSION,
@@ -279,6 +283,7 @@ class ReleaseMigrationGateReport:
     covered_version_ranges: tuple[str, ...]
     fixture_matrix: dict[str, dict[str, bool]]
     destructive_write_matrix: dict[str, dict[str, bool]]
+    surface_migration_observer: SurfaceMigrationObserverReport
     blocked_manual_migrations: tuple[str, ...]
     ungated_lifecycle_paths: tuple[str, ...]
     notes: tuple[str, ...]
@@ -293,6 +298,7 @@ class ReleaseMigrationGateReport:
             "fixture_matrix": dict(self.fixture_matrix),
             "destructive_write_scenarios": [scenario.as_dict() for scenario in destructive_write_scenarios()],
             "destructive_write_matrix": dict(self.destructive_write_matrix),
+            "surface_migration_observer": self.surface_migration_observer.as_dict(),
             "blocked_manual_migrations": list(self.blocked_manual_migrations),
             "ungated_lifecycle_paths": list(self.ungated_lifecycle_paths),
             "notes": list(self.notes),
@@ -1106,11 +1112,18 @@ def validate_release_migration_gate(
     repo_root: str | Path,
     target_version: str = "",
     release_manifest: Mapping[str, object] | None = None,
+    changed_paths: Sequence[str] | None = None,
 ) -> ReleaseMigrationGateReport:
     """Validate that release migration requirements are registered and fixture-proven."""
     root = Path(repo_root).expanduser().resolve()
     definitions = registered_migrations()
     manifest = dict(release_manifest if release_manifest is not None else _load_manifest_for_gate(root))
+    observer_target = str(target_version or manifest.get("version") or manifest.get("tag") or "")
+    surface_observer = observe_surface_migration_needs(
+        repo_root=root,
+        target_version=observer_target,
+        changed_paths=changed_paths,
+    )
     blocked_manual: list[str] = []
     if bool(manifest.get("migration_required")):
         target = normalize_version(target_version or manifest.get("version") or manifest.get("tag"))
@@ -1125,6 +1138,9 @@ def validate_release_migration_gate(
             blocked_manual.append(f"{migration_id} fixture coverage missing: {', '.join(missing)}")
     destructive_matrix = destructive_write_fixture_matrix(repo_root=root)
     blocked_manual.extend(missing_destructive_write_proofs(repo_root=root))
+    for need in surface_observer.needs:
+        if need.need_id in surface_observer.blocked_need_ids:
+            blocked_manual.append(f"{need.need_id} surface migration assessment incomplete: {need.governance_prompt}")
     ungated = _ungated_lifecycle_paths(root)
     covered_ranges = tuple(
         f"{definition.migration_id}: {definition.from_version_range} -> {definition.to_version_range}"
@@ -1133,14 +1149,16 @@ def validate_release_migration_gate(
     notes = (
         "Release migration gate checks registry definitions, fixture coverage, and lifecycle bypasses.",
         "Destructive-write guardrails are tracked as first-class adoption-risk fixtures.",
+        "Consumer-visible surface changes are observed and must have completed migration assessment records.",
         "Generated dashboard refresh is intentionally outside migration scope.",
     )
     return ReleaseMigrationGateReport(
-        ok=not blocked_manual and not ungated,
+        ok=not blocked_manual and not ungated and surface_observer.ok,
         registered_migrations=definitions,
         covered_version_ranges=covered_ranges,
         fixture_matrix=matrix,
         destructive_write_matrix=destructive_matrix,
+        surface_migration_observer=surface_observer,
         blocked_manual_migrations=tuple(blocked_manual),
         ungated_lifecycle_paths=ungated,
         notes=notes,

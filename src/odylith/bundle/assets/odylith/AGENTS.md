@@ -11,15 +11,13 @@ Scope: applies to Odylith paths under `odylith/`.
 ## Purpose
 - Keep Odylith guidance, runtime surfaces, and execution helpers product-owned.
 - Keep Odylith behavior scoped to Odylith paths and Odylith-owned tasks.
-- Keep product-maintainer release guidance and skills explicit instead of
-  leaking them into bundled consumer instructions.
+- Keep installed consumer instructions free of product-repo release procedures.
 - In consumer repos, keep Odylith-fix requests in diagnosis-and-handoff mode
   instead of local Odylith patching.
 
 ## What Odylith Owns Here
 - guidance under `odylith/agents-guidelines/`
 - skills under `odylith/skills/`
-- maintainer-only release guidance and skills under `odylith/maintainer/`
 - product overview docs at `odylith/*.md`
 - runtime docs/assets under `odylith/runtime/`
 - shell-wide surface assets under `odylith/surfaces/`
@@ -120,23 +118,22 @@ Scope: applies to Odylith paths under `odylith/`.
   proposal for the same session-local moment. Later hooks may add evidence or
   surface the first eligible proposal, but they must not make the same moment
   feel like a fresh branded interruption.
-- For Codex and Claude checkpoint hooks, keep the full Observation,
-  Proposal, and Assist bundle in hidden developer context for continuity, but
-  surface the earned Observation/Proposal beat visibly at the hook moment when
-  the host renders hook output. If the host keeps hook output hidden, render
-  the assistant-visible fallback Markdown in chat instead of claiming the
-  engine is active. Stop is the fallback closeout and live-beat recovery lane,
-  not the primary intervention moment; unseen Ambient Highlight,
-  Observation, or Proposal beats may replay there before Assist.
+- For Codex checkpoint hooks, keep the full Observation, Proposal, and Assist
+  bundle in hidden developer context for continuity, and surface the earned
+  Observation/Proposal note when the host renders hook output. Claude is
+  stricter because Claude Code renders hook output inline with the transcript:
+  direct-edit and Bash PostToolUse hooks stay silent on success and emit only
+  compact failure/skipped-refresh status; Claude Stop is memory/logging only,
+  not a fallback closeout or live-note recovery lane.
 - Hook `systemMessage` or `additionalContext` generation is not proof of
   chat-visible UX. The user-visible contract is satisfied only by rendered
-  chat text or by a host channel that is proven visible in the active session.
+  chat text or by a host channel that is verified visible in the active session.
   When in doubt, run `odylith codex visible-intervention` or `odylith claude
   visible-intervention` and show that Markdown directly.
 - Before claiming the intervention UX is active in a specific chat, run or
   cite `odylith codex intervention-status` or `odylith claude
   intervention-status` for that host/session. That status surface is the
-  low-latency delivery ledger for Teaser, Ambient Highlight, Observation,
+  low-latency delivery record for Teaser, Ambient Highlight, Observation,
   Proposal, and Assist readiness; hook payload generation alone is not enough.
 - A plain `Odylith, help` request is the CLI help fast path. Use the first
   available `odylith --help` command and print stdout only.
@@ -165,7 +162,7 @@ Scope: applies to Odylith paths under `odylith/`.
   friendly, delightful, soulful, insightful, simple, clear, accurate,
   precise, and above all human. Future voice packs may tune the voice later;
   the shipped default brand voice is non-negotiable now.
-- At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. The host prompt-submit runtime is stricter: for normal non-passthrough prompts it supplies one shared prompt-visible Assist line even when no stronger beat has matured; `Odylith, help` and `Odylith, show me what you can do` stay stdout-clean and suppress narration. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance IDs inline when they were actually changed, and when no governed file moved, name the affected governance-contract IDs from bounded request or packet truth without calling them updated. Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes, or a concrete chat-visibility complaint. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real; when it appears, it must render before `Odylith Assist:` so Assist remains the final closeout line.
+- At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. The host prompt-submit runtime is stricter: for normal non-passthrough prompts it supplies one shared prompt-visible Assist line even when no stronger note has matured; `Odylith, help` and `Odylith, show me what you can do` stay stdout-clean and suppress narration. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance IDs inline when they were actually changed, and when no governed file moved, name the affected governance-contract IDs from bounded request or packet truth without calling them updated. Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes, or a concrete chat-visibility complaint. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real; when it appears, it must render before `Odylith Assist:` so Assist remains the final closeout line.
 - Explicit feedback that Odylith ambient highlights, interventions, Assist,
   Observations, Proposals, hooks, or chat output are not visible is a real
   closeout signal. A short `Odylith Assist:` may acknowledge that visibility
@@ -212,10 +209,8 @@ Scope: applies to Odylith paths under `odylith/`.
 - The shared Odylith coding baseline now lives in
   `agents-guidelines/CODING_STANDARDS.md`; that file is consumer-safe and
   defers to consumer repo standards for consumer-owned code.
-- Maintainer-only Odylith product coding policy now lives in
-  `maintainer/agents-guidelines/CODING_STANDARDS.md`; use it in maintainer
-  mode for deep-scan expectations, inline documentation bar, source-file
-  discipline, refactor-first posture, and coding validation expectations.
+- Product-repo source work has additional policy outside this installed
+  consumer tree.
 
 ## Governance Contract
 - For non-trivial work touching Odylith governance under `odylith/`, create or update the bound plan under `odylith/technical-plans/` per `technical-plans/AGENTS.md`.
@@ -241,7 +236,6 @@ Scope: applies to Odylith paths under `odylith/`.
 - Code hygiene and decomposition: `agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md`
 - Context engine behavior: `agents-guidelines/ODYLITH_CONTEXT_ENGINE.md`
 - Shared coding standards baseline: `agents-guidelines/CODING_STANDARDS.md`
-- Maintainer coding standards: `maintainer/agents-guidelines/CODING_STANDARDS.md`
 - Grounding and narrowing: `agents-guidelines/GROUNDING_AND_NARROWING.md`
 - Governance and delivery surfaces: `agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md`
 - Security and trust boundary: `agents-guidelines/SECURITY_AND_TRUST.md`
@@ -249,7 +243,6 @@ Scope: applies to Odylith paths under `odylith/`.
 - Product surfaces and runtime: `agents-guidelines/PRODUCT_SURFACES_AND_RUNTIME.md`
 - Validation and testing: `agents-guidelines/VALIDATION_AND_TESTING.md`
 - Install, upgrade, and recovery: `agents-guidelines/UPGRADE_AND_RECOVERY.md`
-- Maintainer-only release work: `maintainer/AGENTS.md`
 - Workstream source contracts: `radar/source/AGENTS.md`
 - Technical-plan lifecycle: `technical-plans/AGENTS.md`
 - Bug-record lifecycle: `casebook/bugs/AGENTS.md`

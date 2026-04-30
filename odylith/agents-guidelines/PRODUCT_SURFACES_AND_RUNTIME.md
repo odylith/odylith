@@ -39,7 +39,7 @@
     - proves the shipped pinned runtime
     - not the lane for executing unreleased live `src/odylith/*` changes
   - detached `source-local` posture:
-    - explicit maintainer-only override
+    - explicit product-repo override outside the installed consumer lane
     - allowed to execute live unreleased `src/odylith/*` changes
     - intentionally release-ineligible
   - dashboard header freeze:
@@ -59,10 +59,9 @@
     - follow [CODING_STANDARDS.md](./CODING_STANDARDS.md) for the shared
       consumer-safe documentation, reuse, robustness, and focused-validation
       baseline
-    - follow
-      [../maintainer/agents-guidelines/CODING_STANDARDS.md](../maintainer/agents-guidelines/CODING_STANDARDS.md)
-      for maintainer-only file-size discipline, refactor-first posture, and
-      deep-scan coding policy
+    - product-repo source work has additional file-size discipline,
+      refactor-first posture, and deep-scan coding policy outside this
+      installed consumer tree
 
 ## Observation And Proposal Contract
 - `**Odylith Observation**` and `Odylith Proposal` are shipped product
@@ -96,28 +95,24 @@
 - Odylith Discipline feeds this voice layer only when visible value is earned.
   Passing checks stay silent, nudges need a concrete recovery action,
   Observations need evidence the user benefits now, and visible claims require
-  `intervention-status`, transcript confirmation, or direct
+  `intervention-status`, confirmed chat delivery, or direct
   `visible-intervention` fallback.
 - The same intervention moment must keep one stable session-local identity
   across prompt, stop, and edit/bash checkpoints. Do not let a later hook
   make the same moment feel like a fresh branded interruption just because it
   added changed-path or assistant-summary evidence.
-- Checkpoint hooks carry two surfaces on purpose:
-  - hidden developer context with the full Observation/Proposal/Assist bundle
-    for continuity into the next model turn
-  - a visible checkpoint block for the user when the moment earns a real
-    Observation/Proposal beat, optionally followed by the matching
-    `Odylith Assist:` line when closeout continuity is already eligible for
-    that same moment
-- The primary visible intervention moment is the edit/bash checkpoint, not the
-  stop fallback. Stop may still recover a late Observation or a closeout
-  Assist line, and prompt-submit or visibility-feedback fallbacks append Assist
-  after the ruled live block, but the product should not make users wait until
-  stop to feel a live intervention.
-- When a host keeps checkpoint output hidden, Stop is the hard visibility
-  fallback for all earned Odylith live beats, not only Assist. Replay the
-  latest unseen Ambient Highlight, Observation, or Proposal before the Assist
-  line and send the combined text through the same one-shot continuation path.
+- Codex checkpoint hooks carry two surfaces on purpose: hidden developer
+  context with the full Observation/Proposal/Assist bundle for continuity into
+  the next model turn, plus a visible checkpoint block when the moment earns a
+  real Observation/Proposal beat.
+- Claude checkpoint hooks are governed-refresh and failure-status lanes only.
+  Claude Code renders hook output inline with the transcript, so successful
+  PostToolUse refreshes produce no visible text, and failures emit compact
+  status only.
+- Stop is not a universal hard visibility fallback. Use it only on hosts with
+  a proven clean Stop transcript surface. In Claude Code, Stop is
+  memory/logging only and must not recover Observation, Proposal, Assist,
+  Risks, History, Insight, product-repo IDs, or transcript-proof state.
 - Success-only governance refresh receipts must not drown out an earned
   Observation or Proposal. Keep routine success quiet when a stronger live beat
   exists; surface refresh status only when it failed, skipped, or when no live
@@ -163,7 +158,10 @@
 - Claude checkpoint proof must include both direct edit tools and Bash writes.
   `post-edit-checkpoint` covers `Write|Edit|MultiEdit`; `post-bash-checkpoint`
   covers `Bash` so shell edits, inline write scripts, and patch-style Bash
-  payloads do not disappear into hidden context until Stop.
+  payloads receive governed refresh coverage. Claude checkpoints are silent on
+  success and may only emit compact failure/skipped-refresh status; they must
+  not print Observation, Proposal, Assist, internal visibility-proof state,
+  product-repo workstream IDs, or Casebook IDs into the transcript.
 - `odylith codex visible-intervention` and `odylith claude
   visible-intervention` are the shared manual escape hatches when a host keeps
   hook output hidden. They render plain Markdown, not JSON, and agents should
@@ -180,18 +178,12 @@
 - Delivery-ledger state is derived from Compass intervention events. Do not
   create a second host-local truth store just to answer "is it active here?";
   add the missing delivery metadata to the existing stream event path.
-- `Odylith Assist` may recover at Stop from concrete validation proof in the
-  assistant summary when changed paths are unavailable. That proof path is
-  intentionally narrow: it can say the proof stayed tight, but it must not
-  claim artifact updates without changed-path or governed-target evidence.
-  It may still name affected governance-contract IDs from bounded request,
-  packet, or target-ref truth, provided the copy distinguishes "staying
-  inside" from "updating".
-- `Odylith Assist` may also recover at Stop from explicit product-visibility
-  feedback, such as a user saying ambient highlights, interventions,
-  Observations, Proposals, Assist, hooks, or chat output are not visible. This
-  is a narrow continuity lane; ordinary short acknowledgements still stay
-  silent.
+- On hosts with a proven clean Stop transcript surface, `Odylith Assist` may
+  recover at Stop from concrete validation proof or explicit visibility
+  feedback. Claude Code is not in that class: Claude Stop is memory/logging
+  only, stays silent in the transcript, and must not recover Observation,
+  Proposal, Assist, Risks, History, Insight, product-repo IDs, or
+  transcript-proof state.
 - If a closeout also earns `Odylith Risks:`, `Odylith Insight:`, or
   `Odylith History:`, that supplemental line renders before
   `Odylith Assist:`. Assist remains the final visible closeout line.

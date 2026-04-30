@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa
 """Claude prompt hook that routes first-match show-me and help requests."""
 
 from __future__ import annotations

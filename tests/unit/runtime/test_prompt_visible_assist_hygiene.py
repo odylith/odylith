@@ -11,7 +11,8 @@ def test_prompt_visible_assist_has_shared_host_owner() -> None:
     owner_text = owner_path.read_text(encoding="utf-8")
     assert "def ensure_prompt_visible_assist_bundle(" in owner_text
     assert "def compose_prompt_visible_markdown(" in owner_text
-    assert "brand promise is something the user can see" in owner_text
+    assert "surfaced this visibility issue in normal chat where you can inspect it" in owner_text
+    assert "brand promise is something the user can see" not in owner_text
 
     for path in (
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "host_visible_intervention.py",

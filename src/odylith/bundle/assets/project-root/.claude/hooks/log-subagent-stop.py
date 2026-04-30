@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa
 """Claude stop hook that records bounded subagent closeout events."""
 
 from __future__ import annotations

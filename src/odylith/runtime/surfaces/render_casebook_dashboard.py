@@ -1298,6 +1298,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       "Detected By",
       "Timeline",
     ];
+    const EXTERNAL_ISSUE_FIELDS = ["GitHub Issue(s)", "External Issue(s)", "Vendor Issue(s)", "Upstream Issue(s)"];
     const HUMAN_IMPACT_FIELDS = [
       "Impact",
       "Blast Radius",
@@ -1537,7 +1538,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .join("");
       return rows ? `<div class="narrative-list">${{rows}}</div>` : "";
     }}
-
     function renderLabeledNarratives(items) {{
       if (!Array.isArray(items) || !items.length) return "";
       const rows = items
@@ -1556,18 +1556,16 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .join("");
       return rows ? `<div class="narrative-list">${{rows}}</div>` : "";
     }}
-
-    function actionChipHtml(label, href, tooltip = "") {{
+    function actionChipHtml(label, href, tooltip = "", targetMode = "_top") {{
       const text = String(label || "").trim();
-      const target = String(href || "").trim();
-      if (!text || !target) return "";
+      const destination = String(href || "").trim();
+      if (!text || !destination) return "";
+      const linkTarget = String(targetMode || "").trim() === "_blank" ? "_blank" : "_top";
+      const rel = linkTarget === "_blank" ? "noopener noreferrer" : "noreferrer";
       const note = String(tooltip || "").trim();
-      const tooltipAttrs = note
-        ? ` data-tooltip="${{escapeHtml(note)}}" aria-label="${{escapeHtml(note)}}"`
-        : "";
-      return `<a class="action-chip" href="${{escapeHtml(target)}}" target="_top" rel="noreferrer"${{tooltipAttrs}}>${{escapeHtml(text)}}</a>`;
+      const tooltipAttrs = note ? ` data-tooltip="${{escapeHtml(note)}}" aria-label="${{escapeHtml(note)}}"` : "";
+      return `<a class="action-chip" href="${{escapeHtml(destination)}}" target="${{linkTarget}}" rel="${{rel}}"${{tooltipAttrs}}>${{escapeHtml(text)}}</a>`;
     }}
-
     function renderActionChips(items) {{
       if (!Array.isArray(items) || !items.length) return "";
       const seen = new Set();
@@ -1579,21 +1577,31 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         const key = `${{label}}::${{href}}`;
         if (seen.has(key)) continue;
         seen.add(key);
-        chips.push(actionChipHtml(label, href, item && item.tooltip));
+        chips.push(actionChipHtml(label, href, item && item.tooltip, item && item.target));
       }}
       return chips.join("");
     }}
-
     function renderActionChipGroup(items) {{
       const chips = renderActionChips(items);
       return chips ? `<div class="link-group">${{chips}}</div>` : "";
     }}
-
     function externalIssueLinks(detail) {{
       const fields = detail && detail.fields && typeof detail.fields === "object" ? detail.fields : {{}};
-      const value = ["GitHub Issue(s)", "External Issue(s)", "Vendor Issue(s)", "Upstream Issue(s)"].map((name) => String(fields[name] || "")).join(" ");
       const issuePattern = /\\[([^\\]]+)\\]\\((https?:\\/\\/[^)\\s]+)\\)|\\b([A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+)#(\\d+)\\b|https:\\/\\/github\\.com\\/([A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+)\\/issues\\/(\\d+)/g;
-      return [...value.matchAll(issuePattern)].map((match) => {{ const label = match[1] || (match[3] ? `${{match[3]}}#${{match[4]}}` : `${{match[5]}}#${{match[6]}}`); const href = match[2] || (match[3] ? `https://github.com/${{match[3]}}/issues/${{match[4]}}` : match[0]); return {{ label, href, tooltip: "Open linked external issue" }}; }});
+      const actions = [];
+      for (const fieldName of EXTERNAL_ISSUE_FIELDS) {{ for (const match of String(fields[fieldName] || "").trim().matchAll(issuePattern)) {{
+        const rawLabel = String(match[1] || (match[3] ? `${{match[3]}}#${{match[4]}}` : `${{match[5]}}#${{match[6]}}`) || "").trim();
+        const href = String(match[2] || (match[3] ? `https://github.com/${{match[3]}}/issues/${{match[4]}}` : match[0]) || "").trim();
+        if (!rawLabel || !href) continue;
+        const issueKind = /^GitHub Issue\\(s\\)$/i.test(fieldName) || /^https:\\/\\/github\\.com\\//i.test(href) ? "GitHub issue" : fieldName.replace(/\\(s\\)/g, "").replace(/Issue$/i, "issue").trim();
+        actions.push({{ label: `${{issueKind}}: ${{rawLabel}}`, href, target: "_blank", tooltip: `Open ${{issueKind.toLowerCase()}} in a new browser tab` }});
+      }} }}
+      return actions;
+    }}
+    function renderExternalIssueSignal(items) {{
+      const chips = renderActionChipGroup(items);
+      if (!chips) return "";
+      return `<div class="narrative-list"><div class="narrative-row"><p class="signal-label narrative-label">${{items.length === 1 ? "Tracked issue" : "Tracked issues"}}</p><div class="detail-copy">${{chips}}</div></div></div>`;
     }}
     function renderLinkRow(label, items) {{
       const chips = renderActionChipGroup(items);
@@ -1605,7 +1613,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         </div>
       `;
     }}
-
     function dedupeByField(items) {{
       if (!Array.isArray(items)) return [];
       const seen = new Set();
@@ -1621,7 +1628,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       }}
       return rows;
     }}
-
     function renderPathLinkList(items) {{
       if (!Array.isArray(items) || !items.length) return "";
       const rows = items
@@ -1762,7 +1768,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         </div>
       `;
     }}
-
     function matchesSearch(row, term) {{
       if (!term) return true;
       const canonicalBugId = canonicalizeBugIdToken(term);
@@ -1776,21 +1781,17 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       if (!normalizedNeedle) return false;
       return normalizeSearchToken(searchText).includes(normalizedNeedle);
     }}
-
     function matchesFilters(row, state) {{
       if (state.severity && String(row.severity_token || "") !== state.severity) return false;
       if (state.status && String(row.status_token || "") !== state.status) return false;
       return true;
     }}
-
     function compareText(left, right) {{
       return String(left || "").localeCompare(String(right || ""), undefined, {{ numeric: true, sensitivity: "base" }});
     }}
-
     function compareDateDesc(left, right) {{
       return compareText(right && right.date, left && left.date);
     }}
-
     function compareDateAsc(left, right) {{
       return compareText(left && left.date, right && right.date);
     }}
@@ -2135,7 +2136,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           </div>
         `
         : "";
-      const humanSignalBody = renderFocusedFieldRows(HUMAN_SIGNAL_FIELDS);
+      const humanSignalBody = [renderExternalIssueSignal(externalIssueActions), renderFocusedFieldRows(HUMAN_SIGNAL_FIELDS)].filter(Boolean).join("");
       const humanImpactBody = [renderFocusedFieldRows(HUMAN_IMPACT_FIELDS), componentNarrative].filter(Boolean).join("");
       const humanResponseBody = renderFocusedFieldRows(HUMAN_RESPONSE_FIELDS);
       const humanCards = [
@@ -2207,7 +2208,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         renderLimitedActionRow("Atlas diagrams", atlasLinks, 4, "Atlas diagram links"),
       ].filter(Boolean).join("");
       const consumedFieldKeys = new Set(
-        [...HUMAN_SIGNAL_FIELDS, ...HUMAN_IMPACT_FIELDS, ...HUMAN_RESPONSE_FIELDS, "Description", "Agent Guardrails", "Preflight Checks"]
+        [...HUMAN_SIGNAL_FIELDS, ...EXTERNAL_ISSUE_FIELDS, ...HUMAN_IMPACT_FIELDS, ...HUMAN_RESPONSE_FIELDS, "Description", "Agent Guardrails", "Preflight Checks"]
           .map((fieldName) => String(fieldName || "").trim().toLowerCase())
           .filter(Boolean)
       );
@@ -2292,7 +2293,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           ${{summary}}
           <div class="detail-meta">${{chips.join("")}}</div>
           <div class="detail-links">
-            ${{externalIssueActions.length ? renderActionChipGroup(externalIssueActions) : ""}}
             ${{sourceLink}}
             ${{workstreamLinks.length ? renderActionChipGroup(workstreamLinks) : ""}}
           </div>

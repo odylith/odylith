@@ -1,9 +1,9 @@
-"""Visible delivery and transcript-proof helpers for Odylith chat beats.
+"""Visible delivery and chat-confirmation helpers for Odylith notes.
 
 This module owns the last-mile text contract for ambient, intervention, and
 assist delivery. It decides how branded Markdown is canonicalized, how
-assistant-visible fallback instructions are phrased, and how transcript checks
-decide whether a beat already appeared in chat. Host payload transport stays in
+assistant-visible recovery instructions are phrased, and how chat checks decide
+whether a note already appeared in chat. Host payload transport stays in
 `host_surface_runtime`; the visible-delivery contract lives here.
 """
 
@@ -33,6 +33,13 @@ _DELIVERY_TAIL_LABELS: tuple[str, ...] = (
 _ASSIST_LABELS: tuple[str, ...] = (
     "**Odylith Assist:**",
     "Odylith Assist:",
+)
+_SEMANTIC_LABEL_PAIRS: tuple[tuple[str, str], ...] = (
+    ("**Odylith Observation:**", "Odylith Observation:"),
+    ("**Odylith Insight:**", "Odylith Insight:"),
+    ("**Odylith History:**", "Odylith History:"),
+    ("**Odylith Risks:**", "Odylith Risks:"),
+    ("**Odylith Assist:**", "Odylith Assist:"),
 )
 
 
@@ -81,12 +88,11 @@ def assistant_visible_fallback_context(visible_text: str) -> str:
         return ""
     return "\n".join(
         [
-            "Odylith visible delivery fallback:",
+            "Odylith visible delivery recovery:",
             (
-                "The Odylith moment has not been seen in this chat. In the next visible "
-                "assistant message, before any other text, emit the exact Markdown between "
-                "the tags verbatim once if it is not already visible. Do not paraphrase it, "
-                "do not summarize it, and do not use a code fence."
+                "If this chat has not already shown the note below, include it once "
+                "in the next visible assistant reply as normal Markdown. Keep the "
+                "wording intact; do not paraphrase, summarize, or fence it."
             ),
             "",
             _VISIBLE_DELIVERY_BEGIN,
@@ -120,10 +126,24 @@ def visible_delivery_already_present(*, last_assistant_message: str, visible_tex
         return False
     if visible in last:
         return True
+    semantic_visible = _semantic_visible_delivery_text(visible)
+    semantic_last = _semantic_visible_delivery_text(last)
+    if semantic_visible and semantic_visible in semantic_last:
+        return True
     if visible.startswith("---\n") and visible.endswith("\n---"):
         return False
     visible_body = strip_visible_delivery_boundary(visible)
     return bool(visible_body and visible_body in last)
+
+
+def _semantic_visible_delivery_text(value: str) -> str:
+    text = strip_visible_delivery_boundary(value)
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    lines = [line for line in text.splitlines() if line.strip() != "---"]
+    text = "\n".join(lines)
+    for markdown_label, plain_label in _SEMANTIC_LABEL_PAIRS:
+        text = text.replace(markdown_label, plain_label)
+    return " ".join(text.split())
 
 
 def stop_visible_delivery_reason(visible_text: str) -> str:
@@ -133,9 +153,9 @@ def stop_visible_delivery_reason(visible_text: str) -> str:
     return "\n\n".join(
         [
             (
-                "Before ending, render the Odylith closeout below in the next visible "
-                "assistant message if it is not already visible. Keep it as normal "
-                "Markdown, do not wrap it in a code fence, and do not mention hook internals."
+                "Show the Odylith note below once in the next visible assistant "
+                "message if it is not already visible. Keep it as normal Markdown "
+                "and do not wrap it in a code fence."
             ),
             visible,
         ]

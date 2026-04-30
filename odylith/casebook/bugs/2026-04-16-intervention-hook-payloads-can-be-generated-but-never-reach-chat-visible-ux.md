@@ -1,6 +1,6 @@
 - Bug ID: CB-121
 
-- Status: Resolved
+- Status: Fixed Pending Release
 
 - Created: 2026-04-16
 
@@ -49,6 +49,10 @@
 - Prevention: Regression tests must fail when a host payload carries only hidden context without assistant-render fallback, when ambient loses to a stale teaser after evidence matures, when low-signal short turns fabricate Assist, when explicit visibility-feedback turns fail to produce Assist, when Stop dedupe suppresses a label that was not actually shown, or when compatibility reports blur structured hook generation with chat-visible delivery. `intervention-status` must remain cheap enough to run before claiming a live session is active.
 
 - Follow-Up Prevention (2026-04-28 / 0.1.12): Host-visible intervention bundles now carry an `alignment_proof` object inside the normalized `ObservationEnvelope`. The proof requires Context Engine, Execution Engine, Intervention Engine, Tribunal, Governance, Delivery, Memory Substrate, and Subagent Orchestration lanes to be covered or policy-deferred before visibility-recovery output reports ready, while Discipline, Surface DAG, and Analysis lanes remain quiet unless compact evidence exists. Focused proof/host tests passed (`47 passed`) so future regressions cannot hide a broken engine chain behind visible Markdown.
+
+- Follow-Up Prevention (2026-04-30 / 0.1.12): Stop-hook visibility dedupe now treats plain `Odylith Observation:` transcript text as semantically equivalent to the canonical `**Odylith Observation:**` Markdown label for the same beat, while still requiring matching Assist text when the pending closeout includes Assist. This prevents the host from replaying an Observation that was already visibly spoken in a non-canonical but readable form. Focused proof: `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_visible_delivery_runtime.py` (`2 passed`).
+
+- Follow-Up Prevention (2026-04-30 / 0.1.12): Claude Code Stop hooks no longer emit visible-intervention UX through Stop `systemMessage`, because Claude renders that channel as `Stop hook error` / `Stop says` transcript noise instead of a clean product beat. Stop now logs/records only, while prompt-context and explicit visible-intervention commands own user-visible recovery. The visibility-failure Observation copy now states the user-relevant state directly: Claude has Odylith activity, but no clean Odylith beat has reached the chat yet. Focused proof: `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_claude_host_stop_summary.py tests/unit/runtime/test_intervention_visibility_broker.py tests/unit/runtime/test_host_visible_intervention.py tests/unit/runtime/test_claude_host_prompt_context.py tests/unit/runtime/test_codex_host_prompt_context.py tests/unit/runtime/test_intervention_host_surface_runtime.py` (`95 passed`).
 
 - Agent Guardrails: When host hook visibility is unproven, agents must render the Odylith visible-intervention Markdown or fallback block directly in chat instead of saying the engine is active.
 

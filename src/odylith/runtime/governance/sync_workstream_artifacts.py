@@ -594,22 +594,23 @@ def _print_execution_plan(name: str, plan: ExecutionPlan, *, dry_run: bool, verb
     print(f"{name} {'dry-run' if dry_run else 'plan'}")
     if plan.headline:
         print(f"- summary: {plan.headline}")
-    for index, step in enumerate(plan.steps, start=1):
-        print(f"- step {index}/{len(plan.steps)}: {step.label}")
-        if step.mutation_classes:
-            print(f"  mutation_classes: {', '.join(step.mutation_classes)}")
-        if step.paths:
-            preview = ", ".join(step.paths[:4])
-            suffix = "" if len(step.paths) <= 4 else f", +{len(step.paths) - 4} more"
-            print(f"  paths: {preview}{suffix}")
+    show_step_graph = bool(dry_run or verbose)
+    if show_step_graph:
+        for index, step in enumerate(plan.steps, start=1):
+            print(f"- step {index}/{len(plan.steps)}: {step.label}")
+            if step.mutation_classes:
+                print(f"  mutation_classes: {', '.join(step.mutation_classes)}")
+            if step.paths:
+                preview = ", ".join(step.paths if verbose else step.paths[:4])
+                suffix = "" if verbose or len(step.paths) <= 4 else f", +{len(step.paths) - 4} more"
+                print(f"  paths: {preview}{suffix}")
+    elif plan.steps:
+        print(f"- steps: {len(plan.steps)} planned; progress follows.")
     if plan.dirty_overlap:
         print("- dirty_overlap:")
-        for line in summarize_dirty_overlap(plan.dirty_overlap, verbose=verbose):
-            print(f"  {line}")
-    if plan.notes:
-        print("- notes:")
-        for note in plan.notes:
-            print(f"  {note}")
+        print("\n".join(f"  {line}" for line in summarize_dirty_overlap(plan.dirty_overlap, verbose=verbose)))
+    if plan.notes and show_step_graph:
+        print("- notes:\n" + "\n".join(f"  {note}" for note in plan.notes))
     if dry_run:
         print("dry-run mode: no files written")
 
@@ -1876,6 +1877,7 @@ def refresh_dashboard_surfaces(
     runtime_mode: str,
     atlas_sync: bool = False,
     dry_run: bool = False,
+    verbose: bool = False,
 ) -> int:
     selected = normalize_dashboard_surfaces(surfaces)
     normalized_runtime_mode = str(runtime_mode).strip().lower() or "auto"
@@ -1885,7 +1887,7 @@ def refresh_dashboard_surfaces(
         runtime_mode=normalized_runtime_mode,
         atlas_sync=atlas_sync,
     )
-    _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run), verbose=False)
+    _print_execution_plan("dashboard refresh", plan, dry_run=bool(dry_run), verbose=bool(verbose))
     if dry_run:
         return 0
     started_at = time.perf_counter()

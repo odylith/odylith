@@ -4,7 +4,6 @@ import io
 import json
 from pathlib import Path
 
-from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import claude_host_stop_summary
 
 
@@ -340,7 +339,7 @@ def test_render_stop_summary_replaces_teaser_with_unseen_live_beat(tmp_path: Pat
                 "candidate": {
                     "stage": "teaser",
                     "suppressed_reason": "",
-                    "teaser_text": "Odylith Observation: the visible Odylith moment still needs to reach chat.",
+                    "teaser_text": "Odylith Observation: the Odylith note still needs to reach chat.",
                 },
                 "proposal": {"eligible": False, "suppressed_reason": ""},
             },
@@ -355,7 +354,7 @@ def test_render_stop_summary_replaces_teaser_with_unseen_live_beat(tmp_path: Pat
     assert "Odylith is tracking this signal" not in rendered
 
 
-def test_main_emits_system_message_for_visible_stop_surface(monkeypatch, tmp_path: Path) -> None:
+def test_main_never_emits_stop_system_message_for_visible_surface(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         claude_host_stop_summary.claude_host_shared,
         "run_compass_log",
@@ -378,12 +377,12 @@ def test_main_emits_system_message_for_visible_stop_surface(monkeypatch, tmp_pat
     monkeypatch.setattr(
         claude_host_stop_summary,
         "render_stop_summary",
-        lambda **kwargs: "**Odylith Assist:** kept this grounded.",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Claude Stop must not render visible UX")),
     )
     monkeypatch.setattr(
         claude_host_stop_summary,
         "_stop_intervention_bundle",
-        lambda **kwargs: {},
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Claude Stop must not build visible UX")),
     )
     buffer = io.StringIO()
     monkeypatch.setattr("sys.stdout", buffer)
@@ -391,13 +390,10 @@ def test_main_emits_system_message_for_visible_stop_surface(monkeypatch, tmp_pat
     exit_code = claude_host_stop_summary.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    payload = json.loads(buffer.getvalue())
-    assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."
-    assert payload["decision"] == "block"
-    assert "**Odylith Assist:** kept this grounded." in payload["reason"]
+    assert buffer.getvalue() == ""
 
 
-def test_main_replays_pending_chat_blocks_before_stop_assist(monkeypatch, tmp_path: Path) -> None:
+def test_main_does_not_replay_pending_chat_blocks_through_stop_system_message(monkeypatch, tmp_path: Path) -> None:
     claude_host_stop_summary.intervention_surface_runtime.stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -432,22 +428,7 @@ def test_main_replays_pending_chat_blocks_before_stop_assist(monkeypatch, tmp_pa
     monkeypatch.setattr(
         claude_host_stop_summary,
         "_stop_intervention_bundle",
-        lambda **kwargs: {
-            "observation": surface_runtime.observation_envelope(
-                host_family="claude",
-                turn_phase="stop_summary",
-                session_id="claude-stop-main-replay",
-                assistant_summary="Implemented the stop-summary visible surface fix.",
-            ),
-            "intervention_bundle": {
-                "candidate": {"stage": "silent", "suppressed_reason": ""},
-                "proposal": {"eligible": False, "suppressed_reason": ""},
-            },
-            "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
-            },
-        },
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Claude Stop must not build visible UX")),
     )
     buffer = io.StringIO()
     monkeypatch.setattr("sys.stdout", buffer)
@@ -455,14 +436,7 @@ def test_main_replays_pending_chat_blocks_before_stop_assist(monkeypatch, tmp_pa
     exit_code = claude_host_stop_summary.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    payload = json.loads(buffer.getvalue())
-    assert payload["systemMessage"] == (
-        "---\n\n"
-        "**Odylith Observation:** Claude Stop must replay this before Assist.\n"
-        "\n---\n\n"
-        "**Odylith Assist:** kept this grounded."
-    )
-    assert payload["decision"] == "block"
+    assert buffer.getvalue() == ""
 
 
 def test_main_suppresses_cli_help_stop_replay(monkeypatch, tmp_path: Path) -> None:
@@ -524,12 +498,12 @@ def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(
     monkeypatch.setattr(
         claude_host_stop_summary,
         "render_stop_summary",
-        lambda **kwargs: "**Odylith Assist:** kept this grounded.",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Claude Stop must not render visible UX")),
     )
     monkeypatch.setattr(
         claude_host_stop_summary,
         "_stop_intervention_bundle",
-        lambda **kwargs: {},
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("Claude Stop must not build visible UX")),
     )
     buffer = io.StringIO()
     monkeypatch.setattr("sys.stdout", buffer)
@@ -537,6 +511,4 @@ def test_main_does_not_block_stop_when_odylith_closeout_is_already_visible(
     exit_code = claude_host_stop_summary.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    payload = json.loads(buffer.getvalue())
-    assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."
-    assert "decision" not in payload
+    assert buffer.getvalue() == ""

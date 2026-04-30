@@ -59,6 +59,14 @@ No transitional states. Do not replace one slop class with another.
   unrelated growth.
 - When guidance, hooks, skills, or bundle-managed assets change, update the
   live source and every shipped mirror in the same change.
+- For maintainer product-surface changes that can affect already-installed
+  consumer repos, run `odylith release migration-gate --repo-root .
+  --target-version <version>` and satisfy the exact emitted
+  `migration-observer:<version>:<surface>:<fingerprint>` Radar marker before
+  release closeout.
+- Keep that migration-observer rule maintainer-only. Do not mirror it into
+  consumer-safe shared skills, shared agent guidelines, or bundled install
+  assets.
 - Add inline documentation only for invariants, failure modes, boundary
   assumptions, or non-obvious state transitions.
 - Add or update enforcement tests that pin the cleaned-up class of slop.

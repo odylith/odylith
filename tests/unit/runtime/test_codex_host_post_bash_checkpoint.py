@@ -221,10 +221,7 @@ def test_post_bash_checkpoint_runs_selective_sync_when_governed_paths_change(
     ]
     assert sync_timeout == 180
 
-    payload = json.loads(out)
-    assert "systemMessage" in payload
-    assert "completed" in payload["systemMessage"]
-    assert "odylith/casebook/bugs/2026-04-14-example.md" in payload["systemMessage"]
+    assert out == ""
 
 
 def test_post_bash_checkpoint_emits_failure_message_on_selective_sync_error(
@@ -318,7 +315,7 @@ def test_post_bash_checkpoint_prioritizes_pending_chat_replay(monkeypatch, capsy
     assert payload["systemMessage"] == (
         "---\n\n**Odylith Observation:** Checkpoint must carry this pending block.\n\n---"
     )
-    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
 
 
 def test_governed_changed_paths_parses_porcelain_z_output(monkeypatch, tmp_path: Path) -> None:
@@ -526,7 +523,7 @@ def test_main_routes_checkpoint_context_through_additional_context(
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
-    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** The signal is real." in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Proposal:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Assist:** kept this grounded." not in payload["hookSpecificOutput"]["additionalContext"]

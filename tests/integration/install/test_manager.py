@@ -18,6 +18,7 @@ from odylith.install import runtime
 from odylith.install.legacy_install_migration import migrate_legacy_install
 from odylith.install.runtime import runtime_verification_path
 from odylith.runtime.common import codex_cli_capabilities
+from odylith.runtime.governance import validate_component_registry_contract
 from odylith.install.manager import (
     doctor_bundle,
     evaluate_start_preflight,
@@ -103,6 +104,56 @@ def _seed_legacy_casebook_bug_pair(repo_root: Path) -> tuple[Path, Path]:
         components="tooling",
     )
     return retained, missing
+
+
+def _seed_legacy_component_register_drift(repo_root: Path) -> tuple[Path, Path]:
+    registry_path = repo_root / "odylith" / "registry" / "source" / "component_registry.v1.json"
+    spec_path = repo_root / "odylith" / "registry" / "source" / "components" / "dentoai-isb" / "CURRENT_SPEC.md"
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    registry_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "components": [
+                    {
+                        "component_id": "dentoai-isb",
+                        "name": "Dentoai Isb",
+                        "kind": "library",
+                        "category": "detected",
+                        "qualification": "detected",
+                        "aliases": [],
+                        "path_prefixes": ["dentoai_isb"],
+                        "workstreams": [],
+                        "diagrams": [],
+                        "owner": "product",
+                        "status": "active",
+                        "what_it_is": "Logical component registered through `odylith component register`.",
+                        "why_tracked": "Registered so agent sessions can see Dentoai Isb as a named ownership boundary.",
+                        "spec_ref": "odylith/registry/source/components/dentoai-isb/CURRENT_SPEC.md",
+                        "sources": ["manifest"],
+                        "subcomponents": [],
+                        "product_layer": "cli_bootstrap",
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    spec_path.write_text(
+        (
+            "# Dentoai Isb\n\n"
+            "## Overview\n\n"
+            "Dentoai Isb is a `library` component registered through `odylith component register`.\n\n"
+            "## Boundary\n\n"
+            "- **Evidence anchor**: `dentoai_isb`\n\n"
+            "## Contract\n\n"
+            "TBD.\n"
+        ),
+        encoding="utf-8",
+    )
+    return registry_path, spec_path
 
 
 def _write_fake_source_checkout(root: Path) -> Path:
@@ -664,7 +715,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert shell_payload["maintainer_notes"] == []
     shell_index_html = (repo_root / "odylith" / "index.html").read_text(encoding="utf-8")
     assert "The local shell is getting ready." in shell_index_html
-    assert "./.odylith/bin/odylith sync --repo-root . --force --impact-mode full" in shell_index_html
+    assert "./.odylith/bin/odylith sync --repo-root . --proceed-with-overlap" in shell_index_html
+    assert "--force --impact-mode full" not in shell_index_html
     guidance_text = guidance_path.read_text(encoding="utf-8")
     assert "local repo truth, not a copy of the Odylith product repo" in guidance_text
     assert "`.claude/`, `.codex/`, `.agents/skills/`, `odylith/AGENTS.md`, `odylith/CLAUDE.md`, the shipped scoped guidance companions under `odylith/**/AGENTS.md` and `odylith/**/CLAUDE.md`, `odylith/agents-guidelines/`, and `odylith/skills/` are Odylith-managed guidance assets" in guidance_text
@@ -677,12 +729,12 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in guidance_text
     assert "never prefix commentary with control-plane receipt labels" in guidance_text
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in guidance_text
-    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in guidance_text
-    assert "Stop is the fallback closeout and live-beat recovery lane" in guidance_text
+    assert "direct-edit and Bash PostToolUse hooks stay silent on success" in guidance_text
+    assert "Claude Stop is memory/logging only" in guidance_text
     assert "literal commands" not in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
-    assert "At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat" in guidance_text
+    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in guidance_text
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
     assert "Lead with the user win" in guidance_text
     assert "link updated governance IDs inline when they were actually changed" in guidance_text
@@ -734,12 +786,12 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in root_agents
     assert "never prefix commentary with control-plane receipt labels" in root_agents
     assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in root_agents
-    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in root_agents
-    assert "Stop is the fallback closeout and live-beat recovery lane" in root_agents
+    assert "direct-edit and Bash PostToolUse hooks stay silent on success" in root_agents
+    assert "Claude Stop is memory/logging only" in root_agents
     assert "literal commands" not in root_agents
     assert "Keep normal commentary task-first and human." in root_agents
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents
-    assert "At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat" in root_agents
+    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in root_agents
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
     assert "Lead with the user win" in root_agents
     assert "link updated governance IDs inline when they were actually changed" in root_agents
@@ -1532,7 +1584,7 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in guidance_text
-    assert "At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat" in guidance_text
+    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in guidance_text
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in guidance_text
     assert "Lead with the user win" in guidance_text
     assert "link updated governance IDs inline when they were actually changed" in guidance_text
@@ -1631,7 +1683,7 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert "If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history." in root_agents
     assert "Keep normal commentary task-first and human." in root_agents
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in root_agents
-    assert "At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat" in root_agents
+    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in root_agents
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in root_agents
     assert "Lead with the user win" in root_agents
     assert "link updated governance IDs inline when they were actually changed" in root_agents
@@ -2301,6 +2353,99 @@ def test_doctor_bundle_repair_backfills_legacy_casebook_bug_ids(tmp_path: Path) 
     assert "| CB-008 | 2026-03-26 | Missing bug | P1 | tooling | Open | [2026-03-26-missing-bug.md](2026-03-26-missing-bug.md) |" in index_text
 
 
+def test_doctor_bundle_repair_fixes_0_1_11_component_register_drift(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    registry_path, spec_path = _seed_legacy_component_register_drift(repo_root)
+    before_registry = registry_path.read_text(encoding="utf-8")
+    before_spec = spec_path.read_text(encoding="utf-8")
+
+    healthy, message = doctor_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", repair=False)
+
+    assert healthy is True
+    assert "repair completed" not in message.lower()
+    assert registry_path.read_text(encoding="utf-8") == before_registry
+    assert spec_path.read_text(encoding="utf-8") == before_spec
+
+    repaired, repaired_message = doctor_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", repair=True)
+
+    payload = json.loads(registry_path.read_text(encoding="utf-8"))
+    component = payload["components"][0]
+    spec_text = spec_path.read_text(encoding="utf-8")
+    stream_path = repo_root / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    stream_path.write_text("", encoding="utf-8")
+
+    assert repaired is True
+    assert "Repaired 0.1.11 Registry component metadata for 1 component(s)." in repaired_message
+    assert component["category"] == "governance_engine"
+    assert component["qualification"] == "candidate"
+    assert "## Feature History" in spec_text
+    assert "Repaired Odylith 0.1.11 component register metadata drift for `dentoai-isb`." in spec_text
+    assert (
+        validate_component_registry_contract.main(
+            [
+                "--repo-root",
+                str(repo_root),
+                "--manifest",
+                "odylith/registry/source/component_registry.v1.json",
+                "--catalog",
+                "odylith/atlas/source/catalog/diagrams.v1.json",
+                "--ideas-root",
+                "odylith/radar/source/ideas",
+                "--stream",
+                "odylith/compass/runtime/codex-stream.v1.jsonl",
+            ]
+        )
+        == 0
+    )
+
+
+def test_doctor_bundle_repair_removes_stale_consumer_intervention_noise(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    stream_path = repo_root / "odylith" / "compass" / "runtime" / "agent-stream.v1.jsonl"
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    stream_path.write_text(
+        "\n".join(
+            json.dumps(event, sort_keys=True)
+            for event in (
+                {
+                    "host_family": "claude",
+                    "kind": "ambient_signal",
+                    "summary": "Odylith Risks: Odylith still has blocks waiting for transcript confirmation.",
+                },
+                {
+                    "host_family": "claude",
+                    "kind": "intervention_card",
+                    "summary": "Odylith is ready to speak, but this chat has not shown the Odylith moment yet.",
+                    "workstreams": ["B-096"],
+                },
+                {
+                    "host_family": "claude",
+                    "kind": "workspace_activity",
+                    "summary": "Recent workspace activity across tracked paths: src/app.py",
+                },
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    repaired, message = doctor_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", repair=True)
+
+    remaining = stream_path.read_text(encoding="utf-8")
+    assert repaired is True
+    assert "Removed 2 stale 0.1.11 Claude intervention event(s) from 1 Compass stream(s)." in message
+    assert "transcript confirmation" not in remaining
+    assert "B-096" not in remaining
+    assert "Recent workspace activity" in remaining
+
+
 def test_doctor_bundle_repairs_product_repo_with_source_aware_wrapped_runtime(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
@@ -2429,16 +2574,16 @@ def test_doctor_bundle_reset_local_state_clears_mutable_state(tmp_path: Path) ->
     assert (repo_root / ".odylith" / "runtime" / "current").is_symlink()
 
 
-def test_uninstall_bundle_detaches_but_preserves_customer_truth_and_local_state(tmp_path: Path) -> None:
+def test_uninstall_bundle_detaches_and_removes_customer_odylith_tree(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _write_repo_root(repo_root)
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
 
-    uninstall_bundle(repo_root=repo_root)
+    summary = uninstall_bundle(repo_root=repo_root)
 
-    assert (repo_root / "odylith").is_dir()
-    assert (repo_root / "odylith" / "AGENTS.md").is_file()
+    assert summary.removed_paths == ("odylith/",)
+    assert not (repo_root / "odylith").exists()
     assert (repo_root / ".odylith").is_dir()
     state = load_install_state(repo_root=repo_root)
     assert state["detached"] is True
@@ -3555,7 +3700,7 @@ def test_upgrade_warns_and_continues_when_retention_prune_stays_permission_denie
     assert sorted(updated_state["installed_versions"]) == ["1.2.2", "1.2.3"]
 
 
-def test_install_and_uninstall_preserve_existing_customer_truth(tmp_path: Path) -> None:
+def test_install_and_uninstall_remove_existing_customer_truth_tree(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _write_repo_root(repo_root)
@@ -3569,9 +3714,25 @@ def test_install_and_uninstall_preserve_existing_customer_truth(tmp_path: Path) 
     install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
     uninstall_bundle(repo_root=repo_root)
 
-    assert (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8") == "# Radar Index\n"
-    assert (repo_root / "odylith" / "casebook" / "bugs" / "INDEX.md").read_text(encoding="utf-8") == "# Bugs Index\n"
-    assert (repo_root / "odylith" / "technical-plans" / "INDEX.md").read_text(encoding="utf-8") == "# Plans Index\n"
+    assert not (repo_root / "odylith").exists()
+
+
+def test_uninstall_bundle_unlinks_symlinked_odylith_without_following_target(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    external_root = tmp_path / "external-odylith"
+    repo_root.mkdir()
+    external_root.mkdir()
+    _write_repo_root(repo_root)
+    (external_root / "sentinel.txt").write_text("do not delete\n", encoding="utf-8")
+    install_bundle(repo_root=repo_root, bundle_root=tmp_path / "unused-bundle", version="1.2.3")
+    shutil.rmtree(repo_root / "odylith")
+    os.symlink(external_root, repo_root / "odylith")
+
+    summary = uninstall_bundle(repo_root=repo_root)
+
+    assert summary.removed_paths == ("odylith/",)
+    assert not (repo_root / "odylith").exists()
+    assert (external_root / "sentinel.txt").read_text(encoding="utf-8") == "do not delete\n"
 
 
 def test_install_bundle_preserves_legacy_odylith_created_truth_in_customer_tree(tmp_path: Path) -> None:

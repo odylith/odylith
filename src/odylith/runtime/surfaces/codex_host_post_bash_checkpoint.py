@@ -20,9 +20,9 @@ schemas expose ``PostToolUse`` for ``Bash`` only; native desktop/app tool
 payloads can still be parsed by this module in tests or manual fallback
 commands, but they are not claimed as automatically hook-dispatched.
 
-The hook never blocks the tool call. It always exits 0; on failure
-it emits a fail-soft ``systemMessage`` and assistant-visible fallback context
-describing what went wrong so the operator can recover manually if needed.
+The hook never blocks the tool call. It always exits 0; successful refreshes
+stay silent, while skipped or failed refreshes emit a compact fail-soft
+``systemMessage`` so the operator can recover manually if needed.
 """
 
 from __future__ import annotations
@@ -661,7 +661,7 @@ def _changed_paths_preview(paths: list[str]) -> str:
 
 
 def refresh_governance(*, project_dir: Path | str, paths: list[str]) -> dict[str, str] | None:
-    """Run ``odylith sync --impact-mode selective <paths>`` and return the systemMessage.
+    """Run ``odylith sync --impact-mode selective <paths>`` and return visible failure status.
 
     Returns ``None`` when there are no governed changed paths to refresh.
     """
@@ -689,12 +689,7 @@ def refresh_governance(*, project_dir: Path | str, paths: list[str]) -> dict[str
             )
         }
     if completed.returncode == 0:
-        return {
-            "systemMessage": (
-                f"Odylith governance refresh completed after edit-like Bash command "
-                f"touched {preview}."
-            )
-        }
+        return {}
     detail = "\n".join(
         line.strip()
         for line in (completed.stderr or completed.stdout or "").splitlines()[-8:]

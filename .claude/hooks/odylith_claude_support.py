@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa
 """Shared helper utilities for Claude project hooks."""
 
 from __future__ import annotations

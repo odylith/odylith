@@ -51,8 +51,6 @@ CODEX_COMMAND_SKILLS = {
     "odylith-casebook-bug-capture/SKILL.md",
     "odylith-casebook-bug-preflight/SKILL.md",
     "odylith-code-hygiene-guard/SKILL.md",
-    "odylith-github-issue-triage/SKILL.md",
-    "odylith-github-release-closeout/SKILL.md",
     "odylith-guidance-behavior/SKILL.md",
     "odylith-discipline/SKILL.md",
 }
@@ -114,6 +112,18 @@ def test_live_claude_hook_scripts_match_bundle_mirror_content() -> None:
         ).read_text(encoding="utf-8")
 
 
+def test_claude_destructive_guard_assets_route_uninstall_to_cli() -> None:
+    paths = (
+        LIVE_CLAUDE_ROOT / "hooks" / "guard-destructive-bash.py",
+        PROJECT_ROOT_BUNDLE / ".claude" / "hooks" / "guard-destructive-bash.py",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "./.odylith/bin/odylith uninstall --repo-root ." in text
+        assert "raw deletion and hook bypasses are blocked" in text
+        assert "shutil\\.rmtree" in text
+
+
 def test_live_agents_bin_matches_bundle_mirror_content() -> None:
     live_helper = LIVE_AGENTS_ROOT / "bin" / "odylith-host-launcher.py"
     bundle_helper = PROJECT_ROOT_BUNDLE / ".agents" / "bin" / "odylith-host-launcher.py"
@@ -121,6 +131,23 @@ def test_live_agents_bin_matches_bundle_mirror_content() -> None:
     assert live_helper.is_file()
     assert bundle_helper.is_file()
     assert live_helper.read_text(encoding="utf-8") == bundle_helper.read_text(encoding="utf-8")
+
+
+def test_generated_python_project_assets_do_not_pollute_host_ruff_lint() -> None:
+    generated_python_assets = (
+        PROJECT_ROOT_BUNDLE / ".agents" / "bin" / "odylith-host-launcher.py",
+        *(PROJECT_ROOT_BUNDLE / ".claude" / "hooks").glob("*.py"),
+        LIVE_AGENTS_ROOT / "bin" / "odylith-host-launcher.py",
+        *(LIVE_CLAUDE_ROOT / "hooks").glob("*.py"),
+    )
+
+    assert generated_python_assets
+    for path in generated_python_assets:
+        lines = path.read_text(encoding="utf-8").splitlines()
+        assert lines[:2] == ["#!/usr/bin/env python3", "# ruff: noqa"], (
+            f"generated host asset can leak into consumer `ruff check .`: "
+            f"{path.relative_to(REPO_ROOT)}"
+        )
 
 
 def test_install_and_contract_entry_modules_start_with_docstrings() -> None:

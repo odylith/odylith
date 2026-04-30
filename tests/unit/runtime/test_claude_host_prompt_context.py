@@ -66,7 +66,9 @@ def test_claude_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pa
     )
     observation = dict(bundle["observation"])
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Claude has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
     assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"
     assert observation["memory_summary"]["visibility_complaint"] is True
@@ -95,7 +97,7 @@ def test_claude_prompt_system_message_replays_pending_chat_block(tmp_path: Path)
 
     assert rendered == (
         "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---\n\n"
-        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
     )
 
 
@@ -160,7 +162,7 @@ def test_claude_prompt_system_message_prefers_pending_ambient_history_over_obser
         "\n"
         "**Odylith Observation:** Claude prompt should not hide the stronger ambient beat.\n"
         "\n---\n\n"
-        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
     )
 
 
@@ -279,7 +281,7 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery recovery:")
     assert "Odylith Observation:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "systemMessage" not in payload
 
@@ -317,7 +319,7 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
     assert exit_code == 0
     output = capsys.readouterr().out
     assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
-    assert "\n---\n\n**Odylith Assist:** kept Odylith visible in this chat" in output
+    assert "\n---\n\n**Odylith Assist:** surfaced this visibility issue" in output
     assert output.rstrip().rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
     assert not output.lstrip().startswith("{")
 
@@ -365,7 +367,7 @@ def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert "**Odylith Assist:** kept Odylith visible in this chat" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Assist:** surfaced this visibility issue" in payload["hookSpecificOutput"]["additionalContext"]
     snapshot = delivery_ledger.delivery_snapshot(
         repo_root=tmp_path,
         host_family="claude",

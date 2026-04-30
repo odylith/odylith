@@ -105,6 +105,11 @@ answers a different question: **what is actually going on here, what rival
 explanation could still be true, and what check would discriminate between
 them?**
 
+That is why Tribunal matters to the Odylith claim. It changes the failure mode
+from "the model guessed and continued" into "the system opened a grounded case
+before action." Same model, better operating frame: explicit evidence, rival
+diagnosis, risk if wrong, discriminating next check, and bounded remediation.
+
 Tribunal does not run on every turn and it is not the first-turn grounding
 path. It runs inside higher-level delivery-intelligence flows such as
 `odylith sync`, governed surface refresh, and evaluation or benchmark paths
@@ -143,7 +148,7 @@ generic summarizer:
 8. The case queue, systemic brief, and correction packet feed the shell,
    Compass, Registry, benchmarks, and downstream intervention surfaces.
 
-More on Tribunal and the product control plane:
+More on the Tribunal claim, pipeline, and product control plane:
 [Tribunal and Remediation](odylith/runtime/TRIBUNAL_AND_REMEDIATION.md),
 [Tribunal Component Spec](odylith/registry/source/components/tribunal/CURRENT_SPEC.md),
 and [Odylith Product Components](odylith/PRODUCT_COMPONENTS.md)

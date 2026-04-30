@@ -46,6 +46,38 @@ def test_lifecycle_plan_verbose_prints_full_overlap_for_all_lifecycle_commands(c
     assert "hidden; rerun with --verbose" not in output
 
 
+def test_lifecycle_plan_write_mode_hides_internal_step_graph_without_verbose(capsys) -> None:
+    plan = SimpleNamespace(
+        command="install",
+        headline="Preview the Odylith install lifecycle.",
+        steps=(
+            SimpleNamespace(
+                label="Materialize managed guidance.",
+                mutation_classes=("managed_guidance",),
+                paths=("AGENTS.md", "CLAUDE.md"),
+                detail="Internal install detail.",
+            ),
+            SimpleNamespace(
+                label="Stage managed runtime.",
+                mutation_classes=("runtime_state",),
+                paths=(".odylith/install.json",),
+                detail="Internal runtime detail.",
+            ),
+        ),
+        dirty_overlap=(),
+        notes=("Dry-run detail.",),
+    )
+
+    cli._print_lifecycle_plan(plan, dry_run=False, verbose=False)  # noqa: SLF001
+    output = capsys.readouterr().out
+
+    assert "install plan" in output
+    assert "- steps: 2 planned; progress follows." in output
+    assert "Materialize managed guidance" not in output
+    assert "mutation_classes:" not in output
+    assert "Dry-run detail." not in output
+
+
 def test_dirty_overlap_summary_groups_runtime_truth_guidance_generated_and_other_paths() -> None:
     summary = summarize_dirty_overlap(
         (

@@ -138,3 +138,20 @@
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
 - Fix Commit/PR: `2026/freedom/v0.1.10` sync-operator hardening series.
+
+- 0.1.12 Follow-up: The downstream 0.1.11 recovery transcript showed the next
+  UX class after help, heartbeat, and dirty-overlap gating: normal write-mode
+  `sync`, install, and dashboard refresh still printed the full internal step
+  graph before doing useful work. That made a healthy command look like a wall
+  of implementation detail and hid the short operator story.
+
+- 0.1.12 Follow-up Solution: Normal write-mode lifecycle commands now print a
+  compact summary and live progress only. The detailed step graph, mutation
+  classes, path previews, and dry-run notes remain available through `--dry-run`
+  or `--verbose`.
+
+- 0.1.12 Follow-up Regression Tests Added:
+  `tests/unit/test_lifecycle_dirty_overlap.py` covers compact non-dry-run
+  lifecycle plan output. `tests/unit/runtime/test_sync_cli_compat.py` covers
+  compact non-dry-run sync/dashboard plan output while preserving detailed
+  dry-run and verbose behavior.

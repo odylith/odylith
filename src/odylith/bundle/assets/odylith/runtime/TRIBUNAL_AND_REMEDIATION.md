@@ -1,78 +1,96 @@
 # Tribunal and Remediation
 
-Tribunal is Odylith's structured diagnosis engine. It runs after Odylith has
-grounded the repo and delivery intelligence has shaped the current posture, but
-before the agent treats a blocked or ambiguous scope as safe to continue. Its
-job is not to execute a fix. Its job is to turn an uncertain posture into an
-evidence-backed case: the leading explanation, the strongest rival explanation,
-the risk if that read is wrong, and the next check that would discriminate
-between the two.
+Tribunal is Odylith's judgment layer for the moments where raw coding agents
+most often get expensive: the repo is no longer a cold start, there is enough
+evidence to act, but the situation is still ambiguous enough that a confident
+move can be wrong.
 
-Tribunal is deliberately not the first-turn grounding path. The Context Engine
-answers what repo facts are true and relevant. The Execution Engine answers
-what move is admissible next. Tribunal answers why a live scope is blocked,
-contested, stale, unsafe to close, or otherwise not a clear path.
+That is the product claim. Odylith is not better because Tribunal sounds more
+elaborate than a normal agent response. It is better when Tribunal changes the
+failure mode from "the model guessed and continued" into "the system opened a
+case, separated the leading explanation from the strongest rival, named the
+risk if wrong, and produced the next discriminating check before action."
 
-## When Tribunal Runs
+Tribunal is one of Odylith's core differentiators because it turns engineering
+judgment into an inspectable artifact. It does not replace model quality, the
+Context Engine, the Execution Engine, or validation. It sits between them:
+grounded repo truth flows in, adversarial diagnosis happens over the same
+evidence, and a bounded remediation packet flows out.
 
-Tribunal is usually invoked from higher-level Odylith flows rather than a
-standalone operator command:
+## The Failure Mode Tribunal Attacks
 
-- `odylith sync` after deterministic posture and delivery intelligence refresh
-- governed surface refresh when the shell needs diagnosis-backed queue state
-- evaluation and benchmark paths that need to prove diagnosis quality
-- delivery-intelligence flows that need a case queue or systemic brief
+Ordinary coding agents do not usually fail because they cannot produce text.
+They fail because they keep moving after the situation stops being simple:
 
-It should not run just to narrate a chat turn, refresh a hot-path visibility
-status, or replace deterministic grounding. Cached Tribunal summaries may feed
-downstream surfaces, but a fresh provider-backed Tribunal pass is a deliberate
-runtime event.
+- a workstream looks done, but proof has not caught up
+- a component changed, but ownership or blast radius is unclear
+- a fix passed one local check, but the live blocker may have the same
+  fingerprint
+- a generated surface says one thing while source truth says another
+- a policy boundary blocks the obvious next command
+- a prior failure has a lesson, but the current session does not remember it
+- a broad task has several plausible causes and the agent picks the convenient
+  one
 
-## Candidate Selection
+Tribunal exists for that edge. It slows the agent down only when the scope is
+live actionable and not a clear path. The goal is not ceremony. The goal is to
+make uncertainty explicit before the agent commits to a diagnosis, closeout, or
+remediation path.
 
-Tribunal starts from delivery-intelligence scopes and keeps only scopes that
-are live actionable, belong to a supported type, and are not already clear path.
-The supported scope types are:
+## How It Fits The Odylith Stack
 
-- workstream
-- component
-- diagram
+The surrounding Odylith systems answer different questions:
 
-Eligible scopes are ranked by a stable priority band:
+- Context Engine: what repo facts are true and relevant?
+- Delivery Intelligence: which scopes are live, risky, stale, blocked, or
+  execution-outrunning-governance?
+- Execution Engine: what is the next admissible move under the current
+  contract?
+- Tribunal: what is the best explanation for this ambiguous posture, what rival
+  could still be true, and what check would distinguish them?
+- Remediator: what bounded correction packet can be handed to an operator or
+  execution lane with validation, rollback, and stale guards?
 
-- scope type
-- scenario priority
-- severity
-- decision debt
-- governance lag
-- blast radius severity
-- stable scope identity
+Tribunal is therefore not the first-turn grounding path and not a chat
+narration feature. It normally runs inside higher-level flows such as
+`odylith sync`, governed surface refresh, delivery-intelligence refresh,
+evaluation, and benchmark proof. Cached Tribunal summaries may feed surfaces
+and intervention logic, but a fresh provider-backed Tribunal run is a deliberate
+diagnosis event, not a hot-path flourish.
 
-The focused queue is built in two passes. First, Tribunal covers distinct
-scenario classes so one noisy failure mode does not hide every other kind of
-risk. Then it fills the remaining focus slots by priority. The selection
-summary records what was shown, what overflowed, and why.
+## The End-To-End Flow
 
-## Dossier Construction
+1. Delivery intelligence refreshes deterministic posture from repo-local truth,
+   runtime ledgers, Compass history, Registry specs, Radar workstreams, Atlas
+   diagrams, Casebook bugs, and generated surface state.
+2. Tribunal selects only supported live-actionable scopes: workstreams,
+   components, and diagrams that are not already clear path.
+3. It ranks candidates by scope type, scenario priority, severity, decision
+   debt, governance lag, blast radius severity, and stable identity
+   tie-breakers.
+4. It builds a bounded dossier for each focused case. The dossier names the
+   subject, decision at stake, observations, evidence quality, proof refs,
+   explanation facts, and compact evidence items.
+5. Ten actors review the same dossier. They do not get separate stories or
+   hidden context. They contest one evidence set from different engineering
+   angles.
+6. The adjudicator synthesizes the actor memos into one case form: leading
+   explanation, strongest rival, risk if wrong, discriminating next check,
+   confidence, actor influence, queue row, and maintainer brief.
+7. Optional provider enrichment can refine only a narrow field set, and only
+   when the text cites grounded evidence. If the provider fails, times out, or
+   returns unsupported claims, the case degrades explicitly back to
+   deterministic reasoning.
+8. Remediator turns the adjudicated prescription into one correction packet
+   with action boundary, validation expectations, rollback notes, stale guards,
+   and approval state.
+9. The case queue, systemic brief, correction packets, and validation posture
+   feed `odylith/index.html`, Compass, Registry, benchmark proof, and
+   downstream intervention surfaces.
 
-For each focused scope, Tribunal builds a bounded case dossier. The dossier is
-the evidence substrate for the whole run. It includes:
+## The Actor Roster
 
-- case id and subject metadata
-- the decision at stake
-- observations derived from scope posture
-- baseline scenario and severity
-- evidence quality
-- normalized explanation facts
-- proof references and compact evidence items
-
-The same dossier goes to every actor and to any optional provider enrichment.
-That shared evidence set is the guardrail: disagreement is allowed, but each
-claim has to remain attached to named repo facts.
-
-## Actor Review
-
-Tribunal runs a fixed actor roster over the same dossier:
+Tribunal uses a fixed actor roster so diagnosis is repeatable and cacheable:
 
 - `observer`: summarizes grounded facts and visible state
 - `ownership_resolver`: tests ownership and authority claims
@@ -85,92 +103,108 @@ Tribunal runs a fixed actor roster over the same dossier:
 - `risk_analyst`: evaluates downside if the diagnosis is wrong
 - `prescriber`: narrows the result into a bounded next-action claim
 
-The actor roster is versioned. If the actor policy changes, cached reasoning
-can be invalidated instead of silently reusing old judgments under a new policy.
+The roster is versioned. If the actor policy changes, cached reasoning can be
+invalidated instead of silently reusing old judgments under a new policy.
 
-## Adjudication
+## What Makes It Different From Asking A Bigger Model?
 
-Adjudication turns the actor memos into one explicit case form. A Tribunal case
-records:
+A bigger model can often write a better guess. Tribunal is designed to make the
+guess harder to hide.
 
-- leading explanation
-- strongest rival
-- risk if wrong
-- discriminating next check
-- confidence
-- actor influence metadata
-- maintainer brief
-- queue row
-- correction-packet seed
+The important product differences are:
 
-The point is not to make the system sound more certain. The point is to make
-uncertainty inspectable. A good Tribunal case says what Odylith currently
-believes, what could still falsify that belief, and what bounded check or fix
-should happen next.
+- same evidence for every actor, rather than a free-form narrative drift
+- explicit rival explanation, rather than one polished answer
+- discriminating next check, rather than vague "investigate further" language
+- confidence tied to evidence and actor agreement
+- provider output treated as advisory and evidence-gated
+- cache reuse tied to evidence fingerprints, so stale reasoning expires
+- remediation packaged with validation and rollback instead of implied action
+- queue and systemic brief outputs that survive the current chat session
 
-## Provider Enrichment
+That is where the Odylith advantage can show up against an unguided agent. The
+same model, looking at the same repo, gets a better operating frame: grounded
+facts, structured disagreement, falsifiable diagnosis, and bounded recovery.
 
-Deterministic local reasoning is the baseline. External provider output is
-optional, advisory, and narrowly gated.
+## What Remediator Adds
 
-Provider enrichment may refine only these fields:
+Tribunal diagnoses. Remediator packages the next move.
 
-- `leading_explanation`
-- `strongest_rival`
-- `risk_if_wrong`
-- `discriminating_next_check`
-- `maintainer_brief`
+That separation matters. Without it, diagnosis tends to collapse directly into
+action, and the agent can skip over the boring parts that make a fix safe.
+Remediator turns a Tribunal prescription into a correction packet with:
 
-Provider text is accepted only when it cites grounded evidence items. If the
-provider times out, loses transport, or returns unsupported claims, Tribunal
-degrades explicitly back to deterministic reasoning. A failed provider pass is
-not silently blended into the case.
-
-Final payloads report whether the run was deterministic-only, provider-ready
-without validated enrichment, or hybrid with validated enrichment.
-
-## Cache Model
-
-Tribunal can reuse prior cases when the actor policy version, scope key,
-evidence fingerprint, and provider-attempt requirements still match. That keeps
-routine refreshes fast while still discarding stale reasoning when evidence or
-policy changes.
-
-## Remediator Handoff
-
-Tribunal diagnoses. Remediator packages the bounded correction.
-
-After adjudication, Remediator turns the prescription into one correction
-packet per case. The packet carries:
-
-- the proposed action boundary
-- validation expectations
+- the exact action boundary
+- required validation
 - rollback notes
 - stale guards
 - approval and delegation state
+- evidence links back to the case
 
 The caller still owns whether and how corrective action is applied. Tribunal
 and Remediator make the next move explicit and auditable; they do not bypass
 operator approval or target-repo validation.
 
-## Outputs And Surfaces
+## Where Tribunal Wins
 
-The Tribunal payload includes:
+Tribunal is most valuable when the cost of being confidently wrong is higher
+than the cost of a structured diagnosis pass:
+
+- closeout decisions where "done" requires proof, not vibes
+- live blocker recovery where the old failure fingerprint may still be present
+- cross-surface drift between source truth and generated shell views
+- ownership disputes across components, diagrams, and workstreams
+- policy-boundary conflicts where an obvious command is not admissible
+- benchmark or evaluation failures that need an explanation, not just another
+  retry
+- repeated failure patterns that should become Casebook memory, doctrine, or
+  validation pressure
+
+In those cases, Tribunal gives Odylith a way to improve outcomes without
+claiming magical model superiority. It improves the operating policy around the
+model.
+
+## Where Tribunal Is Not The Answer
+
+Tribunal is not supposed to run for everything.
+
+It is the wrong tool for:
+
+- first-turn repo grounding
+- simple clear-path edits
+- ordinary narration in the chat loop
+- hot-path visibility checks
+- replacing target-repo tests
+- accepting provider claims without evidence
+- executing corrective action by itself
+
+If Tribunal ran constantly, it would become ceremony. Its value comes from
+selective use at ambiguity boundaries where structured judgment changes the
+next move.
+
+## Output Contract
+
+A Tribunal payload can include:
 
 - selected cases and full dossiers
 - actor memos and adjudication records
+- leading explanation and strongest rival
+- risk if wrong and discriminating next check
+- confidence and actor influence metadata
+- provider status and validation errors
 - case queue rows
 - systemic brief
-- provider status and validation errors
 - cache stats
 - correction packets
 
-Those outputs feed `odylith/index.html`, Compass, Registry, delivery
-intelligence, benchmark proof, and downstream intervention surfaces. The shell
-may show compressed queue rows or systemic brief text, but those are derived
-views. The full case remains the debugging surface for why a diagnosis changed.
+The shell may show compressed queue rows or systemic brief text, but those are
+derived views. The full case remains the debugging surface for why a diagnosis
+changed.
 
-Primary operator commands:
+## Operator Contract
+
+Operators usually encounter Tribunal through the normal Odylith surface and
+refresh commands:
 
 ```bash
 odylith sync --repo-root . --force

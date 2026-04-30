@@ -435,6 +435,12 @@ claiming ML calibration.
   surface rather than the primary intervention moment. It should recover a
   missed late Observation and may pair that with a shared closeout Assist line
   when the closeout-side bundle is eligible.
+  Claude Stop must never use the blocking visible-delivery payload path for
+  this recovery lane: Claude renders that path as Stop-hook failure/control
+  transcript noise instead of a clean product beat. Claude Stop may return a
+  `systemMessage` for host context, but visibility fallback proof still needs
+  normal assistant-rendered Markdown or a host-visible channel that is proven
+  visible in the active session.
 - `post_edit_checkpoint` and `post_bash_checkpoint`
   are the primary visible intervention lanes. They may upgrade an earned
   observation into a proposal by attaching concrete changed-path evidence and
@@ -800,6 +806,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-30: Removed Claude Stop's blocking visible-delivery fallback so chat-visibility recovery no longer appears as Claude Code Stop hook error or Stop says transcript noise. Claude Stop may still return host context, but chat-visible proof requires normal assistant-rendered Markdown or a proven visible host channel. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-25: Captured and fixed `CB-127`: plain help/show passthrough prompts now suppress live intervention narration and replay, raw CLI help stdout is excluded from fact/evidence scoring, and generic topology Observation copy names the current request instead of treating command catalogs as conversation truth. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-127`)
 - 2026-04-28: Moved prompt-visible Assist continuity into shared host prompt support so Codex prompt context, Claude prompt context, Claude prompt teaser, and manual visible-intervention fallback all render the same Assist line for normal non-passthrough prompts while help/show route locks remain narration-free. This closes a v0.1.12 slop class where the manual fallback knew how to stay visible but the real prompt-submit hooks could still go silent. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-122`)
 - 2026-04-14: Promoted Governance Intervention Engine into a first-class Registry component so Codex and Claude can share one portable conversation observation and governed proposal runtime instead of host-local intervention heuristics. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))

@@ -22,11 +22,11 @@ def test_visible_delivery_already_present_requires_the_same_visible_labels() -> 
             "**Odylith Assist:** kept this grounded."
         ),
     )
-    assert not visible_delivery_runtime.visible_delivery_already_present(
+    assert visible_delivery_runtime.visible_delivery_already_present(
         last_assistant_message="Implemented the fix.\n\n**Odylith Observation:** The signal is real.",
         visible_text="---\n**Odylith Observation:** The signal is real.\n---",
     )
-    assert not visible_delivery_runtime.visible_delivery_already_present(
+    assert visible_delivery_runtime.visible_delivery_already_present(
         last_assistant_message="Implemented the fix.\n\n---\n**Odylith Observation:** The signal is real.\n---",
         visible_text="---\n**Odylith Observation:** The signal is real.\n---",
     )
@@ -45,7 +45,7 @@ def test_visible_delivery_already_present_requires_the_same_visible_labels() -> 
             "**Odylith Assist:** New closeout."
         ),
     )
-    assert not visible_delivery_runtime.visible_delivery_already_present(
+    assert visible_delivery_runtime.visible_delivery_already_present(
         last_assistant_message=(
             "Implemented the fix.\n\n"
             "**Odylith Observation:** The signal is real.\n\n"
@@ -56,7 +56,7 @@ def test_visible_delivery_already_present_requires_the_same_visible_labels() -> 
             "**Odylith Assist:** kept this grounded."
         ),
     )
-    assert not visible_delivery_runtime.visible_delivery_already_present(
+    assert visible_delivery_runtime.visible_delivery_already_present(
         last_assistant_message=(
             "Implemented the fix.\n\n"
             "---\n\n"
@@ -67,6 +67,18 @@ def test_visible_delivery_already_present_requires_the_same_visible_labels() -> 
         visible_text=(
             "**Odylith Observation:** The signal is real.\n\n"
             "**Odylith Assist:** kept this grounded."
+        ),
+    )
+    assert visible_delivery_runtime.visible_delivery_already_present(
+        last_assistant_message=(
+            "---\n\n"
+            "Odylith Observation: This request is making architecture, ownership, or boundary claims.\n\n"
+            "---"
+        ),
+        visible_text=(
+            "---\n\n"
+            "**Odylith Observation:** This request is making architecture, ownership, or boundary claims.\n\n"
+            "---"
         ),
     )
     assert visible_delivery_runtime.visible_delivery_already_present(

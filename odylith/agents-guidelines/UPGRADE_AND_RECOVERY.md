@@ -24,8 +24,30 @@
 - In consumer repos, do not run the mutating commands above as a self-directed Odylith fix. Capture the exact failing command, touched paths, and symptoms for the maintainer instead.
 - Upgrade should switch versions only after validation succeeds.
 - Recovery should restore a healthy install without manual file surgery.
+- For the 0.1.11 `odylith component register` drift where
+  `odylith/registry/source/component_registry.v1.json` contains
+  `category: detected` or `qualification: detected`, the supported recovery
+  is upgrade to 0.1.12 or later and then run
+  `./.odylith/bin/odylith doctor --repo-root . --repair`. Do not tell
+  operators to hand-edit the Registry JSON, do not call that a CLI-first
+  override, and do not claim `doctor --repair` cannot help for this known
+  repair lane.
+- For 0.1.11 Claude visibility noise already written into consumer Compass
+  streams, the supported recovery is also upgrade to 0.1.12 or later and then
+  run `./.odylith/bin/odylith doctor --repo-root . --repair`. The repair
+  removes stale Claude intervention events that mention nonlocal governance IDs
+  absent from local Radar/Casebook truth; rerun sync or the relevant dashboard
+  refresh afterward if generated browser payloads still contain old timelines.
+- Plain-English uninstall requests must route to
+  `./.odylith/bin/odylith uninstall --repo-root .`. Run that command directly
+  when the operator explicitly asks to uninstall; do not pause for a
+  commit/snapshot preflight, do not claim uninstall removes `.odylith/`, and
+  do not remove Odylith with `rm -rf`, Python `shutil.rmtree`, or host-hook
+  bypass instructions.
 - Use the reset-local-state repair path when cache, tuning, or derived runtime state looks compromised.
-- `off`/`on` are the lightweight switch for coding agents; uninstall removes `.odylith/` runtime integration but keeps the `odylith/` context tree.
+- `off`/`on` are the lightweight switch for coding agents; uninstall detaches
+  repo-root guidance, removes the local `odylith/` product surface, and
+  preserves `.odylith/` launcher and audit state.
   `off` detaches Odylith-first repo-root guidance so the current coding host falls back to the surrounding repo's default behavior; `on` restores Odylith as the default first path.
 - Install, upgrade, reinstall, and `doctor --repair` may refresh the managed
   project-root host assets under `.claude/`, `.codex/`, and `.agents/skills/`
@@ -57,7 +79,7 @@
 - Product-repo maintainer mode:
   - pinned dogfood posture stays on the tracked pinned runtime for
     shipped-product proof
-  - detached `source-local` posture is the explicit maintainer-only override
+  - detached `source-local` posture is outside the installed consumer lane
     for live-source execution
   - detached `source-local` is not a substitute for pinned dogfood proof or
     release posture

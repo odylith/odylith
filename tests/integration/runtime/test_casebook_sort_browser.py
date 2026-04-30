@@ -163,8 +163,16 @@ def test_casebook_workstream_action_chips_omit_radar_prefix(browser_context) -> 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
-def test_casebook_github_issue_action_chip_links_to_public_issue(browser_context) -> None:  # noqa: ANN001
+def test_casebook_github_issue_signal_opens_in_new_browser_tab(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
+    context.route(
+        "https://github.com/**",
+        lambda route: route.fulfill(
+            status=200,
+            content_type="text/html",
+            body="<!doctype html><html><body><h1>Mock GitHub issue</h1></body></html>",
+        ),
+    )
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
     response = page.goto(base_url + "/odylith/index.html?tab=casebook&bug=CB-136", wait_until="domcontentloaded")
     assert response is not None and response.ok
@@ -172,17 +180,35 @@ def test_casebook_github_issue_action_chip_links_to_public_issue(browser_context
     casebook = page.frame_locator("#frame-casebook")
     casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     casebook.locator('button.bug-row.active[data-bug="CB-136"]').wait_for(timeout=15000)
-    labels = casebook.locator("#detailPane a.action-chip").evaluate_all(
-        """nodes => nodes.map((node) => ({
+    head_actions = casebook.locator("#detailPane .detail-head .detail-links a.action-chip").evaluate_all(
+        """nodes => nodes.map((node) => node.getAttribute("href") || "")"""
+    )
+    assert "https://github.com/odylith/odylith/issues/21" not in head_actions
+
+    signal = casebook.locator(".brief-card", has_text="Signal")
+    issue = signal.locator('a.action-chip[href="https://github.com/odylith/odylith/issues/21"]')
+    issue.wait_for(timeout=15000)
+    issue_attrs = issue.evaluate(
+        """node => ({
           label: (node.textContent || "").trim(),
           href: node.getAttribute("href") || "",
           target: node.getAttribute("target") || "",
-        }))"""
+          rel: node.getAttribute("rel") || "",
+        })"""
     )
 
-    assert labels[0] == {
-        "label": "odylith/odylith#21",
+    assert issue_attrs == {
+        "label": "GitHub issue: odylith/odylith#21",
         "href": "https://github.com/odylith/odylith/issues/21",
-        "target": "_top",
+        "target": "_blank",
+        "rel": "noopener noreferrer",
     }
+    with page.expect_popup() as popup_info:
+        issue.click()
+    popup = popup_info.value
+    popup.wait_for_load_state("domcontentloaded")
+    assert popup.locator("h1").inner_text().strip() == "Mock GitHub issue"
+    assert popup.url == "https://github.com/odylith/odylith/issues/21"
+    popup.close()
+
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)

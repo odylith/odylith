@@ -632,7 +632,10 @@ def _is_current_visibility_status_fact(fact: Mapping[str, Any]) -> bool:
     return bool(
         "chat visibility" in text
         or "chat-visible" in text
+        or "odylith note has reached this chat" in text
+        or "odylith note stated directly" in text
         or "visible odylith beat" in text
+        or "clean odylith beat" in text
         or "visible odylith block" in text
         or "visible odylith moment" in text
         or "visibility proof" in text

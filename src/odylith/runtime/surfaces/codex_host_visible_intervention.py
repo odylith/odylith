@@ -1,4 +1,4 @@
-"""Codex wrapper for assistant-rendered Odylith visible fallback."""
+"""Codex wrapper for assistant-rendered Odylith visible recovery."""
 
 from __future__ import annotations
 

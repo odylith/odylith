@@ -583,7 +583,7 @@ def test_benchmark_corpus_keeps_evidence_backed_odylith_assist_contract() -> Non
     assert any("mid-task narration task-first" in rule or "weave Odylith facts into normal updates" in rule for rule in rules)
     assert any("Odylith Insight" in rule and "Odylith History" in rule and "Odylith Risks" in rule for rule in rules)
     assert any("at most one short Odylith Assist line" in rule for rule in rules)
-    assert any("explicit visibility feedback" in rule and "visible fallback" in rule for rule in rules)
+    assert any("explicit visibility feedback" in rule and "visible recovery" in rule for rule in rules)
     assert any("bold Markdown label" in rule for rule in rules)
     assert any("Lead with the user win" in rule and "updated governance IDs inline" in rule for rule in rules)
     assert any("affected governance-contract IDs" in rule for rule in rules)

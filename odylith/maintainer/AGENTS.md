@@ -80,6 +80,15 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Keep maintainer and dogfood progress updates task-first. Do not narrate
   startup, routing, packet-selection, or degraded-attempt history unless a
   literal command, a live blocker, or a runtime-lane distinction matters.
+- In maintainer mode, any product surface change that can affect
+  already-installed consumer repos must be assessed through the migration
+  observer before release closeout. This is a maintainer release-gate
+  obligation only: do not add it to consumer-safe `odylith/agents-guidelines/`,
+  shared `odylith/skills/`, or bundled install assets. Run
+  `odylith release migration-gate --repo-root . --target-version <version>`
+  and complete the exact emitted
+  `migration-observer:<version>:<surface>:<fingerprint>` Radar marker in
+  maintainer governance before claiming release readiness.
 - Keep Odylith ambient by default during work. If a routing or governance fact
   materially changes the next move, weave it into the update first and reserve
   explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels
@@ -181,14 +190,14 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 ## Routing
 - Shared anti-slop and decomposition policy: `../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md`
 - Maintainer coding standards: `agents-guidelines/CODING_STANDARDS.md`
-- GitHub issue intake and release closeout: `../agents-guidelines/GITHUB_ISSUE_PIPELINE.md`
+- GitHub issue intake and release closeout: `agents-guidelines/GITHUB_ISSUE_PIPELINE.md`
 - Release benchmark publishing: `agents-guidelines/RELEASE_BENCHMARKS.md`
 - Canonical release order: `../MAINTAINER_RELEASE_RUNBOOK.md`
 
 ## Skills
 - `../skills/odylith-code-hygiene-guard/`
-- `../skills/odylith-github-issue-triage/`
-- `../skills/odylith-github-release-closeout/`
+- `skills/odylith-github-issue-triage/`
+- `skills/odylith-github-release-closeout/`
 - `skills/fail-closed-code-hygiene/`
 - `skills/release-benchmark-publishing/`
 

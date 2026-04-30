@@ -553,7 +553,7 @@ def _load_catalog(
             field="related_backlog",
             context=context,
             errors=errors,
-            required=True,
+            required=False,
             resolve_path=path_resolver.resolve,
             repo_path_for=path_resolver.repo_path,
         )
@@ -563,7 +563,7 @@ def _load_catalog(
             field="related_plans",
             context=context,
             errors=errors,
-            required=True,
+            required=False,
             resolve_path=path_resolver.resolve,
             repo_path_for=path_resolver.repo_path,
         )
@@ -573,7 +573,7 @@ def _load_catalog(
             field="related_docs",
             context=context,
             errors=errors,
-            required=True,
+            required=False,
             resolve_path=path_resolver.resolve,
             repo_path_for=path_resolver.repo_path,
         )

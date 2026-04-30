@@ -40,6 +40,19 @@ verified release in one step, use:
 ./.odylith/bin/odylith reinstall --repo-root . --latest
 ```
 
+To check for a newer release without upgrading:
+
+```bash
+./.odylith/bin/odylith version --repo-root . --check-upgrade
+```
+
+That remote advisory check is cached for seven days by default under
+`.odylith/state/upgrade-check.v1.json`. Use `--force-upgrade-check` to bypass
+the cache, `--upgrade-check-offline` to read cache only, or
+`ODYLITH_UPGRADE_CHECK=off` to disable remote advisory checks in locked-down
+enterprise networks. The check is advisory only; `odylith upgrade` still does
+the signed release verification.
+
 ## What should I use for repair?
 
 ```bash
@@ -70,9 +83,10 @@ path.
 ./.odylith/bin/odylith uninstall --repo-root .
 ```
 
-That detaches the runtime integration under `.odylith/` and removes the
-Odylith block from supported repo-root guidance files such as `AGENTS.md` and
-`CLAUDE.md`, but leaves the `odylith/` context tree in place.
+That removes the local `odylith/` product surface and detaches Odylith blocks
+from supported repo-root guidance files such as `AGENTS.md` and `CLAUDE.md`.
+It preserves `.odylith/` launcher and audit state so the lifecycle command can
+finish cleanly. Do not uninstall with raw `rm` or Python deletion.
 
 ## What does Odylith own in this repository?
 

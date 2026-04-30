@@ -46,7 +46,7 @@
 - If Odylith is not installed yet and no repo-local bootstrap launcher exists, rerun the hosted installer from the repo root instead of cloning a second Odylith checkout:
   `curl -fsSL https://odylith.ai/install.sh | bash`
 - Use `./.odylith/bin/odylith off --repo-root .` and `./.odylith/bin/odylith on --repo-root .` to toggle Odylith guidance for coding agents without removing the runtime. `off` restores default coding-agent behavior for the repo; `on` restores Odylith as the default first path.
-- Use `./.odylith/bin/odylith uninstall --repo-root .` to detach runtime integration while preserving both `odylith/` and `.odylith/`.
+- Use `./.odylith/bin/odylith uninstall --repo-root .` to remove the local `odylith/` product surface, detach repo-root guidance, and preserve `.odylith/` launcher and audit state.
 
 ## Repo Integration Contract
 
@@ -119,6 +119,19 @@
   stages the managed runtime side-by-side, health-checks it, and atomically
   switches `.odylith/runtime/current`.
 - `odylith upgrade` reports explicitly whether it moved to a new version, was already current, or only advanced the repo pin, and it prints the release link plus short highlights when that metadata is available.
+- `odylith version --check-upgrade` performs a remote advisory check for the
+  latest release and writes a cache under
+  `.odylith/state/upgrade-check.v1.json`. The default retry interval is seven
+  days so routine version checks do not repeatedly ping the network.
+- Plain `odylith version` does not make a remote request; it only shows a
+  cached upgrade advisory if one already exists. Use `--force-upgrade-check`
+  to bypass the cache and `--upgrade-check-offline` to read cache only.
+- Enterprise and offline environments can set `ODYLITH_UPGRADE_CHECK=off` to
+  disable remote advisory checks, `ODYLITH_UPGRADE_CHECK_URL` to point at an
+  approved mirror, `ODYLITH_UPGRADE_CHECK_INTERVAL_HOURS` to tune cadence, and
+  `ODYLITH_UPGRADE_CHECK_TIMEOUT_SECONDS` to keep proxy-filtered checks short.
+  Remote advisory failure is non-fatal; `odylith upgrade` remains the signed
+  asset verification path.
 - Successful consumer upgrade or reinstall refreshes the local shell through the narrow dashboard-refresh path so the browser surface stays current without a full governance sync.
 - A previously staged version directory is reused only when its local runtime
   verification marker still matches the newly verified release evidence;
@@ -145,8 +158,9 @@
 - Poisoned-local-state repair path: `./.odylith/bin/odylith doctor --repo-root . --repair --reset-local-state`
 - Temporary agent-off switch: `./.odylith/bin/odylith off --repo-root .`
 - Re-enable switch: `./.odylith/bin/odylith on --repo-root .`
-- Uninstall preserves customer-owned `odylith/` truth, preserved local
-  `.odylith/` state, and only removes the Odylith block from supported root
-  guidance files such as `AGENTS.md` and `CLAUDE.md`.
-- Do not delete customer-owned Odylith truth, context, or local operational history to "clean" an install.
+- Uninstall removes the consumer repo's visible `odylith/` tree and removes
+  the Odylith block from supported root guidance files such as `AGENTS.md` and
+  `CLAUDE.md`. It preserves hidden `.odylith/` launcher and audit state so the
+  repo can still report version posture or reinstall cleanly.
+- Do not delete hidden `.odylith/` local operational history to "clean" an install.
 - Do not ask users to clone Odylith for installation.

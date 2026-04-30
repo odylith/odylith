@@ -216,6 +216,35 @@ def test_print_execution_plan_verbose_shows_full_dirty_overlap(capsys) -> None: 
     assert "hidden; rerun with --verbose" not in output
 
 
+def test_print_execution_plan_write_mode_hides_internal_step_graph_without_verbose(capsys) -> None:  # noqa: ANN001
+    plan = sync_workstream_artifacts.ExecutionPlan(
+        headline="Sync governed surfaces.",
+        steps=(
+            sync_workstream_artifacts.ExecutionStep(
+                label="Validate Registry contract.",
+                mutation_classes=("repo_owned_truth",),
+                paths=("odylith/registry/source/component_registry.v1.json",),
+            ),
+            sync_workstream_artifacts.ExecutionStep(
+                label="Render Registry.",
+                mutation_classes=("generated_surfaces",),
+                paths=("odylith/registry/registry.html", "odylith/registry/registry-payload.v1.js"),
+            ),
+        ),
+        dirty_overlap=(),
+        notes=("Dry-run previews the full step graph.",),
+    )
+
+    sync_workstream_artifacts._print_execution_plan("workstream sync", plan, dry_run=False, verbose=False)  # noqa: SLF001
+    output = capsys.readouterr().out
+
+    assert "workstream sync plan" in output
+    assert "- steps: 2 planned; progress follows." in output
+    assert "Validate Registry contract" not in output
+    assert "mutation_classes:" not in output
+    assert "Dry-run previews the full step graph." not in output
+
+
 def test_context_engine_defaults_to_current_runtime_without_workspace_opt_in(tmp_path: Path, monkeypatch) -> None:
     candidate = tmp_path / ".venv" / "bin" / "python"
     candidate.parent.mkdir(parents=True, exist_ok=True)

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from odylith.install import migration_runtime
+from odylith.install import migration_observer, migration_runtime
 from odylith.install.value_engine_migration import (
     MIGRATION_ID,
     VALUE_CORPUS_RELATIVE_PATH,
@@ -99,6 +99,15 @@ def test_registered_value_engine_definition_has_release_gate_fixture_coverage() 
     assert definition.introduced_version == "0.1.11"
     assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
     assert definition.automatic is True
+
+
+def test_every_registered_upgrade_migration_has_full_lifecycle_fixture_coverage() -> None:
+    expected_markers = set(MIGRATION_FIXTURE_COVERAGE_MARKERS)
+
+    for definition in migration_runtime.registered_migrations():
+        assert set(FIXTURE_COVERAGE_TOKENS).issubset(definition.coverage_fixtures)
+        for token in FIXTURE_COVERAGE_TOKENS:
+            assert f"{definition.migration_id}:{token}" in expected_markers
 
 
 def _decision_for(plan: migration_runtime.MigrationPlan, migration_id: str) -> migration_runtime.MigrationDecision:
@@ -604,6 +613,242 @@ def test_migration_required_with_registered_target_uses_value_engine_plan(tmp_pa
     assert "no registered migration" not in plan.blocked_reason
 
 
+def test_surface_migration_observer_classifies_consumer_visible_surface_paths(tmp_path: Path) -> None:
+    report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=(
+            "odylith/skills/odylith-sync/SKILL.md",
+            "src/odylith/runtime/surfaces/render_casebook_dashboard.py",
+            "src/odylith/install/agents.py",
+            "src/odylith/cli.py",
+            "README.md",
+            "odylith/radar/source/ideas/2026-04/generated.md",
+        ),
+    )
+
+    assert report.ok is False
+    assert {need.need_id for need in report.needs} == {
+        "browser-surfaces",
+        "guidance-and-skills",
+        "install-managed-assets",
+        "operator-cli-contracts",
+        "public-docs-and-release-guidance",
+    }
+    assert "odylith/radar/source/ideas/2026-04/generated.md" not in report.changed_paths
+    assert all(need.governance_marker.startswith("migration-observer:0.1.12:") for need in report.needs)
+    assert all(need.governance_marker != need.marker_family for need in report.needs)
+    assert all(len(need.change_fingerprint) == 12 for need in report.needs)
+
+
+def test_surface_migration_observer_passes_only_completed_target_specific_records(tmp_path: Path) -> None:
+    first_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/skills/odylith-sync/SKILL.md",),
+    )
+    marker = first_report.needs[0].governance_marker
+    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
+    record.parent.mkdir(parents=True)
+    record.write_text(
+        "\n".join(
+            [
+                "status: finished",
+                "idea_id: B-999",
+                "title: Surface migration proof",
+                "",
+                "## Migration Observer Needs",
+                f"- `{marker}`",
+                "- stale prose token `migration-observer:0.1.11:guidance-and-skills` should not satisfy 0.1.12",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/skills/odylith-sync/SKILL.md",),
+    )
+    stale_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.13",
+        changed_paths=("odylith/skills/odylith-sync/SKILL.md",),
+    )
+
+    assert report.ok is True
+    assert report.blocked_need_ids == ()
+    assert report.records[0].workstream_id == "B-999"
+    assert stale_report.ok is False
+    assert stale_report.blocked_need_ids == ("guidance-and-skills",)
+
+
+def test_surface_migration_observer_requires_change_fingerprint_not_class_marker(tmp_path: Path) -> None:
+    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "class-marker.md"
+    record.parent.mkdir(parents=True)
+    record.write_text(
+        "\n".join(
+            [
+                "status: finished",
+                "idea_id: B-997",
+                "title: Class marker is not enough",
+                "",
+                "- `migration-observer:0.1.12:guidance-and-skills`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/skills/odylith-sync/SKILL.md",),
+    )
+
+    assert report.ok is False
+    assert report.needs[0].marker_family in report.records[0].markers
+    assert report.needs[0].governance_marker not in report.records[0].markers
+    assert report.blocked_need_ids == ("guidance-and-skills",)
+
+
+def test_surface_migration_observer_rechecks_same_path_when_content_changes(tmp_path: Path) -> None:
+    skill_path = tmp_path / "odylith" / "skills" / "sample" / "SKILL.md"
+    skill_path.parent.mkdir(parents=True)
+    skill_path.write_text("first guidance contract\n", encoding="utf-8")
+    first_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/skills/sample/SKILL.md",),
+    )
+    marker = first_report.needs[0].governance_marker
+    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
+    record.parent.mkdir(parents=True)
+    record.write_text(
+        "\n".join(
+            [
+                "status: finished",
+                "idea_id: B-996",
+                "title: Exact content marker",
+                "",
+                f"- `{marker}`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    covered_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/skills/sample/SKILL.md",),
+    )
+    skill_path.write_text("second guidance contract\n", encoding="utf-8")
+    changed_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/skills/sample/SKILL.md",),
+    )
+
+    assert covered_report.ok is True
+    assert changed_report.ok is False
+    assert changed_report.needs[0].governance_marker != marker
+    assert changed_report.blocked_need_ids == ("guidance-and-skills",)
+
+
+def test_surface_migration_observer_fingerprint_ignores_rendered_observer_markers(tmp_path: Path) -> None:
+    rendered = tmp_path / "odylith" / "radar" / "radar.html"
+    rendered.parent.mkdir(parents=True)
+    rendered.write_text(
+        "rendered release note migration-observer:0.1.12:browser-surfaces:aaaaaaaaaaaa\n"
+        '<script src="backlog-payload.v1.js?v=aaaaaaaaaaaa"></script>\n',
+        encoding="utf-8",
+    )
+    first_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/radar/radar.html",),
+    )
+    marker = first_report.needs[0].governance_marker
+    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "migration.md"
+    record.parent.mkdir(parents=True)
+    record.write_text(
+        "\n".join(
+            [
+                "status: finished",
+                "idea_id: B-995",
+                "title: Rendered observer marker proof",
+                "",
+                f"- `{marker}`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    rendered.write_text(
+        f"rendered release note {marker}\n"
+        '<script src="backlog-payload.v1.js?v=bbbbbbbbbbbb"></script>\n',
+        encoding="utf-8",
+    )
+
+    covered_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("odylith/radar/radar.html",),
+    )
+
+    assert covered_report.ok is True
+    assert covered_report.needs[0].governance_marker == marker
+    assert covered_report.blocked_need_ids == ()
+
+
+def test_surface_migration_observer_rejects_incomplete_records_with_matching_markers(tmp_path: Path) -> None:
+    first_report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("src/odylith/cli.py",),
+    )
+    marker = first_report.needs[0].governance_marker
+    record = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "queued.md"
+    record.parent.mkdir(parents=True)
+    record.write_text(
+        "\n".join(
+            [
+                "status: queued",
+                "idea_id: B-998",
+                "title: Queued surface migration assessment",
+                "",
+                f"- `{marker}`",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    report = migration_observer.observe_surface_migration_needs(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("src/odylith/cli.py",),
+    )
+
+    assert report.ok is False
+    assert report.records[0].completed() is False
+    assert report.blocked_need_ids == ("operator-cli-contracts",)
+
+
+def test_release_gate_blocks_surface_changes_without_completed_observer_record(tmp_path: Path) -> None:
+    report = migration_runtime.validate_release_migration_gate(
+        repo_root=tmp_path,
+        target_version="0.1.12",
+        changed_paths=("src/odylith/install/agents.py",),
+    )
+
+    assert report.ok is False
+    assert report.surface_migration_observer.blocked_need_ids == ("install-managed-assets",)
+    assert any("surface migration assessment incomplete" in item for item in report.blocked_manual_migrations)
+
+
 def test_release_gate_reports_registered_migrations_and_no_lifecycle_bypass() -> None:
     repo_root = Path(__file__).resolve().parents[3]
 
@@ -623,7 +868,14 @@ def test_release_gate_reports_registered_migrations_and_no_lifecycle_bypass() ->
     assert report.destructive_write_matrix["migration.legacy-product-conflict"][
         "test_legacy_odyssey_product_conflict_blocks_before_overwrite"
     ] is True
+    assert report.destructive_write_matrix["governance.first-install-authoring-order"][
+        "test_first_install_governance_records_can_be_created_in_every_surface_order"
+    ] is True
     assert "destructive_write_scenarios" in report.as_dict()
+    assert report.surface_migration_observer.ok is True
+    assert report.as_dict()["surface_migration_observer"]["schema_version"] == (
+        migration_observer.OBSERVER_SCHEMA_VERSION
+    )
 
 
 def test_release_gate_blocks_migration_required_manifest_without_definition(tmp_path: Path) -> None:

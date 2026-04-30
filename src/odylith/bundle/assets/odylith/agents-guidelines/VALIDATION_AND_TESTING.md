@@ -67,7 +67,8 @@
 - Guidance Behavior must stay lane-correct: consumer validation uses the
   installed repo-local launcher and diagnosis-first product-fix posture;
   pinned dogfood proves the shipped runtime in the product repo; detached
-  source-local proof is maintainer-only for current unreleased source changes.
+  source-local proof is outside the installed consumer lane for current
+  unreleased source changes.
   Do not treat a source-local pass as consumer or shipped-runtime proof.
 
 ## Odylith-Specific Regression Families

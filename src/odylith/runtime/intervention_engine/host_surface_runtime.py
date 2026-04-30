@@ -374,16 +374,11 @@ def codex_prompt_payload(
 
 
 def stop_payload(*, system_message: str = "", block_for_visible_delivery: bool = False) -> dict[str, Any]:
+    del block_for_visible_delivery
     message = visible_delivery_runtime.canonical_visible_delivery_text(system_message)
     if not message:
         return {}
-    payload: dict[str, Any] = {"systemMessage": message}
-    if block_for_visible_delivery:
-        reason = visible_delivery_runtime.stop_visible_delivery_reason(message)
-        if reason:
-            payload["decision"] = "block"
-            payload["reason"] = reason
-    return payload
+    return {"systemMessage": message}
 
 
 def claude_post_tool_payload(
@@ -444,7 +439,7 @@ def chat_visible_text(
     """Return the text Odylith expects the user to see.
 
     Hosts may keep hook `systemMessage` hidden. In that case the matching
-    assistant-visible fallback context tells the next assistant turn to render
+    assistant-visible recovery context tells the next assistant turn to render
     this same text. Claude `UserPromptSubmit` can also use plain stdout from
     the dedicated teaser hook when the host exposes it.
     """

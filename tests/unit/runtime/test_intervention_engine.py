@@ -307,8 +307,8 @@ def test_prompt_submit_status_review_prefers_current_visibility_truth_over_quote
     headlines = [row["headline"] for row in bundle["facts"]]
 
     assert bundle["candidate"]["stage"] == "teaser"
-    assert "this chat still has no visible Odylith moment" in bundle["candidate"]["teaser_text"]
-    assert "what Odylith is doing" in bundle["candidate"]["teaser_text"]
+    assert "no Odylith note has reached this chat yet" in bundle["candidate"]["teaser_text"]
+    assert "normal assistant text" in bundle["candidate"]["teaser_text"]
     assert "Radar already has B-096" not in bundle["candidate"]["teaser_text"]
     assert "Radar already has B-096" not in " ".join(headlines)
     assert bundle["proposal"]["eligible"] is False
@@ -358,8 +358,8 @@ def test_stop_summary_status_review_uses_current_visibility_observation_not_inhe
     headlines = [row["headline"] for row in bundle["facts"]]
 
     assert bundle["candidate"]["stage"] == "card"
-    assert "Odylith is on, but this chat still has no visible Odylith moment." in bundle["candidate"]["markdown_text"]
-    assert "what Odylith is doing" in bundle["candidate"]["markdown_text"]
+    assert "Odylith is active, but no Odylith note has reached this chat yet." in bundle["candidate"]["markdown_text"]
+    assert "normal assistant text" in bundle["candidate"]["markdown_text"]
     assert "Radar already has B-096" not in bundle["candidate"]["markdown_text"]
     assert "Radar already has B-096" not in " ".join(headlines)
     assert bundle["proposal"]["eligible"] is False
@@ -1033,16 +1033,16 @@ def test_execution_memory_tribunal_and_visibility_summaries_feed_same_interventi
                     "scope_label": "Governance Intervention Engine",
                     "operator_readout": {
                         "severity": "p0",
-                        "issue": "Generated hook payloads are still not chat-visible proof.",
-                        "action": "Replay the exact Odylith Markdown until transcript confirmation lands.",
+                        "issue": "Generated host messages still have not reached chat visibility.",
+                        "action": "State the Odylith note directly in normal assistant text.",
                     },
                 }
             ],
             "case_queue": [
                 {
                     "id": "CB-122",
-                    "headline": "Intervention hooks report ready while chat sees zero visible Odylith beats",
-                    "brief": "Hidden hook payloads must not satisfy the product contract.",
+                    "headline": "Intervention hooks report ready while chat sees no visible Odylith output",
+                    "brief": "Hidden host messages must not satisfy the product contract.",
                 }
             ],
         },
@@ -1063,7 +1063,7 @@ def test_execution_memory_tribunal_and_visibility_summaries_feed_same_interventi
     assert ("component", "tribunal") in refs
     assert ("bug", "CB-122") in refs
     assert any("Execution Engine has an active recovery constraint" in row for row in headlines)
-    assert any("Tribunal already has CB-122" in row for row in headlines)
-    assert any("Odylith still has blocks waiting for transcript confirmation" in row for row in headlines)
+    assert any("A local Casebook record is linked to this path: CB-122" in row for row in headlines)
+    assert any("Odylith still has output that has not clearly reached this chat" in row for row in headlines)
     assert "execution_engine_snapshot" in bundle["facts"][0]["evidence_classes"]
     assert bundle["candidate"]["stage"] == "card"

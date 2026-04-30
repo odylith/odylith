@@ -420,7 +420,7 @@ def format_text(result: ShowResult) -> str:
         for d in result.diagrams:
             lines.append(f"- **{d.title}**")
             lines.append(f"  Why: {d.description}")
-            lines.append(_prompt_line(f"Create the {d.title} Atlas diagram."))
+            lines.append(_prompt_line(_atlas_prompt(d)))
         lines.append("")
 
     if result.issues:
@@ -549,7 +549,7 @@ def _next_prompt(result: ShowResult) -> str:
     if result.components:
         return f"Define the {result.components[0].label} Registry component."
     if result.diagrams:
-        return f"Create the {result.diagrams[0].title} Atlas diagram."
+        return _atlas_prompt(result.diagrams[0])
     if result.workstreams:
         return f"Open a Radar workstream for {result.workstreams[0].title}."
     if result.issues:
@@ -584,7 +584,7 @@ def _best_first_move(result: ShowResult) -> list[str]:
         diagram = result.diagrams[0]
         lines = [f"Best first move: **{diagram.title}**."]
         lines.append(f"Why: {diagram.description}")
-        lines.append(_prompt_line(f"Create the {diagram.title} Atlas diagram."))
+        lines.append(_prompt_line(_atlas_prompt(diagram)))
         return lines
     if result.workstreams:
         workstream = result.workstreams[0]
@@ -603,6 +603,10 @@ def _best_first_move(result: ShowResult) -> list[str]:
         )
         return lines
     return []
+
+
+def _atlas_prompt(diagram: DiagramSuggestion) -> str:
+    return f"Create the {diagram.title} Atlas diagram."
 
 
 def _count_phrase(count: int, singular: str, plural: str) -> str:

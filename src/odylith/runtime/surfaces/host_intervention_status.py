@@ -146,14 +146,15 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
         latest_status = _normalize_token(latest_unconfirmed.get("delivery_status")) or "unknown"
         latest_channel = _normalize_token(latest_unconfirmed.get("delivery_channel")) or "unknown"
         visible_prefix = (
-            f"{visible_count} ledger-visible event(s) exist, {chat_confirmed_count} chat-confirmed, but "
+            f"{visible_count} Odylith output event(s) were recorded as visible and "
+            f"{chat_confirmed_count} confirmed in chat, but "
             if visible_count
-            else "No ledger-visible or chat-confirmed event is recorded yet, and "
+            else "No Odylith output has been confirmed in chat yet, and "
         )
         return {
             "status": status,
             "summary": (
-                f"{visible_prefix}{unconfirmed_count} Odylith beat(s) still require exact chat confirmation; "
+                f"{visible_prefix}{unconfirmed_count} Odylith output event(s) still need to appear in assistant text; "
                 f"latest pending delivery is {latest_status} via {latest_channel}."
             ),
             "latest_delivery_channel": latest_channel,
@@ -165,7 +166,7 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
         channel = _normalize_token(latest.get("delivery_channel")) or "unknown"
         return {
             "status": status,
-            "summary": f"{chat_confirmed_count} chat-confirmed Odylith event(s) recorded for this session; latest via {channel}.",
+            "summary": f"{chat_confirmed_count} Odylith output event(s) confirmed in chat for this session; latest via {channel}.",
             "latest_delivery_channel": channel,
             "visible_event_count": visible_count,
             "chat_confirmed_event_count": chat_confirmed_count,
@@ -176,8 +177,8 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
         return {
             "status": status,
             "summary": (
-                f"{visible_count} ledger-visible event(s) recorded for this session, "
-                f"but 0 chat-confirmed; latest via {channel}."
+                f"{visible_count} Odylith output event(s) were recorded as visible, "
+                f"but none has been confirmed in chat; latest via {channel}."
             ),
             "latest_delivery_channel": channel,
             "visible_event_count": visible_count,
@@ -188,8 +189,8 @@ def _chat_visible_proof(*, ledger: Mapping[str, Any], static_ready: bool) -> dic
         return {
             "status": status,
             "summary": (
-                "No ledger-visible or chat-confirmed event is recorded for this session; the assistant must render the "
-                "visible-intervention fallback directly before claiming the UX is active."
+                "No Odylith output is confirmed in chat for this session; the assistant must render "
+                "assistant-visible Odylith text directly before claiming the UX is active."
             ),
             "latest_delivery_channel": "",
             "visible_event_count": 0,
@@ -288,6 +289,22 @@ def _check_label(value: bool) -> str:
     return "yes" if bool(value) else "no"
 
 
+_PROOF_STATUS_LABELS = {
+    "proven_this_session": "confirmed in this session",
+    "ledger_visible_unconfirmed": "recorded but not confirmed in chat",
+    "pending_confirmation": "waiting for chat confirmation",
+    "ledger_visible_with_pending_confirmation": "recorded with pending chat confirmation",
+    "chat_confirmed_with_pending_confirmation": "confirmed with pending chat confirmation",
+    "unproven_this_session": "not confirmed in this session",
+    "degraded": "not ready",
+}
+
+
+def _proof_status_label(value: Any) -> str:
+    token = _normalize_token(value)
+    return _PROOF_STATUS_LABELS.get(token, token or "unknown")
+
+
 def _format_ratio(value: Any) -> str:
     if value is None:
         return "n/a"
@@ -314,15 +331,14 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
         f"Session: `{_normalize_string(report.get('session_id')) or 'unknown'}`",
         f"Chat-visible contract: {_normalize_string(report.get('chat_visibility_contract'))}",
         (
-            "Chat-visible proof: "
-            f"{_normalize_token(proof.get('status')) or 'unknown'} - "
+            "Chat visibility: "
+            f"{_proof_status_label(proof.get('status'))} - "
             f"{_normalize_string(proof.get('summary')) or 'no proof summary available.'}"
         ),
         (
-            "End-to-end claim gate: only `Activation: ready` with "
-            "`Chat-visible proof: proven_this_session` counts as fully "
-            "chat-proved; ledger-visible-only and pending-confirmation states "
-            "are partial."
+            "End-to-end claim gate: only `Activation: ready` with chat visibility "
+            "confirmed in this session counts as fully active; recorded-only and "
+            "waiting states are partial."
         ),
     ]
     activation_note = _normalize_string(readiness.get("activation_note"))
@@ -345,18 +361,18 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
     lines.append("")
     if latest:
         lines.append(
-            "Last visible Odylith beat: "
+            "Last visible Odylith output: "
             f"{_normalize_string(latest.get('kind')) or 'event'} via "
             f"{_normalize_string(latest.get('delivery_channel')) or 'unknown'}"
             f" at {_normalize_string(latest.get('ts_iso')) or 'unknown time'}."
         )
     else:
-        lines.append("Last visible Odylith beat: none recorded for this session yet.")
+        lines.append("Last visible Odylith output: none recorded for this session yet.")
     lines.append(
-        f"Ledger: {int(ledger.get('event_count') or 0)} recent event(s), "
-        f"{int(ledger.get('visible_event_count') or 0)} ledger-visible event(s), "
-        f"{int(ledger.get('chat_confirmed_event_count') or 0)} chat-confirmed event(s), "
-        f"{int(ledger.get('unconfirmed_event_count') or 0)} pending chat-confirmation event(s), "
+        f"Visibility ledger: {int(ledger.get('event_count') or 0)} recent event(s), "
+        f"{int(ledger.get('visible_event_count') or 0)} recorded-visible event(s), "
+        f"{int(ledger.get('chat_confirmed_event_count') or 0)} confirmed-in-chat event(s), "
+        f"{int(ledger.get('unconfirmed_event_count') or 0)} waiting-for-chat event(s), "
         f"{pending_count} pending proposal(s)."
     )
     visibility_ratios = ledger.get("visibility_ratios")
@@ -376,13 +392,13 @@ def render_intervention_status(report: Mapping[str, Any]) -> str:
             chat_confirmed = int(bucket.get("chat_confirmed") or 0)
             pending_confirmation = int(bucket.get("pending_confirmation") or 0)
             lines.append(
-                f"- {label}: ledger {ledger_visible}/{total} ({_format_ratio(bucket.get('ledger_visible_ratio'))}); "
-                f"chat-confirmed {chat_confirmed}/{total} ({_format_ratio(bucket.get('chat_confirmed_ratio'))}); "
-                f"pending confirmation {pending_confirmation}."
+                f"- {label}: recorded-visible {ledger_visible}/{total} ({_format_ratio(bucket.get('ledger_visible_ratio'))}); "
+                f"confirmed-in-chat {chat_confirmed}/{total} ({_format_ratio(bucket.get('chat_confirmed_ratio'))}); "
+                f"waiting {pending_confirmation}."
             )
     confirmed_count = int(report.get("chat_confirmed_event_count") or 0)
     if confirmed_count:
-        lines.append(f"Chat transcript confirmations recorded on this probe: {confirmed_count}.")
+        lines.append(f"Chat confirmations recorded on this probe: {confirmed_count}.")
     replay = visibility_contract.normalize_block_string(report.get("assistant_visible_replay_markdown"))
     if replay:
         lines.append("")
@@ -410,7 +426,7 @@ def main_with_host(host_family: str, argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--last-assistant-message",
         default="",
-        help="Optional latest assistant text; confirms exact Odylith Markdown as chat-visible proof.",
+        help="Optional latest assistant text; confirms exact Odylith Markdown as shown in chat.",
     )
     parser.add_argument("--json", action="store_true", help="Emit status as JSON.")
     args = parser.parse_args(list(argv or sys.argv[1:]))

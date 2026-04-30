@@ -130,7 +130,11 @@ def test_broker_hard_fail_visible_for_zero_visibility_feedback(tmp_path: Path) -
         include_closeout=False,
     )
 
-    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert decision.visible_markdown.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
+    assert "Show the next Odylith" not in decision.visible_markdown
+    assert "chat-proved" not in decision.visible_markdown
     assert decision.delivery_status == "assistant_render_required"
     assert decision.delivery_channel == "assistant_visible_fallback"
     assert decision.proof_required is True
@@ -152,9 +156,83 @@ def test_broker_hard_fail_visible_for_zero_signals_branding_feedback(tmp_path: P
         include_closeout=False,
     )
 
-    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert decision.visible_markdown.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True
+
+
+def test_broker_suppresses_recursive_internal_visible_copy(tmp_path: Path) -> None:
+    decision = visibility_broker.build_visible_intervention_decision(
+        repo_root=tmp_path,
+        bundle=_bundle(
+            visible_text=(
+                "**Odylith Observation:** This chat still has no visible Odylith moment. "
+                "Show the next Odylith Observation here."
+            )
+        ),
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="recursive-copy",
+        include_proposal=False,
+        include_closeout=False,
+    )
+
+    assert decision.visible_markdown == ""
+    assert decision.developer_context == ""
+    assert "visible_text_quality_blocked" in decision.no_output_reason
+    assert "recursive display instruction" in decision.no_output_reason
+
+
+def test_broker_suppresses_visible_copy_with_unresolved_local_governance_ids(tmp_path: Path) -> None:
+    decision = visibility_broker.build_visible_intervention_decision(
+        repo_root=tmp_path,
+        bundle=_bundle(
+            visible_text=(
+                "**Odylith History:** Casebook already remembers CB-122. "
+                "Keep B-096 in frame."
+            )
+        ),
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="stale-id-copy",
+        include_proposal=False,
+        include_closeout=False,
+    )
+
+    assert decision.visible_markdown == ""
+    assert decision.developer_context == ""
+    assert "repo-memory claim without local proof" in decision.no_output_reason
+    assert "unresolved local governance id: B-096, CB-122" in decision.no_output_reason
+
+
+def test_broker_allows_visible_copy_with_repo_local_governance_ids(tmp_path: Path) -> None:
+    radar = tmp_path / "odylith" / "radar" / "source" / "ideas"
+    casebook = tmp_path / "odylith" / "casebook" / "bugs"
+    radar.mkdir(parents=True)
+    casebook.mkdir(parents=True)
+    (radar / "visibility.md").write_text("Backlog: B-777\n", encoding="utf-8")
+    (casebook / "visibility.md").write_text("- Bug ID: CB-777\n", encoding="utf-8")
+
+    decision = visibility_broker.build_visible_intervention_decision(
+        repo_root=tmp_path,
+        bundle=_bundle(
+            visible_text=(
+                "**Odylith Observation:** B-777 and CB-777 are the local records "
+                "that own this visible recovery."
+            )
+        ),
+        host_family="codex",
+        turn_phase="post_bash_checkpoint",
+        session_id="local-id-copy",
+        include_proposal=False,
+        include_closeout=False,
+    )
+
+    assert "B-777" in decision.visible_markdown
+    assert "CB-777" in decision.visible_markdown
+    assert decision.no_output_reason == ""
 
 
 def test_hidden_fallback_ready_is_not_chat_visible_until_exact_markdown_confirmed(tmp_path: Path) -> None:
@@ -308,6 +386,9 @@ def test_duplicate_hidden_fallbacks_confirm_once_and_do_not_count_visible_before
 
 
 def test_generated_proposal_is_not_actionable_until_chat_visible(tmp_path: Path) -> None:
+    casebook = tmp_path / "odylith" / "casebook" / "bugs"
+    casebook.mkdir(parents=True)
+    (casebook / "visible-proposal.md").write_text("- Bug ID: CB-122\n", encoding="utf-8")
     bundle = _bundle(
         visible_text=(
             "**Odylith Observation:** Proposal proof must be visible before confirmation.\n\n"

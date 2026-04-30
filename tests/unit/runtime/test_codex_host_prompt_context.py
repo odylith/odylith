@@ -68,7 +68,9 @@ def test_codex_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pat
     )
     observation = dict(bundle["observation"])
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
     assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"
     assert observation["memory_summary"]["visibility_complaint"] is True
@@ -97,7 +99,7 @@ def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) 
 
     assert rendered == (
         "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---\n\n"
-        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
     )
 
 
@@ -162,7 +164,7 @@ def test_codex_prompt_system_message_prefers_pending_ambient_risk_over_observati
         "\n"
         "**Odylith Observation:** Prompt should not hide the stronger ambient beat.\n"
         "\n---\n\n"
-        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
     )
 
 
@@ -189,7 +191,7 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "src/odylith/cli.py" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"] == (
-        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
     )
 
 
@@ -299,10 +301,10 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery recovery:")
     assert "Odylith Observation:" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
-    assert "\n---\n\n**Odylith Assist:** kept Odylith visible in this chat" in payload["systemMessage"]
+    assert "\n---\n\n**Odylith Assist:** surfaced this visibility issue" in payload["systemMessage"]
     assert payload["systemMessage"].rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
 
 
@@ -330,7 +332,7 @@ def test_main_records_prompt_events_on_stable_thread_id_not_turn_id(
             "intervention_bundle": {
                 "candidate": {
                     "stage": "teaser",
-                    "teaser_text": "Odylith Observation: Keep the visible Odylith moment on the stable chat id.",
+                    "teaser_text": "Odylith Observation: Keep the Odylith note on the stable chat id.",
                 }
             }
         },
@@ -397,7 +399,7 @@ def test_main_confirms_visible_prompt_replay_from_last_assistant_message(
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["systemMessage"] == (
-        "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
+        "**Odylith Assist:** surfaced this visibility issue in normal chat where you can inspect it."
     )
     snapshot = delivery_ledger.delivery_snapshot(
         repo_root=tmp_path,

@@ -20,7 +20,7 @@ Paths under `odylith/` follow `odylith/AGENTS.md`.
 - For guidance behavior pressure cases, use `odylith validate guidance-behavior --repo-root .` for deterministic proof and `odylith benchmark --profile quick --family guidance_behavior` for benchmark-family proof. Compact packet summaries only prove the proof path is available; fresh validation still requires the explicit command.
 - Odylith Discipline is the v0.1.11 shared Codex/Claude behavior contract: hard laws are deterministic, runtime pressure is open-world, stance is local and credit-safe, passing checks stay quiet, and durable learning requires validator, benchmark, or Tribunal/governance proof. Use `odylith discipline status/check/explain`, `odylith validate discipline --repo-root .`, and `odylith benchmark --profile quick --family discipline --no-write-report --json`; none of those discipline hot paths may call host models, providers, subagents, broad scans, full validation, or projection expansion.
 - A plain `Odylith, help` request is the CLI help fast path. Use the first available `odylith --help` command and print stdout only.
-- A plain `Odylith, show me what you can do` request is a first-match route lock for the advisory `odylith show` repo-capability demo. It is not a request to prove intervention UX, diagnose install posture, run `start`, run `doctor`, run `version`, inspect dirty paths, summarize context packets, count modules, discuss tmp clone noise, explain routed-spawn policy, or explain missing launcher state. Use the first available show command and print stdout only. Do not replace stdout with a hand-written "here's what Odylith demonstrated" summary.
+- A plain `Odylith, show me what you can do` request is the advisory `odylith show` repo-capability demo. It is not a request to prove intervention UX, diagnose install posture, run `start`, run `doctor`, or explain missing launcher state. Use the first available show command and print stdout only.
 - In Codex commentary, keep startup, fallback, routing, and packet-selection internals implicit. Describe progress in task terms like the exact file/workstream, the bug under test, or the validation in flight. If an earlier repo-local start attempt degraded but work can continue safely, do not narrate that history. Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates, and never prefix commentary with control-plane receipt labels. Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters.
 - Keep normal commentary task-first and human. Weave Odylith-grounded facts into ordinary updates when they change the next move, and reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels for rare high-signal moments. Pick the strongest one or stay quiet.
 - Treat live teaser, `**Odylith Observation**`, and `Odylith Proposal` as the
@@ -39,25 +39,27 @@ Paths under `odylith/` follow `odylith/AGENTS.md`.
   Proposal for the same session-local moment. Later hooks may add evidence or
   surface the first eligible Proposal, but they must not make the same moment
   feel like a fresh branded interruption.
-- For Codex and Claude checkpoint hooks, keep the full Observation,
-  Proposal, and Assist bundle in hidden developer context for continuity, but
-  surface the earned Observation/Proposal beat visibly at the hook moment when
-  the host renders hook output. If the host keeps hook output hidden, render
-  the assistant-visible fallback Markdown in chat instead of claiming the
-  engine is active. Stop is the fallback closeout and live-beat recovery lane,
-  not the primary intervention moment; unseen Ambient Highlight,
-  Observation, or Proposal beats may replay there before Assist.
+- For Codex checkpoint hooks, keep the full Observation, Proposal, and Assist
+  bundle in hidden developer context for continuity, and surface the earned
+  Observation/Proposal note when the host renders hook output. Claude is
+  stricter because Claude Code renders hook output inline with the transcript:
+  direct-edit and Bash PostToolUse hooks stay silent on success and emit only
+  compact failure/skipped-refresh status; Claude Stop is memory/logging only,
+  not a fallback closeout or live-note recovery lane.
 - Hook `systemMessage` or `additionalContext` generation is not proof of
   chat-visible UX. The user-visible contract is satisfied only by rendered
-  chat text or by a host channel that is proven visible in the active session.
+  chat text or by a host channel that is verified visible in the active session.
   When in doubt, run `odylith codex visible-intervention` or `odylith claude
   visible-intervention` and show that Markdown directly.
 - Before claiming the intervention UX is active in a specific chat, run or
   cite `odylith codex intervention-status` or `odylith claude
   intervention-status` for that host/session. That status surface is the
-  low-latency delivery ledger for Teaser, Ambient Highlight, Observation,
+  low-latency delivery record for Teaser, Ambient Highlight, Observation,
   Proposal, and Assist readiness; hook payload generation alone is not enough.
-- Only call a session or worktree fully end to end after `intervention-status` reports `Activation: ready` and `chat_visible_proof=proven_this_session`. Treat `ledger_visible_unconfirmed`, `pending_confirmation`, `ledger_visible_with_pending_confirmation`, and `chat_confirmed_with_pending_confirmation` as partial proof, not completion, and treat `degraded` or `unproven_this_session` as not active yet.
+- Only call a session or worktree fully end to end after `intervention-status`
+  reports `Activation: ready` and a chat-visibility line confirmed in this
+  session. Treat recorded-only and waiting-for-chat states as partial proof, not
+  completion, and treat degraded or not-confirmed states as not active yet.
 - Existing Codex and Claude sessions may not hot-reload changed hooks,
   guidance, or source-local runtime code. After changing intervention
   visibility behavior, prove it in a newly started or explicitly reloaded
@@ -66,7 +68,7 @@ Paths under `odylith/` follow `odylith/AGENTS.md`.
 - If you need to show that UX to a human in-chat, prefer rendered Markdown or
   plain prose. Do not wrap the product moment in fenced raw Markdown unless
   the task is explicitly about debugging the raw source text.
-- At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance IDs inline when they were actually changed, and when no governed file moved, name the affected governance-contract IDs from bounded request or packet truth without calling them updated. Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes, or a concrete chat-visibility complaint. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real; when it appears, it must render before `Odylith Assist:` so Assist remains the final closeout line.
+- At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. The host prompt-submit runtime is stricter: for normal non-passthrough prompts it supplies one shared prompt-visible Assist line even when no stronger note has matured; `Odylith, help` and `Odylith, show me what you can do` stay stdout-clean and suppress narration. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance IDs inline when they were actually changed, and when no governed file moved, name the affected governance-contract IDs from bounded request or packet truth without calling them updated. Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes, or a concrete chat-visibility complaint. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real; when it appears, it must render before `Odylith Assist:` so Assist remains the final closeout line.
 - Explicit feedback that Odylith ambient highlights, interventions, Assist,
   Observations, Proposals, hooks, or chat output are not visible is a real
   closeout signal. A short `Odylith Assist:` may acknowledge that visibility

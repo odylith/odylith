@@ -111,7 +111,7 @@ HARD_LAW_RECOVERY_CUES: dict[str, str] = {
     "supported_host_lane": "Choose Codex or Claude and dev, dev-maintainer, dogfood, or consumer before acting.",
     "cli_first_governed_truth": "Use the owning Odylith CLI writer before hand edits.",
     "fresh_proof_completion": "Report implementation state without claiming completion, then run fresh proof.",
-    "visible_intervention_proof": "Run intervention-status or render the visible-intervention fallback.",
+    "visible_intervention_proof": "Run intervention-status or render the visible-intervention recovery.",
     "queue_non_adoption": "Treat queue rows as context until the operator explicitly authorizes implementation.",
     "bounded_delegation": "Create owner, goal, expected output, stop condition, owned scope, and validation before delegation.",
     "benchmark_public_claim": "Run the required benchmark proof before publishing the claim.",

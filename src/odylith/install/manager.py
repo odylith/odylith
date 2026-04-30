@@ -25,8 +25,16 @@ from odylith import __version__
 from odylith.runtime.common import agent_runtime_contract
 from odylith.install import bootstrap_assets
 from odylith.install import migration_runtime
-from odylith.install.fs import atomic_write_text
+from odylith.install.fs import atomic_write_text, remove_path
 from odylith.install.gitignore_rules import ensure_odylith_gitignore_entry
+from odylith.install.consumer_registry_repair import (
+    ComponentRegisterDriftRepair,
+    repair_component_register_registry_drift,
+)
+from odylith.install.consumer_runtime_repair import (
+    ConsumerInterventionNoiseRepair,
+    repair_stale_consumer_intervention_noise,
+)
 from odylith.install.legacy_install_migration import (
     MigrationSummary,
     legacy_layout_present,
@@ -129,6 +137,12 @@ class InstallSummary:
     created_guidance_files: tuple[str, ...] = ()
     retention_warnings: tuple[str, ...] = ()
     migration: MigrationSummary | None = None
+
+
+@dataclass(frozen=True)
+class UninstallSummary:
+    repo_root: Path
+    removed_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -986,6 +1000,27 @@ def _doctor_lock_compaction_clause(removed_files: int) -> str:
     if removed_files <= 0:
         return ""
     return f" Compacted {removed_files} stale zero-byte lock placeholder(s)."
+
+
+def _doctor_component_register_repair_clause(result: ComponentRegisterDriftRepair) -> str:
+    if not result.changed:
+        return ""
+    component_count = len(result.repaired_components)
+    spec_count = len(result.repaired_specs)
+    clause = f" Repaired 0.1.11 Registry component metadata for {component_count} component(s)."
+    if spec_count:
+        clause += f" Added missing Feature History to {spec_count} component spec(s)."
+    return clause
+
+
+def _doctor_intervention_noise_repair_clause(result: ConsumerInterventionNoiseRepair) -> str:
+    if not result.changed:
+        return ""
+    stream_count = len(result.repaired_streams)
+    return (
+        f" Removed {result.removed_events} stale 0.1.11 Claude intervention event(s) "
+        f"from {stream_count} Compass stream(s)."
+    )
 
 
 _repo_root_guidance_source = bootstrap_assets.repo_root_guidance_source
@@ -2518,28 +2553,38 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
         )
 
 
-def uninstall_bundle(*, repo_root: str | Path) -> None:
+def uninstall_bundle(*, repo_root: str | Path) -> UninstallSummary:
     root = _repo_root(repo_root)
+    repo_role = product_repo_role(repo_root=root)
+    if repo_role == PRODUCT_REPO_ROLE:
+        raise ValueError("refusing to uninstall the Odylith product repo's own odylith/ source tree")
     with install_lock(repo_root=root):
         state = load_install_state(repo_root=root)
         _update_root_guidance_files(
             repo_root=root,
             install_active=False,
-            repo_role=product_repo_role(repo_root=root),
+            repo_role=repo_role,
         )
         if state:
             updated_state = dict(state)
             updated_state["detached"] = True
             updated_state["integration_enabled"] = False
             write_install_state(repo_root=root, payload=updated_state)
+        removed_paths: list[str] = []
+        odylith_root = root / "odylith"
+        if odylith_root.exists() or odylith_root.is_symlink():
+            remove_path(odylith_root)
+            removed_paths.append("odylith/")
         append_install_ledger(
             repo_root=root,
             payload={
                 "operation": "uninstall",
-                "status": "detached",
+                "status": "uninstalled",
                 "active_version": _observed_active_version(repo_root=root, state=state),
+                "removed_paths": removed_paths,
             },
         )
+    return UninstallSummary(repo_root=root, removed_paths=tuple(removed_paths))
 
 
 def set_agents_integration(*, repo_root: str | Path, enabled: bool) -> tuple[bool, str]:
@@ -2831,6 +2876,20 @@ def doctor_bundle(
             product_root=_bundled_product_root_for_runtime(runtime_root),
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
+        component_register_repair = repair_component_register_registry_drift(
+            repo_root=root,
+            consumer_repo=repo_role != PRODUCT_REPO_ROLE,
+        )
+        component_register_repair_clause = _doctor_component_register_repair_clause(
+            component_register_repair
+        )
+        intervention_noise_repair = repair_stale_consumer_intervention_noise(
+            repo_root=root,
+            consumer_repo=repo_role != PRODUCT_REPO_ROLE,
+        )
+        intervention_noise_repair_clause = _doctor_intervention_noise_repair_clause(
+            intervention_noise_repair
+        )
         repaired_status = version_status(repo_root=root)
         reset_clause = ""
         if reset_local_state:
@@ -2842,13 +2901,13 @@ def doctor_bundle(
         if repaired_status.detached and repaired_status.diverged_from_pin:
             return (
                 True,
-                f"Odylith repair completed for {root}{reset_clause}. Active version is still a detached local override and diverges from the repo pin.{lock_clause}",
+                f"Odylith repair completed for {root}{reset_clause}. Active version is still a detached local override and diverges from the repo pin.{component_register_repair_clause}{intervention_noise_repair_clause}{lock_clause}",
             )
         if repaired_status.detached:
-            return True, f"Odylith repair completed for {root}{reset_clause}. Active version remains a detached local override.{lock_clause}"
+            return True, f"Odylith repair completed for {root}{reset_clause}. Active version remains a detached local override.{component_register_repair_clause}{intervention_noise_repair_clause}{lock_clause}"
         if repaired_status.diverged_from_pin:
-            return True, f"Odylith repair completed for {root}{reset_clause}. Active version still diverges from the repo pin.{lock_clause}"
-        return True, f"Odylith repair completed for {root}{reset_clause}.{lock_clause}"
+            return True, f"Odylith repair completed for {root}{reset_clause}. Active version still diverges from the repo pin.{component_register_repair_clause}{intervention_noise_repair_clause}{lock_clause}"
+        return True, f"Odylith repair completed for {root}{reset_clause}.{component_register_repair_clause}{intervention_noise_repair_clause}{lock_clause}"
 
     if (
         trust_only_runtime_issue

@@ -103,6 +103,7 @@ def test_show_text_reads_like_demo_copy_not_command_dump() -> None:
     assert "Prompt: `Define the Dashboard Registry component.`" in text
     assert "Why: Dashboard changes cross several runtime paths." in text
     assert "Prompt: `Open a Radar workstream for Clarify dashboard ownership.`" in text
+    assert "Needs: Radar workstream, technical plan, and doc link before Atlas scaffold." not in text
     assert "Prompt: `Create the Dashboard Boundary Map Atlas diagram.`" in text
     assert "Prompt: `Capture a Casebook bug for Dashboard stale refresh." in text
     assert "### How to create things" not in text
@@ -601,16 +602,11 @@ def test_managed_guidance_exempts_show_me_from_intervention_proof() -> None:
     assert "Odylith, help" in block
     assert "CLI help fast path" in block
     assert "Odylith, show me what you can do" in block
-    assert "first-match route lock" in block
     assert "advisory `odylith show` repo-capability demo" in block
     assert "not a request to prove intervention UX" in block
-    assert "inspect dirty paths" in block
-    assert "summarize context packets" in block
-    assert "count modules" in block
-    assert "discuss tmp clone noise" in block
-    assert "explain routed-spawn policy" in block
+    assert "run `doctor`" in block
+    assert "explain missing launcher state" in block
     assert "print stdout only" in block
-    assert "Do not replace stdout with a hand-written" in block
 
 
 def test_component_discovery_uses_real_anchor_for_logical_candidates() -> None:

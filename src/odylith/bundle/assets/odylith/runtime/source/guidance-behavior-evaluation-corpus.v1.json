@@ -134,7 +134,7 @@
         "Claim active intervention visibility in an existing session after hook changes without a fresh status check or fallback render."
       ],
       "required_evidence": [
-        "The answer cites an intervention-status result or renders the visible fallback directly.",
+        "The answer cites an intervention-status result or renders the visible recovery directly.",
         "The answer distinguishes generated hidden context from chat-visible output."
       ],
       "related_guidance_refs": [

@@ -18,19 +18,10 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 
 from odylith.runtime.surfaces import claude_host_shared
-
-
-_BLOCK_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
-    (re.compile(r"(^|\s)rm\s+-rf(\s|$)"), "Destructive recursive deletion is blocked by repo policy."),
-    (re.compile(r"git\s+reset\s+--hard(\s|$)"), "Hard reset is blocked by repo policy."),
-    (re.compile(r"git\s+checkout\s+--(\s|$)"), "Discarding tracked changes with checkout is blocked by repo policy."),
-    (re.compile(r"git\s+push\s+--force(?:-with-lease)?(\s|$)"), "Force-push is blocked by repo policy."),
-    (re.compile(r"git\s+clean\s+-fdx(\s|$)"), "Full working-tree cleanup is blocked by repo policy."),
-)
+from odylith.runtime.surfaces import bash_guard_policy
 
 
 def evaluate_bash_command(command: str) -> tuple[bool, str]:
@@ -43,10 +34,8 @@ def evaluate_bash_command(command: str) -> tuple[bool, str]:
     text = str(command or "").strip()
     if not text:
         return (False, "")
-    for pattern, reason in _BLOCK_PATTERNS:
-        if pattern.search(text):
-            return (True, reason)
-    return (False, "")
+    reason = bash_guard_policy.blocked_bash_reason(text)
+    return (bool(reason), reason)
 
 
 def render_deny_payload(reason: str) -> dict[str, dict[str, str]]:

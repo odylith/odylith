@@ -73,3 +73,16 @@ def test_activate_runtime_read_session_clears_low_ram_session_cache(tmp_path: Pa
     assert len(session._cache) == 1  # noqa: SLF001
     session.clear()
     assert len(session._cache) == 0  # noqa: SLF001
+
+
+def test_clear_active_runtime_read_session_is_repo_scoped(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    other_root = tmp_path / "other"
+
+    with runtime_read_session.activate_runtime_read_session(repo_root=repo_root) as session:
+        session.get_or_compute(namespace="query", key="one", builder=lambda: {"ok": True})
+        runtime_read_session.clear_active_runtime_read_session(repo_root=other_root)
+        assert len(session._cache) == 1  # noqa: SLF001
+
+        runtime_read_session.clear_active_runtime_read_session(repo_root=repo_root)
+        assert len(session._cache) == 0  # noqa: SLF001

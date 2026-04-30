@@ -119,6 +119,18 @@ def _write_cb136(repo_root: Path, *, verification: str = "Focused install tests 
     return bug_path
 
 
+def _make_product_repo_shape(repo_root: Path) -> None:
+    (repo_root / "src" / "odylith").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "registry" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / "odylith" / "radar" / "source").mkdir(parents=True, exist_ok=True)
+    (repo_root / "pyproject.toml").write_text('[project]\nname = "odylith"\n', encoding="utf-8")
+    (repo_root / "odylith" / "registry" / "source" / "component_registry.v1.json").write_text(
+        '{"components": []}\n',
+        encoding="utf-8",
+    )
+    (repo_root / "odylith" / "radar" / "source" / "INDEX.md").write_text("# Radar\n", encoding="utf-8")
+
+
 def _write_releases(repo_root: Path, *, status: str = "active") -> None:
     release_path = repo_root / "odylith/radar/source/releases/releases.v1.json"
     release_path.parent.mkdir(parents=True, exist_ok=True)
@@ -268,6 +280,7 @@ def test_apply_governance_updates_casebook_without_public_github_writes(tmp_path
 
 
 def test_cli_json_does_not_write_to_github_without_apply_flag(tmp_path: Path, monkeypatch, capsys) -> None:
+    _make_product_repo_shape(tmp_path)
     _write_cb136(tmp_path)
     fake = FakeGitHubTransport()
     monkeypatch.setattr(github_issue_cli, "build_transport", lambda: fake)
@@ -285,6 +298,7 @@ def test_cli_json_does_not_write_to_github_without_apply_flag(tmp_path: Path, mo
 
 
 def test_cli_apply_github_records_labels_and_comment_only_when_explicit(tmp_path: Path, monkeypatch, capsys) -> None:
+    _make_product_repo_shape(tmp_path)
     _write_cb136(tmp_path)
     fake = FakeGitHubTransport()
     monkeypatch.setattr(github_issue_cli, "build_transport", lambda: fake)
@@ -325,6 +339,7 @@ def test_cli_apply_github_records_labels_and_comment_only_when_explicit(tmp_path
 
 
 def test_cli_apply_github_without_casebook_match_fails_closed(tmp_path: Path, monkeypatch, capsys) -> None:
+    _make_product_repo_shape(tmp_path)
     fake = FakeGitHubTransport(issues=(GENERIC_ISSUE,), labels=())
     monkeypatch.setattr(github_issue_cli, "build_transport", lambda: fake)
 

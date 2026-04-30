@@ -323,6 +323,64 @@ def test_load_catalog_enriches_related_backlog_entries_with_front_matter_metadat
     ]
 
 
+def test_load_catalog_allows_atlas_first_draft_without_related_links(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+    mmd_path = repo_root / "odylith" / "atlas" / "source" / "draft.mmd"
+    svg_path = repo_root / "odylith" / "atlas" / "source" / "draft.svg"
+    png_path = repo_root / "odylith" / "atlas" / "source" / "draft.png"
+    catalog_path = repo_root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    for path in (mmd_path, svg_path, png_path, catalog_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    mmd_path.write_text("flowchart TD\n  A-->B\n", encoding="utf-8")
+    svg_path.write_text("<svg viewBox='0 0 1200 800'></svg>\n", encoding="utf-8")
+    png_path.write_bytes(b"png")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "diagrams": [
+                    {
+                        "diagram_id": "D-777",
+                        "slug": "draft",
+                        "title": "Draft Diagram",
+                        "kind": "flowchart",
+                        "status": "draft",
+                        "owner": "product",
+                        "summary": "Atlas-first draft.",
+                        "source_mmd": "odylith/atlas/source/draft.mmd",
+                        "source_svg": "odylith/atlas/source/draft.svg",
+                        "source_png": "odylith/atlas/source/draft.png",
+                        "last_reviewed_utc": dt.date.today().isoformat(),
+                        "change_watch_paths": ["odylith/atlas/source/draft.mmd"],
+                        "components": [{"name": "draft", "description": "Draft boundary"}],
+                        "related_backlog": [],
+                        "related_plans": [],
+                        "related_docs": [],
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    diagrams, errors, stats = renderer._load_catalog(  # noqa: SLF001
+        repo_root=repo_root,
+        catalog_path=catalog_path,
+        output_path=repo_root / "odylith" / "atlas" / "atlas.html",
+        max_review_age_days=21,
+        component_index={},
+    )
+
+    assert errors == []
+    assert stats == {"total": 1, "fresh": 1, "stale": 0}
+    assert diagrams[0]["status"] == "draft"
+    assert diagrams[0]["related_backlog"] == []
+    assert diagrams[0]["related_plans"] == []
+    assert diagrams[0]["related_docs"] == []
+
+
 def test_load_catalog_uses_reviewed_watch_fingerprints_over_mtime_for_freshness(tmp_path: Path) -> None:
     repo_root = tmp_path
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")

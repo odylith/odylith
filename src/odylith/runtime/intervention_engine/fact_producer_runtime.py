@@ -284,10 +284,8 @@ def _current_visibility_status_fact(
         and visible_event_count <= 0
         and chat_confirmed_event_count <= 0
     ):
-        headline = "Odylith is on, but this chat still has no visible Odylith moment."
-        detail = (
-            "Show the next Odylith Observation or Assist here so the user can see what Odylith is doing."
-        )
+        headline = "Odylith is active, but no Odylith note has reached this chat yet."
+        detail = "The operator needs any Odylith note stated directly in normal assistant text."
         priority = 98
     elif proof in {
         "pending_confirmation",
@@ -295,18 +293,18 @@ def _current_visibility_status_fact(
         "ledger_visible_with_pending_confirmation",
         "chat_confirmed_with_pending_confirmation",
     } or unconfirmed_event_count > 0:
-        headline = "Odylith has appeared in this chat, but the moment still needs a clear follow-through."
+        headline = "Odylith has appeared in this chat, but the note still needs clear follow-through."
         detail = (
-            f"{visible_event_count} Odylith moment(s) appeared; keep the next line simple and user-facing."
+            f"{visible_event_count} Odylith note(s) appeared; keep the next line simple and user-facing."
         )
         priority = 97
     elif proof == "proven_this_session" or chat_confirmed_event_count > 0:
         headline = "Odylith is already visible in this chat."
-        detail = f"{chat_confirmed_event_count} visible Odylith moment(s) already landed for the user."
+        detail = f"{chat_confirmed_event_count} Odylith note(s) already landed for the user."
         priority = 95
     elif event_count > 0:
         headline = "Odylith has activity, but the user still needs a visible line."
-        detail = f"{event_count} Odylith event(s) are recorded; keep the next surfaced line direct and branded."
+        detail = f"{event_count} Odylith event(s) are recorded; keep the next surfaced line direct and user-facing."
         priority = 94
     else:
         return None
@@ -370,7 +368,7 @@ def collect_facts(
         facts.append(
             _fact(
                 "history",
-                f"Casebook already remembers {bug_id}.",
+                f"Casebook has {bug_id} for this failure.",
                 bug_title or "This conversation is touching a previously captured failure lane.",
                 evidence_classes,
                 [{"kind": "bug", "id": bug_id, "label": bug_id}],

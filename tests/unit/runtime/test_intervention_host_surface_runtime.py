@@ -171,19 +171,17 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
     }
 
     assert context_packet["packet_state"] == "visibility_recovery"
-    assert context_packet["workstreams"] == ["B-096"]
-    assert "governance-intervention-engine" in context_packet["components"]
-    assert "odylith-context-engine" in context_packet["components"]
-    assert "execution-engine" in context_packet["components"]
-    assert "odylith-memory-backend" in context_packet["components"]
-    assert "tribunal" in context_packet["components"]
+    assert context_packet["workstreams"] == []
+    assert context_packet["bugs"] == []
+    assert context_packet["diagrams"] == []
+    assert context_packet["components"] == ["governance-intervention-engine"]
     assert execution["execution_engine_canonical_component_id"] == "execution-engine"
     assert execution["execution_engine_next_move"] == "recover.current_blocker"
     assert execution["execution_engine_host_family"] == "codex"
     assert memory["visibility_complaint"] is True
     assert visibility["chat_visible_proof"] == "unproven_this_session"
     assert tribunal["source"] == "intervention_alignment_context"
-    assert tribunal["case_queue"][0]["id"] == "CB-122"
+    assert tribunal["case_queue"] == []
     assert proof["status"] == "ready"
     assert proof["missing_required_lanes"] == []
     assert proof_lanes["context_engine"]["status"] == "covered"
@@ -205,7 +203,9 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
         include_closeout=False,
     )
 
-    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert decision.visible_markdown.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True
 
@@ -217,7 +217,7 @@ def test_codex_post_tool_payload_uses_additional_context_and_system_message() ->
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
-    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "<odylith-visible-markdown>" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith developer continuity:" not in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** The signal is real." not in payload["hookSpecificOutput"]["additionalContext"]
@@ -272,7 +272,7 @@ def test_codex_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"] == (
         "---\n\n"
@@ -289,7 +289,7 @@ def test_claude_post_tool_payload_uses_additional_context_and_system_message() -
         system_message="Odylith governance refresh completed.",
     )
 
-    assert "Odylith visible delivery fallback:" in payload["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["additionalContext"]
     assert "Odylith developer continuity:" not in payload["additionalContext"]
     assert "**Odylith Observation:** The signal is real." not in payload["additionalContext"]
     assert payload["systemMessage"] == "Odylith governance refresh completed."
@@ -309,7 +309,7 @@ def test_claude_prompt_payload_keeps_prompt_context_discreet() -> None:
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Assist:" not in payload["hookSpecificOutput"]["additionalContext"]
     assert "systemMessage" not in payload
@@ -319,16 +319,15 @@ def test_stop_payload_is_empty_without_message() -> None:
     assert host_surface_runtime.stop_payload(system_message="") == {}
 
 
-def test_stop_payload_can_force_one_visible_delivery_continuation() -> None:
+def test_stop_payload_never_blocks_for_visible_delivery_continuation() -> None:
     payload = host_surface_runtime.stop_payload(
         system_message="**Odylith Assist:** kept this grounded.",
         block_for_visible_delivery=True,
     )
 
     assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."
-    assert payload["decision"] == "block"
-    assert "**Odylith Assist:** kept this grounded." in payload["reason"]
-    assert "code fence" in payload["reason"]
+    assert "decision" not in payload
+    assert "reason" not in payload
 def test_normalized_session_id_falls_back_when_host_payload_is_missing() -> None:
     token = host_surface_runtime.normalized_session_id("", host_family="codex")
     assert token
@@ -457,7 +456,7 @@ def test_checkpoint_visible_text_includes_observation_and_proposal_but_keeps_ass
     assert "**Odylith Observation:** The signal is real." in codex_visible
     assert "Odylith Proposal:" in codex_visible
     assert "Odylith Assist:" not in codex_visible
-    assert "Odylith visible delivery fallback:" in codex_payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Assist:" not in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Assist:" not in claude_payload["additionalContext"]
 
@@ -489,7 +488,7 @@ def test_visible_fallback_keeps_non_odylith_context_while_stripping_live_tail() 
 
     additional_context = payload["hookSpecificOutput"]["additionalContext"]
 
-    assert "Odylith visible delivery fallback:" in additional_context
+    assert "Odylith visible delivery recovery:" in additional_context
     assert "Odylith anchor B-096: primary target src/main.py." in additional_context
     assert "Odylith developer continuity:" in additional_context
     assert additional_context.count(

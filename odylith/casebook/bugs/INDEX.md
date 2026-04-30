@@ -1,13 +1,20 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-29
+Last updated (UTC): 2026-04-30
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-145 | 2026-04-30 | Uninstall requests can be routed to raw deletion that odylith blocks itself | P1 | install | Fixed Pending Release | [2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md](2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md) |
+| CB-143 | 2026-04-30 | Uninstall leaves broken odylith tree behind | P1 | migration-runtime | Open | [2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md](2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md) |
+| CB-140 | 2026-04-30 | Show output suggests standalone atlas prompt that scaffold rejects | P1 | odylith | Fixed Pending Release | [2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md](2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md) |
+| CB-144 | 2026-04-30 | Intervention visibility fallback leaks internal instructions into claude chat | P1 | governance-intervention-engine | Fixed Pending Release | [2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md](2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md) |
+| CB-142 | 2026-04-30 | Generated python host assets break consumer ruff lint | P1 | migration-runtime | Fixed Pending Release | [2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md](2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md) |
+| CB-139 | 2026-04-30 | First install sync overlap gate leaves first run shell incomplete | P1 | odylith | Fixed Pending Release | [2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md](2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md) |
+| CB-141 | 2026-04-30 | Component register writes registry entries rejected by validator | P1 | registry | Fixed Pending Release | [2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md](2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md) |
 | CB-138 | 2026-04-29 | Casebook list clips long consumer bug cards | P2 | casebook | Fixed Pending Release | [2026-04-29-casebook-list-clips-long-consumer-bug-cards.md](2026-04-29-casebook-list-clips-long-consumer-bug-cards.md) |
-| CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Resolved | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
+| CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Fixed Pending Release | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
 | CB-120 | 2026-04-16 | Dashboard shell diagnostic cockpit leaked into product render | P1 | dashboard | Resolved | [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md) |
 | CB-119 | 2026-04-16 | Benchmark live proof conflates support paths write targets and read only sandbox | P1 | benchmark | Open | [2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md](2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md) |
 | CB-114 | 2026-04-15 | Bug capture can publish placeholder tbd records before the maintainer has enough | P0 | `src/odylith/runtime/governance/bug_authoring.py`,

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa
 """Dispatch Odylith host hooks through a usable launcher, even in fresh worktrees.
 
 Hook commands live in tracked project assets, but the repo-local Odylith launcher

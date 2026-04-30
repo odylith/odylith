@@ -506,7 +506,7 @@ def governance_facts_from_alignment(
         facts.append(
             _fact(
                 "history",
-                f"Tribunal already has {case_id} on this path.",
+                f"A local Casebook record is linked to this path: {case_id}.",
                 _normalize_string(row.get("brief") or row.get("headline")) or "A prior case is already connected to this slice.",
                 evidence_classes,
                 case_ref,
@@ -551,8 +551,8 @@ def governance_facts_from_alignment(
         facts.append(
             _fact(
                 "invariant",
-                "Odylith still has blocks waiting for transcript confirmation.",
-                "Replay the exact visible Markdown before treating the signal as proven visible.",
+                "Odylith still has output that has not clearly reached this chat.",
+                "Keep the next Odylith note short and in normal assistant text.",
                 evidence_classes,
                 [_ref("component", "governance-intervention-engine", label="Governance Intervention Engine")],
                 90,

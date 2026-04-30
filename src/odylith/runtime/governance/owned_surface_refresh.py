@@ -9,7 +9,9 @@ Atlas/Casebook visibility in sync without widening into full governance sync.
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass
+import io
 from pathlib import Path
 
 from odylith.runtime.common.command_surface import display_command
@@ -49,11 +51,16 @@ _OWNED_SURFACE_REFRESH_POLICIES: dict[str, OwnedSurfaceRefreshPolicy] = {
 
 
 def refresh_owned_surface(*, repo_root: Path, surface: str) -> int:
+    from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
     from odylith.runtime.governance import sync_workstream_artifacts
 
     policy = _policy_for_surface(surface)
+    root = Path(repo_root).resolve()
+    odylith_context_engine_projection_search_runtime.clear_runtime_process_caches(repo_root=root)
+    if policy.surface == "compass":
+        _ensure_compass_refresh_inputs(repo_root=root)
     return sync_workstream_artifacts.refresh_dashboard_surfaces(
-        repo_root=Path(repo_root).resolve(),
+        repo_root=root,
         surfaces=(policy.surface,),
         runtime_mode=policy.runtime_mode,
         atlas_sync=policy.atlas_sync,
@@ -79,6 +86,36 @@ def _policy_for_surface(surface: str) -> OwnedSurfaceRefreshPolicy:
     if policy is None:
         raise ValueError(f"unknown owned surface `{surface}`")
     return policy
+
+
+def _ensure_compass_refresh_inputs(*, repo_root: Path) -> None:
+    """Create the empty baseline files Compass needs on a fresh install."""
+
+    root = Path(repo_root).resolve()
+    bug_index = root / "odylith" / "casebook" / "bugs" / "INDEX.md"
+    if not bug_index.is_file():
+        from odylith.runtime.governance import sync_casebook_bug_index
+
+        sync_casebook_bug_index.sync_casebook_bug_index(repo_root=root)
+
+    traceability_graph = root / "odylith" / "radar" / "traceability-graph.v1.json"
+    if not traceability_graph.is_file():
+        from odylith.runtime.governance import build_traceability_graph
+
+        captured = io.StringIO()
+        with contextlib.redirect_stdout(captured):
+            rc = build_traceability_graph.main(
+                [
+                    "--repo-root",
+                    str(root),
+                    "--output",
+                    "odylith/radar/traceability-graph.v1.json",
+                ]
+            )
+        if rc != 0:
+            detail = " ".join(captured.getvalue().split())
+            suffix = f": {detail}" if detail else ""
+            raise RuntimeError(f"Compass refresh prerequisites failed{suffix}")
 
 
 __all__ = ["OwnedSurfaceRefreshPolicy", "raise_for_failed_refresh", "refresh_owned_surface"]

@@ -343,7 +343,7 @@ def test_later_live_beats_supersede_stale_teaser_confirmation_debt(
         host_family=host_family,
         intervention_key="teaser",
         turn_phase="prompt_submit",
-        display_markdown="---\n\nOdylith Observation: teaser waiting for the visible Odylith moment.\n\n---",
+        display_markdown="---\n\nOdylith Observation: teaser waiting for the Odylith note.\n\n---",
         delivery_channel="assistant_visible_fallback",
         delivery_status="assistant_render_required",
         render_surface=f"{host_family}_user_prompt_submit",
@@ -418,7 +418,7 @@ def test_all_visible_lanes_clear_to_proven_session_for_both_hosts(
     _append(
         key="teaser",
         kind="intervention_teaser",
-        text="---\n\nOdylith Observation: teaser pending for the visible Odylith moment.\n\n---",
+        text="---\n\nOdylith Observation: teaser pending for the Odylith note.\n\n---",
         phase="prompt_submit",
         bundle="prompt-1",
     )
@@ -552,16 +552,16 @@ def test_codex_intervention_status_is_low_latency_and_human_readable(tmp_path: P
     assert report["delivery_ledger"]["chat_confirmed_event_count"] == 0
     assert "**Odylith Intervention Status**" in rendered
     assert "Activation: ready" in rendered
-    assert "Chat-visible proof: ledger_visible_unconfirmed" in rendered
-    assert "1 ledger-visible event(s)" in rendered
+    assert "Chat visibility: recorded but not confirmed in chat" in rendered
+    assert "1 recorded-visible event(s)" in rendered
     assert "proven-visible event(s)" not in rendered
-    assert "- Observation/Proposal: ledger 1/1 (100.0%); chat-confirmed 0/1 (0.0%);" in rendered
+    assert "- Observation/Proposal: recorded-visible 1/1 (100.0%); confirmed-in-chat 0/1 (0.0%);" in rendered
     assert "Odylith Observation" in rendered
     assert "Fast smoke:" in rendered
     assert any(row["lane"] == "Ambient Highlight" for row in report["active_lanes"])
     assert any(
         row["lane"] == "Odylith Assist"
-        and "prompt-submit visible fallback" in row["phase"]
+        and "prompt-submit visible recovery" in row["phase"]
         for row in report["active_lanes"]
     )
     assert all(row["lane"] != "Teaser / Ambient" for row in report["active_lanes"])
@@ -580,9 +580,9 @@ def test_codex_intervention_status_separates_static_ready_from_visible_proof(tmp
     assert report["activation"] == "ready"
     assert report["delivery_ledger"]["visible_event_count"] == 0
     assert report["chat_visible_proof"]["status"] == "unproven_this_session"
-    assert "Chat-visible proof: unproven_this_session" in rendered
-    assert "End-to-end claim gate: only `Activation: ready` with `Chat-visible proof: proven_this_session` counts as fully chat-proved" in rendered
-    assert "assistant must render the visible-intervention fallback directly" in rendered
+    assert "Chat visibility: not confirmed in this session" in rendered
+    assert "End-to-end claim gate: only `Activation: ready` with chat visibility confirmed in this session counts as fully active" in rendered
+    assert "assistant must render assistant-visible Odylith text directly" in rendered
 
 
 def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visible(tmp_path: Path) -> None:
@@ -590,12 +590,12 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
     stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
-        summary="Observation computed in hidden hook context.",
+        summary="Observation computed in hidden host context.",
         session_id="session-hidden-ready",
         host_family="codex",
         intervention_key="iv-hidden-ready",
         turn_phase="post_bash_checkpoint",
-        display_markdown="**Odylith Observation:** Hidden hook context is not chat-visible proof.",
+        display_markdown="**Odylith Observation:** Hidden host context is not chat visibility.",
         delivery_channel="system_message_and_assistant_fallback",
         delivery_status="assistant_fallback_ready",
         render_surface="codex_post_tool_use",
@@ -617,8 +617,8 @@ def test_codex_intervention_status_does_not_count_hidden_ready_payload_as_visibl
     assert report["assistant_visible_replay_count"] == 1
     assert report["assistant_visible_replay_additional_count"] == 0
     assert "Next assistant-visible replay:" in rendered
-    assert rendered.count("**Odylith Observation:** Hidden hook context is not chat-visible proof.") == 1
-    assert "---\n\n**Odylith Observation:** Hidden hook context is not chat-visible proof.\n\n---" in rendered
+    assert rendered.count("**Odylith Observation:** Hidden host context is not chat visibility.") == 1
+    assert "---\n\n**Odylith Observation:** Hidden host context is not chat visibility.\n\n---" in rendered
 
 
 def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is_pending(
@@ -662,8 +662,8 @@ def test_intervention_status_keeps_proven_session_honest_when_new_hidden_beat_is
     assert report["delivery_ledger"]["visible_event_count"] == 1
     assert report["delivery_ledger"]["unconfirmed_event_count"] == 1
     assert report["chat_visible_proof"]["status"] == "ledger_visible_with_pending_confirmation"
-    assert "pending chat-confirmation event(s)" in rendered
-    assert "ledger-visible-only and pending-confirmation states are partial." in rendered
+    assert "waiting-for-chat event(s)" in rendered
+    assert "recorded-only and waiting states are partial." in rendered
     assert report["assistant_visible_replay_count"] == 1
     assert report["assistant_visible_replay_additional_count"] == 0
     assert "Next assistant-visible replay:" in rendered

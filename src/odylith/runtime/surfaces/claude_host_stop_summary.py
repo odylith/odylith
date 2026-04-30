@@ -16,17 +16,13 @@ payload never breaks Claude Code's stop dispatch.
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 from typing import Any
 from typing import Mapping
 
-from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
-from odylith.runtime.intervention_engine import visible_delivery_runtime
 from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
-from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import host_intervention_support
 
@@ -126,64 +122,6 @@ def main(argv: list[str] | None = None) -> int:
             project_dir=repo_root,
             summary=summary,
             workstreams=workstreams,
-        )
-    bundle = _stop_intervention_bundle(repo_root=repo_root, payload=payload)
-    decision = (
-        host_surface_runtime.visible_intervention_decision(
-            repo_root=repo_root,
-            bundle=bundle,
-            host_family="claude",
-            turn_phase="stop_summary",
-            session_id=session_id,
-            include_proposal=False,
-            include_closeout=True,
-        )
-        if bundle
-        else None
-    )
-    replay = visibility_replay.replayable_chat_markdown(
-        repo_root=repo_root,
-        host_family="claude",
-        session_id=session_id,
-        max_live_blocks=4,
-        ambient_cap=3,
-        include_assist=True,
-        include_teaser=False,
-    )
-    closeout_text = (
-        conversation_surface.render_closeout_text(bundle, markdown=True)
-        if bundle
-        else ""
-    )
-    rendered = (
-        host_intervention_support.merge_replay_with_closeout(replay=replay, closeout_text=closeout_text)
-        if replay
-        else decision.visible_markdown
-        if decision is not None
-        else render_stop_summary(
-            repo_root=repo_root,
-            payload=payload,
-            conversation_bundle_override=bundle,
-        )
-    )
-    if bundle and decision is not None:
-        host_surface_runtime.append_visible_intervention_events(
-            repo_root=repo_root,
-            bundle=bundle,
-            decision=decision,
-            render_surface="claude_stop",
-        )
-    if rendered:
-        sys.stdout.write(
-            json.dumps(
-                host_surface_runtime.stop_payload(
-                    system_message=rendered,
-                    block_for_visible_delivery=not visible_delivery_runtime.visible_delivery_already_present(
-                        last_assistant_message=str(payload.get("last_assistant_message", "")),
-                        visible_text=rendered,
-                    ),
-                )
-            )
         )
     return 0
 

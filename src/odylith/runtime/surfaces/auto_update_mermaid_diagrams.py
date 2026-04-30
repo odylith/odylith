@@ -472,12 +472,32 @@ def _select_stale_diagram_indexes(
         if not isinstance(raw_item, dict):
             continue
         source_mmd = str(raw_item.get("source_mmd", "")).strip()
+        source_svg = str(raw_item.get("source_svg", "")).strip()
+        source_png = str(raw_item.get("source_png", "")).strip()
         review_date = _parse_review_date(str(raw_item.get("last_reviewed_utc", "")).strip())
         watch_paths = [
             PurePosixPath(str(token or "").strip()).as_posix()
             for token in raw_item.get("change_watch_paths", [])
             if str(token or "").strip()
         ]
+        source_svg_path = (
+            surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_svg)
+            if source_svg
+            else None
+        )
+        source_png_path = (
+            surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_png)
+            if source_png
+            else None
+        )
+        if (
+            source_svg_path is None
+            or source_png_path is None
+            or not source_svg_path.is_file()
+            or not source_png_path.is_file()
+        ):
+            selected.append(idx)
+            continue
         if review_date is None:
             selected.append(idx)
             continue

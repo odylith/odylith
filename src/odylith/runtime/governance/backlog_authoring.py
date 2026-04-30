@@ -76,6 +76,15 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="Queued through `odylith backlog create` from the current maintainer lane.",
     )
     parser.add_argument("--confidence", default=_DEFAULT_CONFIDENCE)
+    parser.add_argument(
+        "--workstream-type",
+        choices=("standalone", "umbrella"),
+        default="standalone",
+        help=(
+            "Topology for created workstream records. With `umbrella` and multiple --title values, "
+            "the first title becomes the umbrella and the remaining titles become reciprocal child workstreams."
+        ),
+    )
     parser.add_argument("--founder-override", action="store_true")
     parser.add_argument("--override-note", default="")
     parser.add_argument("--override-review-date", default="")
@@ -283,7 +292,13 @@ def _build_metadata(
     title: str,
     today: dt.date,
     args: argparse.Namespace,
+    workstream_type: str | None = None,
+    workstream_parent: str = "",
+    workstream_children: Sequence[str] = (),
 ) -> dict[str, str]:
+    resolved_type = str(workstream_type or args.workstream_type or "standalone").strip().lower()
+    if resolved_type not in {"standalone", "umbrella", "child"}:
+        raise ValueError(f"unsupported workstream type `{resolved_type}`")
     payload = {
         "status": "queued",
         "idea_id": idea_id,
@@ -302,9 +317,9 @@ def _build_metadata(
         "founder_override": "yes" if bool(args.founder_override) else "no",
         "promoted_to_plan": "",
         execution_wave_contract.EXECUTION_MODEL_FIELD: execution_wave_contract.EXECUTION_MODEL_STANDARD,
-        "workstream_type": "standalone",
-        "workstream_parent": "",
-        "workstream_children": "",
+        "workstream_type": resolved_type,
+        "workstream_parent": str(workstream_parent or "").strip(),
+        "workstream_children": ", ".join(str(item).strip().upper() for item in workstream_children if str(item).strip()),
         "workstream_depends_on": "",
         "workstream_blocks": "",
         "related_diagram_ids": "",
@@ -328,6 +343,56 @@ def _build_metadata(
         )
     payload["ordering_score"] = str(declared_score)
     return payload
+
+
+def _allocated_workstream_ids(
+    *,
+    ideas: Mapping[str, backlog_contract.IdeaSpec],
+    count: int,
+) -> list[str]:
+    max_id = 0
+    for idea_id in ideas:
+        match = _WORKSTREAM_RE.fullmatch(str(idea_id).strip().upper())
+        if match:
+            max_id = max(max_id, int(match.group(1)))
+    return [f"B-{value:03d}" for value in range(max_id + 1, max_id + count + 1)]
+
+
+def _created_workstream_topology(
+    *,
+    allocated_ids: Sequence[str],
+    args: argparse.Namespace,
+) -> dict[str, dict[str, object]]:
+    requested_type = str(args.workstream_type or "standalone").strip().lower()
+    if requested_type == "standalone":
+        return {
+            idea_id: {
+                "workstream_type": "standalone",
+                "workstream_parent": "",
+                "workstream_children": [],
+            }
+            for idea_id in allocated_ids
+        }
+    if requested_type != "umbrella":
+        raise ValueError(f"unsupported --workstream-type `{requested_type}`")
+    if not allocated_ids:
+        return {}
+    umbrella_id = str(allocated_ids[0]).strip().upper()
+    child_ids = [str(item).strip().upper() for item in allocated_ids[1:] if str(item).strip()]
+    topology: dict[str, dict[str, object]] = {
+        umbrella_id: {
+            "workstream_type": "umbrella",
+            "workstream_parent": "",
+            "workstream_children": child_ids,
+        }
+    }
+    for child_id in child_ids:
+        topology[child_id] = {
+            "workstream_type": "child",
+            "workstream_parent": umbrella_id,
+            "workstream_children": [],
+        }
+    return topology
 
 
 def _build_rationale_lines(
@@ -473,8 +538,10 @@ def create_queued_backlog_items(
 
     created_items: list[CreatedBacklogItem] = []
     new_text_by_path: dict[Path, str] = {}
+    metadata_by_idea_id: dict[str, dict[str, str]] = {}
     mutable_ideas = dict(ideas)
     reserved_paths: set[Path] = set()
+    normalized_titles: list[str] = []
     for raw_title in titles:
         title = backlog_title_contract.normalize_workstream_title(
             title=str(raw_title).strip(),
@@ -482,8 +549,24 @@ def create_queued_backlog_items(
         )
         if not title:
             raise ValueError("backlog titles must be non-empty")
-        idea_id = _next_workstream_id(mutable_ideas)
-        metadata = _build_metadata(idea_id=idea_id, title=title, today=today, args=args)
+        normalized_titles.append(title)
+    allocated_ids = _allocated_workstream_ids(ideas=mutable_ideas, count=len(normalized_titles))
+    topology_by_id = _created_workstream_topology(allocated_ids=allocated_ids, args=args)
+    for idea_id, title in zip(allocated_ids, normalized_titles, strict=True):
+        topology = topology_by_id.get(idea_id, {})
+        workstream_children = topology.get("workstream_children", [])
+        if not isinstance(workstream_children, (list, tuple)):
+            workstream_children = ()
+        metadata = _build_metadata(
+            idea_id=idea_id,
+            title=title,
+            today=today,
+            args=args,
+            workstream_type=str(topology.get("workstream_type", "standalone")),
+            workstream_parent=str(topology.get("workstream_parent", "")),
+            workstream_children=tuple(str(item) for item in workstream_children if str(item).strip()),
+        )
+        metadata_by_idea_id[idea_id] = metadata
         idea_path = _unique_idea_path(ideas_root=ideas_root, title=title, today=today, reserved=reserved_paths)
         reserved_paths.add(idea_path)
         sections = _grounded_sections_for_title(title=title, args=args)
@@ -524,7 +607,7 @@ def create_queued_backlog_items(
             }
         )
     for ordinal, item in enumerate(created_items, start=len(row_records)):
-        metadata = _build_metadata(idea_id=item.idea_id, title=item.title, today=today, args=args)
+        metadata = metadata_by_idea_id[item.idea_id]
         row_records.append(
             {
                 "idea_id": item.idea_id,

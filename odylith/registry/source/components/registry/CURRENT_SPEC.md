@@ -141,6 +141,19 @@ deep-skill policy expectations for configured high-risk components. Some
 diagnostics remain warn-only by design, such as candidate components pending
 review.
 
+`odylith component register` is a Registry truth writer, so its output must pass
+this validator immediately. New entries must use canonical first-class enum
+values such as `category: governance_engine` and `qualification: candidate`, and
+the scaffolded `CURRENT_SPEC.md` must include a dated `## Feature History`
+entry so the component can load into Registry intelligence instead of stranding
+the browser on stale delivery intelligence.
+
+Consumer repair owns the released 0.1.11 drift where `component register`
+emitted `category: detected`, `qualification: detected`, and specs without
+Feature History. `odylith doctor --repo-root . --repair` must repair only that
+known consumer-repo writer drift, leave product-repo Registry truth untouched,
+and produce source that passes this validator before operators rerun sync.
+
 ### Local cache invalidation
 Registry component-index and component-report caches are performance artifacts,
 not governance truth. Their fingerprints must include:

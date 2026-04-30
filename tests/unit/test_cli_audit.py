@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -252,12 +253,6 @@ _HANDLER_CASES = [
         "path": ("compass", "log"),
         "argv": lambda root: ["compass", "log", f"--repo-root={root}"],
         "handler": "_cmd_compass_log",
-        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
-    },
-    {
-        "path": ("compass", "refresh"),
-        "argv": lambda root: ["compass", "refresh", f"--repo-root={root}"],
-        "handler": "_cmd_compass_refresh",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
     },
     {
@@ -644,13 +639,6 @@ _DOWNSTREAM_ARGV_CASES = [
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
     {
-        "path": ("validate", "discipline"),
-        "argv": lambda root: ["validate", "discipline", f"--repo-root={root}"],
-        "target_obj": cli.validate_discipline,
-        "target_attr": "main",
-        "expected_argv": lambda root: ["--repo-root", str(root)],
-    },
-    {
         "path": ("validate", "plan-risk-mitigation"),
         "argv": lambda root: ["validate", "plan-risk-mitigation", f"--repo-root={root}"],
         "target_obj": cli.validate_plan_risk_mitigation_contract,
@@ -767,13 +755,25 @@ def test_cli_benchmark_compare_dispatch_and_json(monkeypatch, tmp_path: Path, ca
 def test_cli_dispatch_matrix_covers_every_parser_leaf() -> None:
     parser = cli.build_parser()
     leaf_paths = _parser_leaf_paths(parser)
-    covered_paths = {tuple(case["path"]) for case in _HANDLER_CASES}
-    covered_paths.update(tuple(case["path"]) for case in _OWNED_SURFACE_REFRESH_CASES)
-    covered_paths.update(tuple(case["path"]) for case in _SHORTCUT_CASES)
-    covered_paths.update(tuple(case["path"]) for case in _DISCIPLINE_SHORTCUT_CASES)
-    covered_paths.update(tuple(case["path"]) for case in _DOWNSTREAM_ARGV_CASES)
+    covered_paths = set(_dispatch_coverage_paths())
 
     assert leaf_paths == covered_paths
+
+
+def test_cli_dispatch_matrix_has_exactly_one_fixture_per_leaf() -> None:
+    counts = Counter(_dispatch_coverage_paths())
+    duplicates = sorted(" ".join(path) for path, count in counts.items() if count > 1)
+
+    assert duplicates == []
+
+
+def _dispatch_coverage_paths() -> list[tuple[str, ...]]:
+    paths = [tuple(case["path"]) for case in _HANDLER_CASES]
+    paths.extend(tuple(case["path"]) for case in _OWNED_SURFACE_REFRESH_CASES)
+    paths.extend(tuple(case["path"]) for case in _SHORTCUT_CASES)
+    paths.extend(tuple(case["path"]) for case in _DISCIPLINE_SHORTCUT_CASES)
+    paths.extend(tuple(case["path"]) for case in _DOWNSTREAM_ARGV_CASES)
+    return paths
 
 
 def test_extract_repo_root_accepts_equals_syntax_and_stops_at_double_dash(tmp_path: Path) -> None:
