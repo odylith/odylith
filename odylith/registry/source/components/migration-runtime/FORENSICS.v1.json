@@ -1,0 +1,180 @@
+{
+  "component_id": "migration-runtime",
+  "diagrams": [
+    "D-042"
+  ],
+  "forensic_coverage": {
+    "empty_reasons": [],
+    "explicit_event_count": 5,
+    "mapped_workstream_evidence_count": 4,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 6,
+    "status": "forensic_coverage_present",
+    "timeline_event_count": 6
+  },
+  "name": "Migration Runtime",
+  "path_prefixes": [
+    "src/odylith/install/migration_runtime.py"
+  ],
+  "spec_ref": "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+  "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 397,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "migration-runtime"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+      "ts_iso": "2026-04-29T23:17:51-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
+        "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
+      ],
+      "confidence": "high",
+      "event_index": 384,
+      "explicit_components": [
+        "migration-runtime",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "github-issue-pipeline",
+        "migration-runtime",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "B-127 Migration Runtime Release Gate closed after migration-runtime proof and governance validation.",
+      "ts_iso": "2026-04-27T18:15:04-07:00",
+      "workstreams": [
+        "B-127"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
+        "src/odylith/install/migration_runtime.py",
+        "tests/unit/install/test_migration_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 383,
+      "explicit_components": [
+        "casebook",
+        "migration-runtime",
+        "odylith",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "casebook",
+        "github-issue-pipeline",
+        "migration-runtime",
+        "odylith",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "0.1.12 migration-runtime QA pass closed with full pytest, release migration gate, doctor, Casebook, and component-registry validation green.",
+      "ts_iso": "2026-04-27T17:57:36-07:00",
+      "workstreams": [
+        "B-127"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md",
+        "src/odylith/install/migration_runtime.py",
+        "tests/unit/install/test_migration_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 382,
+      "explicit_components": [
+        "migration-runtime",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "github-issue-pipeline",
+        "migration-runtime",
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "0.1.12 migration runtime gate hardened with legacy root routing, explicit fixture markers, active-state classification, and expanded edge-case tests.",
+      "ts_iso": "2026-04-27T17:15:49-07:00",
+      "workstreams": [
+        "B-127"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 381,
+      "explicit_components": [
+        "migration-runtime",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "migration-runtime",
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "0.1.12 migration-runtime release gate implemented; dry-run/apply/doctor now share one MigrationPlan and release migration-gate is passing.",
+      "ts_iso": "2026-04-27T16:32:34-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+        "src/odylith/install/migration_runtime.py",
+        "tests/unit/install/test_migration_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 380,
+      "explicit_components": [
+        "migration-runtime",
+        "odylith",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "github-issue-pipeline",
+        "migration-runtime",
+        "odylith",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implemented the 0.1.12 migration-runtime release gate: dry-run/apply share one MigrationPlan, v0.1.11 value-engine migration routes through the registry, doctor reports ledger state, and release migration-gate validates fixture coverage and lifecycle bypasses.",
+      "ts_iso": "2026-04-27T16:23:09-07:00",
+      "workstreams": [
+        "B-127"
+      ]
+    }
+  ],
+  "traceability": {
+    "code_references": [],
+    "developer_docs": [],
+    "runbooks": []
+  },
+  "version": "v1",
+  "what_it_is": "Install-owned migration planning, ledger, doctor-observability, and release-gate runtime for Odylith install and upgrade paths.",
+  "why_tracked": "Keeps release migration behavior authoritative and auditable so dry-run, apply, reinstall, doctor, and release gates cannot derive migration state independently.",
+  "workstreams": [
+    "B-127"
+  ]
+}

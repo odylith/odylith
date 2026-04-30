@@ -25,6 +25,26 @@ _RELEASE_ID = "release-first-install-order-fixture"
 _WAVE_ID = "W3"
 _SURFACE_COMMANDS = ("component", "backlog", "atlas", "bug", "compass")
 _FIRST_COMMAND_ORDERS = tuple(itertools.permutations(_SURFACE_COMMANDS))
+_FAKE_FIRST_INSTALL_UX_LEAKS = (
+    "Tribunal already has CB-122",
+    "Casebook already remembers CB-122",
+    "This turn resolves to B-096",
+    "Show the next Odylith Observation",
+    "transcript confirmation",
+    "proven visible",
+    "brand promise",
+    "ready to speak",
+    "systemMessage",
+    "additionalContext",
+    "Stop hook error",
+    "Stop says",
+)
+
+
+def _assert_no_fake_first_install_ux_leaks(captured: pytest.CaptureResult[str]) -> None:
+    text = f"{captured.out}\n{captured.err}".casefold()
+    leaks = [token for token in _FAKE_FIRST_INSTALL_UX_LEAKS if token.casefold() in text]
+    assert leaks == []
 
 
 def _install_fresh_consumer_repo(monkeypatch: pytest.MonkeyPatch, repo_root: Path) -> None:
@@ -307,7 +327,7 @@ def test_first_install_governance_records_can_be_created_in_every_surface_order(
     commands = _commands(repo_root)
     for command_name in order:
         assert cli.main(commands[command_name]) == 0, command_name
-        capsys.readouterr()
+        _assert_no_fake_first_install_ux_leaks(capsys.readouterr())
 
     workstream_ids = _created_workstream_ids(repo_root)
     for command in _dependent_record_commands(
@@ -316,9 +336,10 @@ def test_first_install_governance_records_can_be_created_in_every_surface_order(
         child_id=workstream_ids["child_two"],
     ):
         assert cli.main(command) == 0, " ".join(command[:2])
-        capsys.readouterr()
+        _assert_no_fake_first_install_ux_leaks(capsys.readouterr())
 
     assert cli.main(["sync", "--repo-root", str(repo_root), "--proceed-with-overlap", "--force", "--impact-mode", "full"]) == 0
+    _assert_no_fake_first_install_ux_leaks(capsys.readouterr())
 
     _assert_created_truth_and_surfaces(repo_root, workstream_ids=workstream_ids)
 

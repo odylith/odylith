@@ -1,4 +1,6 @@
 # GitHub Issue Pipeline
+Last updated: 2026-04-29
+
 
 ## Overview
 
@@ -87,6 +89,13 @@ release closeout without closing issues before artifacts are public.
 - CLI: `tests/unit/runtime/test_github_issue_pipeline.py` calls
   `odylith github issue triage` through the top-level CLI with fake GitHub
   transport so CI never writes to public GitHub.
+
+## Requirements Trace
+This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
+
+<!-- registry-requirements:start -->
+- No synchronized requirement or contract signals yet.
+<!-- registry-requirements:end -->
 
 ## Feature History
 

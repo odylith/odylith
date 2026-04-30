@@ -30,12 +30,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 106,
+    "explicit_event_count": 107,
     "mapped_workstream_evidence_count": 97,
     "recent_path_match_count": 0,
     "spec_history_event_count": 6,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 106
+    "timeline_event_count": 107
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -44,6 +44,21 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 387,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "odylith",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Odylith Observation: Tribunal already has CB-122 on this path. Why it matters: Treat unseen Odylith moments as not delivered until the Markdown appears in chat.",
+      "ts_iso": "2026-04-28T21:11:21Z",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

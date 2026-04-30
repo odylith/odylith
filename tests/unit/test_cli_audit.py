@@ -11,6 +11,22 @@ from odylith.runtime.common import command_surface
 from odylith.runtime.evaluation import benchmark_compare as _real_benchmark_compare
 
 
+_FAKE_CLI_UX_LEAKS = (
+    "Tribunal already has CB-122",
+    "Casebook already remembers CB-122",
+    "This turn resolves to B-096",
+    "Show the next Odylith Observation",
+    "transcript confirmation",
+    "proven visible",
+    "brand promise",
+    "ready to speak",
+    "systemMessage",
+    "additionalContext",
+    "Stop hook error",
+    "Stop says",
+)
+
+
 def _parser_nodes(parser: argparse.ArgumentParser, prefix: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
     nodes: set[tuple[str, ...]] = set()
     for action in parser._actions:
@@ -27,25 +43,38 @@ def _parser_leaf_paths(parser: argparse.ArgumentParser) -> set[tuple[str, ...]]:
     return {path for path in all_nodes if not any(other[: len(path)] == path and other != path for other in all_nodes)}
 
 
-def _assert_help_ok(argv: list[str]) -> None:
+def _assert_no_fake_cli_ux_leaks(text: str) -> None:
+    lowered = text.casefold()
+    leaks = [token for token in _FAKE_CLI_UX_LEAKS if token.casefold() in lowered]
+    assert leaks == []
+
+
+def _assert_help_ok(argv: list[str], capsys: pytest.CaptureFixture[str]) -> None:
     try:
         rc = cli.main(argv)
     except SystemExit as exc:
         assert exc.code == 0
     else:
         assert rc == 0
+    captured = capsys.readouterr()
+    _assert_no_fake_cli_ux_leaks(captured.out)
+    _assert_no_fake_cli_ux_leaks(captured.err)
 
 
-def test_cli_help_smoke_covers_every_parser_node(monkeypatch, tmp_path: Path) -> None:
+def test_cli_help_smoke_covers_every_parser_node(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     parser = cli.build_parser()
     nodes = _parser_nodes(parser)
 
     monkeypatch.setattr(cli.subagent_router, "main", lambda argv: 0)
     monkeypatch.setattr(cli.subagent_orchestrator, "main", lambda argv: 0)
 
-    _assert_help_ok(["--help"])
+    _assert_help_ok(["--help"], capsys)
     for path in sorted(nodes):
-        _assert_help_ok([*path, "--help"])
+        _assert_help_ok([*path, "--help"], capsys)
 
 
 _HANDLER_CASES = [

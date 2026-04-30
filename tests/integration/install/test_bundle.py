@@ -44,6 +44,9 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     assert (project_root / ".claude" / "hooks" / "odylith_claude_support.py").is_file()
     assert (project_root / ".claude" / "hooks" / "subagent-start-ground.py").is_file()
     assert (project_root / ".claude" / "hooks" / "refresh-governance-after-edit.py").is_file()
+    refresh_hook = (project_root / ".claude" / "hooks" / "refresh-governance-after-edit.py").read_text(encoding="utf-8")
+    assert "governance refresh completed" not in refresh_hook
+    assert "completed after editing" not in refresh_hook
     assert (project_root / ".claude" / "hooks" / "session-start-ground.py").is_file()
     assert (project_root / ".claude" / "hooks" / "log-stop-summary.py").is_file()
     assert (project_root / ".claude" / "hooks" / "guard-destructive-bash.py").is_file()

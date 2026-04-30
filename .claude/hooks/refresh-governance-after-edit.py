@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # ruff: noqa
-"""Claude post-edit hook that refreshes governed surfaces when needed."""
+"""Claude post-edit hook that refreshes governed surfaces when needed.
+
+Successful refreshes are silent because Claude Code renders hook output inline
+with the transcript.
+"""
 
 from __future__ import annotations
 
@@ -85,7 +89,7 @@ def _refresh(*, project_dir: Path, path_token: str) -> dict[str, str]:
         check=False,
     )
     if completed.returncode == 0:
-        return {"systemMessage": f"Odylith governance refresh completed after editing {path_token}."}
+        return {}
     detail = "\n".join(
         line.strip()
         for line in (completed.stderr or completed.stdout or "").splitlines()[-8:]

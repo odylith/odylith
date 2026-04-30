@@ -7,10 +7,10 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 111,
-    "mapped_workstream_evidence_count": 90,
-    "recent_path_match_count": 1,
-    "spec_history_event_count": 29,
+    "explicit_event_count": 112,
+    "mapped_workstream_evidence_count": 91,
+    "recent_path_match_count": 0,
+    "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
     "timeline_event_count": 112
   },
@@ -39,25 +39,42 @@
   "timeline": [
     {
       "artifacts": [
-        "claude/settings.json",
-        "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
-        "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
-        "src/odylith/bundle/assets/project-root/.claude/settings.json",
-        "src/odylith/runtime/common/claude_cli_capabilities.py",
-        "src/odylith/runtime/intervention_engine/fact_producer_runtime.py",
-        "src/odylith/runtime/surfaces/codex_host_prompt_context.py"
+        "src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py",
+        "src/odylith/runtime/surfaces/backlog_traceability_paths.py",
+        "tests/unit/runtime/test_backlog_traceability_paths.py",
+        "tests/unit/runtime/test_surface_refresh_fingerprint_dag.py"
       ],
       "confidence": "high",
-      "event_index": 378,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 393,
+      "explicit_components": [
+        "casebook",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "statement",
       "mapped_components": [
-        "governance-intervention-engine"
+        "casebook",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: claude/settings.json, odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md +5 more",
-      "ts_iso": "2026-04-27T13:13:46-07:00",
-      "workstreams": []
+      "summary": "QA closure for the 0.1.12 Radar anti-slop slice: focused Radar traceability/render tests, surface refresh fingerprint tests, hygiene checks, intervention/subagent/execution/memory alignment tests, full browser smoke, component-registry validation, Casebook validation, Discipline validation, py_compile, and git diff --check passed.",
+      "ts_iso": "2026-04-28T15:56:42-07:00",
+      "workstreams": [
+        "B-117"
+      ]
     },
     {
       "artifacts": [],

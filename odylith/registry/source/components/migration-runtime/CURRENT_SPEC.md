@@ -1,4 +1,6 @@
 # Migration Runtime
+Last updated: 2026-04-29
+
 
 ## Overview
 
@@ -108,6 +110,21 @@ contract.
 - CLI: `tests/unit/test_cli.py` proves `upgrade --dry-run --json` carries the
   additive migration plan fields and `release migration-gate --json` emits a
   machine-readable gate report.
+
+## Requirements Trace
+This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
+
+<!-- registry-requirements:start -->
+- **2026-04-27 · Implementation:** 0.1.12 migration-runtime QA pass closed with full pytest, release migration gate, doctor, Casebook, and component-registry validation green.
+  - Scope: B-127
+  - Evidence: odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md, src/odylith/install/migration_runtime.py +1 more
+- **2026-04-27 · Implementation:** 0.1.12 migration runtime gate hardened with legacy root routing, explicit fixture markers, active-state classification, and expanded edge-case tests.
+  - Scope: B-127
+  - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md, src/odylith/install/migration_runtime.py +1 more
+- **2026-04-27 · Implementation:** Implemented the 0.1.12 migration-runtime release gate: dry-run/apply share one MigrationPlan, v0.1.11 value-engine migration routes through the registry, doctor reports ledger state, and release migration-gate validates fixture coverage and lifecycle bypasses.
+  - Scope: B-127
+  - Evidence: odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md, src/odylith/install/migration_runtime.py +1 more
+<!-- registry-requirements:end -->
 
 ## Feature History
 

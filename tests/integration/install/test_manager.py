@@ -658,6 +658,9 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert (repo_root / ".claude" / "hooks" / "odylith_claude_support.py").is_file()
     assert (repo_root / ".claude" / "hooks" / "subagent-start-ground.py").is_file()
     assert (repo_root / ".claude" / "hooks" / "refresh-governance-after-edit.py").is_file()
+    refresh_hook = (repo_root / ".claude" / "hooks" / "refresh-governance-after-edit.py").read_text(encoding="utf-8")
+    assert "governance refresh completed" not in refresh_hook
+    assert "completed after editing" not in refresh_hook
     assert (repo_root / ".claude" / "hooks" / "log-stop-summary.py").is_file()
     assert (repo_root / ".agents" / "bin" / "odylith-host-launcher.py").is_file()
     assert (repo_root / ".claude" / "rules" / "odylith-governance.md").is_file()

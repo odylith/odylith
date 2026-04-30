@@ -199,7 +199,7 @@
           "odylith/registry/source/components/odylith/CURRENT_SPEC.md"
         ],
         "code_references": [
-          ".github/workflows/release.yml",
+          "github/workflows/release.yml",
           "src/odylith/cli.py",
           "src/odylith/install/manager.py",
           "src/odylith/runtime/governance/validate_self_host_posture.py",
@@ -260,7 +260,7 @@
           "odylith/registry/source/components/release/CURRENT_SPEC.md"
         ],
         "code_references": [
-          ".github/workflows/test.yml",
+          "github/workflows/test.yml",
           "src/odylith/cli.py",
           "src/odylith/install/managed_runtime.py",
           "src/odylith/install/manager.py",
@@ -1286,7 +1286,7 @@
     {
       "idea_id": "B-030",
       "title": "Consumer Upgrade, Reinstall Recovery, and Shell Refresh",
-      "status": "implementation",
+      "status": "finished",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -1303,7 +1303,7 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -2100,7 +2100,7 @@
     {
       "idea_id": "B-049",
       "title": "macOS Runtime Trust Ignores OS Metadata Noise",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-048",
       "workstream_children": [],
@@ -2121,7 +2121,7 @@
         "D-020"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-macos-runtime-trust-ignores-os-metadata-noise.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-28-macos-runtime-trust-metadata-noise.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -2132,7 +2132,7 @@
       "release_history": [],
       "release_history_summary": "",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -2143,7 +2143,7 @@
     {
       "idea_id": "B-050",
       "title": "Repair and Reinstall Converge After Partial Runtime Failure",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-048",
       "workstream_children": [],
@@ -2164,7 +2164,7 @@
         "D-019"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -2175,7 +2175,7 @@
       "release_history": [],
       "release_history_summary": "",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -2228,7 +2228,7 @@
     {
       "idea_id": "B-052",
       "title": "Legacy Migration Stale Reference Audit",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-048",
       "workstream_children": [],
@@ -2247,7 +2247,7 @@
         "D-019"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-migration-stale-reference-audit.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-28-legacy-migration-stale-reference-audit.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -2258,7 +2258,7 @@
       "release_history": [],
       "release_history_summary": "",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -2269,7 +2269,7 @@
     {
       "idea_id": "B-053",
       "title": "Legacy Radar Index Normalization Before Sync Validation",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-048",
       "workstream_children": [],
@@ -2290,7 +2290,7 @@
         "D-006"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-radar-index-normalization-before-sync-validation.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-28-legacy-radar-index-normalization-before-sync-validation.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -2301,7 +2301,7 @@
       "release_history": [],
       "release_history_summary": "",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -2312,7 +2312,7 @@
     {
       "idea_id": "B-054",
       "title": "Sync Failure Summary Dedup and Next-Action Routing",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-048",
       "workstream_children": [],
@@ -2331,7 +2331,7 @@
         "D-006"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-sync-failure-summary-dedup-and-next-action-routing.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-28-sync-failure-summary-dedup-and-next-action-routing.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -2342,7 +2342,7 @@
       "release_history": [],
       "release_history_summary": "",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -2353,7 +2353,7 @@
     {
       "idea_id": "B-055",
       "title": "Lifecycle Plan Dirty Overlap Summary Defaults",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-048",
       "workstream_children": [],
@@ -2372,7 +2372,7 @@
         "D-018"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-lifecycle-plan-dirty-overlap-summary-defaults.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-28-lifecycle-plan-dirty-overlap-summary-defaults.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -2383,7 +2383,7 @@
       "release_history": [],
       "release_history_summary": "",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 1,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -2394,7 +2394,7 @@
     {
       "idea_id": "B-056",
       "title": "Trust Bootstrap Warning Suppression and Success Clarity",
-      "status": "queued",
+      "status": "finished",
       "workstream_type": "child",
       "workstream_parent": "B-048",
       "workstream_children": [],
@@ -2413,7 +2413,7 @@
         "D-020"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-trust-bootstrap-warning-suppression-and-success-clarity.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-28-trust-bootstrap-warning-suppression-and-success-clarity.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -2424,7 +2424,7 @@
       "release_history": [],
       "release_history_summary": "",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -3185,7 +3185,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -3216,11 +3216,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -4129,7 +4132,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -4160,11 +4163,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -4238,7 +4244,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -4269,11 +4275,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -4345,7 +4354,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -4376,11 +4385,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -4490,7 +4502,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -4521,11 +4533,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -4607,7 +4622,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -4638,11 +4653,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -4833,7 +4851,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -4864,11 +4882,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -4942,7 +4963,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -4973,11 +4994,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -5189,7 +5213,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -5220,11 +5244,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -6728,7 +6755,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -6759,11 +6786,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -6819,7 +6849,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -6850,11 +6880,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -6910,7 +6943,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -6941,11 +6974,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -7001,7 +7037,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -7032,11 +7068,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -7092,7 +7131,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -7123,11 +7162,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -7183,7 +7225,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -7214,11 +7256,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -7274,7 +7319,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -7305,11 +7350,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -7365,7 +7413,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -7396,11 +7444,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -7456,7 +7507,7 @@
         "version": "0.1.12",
         "tag": "v0.1.12",
         "name": "",
-        "inherited_name": "",
+        "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
         "effective_name": "0.1.12",
         "display_label": "0.1.12",
         "notes": "",
@@ -7487,11 +7538,14 @@
           "B-125",
           "B-126"
         ],
-        "completed_workstreams": [],
+        "completed_workstreams": [
+          "B-127",
+          "B-140"
+        ],
         "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 18,
-        "completed_workstream_count": 0
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -7508,6 +7562,562 @@
         }
       ],
       "release_history_summary": "Active: 0.1.12 \u00b7 Added to 0.1.12",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-127",
+      "title": "Migration Runtime Release Gate",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-042"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-127",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-27T22:55:50Z",
+          "note": "Target newly created queued backlog record(s) from `odylith backlog create --release release-0-1-12`.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-127",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-28T01:12:45Z",
+          "note": "Closed B-127 after migration-runtime release-gate implementation and validation; finished work no longer targets the active release lane.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.12",
+      "coverage": {
+        "linked_plan_count": 1,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-128",
+      "title": "v0.1.15+ Agentic Context Governance Program",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-context-governance-program.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-129",
+      "title": "v0.1.15+ Agentic Context Component Boundaries and Atlas Topology",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-context-component-boundaries-and-atlas-topology.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-130",
+      "title": "v0.1.15+ Harness-Neutral Run Trace and Artifact Contract",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-harness-neutral-run-trace-and-artifact-contract.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-131",
+      "title": "v0.1.15+ Repo Context Graph v1",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-repo-context-graph-v1.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-132",
+      "title": "v0.1.15+ Collaboration Identity Workspace and Actor Model",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-collaboration-identity-workspace-and-actor-model.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-133",
+      "title": "v0.1.15+ Durable Decisions Annotations and Memory Hygiene",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-durable-decisions-annotations-and-memory-hygiene.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-134",
+      "title": "v0.1.15+ Execution Policy Adapters and Universal Action Gate",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-execution-policy-adapters-and-universal-action-gate.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-135",
+      "title": "v0.1.15+ MCP and A2A Governed Protocol Boundary",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-mcp-and-a2a-governed-protocol-boundary.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-136",
+      "title": "v0.1.15+ Enterprise Outcome Connectors and Hosted Augmentation",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-enterprise-outcome-connectors-and-hosted-augmentation.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-137",
+      "title": "v0.1.15+ Agentic Policy Packs and Compliance Guardrails",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-policy-packs-and-compliance-guardrails.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-138",
+      "title": "v0.1.15+ Agentic Memory Integrity and Security Hardening",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-memory-integrity-and-security-hardening.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-139",
+      "title": "v0.1.15+ Context Continuity Benchmark and Audit Proof Surface",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-context-continuity-benchmark-and-audit-proof-surface.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-140",
+      "title": "Consumer Surface Migration Observer And Release Gate",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-140",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-29T22:58:40Z",
+          "note": "Target newly created queued backlog record(s) from `odylith backlog create --release current`.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-140",
+          "release_id": "release-0-1-12",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-04-29T23:11:59Z",
+          "note": "Completed migration observer release-gate implementation; B-140 closed with done-plan evidence.",
+          "release_label": "0.1.12",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.12",
       "coverage": {
         "linked_plan_count": 1,
         "linked_diagram_count": 0,
@@ -7583,7 +8193,7 @@
       "version": "0.1.12",
       "tag": "v0.1.12",
       "name": "",
-      "inherited_name": "",
+      "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
       "effective_name": "0.1.12",
       "display_label": "0.1.12",
       "notes": "",
@@ -7614,11 +8224,14 @@
         "B-125",
         "B-126"
       ],
-      "completed_workstreams": [],
+      "completed_workstreams": [
+        "B-127",
+        "B-140"
+      ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 18,
-      "completed_workstream_count": 0
+      "completed_workstream_count": 2
     }
   ],
   "release_aliases": {
@@ -7628,7 +8241,7 @@
       "version": "0.1.12",
       "tag": "v0.1.12",
       "name": "",
-      "inherited_name": "",
+      "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
       "effective_name": "0.1.12",
       "display_label": "0.1.12",
       "notes": "",
@@ -7659,11 +8272,14 @@
         "B-125",
         "B-126"
       ],
-      "completed_workstreams": [],
+      "completed_workstreams": [
+        "B-127",
+        "B-140"
+      ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 18,
-      "completed_workstream_count": 0
+      "completed_workstream_count": 2
     },
     "next": {
       "release_id": "release-0-1-12",
@@ -7671,7 +8287,7 @@
       "version": "0.1.12",
       "tag": "v0.1.12",
       "name": "",
-      "inherited_name": "",
+      "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
       "effective_name": "0.1.12",
       "display_label": "0.1.12",
       "notes": "",
@@ -7702,11 +8318,14 @@
         "B-125",
         "B-126"
       ],
-      "completed_workstreams": [],
+      "completed_workstreams": [
+        "B-127",
+        "B-140"
+      ],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 18,
-      "completed_workstream_count": 0
+      "completed_workstream_count": 2
     }
   },
   "current_release": {
@@ -7715,7 +8334,7 @@
     "version": "0.1.12",
     "tag": "v0.1.12",
     "name": "",
-    "inherited_name": "",
+    "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
     "effective_name": "0.1.12",
     "display_label": "0.1.12",
     "notes": "",
@@ -7746,11 +8365,14 @@
       "B-125",
       "B-126"
     ],
-    "completed_workstreams": [],
+    "completed_workstreams": [
+      "B-127",
+      "B-140"
+    ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
     "active_workstream_count": 18,
-    "completed_workstream_count": 0
+    "completed_workstream_count": 2
   },
   "next_release": {
     "release_id": "release-0-1-12",
@@ -7758,7 +8380,7 @@
     "version": "0.1.12",
     "tag": "v0.1.12",
     "name": "",
-    "inherited_name": "",
+    "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
     "effective_name": "0.1.12",
     "display_label": "0.1.12",
     "notes": "",
@@ -7789,11 +8411,14 @@
       "B-125",
       "B-126"
     ],
-    "completed_workstreams": [],
+    "completed_workstreams": [
+      "B-127",
+      "B-140"
+    ],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
     "active_workstream_count": 18,
-    "completed_workstream_count": 0
+    "completed_workstream_count": 2
   },
   "release_summary": {
     "release_count": 2,
@@ -8527,7 +9152,7 @@
       "id": "B-030",
       "type": "workstream",
       "label": "Consumer Upgrade, Reinstall Recovery, and Shell Refresh",
-      "status": "implementation",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md"
     },
     {
@@ -8660,14 +9285,14 @@
       "id": "B-049",
       "type": "workstream",
       "label": "macOS Runtime Trust Ignores OS Metadata Noise",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-macos-runtime-trust-ignores-os-metadata-noise.md"
     },
     {
       "id": "B-050",
       "type": "workstream",
       "label": "Repair and Reinstall Converge After Partial Runtime Failure",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md"
     },
     {
@@ -8681,35 +9306,35 @@
       "id": "B-052",
       "type": "workstream",
       "label": "Legacy Migration Stale Reference Audit",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-migration-stale-reference-audit.md"
     },
     {
       "id": "B-053",
       "type": "workstream",
       "label": "Legacy Radar Index Normalization Before Sync Validation",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-radar-index-normalization-before-sync-validation.md"
     },
     {
       "id": "B-054",
       "type": "workstream",
       "label": "Sync Failure Summary Dedup and Next-Action Routing",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-sync-failure-summary-dedup-and-next-action-routing.md"
     },
     {
       "id": "B-055",
       "type": "workstream",
       "label": "Lifecycle Plan Dirty Overlap Summary Defaults",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-lifecycle-plan-dirty-overlap-summary-defaults.md"
     },
     {
       "id": "B-056",
       "type": "workstream",
       "label": "Trust Bootstrap Warning Suppression and Success Clarity",
-      "status": "queued",
+      "status": "finished",
       "file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-trust-bootstrap-warning-suppression-and-success-clarity.md"
     },
     {
@@ -9203,18 +9828,102 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md"
     },
     {
-      "id": "artifact:.github/workflows/release.yml",
-      "type": "artifact",
-      "label": ".github/workflows/release.yml",
-      "bucket": "code_references",
-      "file": ".github/workflows/release.yml"
+      "id": "B-127",
+      "type": "workstream",
+      "label": "Migration Runtime Release Gate",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md"
     },
     {
-      "id": "artifact:.github/workflows/test.yml",
-      "type": "artifact",
-      "label": ".github/workflows/test.yml",
-      "bucket": "code_references",
-      "file": ".github/workflows/test.yml"
+      "id": "B-128",
+      "type": "workstream",
+      "label": "v0.1.15+ Agentic Context Governance Program",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-context-governance-program.md"
+    },
+    {
+      "id": "B-129",
+      "type": "workstream",
+      "label": "v0.1.15+ Agentic Context Component Boundaries and Atlas Topology",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-context-component-boundaries-and-atlas-topology.md"
+    },
+    {
+      "id": "B-130",
+      "type": "workstream",
+      "label": "v0.1.15+ Harness-Neutral Run Trace and Artifact Contract",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-harness-neutral-run-trace-and-artifact-contract.md"
+    },
+    {
+      "id": "B-131",
+      "type": "workstream",
+      "label": "v0.1.15+ Repo Context Graph v1",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-repo-context-graph-v1.md"
+    },
+    {
+      "id": "B-132",
+      "type": "workstream",
+      "label": "v0.1.15+ Collaboration Identity Workspace and Actor Model",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-collaboration-identity-workspace-and-actor-model.md"
+    },
+    {
+      "id": "B-133",
+      "type": "workstream",
+      "label": "v0.1.15+ Durable Decisions Annotations and Memory Hygiene",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-durable-decisions-annotations-and-memory-hygiene.md"
+    },
+    {
+      "id": "B-134",
+      "type": "workstream",
+      "label": "v0.1.15+ Execution Policy Adapters and Universal Action Gate",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-execution-policy-adapters-and-universal-action-gate.md"
+    },
+    {
+      "id": "B-135",
+      "type": "workstream",
+      "label": "v0.1.15+ MCP and A2A Governed Protocol Boundary",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-mcp-and-a2a-governed-protocol-boundary.md"
+    },
+    {
+      "id": "B-136",
+      "type": "workstream",
+      "label": "v0.1.15+ Enterprise Outcome Connectors and Hosted Augmentation",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-enterprise-outcome-connectors-and-hosted-augmentation.md"
+    },
+    {
+      "id": "B-137",
+      "type": "workstream",
+      "label": "v0.1.15+ Agentic Policy Packs and Compliance Guardrails",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-policy-packs-and-compliance-guardrails.md"
+    },
+    {
+      "id": "B-138",
+      "type": "workstream",
+      "label": "v0.1.15+ Agentic Memory Integrity and Security Hardening",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-memory-integrity-and-security-hardening.md"
+    },
+    {
+      "id": "B-139",
+      "type": "workstream",
+      "label": "v0.1.15+ Context Continuity Benchmark and Audit Proof Surface",
+      "status": "queued",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-context-continuity-benchmark-and-audit-proof-surface.md"
+    },
+    {
+      "id": "B-140",
+      "type": "workstream",
+      "label": "Consumer Surface Migration Observer And Release Gate",
+      "status": "finished",
+      "file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
     },
     {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
@@ -9222,6 +9931,20 @@
       "label": "docs/specs/odylith-repo-integration-contract.md",
       "bucket": "developer_docs",
       "file": "docs/specs/odylith-repo-integration-contract.md"
+    },
+    {
+      "id": "artifact:github/workflows/release.yml",
+      "type": "artifact",
+      "label": "github/workflows/release.yml",
+      "bucket": "code_references",
+      "file": "github/workflows/release.yml"
+    },
+    {
+      "id": "artifact:github/workflows/test.yml",
+      "type": "artifact",
+      "label": "github/workflows/test.yml",
+      "bucket": "code_references",
+      "file": "github/workflows/test.yml"
     },
     {
       "id": "artifact:odylith/INSTALL_AND_UPGRADE_RUNBOOK.md",
@@ -9700,6 +10423,13 @@
       "file": "odylith/atlas/source/odylith-anti-slop-governance-and-host-parity.mmd"
     },
     {
+      "id": "diagram:D-042",
+      "type": "diagram",
+      "label": "Migration Runtime Upgrade Transaction Flow",
+      "diagram_id": "D-042",
+      "file": "odylith/atlas/source/migration-runtime-upgrade-transaction-flow.mmd"
+    },
+    {
       "id": "plan:odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -9854,6 +10584,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
       "file": "odylith/technical-plans/done/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md"
     },
     {
       "id": "plan:odylith/technical-plans/done/2026-04/2026-04-06-odylith-runtime-posture-reporting-explains-wrapped-runtime-degradation.md",
@@ -10036,6 +10772,60 @@
       "file": "odylith/technical-plans/done/2026-04/2026-04-25-b-110-completed-child-wave-closure.md"
     },
     {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-28-legacy-migration-stale-reference-audit.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-28-legacy-migration-stale-reference-audit.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-28-legacy-migration-stale-reference-audit.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-28-legacy-radar-index-normalization-before-sync-validation.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-28-legacy-radar-index-normalization-before-sync-validation.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-28-legacy-radar-index-normalization-before-sync-validation.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-28-lifecycle-plan-dirty-overlap-summary-defaults.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-28-lifecycle-plan-dirty-overlap-summary-defaults.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-28-lifecycle-plan-dirty-overlap-summary-defaults.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-28-macos-runtime-trust-metadata-noise.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-28-macos-runtime-trust-metadata-noise.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-28-macos-runtime-trust-metadata-noise.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-28-sync-failure-summary-dedup-and-next-action-routing.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-28-sync-failure-summary-dedup-and-next-action-routing.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-28-sync-failure-summary-dedup-and-next-action-routing.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-28-trust-bootstrap-warning-suppression-and-success-clarity.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-28-trust-bootstrap-warning-suppression-and-success-clarity.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-28-trust-bootstrap-warning-suppression-and-success-clarity.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+      "file": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+    },
+    {
       "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
@@ -10046,12 +10836,6 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md",
       "file": "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-cross-surface-runtime-freshness-and-ux-browser-hardening.md"
-    },
-    {
-      "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
-      "type": "plan",
-      "label": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
-      "file": "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
@@ -10488,13 +11272,13 @@
     },
     {
       "source": "B-004",
-      "target": "artifact:.github/workflows/release.yml",
-      "edge_type": "plan_traceability:code_references"
+      "target": "artifact:docs/specs/odylith-repo-integration-contract.md",
+      "edge_type": "plan_traceability:developer_docs"
     },
     {
       "source": "B-004",
-      "target": "artifact:docs/specs/odylith-repo-integration-contract.md",
-      "edge_type": "plan_traceability:developer_docs"
+      "target": "artifact:github/workflows/release.yml",
+      "edge_type": "plan_traceability:code_references"
     },
     {
       "source": "B-004",
@@ -10583,7 +11367,7 @@
     },
     {
       "source": "B-005",
-      "target": "artifact:.github/workflows/test.yml",
+      "target": "artifact:github/workflows/test.yml",
       "edge_type": "plan_traceability:code_references"
     },
     {
@@ -11453,7 +12237,7 @@
     },
     {
       "source": "B-030",
-      "target": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -11787,6 +12571,11 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-049",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-28-macos-runtime-trust-metadata-noise.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
       "source": "B-050",
       "target": "B-051",
       "edge_type": "depends_on"
@@ -11800,6 +12589,11 @@
       "source": "B-050",
       "target": "diagram:D-019",
       "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-050",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-051",
@@ -11827,6 +12621,11 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-052",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-28-legacy-migration-stale-reference-audit.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
       "source": "B-053",
       "target": "B-054",
       "edge_type": "blocks"
@@ -11847,6 +12646,11 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-053",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-28-legacy-radar-index-normalization-before-sync-validation.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
       "source": "B-054",
       "target": "B-055",
       "edge_type": "depends_on"
@@ -11862,9 +12666,19 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-054",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-28-sync-failure-summary-dedup-and-next-action-routing.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
       "source": "B-055",
       "target": "diagram:D-018",
       "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-055",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-28-lifecycle-plan-dirty-overlap-summary-defaults.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-056",
@@ -11875,6 +12689,11 @@
       "source": "B-056",
       "target": "diagram:D-020",
       "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-056",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-28-trust-bootstrap-warning-suppression-and-success-clarity.md",
+      "edge_type": "promoted_to_plan"
     },
     {
       "source": "B-057",
@@ -13240,6 +14059,21 @@
       "source": "B-126",
       "target": "release:release-0-1-12",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-127",
+      "target": "diagram:D-042",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-127",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-140",
+      "target": "plan:odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+      "edge_type": "promoted_to_plan"
     }
   ],
   "coverage": {
@@ -13580,14 +14414,14 @@
       "code_reference_count": 0
     },
     "B-049": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-050": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -13601,35 +14435,35 @@
       "code_reference_count": 0
     },
     "B-052": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-053": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-054": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-055": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 1,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
     },
     "B-056": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -14124,6 +14958,104 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-127": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-128": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-129": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-130": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-131": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-132": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-133": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-134": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-135": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-136": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-137": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-138": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-139": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
+    },
+    "B-140": {
+      "linked_plan_count": 1,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -14186,15 +15118,15 @@
     "B-110: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 126,
+    "workstream_count": 140,
     "release_count": 2,
     "active_release_assignment_count": 18,
     "execution_program_count": 4,
     "execution_wave_count": 23,
-    "node_count": 278,
-    "edge_count": 609,
+    "node_count": 302,
+    "edge_count": 619,
     "warning_count": 5,
     "warning_item_count": 5
   },
-  "generated_utc": "2026-04-27 20:31:02Z"
+  "generated_utc": "2026-04-30 06:17:22Z"
 }

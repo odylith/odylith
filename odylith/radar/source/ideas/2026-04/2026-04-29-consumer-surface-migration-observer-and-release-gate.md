@@ -119,10 +119,10 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 
 ## Migration Observer Needs
 - `migration-observer:0.1.12:guidance-and-skills:5edfb8f61a7a`
-- `migration-observer:0.1.12:operator-cli-contracts:b77238d4aea0`
-- `migration-observer:0.1.12:public-docs-and-release-guidance:a72a0b33d7a1`
-- `migration-observer:0.1.12:browser-surfaces:351f880e2559`
-- `migration-observer:0.1.12:install-managed-assets:5e672fbc99fa`
+- `migration-observer:0.1.12:operator-cli-contracts:5048d0eb61c4`
+- `migration-observer:0.1.12:public-docs-and-release-guidance:3d374298bec4`
+- `migration-observer:0.1.12:browser-surfaces:742e1bb597ab`
+- `migration-observer:0.1.12:install-managed-assets:9431818775c2`
 
 ## 0.1.12 Upgrade Assessment
 - First-run install and sync overlap: existing 0.1.11 consumer repos can safely
