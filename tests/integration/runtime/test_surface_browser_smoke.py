@@ -269,6 +269,19 @@ def test_tooling_shell_routes_into_all_child_surfaces(browser_context) -> None: 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
+def test_radar_defaults_to_date_sort(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    response = page.goto(base_url + "/odylith/index.html?tab=radar", wait_until="domcontentloaded")
+    assert response is not None and response.ok
+
+    radar = page.frame_locator("#frame-radar")
+    radar.locator("#sort").wait_for(timeout=15000)
+    assert radar.locator("#sort").input_value() == "date"
+
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
 def test_compass_window_switches_keep_brief_visible(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)

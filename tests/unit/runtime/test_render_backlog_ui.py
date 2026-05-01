@@ -591,6 +591,15 @@ def test_render_backlog_ui_sorts_default_sections_by_scope_signal_rank() -> None
     assert "if (rankDelta !== 0) return rankDelta;" in html
 
 
+def test_render_backlog_ui_defaults_to_date_sort() -> None:
+    html = render_backlog_ui._render_html(payload={"entries": []})
+
+    assert 'sort: "date",' in html
+    assert '<option value="date" selected>Sort: Date</option>' in html
+    assert "el.sort.value = state.sort;" in html
+    assert "syncFilterControls();\n    render();" in html
+
+
 def test_render_backlog_ui_uses_shared_workstream_button_contract_for_workstream_ids() -> None:
     html = render_backlog_ui._render_html(payload={"entries": []})
 

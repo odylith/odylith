@@ -3192,10 +3192,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4139,10 +4136,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4251,10 +4245,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4361,10 +4352,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4509,10 +4497,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4629,10 +4614,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4858,10 +4840,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -4970,10 +4949,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -5220,10 +5196,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -6762,10 +6735,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -6856,10 +6826,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -6950,10 +6917,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -7044,10 +7008,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -7138,10 +7099,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -7232,10 +7190,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -7326,10 +7281,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -7420,10 +7372,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -7514,10 +7463,7 @@
         "created_utc": "2026-04-09",
         "shipped_utc": "",
         "closed_utc": "",
-        "aliases": [
-          "current",
-          "next"
-        ],
+        "aliases": [],
         "active_workstreams": [
           "B-070",
           "B-083",
@@ -8126,6 +8072,80 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-141",
+      "title": "Claude hook latency budget and fast-path startup",
+      "status": "implementation",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "release-0-1-13",
+      "active_release": {
+        "release_id": "release-0-1-13",
+        "status": "active",
+        "version": "0.1.13",
+        "tag": "v0.1.13",
+        "name": "",
+        "inherited_name": "",
+        "effective_name": "0.1.13",
+        "display_label": "0.1.13",
+        "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+        "created_utc": "2026-05-01",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current",
+          "next"
+        ],
+        "active_workstreams": [
+          "B-141"
+        ],
+        "completed_workstreams": [],
+        "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 1,
+        "completed_workstream_count": 0
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-141",
+          "release_id": "release-0-1-13",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-05-01T19:18:27Z",
+          "note": "Bind active cross-host hook latency and performance implementation to the v0.1.13 target release.",
+          "release_label": "0.1.13",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.13 \u00b7 Added to 0.1.13",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -8200,58 +8220,7 @@
       "created_utc": "2026-04-09",
       "shipped_utc": "",
       "closed_utc": "",
-      "aliases": [
-        "current",
-        "next"
-      ],
-      "active_workstreams": [
-        "B-070",
-        "B-083",
-        "B-084",
-        "B-085",
-        "B-087",
-        "B-088",
-        "B-092",
-        "B-093",
-        "B-097",
-        "B-118",
-        "B-119",
-        "B-120",
-        "B-121",
-        "B-122",
-        "B-123",
-        "B-124",
-        "B-125",
-        "B-126"
-      ],
-      "completed_workstreams": [
-        "B-127",
-        "B-140"
-      ],
-      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
-      "terminal": false,
-      "active_workstream_count": 18,
-      "completed_workstream_count": 2
-    }
-  ],
-  "release_aliases": {
-    "current": {
-      "release_id": "release-0-1-12",
-      "status": "active",
-      "version": "0.1.12",
-      "tag": "v0.1.12",
-      "name": "",
-      "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-      "effective_name": "0.1.12",
-      "display_label": "0.1.12",
-      "notes": "",
-      "created_utc": "2026-04-09",
-      "shipped_utc": "",
-      "closed_utc": "",
-      "aliases": [
-        "current",
-        "next"
-      ],
+      "aliases": [],
       "active_workstreams": [
         "B-070",
         "B-083",
@@ -8281,17 +8250,17 @@
       "active_workstream_count": 18,
       "completed_workstream_count": 2
     },
-    "next": {
-      "release_id": "release-0-1-12",
+    {
+      "release_id": "release-0-1-13",
       "status": "active",
-      "version": "0.1.12",
-      "tag": "v0.1.12",
+      "version": "0.1.13",
+      "tag": "v0.1.13",
       "name": "",
-      "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-      "effective_name": "0.1.12",
-      "display_label": "0.1.12",
-      "notes": "",
-      "created_utc": "2026-04-09",
+      "inherited_name": "",
+      "effective_name": "0.1.13",
+      "display_label": "0.1.13",
+      "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+      "created_utc": "2026-05-01",
       "shipped_utc": "",
       "closed_utc": "",
       "aliases": [
@@ -8299,46 +8268,80 @@
         "next"
       ],
       "active_workstreams": [
-        "B-070",
-        "B-083",
-        "B-084",
-        "B-085",
-        "B-087",
-        "B-088",
-        "B-092",
-        "B-093",
-        "B-097",
-        "B-118",
-        "B-119",
-        "B-120",
-        "B-121",
-        "B-122",
-        "B-123",
-        "B-124",
-        "B-125",
-        "B-126"
+        "B-141"
       ],
-      "completed_workstreams": [
-        "B-127",
-        "B-140"
-      ],
+      "completed_workstreams": [],
       "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 18,
-      "completed_workstream_count": 2
+      "active_workstream_count": 1,
+      "completed_workstream_count": 0
+    }
+  ],
+  "release_aliases": {
+    "current": {
+      "release_id": "release-0-1-13",
+      "status": "active",
+      "version": "0.1.13",
+      "tag": "v0.1.13",
+      "name": "",
+      "inherited_name": "",
+      "effective_name": "0.1.13",
+      "display_label": "0.1.13",
+      "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+      "created_utc": "2026-05-01",
+      "shipped_utc": "",
+      "closed_utc": "",
+      "aliases": [
+        "current",
+        "next"
+      ],
+      "active_workstreams": [
+        "B-141"
+      ],
+      "completed_workstreams": [],
+      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "terminal": false,
+      "active_workstream_count": 1,
+      "completed_workstream_count": 0
+    },
+    "next": {
+      "release_id": "release-0-1-13",
+      "status": "active",
+      "version": "0.1.13",
+      "tag": "v0.1.13",
+      "name": "",
+      "inherited_name": "",
+      "effective_name": "0.1.13",
+      "display_label": "0.1.13",
+      "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+      "created_utc": "2026-05-01",
+      "shipped_utc": "",
+      "closed_utc": "",
+      "aliases": [
+        "current",
+        "next"
+      ],
+      "active_workstreams": [
+        "B-141"
+      ],
+      "completed_workstreams": [],
+      "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
+      "terminal": false,
+      "active_workstream_count": 1,
+      "completed_workstream_count": 0
     }
   },
   "current_release": {
-    "release_id": "release-0-1-12",
+    "release_id": "release-0-1-13",
     "status": "active",
-    "version": "0.1.12",
-    "tag": "v0.1.12",
+    "version": "0.1.13",
+    "tag": "v0.1.13",
     "name": "",
-    "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-    "effective_name": "0.1.12",
-    "display_label": "0.1.12",
-    "notes": "",
-    "created_utc": "2026-04-09",
+    "inherited_name": "",
+    "effective_name": "0.1.13",
+    "display_label": "0.1.13",
+    "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+    "created_utc": "2026-05-01",
     "shipped_utc": "",
     "closed_utc": "",
     "aliases": [
@@ -8346,45 +8349,25 @@
       "next"
     ],
     "active_workstreams": [
-      "B-070",
-      "B-083",
-      "B-084",
-      "B-085",
-      "B-087",
-      "B-088",
-      "B-092",
-      "B-093",
-      "B-097",
-      "B-118",
-      "B-119",
-      "B-120",
-      "B-121",
-      "B-122",
-      "B-123",
-      "B-124",
-      "B-125",
-      "B-126"
+      "B-141"
     ],
-    "completed_workstreams": [
-      "B-127",
-      "B-140"
-    ],
+    "completed_workstreams": [],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 18,
-    "completed_workstream_count": 2
+    "active_workstream_count": 1,
+    "completed_workstream_count": 0
   },
   "next_release": {
-    "release_id": "release-0-1-12",
+    "release_id": "release-0-1-13",
     "status": "active",
-    "version": "0.1.12",
-    "tag": "v0.1.12",
+    "version": "0.1.13",
+    "tag": "v0.1.13",
     "name": "",
-    "inherited_name": "Upgrade Recovery for 0.1.11 Installs",
-    "effective_name": "0.1.12",
-    "display_label": "0.1.12",
-    "notes": "",
-    "created_utc": "2026-04-09",
+    "inherited_name": "",
+    "effective_name": "0.1.13",
+    "display_label": "0.1.13",
+    "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+    "created_utc": "2026-05-01",
     "shipped_utc": "",
     "closed_utc": "",
     "aliases": [
@@ -8392,38 +8375,18 @@
       "next"
     ],
     "active_workstreams": [
-      "B-070",
-      "B-083",
-      "B-084",
-      "B-085",
-      "B-087",
-      "B-088",
-      "B-092",
-      "B-093",
-      "B-097",
-      "B-118",
-      "B-119",
-      "B-120",
-      "B-121",
-      "B-122",
-      "B-123",
-      "B-124",
-      "B-125",
-      "B-126"
+      "B-141"
     ],
-    "completed_workstreams": [
-      "B-127",
-      "B-140"
-    ],
+    "completed_workstreams": [],
     "source_path": "/Users/freedom/code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 18,
-    "completed_workstream_count": 2
+    "active_workstream_count": 1,
+    "completed_workstream_count": 0
   },
   "release_summary": {
-    "release_count": 2,
+    "release_count": 3,
     "alias_count": 2,
-    "active_assignment_count": 18
+    "active_assignment_count": 19
   },
   "execution_programs": [
     {
@@ -9926,6 +9889,13 @@
       "file": "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
     },
     {
+      "id": "B-141",
+      "type": "workstream",
+      "label": "Claude hook latency budget and fast-path startup",
+      "status": "implementation",
+      "file": "odylith/radar/source/ideas/2026-05/2026-05-01-claude-hook-latency-budget-and-fast-path-startup.md"
+    },
+    {
       "id": "artifact:docs/specs/odylith-repo-integration-contract.md",
       "type": "artifact",
       "label": "docs/specs/odylith-repo-integration-contract.md",
@@ -10972,6 +10942,18 @@
       "version": "0.1.12",
       "tag": "v0.1.12",
       "name": "0.1.12",
+      "aliases": [],
+      "file": "odylith/radar/source/releases/releases.v1.json"
+    },
+    {
+      "id": "release:release-0-1-13",
+      "type": "release",
+      "label": "0.1.13",
+      "release_id": "release-0-1-13",
+      "status": "active",
+      "version": "0.1.13",
+      "tag": "v0.1.13",
+      "name": "0.1.13",
       "aliases": [
         "current",
         "next"
@@ -14074,6 +14056,11 @@
       "source": "B-140",
       "target": "plan:odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
       "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-141",
+      "target": "release:release-0-1-13",
+      "edge_type": "active_release"
     }
   ],
   "coverage": {
@@ -15056,6 +15043,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-141": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -15118,15 +15112,15 @@
     "B-110: autofix skipped `related_diagram_ids` due to metadata conflict"
   ],
   "summary": {
-    "workstream_count": 140,
-    "release_count": 2,
-    "active_release_assignment_count": 18,
+    "workstream_count": 141,
+    "release_count": 3,
+    "active_release_assignment_count": 19,
     "execution_program_count": 4,
     "execution_wave_count": 23,
-    "node_count": 302,
-    "edge_count": 619,
+    "node_count": 304,
+    "edge_count": 620,
     "warning_count": 5,
     "warning_item_count": 5
   },
-  "generated_utc": "2026-04-30 06:17:22Z"
+  "generated_utc": "2026-05-01 19:31:50Z"
 }

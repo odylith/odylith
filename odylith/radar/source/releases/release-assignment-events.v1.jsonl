@@ -106,3 +106,4 @@
 {"action": "remove", "note": "Closed B-127 after migration-runtime release-gate implementation and validation; finished work no longer targets the active release lane.", "recorded_at": "2026-04-28T01:12:45Z", "release_id": "release-0-1-12", "workstream_id": "B-127"}
 {"action": "add", "note": "Target newly created queued backlog record(s) from `odylith backlog create --release current`.", "recorded_at": "2026-04-29T22:58:40Z", "release_id": "release-0-1-12", "workstream_id": "B-140"}
 {"action": "remove", "note": "Completed migration observer release-gate implementation; B-140 closed with done-plan evidence.", "recorded_at": "2026-04-29T23:11:59Z", "release_id": "release-0-1-12", "workstream_id": "B-140"}
+{"action": "add", "note": "Bind active cross-host hook latency and performance implementation to the v0.1.13 target release.", "recorded_at": "2026-05-01T19:18:27Z", "release_id": "release-0-1-13", "workstream_id": "B-141"}

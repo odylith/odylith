@@ -129,7 +129,7 @@
         "Nothing moved in this window: B-126 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-141": [
-        "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
       ],
       "B-001": [
         "Completed in this window: Release v0.1.12 landed, confirming the repo boundary work has a verified release point.",
@@ -572,7 +572,7 @@
         "Nothing moved in this window: B-126 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-141": [
-        "Brief stayed on wallet-safe local truth: Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite."
+        "Brief is waiting on Codex CLI budget: Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff."
       ],
       "B-001": [
         "Completed in this window: Release v0.1.12 is the verified outcome marker for this 48-hour lane.",
@@ -960,7 +960,7 @@
         "provider_failure_detail": "OpenAI Codex v0.128.0-alpha.1 (research preview) -------- workdir: /Users/freedom/code/odylith model: gpt-5.3-codex-spark provider: openai a ... :38 AM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at May 2nd, 2026 4:38 AM.",
         "provider_model": "gpt-5.3-codex-spark",
         "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-05-01T21:20:08Z"
+        "next_retry_utc": "2026-05-01T20:20:05Z"
       },
       "evidence_lookup": {}
     },
@@ -1561,19 +1561,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "d3b9297a728fa952ee6beac15c6b604fb1e131c93363a1a7c391404b0440bfe0",
+        "substrate_fingerprint": "d3b9297a728fa952ee6beac15c6b604fb1e131c93363a1a7c391404b0440bfe0",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "credits_exhausted",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-01T19:50:19Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief stayed on wallet-safe local truth",
-          "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "credits_exhausted",
+          "title": "Brief is waiting on Codex CLI budget",
+          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
+          "provider": "codex-cli",
+          "provider_failure_code": "credits_exhausted",
+          "provider_failure_detail": "OpenAI Codex v0.128.0-alpha.1 (research preview) -------- workdir: /Users/freedom/code/odylith model: gpt-5.3-codex-spark provider: openai a ... :38 AM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at May 2nd, 2026 4:38 AM.",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium",
+          "next_retry_utc": "2026-05-01T20:20:05Z"
         },
         "evidence_lookup": {}
       },
@@ -4103,19 +4107,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "a0ebb39208ba9e233e8c8a790842d04a015976ada55c757dfd8a6cba1d47db8c",
+        "substrate_fingerprint": "a0ebb39208ba9e233e8c8a790842d04a015976ada55c757dfd8a6cba1d47db8c",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "credits_exhausted",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-05-01T19:50:19Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief stayed on wallet-safe local truth",
-          "message": "Compass kept provider spend at zero here because the winning narrative facts did not change enough to justify a fresh live rewrite.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "credits_exhausted",
+          "title": "Brief is waiting on Codex CLI budget",
+          "message": "Compass could not warm this brief because the last narration attempt through Codex CLI using gpt-5.3-codex-spark may have hit a credit or budget limit. It will retry on backoff.",
+          "provider": "codex-cli",
+          "provider_failure_code": "credits_exhausted",
+          "provider_failure_detail": "OpenAI Codex v0.128.0-alpha.1 (research preview) -------- workdir: /Users/freedom/code/odylith model: gpt-5.3-codex-spark provider: openai a ... :38 AM. ERROR: You've hit your usage limit for GPT-5.3-Codex-Spark. Switch to another model now, or try again at May 2nd, 2026 4:38 AM.",
+          "provider_model": "gpt-5.3-codex-spark",
+          "provider_reasoning_effort": "medium",
+          "next_retry_utc": "2026-05-01T20:20:05Z"
         },
         "evidence_lookup": {}
       },

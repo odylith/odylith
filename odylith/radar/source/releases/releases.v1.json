@@ -1,9 +1,9 @@
 {
   "version": "v1",
-  "updated_utc": "2026-04-27",
+  "updated_utc": "2026-05-01",
   "aliases": {
-    "current": "release-0-1-12",
-    "next": "release-0-1-12"
+    "current": "release-0-1-13",
+    "next": "release-0-1-13"
   },
   "releases": [
     {
@@ -25,6 +25,17 @@
       "name": "",
       "notes": "",
       "created_utc": "2026-04-09",
+      "shipped_utc": "",
+      "closed_utc": ""
+    },
+    {
+      "release_id": "release-0-1-13",
+      "status": "active",
+      "version": "0.1.13",
+      "tag": "v0.1.13",
+      "name": "",
+      "notes": "Target release for B-141 cross-host hook latency, migration repair feedback, and host UX hardening.",
+      "created_utc": "2026-05-01",
       "shipped_utc": "",
       "closed_utc": ""
     }
