@@ -30,6 +30,22 @@ def _has_unsafe_plain_scalar_colon(line: str) -> bool:
     return ": " in value
 
 
+def _has_unsafe_reserved_scalar_start(line: str) -> bool:
+    stripped = line.strip()
+    if not stripped or stripped.endswith(":"):
+        return False
+    if stripped.startswith("- "):
+        value = stripped[2:].lstrip()
+    elif ": " in stripped:
+        key, value = stripped.split(": ", 1)
+        if not key.replace("_", "").replace("-", "").isalnum():
+            return False
+        value = value.lstrip()
+    else:
+        return False
+    return value.startswith(("`", "@"))
+
+
 def test_load_release_notes_source_parses_front_matter_and_normalizes_markdown(tmp_path) -> None:  # noqa: ANN001
     notes_root = tmp_path / "odylith" / "runtime" / "source" / "release-notes"
     notes_root.mkdir(parents=True, exist_ok=True)
@@ -93,7 +109,7 @@ def test_repo_release_note_front_matter_stays_github_yaml_safe() -> None:
     for notes_root in notes_roots:
         for path, front_matter in _front_matter_blocks(notes_root):
             for line_no, line in enumerate(front_matter.splitlines(), start=2):
-                if _has_unsafe_plain_scalar_colon(line):
+                if _has_unsafe_plain_scalar_colon(line) or _has_unsafe_reserved_scalar_start(line):
                     unsafe_lines.append(f"{path.relative_to(repo_root)}:{line_no}: {line.strip()}")
 
     assert unsafe_lines == []
