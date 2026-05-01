@@ -43,6 +43,42 @@ def _signal(
     }
 
 
+def test_worker_env_absolutizes_relative_pythonpath(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("PYTHONPATH", maintenance.os.pathsep.join(["src", "vendor", "/absolute/path"]))
+
+    env = maintenance._worker_env()  # noqa: SLF001
+
+    assert env["PYTHONPATH"].split(maintenance.os.pathsep) == [
+        str(tmp_path / "src"),
+        str(tmp_path / "vendor"),
+        "/absolute/path",
+    ]
+
+
+def test_maybe_spawn_background_stays_quiet_under_pytest(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    request_path = maintenance.maintenance_request_path(repo_root=tmp_path)
+    request_path.parent.mkdir(parents=True, exist_ok=True)
+    request_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-09T00:00:00Z",
+                "runtime_input_fingerprint": "runtime-fp",
+                "global": {"24h": {"fingerprint": "global-fp", "fact_packet": {}}},
+                "scoped": {},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("PYTEST_CURRENT_TEST", "tests/unit/runtime/test_compass.py::test_example (call)")
+
+    assert maintenance.maybe_spawn_background(repo_root=tmp_path) == 0
+    assert not maintenance.maintenance_state_path(repo_root=tmp_path).exists()
+
+
 def test_enqueue_request_only_selects_active_scope_candidates(tmp_path: Path, monkeypatch) -> None:
     repo_root = tmp_path
     state_path = maintenance.maintenance_state_path(repo_root=repo_root)
@@ -438,6 +474,110 @@ def test_run_pending_request_warms_cache_and_patches_current_runtime(tmp_path: P
     assert state["entries"]["global:24h"]["status"] == "ready"
     assert state["entries"]["scoped:24h:B-001"]["status"] == "ready"
     assert not request_path.exists()
+
+
+def test_run_pending_request_does_not_patch_superseded_runtime_generation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root = tmp_path
+    current_json_path = repo_root / "odylith/compass/runtime/current.v1.json"
+    current_js_path = repo_root / "odylith/compass/runtime/current.v1.js"
+    current_json_path.parent.mkdir(parents=True, exist_ok=True)
+    current_json_path.write_text(
+        json.dumps(
+            {
+                "generated_utc": "2026-04-08T00:00:00Z",
+                "runtime_contract": {"input_fingerprint": "runtime-fp"},
+                "standup_brief": {"24h": _brief(source="unavailable", status="unavailable")},
+                "standup_brief_scoped": {},
+                "digest": {"24h": ["old global"]},
+                "digest_scoped": {},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
+
+    request_path = maintenance.maintenance_request_path(repo_root=repo_root)
+    request_path.parent.mkdir(parents=True, exist_ok=True)
+    request_path.write_text(
+        json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-04-09T00:00:00Z",
+                "runtime_input_fingerprint": "runtime-fp",
+                "global": {
+                    "24h": {
+                        "fingerprint": "global-fp",
+                        "fact_packet": {"scope_id": "global-24h"},
+                    }
+                },
+                "scoped": {},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(maintenance, "_cheap_config", lambda **_kwargs: object())
+    monkeypatch.setattr(maintenance, "_provider_for_cheap_config", lambda **_kwargs: object())
+    monkeypatch.setattr(
+        maintenance.compass_standup_brief_batch,
+        "build_brief_bundle",
+        lambda **_kwargs: {"global": {"24h": _brief(source="provider")}, "scoped": {}},
+    )
+
+    result = maintenance.run_pending_request(repo_root=repo_root)
+    updated_payload = json.loads(current_json_path.read_text(encoding="utf-8"))
+
+    assert result["warmed"] == 1
+    assert result["patched_current_runtime"] is False
+    assert updated_payload["generated_utc"] == "2026-04-08T00:00:00Z"
+    assert updated_payload["standup_brief"]["24h"]["source"] == "unavailable"
+
+
+def test_current_runtime_patch_aborts_when_runtime_file_changes_after_read(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo_root = tmp_path
+    current_json_path = repo_root / "odylith/compass/runtime/current.v1.json"
+    current_js_path = repo_root / "odylith/compass/runtime/current.v1.js"
+    current_json_path.parent.mkdir(parents=True, exist_ok=True)
+    current_json_path.write_text(
+        json.dumps(
+            {
+                "generated_utc": "2026-04-09T00:00:00Z",
+                "runtime_contract": {"input_fingerprint": "runtime-fp"},
+                "standup_brief": {"24h": _brief(source="unavailable", status="unavailable")},
+                "standup_brief_scoped": {},
+                "digest": {"24h": ["old global"]},
+                "digest_scoped": {},
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    current_js_path.write_text("window.__ODYLITH_COMPASS_RUNTIME__ = {};\n", encoding="utf-8")
+    signatures = iter([{"mtime_ns": 1}, {"mtime_ns": 2}])
+    monkeypatch.setattr(maintenance.odylith_context_cache, "path_signature", lambda _path: next(signatures))
+
+    patched = maintenance._patch_current_runtime_payload(  # noqa: SLF001
+        repo_root=repo_root,
+        runtime_input_fingerprint="runtime-fp",
+        runtime_generated_utc="2026-04-09T00:00:00Z",
+        global_results={"24h": _brief(source="provider")},
+        scoped_results={},
+    )
+    updated_payload = json.loads(current_json_path.read_text(encoding="utf-8"))
+
+    assert patched is False
+    assert updated_payload["standup_brief"]["24h"]["source"] == "unavailable"
 
 
 def test_run_pending_request_failed_scoped_result_sets_retry_backoff(tmp_path: Path, monkeypatch) -> None:
@@ -1024,6 +1164,7 @@ def test_run_pending_request_preserves_stamped_runtime_input_fingerprint_when_re
 
 
 def test_maybe_spawn_background_starts_worker_once(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("ODYLITH_COMPASS_STANDUP_BACKGROUND_ALLOW_IN_TESTS", "1")
     repo_root = tmp_path
     request_path = maintenance.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1072,6 +1213,7 @@ def test_maybe_spawn_background_restarts_stale_worker_when_worker_epoch_changes(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setenv("ODYLITH_COMPASS_STANDUP_BACKGROUND_ALLOW_IN_TESTS", "1")
     repo_root = tmp_path
     request_path = maintenance.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1141,6 +1283,7 @@ def test_maybe_spawn_background_terminates_orphan_worker_before_spawning(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setenv("ODYLITH_COMPASS_STANDUP_BACKGROUND_ALLOW_IN_TESTS", "1")
     repo_root = tmp_path
     request_path = maintenance.maintenance_request_path(repo_root=repo_root)
     request_path.parent.mkdir(parents=True, exist_ok=True)
