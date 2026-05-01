@@ -41,6 +41,8 @@ _INVALID_BATCH_RETRY_BASE_SECONDS = 1800
 _INVALID_BATCH_RETRY_MAX_SECONDS = 21600
 _PROVIDER_UNAVAILABLE_RETRY_BASE_SECONDS = 1800
 _PROVIDER_UNAVAILABLE_RETRY_MAX_SECONDS = 21600
+_BACKGROUND_DISABLE_ENV = "ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE"
+_BACKGROUND_TEST_ALLOW_ENV = "ODYLITH_COMPASS_STANDUP_BACKGROUND_ALLOW_IN_TESTS"
 _RETRY_POLL_INTERVAL_SECONDS = 5
 _MAX_SCOPED_REQUESTS_PER_WINDOW = 4
 _WORKER_EPOCH_RELATIVE_PATHS = (
@@ -110,6 +112,22 @@ def _pid_alive(pid: int) -> bool:
 
 def _worker_python_bin() -> str:
     return str(Path(sys.executable).resolve()) if str(sys.executable).strip() else "python3"
+
+
+def _worker_env() -> dict[str, str]:
+    env = dict(os.environ)
+    raw_pythonpath = str(env.get("PYTHONPATH", "")).strip()
+    if raw_pythonpath:
+        cwd = Path.cwd()
+        tokens = []
+        for raw_token in raw_pythonpath.split(os.pathsep):
+            token = str(raw_token).strip()
+            if not token:
+                continue
+            path = Path(token)
+            tokens.append(str(path if path.is_absolute() else (cwd / path).resolve()))
+        env["PYTHONPATH"] = os.pathsep.join(tokens)
+    return env
 
 
 def _worker_epoch(*, repo_root: Path) -> str:
@@ -562,6 +580,7 @@ def stamp_request_runtime_input_fingerprint(
         _patch_current_runtime_payload(
             repo_root=repo_root,
             runtime_input_fingerprint=runtime_fingerprint,
+            runtime_generated_utc=str(payload.get("generated_utc", "")).strip(),
             global_results={},
             scoped_results={},
             global_failures=global_failures,
@@ -570,6 +589,10 @@ def stamp_request_runtime_input_fingerprint(
 
 
 def maybe_spawn_background(*, repo_root: Path) -> int:
+    if str(os.environ.get(_BACKGROUND_DISABLE_ENV, "")).strip() == "1":
+        return 0
+    if str(os.environ.get("PYTEST_CURRENT_TEST", "")).strip() and str(os.environ.get(_BACKGROUND_TEST_ALLOW_ENV, "")).strip() != "1":
+        return 0
     repo_root = Path(repo_root).resolve()
     request_file = maintenance_request_path(repo_root=repo_root)
     request_payload = _load_json(request_file)
@@ -600,6 +623,7 @@ def maybe_spawn_background(*, repo_root: Path) -> int:
             str(repo_root),
         ],
         cwd=str(repo_root),
+        env=_worker_env(),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         stdin=subprocess.DEVNULL,
@@ -934,6 +958,7 @@ def _patch_current_runtime_payload(
     *,
     repo_root: Path,
     runtime_input_fingerprint: str,
+    runtime_generated_utc: str,
     global_results: Mapping[str, Mapping[str, Any]],
     scoped_results: Mapping[str, Mapping[str, Mapping[str, Any]]],
     global_failures: Mapping[str, Mapping[str, Any]] | None = None,
@@ -941,11 +966,16 @@ def _patch_current_runtime_payload(
 ) -> bool:
     current_json_path = (repo_root / _RUNTIME_CURRENT_JSON).resolve()
     current_js_path = (repo_root / _RUNTIME_CURRENT_JS).resolve()
+    current_json_signature = odylith_context_cache.path_signature(current_json_path)
     payload = _load_json(current_json_path)
     runtime_contract = payload.get("runtime_contract")
     if not isinstance(runtime_contract, Mapping):
         return False
     if str(runtime_contract.get("input_fingerprint", "")).strip() != str(runtime_input_fingerprint).strip():
+        return False
+    current_generated_utc = str(payload.get("generated_utc", "")).strip()
+    expected_generated_utc = str(runtime_generated_utc).strip()
+    if current_generated_utc and expected_generated_utc and current_generated_utc != expected_generated_utc:
         return False
     changed = False
     standup_brief = payload.get("standup_brief")
@@ -1017,6 +1047,8 @@ def _patch_current_runtime_payload(
         mutable_standup_brief_scoped[window_token] = scoped_window
         mutable_digest_scoped[window_token] = digest_window
     if not changed:
+        return False
+    if odylith_context_cache.path_signature(current_json_path) != current_json_signature:
         return False
     payload["standup_brief"] = mutable_standup_brief
     payload["digest"] = mutable_digest
@@ -1324,6 +1356,7 @@ def run_pending_request(
         patched_current_runtime = _patch_current_runtime_payload(
             repo_root=repo_root,
             runtime_input_fingerprint=str(request.get("runtime_input_fingerprint", "")).strip(),
+            runtime_generated_utc=str(request.get("generated_utc", "")).strip(),
             global_results=global_results,
             scoped_results=scoped_results,
             global_failures=global_failure_results,
