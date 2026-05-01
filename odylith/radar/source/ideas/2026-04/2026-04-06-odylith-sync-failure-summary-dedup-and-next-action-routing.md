@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-054
 title: Sync Failure Summary Dedup and Next-Action Routing
 date: 2026-04-06
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: Even once sync can normalize legacy Radar truth, operators still need a compact explanation when something real remains broken. Recommending the same forced command after it already failed is a product-clarity miss.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-28-sync-failure-summary-dedup-and-next-action-routing.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-048
@@ -99,4 +99,9 @@ Odylith was hoping for.
   report file as well as the terminal summary
 
 ## Outcome
-- Bound to `B-054` under `B-048`.
+- Closed for 0.1.12 after the sync failure summary contract was pinned with a
+  small focused test surface: duplicate backlog-contract failures collapse with
+  counts, next actions route by failure class, and failed execution steps use
+  their own repair command instead of telling operators to repeat the same
+  failed sync.
+- Bound to `B-054` under `B-048`; closes `CB-059`.

@@ -102,7 +102,9 @@ def _legacy_test_command(module_name: str) -> str:
     return specific.get(module, "odylith sync --repo-root . --check-only --runtime-mode standalone")
 
 
-def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
+def normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
+    """Normalize one inline markdown token into a safe repo-relative path."""
+
     normalized = workstream_inference.normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
     collapsed = str(normalized or "").strip().strip(".,;:")
     if not collapsed or " " in collapsed or "<" in collapsed or ">" in collapsed:
@@ -110,6 +112,10 @@ def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
     if collapsed.startswith(("http://", "https://")):
         return ""
     return collapsed
+
+
+def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
+    return normalize_inline_repo_token(repo_root=repo_root, token=token)
 
 
 def _rewrite_legacy_inline_command(text: str) -> str:

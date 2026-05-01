@@ -9,10 +9,13 @@ Atlas/Casebook visibility in sync without widening into full governance sync.
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass
+import io
 from pathlib import Path
 
 from odylith.runtime.common.command_surface import display_command
+from odylith.runtime.surfaces import dashboard_shell_links
 
 
 @dataclass(frozen=True)
@@ -49,11 +52,16 @@ _OWNED_SURFACE_REFRESH_POLICIES: dict[str, OwnedSurfaceRefreshPolicy] = {
 
 
 def refresh_owned_surface(*, repo_root: Path, surface: str) -> int:
+    from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
     from odylith.runtime.governance import sync_workstream_artifacts
 
     policy = _policy_for_surface(surface)
+    root = Path(repo_root).resolve()
+    odylith_context_engine_projection_search_runtime.clear_runtime_process_caches(repo_root=root)
+    if policy.surface == "compass":
+        _ensure_compass_refresh_inputs(repo_root=root)
     return sync_workstream_artifacts.refresh_dashboard_surfaces(
-        repo_root=Path(repo_root).resolve(),
+        repo_root=root,
         surfaces=(policy.surface,),
         runtime_mode=policy.runtime_mode,
         atlas_sync=policy.atlas_sync,
@@ -62,15 +70,62 @@ def refresh_owned_surface(*, repo_root: Path, surface: str) -> int:
 
 def raise_for_failed_refresh(*, repo_root: Path, surface: str, operation_label: str, detail: str = "") -> None:
     policy = _policy_for_surface(surface)
-    refresh_rc = refresh_owned_surface(repo_root=repo_root, surface=policy.surface)
+    captured_output = io.StringIO()
+    with contextlib.redirect_stdout(captured_output):
+        refresh_rc = refresh_owned_surface(repo_root=repo_root, surface=policy.surface)
     if refresh_rc == 0:
         return
+    refresh_detail = " ".join(captured_output.getvalue().split())
     suffix = f" {detail.strip()}" if str(detail).strip() else ""
+    output_suffix = f" Refresh output: {refresh_detail}" if refresh_detail else ""
     retry_command = display_command(*policy.retry_command)
     raise RuntimeError(
         f"{operation_label.strip()} succeeded, but the {policy.surface} surface refresh failed; "
-        f"retry with `{retry_command}`.{suffix}"
+        f"retry with `{retry_command}`.{suffix}{output_suffix}"
     )
+
+
+def dashboard_handoff(
+    *,
+    surface: str,
+    workstream: str = "",
+    component: str = "",
+    diagram: str = "",
+    bug: str = "",
+) -> str:
+    """Return the repo-local tooling-shell route for a newly changed surface item."""
+
+    href = dashboard_shell_links.shell_href(
+        tab=surface,
+        workstream=workstream,
+        component=component,
+        diagram=diagram,
+        bug=bug,
+    )
+    return f"odylith/index.html{href}"
+
+
+def print_dashboard_handoff(
+    *,
+    surface: str,
+    workstream: str = "",
+    component: str = "",
+    diagram: str = "",
+    bug: str = "",
+    dry_run: bool = False,
+) -> None:
+    """Print the one browser action an operator needs after a governance write."""
+
+    if dry_run:
+        return
+    route = dashboard_handoff(
+        surface=surface,
+        workstream=workstream,
+        component=component,
+        diagram=diagram,
+        bug=bug,
+    )
+    print(f"view: {route} (refresh if already open)")
 
 
 def _policy_for_surface(surface: str) -> OwnedSurfaceRefreshPolicy:
@@ -81,4 +136,40 @@ def _policy_for_surface(surface: str) -> OwnedSurfaceRefreshPolicy:
     return policy
 
 
-__all__ = ["OwnedSurfaceRefreshPolicy", "raise_for_failed_refresh", "refresh_owned_surface"]
+def _ensure_compass_refresh_inputs(*, repo_root: Path) -> None:
+    """Create the empty baseline files Compass needs on a fresh install."""
+
+    root = Path(repo_root).resolve()
+    bug_index = root / "odylith" / "casebook" / "bugs" / "INDEX.md"
+    if not bug_index.is_file():
+        from odylith.runtime.governance import sync_casebook_bug_index
+
+        sync_casebook_bug_index.sync_casebook_bug_index(repo_root=root)
+
+    traceability_graph = root / "odylith" / "radar" / "traceability-graph.v1.json"
+    if not traceability_graph.is_file():
+        from odylith.runtime.governance import build_traceability_graph
+
+        captured = io.StringIO()
+        with contextlib.redirect_stdout(captured):
+            rc = build_traceability_graph.main(
+                [
+                    "--repo-root",
+                    str(root),
+                    "--output",
+                    "odylith/radar/traceability-graph.v1.json",
+                ]
+            )
+        if rc != 0:
+            detail = " ".join(captured.getvalue().split())
+            suffix = f": {detail}" if detail else ""
+            raise RuntimeError(f"Compass refresh prerequisites failed{suffix}")
+
+
+__all__ = [
+    "OwnedSurfaceRefreshPolicy",
+    "dashboard_handoff",
+    "print_dashboard_handoff",
+    "raise_for_failed_refresh",
+    "refresh_owned_surface",
+]

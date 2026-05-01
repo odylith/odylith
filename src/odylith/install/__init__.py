@@ -21,7 +21,7 @@ _EXPORTS: dict[str, tuple[str, str]] = {
     "install_release_runtime": ("odylith.install.runtime", "install_release_runtime"),
     "load_consumer_profile": ("odylith.runtime.common.consumer_profile", "load_consumer_profile"),
     "load_install_state": ("odylith.install.manager", "load_install_state"),
-    "migrate_legacy_install": ("odylith.install.manager", "migrate_legacy_install"),
+    "migrate_legacy_install": ("odylith.install.legacy_install_migration", "migrate_legacy_install"),
     "plan_install_lifecycle": ("odylith.install.manager", "plan_install_lifecycle"),
     "plan_reinstall_lifecycle": ("odylith.install.manager", "plan_reinstall_lifecycle"),
     "plan_upgrade_lifecycle": ("odylith.install.manager", "plan_upgrade_lifecycle"),
@@ -34,6 +34,9 @@ _EXPORTS: dict[str, tuple[str, str]] = {
     "switch_runtime": ("odylith.install.runtime", "switch_runtime"),
     "uninstall_bundle": ("odylith.install.manager", "uninstall_bundle"),
     "upgrade_install": ("odylith.install.manager", "upgrade_install"),
+    "check_for_available_upgrade": ("odylith.install.upgrade_check", "check_for_available_upgrade"),
+    "load_cached_upgrade_check": ("odylith.install.upgrade_check", "load_cached_upgrade_check"),
+    "upgrade_check_lines": ("odylith.install.upgrade_check", "upgrade_check_lines"),
     "version_status": ("odylith.install.manager", "version_status"),
     "write_consumer_profile": ("odylith.runtime.common.consumer_profile", "write_consumer_profile"),
 }

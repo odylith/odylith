@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -8,6 +9,22 @@ import pytest
 from odylith import cli
 from odylith.runtime.common import command_surface
 from odylith.runtime.evaluation import benchmark_compare as _real_benchmark_compare
+
+
+_FAKE_CLI_UX_LEAKS = (
+    "Tribunal already has CB-122",
+    "Casebook already remembers CB-122",
+    "This turn resolves to B-096",
+    "Show the next Odylith Observation",
+    "transcript confirmation",
+    "proven visible",
+    "brand promise",
+    "ready to speak",
+    "systemMessage",
+    "additionalContext",
+    "Stop hook error",
+    "Stop says",
+)
 
 
 def _parser_nodes(parser: argparse.ArgumentParser, prefix: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
@@ -26,25 +43,38 @@ def _parser_leaf_paths(parser: argparse.ArgumentParser) -> set[tuple[str, ...]]:
     return {path for path in all_nodes if not any(other[: len(path)] == path and other != path for other in all_nodes)}
 
 
-def _assert_help_ok(argv: list[str]) -> None:
+def _assert_no_fake_cli_ux_leaks(text: str) -> None:
+    lowered = text.casefold()
+    leaks = [token for token in _FAKE_CLI_UX_LEAKS if token.casefold() in lowered]
+    assert leaks == []
+
+
+def _assert_help_ok(argv: list[str], capsys: pytest.CaptureFixture[str]) -> None:
     try:
         rc = cli.main(argv)
     except SystemExit as exc:
         assert exc.code == 0
     else:
         assert rc == 0
+    captured = capsys.readouterr()
+    _assert_no_fake_cli_ux_leaks(captured.out)
+    _assert_no_fake_cli_ux_leaks(captured.err)
 
 
-def test_cli_help_smoke_covers_every_parser_node(monkeypatch, tmp_path: Path) -> None:
+def test_cli_help_smoke_covers_every_parser_node(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     parser = cli.build_parser()
     nodes = _parser_nodes(parser)
 
     monkeypatch.setattr(cli.subagent_router, "main", lambda argv: 0)
     monkeypatch.setattr(cli.subagent_orchestrator, "main", lambda argv: 0)
 
-    _assert_help_ok(["--help"])
+    _assert_help_ok(["--help"], capsys)
     for path in sorted(nodes):
-        _assert_help_ok([*path, "--help"])
+        _assert_help_ok([*path, "--help"], capsys)
 
 
 _HANDLER_CASES = [
@@ -121,6 +151,19 @@ _HANDLER_CASES = [
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root) and list(getattr(args, "forwarded", [])) == ["--check-only"],
     },
     {
+        "path": ("plan",),
+        "argv": lambda root: ["plan", f"--repo-root={root}"],
+        "handler": "_cmd_plan",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
+    },
+    {
+        "path": ("capabilities",),
+        "argv": lambda root: ["capabilities", f"--repo-root={root}", "--json"],
+        "handler": "_cmd_capabilities",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and (bool(getattr(args, "json", False)) or "--json" in list(getattr(args, "forwarded", []))),
+    },
+    {
         "path": ("dashboard", "refresh"),
         "argv": lambda root: ["dashboard", "refresh", f"--repo-root={root}"],
         "handler": "_cmd_dashboard_refresh",
@@ -179,6 +222,13 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--title", "Fixture bug"],
     },
     {
+        "path": ("github",),
+        "argv": lambda root: ["github", f"--repo-root={root}", "issue", "triage", "21", "--repo", "odylith/odylith"],
+        "handler": "_cmd_github",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and list(getattr(args, "forwarded", [])) == ["issue", "triage", "21", "--repo", "odylith/odylith"],
+    },
+    {
         "path": ("release", "list"),
         "argv": lambda root: ["release", "list", f"--repo-root={root}"],
         "handler": "_cmd_release",
@@ -233,15 +283,18 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["B-101", "next", "--from-release", "current"],
     },
     {
+        "path": ("release", "migration-gate"),
+        "argv": lambda root: ["release", "migration-gate", f"--repo-root={root}", "--target-version", "0.1.12", "--json"],
+        "handler": "_cmd_release",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "release_command", "") == "migration-gate"
+        and getattr(args, "target_version", "") == "0.1.12"
+        and bool(getattr(args, "json", False)),
+    },
+    {
         "path": ("compass", "log"),
         "argv": lambda root: ["compass", "log", f"--repo-root={root}"],
         "handler": "_cmd_compass_log",
-        "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
-    },
-    {
-        "path": ("compass", "refresh"),
-        "argv": lambda root: ["compass", "refresh", f"--repo-root={root}"],
-        "handler": "_cmd_compass_refresh",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root),
     },
     {
@@ -628,13 +681,6 @@ _DOWNSTREAM_ARGV_CASES = [
         "expected_argv": lambda root: ["--repo-root", str(root)],
     },
     {
-        "path": ("validate", "discipline"),
-        "argv": lambda root: ["validate", "discipline", f"--repo-root={root}"],
-        "target_obj": cli.validate_discipline,
-        "target_attr": "main",
-        "expected_argv": lambda root: ["--repo-root", str(root)],
-    },
-    {
         "path": ("validate", "plan-risk-mitigation"),
         "argv": lambda root: ["validate", "plan-risk-mitigation", f"--repo-root={root}"],
         "target_obj": cli.validate_plan_risk_mitigation_contract,
@@ -751,13 +797,25 @@ def test_cli_benchmark_compare_dispatch_and_json(monkeypatch, tmp_path: Path, ca
 def test_cli_dispatch_matrix_covers_every_parser_leaf() -> None:
     parser = cli.build_parser()
     leaf_paths = _parser_leaf_paths(parser)
-    covered_paths = {tuple(case["path"]) for case in _HANDLER_CASES}
-    covered_paths.update(tuple(case["path"]) for case in _OWNED_SURFACE_REFRESH_CASES)
-    covered_paths.update(tuple(case["path"]) for case in _SHORTCUT_CASES)
-    covered_paths.update(tuple(case["path"]) for case in _DISCIPLINE_SHORTCUT_CASES)
-    covered_paths.update(tuple(case["path"]) for case in _DOWNSTREAM_ARGV_CASES)
+    covered_paths = set(_dispatch_coverage_paths())
 
     assert leaf_paths == covered_paths
+
+
+def test_cli_dispatch_matrix_has_exactly_one_fixture_per_leaf() -> None:
+    counts = Counter(_dispatch_coverage_paths())
+    duplicates = sorted(" ".join(path) for path, count in counts.items() if count > 1)
+
+    assert duplicates == []
+
+
+def _dispatch_coverage_paths() -> list[tuple[str, ...]]:
+    paths = [tuple(case["path"]) for case in _HANDLER_CASES]
+    paths.extend(tuple(case["path"]) for case in _OWNED_SURFACE_REFRESH_CASES)
+    paths.extend(tuple(case["path"]) for case in _SHORTCUT_CASES)
+    paths.extend(tuple(case["path"]) for case in _DISCIPLINE_SHORTCUT_CASES)
+    paths.extend(tuple(case["path"]) for case in _DOWNSTREAM_ARGV_CASES)
+    return paths
 
 
 def test_extract_repo_root_accepts_equals_syntax_and_stops_at_double_dash(tmp_path: Path) -> None:

@@ -50,5 +50,7 @@
 
 - Related Incidents/Bugs: CB-113
 
+- Release Note: On 2026-05-01, v0.1.12 candidate proof passed 3373 tests and built the release wheel, then benchmark compare failed closed because there was still no current-tree authoritative proof report. The v0.1.12 maintainer override records benchmark proof and compare as advisory for that exact recovery release instead of weakening this invariant.
+
 - Code References: - src/odylith/runtime/evaluation/benchmark_compare.py
 - src/odylith/runtime/evaluation/odylith_benchmark_publication.py

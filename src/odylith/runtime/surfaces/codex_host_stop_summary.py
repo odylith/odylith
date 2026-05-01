@@ -145,18 +145,14 @@ def main(argv: list[str] | None = None) -> int:
         else ""
     )
     rendered = (
-        host_intervention_support.merge_replay_with_closeout(replay=replay, closeout_text=closeout_text)
-        if replay
-        else decision.visible_markdown
-        if decision is not None
-        else render_codex_stop_summary(
-            args.repo_root,
-            message=message,
-            session_id=session_id,
-            conversation_bundle_override=bundle,
+        host_intervention_support.merge_replay_with_closeout(
+            replay=replay,
+            closeout_text=closeout_text,
         )
+        if replay
+        else ""
     )
-    if bundle and decision is not None:
+    if rendered and bundle and decision is not None:
         host_surface_runtime.append_visible_intervention_events(
             repo_root=Path(args.repo_root).expanduser().resolve(),
             bundle=bundle,

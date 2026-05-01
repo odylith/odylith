@@ -1,5 +1,7 @@
 import argparse
 import json
+import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -82,8 +84,114 @@ def test_bug_capture_help_forwards_backend_flags(capsys) -> None:
     assert "--failure-signature" in output
     assert "--trigger-path" in output
     assert "--detected-by" in output
+    assert "--github-issues" in output
+    assert "--github-status" in output
+    assert "--fixed-in" in output
+    assert "--public-response" in output
     assert "--dry-run" in output
     assert "--json" in output
+
+
+def test_github_issue_triage_help_forwards_backend_flags(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["github", "issue", "triage", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith github issue triage" in output
+    assert "--apply-governance" in output
+    assert "--apply-github" in output
+    assert "--repo" in output
+    assert "--json" in output
+
+
+def test_github_issue_pipeline_blocks_consumer_repo_json(tmp_path: Path, capsys) -> None:
+    (tmp_path / "pyproject.toml").write_text("[project]\nname = \"consumer\"\n", encoding="utf-8")
+
+    rc = cli.main([
+        "github",
+        f"--repo-root={tmp_path}",
+        "issue",
+        "triage",
+        "21",
+        "--repo",
+        "odylith/odylith",
+        "--json",
+    ])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 2
+    assert payload["ok"] is False
+    assert payload["repo_role"] == "consumer_repo"
+    assert "maintainer-only" in payload["blocked_reason"]
+    assert "consumer repos do not run public issue mutation workflows" in payload["blocked_reason"]
+
+
+def test_plan_help_is_read_only_command_guide(capsys) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["plan", "--help"])
+
+    output = capsys.readouterr().out
+    assert excinfo.value.code == 0
+    assert "usage: odylith plan" in output
+    assert "Technical-plan writes and checks use the" in output
+    assert "odylith governance reconcile-plan-workstream-binding" in output
+    assert "odylith validate plan-traceability" in output
+    assert "There is no odylith/technical-plans/source/ directory." in output
+
+
+def test_plan_command_prints_read_only_command_guide(capsys) -> None:
+    rc = cli.main(["plan"])
+
+    output = capsys.readouterr().out
+    assert rc == 0
+    assert "Odylith technical-plan command guide" in output
+    assert "`odylith plan` is read-only guidance" in output
+    assert "odylith validate plan-risk-mitigation" in output
+
+
+def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> None:
+    rc = cli.main(["capabilities"])
+
+    output = capsys.readouterr().out
+    assert rc == 0
+    assert "Odylith capabilities and engines" in output
+    assert "Host model: agnostic" in output
+    assert "Analysis Engine" in output
+    assert "Governance Engine" in output
+    assert "Delivery Intelligence" in output
+    assert "Tribunal" in output
+    assert "Memory Substrate" in output
+    assert "Reasoning Engine" in output
+    assert "Surface DAGs" in output
+    assert "Codex and Claude Code are adapters" in output
+    assert "Use `odylith --help` for command syntax." in output
+
+
+def test_capabilities_command_json_exposes_product_inventory(capsys) -> None:
+    rc = cli.main(["capabilities", "--json"])
+
+    payload = json.loads(capsys.readouterr().out)
+    names = {
+        item["name"]
+        for group_key in ("engine_groups", "surface_groups")
+        for group in payload[group_key]
+        for item in group["items"]
+    }
+    assert rc == 0
+    assert payload["schema"] == "odylith.capability_inventory.v1"
+    assert payload["posture"] == "host-model-agnostic"
+    assert {
+        "Analysis Engine",
+        "Governance Engine",
+        "Delivery Intelligence",
+        "Tribunal",
+        "Memory Substrate",
+        "Reasoning Engine",
+        "Surface DAGs",
+        "Codex Adapter",
+        "Claude Code Adapter",
+    } <= names
 
 
 def test_compass_log_help_forwards_backend_flags(capsys) -> None:
@@ -113,6 +221,8 @@ def test_backlog_create_help_forwards_backend_flags(capsys) -> None:
     assert "--product-view" in output
     assert "--success-metrics" in output
     assert "--priority" in output
+    assert "--sizing {XS,S,M,L,XL}" in output
+    assert "--complexity {Low,Medium,High,VeryHigh}" in output
     assert "--release" in output
     assert "--dry-run" in output
     assert "--json" in output
@@ -269,6 +379,56 @@ def test_bug_capture_rebuilds_multiline_casebook_index_from_source(tmp_path: Pat
     assert "## Closed Bugs" in index_text
     assert "TBD" not in created_text
     assert refresh_calls == [tmp_path]
+
+
+def test_bug_capture_prints_casebook_dashboard_handoff(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        bug_authoring,
+        "_refresh_casebook_surface",
+        lambda *, repo_root: 0,
+    )
+    payload = _bug_capture_kwargs()
+
+    rc = bug_authoring.main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "--title",
+            "Casebook route should be obvious",
+            "--component",
+            "casebook",
+            "--severity",
+            "P2",
+            "--reproducibility",
+            str(payload["reproducibility"]),
+            "--impact",
+            str(payload["impact"]),
+            "--environment",
+            str(payload["environment"]),
+            "--detected-by",
+            str(payload["detected_by"]),
+            "--failure-signature",
+            str(payload["failure_signature"]),
+            "--trigger-path",
+            str(payload["trigger_path"]),
+            "--ownership",
+            str(payload["ownership"]),
+            "--blast-radius",
+            str(payload["blast_radius"]),
+            "--slo-impact",
+            str(payload["slo_sla_impact"]),
+            "--data-risk",
+            str(payload["data_risk"]),
+            "--security-compliance",
+            str(payload["security_compliance"]),
+            "--invariant-violated",
+            str(payload["invariant_violated"]),
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0
+    assert "view: odylith/index.html?tab=casebook&bug=CB-001 (refresh if already open)" in output
 
 
 def test_bug_capture_raises_when_casebook_refresh_fails(tmp_path: Path, monkeypatch) -> None:
@@ -442,6 +602,8 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
 
     def fake_full_sync(argv: list[str]) -> int:
         sync_capture["argv"] = argv
+        print("workstream sync impact plan")
+        print("- dirty_overlap: bootstrap internals that should stay hidden")
         _seed_first_run_surfaces(tmp_path)
         return 0
 
@@ -458,9 +620,13 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
         "--force",
         "--impact-mode",
         "full",
+        "--proceed-with-overlap",
     ]
     assert "Odylith 1.2.3 is ready" in output.out
     assert "Rendering first-run Odylith surfaces" in output.out
+    assert "First-run Odylith surfaces rendered." in output.out
+    assert "workstream sync impact plan" not in output.out
+    assert "bootstrap internals" not in output.out
     assert "Dashboard:" in output.out
     assert "Added Odylith local-state ignore rules to the root `.gitignore`" in output.out
     assert "Repo-root AGENTS now activates Odylith guidance, skills, and route-ready native delegation candidates" in output.out
@@ -473,6 +639,143 @@ def test_install_bootstraps_first_run_surfaces_and_reports_agent_workflow(monkey
     assert cli.shell_onboarding.STARTER_PROMPT in output.out
     assert "use `odylith/index.html` as the first-run Odylith launchpad" in output.out
     assert "doctor --repo-root . --repair" in output.out
+
+
+def test_hosted_first_install_uses_compact_progress_labels(monkeypatch, tmp_path: Path, capsys) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+
+    monkeypatch.setenv("ODYLITH_INSTALL_COMPACT", "1")
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=True,
+            created_guidance_files=("AGENTS.md", "CLAUDE.md"),
+            git_repo_present=True,
+            gitignore_updated=True,
+        ),
+    )
+
+    def fake_full_sync(argv: list[str]) -> int:  # noqa: ARG001
+        print("workstream sync impact plan")
+        print("- dirty_overlap: bootstrap internals that should stay hidden")
+        _seed_first_run_surfaces(tmp_path)
+        return 0
+
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "main", fake_full_sync)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--no-open"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "write  Adding Odylith files." in output
+    assert "draw   Building the dashboard." in output
+    assert "done   Dashboard ready." in output
+    assert "ready  Odylith 1.2.3 is installed." in output
+    assert f"file   {tmp_path / 'odylith' / 'index.html'}" in output
+    assert "start  In Codex or Claude Code, ask: Odylith, show me what you can do." in output
+    assert "install plan" not in output
+    assert "dirty_overlap" not in output
+    assert "workstream sync impact plan" not in output
+    assert "Created root guidance files" not in output
+    assert "Repo-root AGENTS now activates" not in output
+    assert "Full Odylith is installed by default" not in output
+
+
+def test_compact_install_reports_failure_without_traceback(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setenv("ODYLITH_INSTALL_COMPACT", "1")
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: (_ for _ in ()).throw(ValueError("migration ledger exists, but value-engine verification no longer passes")),
+    )
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--no-open"])
+    captured = capsys.readouterr()
+
+    assert rc == 2
+    assert "write  Adding Odylith files." in captured.out
+    assert "stop   Install needs attention." in captured.out
+    assert "migration ledger exists, but value-engine verification no longer passes" in captured.err
+    assert "Traceback" not in captured.err
+
+
+def test_first_run_surface_bootstrap_replays_sync_output_on_failure(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    def fake_full_sync(argv: list[str]) -> int:  # noqa: ARG001
+        print("workstream sync blocked")
+        print("contract failure details", file=sys.stderr)
+        return 2
+
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "main", fake_full_sync)
+
+    rc = cli._bootstrap_first_run_surfaces(  # noqa: SLF001
+        repo_root=tmp_path,
+        proceed_with_bootstrap_overlap=True,
+    )
+    output = capsys.readouterr()
+
+    assert rc == 2
+    assert "workstream sync blocked" in output.out
+    assert "contract failure details" in output.err
+
+
+def test_compact_existing_install_surface_failure_hides_sync_internals(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    install_state = tmp_path / ".odylith" / "install.json"
+    install_state.parent.mkdir(parents=True)
+    install_state.write_text('{"active_version":"1.2.3"}\n', encoding="utf-8")
+    sync_capture: dict[str, object] = {}
+
+    monkeypatch.setenv("ODYLITH_INSTALL_COMPACT", "1")
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+            gitignore_updated=False,
+        ),
+    )
+
+    def fail_full_sync(argv: list[str]) -> int:
+        sync_capture["argv"] = argv
+        print("workstream sync plan")
+        print("- dirty_overlap: details that compact install must hide")
+        print("contract failure details", file=sys.stderr)
+        return 17
+
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "main", fail_full_sync)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--no-open"])
+    captured = capsys.readouterr()
+
+    assert rc == 17
+    assert sync_capture["argv"] == [
+        "--repo-root",
+        str(tmp_path.resolve()),
+        "--force",
+        "--impact-mode",
+        "full",
+        "--proceed-with-overlap",
+    ]
+    assert "write  Adding Odylith files." in captured.out
+    assert "draw   Building the dashboard." in captured.out
+    assert "workstream sync plan" not in captured.out
+    assert "dirty_overlap" not in captured.out
+    assert "contract failure details" not in captured.err
+    assert "Odylith runtime install succeeded, but the first-run Odylith shell is incomplete." in captured.err
+    assert "odylith sync --repo-root . --proceed-with-overlap" in captured.err
+    assert "Traceback" not in captured.err
 
 
 def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -524,6 +827,48 @@ def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch
     assert "Opened `odylith/index.html` in your browser." in output.out
 
 
+def test_install_rematerialize_does_not_auto_acknowledge_surface_overlap(monkeypatch, tmp_path: Path, capsys) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    install_state = tmp_path / ".odylith" / "install.json"
+    install_state.parent.mkdir(parents=True, exist_ok=True)
+    install_state.write_text("{}\n", encoding="utf-8")
+    sync_capture: dict[str, object] = {}
+
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+        ),
+    )
+
+    def fake_full_sync(argv: list[str]) -> int:
+        sync_capture["argv"] = argv
+        _seed_first_run_surfaces(tmp_path)
+        return 0
+
+    monkeypatch.setattr(cli.sync_workstream_artifacts, "main", fake_full_sync)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path)])
+    output = capsys.readouterr()
+
+    assert rc == 0
+    assert sync_capture["argv"] == [
+        "--repo-root",
+        str(tmp_path.resolve()),
+        "--force",
+        "--impact-mode",
+        "full",
+    ]
+    assert "--proceed-with-overlap" not in sync_capture["argv"]
+    assert "Refreshing missing Odylith surfaces" in output.out
+    assert "Opened `odylith/index.html` in your browser." not in output.out
+
+
 def test_install_no_open_flag_suppresses_browser_launch(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     _seed_first_run_surfaces_without_shell(tmp_path)
@@ -558,12 +903,55 @@ def test_install_no_open_flag_suppresses_browser_launch(monkeypatch, tmp_path: P
     assert "Opened `odylith/index.html` in your browser." not in output.out
 
 
-def test_install_does_not_open_browser_when_not_first_install(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_compact_install_env_browser_opt_out_prints_dashboard_path_and_hint(monkeypatch, tmp_path: Path, capsys) -> None:
+    launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
+    _seed_first_run_surfaces_without_shell(tmp_path)
+    monkeypatch.setenv("ODYLITH_INSTALL_COMPACT", "1")
+    monkeypatch.setenv("ODYLITH_NO_BROWSER", "1")
+
+    monkeypatch.setattr(
+        cli,
+        "install_bundle",
+        lambda **kwargs: SimpleNamespace(
+            version="1.2.3",
+            repo_root=tmp_path,
+            launcher_path=launcher_path,
+            repo_guidance_created=False,
+            git_repo_present=True,
+        ),
+    )
+    monkeypatch.setattr(
+        cli.sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        lambda **kwargs: (
+            _seed_first_run_surfaces_without_shell(tmp_path),
+            (tmp_path / "odylith" / "index.html").write_text("<!doctype html>\n", encoding="utf-8"),
+            0,
+        )[2],
+    )
+
+    def fail_open(url: str, new: int = 0) -> bool:
+        raise AssertionError(f"browser should not open when ODYLITH_NO_BROWSER is set: {url=} {new=}")
+
+    monkeypatch.setattr(cli.webbrowser, "open", fail_open)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path)])
+    output = capsys.readouterr()
+
+    assert rc == 0
+    assert "open   Browser auto-open disabled by ODYLITH_NO_BROWSER." in output.out
+    assert f"file   {tmp_path / 'odylith' / 'index.html'}" in output.out
+    assert "hint   Run `unset ODYLITH_NO_BROWSER` to auto-open on the next install." in output.out
+    assert "Opened `odylith/index.html` in your browser." not in output.out
+
+
+def test_install_opens_dashboard_browser_on_successful_rematerialize(monkeypatch, tmp_path: Path, capsys) -> None:
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     install_state = tmp_path / ".odylith" / "install.json"
     install_state.parent.mkdir(parents=True, exist_ok=True)
     install_state.write_text("{}\n", encoding="utf-8")
     _seed_first_run_surfaces_without_shell(tmp_path)
+    opened: dict[str, object] = {}
 
     monkeypatch.setattr(
         cli,
@@ -582,18 +970,20 @@ def test_install_does_not_open_browser_when_not_first_install(monkeypatch, tmp_p
         lambda **kwargs: (_seed_first_run_surfaces_without_shell(tmp_path), (tmp_path / "odylith" / "index.html").write_text("<!doctype html>\n", encoding="utf-8"), 0)[2],
     )
     monkeypatch.setattr(cli, "_interactive_browser_launch_possible", lambda: True)
-
-    def fail_open(url: str, new: int = 0) -> bool:
-        raise AssertionError(f"browser should not open on reinstall: {url=} {new=}")
-
-    monkeypatch.setattr(cli.webbrowser, "open", fail_open)
+    monkeypatch.setattr(
+        cli.webbrowser,
+        "open",
+        lambda url, new=0: opened.update({"url": url, "new": new}) or True,
+    )
 
     rc = cli.main(["install", "--repo-root", str(tmp_path)])
     output = capsys.readouterr()
 
     assert rc == 0
     assert "Odylith is already installed here on 1.2.3." in output.out
-    assert "Opened `odylith/index.html` in your browser." not in output.out
+    assert opened["url"] == (tmp_path / "odylith" / "index.html").resolve().as_uri()
+    assert opened["new"] == 2
+    assert "Opened `odylith/index.html` in your browser." in output.out
 
 
 def test_install_adopt_latest_reinstalls_and_updates_repo_pin(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -819,6 +1209,37 @@ def test_refresh_dashboard_after_upgrade_reenters_through_fresh_launcher(monkeyp
     assert "dashboard refresh completed" in output.out
 
 
+def test_refresh_dashboard_after_upgrade_compact_hides_launcher_refresh_plan(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    repo_root = tmp_path / "repo"
+    launcher_path = repo_root / ".odylith" / "bin" / "odylith"
+    launcher_path.parent.mkdir(parents=True, exist_ok=True)
+    launcher_path.write_text("#!/bin/sh\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(  # noqa: ANN002, ANN003
+            returncode=0,
+            stdout="dashboard refresh plan\n- stage_timing.complete: 0.1s\ndashboard refresh completed\n",
+            stderr="",
+        ),
+    )
+
+    refreshed, message = cli._refresh_dashboard_after_upgrade(  # noqa: SLF001
+        repo_root=repo_root,
+        compact_output=True,
+    )
+    output = capsys.readouterr()
+
+    assert refreshed is True
+    assert message == "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
+    assert "draw   Refreshing dashboard." in output.out
+    assert "dashboard refresh plan" not in output.out
+    assert "stage_timing" not in output.out
+
+
 def test_refresh_dashboard_after_upgrade_returns_failure_when_launcher_refresh_fails(
     monkeypatch, tmp_path: Path, capsys
 ) -> None:
@@ -917,6 +1338,7 @@ def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, 
         "adopt_latest": False,
         "align_pin": True,
         "target_version": "1.2.4",
+        "bootstrap_runtime_prestaged": False,
     }
     assert captured["install_kwargs"] == {
         "repo_root": str(tmp_path),
@@ -925,6 +1347,22 @@ def test_install_align_pin_reports_repo_pin_update(monkeypatch, tmp_path: Path, 
         "align_pin": True,
     }
     assert "Repo pin updated to 1.2.4." in output
+
+
+def test_install_dry_run_passes_bootstrap_runtime_prestaged_env(monkeypatch, tmp_path: Path) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_plan_install_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured.update(kwargs)
+        return SimpleNamespace(command="install", headline="preview", steps=(), dirty_overlap=(), notes=())
+
+    monkeypatch.setenv("ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED", "1")
+    monkeypatch.setattr(cli, "plan_install_lifecycle", fake_plan_install_lifecycle)
+
+    rc = cli.main(["install", "--repo-root", str(tmp_path), "--dry-run"])
+
+    assert rc == 0
+    assert captured["bootstrap_runtime_prestaged"] is True
 
 
 def test_reinstall_defaults_to_latest_verified_release(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -1021,6 +1459,178 @@ def test_upgrade_dry_run_skips_upgrade_install(monkeypatch, tmp_path: Path, caps
     assert "upgrade dry-run" in captured
 
 
+def test_upgrade_dry_run_prints_binding_target_metadata_and_verbose_paths(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_plan_upgrade_lifecycle(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        captured.update(kwargs)
+        return SimpleNamespace(
+            command="upgrade",
+            headline="Preview the Odylith upgrade lifecycle.",
+            metadata={
+                "target_version": "1.2.4",
+                "target_tag": "v1.2.4",
+                "target_relation": "newer_than_active",
+                "operation": "mutating",
+                "release_repo": "example/odylith",
+                "release_url": "https://example.com/releases/v1.2.4",
+                "published_at": "2026-04-27T12:00:00Z",
+                "verification_policy": "sigstore identity, OIDC issuer, provenance, SBOM, archive safety, and sha256 digest checks",
+                "asset_digests": {
+                    "odylith-runtime-v1.2.4.tar.gz": "abc123",
+                    "release-manifest.json": "def456",
+                },
+                "rollback_target": "1.2.3",
+                "rollback_command": "./.odylith/bin/odylith rollback --repo-root . --previous",
+                "rollback_scope": "runtime activation and repo-local launchers",
+                "migration_ids": (),
+                "migration_ledger": ".odylith/state/migrations/example.json",
+            },
+            steps=(
+                SimpleNamespace(
+                    label="Stage the verified managed runtime.",
+                    mutation_classes=("runtime_state",),
+                    paths=("one", "two", "three", "four", "five"),
+                    detail="Target release: v1.2.4.",
+                ),
+            ),
+            dirty_overlap=(),
+            notes=(),
+        )
+
+    monkeypatch.setattr(cli, "plan_upgrade_lifecycle", fake_plan_upgrade_lifecycle)
+    monkeypatch.setattr(
+        cli,
+        "upgrade_install",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("upgrade_install should not run during --dry-run")),
+    )
+
+    rc = cli.main(
+        [
+            "upgrade",
+            "--repo-root",
+            str(tmp_path),
+            "--release-repo",
+            "example/odylith",
+            "--dry-run",
+            "--verbose",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured["release_repo"] == "example/odylith"
+    assert "target_version: 1.2.4" in output
+    assert "release_url: https://example.com/releases/v1.2.4" in output
+    assert "odylith-runtime-v1.2.4.tar.gz: abc123" in output
+    assert "rollback_command: ./.odylith/bin/odylith rollback --repo-root . --previous" in output
+    assert "paths: one, two, three, four, five" in output
+    assert "+1 more" not in output
+
+
+def test_release_migration_gate_json_reports_registered_runtime(capsys) -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+
+    rc = cli.main([
+        "release",
+        "migration-gate",
+        "--repo-root",
+        str(repo_root),
+        "--target-version",
+        "0.1.12",
+        "--json",
+    ])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["ok"] is True
+    assert payload["schema_version"] == "odylith.release-migration-gate.v1"
+    assert payload["fixture_matrix"]["v0.1.11-visible-intervention-value-engine"]["dry_run"] is True
+    assert payload["destructive_write_matrix"]["host.claude.preverified-settings"][
+        "test_install_bundle_preserves_host_settings_when_runtime_download_fails"
+    ] is True
+    assert payload["destructive_write_scenarios"]
+    assert payload["ungated_lifecycle_paths"] == []
+    assert payload["surface_migration_observer"]["schema_version"] == "odylith.surface-migration-observer.v1"
+    assert payload["surface_migration_observer"]["ok"] is True
+
+
+def test_release_migration_gate_blocks_consumer_repo_json(tmp_path: Path, capsys) -> None:
+    (tmp_path / "pyproject.toml").write_text("[project]\nname = \"consumer\"\n", encoding="utf-8")
+
+    rc = cli.main([
+        "release",
+        "migration-gate",
+        "--repo-root",
+        str(tmp_path),
+        "--target-version",
+        "0.1.12",
+        "--json",
+    ])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 2
+    assert payload["ok"] is False
+    assert payload["repo_role"] == "consumer_repo"
+    assert "maintainer-only" in payload["blocked_reason"]
+    assert "consumer repos do not run migration-observer guidance or skills" in payload["blocked_reason"]
+
+
+def test_upgrade_dry_run_json_outputs_binding_plan(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(
+            command="upgrade",
+            headline="Already at the resolved verified release; no upgrade mutation is planned.",
+            metadata={
+                "target_version": "1.2.4",
+                "target_tag": "v1.2.4",
+                "operation": "no-op",
+                "asset_digests": {"release-manifest.json": "abc123"},
+                "scenario": "already_current_consumer",
+                "migration_plan": {
+                    "schema_version": "odylith.migration-plan.v1",
+                    "plan_fingerprint": "abc123",
+                },
+                "ledger_state": {"v0.1.11-visible-intervention-value-engine": "skipped"},
+                "blocked_reason": "",
+                "plan_fingerprint": "abc123",
+            },
+            steps=(
+                SimpleNamespace(
+                    label="No upgrade mutation is planned.",
+                    mutation_classes=(),
+                    paths=(),
+                    detail="Resolved target: v1.2.4.",
+                ),
+            ),
+            dirty_overlap=(),
+            notes=("Dry-run is idempotent after a completed upgrade.",),
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "upgrade_install",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("upgrade_install should not run during --dry-run")),
+    )
+
+    rc = cli.main(["upgrade", "--repo-root", str(tmp_path), "--dry-run", "--json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["schema"] == "odylith.upgrade.dry_run.v1"
+    assert payload["dry_run"] is True
+    assert payload["plan"]["metadata"]["target_tag"] == "v1.2.4"
+    assert payload["plan"]["metadata"]["operation"] == "no-op"
+    assert payload["plan"]["metadata"]["asset_digests"]["release-manifest.json"] == "abc123"
+    assert payload["scenario"] == "already_current_consumer"
+    assert payload["migration_plan"]["plan_fingerprint"] == "abc123"
+    assert payload["ledger_state"]["v0.1.11-visible-intervention-value-engine"] == "skipped"
+
+
 def test_dashboard_refresh_dispatches_selected_surfaces(monkeypatch, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
 
@@ -1050,6 +1660,7 @@ def test_dashboard_refresh_dispatches_selected_surfaces(monkeypatch, tmp_path: P
             "shell,radar,atlas",
             "--atlas-sync",
             "--dry-run",
+            "--verbose",
             "--runtime-mode",
             "standalone",
         ]
@@ -1061,6 +1672,7 @@ def test_dashboard_refresh_dispatches_selected_surfaces(monkeypatch, tmp_path: P
     assert captured["runtime_mode"] == "standalone"
     assert captured["atlas_sync"] is True
     assert captured["dry_run"] is True
+    assert captured["verbose"] is True
 
 
 def test_dashboard_refresh_defaults_to_tooling_shell_radar_and_compass(monkeypatch, tmp_path: Path) -> None:
@@ -1089,6 +1701,25 @@ def test_dashboard_refresh_defaults_to_tooling_shell_radar_and_compass(monkeypat
     assert rc == 0
     assert captured["repo_root"] == tmp_path.resolve()
     assert captured["surfaces"] == ["tooling_shell", "radar", "compass"]
+    assert captured["verbose"] is False
+
+
+def test_dashboard_and_owned_surface_refresh_help_expose_verbose() -> None:
+    parser = cli.build_parser()
+    subparsers = next(
+        action for action in parser._actions if isinstance(action, argparse._SubParsersAction)  # noqa: SLF001
+    )
+    dashboard = subparsers.choices["dashboard"]
+    dashboard_subparsers = next(
+        action for action in dashboard._actions if isinstance(action, argparse._SubParsersAction)  # noqa: SLF001
+    )
+    radar = subparsers.choices["radar"]
+    radar_subparsers = next(
+        action for action in radar._actions if isinstance(action, argparse._SubParsersAction)  # noqa: SLF001
+    )
+
+    assert "--verbose" in dashboard_subparsers.choices["refresh"].format_help()
+    assert "--verbose" in radar_subparsers.choices["refresh"].format_help()
 
 
 def test_radar_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path) -> None:
@@ -1113,6 +1744,7 @@ def test_radar_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path
         "runtime_mode": "auto",
         "atlas_sync": False,
         "dry_run": True,
+        "verbose": False,
     }
 
 
@@ -1138,6 +1770,7 @@ def test_registry_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: P
         "runtime_mode": "standalone",
         "atlas_sync": False,
         "dry_run": False,
+        "verbose": False,
     }
 
 
@@ -1163,6 +1796,7 @@ def test_casebook_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: P
         "runtime_mode": "auto",
         "atlas_sync": False,
         "dry_run": False,
+        "verbose": False,
     }
 
 
@@ -1188,6 +1822,7 @@ def test_atlas_refresh_dispatches_owned_surface_lane(monkeypatch, tmp_path: Path
         "runtime_mode": "auto",
         "atlas_sync": True,
         "dry_run": False,
+        "verbose": False,
     }
 
 
@@ -1472,6 +2107,7 @@ def test_interactive_browser_launch_possible_respects_env_opt_out(monkeypatch) -
     monkeypatch.delenv("SSH_TTY", raising=False)
 
     assert cli._interactive_browser_launch_possible() is False
+    assert cli._browser_launch_disabled_message() == "Browser auto-open disabled by ODYLITH_NO_BROWSER."
 
 
 def test_interactive_browser_launch_possible_blocks_headless_linux(monkeypatch) -> None:
@@ -1597,9 +2233,10 @@ def test_install_fails_when_first_run_full_sync_fails(monkeypatch, tmp_path: Pat
         "--force",
         "--impact-mode",
         "full",
+        "--proceed-with-overlap",
     ]
     assert "Odylith runtime install succeeded, but the first-run Odylith shell is incomplete." in captured.err
-    assert "odylith sync --repo-root . --force --impact-mode full" in captured.err
+    assert "odylith sync --repo-root . --proceed-with-overlap" in captured.err
 
 
 def test_sync_dispatch_accepts_plain_forwarded_flags(monkeypatch, tmp_path: Path) -> None:
@@ -2179,6 +2816,63 @@ def test_doctor_passes_reset_local_state(monkeypatch, tmp_path: Path) -> None:
     assert captured["reset_local_state"] is True
 
 
+def test_doctor_repair_renders_missing_first_run_surfaces(monkeypatch, tmp_path: Path, capsys) -> None:
+    missing_surface = tmp_path / "odylith" / "index.html"
+    surface_calls: list[dict[str, object]] = []
+    missing_checks = {"count": 0}
+    (tmp_path / ".odylith").mkdir()
+    (tmp_path / ".odylith" / "install.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "odylith").mkdir()
+
+    monkeypatch.setattr(cli, "doctor_bundle", lambda **kwargs: (True, "Odylith repair completed."))
+    monkeypatch.setattr(
+        cli,
+        "version_status",
+        lambda **kwargs: SimpleNamespace(
+            repo_root=tmp_path,
+            repo_role="consumer_repo",
+            posture="pinned_release",
+            runtime_source="pinned_runtime",
+            runtime_source_detail="",
+            release_eligible=True,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            runtime_trust_warnings=(),
+        ),
+    )
+    monkeypatch.setattr(cli.upgrade_reporting, "doctor_operational_observability_lines", lambda **kwargs: ())
+    monkeypatch.setattr(cli.migration_runtime, "doctor_migration_observability_lines", lambda **kwargs: ())
+
+    def fake_missing_first_run_surfaces(*, repo_root: Path) -> list[Path]:  # noqa: ARG001
+        missing_checks["count"] += 1
+        return [missing_surface] if missing_checks["count"] == 1 else []
+
+    def fake_bootstrap_first_run_surfaces(*, repo_root: Path, proceed_with_bootstrap_overlap: bool = False) -> int:
+        surface_calls.append(
+            {
+                "repo_root": repo_root,
+                "proceed_with_bootstrap_overlap": proceed_with_bootstrap_overlap,
+            }
+        )
+        return 0
+
+    monkeypatch.setattr(cli, "_missing_first_run_surfaces", fake_missing_first_run_surfaces)
+    monkeypatch.setattr(cli, "_bootstrap_first_run_surfaces", fake_bootstrap_first_run_surfaces)
+
+    rc = cli.main(["doctor", "--repo-root", str(tmp_path), "--repair"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert surface_calls == [
+        {
+            "repo_root": tmp_path.resolve(),
+            "proceed_with_bootstrap_overlap": True,
+        }
+    ]
+    assert "Doctor repair: rendering missing Odylith shell surfaces." in output
+    assert "Odylith repair completed." in output
+
+
 def test_doctor_rejects_reset_without_repair(capsys, tmp_path: Path) -> None:
     rc = cli.main(["doctor", "--repo-root", str(tmp_path), "--reset-local-state"])
     captured = capsys.readouterr()
@@ -2214,6 +2908,116 @@ def test_off_uses_set_agents_integration(monkeypatch, tmp_path: Path) -> None:
     assert rc == 0
     assert captured["repo_root"] == str(tmp_path)
     assert captured["enabled"] is False
+
+
+def test_uninstall_uses_uninstall_bundle(monkeypatch, tmp_path: Path, capsys) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_uninstall_bundle(*, repo_root: str) -> SimpleNamespace:
+        captured["repo_root"] = repo_root
+        (Path(repo_root) / "odylith").mkdir()
+        return SimpleNamespace(removed_paths=(".odylith/",))
+
+    monkeypatch.setattr(cli, "uninstall_bundle", fake_uninstall_bundle)
+    rc = cli.main(["uninstall", "--repo-root", str(tmp_path)])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert captured["repo_root"] == str(tmp_path)
+    assert "Odylith runtime was uninstalled from this repository." in output
+    assert "Preserved `odylith/` governed source truth." in output
+    assert "Removed `.odylith/` local runtime state." in output
+    assert "Detached repo-root Odylith guidance." in output
+    assert "Detached Odylith hook entries from Claude/Codex project settings." in output
+    assert "Preserved `.claude/`, `.codex/`, and `.agents/` directories" in output
+
+
+def test_uninstall_help_states_exact_scope(capsys) -> None:
+    with pytest.raises(SystemExit) as raised:
+        cli.main(["uninstall", "--help"])
+    output = capsys.readouterr().out
+
+    assert raised.value.code == 0
+    assert "Remove Odylith's repo-local runtime state" in output
+    assert "--dry-run" in output
+    assert "removes:   .odylith/ runtime state and launcher files" in output
+    assert "detaches:  Odylith hook entries in Claude/Codex project settings" in output
+    assert "preserves: odylith/ governed source truth, dashboards, records, and history" in output
+    assert "preserves: .claude/, .codex/, and .agents/ host directories" in output
+    assert "Do not replace it with rm -rf or Python shutil.rmtree" in output
+    assert "Use --dry-run when you only need the scope preview" in output
+
+
+def test_uninstall_dry_run_prints_scope_without_mutating(monkeypatch, tmp_path: Path, capsys) -> None:
+    def fail_uninstall_bundle(*, repo_root: str) -> SimpleNamespace:
+        raise AssertionError(f"dry-run must not call uninstall_bundle: {repo_root}")
+
+    monkeypatch.setattr(cli, "uninstall_bundle", fail_uninstall_bundle)
+    (tmp_path / ".odylith").mkdir()
+    (tmp_path / "odylith").mkdir()
+    (tmp_path / ".claude").mkdir()
+
+    rc = cli.main(["uninstall", "--repo-root", str(tmp_path), "--dry-run"])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "uninstall plan" in output
+    assert f"- repo: {tmp_path.resolve()}" in output
+    assert "- removes: .odylith/ runtime state and launcher files" in output
+    assert "- detaches: Odylith hook entries in Claude/Codex project settings" in output
+    assert "- preserves: odylith/ governed source truth, dashboards, records, and history" in output
+    assert "- preserves: .claude/, .codex/, and .agents/ host directories" in output
+    assert "- changed: no" in output
+    assert "- run: ./.odylith/bin/odylith uninstall --repo-root ." in output
+    assert (tmp_path / ".odylith").is_dir()
+    assert (tmp_path / "odylith").is_dir()
+    assert (tmp_path / ".claude").is_dir()
+
+
+def test_uninstall_dry_run_reports_product_repo_block(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(cli, "repo_role_from_local_shape", lambda *, repo_root: cli.PRODUCT_REPO_ROLE)
+    monkeypatch.setattr(
+        cli,
+        "uninstall_bundle",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("dry-run must not mutate")),
+    )
+
+    rc = cli.main(["uninstall", "--repo-root", str(tmp_path), "--dry-run"])
+    output = capsys.readouterr().out
+
+    assert rc == 1
+    assert "uninstall plan" in output
+    assert "- status: blocked" in output
+    assert "refusing to uninstall the Odylith product repo's own `odylith/` source tree" in output
+    assert "- changed: no" in output
+
+
+def test_uninstall_reports_refusal_without_traceback(monkeypatch, tmp_path: Path, capsys) -> None:
+    def fake_uninstall_bundle(*, repo_root: str) -> SimpleNamespace:
+        del repo_root
+        raise ValueError("refusing to uninstall product repo")
+
+    monkeypatch.setattr(cli, "uninstall_bundle", fake_uninstall_bundle)
+    rc = cli.main(["uninstall", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr()
+
+    assert rc == 1
+    assert "refusing to uninstall product repo" in captured.err
+
+
+def test_uninstall_reports_filesystem_failure_without_traceback(monkeypatch, tmp_path: Path, capsys) -> None:
+    def fake_uninstall_bundle(*, repo_root: str) -> SimpleNamespace:
+        del repo_root
+        raise OSError("Directory not empty")
+
+    monkeypatch.setattr(cli, "uninstall_bundle", fake_uninstall_bundle)
+    rc = cli.main(["uninstall", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr()
+
+    assert rc == 1
+    assert "Odylith uninstall could not finish cleanly: Directory not empty" in captured.err
+    assert "No traceback was emitted" in captured.err
+    assert "Traceback" not in captured.err
 
 
 def test_on_prints_bootstrap_guidance(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -2513,6 +3317,115 @@ def test_version_prints_runtime_detail_when_present(monkeypatch, tmp_path: Path,
     assert "Runtime detail: Managed runtime trust is degraded:" in captured
 
 
+def test_version_check_upgrade_reports_available_release(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "version_status",
+        lambda **kwargs: SimpleNamespace(
+            repo_root=tmp_path,
+            repo_role="consumer_repo",
+            posture="pinned_release",
+            runtime_source="pinned_runtime",
+            runtime_source_detail="",
+            release_eligible=True,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.3",
+            active_version="1.2.3",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            runtime_trust_warnings=(),
+            available_versions=["1.2.3"],
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "check_for_available_upgrade",
+        lambda **kwargs: SimpleNamespace(
+            latest_version="1.2.4",
+            current_version=kwargs["current_version"],
+            release_url="https://github.com/odylith/odylith/releases/tag/v1.2.4",
+            from_cache=False,
+            next_check_after="",
+            disabled=False,
+            status="upgrade_available",
+            update_available=True,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "upgrade_check_lines",
+        lambda result, *, explicit=False: (
+            f"Upgrade available: Odylith {result.latest_version} (active {result.current_version}). Run `./.odylith/bin/odylith upgrade --repo-root .`.",
+            f"Release: {result.release_url}",
+        ),
+    )
+
+    rc = cli.main(["version", "--repo-root", str(tmp_path), "--check-upgrade"])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Upgrade available: Odylith 1.2.4 (active 1.2.3)." in captured
+    assert "Release: https://github.com/odylith/odylith/releases/tag/v1.2.4" in captured
+
+
+def test_version_without_check_uses_cache_only(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(
+        cli,
+        "version_status",
+        lambda **kwargs: SimpleNamespace(
+            repo_root=tmp_path,
+            repo_role="consumer_repo",
+            posture="pinned_release",
+            runtime_source="pinned_runtime",
+            runtime_source_detail="",
+            release_eligible=True,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.3",
+            active_version="1.2.3",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            runtime_trust_warnings=(),
+            available_versions=["1.2.3"],
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "check_for_available_upgrade",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("plain version should not ping remote")),
+    )
+    monkeypatch.setattr(
+        cli,
+        "load_cached_upgrade_check",
+        lambda **kwargs: SimpleNamespace(
+            latest_version="1.2.4",
+            current_version=kwargs["current_version"],
+            release_url="",
+            from_cache=True,
+            next_check_after="2026-05-07T00:00:00+00:00",
+            disabled=False,
+            status="upgrade_available",
+            update_available=True,
+        ),
+    )
+    monkeypatch.setattr(
+        cli,
+        "upgrade_check_lines",
+        lambda result, *, explicit=False: (
+            f"Upgrade available: Odylith {result.latest_version} (active {result.current_version}). Run `./.odylith/bin/odylith upgrade --repo-root .`.",
+        ),
+    )
+
+    rc = cli.main(["version", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Upgrade available: Odylith 1.2.4 (active 1.2.3)." in captured
+
+
 def test_doctor_prints_trust_degraded_wrapped_runtime_detail(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(
         cli,
@@ -2552,6 +3465,99 @@ def test_doctor_prints_trust_degraded_wrapped_runtime_detail(monkeypatch, tmp_pa
     assert "Runtime detail: Managed runtime trust is degraded:" in captured
     assert "healthy but trust-degraded" in captured.lower()
     assert "not release-eligible" in captured.lower()
+
+
+def test_doctor_prints_nonfatal_runtime_trust_warning(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.setattr(cli, "doctor_bundle", lambda **kwargs: (True, "Odylith install is healthy."))
+    monkeypatch.setattr(
+        cli,
+        "version_status",
+        lambda **kwargs: SimpleNamespace(
+            repo_root=tmp_path,
+            repo_role="consumer_repo",
+            posture="pinned_release",
+            runtime_source="pinned_runtime",
+            runtime_source_detail="",
+            release_eligible=True,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.3",
+            active_version="1.2.3",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            available_versions=["1.2.3"],
+            runtime_trust_warnings=(
+                "Sigstore emitted expected non-fatal trust-root warning stream(s), but verification completed successfully.",
+            ),
+        ),
+    )
+
+    rc = cli.main(["doctor", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Doctor status: healthy with warnings" in captured
+    assert "Trust warning: Sigstore emitted expected non-fatal trust-root warning stream(s)" in captured
+
+
+def test_doctor_prints_last_upgrade_report_and_lock_note(monkeypatch, tmp_path: Path, capsys) -> None:
+    report_dir = tmp_path / ".odylith" / "runtime" / "logs"
+    report_dir.mkdir(parents=True)
+    (report_dir / "upgrade-20260427T120000Z.json").write_text(
+        json.dumps(
+            {
+                "status": "succeeded_with_warnings",
+                "finished_at": "2026-04-27T12:01:00+00:00",
+                "dashboard_refresh": {
+                    "mode": "launcher",
+                    "fresh": True,
+                    "timeout_detected": True,
+                },
+                "generated_change_manifest": {
+                    "path": "odylith/upgrade-generated-changes.v1.json",
+                    "generated_changed_count": 2,
+                    "content_fingerprint": "123456abcdef",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    locks_dir = tmp_path / ".odylith" / "locks"
+    locks_dir.mkdir(parents=True)
+    for index in range(200):
+        (locks_dir / f"lock-{index}.lock").touch()
+    monkeypatch.setattr(cli, "doctor_bundle", lambda **kwargs: (True, "Odylith install is healthy."))
+    monkeypatch.setattr(
+        cli,
+        "version_status",
+        lambda **kwargs: SimpleNamespace(
+            repo_root=tmp_path,
+            repo_role="consumer_repo",
+            posture="pinned_release",
+            runtime_source="pinned_runtime",
+            runtime_source_detail="",
+            release_eligible=True,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.4",
+            active_version="1.2.4",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            available_versions=["1.2.3", "1.2.4"],
+        ),
+    )
+
+    rc = cli.main(["doctor", "--repo-root", str(tmp_path)])
+    captured = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Last upgrade: succeeded_with_warnings at 2026-04-27T12:01:00+00:00" in captured
+    assert "Last upgrade dashboard refresh: mode=launcher; fresh=yes; timeout_detected=yes" in captured
+    assert "Last upgrade generated changes: 2 generated path(s); manifest: odylith/upgrade-generated-changes.v1.json; fingerprint=123456abcdef" in captured
+    assert "Rollback target: 1.2.3" in captured
+    assert "Lock note: 200 zero-byte lock placeholders exist under .odylith/locks" in captured
 
 
 def test_install_dry_run_condenses_dirty_overlap_without_verbose(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -2710,6 +3716,7 @@ def test_upgrade_dispatches_to_upgrade_install(monkeypatch, tmp_path: Path, caps
 
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True, text=True)
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
 
     def fake_upgrade_install(
@@ -2740,11 +3747,29 @@ def test_upgrade_dispatches_to_upgrade_install(monkeypatch, tmp_path: Path, caps
             release_url="https://example.com/releases/v1.2.3",
         )
 
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
     monkeypatch.setattr(cli, "upgrade_install", fake_upgrade_install)
 
-    def fake_refresh_dashboard_after_upgrade(*, repo_root: Path) -> tuple[bool, str]:
+    def fake_refresh_dashboard_after_upgrade(
+        *,
+        repo_root: Path,
+        emit_output: bool = True,
+        compact_output: bool = False,
+        details: dict[str, object] | None = None,
+    ) -> tuple[bool, str]:
         refresh_capture["repo_root"] = repo_root
-        print("Refreshing Odylith dashboard surfaces so the local shell reflects the new release.")
+        refresh_capture["emit_output"] = emit_output
+        refresh_capture["compact_output"] = compact_output
+        if details is not None:
+            details.update({"mode": "launcher", "success": True})
+        if emit_output and compact_output:
+            print("draw   Refreshing dashboard.")
+        elif emit_output:
+            print("Refreshing Odylith dashboard surfaces so the local shell reflects the new release.")
         return True, "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release."
 
     monkeypatch.setattr(
@@ -2764,19 +3789,120 @@ def test_upgrade_dispatches_to_upgrade_install(monkeypatch, tmp_path: Path, caps
     assert captured["source_repo"] is None
     assert captured["write_pin"] is True
     assert refresh_capture["repo_root"] == repo_root
+    assert refresh_capture["compact_output"] is True
     assert spotlight_payload["from_version"] == "1.2.2"
     assert spotlight_payload["to_version"] == "1.2.3"
     assert spotlight_payload["release_tag"] == "v1.2.3"
     assert spotlight_payload["release_body"] == "## Highlights\n\nSharper install messaging.\n\nCleaner shell onboarding."
     assert spotlight_payload["highlights"] == ["Sharper install messaging.", "Cleaner shell onboarding."]
-    assert "Upgraded Odylith from 1.2.2 to 1.2.3." in output
-    assert "Repo pin remains 1.2.3." in output
-    assert "Release: https://example.com/releases/v1.2.3" in output
-    assert "Published: 2026-03-28 12:30 UTC" in output
-    assert "What changed:" in output
-    assert "- Sharper install messaging." in output
-    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." in output
-    assert "Dashboard refreshed. Open `odylith/index.html` to see what landed in this release." in output
+    assert "move   Preparing the verified Odylith release." in output
+    assert "write  Upgraded Odylith from 1.2.2 to 1.2.3." in output
+    assert "notes  2 release highlight(s) in the dashboard." in output
+    assert "draw   Refreshing dashboard." in output
+    assert "done   Dashboard ready." in output
+    assert "open   Open odylith/index.html to see what changed." in output
+    assert "undo   Rollback: ./.odylith/bin/odylith rollback --repo-root . --previous" in output
+    assert "Release: https://example.com/releases/v1.2.3" not in output
+    assert "What changed:" not in output
+    assert "Refreshing Odylith dashboard surfaces so the local shell reflects the new release." not in output
+
+
+def test_upgrade_json_writes_auditable_report_and_suppresses_refresh_stdout(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    subprocess.run(["git", "init"], cwd=repo_root, check=True, capture_output=True, text=True)
+    (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(
+            command="upgrade",
+            headline="Preview the Odylith upgrade lifecycle.",
+            metadata={
+                "target_version": "1.2.4",
+                "target_tag": "v1.2.4",
+                "operation": "mutating",
+                "asset_digests": {"release-manifest.json": "abc123"},
+                "rollback_target": "1.2.3",
+            },
+            steps=(
+                SimpleNamespace(
+                    label="Stage the verified managed runtime.",
+                    mutation_classes=("runtime_state",),
+                    paths=(".odylith/install.json",),
+                    detail="Target release: v1.2.4.",
+                ),
+            ),
+            dirty_overlap=(),
+            notes=(),
+        ),
+    )
+
+    def fake_upgrade_install(**kwargs) -> SimpleNamespace:  # noqa: ANN003
+        (repo_root / "odylith").mkdir(exist_ok=True)
+        (repo_root / "odylith" / "index.html").write_text("<!doctype html>\n", encoding="utf-8")
+        return SimpleNamespace(
+            active_version="1.2.4",
+            launcher_path=repo_root / ".odylith" / "bin" / "odylith",
+            pin_changed=True,
+            pinned_version="1.2.4",
+            previous_version="1.2.3",
+            repo_role="consumer_repo",
+            followed_latest=True,
+            release_tag="v1.2.4",
+            release_body="",
+            release_highlights=(),
+            release_published_at="2026-04-27T12:00:00Z",
+            release_url="https://example.com/releases/v1.2.4",
+            verification={"sigstore_warning_count": 1},
+            retention_warnings=(),
+        )
+
+    monkeypatch.setattr(cli, "upgrade_install", fake_upgrade_install)
+
+    def fake_refresh_dashboard_after_upgrade(
+        *,
+        repo_root: Path,
+        emit_output: bool = True,
+        compact_output: bool = False,
+        details: dict[str, object] | None = None,
+    ) -> tuple[bool, str]:
+        assert emit_output is False
+        assert compact_output is False
+        assert repo_root == tmp_path / "repo"
+        if details is not None:
+            details.update(
+                {
+                    "mode": "launcher",
+                    "returncode": 0,
+                    "timeout_detected": True,
+                    "stdout": "shell-safe runtime timed out at 45s; standalone fallback succeeded",
+                    "success": True,
+                }
+            )
+        return True, "Dashboard refreshed."
+
+    monkeypatch.setattr(cli, "_refresh_dashboard_after_upgrade", fake_refresh_dashboard_after_upgrade)
+
+    rc = cli.main(["upgrade", "--repo-root", str(repo_root), "--json"])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["schema"] == "odylith.upgrade.report.v1"
+    assert payload["status"] == "succeeded"
+    assert payload["final_state"]["active_version"] == "1.2.4"
+    assert payload["dashboard_refresh"]["timeout_detected"] is True
+    assert payload["generated_change_manifest"]["path"] == "odylith/upgrade-generated-changes.v1.json"
+    assert payload["generated_change_manifest"]["generated_changed_count"] == 1
+    assert payload["generated_change_manifest"]["entries"][0]["path"] == "odylith/index.html"
+    assert payload["plan"]["metadata"]["asset_digests"]["release-manifest.json"] == "abc123"
+    assert "odylith/index.html" in payload["changed_paths"]
+    assert "odylith/upgrade-generated-changes.v1.json" in payload["changed_paths"]
+    assert Path(payload["report_path"]).is_file()
+    assert (repo_root / "odylith" / "upgrade-generated-changes.v1.json").is_file()
 
 
 def test_migrate_legacy_install_dispatches_to_install_migration(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -2822,6 +3948,11 @@ def test_upgrade_reports_already_latest_verified_release(monkeypatch, tmp_path: 
 
     monkeypatch.setattr(
         cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
+    monkeypatch.setattr(
+        cli,
         "upgrade_install",
         lambda **kwargs: SimpleNamespace(
             active_version="1.2.3",
@@ -2848,9 +3979,9 @@ def test_upgrade_reports_already_latest_verified_release(monkeypatch, tmp_path: 
 
     assert rc == 0
     assert refresh_capture["repo_root"] == repo_root
-    assert "Odylith is already on the latest verified release: 1.2.3." in output
-    assert "Repo pin remains 1.2.3." in output
-    assert "Dashboard refreshed." in output
+    assert "write  Already on latest verified release 1.2.3." in output
+    assert "done   Dashboard ready." in output
+    assert "Repo pin remains 1.2.3." not in output
 
 
 def test_upgrade_reports_already_on_tracked_self_host_pin(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -2859,6 +3990,11 @@ def test_upgrade_reports_already_on_tracked_self_host_pin(monkeypatch, tmp_path:
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
     refresh_capture: dict[str, object] = {}
 
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
     monkeypatch.setattr(
         cli,
         "upgrade_install",
@@ -2887,9 +4023,9 @@ def test_upgrade_reports_already_on_tracked_self_host_pin(monkeypatch, tmp_path:
 
     assert rc == 0
     assert refresh_capture["repo_root"] == repo_root
-    assert "Odylith is already on the tracked self-host pin: 1.2.3." in output
-    assert "Repo pin remains 1.2.3." in output
-    assert "Dashboard refreshed." in output
+    assert "write  Already on tracked self-host pin 1.2.3." in output
+    assert "done   Dashboard ready." in output
+    assert "Repo pin remains 1.2.3." not in output
 
 
 def test_upgrade_refreshes_dashboard_for_product_repo_version_change_without_consumer_popup(
@@ -2900,6 +4036,11 @@ def test_upgrade_refreshes_dashboard_for_product_repo_version_change_without_con
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")
     refresh_capture: dict[str, object] = {}
 
+    monkeypatch.setattr(
+        cli,
+        "plan_upgrade_lifecycle",
+        lambda **kwargs: SimpleNamespace(command="upgrade", headline="preview", steps=(), dirty_overlap=(), notes=()),
+    )
     monkeypatch.setattr(
         cli,
         "upgrade_install",
@@ -2929,8 +4070,8 @@ def test_upgrade_refreshes_dashboard_for_product_repo_version_change_without_con
 
     assert rc == 0
     assert refresh_capture["repo_root"] == repo_root
-    assert "Upgraded Odylith from 1.2.3 to 1.2.4." in output
-    assert "Dashboard refreshed." in output
+    assert "write  Upgraded Odylith from 1.2.3 to 1.2.4." in output
+    assert "done   Dashboard ready." in output
 
 
 def test_rollback_dispatches_to_previous(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -2991,7 +4132,42 @@ def test_version_reports_pinned_and_available(monkeypatch, tmp_path: Path, capsy
     assert "Pinned: 1.2.3" in output
     assert "Active: 1.2.2" in output
     assert "Diverged from pin: yes" in output
-    assert "Available: 1.2.2, 1.2.3" in output
+    assert "Installed locally: 1.2.2, 1.2.3" in output
+
+
+def test_version_reports_nonfatal_runtime_trust_warning(monkeypatch, tmp_path: Path, capsys) -> None:
+    def fake_version_status(*, repo_root: str) -> SimpleNamespace:
+        return SimpleNamespace(
+            repo_root=Path(repo_root),
+            repo_role="consumer_repo",
+            posture="pinned_release",
+            runtime_source="pinned_runtime",
+            runtime_source_detail="",
+            release_eligible=True,
+            context_engine_mode="local",
+            context_engine_pack_installed=True,
+            pinned_version="1.2.3",
+            active_version="1.2.3",
+            last_known_good_version="1.2.3",
+            detached=False,
+            diverged_from_pin=False,
+            available_versions=["1.2.3"],
+            runtime_trust_warnings=(
+                "Sigstore emitted expected non-fatal trust-root warning stream(s) "
+                "(severity=notice; verification_degraded=no), but artifact identity, issuer, provenance, "
+                "SBOM, and sha256 verification completed successfully.",
+            ),
+        )
+
+    monkeypatch.setattr(cli, "version_status", fake_version_status)
+
+    rc = cli.main(["version", "--repo-root", str(tmp_path)])
+    output = capsys.readouterr().out
+
+    assert rc == 0
+    assert "Trust warning: Sigstore emitted expected non-fatal trust-root warning stream(s)" in output
+    assert "verification_degraded=no" in output
+    assert "artifact identity, issuer, provenance, SBOM, and sha256 verification completed successfully" in output
 
 
 

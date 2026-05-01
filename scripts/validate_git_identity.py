@@ -18,7 +18,6 @@ EXPECTED_EMAIL = "freedom@freedompreetham.org"
 EXPECTED_GITHUB_LOGIN = EXPECTED_NAME
 EXPECTED_GITHUB_REPOSITORY = "odylith/odylith"
 EXPECTED_GITHUB_PERMISSIONS = frozenset({"ADMIN", "MAINTAIN", "WRITE"})
-EXPECTED_HISTORY_AUTHOR_NAMES = frozenset({EXPECTED_NAME, "Freedom Preetham"})
 EXPECTED_LOCAL_CONFIG = {
     "user.name": EXPECTED_NAME,
     "user.email": EXPECTED_EMAIL,
@@ -83,12 +82,11 @@ def _valid_direct_identity(name: str, email: str) -> bool:
 
 
 def _valid_history_author_identity(name: str, email: str) -> bool:
-    return name in EXPECTED_HISTORY_AUTHOR_NAMES and email == EXPECTED_EMAIL
+    return _valid_direct_identity(name, email)
 
 
 def _history_identity_expectation() -> str:
-    accepted_names = ", ".join(sorted(EXPECTED_HISTORY_AUTHOR_NAMES))
-    return f"{{{accepted_names}}} / {EXPECTED_EMAIL!r} for canonical maintainer authorship"
+    return f"{EXPECTED_NAME!r} / {EXPECTED_EMAIL!r} for canonical maintainer authorship"
 
 
 def validate_local_identity(repo_root: Path) -> list[str]:
@@ -114,7 +112,8 @@ def validate_commit_history(repo_root: Path, *, revisions: Sequence[str], includ
     log_args = [
         "log",
         "--no-show-signature",
-        "--format=%H%x00%an%x00%ae%x00%cn%x00%ce",
+        "--use-mailmap",
+        "--format=%H%x00%aN%x00%aE%x00%cN%x00%cE",
     ]
     if include_all:
         log_args.append("--all")

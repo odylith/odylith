@@ -208,7 +208,7 @@ def test_closeout_assist_prefers_visibility_continuity_over_inherited_governance
 
     assert assist["eligible"] is True
     assert assist["style"] == "visibility_continuity"
-    assert "kept Odylith visible in this chat so the brand promise is something the user can see" in assist["markdown_text"]
+    assert "visibility feedback noted; this line is deliberately shown in chat" in assist["markdown_text"]
 
 
 def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_or_ids() -> None:
@@ -236,7 +236,7 @@ def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_
     assert assist["style"] == "visibility_continuity"
     assert assist["updated_artifacts"] == []
     assert assist["affected_contracts"] == []
-    assert "kept Odylith visible in this chat so the brand promise is something the user can see" in assist["markdown_text"]
+    assert "visibility feedback noted; this line is deliberately shown in chat" in assist["markdown_text"]
     assert "candidate path" not in assist["markdown_text"]
     assert "focused check" not in assist["markdown_text"]
 
@@ -427,7 +427,7 @@ def test_conversation_bundle_reads_precomputed_tribunal_risk_signal(tmp_path: Pa
     )
 
     assert bundle["ambient_signals"]["selected_signal"] == "risks"
-    assert "Tribunal already has B-031 flagged for unsafe closeout" in bundle["ambient_signals"]["risks"]["markdown_text"]
+    assert "B-031 is flagged for unsafe closeout" in bundle["ambient_signals"]["risks"]["markdown_text"]
     assert bundle["ambient_signals"]["claim_lint"]["highest_truthful_claim"] == "fixed in code"
     assert bundle["closeout_bundle"]["render_policy"]["claim_terms_require_lint"] is True
     assert bundle["closeout_bundle"]["selected_supplemental"] == ""
@@ -740,7 +740,7 @@ def test_conversation_bundle_prefers_explicit_tribunal_signals_over_cached_artif
     )
 
     assert bundle["ambient_signals"]["selected_signal"] == "risks"
-    assert bundle["ambient_signals"]["risks"]["markdown_text"].startswith("**Odylith Risks:** Tribunal already has B-031 flagged for unsafe closeout")
+    assert bundle["ambient_signals"]["risks"]["markdown_text"].startswith("**Odylith Risks:** B-031 is flagged for unsafe closeout")
     assert ".." not in bundle["ambient_signals"]["risks"]["markdown_text"]
 
 

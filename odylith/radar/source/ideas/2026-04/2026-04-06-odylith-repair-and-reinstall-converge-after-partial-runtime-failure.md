@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-050
 title: Repair and Reinstall Converge After Partial Runtime Failure
 date: 2026-04-06
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: A release-recovery path that needs manual filesystem cleanup after one failed attempt is not an operator-grade repair contract. This sits immediately after the macOS noise fix because partial residue currently turns one failure into a repeating failure loop.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-048
@@ -104,4 +104,10 @@ teaching operators not to trust its own recovery commands.
   ledger for operator forensics
 
 ## Outcome
-- Bound to `B-050` under `B-048`.
+- Closed on 2026-04-27 under the 0.1.12 lifecycle hardening lane.
+- Runtime residue cleanup now stays scoped to the target version under
+  `.odylith/runtime/versions/` and matches names literally instead of using
+  release-version glob patterns.
+- Repair and reinstall convergence is covered by unit and integration tests for
+  backup residue, stage residue, legacy staging residue, stale wrapper outputs,
+  repeated repair, repeated reinstall, and unrelated runtime preservation.

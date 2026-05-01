@@ -92,17 +92,49 @@ def test_render_prompt_system_message_appends_assist_for_visibility_feedback(tmp
         session_id="visibility-feedback",
     )
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert rendered.count("---") == 2
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    assert "kept Odylith visible in this chat so the brand promise is something the user can see" in rendered
+    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
     assert "Odylith is tracking this signal" not in rendered
     assert "**Odylith Insight:**" not in rendered
     assert "**Odylith Risks:**" not in rendered
     assert "**Odylith History:**" not in rendered
+    assert "B-096" not in rendered
+    assert "CB-122" not in rendered
+    assert "D-038" not in rendered
+    assert "Casebook already remembers" not in rendered
 
 
-def test_render_prompt_system_message_keeps_assist_hidden_for_generic_failure(tmp_path: Path) -> None:
+def test_prompt_bundle_preserves_engine_alignment_proof_for_visible_assist(tmp_path: Path) -> None:
+    bundle = host_intervention_support.build_prompt_conversation_bundle(
+        repo_root=tmp_path,
+        host_family="codex",
+        prompt="I still do not see any Odylith interventions or Assist in chat.",
+        session_id="prompt-proof",
+    )
+    proof = dict(bundle["observation"]["alignment_proof"])
+    lanes = {
+        row["lane_id"]: row
+        for row in proof["lanes"]
+        if isinstance(row, dict)
+    }
+
+    assert proof["proof_kind"] == "visibility_recovery"
+    assert proof["status"] == "ready"
+    assert proof["missing_required_lanes"] == []
+    assert lanes["context_engine"]["status"] == "covered"
+    assert lanes["execution_engine"]["status"] == "covered"
+    assert lanes["intervention_engine"]["status"] == "covered"
+    assert lanes["tribunal"]["status"] == "covered"
+    assert lanes["delivery"]["status"] == "covered"
+    assert lanes["memory_substrate"]["status"] == "covered"
+    assert lanes["subagent_orchestration"]["status"] == "policy_deferred"
+
+
+def test_render_prompt_system_message_keeps_generic_failure_free_of_fake_assist(tmp_path: Path) -> None:
     rendered = host_intervention_support.render_prompt_system_message(
         repo_root=tmp_path,
         host_family="codex",
@@ -110,7 +142,9 @@ def test_render_prompt_system_message_keeps_assist_hidden_for_generic_failure(tm
         session_id="generic-failure",
     )
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert "**Odylith Assist:**" not in rendered
 
 

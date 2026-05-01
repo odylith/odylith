@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
+from odylith.runtime.orchestration import subagent_orchestrator_local_gates as local_gates
 from odylith.runtime.orchestration import subagent_router as router
 
 
@@ -161,6 +162,20 @@ def _routing_decision(*, profile: router.RouterProfile, task_family: str, needs_
         escalation_profile="",
         hard_gate_hits=[],
         task_family=task_family,
+    )
+
+
+def _local_gate_decision(
+    request: orchestrator.OrchestrationRequest,
+    assessment: router.TaskAssessment,
+) -> tuple[list[str], list[str]]:
+    return local_gates.should_keep_local(
+        request,
+        assessment,
+        architecture_policy=orchestrator._architecture_policy_context(request),  # noqa: SLF001
+        path_groups=orchestrator._group_paths(request.candidate_paths, needs_write=True),  # noqa: SLF001
+        decomposable_coordination_gates=orchestrator._DECOMPOSABLE_COORDINATION_GATES,  # noqa: SLF001
+        trivial_local_prompt=orchestrator._is_trivial_local_prompt(request, assessment=assessment),  # noqa: SLF001
     )
 
 
@@ -528,6 +543,92 @@ def test_route_request_keeps_local_when_runtime_packet_explicitly_recommends_mai
     assert decision.profile == router.RouterProfile.MAIN_THREAD.value
     assert decision.spawn_agent_overrides == {}
     assert "main thread" in decision.why
+
+
+def test_orchestrator_local_gates_have_a_dedicated_owner() -> None:
+    orchestrator_source = Path(orchestrator.__file__).read_text(encoding="utf-8")
+    local_gate_source = Path(local_gates.__file__).read_text(encoding="utf-8")
+
+    assert "def _should_keep_local" not in orchestrator_source
+    assert "def _can_decompose_coordination_heavy_write" not in orchestrator_source
+    assert "subagent_orchestrator_local_gates.should_keep_local" in orchestrator_source
+    assert "def should_keep_local" in local_gate_source
+    assert "def can_decompose_coordination_heavy_write" in local_gate_source
+
+
+def test_local_gates_keep_narrowing_first_runtime_main_thread_local() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Update the bounded implementation.",
+        candidate_paths=["src/odylith/runtime/orchestration/subagent_router.py"],
+        validation_commands=["pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        context_signal_summary={
+            "odylith_execution_profile": router.RouterProfile.MAIN_THREAD.value,
+            "odylith_execution_delegate_preference": "hold_local",
+            "odylith_execution_selection_mode": "guarded_narrowing",
+            "route_ready": True,
+            "native_spawn_ready": True,
+            "odylith_execution_spawn_worthiness": 1,
+        },
+    )
+
+    reasons, notes = local_gates.should_keep_local(
+        request,
+        assessment,
+        architecture_policy={},
+        path_groups=[["src/odylith/runtime/orchestration/subagent_router.py"]],
+        decomposable_coordination_gates=frozenset({"coordination-cost-high"}),
+        trivial_local_prompt=False,
+    )
+
+    assert "odylith-local-narrowing" in reasons
+    assert notes == ["The slice still needs local narrowing or local coordination before any bounded fan-out."]
+
+
+def test_local_gates_relax_coordination_gate_when_owned_paths_are_decomposable() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Split the bounded implementation and validation work.",
+        candidate_paths=[
+            "src/odylith/runtime/orchestration/subagent_router.py",
+            "tests/unit/runtime/test_subagent_reasoning_ladder.py",
+        ],
+        acceptance_criteria=["Keep routing behavior stable."],
+        validation_commands=["pytest -q tests/unit/runtime/test_subagent_reasoning_ladder.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+    assessment = _assessment(
+        needs_write=True,
+        task_family="bounded_bugfix",
+        context_signal_summary={
+            "route_ready": True,
+            "native_spawn_ready": True,
+        },
+        hard_gate_hits=["coordination-cost-high"],
+    )
+
+    reasons, notes = local_gates.should_keep_local(
+        request,
+        assessment,
+        architecture_policy={},
+        path_groups=[
+            ["src/odylith/runtime/orchestration/subagent_router.py"],
+            ["tests/unit/runtime/test_subagent_reasoning_ladder.py"],
+        ],
+        decomposable_coordination_gates=frozenset({"coordination-cost-high"}),
+        trivial_local_prompt=False,
+    )
+
+    assert "coordination-cost-high" not in reasons
+    assert reasons == []
+    assert notes == [
+        "The base prompt looked coordination-heavy, but grounded explicit owned paths let the orchestrator decompose it into bounded ordered leaves."
+    ]
 
 
 def test_route_request_keeps_local_when_runtime_requires_local_narrowing(tmp_path: Path) -> None:
@@ -1583,7 +1684,7 @@ def test_orchestrator_local_narrowing_notes_stay_task_first() -> None:
         base_confidence=1,
     )
 
-    reasons, notes = orchestrator._should_keep_local(request, assessment)  # noqa: SLF001
+    reasons, notes = _local_gate_decision(request, assessment)
 
     assert "odylith-local-narrowing" in reasons
     assert "odylith-read-only-local-narrowing" in reasons
@@ -1929,7 +2030,7 @@ def test_orchestrator_keeps_claude_host_local_when_worker_delegation_is_unavaila
         },
     )
 
-    reasons, notes = orchestrator._should_keep_local(request, assessment)  # noqa: SLF001
+    reasons, notes = _local_gate_decision(request, assessment)
 
     assert "execution-engine-host-serial" in reasons
     assert any("Claude Code" in note for note in notes)

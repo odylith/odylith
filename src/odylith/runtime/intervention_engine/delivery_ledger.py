@@ -207,15 +207,15 @@ def delivery_snapshot(
 def active_lane_matrix(*, host_family: str) -> list[dict[str, str]]:
     host = _normalize_token(host_family)
     prompt_visibility = (
-        "model-context fallback; visible only when the assistant renders it"
+        "model-context recovery; visible only when the assistant renders it"
         if host == "codex"
-        else "prompt-context fallback plus best-effort prompt-teaser stdout"
+        else "prompt-context recovery plus best-effort prompt-teaser stdout"
     )
     edit_visibility = (
-        "Bash checkpoint hook with cached grounding and assistant fallback; "
-        "native apply_patch depends on host dispatch or visible fallback"
+        "Bash checkpoint hook with cached grounding and assistant recovery; "
+        "native apply_patch depends on host dispatch or visible recovery"
         if host == "codex"
-        else "Write/Edit/MultiEdit and Bash checkpoint hooks with assistant fallback"
+        else "Write/Edit/MultiEdit and Bash checkpoint hooks with assistant recovery"
     )
     return [
         {
@@ -240,9 +240,9 @@ def active_lane_matrix(*, host_family: str) -> list[dict[str, str]]:
         },
         {
             "lane": "Odylith Assist",
-            "phase": "prompt-submit visible fallback, explicit visibility feedback, and stop_summary closeout",
+            "phase": "prompt-submit visible recovery, explicit visibility feedback, and stop-summary closeout",
             "visibility": (
-                "assistant-visible fallback keeps Assist as the final line for prompt-rendered Odylith beats; "
+                "assistant-visible recovery keeps Assist as the final line for prompt-rendered Odylith output; "
                 "stop uses the one-shot continuation guard"
             ),
         },

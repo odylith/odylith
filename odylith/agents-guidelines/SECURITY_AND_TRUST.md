@@ -44,7 +44,7 @@
   Sigstore signer identity plus OIDC issuer.
 - Canonical workflows should pin first-party GitHub Actions to immutable SHAs,
   pin the runner image, and avoid floating maintainer tooling installs.
-- Local hosted-release overrides are maintainer-only rehearsal tools and must
+- Local hosted-release overrides are product-repo rehearsal tools and must
   stay unavailable in consumer posture.
 
 ## Process-Lifetime Rules

@@ -46,7 +46,7 @@ from odylith.runtime.common.python_source_parse import (
 from odylith.runtime.evaluation import benchmark_group_summaries
 from odylith.runtime.evaluation import benchmark_metric_helpers
 from odylith.runtime.evaluation import odylith_benchmark_snapshot_paths
-from odylith.runtime.evaluation.odylith_benchmark_tree_identity import stable_snapshot_overlay_paths
+from odylith.runtime.evaluation import odylith_benchmark_tree_identity as benchmark_tree_identity_runtime
 from odylith.runtime.evaluation import odylith_benchmark_acceptance
 from odylith.runtime.evaluation import odylith_benchmark_mode
 from odylith.runtime.evaluation import odylith_benchmark_isolation
@@ -1055,7 +1055,7 @@ def _tree_identity_from_progress_payload(*, repo_root: Path, progress_payload: M
         if isinstance(progress_payload.get("selection"), Mapping)
         else {}
     )
-    current = benchmark_tree_identity(repo_root=repo_root, selection=selection)
+    current = benchmark_tree_identity_runtime.benchmark_tree_identity(repo_root=repo_root, selection=selection)
     return {
         "git_branch": str(progress_payload.get("git_branch", "")).strip() or str(current.get("git_branch", "")).strip(),
         "git_commit": str(progress_payload.get("git_commit", "")).strip() or str(current.get("git_commit", "")).strip(),
@@ -1192,10 +1192,6 @@ def _persist_orphaned_progress_failed_report(
     return True
 
 
-def _fingerprint_json_payload(payload: Mapping[str, Any]) -> str:
-    return hashlib.sha256(json.dumps(dict(payload), sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
-
-
 def _call_with_supported_kwargs(function: Any, /, **kwargs: Any) -> Any:
     try:
         signature = inspect.signature(function)
@@ -1209,95 +1205,6 @@ def _call_with_supported_kwargs(function: Any, /, **kwargs: Any) -> Any:
         if key in signature.parameters
     }
     return function(**supported)
-
-
-def _selection_fingerprint(selection: Mapping[str, Any]) -> str:
-    return _fingerprint_json_payload(selection)
-
-
-def _safe_resolve_path(path: Path) -> Path | None:
-    with contextlib.suppress(OSError, RuntimeError):
-        return Path(path).resolve()
-    return None
-
-
-def _snapshot_overlay_fingerprint(*, repo_root: Path, snapshot_paths: Sequence[str]) -> str:
-    normalized_paths = _dedupe_path_strings(stable_snapshot_overlay_paths(snapshot_paths))
-    if not normalized_paths:
-        return ""
-    existing_paths = [
-        str(path)
-        for path in (
-            _safe_resolve_path(Path(repo_root).resolve() / token)
-            for token in normalized_paths
-        )
-        if path is not None and path.exists()
-    ]
-    if not existing_paths:
-        return ""
-    return odylith_context_cache.fingerprint_paths(existing_paths)
-
-
-def _benchmark_source_posture(*, repo_root: Path) -> str:
-    with contextlib.suppress(Exception):
-        from odylith.install.manager import version_status
-
-        status = version_status(repo_root=repo_root)
-        posture = str(getattr(status, "posture", "") or "").strip()
-        runtime_source = str(getattr(status, "runtime_source", "") or "").strip()
-        if posture and runtime_source:
-            return f"{posture}:{runtime_source}"
-        if posture:
-            return posture
-        if runtime_source:
-            return runtime_source
-    return "unknown"
-
-
-def benchmark_tree_identity(
-    *,
-    repo_root: Path,
-    selection: Mapping[str, Any],
-    snapshot_paths: Sequence[str] = (),
-) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    return {
-        "git_branch": str(store._git_branch_name(repo_root=root) or "").strip(),  # noqa: SLF001
-        "git_commit": str(store._git_head_oid(repo_root=root) or "").strip(),  # noqa: SLF001
-        "git_dirty": bool(_dirty_repo_paths(root)),
-        "repo_dirty_paths": _dirty_repo_paths(root),
-        "selection_fingerprint": _selection_fingerprint(selection),
-        "corpus_fingerprint": odylith_context_cache.fingerprint_paths(
-            [store.optimization_evaluation_corpus_path(repo_root=root)]
-        ),
-        "snapshot_overlay_fingerprint": _snapshot_overlay_fingerprint(repo_root=root, snapshot_paths=snapshot_paths),
-        "source_posture": _benchmark_source_posture(repo_root=root),
-    }
-
-
-def benchmark_report_matches_current_tree(*, repo_root: Path, report: Mapping[str, Any]) -> bool:
-    if not isinstance(report, Mapping):
-        return False
-    selection = dict(report.get("selection", {})) if isinstance(report.get("selection"), Mapping) else {}
-    snapshot_paths = (
-        [str(token).strip() for token in report.get("snapshot_overlay_paths", []) if str(token).strip()]
-        if isinstance(report.get("snapshot_overlay_paths"), list)
-        else []
-    )
-    current = benchmark_tree_identity(repo_root=repo_root, selection=selection, snapshot_paths=snapshot_paths)
-    for key in (
-        "git_branch",
-        "git_commit",
-        "git_dirty",
-        "repo_dirty_paths",
-        "selection_fingerprint",
-        "corpus_fingerprint",
-        "snapshot_overlay_fingerprint",
-        "source_posture",
-    ):
-        if report.get(key) != current.get(key):
-            return False
-    return True
 
 
 def load_latest_benchmark_report(*, repo_root: Path, benchmark_profile: str | None = None) -> dict[str, Any]:
@@ -1362,7 +1269,9 @@ def load_latest_runtime_benchmark_report(*, repo_root: Path) -> dict[str, Any]:
     if not candidates:
         return {}
     current_tree_candidates = [
-        report for report in candidates if benchmark_report_matches_current_tree(repo_root=root, report=report)
+        report
+        for report in candidates
+        if benchmark_tree_identity_runtime.benchmark_report_matches_current_tree(repo_root=root, report=report)
     ]
     selected_pool = current_tree_candidates or candidates
     return dict(max(selected_pool, key=_runtime_latest_report_sort_key))
@@ -2125,7 +2034,7 @@ def compact_report_summary(report: Mapping[str, Any] | None) -> dict[str, Any]:
         "git_commit": str(report.get("git_commit", "")).strip(),
         "git_dirty": bool(report.get("git_dirty")),
         "source_posture": str(report.get("source_posture", "")).strip(),
-        "current_tree_identity_match": benchmark_report_matches_current_tree(
+        "current_tree_identity_match": benchmark_tree_identity_runtime.benchmark_report_matches_current_tree(
             repo_root=Path(str(report.get("repo_root", "")).strip() or "."),
             report=report,
         )
@@ -4743,26 +4652,6 @@ def _validation_companion_file_paths(*, repo_root: Path, validation_paths: Seque
     return _dedupe_path_strings(rows)
 
 
-def _dirty_repo_paths(repo_root: Path) -> list[str]:
-    root = Path(repo_root).resolve()
-    rows: list[str] = []
-    for command in (
-        ["git", "diff", "--name-only", "--diff-filter=ACMRTUXB", "HEAD", "--"],
-        ["git", "ls-files", "--others", "--exclude-standard"],
-    ):
-        completed = subprocess.run(
-            command,
-            cwd=str(root),
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        if int(completed.returncode or 0) != 0:
-            continue
-        rows.extend(str(line).strip() for line in str(completed.stdout or "").splitlines() if str(line).strip())
-    return _dedupe_path_strings(rows)
-
-
 def _expand_same_package_dirty_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
     base_paths = _dedupe_path_strings(snapshot_paths)
     package_dirs = {
@@ -4807,7 +4696,7 @@ def _expand_same_package_dirty_paths(*, repo_root: Path, snapshot_paths: Sequenc
 
     expanded: list[str] = list(base_paths)
     candidate_rows: dict[str, list[tuple[int, str]]] = {}
-    for dirty_path in _dirty_repo_paths(repo_root):
+    for dirty_path in benchmark_tree_identity_runtime.dirty_repo_paths(repo_root):
         candidate = Path(dirty_path)
         if candidate.suffix != ".py":
             continue
@@ -4929,7 +4818,7 @@ def _expand_dirty_import_dependency_paths(*, repo_root: Path, snapshot_paths: Se
     base_paths = _dedupe_path_strings(snapshot_paths)
     dirty_python_paths = {
         path
-        for path in _dirty_repo_paths(repo_root)
+        for path in benchmark_tree_identity_runtime.dirty_repo_paths(repo_root)
         if Path(path).suffix == ".py" and Path(path).as_posix().startswith(("src/", "tests/"))
     }
     if not dirty_python_paths:
@@ -4973,7 +4862,7 @@ def _expand_dirty_import_dependency_paths(*, repo_root: Path, snapshot_paths: Se
 
 def _expand_dirty_benchmark_runtime_snapshot_paths(*, repo_root: Path, snapshot_paths: Sequence[str]) -> list[str]:
     base_paths = _dedupe_path_strings(snapshot_paths)
-    dirty_paths = _dirty_repo_paths(repo_root)
+    dirty_paths = benchmark_tree_identity_runtime.dirty_repo_paths(repo_root)
     if not dirty_paths:
         return base_paths
 
@@ -5003,7 +4892,7 @@ def _expand_governance_validator_snapshot_paths(*, repo_root: Path, snapshot_pat
     if not base_paths:
         return base_paths
     base_path_set = set(base_paths)
-    dirty_paths = _dirty_repo_paths(repo_root)
+    dirty_paths = benchmark_tree_identity_runtime.dirty_repo_paths(repo_root)
     if not dirty_paths:
         return base_paths
 
@@ -5072,7 +4961,7 @@ def _expand_sync_validator_snapshot_paths(
             ],
         )
     )
-    for path in _dirty_repo_paths(root):
+    for path in benchmark_tree_identity_runtime.dirty_repo_paths(root):
         token = str(path or "").strip()
         if not token:
             continue
@@ -5416,27 +5305,6 @@ def _run_prepared_live_scenario(prepared_request: Mapping[str, Any]) -> dict[str
     )
     result["live_execution"] = live_execution
     return result
-
-
-def _result_snapshot_overlay_paths(result: Mapping[str, Any]) -> list[str]:
-    live_execution = dict(result.get("live_execution", {})) if isinstance(result.get("live_execution"), Mapping) else {}
-    effective_paths = live_execution.get("effective_snapshot_paths", [])
-    if not isinstance(effective_paths, list):
-        return []
-    return stable_snapshot_overlay_paths(effective_paths)
-
-
-def _report_snapshot_overlay_paths(scenario_reports: Sequence[Mapping[str, Any]]) -> list[str]:
-    return _dedupe_strings(
-        [
-            token
-            for scenario_report in scenario_reports
-            if isinstance(scenario_report, Mapping)
-            for result in scenario_report.get("results", [])
-            if isinstance(scenario_report.get("results"), list) and isinstance(result, Mapping)
-            for token in _result_snapshot_overlay_paths(result)
-        ]
-    )
 
 
 def _run_live_scenario_batch(
@@ -7874,7 +7742,7 @@ def run_benchmarks(
             },
             "benchmark_runtime_storage": dict(benchmark_runtime_storage),
         }
-        initial_tree_identity = benchmark_tree_identity(
+        initial_tree_identity = benchmark_tree_identity_runtime.benchmark_tree_identity(
             repo_root=root,
             selection=dict(progress_payload.get("selection", {})),
         )
@@ -8260,8 +8128,8 @@ def run_benchmarks(
                     if isinstance(result, Mapping) and str(result.get("preflight_evidence_result_status", "")).strip()
                 }
             )
-            snapshot_overlay_paths = _report_snapshot_overlay_paths(published_scenarios)
-            tree_identity = benchmark_tree_identity(
+            snapshot_overlay_paths = benchmark_tree_identity_runtime.report_snapshot_overlay_paths(published_scenarios)
+            tree_identity = benchmark_tree_identity_runtime.benchmark_tree_identity(
                 repo_root=root,
                 selection=dict(progress_payload.get("selection", {})),
                 snapshot_paths=snapshot_overlay_paths,

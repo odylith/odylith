@@ -477,6 +477,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     except RuntimeError as exc:
         print(str(exc))
         return 1
+    workstreams = payload.get("workstreams", [])
+    first_workstream = str(workstreams[0]).strip() if isinstance(workstreams, list) and workstreams else ""
+    owned_surface_refresh.print_dashboard_handoff(
+        surface="compass",
+        workstream=first_workstream,
+    )
     return 0
 
 

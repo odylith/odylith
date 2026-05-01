@@ -214,7 +214,7 @@ def test_compass_browser_source_truth_snapshot_restores_active_release_and_wave_
             assert current_ids == []
             compass.locator(
                 "#current-workstreams .empty",
-                has_text="All current workstreams are already represented in Programs or Release Targets.",
+                has_text="No additional current workstreams. Program and release lanes already cover the active work.",
             ).wait_for(timeout=15000)
 
             console_errors[:] = [row for row in console_errors if "compass-source-truth.v1.json" not in row]
@@ -267,7 +267,7 @@ def test_compass_browser_older_source_truth_snapshot_never_overrides_fresher_run
             assert "B-072" not in current_ids
             assert (
                 compass.locator("#current-workstreams .empty").inner_text().strip()
-                == "All current workstreams are already represented in Programs or Release Targets."
+                == "No additional current workstreams. Program and release lanes already cover the active work."
             )
 
             release_ids = release_target_ids(compass)
@@ -333,7 +333,7 @@ def test_compass_browser_traceability_fallback_prioritizes_active_release_truth_
             assert current_ids == []
             compass.locator(
                 "#current-workstreams .empty",
-                has_text="All current workstreams are already represented in Programs or Release Targets.",
+                has_text="No additional current workstreams. Program and release lanes already cover the active work.",
             ).wait_for(timeout=15000)
 
             console_errors[:] = []
@@ -385,7 +385,7 @@ def test_compass_browser_source_truth_snapshot_keeps_release_program_and_current
 
             release_ids = release_target_ids(compass)
             program_ids = program_member_ids(compass)
-            compass.locator("#current-workstreams .empty", has_text="All current workstreams are already represented in Programs or Release Targets.").wait_for(timeout=15000)
+            compass.locator("#current-workstreams .empty", has_text="No additional current workstreams. Program and release lanes already cover the active work.").wait_for(timeout=15000)
             current_ids = current_workstream_ids(compass)
             scope_ids = [token for token in scope_option_values(compass) if token]
             program_text = compass.locator("#execution-waves-host").inner_text().strip()
@@ -457,7 +457,7 @@ def test_compass_browser_traceability_fallback_clears_stale_scoped_metadata_befo
             assert selected_scope_value(compass) == ""
             compass.locator(
                 "#current-workstreams .empty",
-                has_text="All current workstreams are already represented in Programs or Release Targets.",
+                has_text="No additional current workstreams. Program and release lanes already cover the active work.",
             ).wait_for(timeout=15000)
 
             console_errors[:] = []
@@ -516,7 +516,7 @@ def test_compass_browser_ignores_unusable_source_truth_snapshot_and_continues_to
             assert "B-067" not in current_ids
             compass.locator(
                 "#current-workstreams .empty",
-                has_text="All current workstreams are already represented in Programs or Release Targets.",
+                has_text="No additional current workstreams. Program and release lanes already cover the active work.",
             ).wait_for(timeout=15000)
 
             console_errors[:] = []

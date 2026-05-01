@@ -36,13 +36,13 @@ from odylith.runtime.common.value_coercion import bool_value as _normalize_bool
 from odylith.runtime.common.value_coercion import int_value as _int_value
 from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
 from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
-from odylith.runtime.execution_engine import runtime_lane_policy
 from odylith.runtime.context_engine import odylith_context_engine_store as odylith_store
 from odylith.runtime.evaluation import odylith_evaluation_ledger
 from odylith.runtime.orchestration import subagent_router as leaf_router, subagent_tuning_surface
 from odylith.runtime.orchestration import subagent_orchestrator_runtime_signals
 from odylith.runtime.orchestration import subagent_orchestrator_subtasks_runtime
 from odylith.runtime.orchestration import subagent_orchestrator_odylith_runtime
+from odylith.runtime.orchestration import subagent_orchestrator_local_gates
 from odylith.runtime.orchestration.subagent_orchestrator_support import _ARCHITECTURE_GROUNDING_KEYWORDS
 from odylith.runtime.orchestration.subagent_orchestrator_support import _CODEX_HOT_PATH_PROFILE
 from odylith.runtime.orchestration.subagent_orchestrator_support import _GOVERNANCE_GROUNDING_KEYWORDS
@@ -1411,139 +1411,6 @@ def _adaptive_batch_mode(
     )
 
 
-def _can_decompose_coordination_heavy_write(
-    request: OrchestrationRequest,
-    assessment: leaf_router.TaskAssessment,
-) -> bool:
-    if not request.needs_write or not request.evidence_cone_grounded:
-        return False
-    if len(request.candidate_paths) < 2:
-        return False
-    if assessment.write_scope_clarity < 3 or assessment.acceptance_clarity < 2 or assessment.validation_clarity < 1:
-        return False
-    context_summary = dict(assessment.context_signal_summary or {})
-    odylith_signal_present = any(
-        key in context_summary
-        for key in (
-            "route_ready",
-            "odylith_execution_route_ready",
-            "narrowing_required",
-            "odylith_execution_narrowing_required",
-            "native_spawn_ready",
-            "odylith_execution_selection_mode",
-        )
-    )
-    odylith_route_ready = bool(context_summary.get("route_ready") or context_summary.get("odylith_execution_route_ready"))
-    odylith_narrowing_required = bool(
-        context_summary.get("narrowing_required") or context_summary.get("odylith_execution_narrowing_required")
-    )
-    odylith_native_spawn_ready = bool(context_summary.get("native_spawn_ready"))
-    if odylith_signal_present and (odylith_narrowing_required or not odylith_route_ready or not odylith_native_spawn_ready):
-        return False
-    groups = _group_paths(request.candidate_paths, needs_write=True)
-    return len(groups) >= 2
-
-
-def _should_keep_local(
-    request: OrchestrationRequest,
-    assessment: leaf_router.TaskAssessment,
-) -> tuple[list[str], list[str]]:
-    reasons = list(assessment.hard_gate_hits)
-    notes: list[str] = []
-    architecture_policy = _architecture_policy_context(request)
-    context_summary = dict(assessment.context_signal_summary or {})
-    governance_guard = runtime_lane_policy.delegation_guard(context_summary)
-    if governance_guard.blocked and governance_guard.code not in reasons:
-        reasons.append(governance_guard.code)
-        notes.append(governance_guard.reason)
-    odylith_confidence = _clamp_confidence(context_summary.get("odylith_execution_confidence_score", 0) or 0)
-    odylith_profile = _normalize_token(context_summary.get("odylith_execution_profile", ""))
-    odylith_delegate_preference = _normalize_token(context_summary.get("odylith_execution_delegate_preference", ""))
-    odylith_selection_mode = _normalize_token(context_summary.get("odylith_execution_selection_mode", ""))
-    odylith_route_ready = bool(context_summary.get("route_ready") or context_summary.get("odylith_execution_route_ready"))
-    odylith_narrowing_required = bool(
-        context_summary.get("narrowing_required") or context_summary.get("odylith_execution_narrowing_required")
-    )
-    odylith_native_spawn_ready = bool(context_summary.get("native_spawn_ready"))
-    odylith_signal_present = any(
-        key in context_summary
-        for key in (
-            "route_ready",
-            "odylith_execution_route_ready",
-            "narrowing_required",
-            "odylith_execution_narrowing_required",
-            "native_spawn_ready",
-            "odylith_execution_delegate_preference",
-            "odylith_execution_selection_mode",
-            "odylith_execution_profile",
-        )
-    )
-    odylith_spawn_worthiness = max(
-        _int_value(context_summary.get("spawn_worthiness_score", 0)),
-        _int_value(context_summary.get("odylith_execution_spawn_worthiness", 0)),
-    )
-    if (
-        odylith_signal_present
-        and (odylith_profile == leaf_router.RouterProfile.MAIN_THREAD.value or odylith_delegate_preference == "hold_local")
-        and (
-            odylith_narrowing_required
-            or not odylith_route_ready
-            or not odylith_native_spawn_ready
-            or odylith_spawn_worthiness <= 1
-            or odylith_selection_mode in {"narrow_first", "guarded_narrowing"}
-        )
-    ):
-        reasons.append("odylith-local-narrowing")
-        notes.append(
-            "The slice still needs local narrowing or local coordination before any bounded fan-out."
-        )
-    if (
-        odylith_signal_present
-        and odylith_narrowing_required
-        and not odylith_route_ready
-        and "odylith-local-narrowing" not in reasons
-    ):
-        reasons.append("odylith-local-narrowing")
-        notes.append(
-            "The slice is still in a narrowing-first posture, so delegation would add cost before the evidence is tight enough."
-        )
-    if (
-        odylith_signal_present
-        and not request.needs_write
-        and not odylith_route_ready
-        and not odylith_native_spawn_ready
-        and "odylith-read-only-local-narrowing" not in reasons
-    ):
-        reasons.append("odylith-read-only-local-narrowing")
-        notes.append(
-            "The read-only slice stays local until the evidence cone narrows enough to delegate safely."
-        )
-    if architecture_policy["active"] and (
-        architecture_policy["full_scan_recommended"]
-        or architecture_policy["mode"] == "local_only"
-        or (
-            architecture_policy["risk_tier"] == "high"
-            and architecture_policy["confidence_tier"] == "low"
-        )
-    ):
-        reasons.append("architecture-local-grounding")
-        notes.append(
-            "Architecture dossier coverage is too weak or too risky for delegation; keep the slice local until the authority graph is grounded enough to trust."
-        )
-    if _can_decompose_coordination_heavy_write(request, assessment):
-        relaxed = [reason for reason in reasons if reason in _DECOMPOSABLE_COORDINATION_GATES]
-        if relaxed:
-            reasons = [reason for reason in reasons if reason not in _DECOMPOSABLE_COORDINATION_GATES]
-            notes.append(
-                "The base prompt looked coordination-heavy, but grounded explicit owned paths let the orchestrator decompose it into bounded ordered leaves."
-            )
-    if _is_trivial_local_prompt(request, assessment=assessment):
-        reasons.append("trivial-direct-answer")
-    if not request.repo_work:
-        reasons.append("non-repo-work-prompt")
-    return reasons, _sanitize_user_facing_lines(notes)
-
-
 def _slice_prompt(
     request: OrchestrationRequest,
     *,
@@ -2018,7 +1885,14 @@ def orchestrate_prompt(
             details=assessment_errors,
         )
     request = _effective_request(request, assessment)
-    local_reasons, decomposition_notes = _should_keep_local(request, assessment)
+    local_reasons, decomposition_notes = subagent_orchestrator_local_gates.should_keep_local(
+        request,
+        assessment,
+        architecture_policy=_architecture_policy_context(request),
+        path_groups=_group_paths(request.candidate_paths, needs_write=True),
+        decomposable_coordination_gates=_DECOMPOSABLE_COORDINATION_GATES,
+        trivial_local_prompt=_is_trivial_local_prompt(request, assessment=assessment),
+    )
     if local_reasons:
         execution_contract_notes = ["No delegated leaf is allowed for this prompt; keep execution in the main thread."]
         if "consumer-odylith-diagnosis-and-handoff-only" in local_reasons:

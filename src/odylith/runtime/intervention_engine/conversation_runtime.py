@@ -334,7 +334,7 @@ def _compose_history_signal(
             plain_refs = conversation_common.join_items([str(row.get("plain_ref", "")).strip() for row in refs[:2]])
             markdown_text = f"{conversation_common.label('history', markdown=True)} {markdown_refs or 'this slice'} already has an active case here, so treat the next move as a continuation, not a cold start."
             plain_text = f"{conversation_common.label('history', markdown=False)} {plain_refs or 'this slice'} already has an active case here, so treat the next move as a continuation, not a cold start."
-            return _signal_payload(kind="history", metrics=metrics, markdown_text=markdown_text, plain_text=plain_text, facts=["Tribunal already has a live case on this scope"], refs=refs[:2], render_hint="explicit_label", confidence="medium")
+            return _signal_payload(kind="history", metrics=metrics, markdown_text=markdown_text, plain_text=plain_text, facts=["a local case is linked to this scope"], refs=refs[:2], render_hint="explicit_label", confidence="medium")
     if not history_refs:
         return _suppressed_signal_payload(kind="history", metrics=metrics, reason="no_strong_prior")
     refs = list(history_refs[:2])
@@ -389,10 +389,10 @@ def _compose_risk_signal(
         issue = str(readout.get("issue", "")).strip()
         body = action or issue or "do not let polish outrun proof"
         markdown_text = conversation_common.sentence_with_terminal_punctuation(
-            f"{conversation_common.label('risks', markdown=True)} Tribunal already has {scope.get('scope_label') or 'this slice'} flagged for {scenario}, so {body}"
+            f"{conversation_common.label('risks', markdown=True)} {scope.get('scope_label') or 'This slice'} is flagged for {scenario}, so {body}"
         )
         plain_text = conversation_common.sentence_with_terminal_punctuation(
-            f"{conversation_common.label('risks', markdown=False)} Tribunal already has {scope.get('scope_label') or 'this slice'} flagged for {scenario}, so {body}"
+            f"{conversation_common.label('risks', markdown=False)} {scope.get('scope_label') or 'This slice'} is flagged for {scenario}, so {body}"
         )
         return _signal_payload(kind="risks", metrics=metrics, markdown_text=markdown_text, plain_text=plain_text, facts=[issue or scenario, action], refs=refs[:2], render_hint="explicit_label", severity=str(readout.get('severity', '')).strip() or "watch")
     reasons, severity = _risk_summary(request, adoption)

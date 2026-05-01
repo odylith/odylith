@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 105,
-    "mapped_workstream_evidence_count": 94,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 107,
+    "mapped_workstream_evidence_count": 95,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 105
+    "timeline_event_count": 108
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -51,6 +51,88 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "AGENTS.md",
+        "odylith/AGENTS.md",
+        "odylith/README.md",
+        "odylith/agents-guidelines/GROUNDING_AND_NARROWING.md",
+        "odylith/maintainer/AGENTS.md",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/manager.py"
+      ],
+      "confidence": "high",
+      "event_index": 400,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: AGENTS.md, odylith/AGENTS.md +5 more",
+      "ts_iso": "2026-04-30T18:20:25-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/install/lock_hygiene.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/install/upgrade_reporting.py"
+      ],
+      "confidence": "high",
+      "event_index": 379,
+      "explicit_components": [
+        "atlas",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "release",
+        "security"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "dashboard",
+        "odylith",
+        "odylith-chatter",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "v0.1.12 hardening: extracted upgrade reporting from CLI into install-owned helpers, added recursive lock hygiene with doctor repair, improved Sigstore warning summaries, and compacted 13715 stale zero-byte lock placeholders in this product repo.",
+      "ts_iso": "2026-04-27T15:19:58-07:00",
+      "workstreams": [
+        "B-030"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/cli.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/runtime/governance/workstream_inference.py"
+      ],
+      "confidence": "high",
+      "event_index": 378,
+      "explicit_components": [
+        "odylith",
+        "odylith-chatter",
+        "release",
+        "security"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "odylith",
+        "odylith-chatter",
+        "release",
+        "security"
+      ],
+      "meaningful": true,
+      "summary": "v0.1.12 / CB-133: hardened upgrade lifecycle UX with exact dry-run target metadata, idempotent current-target planning, upgrade JSON/report persistence, clearer installed-local version wording, doctor trust/upgrade observability, OS metadata dirty-path filtering, and rollback scope closeout.",
+      "ts_iso": "2026-04-27T14:24:28-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

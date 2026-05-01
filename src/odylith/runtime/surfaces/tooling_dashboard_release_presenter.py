@@ -254,11 +254,9 @@ def render_release_spotlight_html(payload: Mapping[str, Any]) -> str:
     )
     return (
         '<section id="shellUpgradeSpotlight" class="upgrade-spotlight-stage" aria-label="Latest Odylith upgrade">'
-        '<button id="upgradeSpotlightBackdrop" type="button" class="upgrade-spotlight-backdrop" aria-label="Dismiss release spotlight"></button>'
+        '<button id="upgradeSpotlightBackdrop" type="button" class="upgrade-spotlight-backdrop" aria-label="Close release spotlight"></button>'
         '<section class="upgrade-spotlight" role="dialog" aria-modal="true" aria-labelledby="upgradeSpotlightTitle">'
-        '<button id="upgradeSpotlightDismiss" type="button" class="upgrade-spotlight-dismiss" aria-label="Dismiss release spotlight">'
-        '<span aria-hidden="true">&times;</span>'
-        "</button>"
+        '<button id="upgradeSpotlightDismiss" type="button" class="upgrade-spotlight-dismiss" aria-label="Close release spotlight">Close</button>'
         '<div class="upgrade-spotlight-main">'
         f"{meta_row_html}"
         f'<h2 id="upgradeSpotlightTitle" class="upgrade-spotlight-title">{title_html}</h2>'

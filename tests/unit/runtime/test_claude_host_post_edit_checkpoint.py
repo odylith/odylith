@@ -5,7 +5,6 @@ import json
 import subprocess
 from pathlib import Path
 
-from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import claude_host_post_edit_checkpoint
 
 
@@ -75,9 +74,7 @@ def test_main_refreshes_governance_for_governed_edit(monkeypatch, tmp_path: Path
     assert "--impact-mode" in args and "selective" in args
     assert "odylith/radar/source/queued.md" in args
     assert timeout == 180
-    payload = json.loads(capsys.readouterr().out)
-    assert "**Odylith Observation:**" in payload["systemMessage"]
-    assert "Odylith governance refresh completed" in payload["additionalContext"]
+    assert capsys.readouterr().out == ""
 
 
 def test_main_skips_non_governed_edits_silently(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -102,27 +99,18 @@ def test_main_skips_non_governed_edits_silently(monkeypatch, tmp_path: Path, cap
 
     assert exit_code == 0
     assert called == []
-    payload = json.loads(capsys.readouterr().out)
-    assert "additionalContext" in payload
-    assert "Odylith Assist:" not in payload["additionalContext"]
+    assert capsys.readouterr().out == ""
 
 
-def test_main_prioritizes_pending_chat_replay(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_main_does_not_replay_pending_chat_blocks_after_edit(monkeypatch, tmp_path: Path, capsys) -> None:
     project = tmp_path / "repo"
-    (project / "src").mkdir(parents=True)
-    target = project / "src" / "main.py"
+    (project / "odylith" / "radar" / "source").mkdir(parents=True)
+    target = project / "odylith" / "radar" / "source" / "item.md"
     target.write_text("# stub\n", encoding="utf-8")
-    surface_runtime.stream_state.append_intervention_event(
-        repo_root=project,
-        kind="intervention_card",
-        summary="Pending edit replay.",
-        session_id="claude-edit-replay",
-        host_family="claude",
-        intervention_key="claude-edit-replay-key",
-        turn_phase="post_edit_checkpoint",
-        display_markdown="**Odylith Observation:** Edit checkpoint must carry this pending block.",
-        delivery_channel="system_message_and_assistant_fallback",
-        delivery_status="assistant_fallback_ready",
+    monkeypatch.setattr(
+        claude_host_post_edit_checkpoint.claude_host_shared,
+        "run_odylith",
+        lambda **kwargs: subprocess.CompletedProcess(kwargs.get("args", []), 0, stdout="ok\n", stderr=""),
     )
     monkeypatch.setattr(
         "sys.stdin",
@@ -138,48 +126,23 @@ def test_main_prioritizes_pending_chat_replay(monkeypatch, tmp_path: Path, capsy
 
     exit_code = claude_host_post_edit_checkpoint.main(["--repo-root", str(project)])
 
-    payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
-    assert "Odylith visible delivery fallback:" in payload["additionalContext"]
-    assert payload["systemMessage"] == (
-        "---\n\n**Odylith Observation:** Edit checkpoint must carry this pending block.\n\n---"
-    )
+    assert capsys.readouterr().out == ""
 
 
-def test_main_emits_observation_and_proposal_for_correlated_edit(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_main_emits_compact_failure_only_for_governed_edit(monkeypatch, tmp_path: Path, capsys) -> None:
     project = tmp_path / "repo"
-    (project / "src").mkdir(parents=True)
-    target = project / "src" / "main.py"
+    (project / "odylith" / "registry" / "source").mkdir(parents=True)
+    target = project / "odylith" / "registry" / "source" / "component_registry.v1.json"
     target.write_text("# stub\n", encoding="utf-8")
 
+    def _fake_run_odylith(**kwargs):  # noqa: ANN001
+        return subprocess.CompletedProcess(kwargs.get("args", []), 1, stdout="", stderr="validate failure\n")
+
     monkeypatch.setattr(
-        claude_host_post_edit_checkpoint,
-        "_post_edit_bundle",
-        lambda **kwargs: {
-            "intervention_bundle": {
-                "candidate": {
-                    "stage": "card",
-                    "key": "iv-demo",
-                    "suppressed_reason": "",
-                    "markdown_text": "**Odylith Observation:** The truth is warm.",
-                    "plain_text": "Odylith Observation: The truth is warm.",
-                    "headline": "The truth is warm.",
-                },
-                "proposal": {
-                    "key": "iv-demo",
-                    "eligible": True,
-                    "suppressed_reason": "",
-                    "markdown_text": 'Odylith Proposal: Preserve the chat-visible UX contract.\n\nTo apply, say "apply this proposal".',
-                    "plain_text": "Odylith Proposal",
-                    "confirmation_text": "apply this proposal",
-                    "action_surfaces": ["radar", "registry"],
-                },
-            },
-            "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
-            },
-        },
+        claude_host_post_edit_checkpoint.claude_host_shared,
+        "run_odylith",
+        _fake_run_odylith,
     )
     monkeypatch.setattr(
         "sys.stdin",
@@ -190,33 +153,8 @@ def test_main_emits_observation_and_proposal_for_correlated_edit(monkeypatch, tm
 
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
-    assert "**Odylith Observation:**" in payload["additionalContext"]
-    assert "Odylith Proposal:" in payload["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["additionalContext"]
-    assert "**Odylith Observation:**" in payload["systemMessage"]
-    assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
-
-
-def test_post_edit_bundle_uses_recent_prompt_excerpt_not_intervention_summary(tmp_path: Path) -> None:
-    claude_host_post_edit_checkpoint.intervention_surface_runtime.stream_state.append_intervention_event(
-        repo_root=tmp_path,
-        kind="capture_proposed",
-        summary="Odylith Proposal pending.",
-        session_id="edit-1",
-        host_family="claude",
-        intervention_key="iv-edit-1",
-        turn_phase="post_edit_checkpoint",
-        prompt_excerpt="Preserve the human prompt across Claude post-edit checkpoints.",
-        display_markdown="**Odylith Proposal**",
-    )
-
-    bundle = claude_host_post_edit_checkpoint._post_edit_bundle(
-        project_dir=tmp_path,
-        path_token="src/main.py",
-        session_id="edit-1",
-    )
-
-    assert bundle["observation"]["prompt_excerpt"] == (
-        "Preserve the human prompt across Claude post-edit checkpoints."
-    )
+    assert set(payload) == {"systemMessage"}
+    assert "Odylith governance refresh failed after editing" in payload["systemMessage"]
+    assert "validate failure" in payload["systemMessage"]
+    assert "Odylith Observation" not in payload["systemMessage"]
+    assert "Odylith Proposal" not in payload["systemMessage"]

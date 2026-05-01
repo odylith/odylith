@@ -937,3 +937,53 @@ def test_adjudication_corpus_rejects_options_without_proposition_or_value_featur
 
     with pytest.raises(ValueError, match="without value_features"):
         value_engine.validate_adjudication_corpus(corpus)
+
+
+def test_adjudication_corpus_rejects_internal_user_visible_copy() -> None:
+    corpus = copy.deepcopy(value_engine.load_adjudication_corpus())
+    option = corpus["cases"][0]["options"][0]
+    option["proposed_label"] = "observation"
+    option["markdown_text"] = (
+        "**Odylith Observation:** This chat still has no visible Odylith moment. "
+        "Show the next Odylith Observation here."
+    )
+    option["plain_text"] = (
+        "Odylith Observation: This chat still has no visible Odylith moment. "
+        "Show the next Odylith Observation here."
+    )
+    option["proposition"]["claim_text"] = "Show the next Odylith Observation here."
+
+    with pytest.raises(ValueError, match="recursive Odylith display instruction"):
+        value_engine.validate_adjudication_corpus(corpus)
+
+
+def test_adjudication_corpus_rejects_product_theater_and_repo_ids_in_visible_copy() -> None:
+    corpus = copy.deepcopy(value_engine.load_adjudication_corpus())
+    option = corpus["cases"][0]["options"][0]
+    option["proposed_label"] = "history"
+    option["markdown_text"] = "**Odylith History:** Casebook already remembers CB-122."
+    option["plain_text"] = "Odylith History: Casebook already remembers CB-122."
+    option["proposition"]["claim_text"] = "Casebook already remembers CB-122."
+
+    with pytest.raises(ValueError, match="product-repo memory claim"):
+        value_engine.validate_adjudication_corpus(corpus)
+
+    corpus = copy.deepcopy(value_engine.load_adjudication_corpus())
+    option = corpus["cases"][0]["options"][0]
+    option["proposed_label"] = "observation"
+    option["markdown_text"] = "**Odylith Observation:** B-096 already owns the intervention contract."
+    option["plain_text"] = "Odylith Observation: B-096 already owns the intervention contract."
+    option["proposition"]["claim_text"] = "B-096 already owns the intervention contract."
+
+    with pytest.raises(ValueError, match="repo-specific governance id"):
+        value_engine.validate_adjudication_corpus(corpus)
+
+    corpus = copy.deepcopy(value_engine.load_adjudication_corpus())
+    option = corpus["cases"][0]["options"][0]
+    option["proposed_label"] = "risks"
+    option["markdown_text"] = "**Odylith Risks:** kept Odylith visible so the brand promise is visible."
+    option["plain_text"] = "Odylith Risks: kept Odylith visible so the brand promise is visible."
+    option["proposition"]["claim_text"] = "The brand promise is visible."
+
+    with pytest.raises(ValueError, match="product-theater visibility copy"):
+        value_engine.validate_adjudication_corpus(corpus)

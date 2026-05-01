@@ -607,8 +607,12 @@ def test_diagram_needs_render_bootstraps_from_clean_tracked_outputs(tmp_path: Pa
 
 def test_select_stale_diagram_indexes_honors_reviewed_watch_fingerprints_over_mtime(tmp_path: Path) -> None:
     source_mmd = tmp_path / "demo.mmd"
+    source_svg = tmp_path / "demo.svg"
+    source_png = tmp_path / "demo.png"
     watched = tmp_path / "watched.txt"
     source_mmd.write_text("flowchart TD\n  A-->B\n", encoding="utf-8")
+    source_svg.write_text("<svg viewBox='0 0 10 10'></svg>\n", encoding="utf-8")
+    source_png.write_bytes(b"png")
     watched.write_text("same\n", encoding="utf-8")
     current_watch_fingerprint = mermaid._current_watch_fingerprints(  # noqa: SLF001
         repo_root=tmp_path,
@@ -634,6 +638,30 @@ def test_select_stale_diagram_indexes_honors_reviewed_watch_fingerprints_over_mt
     )
 
     assert indexes == []
+
+
+def test_select_stale_diagram_indexes_selects_missing_render_artifacts(tmp_path: Path) -> None:
+    source_mmd = tmp_path / "demo.mmd"
+    watched = tmp_path / "watched.txt"
+    source_mmd.write_text("flowchart TD\n  A-->B\n", encoding="utf-8")
+    watched.write_text("same\n", encoding="utf-8")
+
+    indexes = mermaid._select_stale_diagram_indexes(  # noqa: SLF001
+        repo_root=tmp_path,
+        diagrams=[
+            {
+                "diagram_id": "D-001",
+                "source_mmd": "demo.mmd",
+                "source_svg": "demo.svg",
+                "source_png": "demo.png",
+                "change_watch_paths": ["watched.txt"],
+                "last_reviewed_utc": mermaid.dt.date.today().isoformat(),
+            }
+        ],
+        max_review_age_days=21,
+    )
+
+    assert indexes == [0]
 
 
 def test_validate_diagrams_batch_falls_back_to_browser_scratch_mode_on_dompurify_runtime_error(

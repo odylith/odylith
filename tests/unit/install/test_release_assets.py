@@ -31,6 +31,11 @@ def _clear_github_tokens(monkeypatch) -> None:  # noqa: ANN001
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
 
 
+def _clear_network_env(monkeypatch) -> None:  # noqa: ANN001
+    for name in release_assets._NETWORK_ENV_NAMES:  # noqa: SLF001
+        monkeypatch.delenv(name, raising=False)
+
+
 def _full_matrix_release() -> release_assets.ReleaseInfo:
     return release_assets.ReleaseInfo(
         version="1.2.3",
@@ -432,7 +437,33 @@ def test_download_asset_cleans_temporary_files_after_failed_download(monkeypatch
     assert leftovers == []
 
 
-def test_download_verified_release_validates_manifest_and_signed_assets(monkeypatch, tmp_path: Path) -> None:
+def test_download_asset_failure_adds_enterprise_network_hint_without_secret_values(monkeypatch, tmp_path: Path) -> None:
+    _clear_network_env(monkeypatch)
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxy.local:8080/token")
+    monkeypatch.setenv("REQUESTS_CA_BUNDLE", "/tmp/company-ca.pem")
+    asset = release_assets.ReleaseAsset(
+        name="odylith.whl",
+        download_url="https://github.com/odylith/odylith/releases/download/v1.2.3/odylith.whl",
+    )
+    monkeypatch.setattr(
+        release_assets.urllib.request,
+        "urlopen",
+        lambda *args, **kwargs: (_ for _ in ()).throw(release_assets.urllib_error.URLError("proxy reset")),
+    )
+    monkeypatch.setattr(release_assets.time, "sleep", lambda *_: None)
+
+    with pytest.raises(ValueError) as exc_info:
+        release_assets.download_asset(repo_root=tmp_path, asset=asset, destination=tmp_path / "odylith.whl")
+
+    message = str(exc_info.value)
+    assert "proxy reset" in message
+    assert "Check VPN, proxy, firewall, TLS inspection, and certificate settings." in message
+    assert "Detected proxy/TLS environment: HTTPS_PROXY, REQUESTS_CA_BUNDLE." in message
+    assert "proxy.local" not in message
+    assert "company-ca.pem" not in message
+
+
+def test_download_verified_release_validates_manifest_and_signed_assets(monkeypatch, tmp_path: Path, capsys) -> None:
     wheel_bytes = b"wheel-bytes"
     wheel_sha256 = hashlib.sha256(wheel_bytes).hexdigest()
     runtime_bundle_bytes = b"runtime-bundle-bytes"
@@ -585,11 +616,22 @@ def test_download_verified_release_validates_manifest_and_signed_assets(monkeypa
             destination.write_bytes(wheel_bytes)
         return destination
 
-    def _fake_verify_sigstore_asset(*, repo_root, asset_path: Path, bundle_path: Path, repo: str) -> None:
+    def _fake_verify_sigstore_asset(*, repo_root, asset_path: Path, bundle_path: Path, repo: str):
         assert repo_root == tmp_path
         assert repo == "odylith/odylith"
         assert bundle_path.name.endswith(".sigstore.json")
         verified_assets.append(asset_path.name)
+        if asset_path.name == "release-manifest.json":
+            return release_assets.SigstoreVerificationResult(
+                warnings_suppressed=True,
+                warning_count=1,
+                warning_summaries=(
+                    "unsupported trusted root key type 7 "
+                    "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)",
+                ),
+                verification_degraded=False,
+            )
+        return release_assets.SigstoreVerificationResult(warnings_suppressed=False)
 
     monkeypatch.setattr(release_assets, "fetch_release", _fake_fetch_release)
     monkeypatch.setattr(release_assets, "download_asset", _fake_download_asset)
@@ -611,9 +653,18 @@ def test_download_verified_release_validates_manifest_and_signed_assets(monkeypa
     assert verified.manifest["repo_schema_version"] == 1
     assert verified.verification["wheel_sha256"] == wheel_sha256
     assert verified.verification["runtime_bundle_sha256"] == runtime_bundle_sha256
+    assert verified.verification["sigstore_warning_count"] == 1
+    assert verified.verification["sigstore_warning_status"] == "suppressed_non_fatal"
+    assert verified.verification["sigstore_warning_summaries"] == [
+        "unsupported trusted root key type 7 "
+        "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)"
+    ]
     assert verified.wheel_path.read_bytes() == wheel_bytes
     assert verified.runtime_platform.slug == "darwin-arm64"
     assert verified.runtime_bundle_path.read_bytes() == runtime_bundle_bytes
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
     assert verified_assets == [
         "release-manifest.json",
         "odylith-1.2.3-py3-none-any.whl",
@@ -934,6 +985,10 @@ def test_verify_sigstore_asset_suppresses_expected_non_fatal_warnings(monkeypatc
     )
 
     assert result.warnings_suppressed is True
+    assert result.warning_count == 2
+    assert "TUF offline-mode notice" in result.warning_summaries[0]
+    assert "unsupported trusted root key type 7" in result.warning_summaries[1]
+    assert result.verification_degraded is False
     assert capsys.readouterr().err == ""
 
 
@@ -967,7 +1022,289 @@ def test_verify_sigstore_asset_suppresses_wrapped_trusted_root_warning(monkeypat
     )
 
     assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    assert result.warning_summaries == (
+        "unsupported trusted root key type 7 "
+        "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)",
+    )
+    assert result.verification_degraded is False
     assert capsys.readouterr().err == ""
+
+
+def test_verify_sigstore_asset_suppresses_rich_wrapped_trusted_root_warning(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": (
+                    "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+                    "         key type: 7\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    assert result.warning_summaries == (
+        "unsupported trusted root key type 7 "
+        "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)",
+    )
+    assert result.verification_degraded is False
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_verify_sigstore_asset_suppresses_unindented_trusted_root_continuation(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": "Failed to load a trusted root key: unsupported trust.py:177\nkey type: 7\n",
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_verify_sigstore_asset_suppresses_ansi_rich_trusted_root_warning(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": (
+                    "\x1b[33mWARNING\x1b[0m  Failed to load a trusted root key: unsupported "
+                    "\x1b[2mtrust.py:177\x1b[0m\n"
+                    "         \x1b[2mkey type: 7\x1b[0m\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    assert result.warning_summaries == (
+        "unsupported trusted root key type 7 "
+        "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)",
+    )
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_verify_sigstore_asset_suppresses_stdout_trusted_root_warning(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": (
+                    "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+                    "         key type: 7\n"
+                ),
+                "stderr": "",
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_verify_sigstore_asset_suppresses_trusted_root_warning_when_success_stdout_present(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "OK: asset verified\n",
+                "stderr": (
+                    "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+                    "         key type: 7\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_verify_sigstore_asset_suppresses_split_warning_label(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": (
+                    "WARNING\n"
+                    "Failed to load a trusted root key: unsupported trust.py:177\n"
+                    "key type: 7\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    result = release_assets.verify_sigstore_asset(
+        repo_root=tmp_path,
+        asset_path=asset_path,
+        bundle_path=bundle_path,
+        repo="odylith/odylith",
+    )
+
+    assert result.warnings_suppressed is True
+    assert result.warning_count == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_verify_sigstore_asset_filters_trusted_root_warning_from_failure_details(
+    monkeypatch, tmp_path: Path
+) -> None:
+    asset_path = tmp_path / "asset.txt"
+    bundle_path = tmp_path / "asset.txt.sigstore.json"
+    asset_path.write_text("payload\n", encoding="utf-8")
+    bundle_path.write_text("{}\n", encoding="utf-8")
+
+    def _fake_run(command, check, capture_output, text, env):  # noqa: ANN001, ARG001
+        return type(
+            "Result",
+            (),
+            {
+                "returncode": 1,
+                "stdout": "",
+                "stderr": (
+                    "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+                    "         key type: 7\n"
+                    "error: certificate identity mismatch\n"
+                ),
+            },
+        )()
+
+    monkeypatch.setattr(release_assets.subprocess, "run", _fake_run)
+
+    with pytest.raises(ValueError) as exc_info:
+        release_assets.verify_sigstore_asset(
+            repo_root=tmp_path,
+            asset_path=asset_path,
+            bundle_path=bundle_path,
+            repo="odylith/odylith",
+        )
+
+    message = str(exc_info.value)
+    assert "certificate identity mismatch" in message
+    assert "trusted root key" not in message
+    assert "trust.py:177" not in message
+    assert "key type: 7" not in message
 
 
 def test_verify_sigstore_asset_preserves_unexpected_warning_alongside_wrapped_benign_warning(
@@ -1003,22 +1340,9 @@ def test_verify_sigstore_asset_preserves_unexpected_warning_alongside_wrapped_be
     )
 
     assert result.warnings_suppressed is False
-    assert "unexpected verifier chatter" in capsys.readouterr().err
-
-
-def test_emit_sigstore_success_notice_reports_suppressed_warning_streams(capsys) -> None:  # noqa: ANN001
-    release_assets._emit_sigstore_success_notice(  # noqa: SLF001
-        [
-            release_assets.SigstoreVerificationResult(warnings_suppressed=True),
-            release_assets.SigstoreVerificationResult(warnings_suppressed=False),
-        ],
-        context="release",
-    )
-
-    assert (
-        "Sigstore verification succeeded for the release assets; suppressed 1 expected non-fatal warning stream(s)."
-        in capsys.readouterr().out
-    )
+    output = capsys.readouterr()
+    assert output.out == ""
+    assert "unexpected verifier chatter" in output.err
 
 
 def test_verify_sigstore_asset_rejects_skip_override_outside_product_repo(monkeypatch, tmp_path: Path) -> None:

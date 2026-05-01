@@ -34,7 +34,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--watch",
         action="append",
         default=[],
-        help="Change-watch path (repeatable). If omitted, derived from doc/technical-plan/code.",
+        help="Change-watch path (repeatable). If omitted, derived from doc/technical-plan/code or the new source.",
     )
     parser.add_argument(
         "--review-date",
@@ -44,7 +44,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--create-source-if-missing",
         action="store_true",
-        help="Create odylith/atlas/source/<slug>.mmd from template if it does not exist",
+        help="Compatibility flag; Atlas scaffold now creates a starter source whenever it is missing.",
+    )
+    parser.add_argument(
+        "--require-links",
+        action="store_true",
+        help="Fail unless at least one Radar, technical-plan, and doc link are provided.",
     )
     return parser.parse_args(argv)
 
@@ -85,6 +90,46 @@ def _unique(values: list[str]) -> list[str]:
     return result
 
 
+def _mermaid_label(value: str) -> str:
+    text = " ".join(str(value or "").strip().split())
+    if not text:
+        text = "Unspecified"
+    return text.replace("\\", "\\\\").replace('"', "'")
+
+
+def _starter_source(
+    *,
+    title: str,
+    owner: str,
+    components: list[dict[str, str]],
+    watch_paths: list[str],
+    related_backlog: list[str],
+    related_plans: list[str],
+    related_docs: list[str],
+) -> str:
+    lines = [
+        "flowchart TB",
+        f'    diagram["{_mermaid_label(title)}"]',
+        f'    owner["Owner: {_mermaid_label(owner)}"]',
+        '    diagram --> owner',
+    ]
+    for index, component in enumerate(components[:4], start=1):
+        name = _mermaid_label(str(component.get("name", "")).strip())
+        description = _mermaid_label(str(component.get("description", "")).strip())
+        lines.append(f'    component_{index}["{name}<br/>{description}"]')
+        lines.append(f"    diagram --> component_{index}")
+    for index, path in enumerate(watch_paths[:4], start=1):
+        lines.append(f'    watch_{index}["Watch: {_mermaid_label(path)}"]')
+        if components:
+            lines.append(f"    component_1 --> watch_{index}")
+        else:
+            lines.append(f"    diagram --> watch_{index}")
+    if not (related_backlog and related_plans and related_docs):
+        lines.append('    followup["Link Radar, plan, and docs as governance matures"]')
+        lines.append("    diagram --> followup")
+    return "\n".join(lines) + "\n"
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(args.repo_root).resolve()
@@ -121,13 +166,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     related_docs = _unique(args.doc)
     related_code = _unique(args.code)
 
-    if not related_backlog or not related_plans or not related_docs:
+    has_governance_links = bool(related_backlog and related_plans and related_docs)
+    if args.require_links and not has_governance_links:
         print("FAILED: radar, technical-plan, and doc links are required (at least one each)")
         return 2
 
     watch_paths = _unique(args.watch)
     if not watch_paths:
         watch_paths = _unique(related_docs + related_plans + related_code)
+    if not watch_paths:
+        watch_paths = [source_mmd]
     if not watch_paths:
         print("FAILED: change_watch_paths resolved empty; provide --watch or related links")
         return 2
@@ -137,7 +185,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "slug": slug,
         "title": str(args.title).strip(),
         "kind": str(args.kind).strip(),
-        "status": "active",
+        "status": "active" if has_governance_links else "draft",
         "owner": str(args.owner).strip(),
         "last_reviewed_utc": str(args.review_date).strip(),
         "source_mmd": source_mmd,
@@ -151,23 +199,30 @@ def main(argv: Sequence[str] | None = None) -> int:
         "related_docs": related_docs,
         "related_code": related_code,
     }
+    if not has_governance_links:
+        entry["link_state"] = "atlas_first_draft"
     diagrams.append(entry)
 
     catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
     print(f"catalog updated: {catalog_path}")
     print(f"added: {diagram_id} ({slug})")
 
-    if args.create_source_if_missing:
-        source_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
-        if source_path.exists():
-            print(f"source exists: {source_path}")
-        else:
-            template = (
-                "flowchart TB\\n"
-                '    start["TODO: Replace with real diagram"] --> done["Initial scaffold created"]\\n'
-            )
-            source_path.write_text(template, encoding="utf-8")
-            print(f"source created: {source_path}")
+    source_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)
+    if source_path.exists():
+        print(f"source exists: {source_path}")
+    else:
+        source_path.parent.mkdir(parents=True, exist_ok=True)
+        template = _starter_source(
+            title=str(args.title).strip(),
+            owner=str(args.owner).strip(),
+            components=components,
+            watch_paths=watch_paths,
+            related_backlog=related_backlog,
+            related_plans=related_plans,
+            related_docs=related_docs,
+        )
+        source_path.write_text(template, encoding="utf-8")
+        print(f"source created: {source_path}")
     try:
         owned_surface_refresh.raise_for_failed_refresh(
             repo_root=repo_root,
@@ -178,6 +233,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(str(exc))
         return 1
 
+    owned_surface_refresh.print_dashboard_handoff(
+        surface="atlas",
+        diagram=diagram_id,
+    )
     return 0
 
 

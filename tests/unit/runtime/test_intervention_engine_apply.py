@@ -123,6 +123,41 @@ def test_radar_apply_requires_grounded_workstream_detail(tmp_path: Path) -> None
         )
 
 
+def test_atlas_apply_allows_atlas_first_payload_without_related_links(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _seed_repo(tmp_path)
+    calls: list[list[str]] = []
+
+    def _fake_scaffold(argv: list[str]) -> int:
+        calls.append(argv)
+        return 0
+
+    monkeypatch.setattr(apply.scaffold_mermaid_diagram, "main", _fake_scaffold)
+
+    result = apply._apply_atlas_create(  # noqa: SLF001
+        repo_root=tmp_path,
+        action={
+            "target_id": "proposed:demo-boundary",
+            "title": "Demo Boundary",
+            "payload": {
+                "title": "Demo Boundary",
+                "slug": "demo-boundary",
+                "kind": "flowchart",
+                "component_id": "demo",
+            },
+        },
+    )
+
+    assert result == {"diagram_id": "D-001", "slug": "demo-boundary", "title": "Demo Boundary"}
+    assert calls
+    assert "--backlog" not in calls[0]
+    assert "--plan" not in calls[0]
+    assert "--doc" not in calls[0]
+    assert "--create-source-if-missing" in calls[0]
+
+
 def test_decline_preserves_prompt_context_in_terminal_event(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     bundle = engine.build_intervention_bundle(

@@ -99,12 +99,18 @@ def test_history_validation_accepts_canonical_author_with_github_committer(tmp_p
     assert module.main(["history", "--repo-root", str(repo), "HEAD"]) == 0
 
 
-def test_history_validation_accepts_historical_author_alias_with_github_committer(tmp_path: Path) -> None:
+def test_history_validation_accepts_mailmap_normalized_author_with_github_committer(tmp_path: Path) -> None:
     module = _load_module()
     repo = _init_repo(tmp_path)
+    (repo / ".mailmap").write_text(
+        f"{EXPECTED_NAME} <{EXPECTED_EMAIL}> <{EXPECTED_EMAIL}>\n",
+        encoding="utf-8",
+    )
+    _run("git", "add", ".mailmap", cwd=repo)
+    _run("git", "commit", "-m", "mailmap", cwd=repo)
     env = {
         **os.environ,
-        "GIT_AUTHOR_NAME": "Freedom Preetham",
+        "GIT_AUTHOR_NAME": "Legacy Maintainer",
         "GIT_AUTHOR_EMAIL": EXPECTED_EMAIL,
         "GIT_COMMITTER_NAME": "GitHub",
         "GIT_COMMITTER_EMAIL": "noreply@github.com",

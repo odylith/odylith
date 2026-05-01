@@ -156,7 +156,7 @@ def _action_delta(action: CaptureAction) -> str:
     verb = _normalize_token(action.action)
     target = _action_target(action)
     if verb == "review_refresh":
-        return f"refresh {target} for review"
+        return f"review {target}"
     if verb == "update":
         return f"update {target}"
     if verb == "create":

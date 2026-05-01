@@ -15,6 +15,9 @@ def test_codex_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
     tmp_path: Path,
     capsys,
 ) -> None:
+    radar = tmp_path / "odylith" / "radar" / "source" / "ideas"
+    radar.mkdir(parents=True)
+    (radar / "visible-intervention.md").write_text("Backlog: B-096\n", encoding="utf-8")
     monkeypatch.setattr(
         "sys.stdin",
         io.StringIO(
@@ -57,8 +60,8 @@ def test_codex_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
                 },
             },
             "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
+                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
             },
         },
     )
@@ -70,13 +73,13 @@ def test_codex_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
     assert "**Odylith Observation:** Radar already owns this slice." in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Proposal:" in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** Radar already owns this slice." in payload["systemMessage"]
     assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
+    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in payload["systemMessage"]
 
 
-def test_claude_post_edit_checkpoint_cli_dispatch_emits_visible_intervention(
+def test_claude_post_edit_checkpoint_cli_dispatch_stays_silent_on_success(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -100,44 +103,14 @@ def test_claude_post_edit_checkpoint_cli_dispatch_emits_visible_intervention(
         "run_odylith",
         lambda **kwargs: None,
     )
-    monkeypatch.setattr(
-        claude_host_post_edit_checkpoint,
-        "_post_edit_bundle",
-        lambda **kwargs: {
-            "intervention_bundle": {
-                "candidate": {
-                    "stage": "card",
-                    "suppressed_reason": "",
-                    "markdown_text": "**Odylith Observation:** Registry already owns this boundary.",
-                    "plain_text": "Odylith Observation: Registry already owns this boundary.",
-                },
-                "proposal": {
-                    "eligible": True,
-                    "suppressed_reason": "",
-                    "markdown_text": '-----\nOdylith Proposal: Preserve the chat-visible UX contract.\n\n- Registry: refresh the owned dossier.\n\nTo apply, say "apply this proposal".\n-----',
-                    "plain_text": 'Odylith Proposal: Preserve the chat-visible UX contract.',
-                },
-            },
-            "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
-            },
-        },
-    )
 
     exit_code = cli.main(["claude", "post-edit-checkpoint", "--repo-root", str(tmp_path)])
 
-    payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
-    assert "**Odylith Observation:** Registry already owns this boundary." in payload["additionalContext"]
-    assert "Odylith Proposal:" in payload["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["additionalContext"]
-    assert "**Odylith Observation:** Registry already owns this boundary." in payload["systemMessage"]
-    assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
+    assert capsys.readouterr().out == ""
 
 
-def test_claude_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
+def test_claude_post_bash_checkpoint_cli_dispatch_stays_silent_on_success(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -166,38 +139,8 @@ def test_claude_post_bash_checkpoint_cli_dispatch_emits_visible_intervention(
         "command_scoped_governed_paths",
         lambda **kwargs: [],
     )
-    monkeypatch.setattr(
-        claude_host_post_bash_checkpoint,
-        "_post_bash_bundle",
-        lambda **kwargs: {
-            "intervention_bundle": {
-                "candidate": {
-                    "stage": "card",
-                    "suppressed_reason": "",
-                    "markdown_text": "**Odylith Observation:** Claude Bash is part of the same governed moment.",
-                    "plain_text": "Odylith Observation: Claude Bash is part of the same governed moment.",
-                },
-                "proposal": {
-                    "eligible": True,
-                    "suppressed_reason": "",
-                    "markdown_text": '-----\nOdylith Proposal: Preserve the chat-visible UX contract.\n\n- Radar: extend B-096.\n\nTo apply, say "apply this proposal".\n-----',
-                    "plain_text": 'Odylith Proposal: Preserve the chat-visible UX contract.',
-                },
-            },
-            "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
-            },
-        },
-    )
 
     exit_code = cli.main(["claude", "post-bash-checkpoint", "--repo-root", str(tmp_path)])
 
-    payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
-    assert "**Odylith Observation:** Claude Bash is part of the same governed moment." in payload["additionalContext"]
-    assert "Odylith Proposal:" in payload["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["additionalContext"]
-    assert "**Odylith Observation:** Claude Bash is part of the same governed moment." in payload["systemMessage"]
-    assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
+    assert capsys.readouterr().out == ""

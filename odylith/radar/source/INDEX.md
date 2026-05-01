@@ -1,6 +1,6 @@
 # Backlog Index
 
-Last updated (UTC): 2026-04-27
+Last updated (UTC): 2026-04-30
 ## Ranked Active Backlog
 
 | rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |
@@ -11,18 +11,18 @@ Last updated (UTC): 2026-04-27
 | 4 | B-046 | Tribunal Benchmark Families, No-Tribunal Ablation, and Diagnosis-Proof Publication | P1 | 100 | 4 | 5 | 4 | M | High | queued | [odylith-tribunal-benchmark-families-no-tribunal-ablation-and-diagnosis-proof-publication](odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-benchmark-families-no-tribunal-ablation-and-diagnosis-proof-publication.md) |
 | 5 | B-047 | Tribunal Default Diagnosis Triggers, Two-Speed Execution, and Cached Case Reuse | P1 | 100 | 4 | 5 | 4 | M | High | queued | [odylith-tribunal-default-diagnosis-triggers-two-speed-execution-and-cached-case-reuse](odylith/radar/source/ideas/2026-04/2026-04-04-odylith-tribunal-default-diagnosis-triggers-two-speed-execution-and-cached-case-reuse.md) |
 | 6 | B-039 | Benchmark Corpus Expansion, Diagnostics, and Publication Refresh | P0 | 100 | 5 | 5 | 4 | M | High | queued | [odylith-benchmark-corpus-expansion-diagnostics-and-publication-refresh](odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-corpus-expansion-diagnostics-and-publication-refresh.md) |
-| 7 | B-049 | macOS Runtime Trust Ignores OS Metadata Noise | P0 | 100 | 5 | 5 | 4 | S | Medium | queued | [odylith-macos-runtime-trust-ignores-os-metadata-noise](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-macos-runtime-trust-ignores-os-metadata-noise.md) |
-| 8 | B-050 | Repair and Reinstall Converge After Partial Runtime Failure | P0 | 100 | 5 | 5 | 4 | M | High | queued | [odylith-repair-and-reinstall-converge-after-partial-runtime-failure](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md) |
-| 9 | B-053 | Legacy Radar Index Normalization Before Sync Validation | P0 | 100 | 5 | 5 | 4 | M | High | queued | [odylith-legacy-radar-index-normalization-before-sync-validation](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-radar-index-normalization-before-sync-validation.md) |
-| 10 | B-052 | Legacy Migration Stale Reference Audit | P1 | 100 | 4 | 4 | 3 | S | Medium | queued | [odylith-legacy-migration-stale-reference-audit](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-migration-stale-reference-audit.md) |
-| 11 | B-054 | Sync Failure Summary Dedup and Next-Action Routing | P1 | 100 | 4 | 5 | 3 | S | Medium | queued | [odylith-sync-failure-summary-dedup-and-next-action-routing](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-sync-failure-summary-dedup-and-next-action-routing.md) |
-| 12 | B-056 | Trust Bootstrap Warning Suppression and Success Clarity | P1 | 100 | 4 | 4 | 3 | S | Medium | queued | [odylith-trust-bootstrap-warning-suppression-and-success-clarity](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-trust-bootstrap-warning-suppression-and-success-clarity.md) |
-| 13 | B-055 | Lifecycle Plan Dirty Overlap Summary Defaults | P2 | 100 | 3 | 4 | 2 | S | Low | queued | [odylith-lifecycle-plan-dirty-overlap-summary-defaults](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-lifecycle-plan-dirty-overlap-summary-defaults.md) |
-| 14 | B-057 | Machine-Level Verified Runtime Store for Cross-Repo Reuse | P1 | 100 | 4 | 5 | 4 | L | High | queued | [odylith-machine-level-verified-runtime-store-for-cross-repo-reuse](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md) |
-| 15 | B-070 | Benchmark Host-Family Proof Canon and Live Runner Schema Normalization | P1 | 100 | 4 | 4 | 3 | M | High | queued | [benchmark-host-family-proof-canon-and-live-runner-schema-normalization](odylith/radar/source/ideas/2026-04/2026-04-09-benchmark-host-family-proof-canon-and-live-runner-schema-normalization.md) |
-| 16 | B-081 | Atlas Cold Real-Render Daemon Reuse and Sub-Second First-Render Budget | P0 | 100 | 4 | 5 | 3 | M | High | queued | [atlas-cold-real-render-daemon-reuse-and-sub-second-first-render-budget](odylith/radar/source/ideas/2026-04/2026-04-10-atlas-cold-real-render-daemon-reuse-and-sub-second-first-render-budget.md) |
-| 17 | B-094 | Context Engine Connection Lifecycle and Process-Spawn Optimization | P2 | 100 | 3 | 4 | 3 | M | High | queued | [context-engine-connection-lifecycle-and-process-spawn-optimization](odylith/radar/source/ideas/2026-04/2026-04-13-context-engine-connection-lifecycle-and-process-spawn-optimization.md) |
-| 18 | B-095 | Zero-Configuration Host Binary Discovery for Consumer Lane | P0 | 100 | 3 | 5 | 3 | S | Medium | queued | [zero-configuration-host-binary-discovery-for-consumer-lane](odylith/radar/source/ideas/2026-04/2026-04-13-zero-configuration-host-binary-discovery-for-consumer-lane.md) |
+| 7 | B-057 | Machine-Level Verified Runtime Store for Cross-Repo Reuse | P1 | 100 | 4 | 5 | 4 | L | High | queued | [odylith-machine-level-verified-runtime-store-for-cross-repo-reuse](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md) |
+| 8 | B-070 | Benchmark Host-Family Proof Canon and Live Runner Schema Normalization | P1 | 100 | 4 | 4 | 3 | M | High | queued | [benchmark-host-family-proof-canon-and-live-runner-schema-normalization](odylith/radar/source/ideas/2026-04/2026-04-09-benchmark-host-family-proof-canon-and-live-runner-schema-normalization.md) |
+| 9 | B-081 | Atlas Cold Real-Render Daemon Reuse and Sub-Second First-Render Budget | P0 | 100 | 4 | 5 | 3 | M | High | queued | [atlas-cold-real-render-daemon-reuse-and-sub-second-first-render-budget](odylith/radar/source/ideas/2026-04/2026-04-10-atlas-cold-real-render-daemon-reuse-and-sub-second-first-render-budget.md) |
+| 10 | B-094 | Context Engine Connection Lifecycle and Process-Spawn Optimization | P2 | 100 | 3 | 4 | 3 | M | High | queued | [context-engine-connection-lifecycle-and-process-spawn-optimization](odylith/radar/source/ideas/2026-04/2026-04-13-context-engine-connection-lifecycle-and-process-spawn-optimization.md) |
+| 11 | B-095 | Zero-Configuration Host Binary Discovery for Consumer Lane | P0 | 100 | 3 | 5 | 3 | S | Medium | queued | [zero-configuration-host-binary-discovery-for-consumer-lane](odylith/radar/source/ideas/2026-04/2026-04-13-zero-configuration-host-binary-discovery-for-consumer-lane.md) |
+| 12 | B-129 | v0.1.15+ Agentic Context Component Boundaries and Atlas Topology | P0 | 100 | 5 | 5 | 5 | L | High | queued | [v0-1-15-agentic-context-component-boundaries-and-atlas-topology](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-context-component-boundaries-and-atlas-topology.md) |
+| 13 | B-130 | v0.1.15+ Harness-Neutral Run Trace and Artifact Contract | P0 | 100 | 5 | 5 | 5 | L | High | queued | [v0-1-15-harness-neutral-run-trace-and-artifact-contract](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-harness-neutral-run-trace-and-artifact-contract.md) |
+| 14 | B-132 | v0.1.15+ Collaboration Identity Workspace and Actor Model | P0 | 100 | 5 | 5 | 4 | L | High | queued | [v0-1-15-collaboration-identity-workspace-and-actor-model](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-collaboration-identity-workspace-and-actor-model.md) |
+| 15 | B-133 | v0.1.15+ Durable Decisions Annotations and Memory Hygiene | P0 | 100 | 5 | 5 | 4 | L | High | queued | [v0-1-15-durable-decisions-annotations-and-memory-hygiene](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-durable-decisions-annotations-and-memory-hygiene.md) |
+| 16 | B-135 | v0.1.15+ MCP and A2A Governed Protocol Boundary | P0 | 100 | 5 | 4 | 5 | L | High | queued | [v0-1-15-mcp-and-a2a-governed-protocol-boundary](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-mcp-and-a2a-governed-protocol-boundary.md) |
+| 17 | B-137 | v0.1.15+ Agentic Policy Packs and Compliance Guardrails | P0 | 100 | 5 | 5 | 5 | L | High | queued | [v0-1-15-agentic-policy-packs-and-compliance-guardrails](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-policy-packs-and-compliance-guardrails.md) |
+| 18 | B-138 | v0.1.15+ Agentic Memory Integrity and Security Hardening | P0 | 100 | 5 | 5 | 5 | L | High | queued | [v0-1-15-agentic-memory-integrity-and-security-hardening](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-memory-integrity-and-security-hardening.md) |
 | 19 | B-036 | Product Canon Tab for Feature Narrative | P1 | 99 | 5 | 4 | 3 | L | High | queued | [odylith-product-canon-tab-for-feature-narrative](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md) |
 | 20 | B-034 | Constitution Tab for Non-Negotiable Product Truth | P0 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-constitution-tab-for-non-negotiable-product-truth](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-constitution-tab-for-non-negotiable-product-truth.md) |
 | 21 | B-037 | Live Benchmarks Drawer and Dynamic Metric Readout | P1 | 98 | 4 | 5 | 3 | L | High | queued | [odylith-live-benchmarks-drawer-and-dynamic-metric-readout](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md) |
@@ -36,8 +36,13 @@ Last updated (UTC): 2026-04-27
 | 29 | B-123 | v0.1.12 Governed Harness: OpenAI Agents SDK Adapter And Generic Harness Contract | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-openai-agents-sdk-adapter-and-generic-harness-contract.md) |
 | 30 | B-124 | v0.1.12 Governed Harness: Cross-Host Harness Ablations And Deep Benchmark Execution | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-cross-host-harness-ablations-and-deep-benchmark-execution.md) |
 | 31 | B-125 | v0.1.12 Governed Harness: Release Publication, Docs, And Benchmark Closure | P0 | 83 | 5 | 5 | 5 | XL | High | queued | [v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure](odylith/radar/source/ideas/2026-04/2026-04-18-v0-1-12-governed-harness-release-publication-docs-and-benchmark-closure.md) |
-| 32 | B-002 | Multi-Developer Repo Collaboration Architecture | P0 | 70 | 5 | 5 | 4 | XL | VeryHigh | queued | [odylith-multi-developer-repo-collaboration-architecture](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md) |
-| 33 | B-006 | Dark Theme and Adaptive Surface Tokens | P1 | 67 | 4 | 4 | 4 | XL | High | queued | [odylith-dark-theme-and-adaptive-surface-tokens](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md) |
+| 32 | B-128 | v0.1.15+ Agentic Context Governance Program | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-agentic-context-governance-program](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-agentic-context-governance-program.md) |
+| 33 | B-131 | v0.1.15+ Repo Context Graph v1 | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-repo-context-graph-v1](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-repo-context-graph-v1.md) |
+| 34 | B-134 | v0.1.15+ Execution Policy Adapters and Universal Action Gate | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-execution-policy-adapters-and-universal-action-gate](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-execution-policy-adapters-and-universal-action-gate.md) |
+| 35 | B-139 | v0.1.15+ Context Continuity Benchmark and Audit Proof Surface | P0 | 74 | 5 | 5 | 5 | XL | VeryHigh | queued | [v0-1-15-context-continuity-benchmark-and-audit-proof-surface](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-context-continuity-benchmark-and-audit-proof-surface.md) |
+| 36 | B-002 | Multi-Developer Repo Collaboration Architecture | P0 | 70 | 5 | 5 | 4 | XL | VeryHigh | queued | [odylith-multi-developer-repo-collaboration-architecture](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-multi-developer-repo-collaboration-architecture.md) |
+| 37 | B-136 | v0.1.15+ Enterprise Outcome Connectors and Hosted Augmentation | P1 | 68 | 5 | 4 | 5 | XL | VeryHigh | queued | [v0-1-15-enterprise-outcome-connectors-and-hosted-augmentation](odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-enterprise-outcome-connectors-and-hosted-augmentation.md) |
+| 38 | B-006 | Dark Theme and Adaptive Surface Tokens | P1 | 67 | 4 | 4 | 4 | XL | High | queued | [odylith-dark-theme-and-adaptive-surface-tokens](odylith/radar/source/ideas/2026-03/2026-03-27-odylith-dark-theme-and-adaptive-surface-tokens.md) |
 
 ## In Planning/Implementation (Linked to `odylith/technical-plans/in-progress` or an active parent wave)
 
@@ -64,7 +69,6 @@ Last updated (UTC): 2026-04-27
 | - | B-097 | Casebook Bug Capture Fail-Closed Evidence Contract and Cross-Host Guidance Hardening | P0 | 100 | 5 | 5 | 4 | M | High | implementation | [casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening](odylith/radar/source/ideas/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md) |
 | - | B-126 | Conditional Release-Targeted Backlog Authoring | P1 | 100 | 4 | 4 | 3 | M | Medium | implementation | [conditional-release-targeted-backlog-authoring](odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md) |
 | - | B-071 | Scope Signal Ladder, Cross-Surface Focus Gating, and Low-Signal Suppression | P0 | 95 | 5 | 5 | 4 | L | VeryHigh | implementation | [scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression](odylith/radar/source/ideas/2026-04/2026-04-09-scope-signal-ladder-cross-surface-focus-gating-and-low-signal-suppression.md) |
-| - | B-030 | Consumer Upgrade, Reinstall Recovery, and Shell Refresh | P1 | 92 | 4 | 5 | 4 | L | High | implementation | [odylith-consumer-upgrade-release-spotlight-and-shell-refresh](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md) |
 | - | B-064 | Radar Workstream Title Prefix Normalization | P2 | 90 | 2 | 3 | 2 | M | Medium | implementation | [radar-workstream-title-prefix-normalization](odylith/radar/source/ideas/2026-04/2026-04-08-radar-workstream-title-prefix-normalization.md) |
 | - | B-087 | Codex Project-Asset Parity, Mirror Hygiene, and Install Contract | P1 | 88 | 3 | 4 | 3 | L | Medium | implementation | [codex-project-asset-parity-mirror-hygiene-and-install-contract](odylith/radar/source/ideas/2026-04/2026-04-11-codex-project-asset-parity-mirror-hygiene-and-install-contract.md) |
 | - | B-091 | Sub-Second Governed Sync via Shared Read Models, Incremental Derivation, and Content-Addressed Surface Writes | P0 | 87 | 4 | 5 | 4 | L | VeryHigh | implementation | [sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes](odylith/radar/source/ideas/2026-04/2026-04-12-sub-second-governed-sync-via-shared-read-models-incremental-derivation-and-content-addressed-surface-writes.md) |
@@ -78,6 +82,16 @@ Last updated (UTC): 2026-04-27
 
 | rank | idea_id | title | priority | ordering_score | commercial_value | product_impact | market_value | sizing | complexity | status | link |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| - | B-030 | Consumer Upgrade, Reinstall Recovery, and Shell Refresh | P1 | 92 | 4 | 5 | 4 | L | High | finished | [odylith-consumer-upgrade-release-spotlight-and-shell-refresh](odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md) |
+| - | B-049 | macOS Runtime Trust Ignores OS Metadata Noise | P0 | 100 | 5 | 5 | 4 | S | Medium | finished | [odylith-macos-runtime-trust-ignores-os-metadata-noise](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-macos-runtime-trust-ignores-os-metadata-noise.md) |
+| - | B-052 | Legacy Migration Stale Reference Audit | P1 | 100 | 4 | 4 | 3 | S | Medium | finished | [odylith-legacy-migration-stale-reference-audit](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-migration-stale-reference-audit.md) |
+| - | B-053 | Legacy Radar Index Normalization Before Sync Validation | P0 | 100 | 5 | 5 | 4 | M | High | finished | [odylith-legacy-radar-index-normalization-before-sync-validation](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-legacy-radar-index-normalization-before-sync-validation.md) |
+| - | B-054 | Sync Failure Summary Dedup and Next-Action Routing | P1 | 100 | 4 | 5 | 3 | S | Medium | finished | [odylith-sync-failure-summary-dedup-and-next-action-routing](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-sync-failure-summary-dedup-and-next-action-routing.md) |
+| - | B-055 | Lifecycle Plan Dirty Overlap Summary Defaults | P2 | 100 | 3 | 4 | 2 | S | Low | finished | [odylith-lifecycle-plan-dirty-overlap-summary-defaults](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-lifecycle-plan-dirty-overlap-summary-defaults.md) |
+| - | B-050 | Repair and Reinstall Converge After Partial Runtime Failure | P0 | 100 | 5 | 5 | 4 | M | High | finished | [odylith-repair-and-reinstall-converge-after-partial-runtime-failure](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md) |
+| - | B-056 | Trust Bootstrap Warning Suppression and Success Clarity | P1 | 100 | 4 | 4 | 3 | S | Medium | finished | [odylith-trust-bootstrap-warning-suppression-and-success-clarity](odylith/radar/source/ideas/2026-04/2026-04-06-odylith-trust-bootstrap-warning-suppression-and-success-clarity.md) |
+| - | B-127 | Migration Runtime Release Gate | P0 | 100 | 5 | 5 | 5 | L | High | finished | [migration-runtime-release-gate](odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md) |
+| - | B-140 | Consumer Surface Migration Observer And Release Gate | P0 | 100 | 5 | 5 | 5 | M | High | finished | [consumer-surface-migration-observer-and-release-gate](odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md) |
 | - | B-096 | Conversation observation engine, governed proposal flow, and human intervention voice contract | P0 | 100 | 3 | 5 | 5 | L | High | finished | [conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract](odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md) |
 | - | B-105 | Visible Intervention Value Engine Governance Binding | P0 | 100 | 4 | 5 | 4 | M | Medium | finished | [visible-intervention-value-engine-governance-binding](odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-value-engine-governance-binding.md) |
 | - | B-106 | Visible Intervention Proposition Engine | P0 | 100 | 5 | 5 | 4 | L | High | finished | [visible-intervention-proposition-engine](odylith/radar/source/ideas/2026-04/2026-04-17-visible-intervention-proposition-engine.md) |
@@ -191,70 +205,21 @@ Last updated (UTC): 2026-04-27
 - deferred for now: Public refresh stays queued until the remaining live weak-family proof blockers and the next comprehensive proof are honestly clear.
 - ranking basis: no manual priority override; this belongs in the top queued benchmark cluster because the public benchmark story should only move after the stronger runtime has a harder, more diagnostic scoreboard behind it.
 
-### B-049 (rank 7)
-- why now: created as a new queued workstream for Odylith macOS Runtime Trust Ignores OS Metadata Noise.
-- expected outcome: clearer product truth and faster follow-on implementation planning.
-- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
-- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
-- ranking basis: score-based rank; no manual priority override.
-
-### B-050 (rank 8)
-- why now: created as a new queued workstream for Odylith Repair and Reinstall Converge After Partial Runtime Failure.
-- expected outcome: clearer product truth and faster follow-on implementation planning.
-- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
-- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
-- ranking basis: score-based rank; no manual priority override.
-
-### B-053 (rank 9)
-- why now: created as a new queued workstream for Odylith Legacy Radar Index Normalization Before Sync Validation.
-- expected outcome: clearer product truth and faster follow-on implementation planning.
-- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
-- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
-- ranking basis: score-based rank; no manual priority override.
-
-### B-052 (rank 10)
-- why now: created as a new queued workstream for Odylith Legacy Migration Stale Reference Audit.
-- expected outcome: clearer product truth and faster follow-on implementation planning.
-- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
-- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
-- ranking basis: score-based rank; no manual priority override.
-
-### B-054 (rank 11)
-- why now: created as a new queued workstream for Odylith Sync Failure Summary Dedup and Next-Action Routing.
-- expected outcome: clearer product truth and faster follow-on implementation planning.
-- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
-- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
-- ranking basis: score-based rank; no manual priority override.
-
-### B-056 (rank 12)
-- why now: created as a new queued workstream for Odylith Trust Bootstrap Warning Suppression and Success Clarity.
-- expected outcome: clearer product truth and faster follow-on implementation planning.
-- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
-- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
-- ranking basis: score-based rank; no manual priority override.
-
-### B-055 (rank 13)
-- why now: created as a new queued workstream for Odylith Lifecycle Plan Dirty Overlap Summary Defaults.
-- expected outcome: clearer product truth and faster follow-on implementation planning.
-- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
-- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
-- ranking basis: score-based rank; no manual priority override.
-
-### B-057 (rank 14)
+### B-057 (rank 7)
 - why now: Odylith's install and repair story is now good enough that the next obvious adoption drag is disk amplification. Repeating the same 0.4-0.5 GB managed runtime in every repo makes multi-repo use feel excessive even when single-repo install works.
 - expected outcome: keeps repo-local trust and repair semantics while letting same-version repos on one machine reuse one verified base runtime.
 - tradeoff: This is a large lifecycle-and-storage slice because it has to make shared-store verification, repo-local materialization, overlay copy-on-write safety, and cross-filesystem fallback all work together or the fix either weakens trust or barely reduces footprint.
 - deferred for now: direct global symlink activation, cross-machine shared caches, and hosted/global runtime distribution stay deferred because the immediate need is one machine-local verified store that preserves today's repo-local contract.
 - ranking basis: no manual priority override; this belongs ahead of older product-polish work because repeated full-runtime duplication will slow multi-repo adoption even if install, repair, and sync are otherwise healthy.
 
-### B-070 (rank 15)
+### B-070 (rank 8)
 - why now: created as a new queued workstream for Benchmark Host-Family Proof Canon and Live Runner Schema Normalization.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-081 (rank 16)
+### B-081 (rank 9)
 - why now: created as a new queued workstream for Atlas Cold Real-Render Daemon Reuse and Sub-Second First-Render Budget.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
@@ -590,15 +555,64 @@ Last updated (UTC): 2026-04-27
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-094 (rank 17)
+### B-094 (rank 10)
 - why now: created as a new queued workstream for Context Engine Connection Lifecycle and Process-Spawn Optimization.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-095 (rank 18)
+### B-095 (rank 11)
 - why now: created as a new queued workstream for Zero-Configuration Host Binary Discovery for Consumer Lane.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-129 (rank 12)
+- why now: created as a new queued workstream for v0.1.15+ Agentic Context Component Boundaries and Atlas Topology.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-130 (rank 13)
+- why now: created as a new queued workstream for v0.1.15+ Harness-Neutral Run Trace and Artifact Contract.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-132 (rank 14)
+- why now: created as a new queued workstream for v0.1.15+ Collaboration Identity Workspace and Actor Model.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-133 (rank 15)
+- why now: created as a new queued workstream for v0.1.15+ Durable Decisions Annotations and Memory Hygiene.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-135 (rank 16)
+- why now: created as a new queued workstream for v0.1.15+ MCP and A2A Governed Protocol Boundary.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-137 (rank 17)
+- why now: created as a new queued workstream for v0.1.15+ Agentic Policy Packs and Compliance Guardrails.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-138 (rank 18)
+- why now: created as a new queued workstream for v0.1.15+ Agentic Memory Integrity and Security Hardening.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
@@ -695,14 +709,49 @@ Last updated (UTC): 2026-04-27
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-002 (rank 32)
+### B-128 (rank 32)
+- why now: created as a new queued workstream for v0.1.15+ Agentic Context Governance Program.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-131 (rank 33)
+- why now: created as a new queued workstream for v0.1.15+ Repo Context Graph v1.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-134 (rank 34)
+- why now: created as a new queued workstream for v0.1.15+ Execution Policy Adapters and Universal Action Gate.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-139 (rank 35)
+- why now: created as a new queued workstream for v0.1.15+ Context Continuity Benchmark and Audit Proof Surface.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-002 (rank 36)
 - why now: Odylith now has product-owned governance roots and needs a coherent multi-developer collaboration architecture before comments, authorship, and repo/workspace identity spread through the product as ad hoc fields.
 - expected outcome: Makes shared human/agent development auditable, keeps local-first repo truth authoritative, and gives Dashboard, Compass, Registry, Radar, Atlas, Casebook, and Context Engine one collaboration model.
 - tradeoff: This is a large systems slice because it touches scope identity, actor identity, comment durability, workspace runtime isolation, and optional hosted augmentation all at once.
 - deferred for now: Hosted collaboration features, enterprise tenancy, and broad rollout to additional repos stay deferred until the tracked local-first contract and resolved-summary memory rules are stable in the product repo first.
 - ranking basis: no manual priority override; this remains important, but the newly queued benchmark and product-truth surfaces are moving first.
 
-### B-006 (rank 33)
+### B-136 (rank 37)
+- why now: created as a new queued workstream for v0.1.15+ Enterprise Outcome Connectors and Hosted Augmentation.
+- expected outcome: clearer product truth and faster follow-on implementation planning.
+- tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
+- deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
+- ranking basis: score-based rank; no manual priority override.
+
+### B-006 (rank 38)
 - why now: Odylith now has a real shell and multiple governed surfaces, but they still skew light-only and rely on spread-out light palette literals that make long sessions and after-hours use noticeably worse.
 - expected outcome: Improves operator comfort, raises public product polish, and creates a reusable appearance contract so future surfaces inherit theme support instead of reintroducing styling debt.
 - tradeoff: This is a medium-large UX systems slice because theme state has to propagate across the shell and iframe surfaces while charts, badges, tables, diagrams, and other contrast-sensitive regions stay legible.
@@ -884,12 +933,61 @@ Last updated (UTC): 2026-04-27
 - deferred for now: repo-wide threshold rewrites, broad dashboard IA experimentation, and hosted release-process expansion stay deferred because the immediate need is a safer release lane plus a targeted refactor wave.
 - ranking basis: Manual priority override used because the next release should explicitly prioritize release-system hardening and targeted decomposition before more loosely coupled feature expansion; review checkpoint 2026-04-30.
 
+### B-049 (rank -)
+- why now: closed after reconciling runtime-tree metadata policy with the still-open workstream and `CB-054`; the code path was already centralized but needed direct trust-manifest proof and governance closure.
+- expected outcome: macOS Finder metadata no longer reads as runtime tamper, while non-allowlisted runtime drift still fails closed.
+- tradeoff: this remains intentionally narrow: it ignores only `.DS_Store` and AppleDouble `._*` entries and does not become a broad hidden-file allowlist.
+- deferred for now: future platform-specific metadata requires explicit policy and regression proof before it can be ignored.
+- ranking basis: finished as a release-lifecycle trust reconciliation; no manual priority override.
+
+### B-050 (rank -)
+- why now: recovery commands must converge after a partial runtime failure; otherwise Odylith teaches operators to clean internals by hand.
+- expected outcome: repeated repair and reinstall now move the repo back to one valid pinned runtime without deleting unrelated runtime history.
+- tradeoff: cleanup stays deliberately narrow to target-version residue, so future residue classes must be registered explicitly instead of swept broadly.
+- deferred for now: install-ledger telemetry for removed residue stays deferred to the broader upgrade observability lane.
+- ranking basis: finished on 2026-04-27 under the 0.1.12 release-lifecycle hardening lane after focused runtime/install validation.
+
 ### B-051 (rank -)
 - why now: `doctor` and `version` were still disagreeing exactly where operators needed the product to settle truth: a runnable but trust-degraded wrapped runtime in the product repo.
 - expected outcome: the runtime posture story becomes coherent again, so `doctor` no longer sounds generically broken while `version` quietly reports `wrapped_runtime` with the real trust detail.
 - tradeoff: this stayed intentionally small and surgical because the problem was not lane design; it was one missed trust-only branch in the doctor summary path.
 - deferred for now: broader wrapped-runtime subtype design stays deferred because the immediate requirement was one truthful shared posture contract.
 - ranking basis: executed as a bound child under `B-048`; finished on 2026-04-07 after focused install-manager and CLI regression proof.
+
+### B-052 (rank -)
+- why now: closed after the legacy migration audit was proven across install migration and CLI summary paths, then hardened so generated dashboard churn and root temp/vendor sludge cannot bury source-truth references.
+- expected outcome: operators see a compact, honest post-migration stale-reference report without Odylith rewriting user docs or governed prose.
+- tradeoff: intentionally reports source-truth references even when they may be historical, because hiding them would be worse than asking the operator to review them.
+- deferred for now: automatic rewrite or classification of historical references stays out of scope until a future migration declares that policy explicitly.
+- ranking basis: finished as a release-lifecycle migration truth closeout under `B-048`; no manual priority override.
+
+### B-053 (rank -)
+- why now: closed after proving migrated Radar source can normalize legacy rationale and schema drift before strict sync validation; the final QA pass found and fixed the missing-rationale-section edge case too.
+- expected outcome: post-migration `odylith sync` no longer blocks on mechanically bridgeable Radar source formats, and dashboard refresh uses the same preflight bridge.
+- tradeoff: this remains a narrow compatibility bridge for known legacy Radar shapes, not a broad Markdown auto-repair engine.
+- deferred for now: future Radar schema changes need explicit versioned bridges and tests before they become strict validation requirements.
+- ranking basis: finished as a release-lifecycle sync unblock under `B-048`; no manual priority override.
+
+### B-054 (rank -)
+- why now: closed after the failure-summary contract was proven for duplicate collapse, long-tail suppression, class-aware backlog next actions, and repair-command routing.
+- expected outcome: sync failures lead with compact representative blockers and a next different action rather than a noisy dump followed by the same failed command.
+- tradeoff: no full saved failure report landed in this slice; the terminal contract stays small and operator-facing.
+- deferred for now: JSON/full-report export for very large failure sets remains a future enhancement.
+- ranking basis: finished as sync operator UX closeout under `B-048`; no manual priority override.
+
+### B-055 (rank -)
+- why now: closed after compact dirty-overlap summaries were proven across install, reinstall, upgrade, and sync lifecycle plans.
+- expected outcome: operators see counts, area breakdown, representative paths, and a hidden-entry count by default, with full lists available only through `--verbose`.
+- tradeoff: this keeps dirty-overlap detection unchanged; it only changes the default readout shape.
+- deferred for now: deeper source-versus-generated classification beyond the current area buckets remains future work.
+- ranking basis: finished as release-lifecycle output polish under `B-048`; no manual priority override.
+
+### B-056 (rank -)
+- why now: closed after reconciling the hosted installer and pinned-runtime trust-warning fixes; this was still ranked queued even though `CB-061` and `CB-076` had already landed.
+- expected outcome: successful verification reads as calm success, while non-fatal trust-root notices stay visible only as classified posture details in doctor/version.
+- tradeoff: this remains intentionally narrow: it suppresses only allowlisted successful-verification warning streams and leaves broader upgrade transaction auditability under `CB-133`.
+- deferred for now: future Sigstore/TUF warning-shape drift will require new explicit allowlist proof, not broad suppression.
+- ranking basis: finished as a release-polish reconciliation; no manual priority override.
 
 ### B-058 (rank -)
 - why now: Registry had been showing a blunt memory silhouette exactly where Odylith now relies on projection reuse, scoped snapshot fallback, optional remote retrieval, and packet-safe compaction.
@@ -941,21 +1039,21 @@ Last updated (UTC): 2026-04-27
 - deferred for now: broad external platform graph expansion.
 - ranking basis: no manual priority override; queued behind the frontier wave because closure needs the prior execution state model.
 
-### B-077 (rank 20)
+### B-077 (rank 19)
 - why now: Opaque waiting and replay-from-scratch behavior undermine operator trust even when the agent stayed on the right lane.
 - expected outcome: Normalizes semantic wait states and makes reruns attach to receipts and resume handles by default.
 - tradeoff: External dependency coverage starts narrow so the core receipt contract can stay trustworthy.
 - deferred for now: broader adapter families beyond the first local and GitHub-oriented set.
 - ranking basis: no manual priority override; queued alongside the later execution-governance waves rather than promoted above the active umbrella.
 
-### B-078 (rank 21)
+### B-078 (rank 20)
 - why now: Known failure classes and contradictions should become executable preflight rules instead of searchable memory after the base engine exists.
 - expected outcome: Synthesizes validation matrices and contradiction records from the active execution contract and evidence.
 - tradeoff: This closes the loop later in the sequence because it depends on the earlier contract, closure, and receipt layers being real first.
 - deferred for now: richer operator-facing UX beyond the first contract-driven readouts.
 - ranking basis: no manual priority override; queued as the capstone wave for the execution-governance umbrella.
 
-### B-079 (rank 22)
+### B-079 (rank 21)
 - why now: Coding agents need a direct program/wave authoring path, but that ergonomics layer should stay a sidecar to the execution engine instead of becoming the main event.
 - expected outcome: Adds a thin command surface for umbrella-wave authoring on top of the canonical JSON contract.
 - tradeoff: The CLI stays intentionally narrow so it does not invent a second planning model or outrun the execution-governance core.
@@ -969,35 +1067,35 @@ Last updated (UTC): 2026-04-27
 - deferred for now: broad stale-diagram cleanup and a separate non-failing inspect-only refresh mode.
 - ranking basis: completed implementation workstream; no queued rank.
 
-### B-082 (rank 24)
+### B-082 (rank 23)
 - why now: the product needs one structured intake contract that can use quoted UI text and visible surfaces as anchors without letting consumer turns drift into Odylith-owned write targets.
 - expected outcome: adds a lane-fenced intake path that keeps consumer work diagnosis-first while preserving explicit maintainer-authorized Odylith targetability in the product repo.
 - tradeoff: this stays below the base execution-governance waves because the intake contract should sit on top of the core admissibility and task-contract work, not race ahead of it.
 - deferred for now: deeper agent ergonomics and extra public transports can wait until the shared turn packet, target resolution, and presentation policy are stable.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-088 (rank 25)
+### B-088 (rank 24)
 - why now: created as a new queued workstream for Codex Host Runtime Parity, CLI Dispatch, and Target-Release Wording Hardening.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-089 (rank 25)
+### B-089 (rank 24)
 - why now: created as a new queued workstream for Claude Host Capability Layer Cli Backed Baked Hooks And Compatibility Surface.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-090 (rank 25)
+### B-090 (rank 24)
 - why now: created as a new queued workstream for Bounded test contract catch-up for orchestrator profile inference benchmark routing and governance refactors.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-091 (rank 30)
+### B-091 (rank 29)
 - why now: governed sync profiling showed the hot path is dominated by repeated read-model reconstruction, path canonicalization, and unnecessary surface rewrites rather than intrinsically expensive validation or rendering.
 - expected outcome: one sync-scoped shared read model, materially lower repeated path/profile/report work across the in-process step chain, and the first no-op-write guarantees on the shell and Registry surfaces.
 - tradeoff: the first landing keeps the current step graph externally stable, so it does not yet deliver the full daemon or per-node reverse-dependency engine that would take warm selective sync all the way to the architectural ceiling.
@@ -1038,42 +1136,42 @@ Last updated (UTC): 2026-04-27
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-099 (rank 25)
+### B-099 (rank 24)
 - why now: created as a new queued workstream for Context Engine and Execution Engine Seamless Alignment Program.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-100 (rank 26)
+### B-100 (rank 25)
 - why now: Wave 1 is active because benchmark proof is the first guard for the Context Engine to Execution Engine handshake, and stale execution identifiers must fail closed before route readiness.
 - expected outcome: canonical `execution-engine` packet posture, `execution_engine_*` benchmark metrics, and generated proof surfaces stay aligned.
 - tradeoff: this keeps Wave 1 narrow and leaves full snapshot normalization, host parity, hot-path cost work, and release closure to B-101 through B-104.
 - deferred for now: broader handshake normalization and release-proof closure remain in later waves.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-101 (rank 26)
+### B-101 (rank 25)
 - why now: created as a new queued workstream for Context Execution Handshake Snapshot Normalization.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-102 (rank 27)
+### B-102 (rank 26)
 - why now: created as a new queued workstream for Codex Claude Execution Contract Parity.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-103 (rank 28)
+### B-103 (rank 27)
 - why now: created as a new queued workstream for Execution Snapshot Reuse and Hot Path Cost Reduction.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-104 (rank 29)
+### B-104 (rank 28)
 - why now: created as a new queued workstream for Execution Alignment Release Proof and Governance Closure.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
@@ -1087,35 +1185,35 @@ Last updated (UTC): 2026-04-27
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-106 (rank 20)
+### B-106 (rank 19)
 - why now: created as a new queued workstream for Visible Intervention Proposition Engine.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-107 (rank 21)
+### B-107 (rank 20)
 - why now: created as a new queued workstream for Host Visibility Integration And Ruler Canonicalization.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-108 (rank 22)
+### B-108 (rank 21)
 - why now: created as a new queued workstream for Intervention Adjudication Corpus And Advisory Benchmark.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-109 (rank 23)
+### B-109 (rank 22)
 - why now: created as a new queued workstream for v0.1.11 Visible Intervention Release Proof.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
 
-### B-110 (rank 31)
+### B-110 (rank 30)
 - why now: created as a new queued workstream for Discipline, Credit-Safe And Benchmark-Proved.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
@@ -1129,42 +1227,42 @@ Last updated (UTC): 2026-04-27
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: Required child decomposition for B-110 so the CLI-backed execution-wave program can stay governed and bounded. Review checkpoint: 2026-04-17.
 
-### B-112 (rank 20)
+### B-112 (rank 19)
 - why now: created as a new queued workstream for Adaptive Character Runtime And Budget Kernel.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: Required child decomposition for B-110 so the CLI-backed execution-wave program can stay governed and bounded. Review checkpoint: 2026-04-17.
 
-### B-113 (rank 21)
+### B-113 (rank 20)
 - why now: created as a new queued workstream for Adaptive Character Learning Spine.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: Required child decomposition for B-110 so the CLI-backed execution-wave program can stay governed and bounded. Review checkpoint: 2026-04-17.
 
-### B-114 (rank 22)
+### B-114 (rank 21)
 - why now: created as a new queued workstream for Adaptive Character Subsystem Integration.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: Required child decomposition for B-110 so the CLI-backed execution-wave program can stay governed and bounded. Review checkpoint: 2026-04-17.
 
-### B-115 (rank 23)
+### B-115 (rank 22)
 - why now: created as a new queued workstream for Adaptive Character Tooling And Host Parity.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: Required child decomposition for B-110 so the CLI-backed execution-wave program can stay governed and bounded. Review checkpoint: 2026-04-17.
 
-### B-116 (rank 24)
+### B-116 (rank 23)
 - why now: created as a new queued workstream for Adaptive Character Benchmark Sovereignty.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: Required child decomposition for B-110 so the CLI-backed execution-wave program can stay governed and bounded. Review checkpoint: 2026-04-17.
 
-### B-117 (rank 25)
+### B-117 (rank 24)
 - why now: created as a new queued workstream for Adaptive Character Surfaces And Release Proof.
 - expected outcome: clearer product truth and faster follow-on implementation planning.
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
@@ -1177,3 +1275,10 @@ Last updated (UTC): 2026-04-27
 - tradeoff: queued with sizing and complexity assumptions that should be validated when implementation begins.
 - deferred for now: deeper scope decomposition waits until the implementation owner starts the workstream.
 - ranking basis: score-based rank; no manual priority override.
+
+### B-127 (rank -)
+- why now: migration became the first 0.1.12 release-gating function after upgrade dry-run, apply, doctor, and release proof could disagree.
+- expected outcome: upgrade, install, reinstall, doctor, and release validation consume one migration plan with scenario, write-set, ledger, rollback, and proof state.
+- tradeoff: generated dashboard reviewability stays outside this migration gate and remains tracked separately in CB-134.
+- deferred for now: broader maintainer preflight consolidation waits for a later release; 0.1.12 keeps `release migration-gate` focused.
+- ranking basis: completed and closed on 2026-04-27 with B-127 moved to `finished` and the technical plan moved to `done`.

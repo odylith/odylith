@@ -14,12 +14,19 @@ You are operating inside a repo that carries Odylith (`odylith/` + `.odylith/`) 
 - Lead with the answer or action, not the reasoning. Skip filler words and unnecessary transitions. Prefer short, direct sentences. Do not restate what the user said — just do it.
 
 ## Closeout Contract
-- At closeout, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available.
-- Lead with the user win. Link updated governance ids inline (workstream, plan, bug, component, diagram) when they were actually changed.
+- Use `Odylith Assist:` as the post-action lane, not as pre-action narration. Prefer `**Odylith Assist:**` when Markdown formatting is available.
+- After a successful Odylith governance CLI mutation, end with one short Assist line when you can name the concrete result: the created/updated id, the refreshed surface, the route printed by the CLI, or the validation that passed. If there is no concrete result, stay silent.
+- Lead with the user win. Link updated governance ids inline (workstream, plan, bug, component, diagram) only when they were actually changed.
+- Never use canned Assist text such as `surfaced this visibility issue`, `kept this grounded`, or `this turn is already...`. The line must read like it was written for the exact artifact that just changed.
 - Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it.
 - Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Not promotional.
 - Ground the line in concrete observed counts, measured deltas, or validation outcomes. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler.
 - At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real. Pick the strongest one or stay quiet.
+
+## Branded Pre-Action Contract
+- Do not emit `Odylith Observation:` just because the prompt names Radar, Registry, Atlas, Casebook, governance, a component, or a diagram. Those are normal commands, not intelligence.
+- A pre-action Observation is earned only when it changes the next move: real evidence is missing, two governed records conflict, a destructive action is ambiguous, the host lane changes what is safe, or the user is reporting an Odylith visibility failure.
+- When a pre-action Observation is earned, write one specific line tied to the current prompt. No generic `this turn is already...` language.
 
 ## Live Blocker Lane
 - Never say `fixed`, `cleared`, or `resolved` without qualification unless the hosted proof moved past the prior failing phase.

@@ -99,7 +99,7 @@ def test_casebook_detail_header_stays_readable_in_desktop_view(browser_context) 
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     _casebook, row, layout = _select_casebook_layout_stress_row(page)
 
     assert row["titleLength"] >= 80, "expected a long-title Casebook row to stress the header layout"
@@ -123,7 +123,7 @@ def test_casebook_detail_header_stays_readable_in_compact_view(compact_browser_c
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     _casebook, _row, layout = _select_casebook_layout_stress_row(page)
 
     pane_layout = casebook.locator("#detailPane").evaluate(
@@ -780,7 +780,7 @@ def _assert_shared_deep_link_buttons_keep_style_contract(  # noqa: ANN001
     response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
     assert response is not None and response.ok
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     casebook_style = _synthetic_anchor_button_style(casebook, "body", "action-chip")
 
     for style in (compass_style, radar_style, registry_style, casebook_style):
@@ -831,7 +831,7 @@ def _assert_shared_governance_kpi_cards_keep_compact_style_contract(  # noqa: AN
 
     page.locator("#tab-casebook").click()
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     casebook.locator(".kpis .kpi-card").first.wait_for(timeout=15000)
     casebook_style = _governance_kpi_style(casebook, ".kpis .kpi-card", ".kpi-label", ".kpi-value")
 

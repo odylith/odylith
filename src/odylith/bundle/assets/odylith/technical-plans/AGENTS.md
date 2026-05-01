@@ -19,3 +19,7 @@ Scope: applies to all files under `odylith/technical-plans/`.
 - `odylith/technical-plans/done/legacy/`: completed plans without date-prefixed filenames.
 - `odylith/technical-plans/INDEX.md`: navigation + active registry.
 - `odylith/technical-plans/AGENTS.md`: this policy file.
+- There is no `odylith/technical-plans/source/` directory. `odylith plan
+  --help` is a read-only command guide, not a plan writer. Use
+  `odylith governance ...` and `odylith validate plan-* ...` for
+  technical-plan maintenance and validation.

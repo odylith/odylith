@@ -19,16 +19,19 @@ def test_build_welcome_state_suggests_components_diagrams_and_surface_flow(tmp_p
     welcome = shell_onboarding.build_welcome_state(repo_root=tmp_path)
 
     assert welcome["show"] is True
-    assert welcome["headline"] == "Start Odylith from one real code path"
-    assert welcome["subhead"] == "Open the cheatsheet drawer on the left and try out commands in this repo."
+    assert welcome["headline"] == "Odylith is installed"
+    assert welcome["subhead"] == (
+        "Copy one prompt into Codex or Claude. Odylith will inspect this repo, explain the safe first moves, "
+        "and stay quiet when evidence is weak."
+    )
     assert welcome["starter_prompt"] == shell_onboarding.STARTER_PROMPT
     assert welcome["auto_refresh_note"] == shell_onboarding.AUTO_REFRESH_NOTE
     assert welcome["dismiss_key"].startswith("welcome-v2|")
     assert welcome["notices"] == []
     assert welcome["quick_steps"] == [
-        "Copy prompt.",
-        "Run in Codex or Claude.",
-        "Map the repo.",
+        "Paste the prompt into Codex or Claude.",
+        "Read the repo-aware report.",
+        "Choose the first grounded next move.",
     ]
     assert welcome["chosen_slice"]["path"] in {"src/payments", "src/billing"}
     assert welcome["chosen_slice"]["title"] == "Example starting path"
@@ -58,12 +61,17 @@ def test_build_welcome_state_suggests_components_diagrams_and_surface_flow(tmp_p
         "Radar",
         "Registry",
         "Atlas",
+        "Casebook",
         "Compass",
     ]
     assert welcome["surface_explainers"][0]["sentence"] == "Radar keeps a clear backlog so the repo always has one governed next step."
     assert welcome["surface_explainers"][1]["sentence"] == "Registry is the component ledger for boundaries, ownership, and contracts."
     assert welcome["surface_explainers"][2]["sentence"] == "Atlas keeps architecture visible with diagrams of topology and flow."
-    assert welcome["surface_explainers"][3]["sentence"] == "Compass keeps briefs and timelines so the next move stays clear."
+    assert (
+        welcome["surface_explainers"][3]["sentence"]
+        == "Casebook keeps bugs and regressions durable so failures do not disappear into chat."
+    )
+    assert welcome["surface_explainers"][4]["sentence"] == "Compass keeps briefs and timelines so the next move stays clear."
 
 
 def test_build_welcome_state_hides_once_backlog_components_and_atlas_exist(tmp_path: Path) -> None:
@@ -113,9 +121,9 @@ def test_build_welcome_state_skips_fake_slice_when_only_repo_name_is_available(t
     }
     assert "|none|" in welcome["dismiss_key"]
     assert welcome["quick_steps"] == [
-        "Copy prompt.",
-        "Run in Codex or Claude.",
-        "Open the cheatsheet.",
+        "Paste the prompt into Codex or Claude.",
+        "Read the empty-repo report.",
+        "Name a path or feature when you are ready.",
     ]
     assert not any(item.startswith("Likely first delivery surface:") for item in welcome["repo_readout"])
     assert any("has not inferred one grounded slice yet" in item for item in welcome["repo_readout"])
@@ -465,3 +473,40 @@ def test_build_welcome_state_dismiss_key_changes_when_onboarding_shape_changes(t
     grounded = shell_onboarding.build_welcome_state(repo_root=tmp_path)
 
     assert blank["dismiss_key"] != grounded["dismiss_key"]
+
+
+def test_build_welcome_state_dismiss_key_changes_when_install_instance_changes(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "src" / "payments").mkdir(parents=True, exist_ok=True)
+    write_install_state(
+        repo_root=tmp_path,
+        payload={
+            "active_version": "1.2.3",
+            "installed_utc": "2026-04-01T00:00:00+00:00",
+            "installed_versions": {
+                "1.2.3": {
+                    "installed_utc": "2026-04-01T00:00:00+00:00",
+                    "runtime_root": str(tmp_path / ".odylith" / "runtime" / "versions" / "1.2.3"),
+                }
+            },
+        },
+    )
+    first_install = shell_onboarding.build_welcome_state(repo_root=tmp_path)
+
+    write_install_state(
+        repo_root=tmp_path,
+        payload={
+            "active_version": "1.2.3",
+            "installed_utc": "2026-04-27T20:03:21+00:00",
+            "installed_versions": {
+                "1.2.3": {
+                    "installed_utc": "2026-04-27T20:03:21+00:00",
+                    "runtime_root": str(tmp_path / ".odylith" / "runtime" / "versions" / "1.2.3"),
+                }
+            },
+        },
+    )
+    same_path_reinstall = shell_onboarding.build_welcome_state(repo_root=tmp_path)
+
+    assert first_install["dismiss_key"] != same_path_reinstall["dismiss_key"]
+    assert "install=1-2-3-2026-04-27t20-03-21-00-00" in same_path_reinstall["dismiss_key"]

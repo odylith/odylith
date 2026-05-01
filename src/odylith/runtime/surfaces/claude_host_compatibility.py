@@ -28,7 +28,7 @@ def _report_notes(report: ClaudeCompatibilityReport) -> list[str]:
         "Repo-scoped `.claude/` settings, hooks, slash commands, subagents, and skills are first-class project surfaces and ship with the install.",
         "Claude Code project assets do not require a trusted-project approval gate; checked-in `.claude/settings.json` activates immediately.",
         "Existing Claude sessions may not hot-reload changed project settings, guidance, or source-local runtime code; restart the session or render `odylith claude visible-intervention` directly before claiming another open chat is visibly active.",
-        "`odylith claude intervention-status` is the low-latency session proof for static readiness, active UX lanes, delivery-ledger state, and the visible fallback smoke command.",
+        "`odylith claude intervention-status` is the low-latency session proof for static readiness, active UX lanes, delivery-ledger state, and the visible recovery smoke command.",
         "Version compatibility is capability-based and does not pin a maximum Claude CLI version.",
     ]
     if report.claude_available and report.claude_version:
@@ -74,7 +74,7 @@ def _report_notes(report: ClaudeCompatibilityReport) -> list[str]:
             "Claude intervention hooks are wired for direct edits, Bash edits, and Stop closeout sources."
         )
         notes.append(
-            "Chat visibility is completed by the assistant-render fallback inside `additionalContext` and the Stop one-shot continuation guard; hook stdout or `systemMessage` may carry the same visible block, including Assist when that moment already earned closeout continuity, but is not alone treated as visible-chat proof."
+            "Chat visibility is completed by assistant-rendered recovery text and the Stop one-shot continuation guard; hook stdout or hidden host context may carry the same visible block, including Assist when that note already earned closeout continuity, but it is not alone treated as user-visible chat."
         )
     else:
         missing = []
@@ -113,7 +113,7 @@ def render_claude_compatibility(report: ClaudeCompatibilityReport) -> str:
         f"PostToolUse post-edit-checkpoint hook wired for Write/Edit/MultiEdit: {'yes' if report.supports_post_edit_checkpoint_hook else 'no'}",
         f"PostToolUse post-bash-checkpoint hook wired for Bash: {'yes' if report.supports_post_bash_checkpoint_hook else 'no'}",
         f"Stop stop-summary hook wired: {'yes' if report.supports_stop_summary_hook else 'no'}",
-        "Assistant-render fallback for chat-visible UX: yes",
+        "Assistant-render recovery for chat-visible UX: yes",
         f"PostToolUse non-wildcard matcher present: {'yes' if report.supports_post_tool_matchers else 'no'}",
         f"Subagent lifecycle hooks wired: {'yes' if report.supports_subagent_hooks else 'no'}",
         f"PreCompact hook wired: {'yes' if report.supports_pre_compact_hook else 'no'}",

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa
 """Claude session-start hook that grounds Odylith context."""
 
 from __future__ import annotations

@@ -15,10 +15,10 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-04-18
+Last updated: 2026-04-28
 
 
-Last updated (UTC): 2026-04-18
+Last updated (UTC): 2026-04-28
 
 ## Purpose
 Governance Intervention Engine is Odylith's shared conversation-observation
@@ -197,6 +197,15 @@ claiming ML calibration.
   artifacts and precomputed delivery intelligence; it must not invoke provider
   calls, full context-store expansion, or repo-wide search while deciding
   chat visibility.
+- `src/odylith/runtime/intervention_engine/alignment_proof.py`
+  Explicit engine-lane proof model for host-visible intervention alignment.
+  It turns the compact alignment context into a JSON-friendly lane summary
+  across Context Engine, Execution Engine, Tribunal, Intervention Engine,
+  Governance, Subagent Orchestration, Discipline, Surface DAGs, Delivery,
+  Analysis, and Memory Substrate. Required lanes must be covered or
+  policy-deferred before a visibility-recovery beat can report `status=ready`,
+  and the proof object records that the host path used local summaries only,
+  with no provider call or repo scan.
 - `src/odylith/runtime/intervention_engine/alignment_evidence.py`
   Reusable hot-path evidence normalizer for the intervention engine. It merges
   legacy packet summaries with Context Engine packet summaries, folds compact
@@ -244,6 +253,13 @@ claiming ML calibration.
   fallback, Stop recovery, status probes, and tests. It is the only runtime
   surface allowed to decide whether an earned beat is visible, fallback-ready,
   assistant-render-required, or chat-confirmed.
+- `src/odylith/runtime/surfaces/host_intervention_support.py`
+  Shared host prompt-support owner for prompt-submit visibility continuity.
+  It owns the default prompt-visible `Odylith Assist:` bundle, Assist
+  dedupe, and Markdown composition used by Codex prompt context, Claude
+  prompt context, Claude prompt teaser, and manual visible-intervention
+  fallback. Host-specific prompt adapters must not duplicate the default
+  Assist text or derive a separate prompt-closeout policy.
 - `src/odylith/runtime/intervention_engine/value_engine.py`
   Public facade for the proposition-first value engine. It re-exports the
   forward v0.1.11 runtime contract without preserving the removed block-first
@@ -297,8 +313,18 @@ claiming ML calibration.
   Fixed fields: `host_family`, `session_id`, `turn_phase`, `prompt_excerpt`,
   `assistant_summary`, `changed_paths`, `packet_summary`,
   `context_packet_summary`, `execution_engine_summary`, `memory_summary`,
-  `tribunal_summary`, `visibility_summary`, `delivery_snapshot`, and
+  `tribunal_summary`, `visibility_summary`, `delivery_snapshot`,
+  `alignment_proof`, and
   `active_target_refs`.
+- `Alignment Proof`
+  Compact, host-visible engine coverage proof carrying `proof_kind`, `status`,
+  `required_lanes`, `covered_lanes`, `missing_required_lanes`,
+  `hot_path_constraints`, and per-lane status rows. Visibility-recovery
+  prompts require the Context Engine, Execution Engine, Intervention Engine,
+  Tribunal, Governance, Delivery, Memory Substrate, and Subagent
+  Orchestration lanes to be covered or policy-deferred. Optional Discipline,
+  Surface DAG, and Analysis lanes stay `quiet` unless compact evidence is
+  present, so the engine does not fabricate cross-system proof.
 - `VisibleInterventionDecision`
   Compact broker output carrying `visible_markdown`, `developer_context`,
   `delivery_channel`, `delivery_status`, `proof_required`,
@@ -329,13 +355,14 @@ claiming ML calibration.
   Compact, non-public payload consumed by host surfaces before the broker
   decides visibility. Required fields are `context_packet`,
   `execution_engine_summary`, `memory_summary`, `visibility_summary`,
-  `delivery_snapshot`, and `tribunal_summary`. When an operator reports zero
-  ambient highlights, zero signals, invisible Observations/Proposals, or a
-  missing Assist, this context must infer the `B-096`/`CB-122` visibility
-  recurrence, include the Governance Intervention Engine plus Context Engine,
-  Execution Engine, memory backend, and Tribunal components, and force the
-  Execution Engine next move into a recover lane until chat-visible proof is
-  confirmed.
+  `delivery_snapshot`, `tribunal_summary`, and `alignment_proof`. When an
+  operator reports zero ambient highlights, zero signals, invisible
+  Observations/Proposals, or a missing Assist, this context must infer the
+  `B-096`/`CB-122` visibility recurrence, include the Governance Intervention
+  Engine plus Context Engine, Execution Engine, memory backend, and Tribunal
+  components, force the Execution Engine next move into a recover lane until
+  chat-visible proof is confirmed, and preserve the engine-lane proof through
+  Codex and Claude prompt/checkpoint bundles.
 - `GovernanceFact`
   Fixed fact classes: `history`, `governance_truth`, `invariant`,
   `topology`, and `capture_opportunity`.
@@ -374,7 +401,13 @@ claiming ML calibration.
      proposal-ready; proposal generation is not an always-on side effect of
      every teaser-worthy signal
 - `prompt_submit`
-  May emit only teaser text.
+  May emit one earned teaser or explicit visibility-feedback Observation plus
+  one shared prompt-visible `Odylith Assist:` line for normal
+  non-passthrough prompts. When no stronger prompt beat is earned, Assist
+  alone is the fallback instead of silence. Prompt submit must not emit
+  ambient highlights or proposals, and first-match `Odylith, help` /
+  `Odylith, show me what you can do` route locks must suppress prompt
+  narration so stdout remains clean.
 - Prompt hooks must not suppress that teaser just because anchor resolution or
   launcher-backed context narrowing is unavailable. Missing anchor context is a
   degraded add-on, not permission to silence a real governed signal.
@@ -402,6 +435,12 @@ claiming ML calibration.
   surface rather than the primary intervention moment. It should recover a
   missed late Observation and may pair that with a shared closeout Assist line
   when the closeout-side bundle is eligible.
+  Claude Stop must never use the blocking visible-delivery payload path for
+  this recovery lane: Claude renders that path as Stop-hook failure/control
+  transcript noise instead of a clean product beat. Claude Stop may return a
+  `systemMessage` for host context, but visibility fallback proof still needs
+  normal assistant-rendered Markdown or a host-visible channel that is proven
+  visible in the active session.
 - `post_edit_checkpoint` and `post_bash_checkpoint`
   are the primary visible intervention lanes. They may upgrade an earned
   observation into a proposal by attaching concrete changed-path evidence and
@@ -767,7 +806,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-04-30: Removed Claude Stop's blocking visible-delivery fallback so chat-visibility recovery no longer appears as Claude Code Stop hook error or Stop says transcript noise. Claude Stop may still return host context, but chat-visible proof requires normal assistant-rendered Markdown or a proven visible host channel. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-04-25: Captured and fixed `CB-127`: plain help/show passthrough prompts now suppress live intervention narration and replay, raw CLI help stdout is excluded from fact/evidence scoring, and generic topology Observation copy names the current request instead of treating command catalogs as conversation truth. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-127`)
+- 2026-04-28: Moved prompt-visible Assist continuity into shared host prompt support so Codex prompt context, Claude prompt context, Claude prompt teaser, and manual visible-intervention fallback all render the same Assist line for normal non-passthrough prompts while help/show route locks remain narration-free. This closes a v0.1.12 slop class where the manual fallback knew how to stay visible but the real prompt-submit hooks could still go silent. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-122`)
 - 2026-04-14: Promoted Governance Intervention Engine into a first-class Registry component so Codex and Claude can share one portable conversation observation and governed proposal runtime instead of host-local intervention heuristics. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Shipped the fixed user-facing labels `Odylith Observation` and `Odylith Proposal`, the single-confirmation proposal apply contract, the future-ready voice-pack seam, and Atlas diagram `D-038` to keep runtime, governance, and maintainer guidance aligned. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-14: Hardened the product contract so rich markdown survives the full host and Compass path, duplicate suppression keys stay causal rather than overly coarse, proposal apply is all-or-nothing for CLI-safe bundles, and warm-cache latency stays covered by focused regression tests. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))

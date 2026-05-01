@@ -14,6 +14,7 @@ import tempfile
 import pytest
 
 from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+from odylith.runtime.evaluation import odylith_benchmark_tree_identity as tree_identity_runtime
 from odylith.runtime.evaluation import odylith_benchmark_live_diagnostics
 from odylith.runtime.context_engine import governance_signal_codec
 from odylith.runtime.context_engine import odylith_context_engine_grounding_runtime as grounding_runtime
@@ -3905,7 +3906,7 @@ def test_load_latest_runtime_benchmark_report_prefers_current_tree_profile_lates
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        runner,
+        tree_identity_runtime,
         "benchmark_report_matches_current_tree",
         lambda *, repo_root, report: str(report.get("report_id", "")) == "quick-current",
     )
@@ -8299,7 +8300,7 @@ def test_benchmark_tree_identity_records_real_head_oid(tmp_path: Path) -> None:
     )
 
     store._PROCESS_GIT_REF_CACHE.clear()  # noqa: SLF001
-    identity = runner.benchmark_tree_identity(repo_root=repo_root, selection={})
+    identity = tree_identity_runtime.benchmark_tree_identity(repo_root=repo_root, selection={})
     assert identity["git_branch"] == expected_branch
     assert identity["git_commit"] == expected_commit
     assert identity["git_commit"] != identity["git_branch"]
@@ -8317,7 +8318,7 @@ def test_benchmark_tree_identity_fingerprints_existing_snapshot_overlay_paths(tm
     subprocess.run(["git", "add", "README.md", "docs/bench.md"], cwd=repo_root, check=True)
     subprocess.run(["git", "commit", "-m", "base"], cwd=repo_root, text=True, capture_output=True, check=True)
 
-    identity = runner.benchmark_tree_identity(
+    identity = tree_identity_runtime.benchmark_tree_identity(
         repo_root=repo_root,
         selection={},
         snapshot_paths=["docs/bench.md", "missing.md"],

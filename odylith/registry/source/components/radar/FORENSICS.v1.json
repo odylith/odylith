@@ -33,12 +33,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 126,
-    "mapped_workstream_evidence_count": 85,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 129,
+    "mapped_workstream_evidence_count": 88,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 10,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 126
+    "timeline_event_count": 130
   },
   "name": "Radar",
   "path_prefixes": [
@@ -48,6 +48,120 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+      ],
+      "confidence": "high",
+      "event_index": 402,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/radar/source/ideas/2026-04/2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md, odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+      "ts_iso": "2026-04-30T22:41:07-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py",
+        "src/odylith/runtime/surfaces/backlog_traceability_paths.py",
+        "tests/unit/runtime/test_backlog_traceability_paths.py",
+        "tests/unit/runtime/test_surface_refresh_fingerprint_dag.py"
+      ],
+      "confidence": "high",
+      "event_index": 393,
+      "explicit_components": [
+        "casebook",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "casebook",
+        "dashboard",
+        "execution-engine",
+        "governance-intervention-engine",
+        "odylith",
+        "odylith-context-engine",
+        "radar",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "QA closure for the 0.1.12 Radar anti-slop slice: focused Radar traceability/render tests, surface refresh fingerprint tests, hygiene checks, intervention/subagent/execution/memory alignment tests, full browser smoke, component-registry validation, Casebook validation, Discipline validation, py_compile, and git diff --check passed.",
+      "ts_iso": "2026-04-28T15:56:42-07:00",
+      "workstreams": [
+        "B-117"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/governance/surface_refresh_fingerprint_dag.py",
+        "src/odylith/runtime/surfaces/backlog_traceability_paths.py",
+        "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py",
+        "tests/unit/runtime/test_backlog_traceability_paths.py",
+        "tests/unit/runtime/test_surface_refresh_fingerprint_dag.py"
+      ],
+      "confidence": "high",
+      "event_index": 392,
+      "explicit_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "odylith-context-engine",
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "0.1.12 anti-slop pass extracted Radar plan traceability path parsing from the giant backlog HTML renderer, adopted the new owner in detail/support renderers, and added Radar renderer-source fingerprints plus focused tests.",
+      "ts_iso": "2026-04-28T15:54:03-07:00",
+      "workstreams": [
+        "B-117"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
+        "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
+      ],
+      "confidence": "high",
+      "event_index": 384,
+      "explicit_components": [
+        "migration-runtime",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "github-issue-pipeline",
+        "migration-runtime",
+        "odylith",
+        "radar",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "B-127 Migration Runtime Release Gate closed after migration-runtime proof and governance validation.",
+      "ts_iso": "2026-04-27T18:15:04-07:00",
+      "workstreams": [
+        "B-127"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "low",

@@ -66,7 +66,9 @@ def test_claude_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pa
     )
     observation = dict(bundle["observation"])
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Claude has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
     assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"
     assert observation["memory_summary"]["visibility_complaint"] is True
@@ -93,7 +95,9 @@ def test_claude_prompt_system_message_replays_pending_chat_block(tmp_path: Path)
         session_id="claude-prompt-replay",
     )
 
-    assert rendered == "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---"
+    assert rendered == (
+        "---\n\n**Odylith Observation:** Claude prompt must carry this pending block.\n\n---"
+    )
 
 
 def test_claude_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: Path) -> None:
@@ -262,8 +266,8 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith Observation: This turn is already framing a governed proposal. "
-                        "Why it matters: Capture the exact governed change while the request is still current."
+                        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+            "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
                     ),
                 }
             }
@@ -275,7 +279,7 @@ def test_main_keeps_teaser_in_discreet_prompt_context_when_signal_is_real(
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery recovery:")
     assert "Odylith Observation:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "systemMessage" not in payload
 
@@ -300,8 +304,8 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith Observation: This turn is already framing a governed proposal. "
-                        "Why it matters: Capture the exact governed change while the request is still current."
+                        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+            "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
                     ),
                 }
             }
@@ -313,7 +317,7 @@ def test_prompt_teaser_main_prints_plain_best_effort_teaser_text(
     assert exit_code == 0
     output = capsys.readouterr().out
     assert output.startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
-    assert output.rstrip().endswith(surface_runtime.LIVE_BOUNDARY)
+    assert "**Odylith Assist:**" not in output
     assert not output.lstrip().startswith("{")
 
 

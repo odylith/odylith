@@ -4,6 +4,7 @@ from pathlib import Path
 
 from odylith.install.release_assets import ReleaseInfo
 from odylith.runtime.evaluation import benchmark_compare
+from odylith.runtime.evaluation import odylith_benchmark_tree_identity as tree_identity_runtime
 
 
 def _report(report_id: str, version: str, *, latest_eligible: bool = True) -> dict[str, object]:
@@ -166,11 +167,7 @@ def test_resolve_candidate_summary_marks_stale_runtime_report_without_tracked_fa
         "load_latest_benchmark_report",
         lambda **kwargs: candidate_report,
     )
-    monkeypatch.setattr(
-        benchmark_compare.runner,
-        "benchmark_report_matches_current_tree",
-        lambda **kwargs: False,
-    )
+    monkeypatch.setattr(tree_identity_runtime, "benchmark_report_matches_current_tree", lambda **kwargs: False)
     monkeypatch.setattr(
         benchmark_compare.runner,
         "compact_report_summary",

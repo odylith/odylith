@@ -22,7 +22,14 @@ from odylith.runtime.analysis_engine.types import (
     ScanContext,
     progress,
 )
-from odylith.runtime.analysis_engine.repo_analysis import NOISE_DIRS
+from odylith.runtime.analysis_engine.repo_analysis import (
+    NOISE_DIRS,
+    SOURCE_CATEGORY_APP,
+    SOURCE_CATEGORY_SUPPORT,
+    SOURCE_CATEGORY_TEST,
+    is_ignored_source_path,
+    source_file_role,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -64,21 +71,26 @@ def build_import_graph(
 
     for entry in _iter_source_files(repo_root):
         rel_path = entry.relative_to(repo_root).as_posix()
+        source_role = source_file_role(entry, repo_root=repo_root)
         ctx.file_count += 1
 
         lang = _lang_for_ext(entry.suffix)
         ctx.language_counts[lang] = ctx.language_counts.get(lang, 0) + 1
 
-        if any(p in entry.name.lower() for p in _TEST_PATTERNS):
+        if source_role == SOURCE_CATEGORY_APP:
+            ctx.app_files.add(rel_path)
+        elif source_role == SOURCE_CATEGORY_TEST:
             ctx.test_files.add(rel_path)
+            ctx.support_files.add(rel_path)
+        elif source_role == SOURCE_CATEGORY_SUPPORT:
+            ctx.support_files.add(rel_path)
 
         try:
             source = entry.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
 
-        # TODOs (skip generated files)
-        if not any(t in rel_path.lower() for t in _SKIP_PATH_TOKENS):
+        if source_role == SOURCE_CATEGORY_APP and not any(t in rel_path.lower() for t in _SKIP_PATH_TOKENS):
             for line in source.splitlines():
                 match = _TODO_RE.search(line)
                 if match:
@@ -126,7 +138,7 @@ def _iter_source_files(repo_root: Path):
         for entry in repo_root.rglob("*"):
             if not entry.is_file() or entry.suffix not in _SOURCE_EXTS:
                 continue
-            if any(p in NOISE_DIRS or p.startswith(".") for p in entry.relative_to(repo_root).parts):
+            if is_ignored_source_path(entry, repo_root=repo_root):
                 continue
             yield entry
     except OSError:
@@ -149,22 +161,43 @@ def _auto_detect_python_roots(repo_root: Path) -> list[tuple[str, str]]:
     src_dir = repo_root / "src"
     if src_dir.is_dir():
         for child in sorted(src_dir.iterdir()):
-            if child.is_dir() and not child.name.startswith(".") and not child.name.startswith("__"):
-                if (child / "__init__.py").is_file() or any(child.rglob("*.py")):
+            if (
+                child.is_dir()
+                and not child.name.startswith(".")
+                and not child.name.startswith("__")
+                and not is_ignored_source_path(child, repo_root=repo_root)
+            ):
+                if (child / "__init__.py").is_file() or _has_python_source_files(child, repo_root=repo_root):
                     roots.append((f"src/{child.name}", child.name))
     for name in ("app", "lib", "server", "backend", "api", "services"):
         candidate = repo_root / name
-        if candidate.is_dir() and any(candidate.rglob("*.py")):
+        if candidate.is_dir() and _has_python_source_files(candidate, repo_root=repo_root):
             roots.append((name, name))
     if not roots:
         for child in sorted(repo_root.iterdir()):
-            if child.is_dir() and (child / "__init__.py").is_file() and child.name not in NOISE_DIRS and not child.name.startswith("."):
+            if (
+                child.is_dir()
+                and (child / "__init__.py").is_file()
+                and child.name not in NOISE_DIRS
+                and not is_ignored_source_path(child, repo_root=repo_root)
+                and not child.name.startswith(".")
+            ):
                 roots.append((child.name, child.name))
     for name in ("tests", "test", "scripts"):
         candidate = repo_root / name
-        if candidate.is_dir() and any(candidate.rglob("*.py")):
+        if candidate.is_dir() and _has_python_source_files(candidate, repo_root=repo_root):
             roots.append((name, name))
     return roots
+
+
+def _has_python_source_files(directory: Path, *, repo_root: Path) -> bool:
+    try:
+        return any(
+            entry.is_file() and source_file_role(entry, repo_root=repo_root) == SOURCE_CATEGORY_APP
+            for entry in directory.rglob("*.py")
+        )
+    except OSError:
+        return False
 
 
 def _parse_python_file(

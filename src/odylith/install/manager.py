@@ -15,8 +15,9 @@ import shutil
 import stat
 import subprocess
 import sys
+import time
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping, Sequence
@@ -24,18 +25,32 @@ from typing import Any, Mapping, Sequence
 from odylith import __version__
 from odylith.runtime.common import agent_runtime_contract
 from odylith.install import bootstrap_assets
-from odylith.install.fs import atomic_write_text
+from odylith.install import migration_runtime
+from odylith.install.fs import atomic_write_text, remove_path
+from odylith.install.gitignore_rules import ensure_odylith_gitignore_entry
+from odylith.install.consumer_registry_repair import (
+    ComponentRegisterDriftRepair,
+    repair_component_register_registry_drift,
+)
+from odylith.install.consumer_runtime_repair import (
+    ConsumerInterventionNoiseRepair,
+    repair_stale_consumer_intervention_noise,
+)
+from odylith.install.legacy_install_migration import (
+    MigrationSummary,
+    legacy_layout_present,
+)
 from odylith.install.managed_runtime import (
     CONTEXT_ENGINE_FEATURE_PACK_ID,
     MANAGED_RUNTIME_FEATURE_PACK_FILENAME,
     MANAGED_RUNTIME_FEATURE_PACK_SCHEMA_VERSION,
+    managed_runtime_site_packages_roots,
 )
 from odylith.install.agents import GUIDANCE_FILENAMES, has_managed_block, update_guidance_file
-from odylith.install.migration_audit import LegacyReferenceAudit
-from odylith.install.migration_audit import audit_legacy_odyssey_references
+from odylith.install.lock_hygiene import compact_stale_zero_byte_locks
 from odylith.install.repair import reset_local_state as reset_install_local_state
 from odylith.install.python_env import scrubbed_python_env
-from odylith.install.release_assets import ReleaseInfo, fetch_release
+from odylith.install.release_assets import ReleaseInfo, fetch_release, fetch_release_manifest
 from odylith.install.runtime import (
     clear_runtime_activation,
     current_runtime_root,
@@ -70,7 +85,6 @@ from odylith.install.state import (
     write_install_state,
     write_version_pin,
 )
-from odylith.install.value_engine_migration import migrate_visible_intervention_value_engine
 from odylith.runtime.common.consumer_profile import consumer_profile_path, write_consumer_profile
 from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.common import codex_cli_capabilities
@@ -80,7 +94,6 @@ from odylith.runtime.common.guidance_paths import (
     has_project_guidance,
 )
 from odylith.runtime.common.product_assets import bundled_product_root, bundled_project_root_assets_root
-from odylith.runtime.governance.legacy_backlog_normalization import normalize_legacy_backlog_index
 from odylith.runtime.governance import sync_casebook_bug_index
 from odylith.runtime.memory import odylith_memory_backend
 
@@ -97,22 +110,6 @@ VERIFIED_RUNTIME_SOURCE = "verified_runtime"
 WRAPPED_RUNTIME_SOURCE = "wrapped_runtime"
 INSTALL_STATE_ONLY_RUNTIME_SOURCE = "install_state_only"
 MISSING_RUNTIME_SOURCE = "missing_runtime"
-_ODYLITH_GITIGNORE_ENTRY = "/.odylith/"
-_COMPASS_REFRESH_STATE_GITIGNORE_ENTRY = "/odylith/compass/runtime/refresh-state.v1.json"
-_ODYLITH_GITIGNORE_PATTERNS = {
-    ".odylith",
-    ".odylith/",
-    "/.odylith",
-    "/.odylith/",
-}
-_COMPASS_REFRESH_STATE_GITIGNORE_PATTERNS = {
-    "odylith/compass/runtime/refresh-state.v1.json",
-    "/odylith/compass/runtime/refresh-state.v1.json",
-}
-_ODYLITH_GITIGNORE_ENTRIES = (
-    _ODYLITH_GITIGNORE_ENTRY,
-    _COMPASS_REFRESH_STATE_GITIGNORE_ENTRY,
-)
 _FIRST_RUN_SURFACE_TARGETS: tuple[str, ...] = (
     "odylith/index.html",
     "odylith/radar/radar.html",
@@ -124,28 +121,6 @@ _FIRST_RUN_SURFACE_TARGETS: tuple[str, ...] = (
 _HOSTED_INSTALL_COMMAND = (
     "curl -fsSL https://odylith.ai/install.sh | bash"
 )
-_LEGACY_TEXT_FILE_SUFFIXES = frozenset(
-    {
-        "",
-        ".css",
-        ".html",
-        ".js",
-        ".json",
-        ".jsonl",
-        ".md",
-        ".mjs",
-        ".mmd",
-        ".py",
-        ".sh",
-        ".svg",
-        ".toml",
-        ".txt",
-        ".yaml",
-        ".yml",
-    }
-)
-
-
 @dataclass(frozen=True)
 class InstallSummary:
     repo_root: Path
@@ -166,16 +141,9 @@ class InstallSummary:
 
 
 @dataclass(frozen=True)
-class MigrationSummary:
+class UninstallSummary:
     repo_root: Path
-    odylith_root: Path
-    state_root: Path
-    launcher_path: Path
-    consumer_profile_path: Path
-    moved_paths: tuple[str, ...]
-    removed_paths: tuple[str, ...]
-    stale_reference_audit: LegacyReferenceAudit | None = None
-    already_migrated: bool = False
+    removed_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -197,6 +165,8 @@ class UpgradeSummary:
     repaired: bool = False
     retention_warnings: tuple[str, ...] = ()
     migration: MigrationSummary | None = None
+    migration_plan: dict[str, object] = field(default_factory=dict)
+    migration_results: tuple[dict[str, object], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -228,6 +198,7 @@ class VersionStatus:
     runtime_source_detail: str
     runtime_trust_degraded: bool
     runtime_trust_reasons: tuple[str, ...]
+    runtime_trust_warnings: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -245,6 +216,7 @@ class LifecyclePlan:
     steps: tuple[LifecycleStep, ...]
     dirty_overlap: tuple[str, ...]
     notes: tuple[str, ...] = ()
+    metadata: dict[str, object] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -268,265 +240,6 @@ def _repo_root(path: str | Path, *, require_agents: bool = True) -> Path:
 
 def _git_repo_present(*, repo_root: Path) -> bool:
     return (Path(repo_root).resolve() / ".git").exists()
-
-
-def _ensure_odylith_gitignore_entry(*, repo_root: Path, git_repo_present: bool | None = None) -> bool:
-    root = Path(repo_root).resolve()
-    del git_repo_present
-    path = root / ".gitignore"
-    if path.exists() and not path.is_file():
-        return False
-    existing = path.read_text(encoding="utf-8") if path.is_file() else ""
-    normalized_lines = {line.strip() for line in existing.splitlines()}
-    missing_entries: list[str] = []
-    if not normalized_lines.intersection(_ODYLITH_GITIGNORE_PATTERNS):
-        missing_entries.append(_ODYLITH_GITIGNORE_ENTRY)
-    if not normalized_lines.intersection(_COMPASS_REFRESH_STATE_GITIGNORE_PATTERNS):
-        missing_entries.append(_COMPASS_REFRESH_STATE_GITIGNORE_ENTRY)
-    if not missing_entries:
-        return False
-    updated = existing
-    if updated and not updated.endswith("\n"):
-        updated += "\n"
-    for entry in missing_entries:
-        updated += f"{entry}\n"
-    atomic_write_text(path, updated, encoding="utf-8")
-    return True
-
-
-def _rewrite_legacy_gitignore_entries(*, repo_root: Path) -> None:
-    path = Path(repo_root).resolve() / ".gitignore"
-    if not path.is_file():
-        return
-    text = path.read_text(encoding="utf-8")
-    updated = text.replace("/.odyssey/", "/.odylith/").replace("/.odyssey", "/.odylith")
-    if updated != text:
-        atomic_write_text(path, updated, encoding="utf-8")
-
-
-def _legacy_operation_in_progress(*, repo_root: Path) -> bool:
-    for candidate in (
-        repo_root / ".odyssey" / "locks" / "install.lock",
-        repo_root / ".odylith" / "locks" / "install.lock",
-    ):
-        if not candidate.is_file():
-            continue
-        if str(candidate.read_text(encoding="utf-8") or "").strip():
-            return True
-    return False
-
-
-def _rewrite_legacy_payload(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        return {
-            str(_rewrite_legacy_payload(key)): _rewrite_legacy_payload(item)
-            for key, item in value.items()
-        }
-    if isinstance(value, list):
-        return [_rewrite_legacy_payload(item) for item in value]
-    if isinstance(value, str):
-        return _rewrite_legacy_text(value)
-    return value
-
-
-def _rewrite_legacy_text(value: str) -> str:
-    return (
-        str(value)
-        .replace("ODYSSEY", "ODYLITH")
-        .replace("Odyssey", "Odylith")
-        .replace("odyssey", "odylith")
-    )
-
-
-def _rewrite_json_file(path: Path) -> None:
-    if not path.is_file():
-        return
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    atomic_write_text(path, json.dumps(_rewrite_legacy_payload(payload), indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def _rewrite_jsonl_file(path: Path) -> None:
-    if not path.is_file():
-        return
-    lines: list[str] = []
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        if not raw_line.strip():
-            continue
-        payload = json.loads(raw_line)
-        lines.append(json.dumps(_rewrite_legacy_payload(payload), sort_keys=True))
-    atomic_write_text(path, "\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
-
-
-def _rewrite_text_file(path: Path) -> None:
-    if not path.is_file() or path.is_symlink():
-        return
-    if path.suffix.lower() not in _LEGACY_TEXT_FILE_SUFFIXES:
-        return
-    try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return
-    updated = _rewrite_legacy_text(text)
-    if updated != text:
-        atomic_write_text(path, updated, encoding="utf-8")
-
-
-def _rewrite_legacy_text_tree(root: Path) -> None:
-    if not root.is_dir():
-        return
-    for path in root.rglob("*"):
-        _rewrite_text_file(path)
-
-
-def _legacy_layout_present(*, repo_root: Path) -> bool:
-    return (repo_root / "odyssey").exists() or (repo_root / ".odyssey").exists()
-
-
-def _merge_legacy_tree(
-    *,
-    source_root: Path,
-    target_root: Path,
-    source_label: str,
-    target_label: str,
-    moved_paths: list[str],
-) -> None:
-    target_root.mkdir(parents=True, exist_ok=True)
-    for source_path in sorted(source_root.iterdir(), key=lambda path: (not path.is_dir(), path.name.lower())):
-        target_path = target_root / source_path.name
-        if source_path.is_dir() and not source_path.is_symlink():
-            if target_path.exists() and not target_path.is_dir():
-                if target_path.is_symlink() or target_path.is_file():
-                    target_path.unlink()
-                else:
-                    shutil.rmtree(target_path)
-            if target_path.is_dir():
-                _merge_legacy_tree(
-                    source_root=source_path,
-                    target_root=target_path,
-                    source_label=f"{source_label}/{source_path.name}",
-                    target_label=f"{target_label}/{source_path.name}",
-                    moved_paths=moved_paths,
-                )
-                source_path.rmdir()
-                continue
-        elif target_path.exists():
-            if target_path.is_dir() and not target_path.is_symlink():
-                shutil.rmtree(target_path)
-            else:
-                target_path.unlink()
-        source_path.rename(target_path)
-        moved_paths.append(f"{source_label}/{source_path.name} -> {target_label}/{target_path.name}")
-
-
-def _is_transient_odylith_state_root(path: Path) -> bool:
-    if not path.exists():
-        return False
-    for candidate in path.rglob("*"):
-        relative = candidate.relative_to(path)
-        if candidate.is_dir():
-            continue
-        if relative == Path("locks/install.lock"):
-            content = str(candidate.read_text(encoding="utf-8") or "").strip()
-            if not content:
-                continue
-        return False
-    return True
-
-
-def _absorb_legacy_state_root(*, old_state_root: Path, new_state_root: Path, moved_paths: list[str]) -> None:
-    if not new_state_root.exists() or _is_transient_odylith_state_root(new_state_root):
-        if new_state_root.exists():
-            shutil.rmtree(new_state_root)
-        old_state_root.rename(new_state_root)
-        _normalize_migrated_current_runtime_symlink(state_root=new_state_root)
-        moved_paths.append(".odyssey/ -> .odylith/")
-        return
-
-    new_state_root.mkdir(parents=True, exist_ok=True)
-    root_move_recorded = False
-    legacy_bin_root = old_state_root / "bin"
-    new_bin_root = new_state_root / "bin"
-    for old_name, new_name in (("odyssey", "odylith"), ("odyssey-bootstrap", "odylith-bootstrap")):
-        source_path = legacy_bin_root / old_name
-        target_path = new_bin_root / new_name
-        if source_path.exists() and not target_path.exists():
-            target_path.parent.mkdir(parents=True, exist_ok=True)
-            source_path.rename(target_path)
-            if not root_move_recorded:
-                moved_paths.append(".odyssey/ -> .odylith/")
-                root_move_recorded = True
-            moved_paths.append(f".odyssey/bin/{old_name} -> .odylith/bin/{new_name}")
-
-    legacy_versions_root = old_state_root / "runtime" / "versions"
-    new_versions_root = new_state_root / "runtime" / "versions"
-    if legacy_versions_root.is_dir():
-        new_versions_root.mkdir(parents=True, exist_ok=True)
-        for version_root in sorted(legacy_versions_root.iterdir(), key=lambda path: path.name):
-            target_root = new_versions_root / version_root.name
-            if target_root.exists():
-                continue
-            version_root.rename(target_root)
-            if not root_move_recorded:
-                moved_paths.append(".odyssey/ -> .odylith/")
-                root_move_recorded = True
-            moved_paths.append(
-                f".odyssey/runtime/versions/{version_root.name} -> .odylith/runtime/versions/{version_root.name}"
-            )
-
-    legacy_current = old_state_root / "runtime" / "current"
-    new_current = new_state_root / "runtime" / "current"
-    if (legacy_current.exists() or legacy_current.is_symlink()) and not (new_current.exists() or new_current.is_symlink()):
-        new_current.parent.mkdir(parents=True, exist_ok=True)
-        legacy_current.rename(new_current)
-        _normalize_migrated_current_runtime_symlink(state_root=new_state_root)
-        if not root_move_recorded:
-            moved_paths.append(".odyssey/ -> .odylith/")
-            root_move_recorded = True
-        moved_paths.append(".odyssey/runtime/current -> .odylith/runtime/current")
-
-    for relative_path in (
-        Path("install.json"),
-        Path("consumer-profile.json"),
-        Path("install-ledger.v1.jsonl"),
-    ):
-        source_path = old_state_root / relative_path
-        target_path = new_state_root / relative_path
-        if source_path.exists() and not target_path.exists():
-            target_path.parent.mkdir(parents=True, exist_ok=True)
-            source_path.rename(target_path)
-            if not root_move_recorded:
-                moved_paths.append(".odyssey/ -> .odylith/")
-                root_move_recorded = True
-            moved_paths.append(f".odyssey/{relative_path.as_posix()} -> .odylith/{relative_path.as_posix()}")
-
-    shutil.rmtree(old_state_root)
-
-
-def _normalize_migrated_current_runtime_symlink(*, state_root: Path) -> None:
-    current_root = state_root / "runtime" / "current"
-    if not current_root.is_symlink():
-        return
-    try:
-        raw_target = Path(os.readlink(current_root))
-    except OSError:
-        return
-    version_name = raw_target.name.strip()
-    if not version_name:
-        return
-    candidate_root = state_root / "runtime" / "versions" / version_name
-    if not candidate_root.is_dir():
-        return
-    normalized_target = Path("versions") / version_name
-    if raw_target == normalized_target:
-        return
-    current_root.unlink()
-    current_root.symlink_to(normalized_target)
-
-
-def _migrate_legacy_install_if_needed(*, repo_root: Path) -> MigrationSummary | None:
-    if not _legacy_layout_present(repo_root=repo_root):
-        return None
-    return migrate_legacy_install(repo_root=repo_root)
 
 
 def _lifecycle_step(
@@ -553,7 +266,36 @@ def _lifecycle_step(
     )
 
 
-def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[str, ...]:
+def _status_path_from_porcelain_line(line: str) -> str:
+    token = str(line or "").rstrip()
+    if len(token) <= 3:
+        return ""
+    path_token = token[3:].strip()
+    if " -> " in path_token:
+        path_token = path_token.rsplit(" -> ", 1)[-1].strip()
+    return path_token.strip('"')
+
+
+def _matches_path_prefix(path: str, prefixes: Sequence[str]) -> bool:
+    normalized_path = str(path or "").strip().lstrip("./")
+    if not normalized_path:
+        return False
+    for prefix in prefixes:
+        normalized_prefix = str(prefix or "").strip().lstrip("./")
+        if not normalized_prefix:
+            continue
+        trimmed_prefix = normalized_prefix.rstrip("/")
+        if normalized_path == trimmed_prefix or normalized_path.startswith(trimmed_prefix + "/"):
+            return True
+    return False
+
+
+def _dirty_overlap_for_paths(
+    *,
+    repo_root: Path,
+    paths: Sequence[str],
+    exclude_prefixes: Sequence[str] = (),
+) -> tuple[str, ...]:
     normalized = tuple(dict.fromkeys(str(token).strip() for token in paths if str(token).strip()))
     if not normalized or not _git_repo_present(repo_root=repo_root):
         return ()
@@ -574,7 +316,16 @@ def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[
     )
     if completed.returncode != 0:
         return ()
-    return tuple(line.rstrip() for line in str(completed.stdout or "").splitlines() if line.strip())
+    exclusions = tuple(str(token).strip() for token in exclude_prefixes if str(token).strip())
+    rows = []
+    for line in str(completed.stdout or "").splitlines():
+        row = line.rstrip()
+        if not row.strip():
+            continue
+        if exclusions and _matches_path_prefix(_status_path_from_porcelain_line(row), exclusions):
+            continue
+        rows.append(row)
+    return tuple(rows)
 
 
 def _lifecycle_plan(
@@ -584,11 +335,14 @@ def _lifecycle_plan(
     steps: Sequence[LifecycleStep],
     notes: Sequence[str] = (),
     repo_root: Path,
+    metadata: Mapping[str, object] | None = None,
+    dirty_overlap_exclude_prefixes: Sequence[str] = (),
 ) -> LifecyclePlan:
     normalized_steps = tuple(steps)
     dirty_overlap = _dirty_overlap_for_paths(
         repo_root=repo_root,
         paths=[path for step in normalized_steps for path in step.paths],
+        exclude_prefixes=dirty_overlap_exclude_prefixes,
     )
     return LifecyclePlan(
         command=str(command).strip(),
@@ -596,7 +350,94 @@ def _lifecycle_plan(
         steps=normalized_steps,
         dirty_overlap=dirty_overlap,
         notes=tuple(str(note).strip() for note in notes if str(note).strip()),
+        metadata={str(key): value for key, value in (metadata or {}).items()},
     )
+
+
+def _migration_plan_metadata(plan: migration_runtime.MigrationPlan) -> dict[str, object]:
+    payload = migration_runtime.migration_plan_payload(plan)
+    return {
+        "scenario": plan.scenario.scenario,
+        "migration_plan": payload,
+        "migration_ids": plan.migration_ids,
+        "migration_ledger": next((decision.ledger_path for decision in plan.decisions), ""),
+        "ledger_state": dict(plan.ledger_state),
+        "blocked_reason": plan.blocked_reason,
+        "plan_fingerprint": plan.plan_fingerprint,
+    }
+
+
+def _migration_lifecycle_steps(plan: migration_runtime.MigrationPlan) -> tuple[LifecycleStep, ...]:
+    steps: list[LifecycleStep] = []
+    for decision in (*plan.selected, *plan.blocked):
+        if decision.state == migration_runtime.STATE_SATISFIED_UNRECORDED:
+            label = f"Record satisfied migration {decision.migration_id} after verification."
+            classes = ("runtime_state",)
+        elif decision.state == migration_runtime.STATE_LEDGER_STALE:
+            label = f"Block on stale migration ledger for {decision.migration_id}."
+            classes = ("runtime_state",)
+        elif decision.state == migration_runtime.STATE_BLOCKED:
+            label = f"Block release migration {decision.migration_id} before runtime mutation."
+            classes = ("runtime_state",)
+        else:
+            label = f"Apply registered migration {decision.migration_id}."
+            classes = ("runtime_state", "repo_owned_truth")
+        steps.append(
+            _lifecycle_step(
+                label,
+                *classes,
+                paths=decision.planned_paths,
+                detail=f"{decision.reason} Rollback scope: {decision.rollback_scope}",
+            )
+        )
+    return tuple(steps)
+
+
+def _apply_release_migration_plan(
+    *,
+    plan: migration_runtime.MigrationPlan,
+    runtime_root: Path | None,
+) -> tuple[dict[str, object], list[dict[str, object]], dict[str, object]]:
+    results = migration_runtime.apply_release_migrations(plan=plan, runtime_root=runtime_root)
+    transaction_ledger = ""
+    if results:
+        transaction_ledger = migration_runtime.append_migration_ledger_snapshot(
+            repo_root=plan.repo_root,
+            plan=plan,
+            results=results,
+        )
+    plan_payload = migration_runtime.migration_plan_payload(plan)
+    results_payload = migration_runtime.migration_results_payload(results)
+    if transaction_ledger:
+        plan_payload["transaction_ledger"] = transaction_ledger
+    return (
+        plan_payload,
+        results_payload,
+        migration_runtime.legacy_value_engine_payload(results, plan),
+    )
+
+
+def _apply_repo_state_migrations_before_runtime(
+    *,
+    repo_root: Path,
+    repo_role: str,
+    previous_version: str,
+    target_version: str,
+) -> MigrationSummary | None:
+    pin = load_version_pin(repo_root=repo_root, fallback_version=None)
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=repo_root,
+        repo_role=repo_role,
+        previous_version=previous_version,
+        target_version=target_version,
+        runtime_root=current_runtime_root(repo_root=repo_root),
+        state=load_install_state(repo_root=repo_root),
+        pinned_version=pin.odylith_version if pin is not None else "",
+    )
+    if not any(decision.migration_id == migration_runtime.LEGACY_ROOT_MIGRATION_ID for decision in plan.selected):
+        return None
+    results = migration_runtime.apply_repo_state_migrations(plan=plan)
+    return migration_runtime.legacy_migration_summary(results)
 
 
 def plan_install_lifecycle(
@@ -605,16 +446,17 @@ def plan_install_lifecycle(
     adopt_latest: bool = False,
     align_pin: bool = False,
     target_version: str = "",
+    bootstrap_runtime_prestaged: bool = False,
 ) -> LifecyclePlan:
     root = _repo_root(repo_root, require_agents=False)
-    first_install = not load_install_state(repo_root=root)
+    first_install = not install_state_path(repo_root=root).is_file()
     missing_surfaces = [
         token
         for token in _FIRST_RUN_SURFACE_TARGETS
         if not (root / token).is_file()
     ]
     steps: list[LifecycleStep] = []
-    if _legacy_layout_present(repo_root=root):
+    if legacy_layout_present(repo_root=root):
         steps.append(
             _lifecycle_step(
                 "Migrate any legacy repo roots into the Odylith layout before rematerializing the runtime.",
@@ -626,42 +468,44 @@ def plan_install_lifecycle(
         )
     steps.extend(
         [
-        _lifecycle_step(
-            "Materialize the repo-owned Odylith bootstrap tree and managed guidance.",
-            "managed_guidance",
-            "repo_owned_truth",
-            paths=(
-                "AGENTS.md",
-                "CLAUDE.md",
-                ".claude/",
-                ".codex/",
-                ".agents/skills/",
-                ".gitignore",
-                "odylith/AGENTS.md",
-                "odylith/CLAUDE.md",
-                "odylith/agents-guidelines/",
-                "odylith/skills/",
-                "odylith/runtime/source/",
-                "odylith/radar/source/",
-                "odylith/technical-plans/",
-                "odylith/registry/source/",
-                "odylith/atlas/source/",
+            _lifecycle_step(
+                "Materialize the repo-owned Odylith bootstrap tree and managed guidance.",
+                "managed_guidance",
+                "repo_owned_truth",
+                paths=(
+                    "AGENTS.md",
+                    "CLAUDE.md",
+                    ".claude/",
+                    ".codex/",
+                    ".agents/skills/",
+                    ".gitignore",
+                    "odylith/AGENTS.md",
+                    "odylith/CLAUDE.md",
+                    "odylith/agents-guidelines/",
+                    "odylith/skills/",
+                    "odylith/runtime/source/",
+                    "odylith/radar/source/",
+                    "odylith/technical-plans/",
+                    "odylith/registry/source/",
+                    "odylith/atlas/source/",
+                ),
+                detail=(
+                    "First install seeds the repo-owned Odylith truth tree; later installs rematerialize the "
+                    "managed guidance layer."
+                ),
             ),
-            detail="First install seeds the repo-owned Odylith truth tree; later installs rematerialize the managed guidance layer.",
-        ),
-        _lifecycle_step(
-            "Stage or reuse the Odylith-managed runtime and refresh the repo-local launchers.",
-            "runtime_state",
-            paths=(
-                ".odylith/install.json",
-                ".odylith/bin/odylith",
-                ".odylith/bin/odylith-bootstrap",
-                ".odylith/runtime/current",
-                ".odylith/runtime/versions/",
-                ".odylith/",
+            _lifecycle_step(
+                "Stage or reuse the Odylith-managed runtime and refresh the repo-local launchers.",
+                "runtime_state",
+                paths=(
+                    ".odylith/install.json",
+                    ".odylith/bin/odylith",
+                    ".odylith/bin/odylith-bootstrap",
+                    ".odylith/runtime/current",
+                    ".odylith/runtime/versions/",
+                ),
+                detail="This keeps Odylith itself on the managed runtime without touching the repo's own application toolchain.",
             ),
-            detail="This keeps Odylith itself on the managed runtime without touching the repo's own application toolchain.",
-        ),
         ]
     )
     if adopt_latest:
@@ -712,6 +556,7 @@ def plan_install_lifecycle(
         steps=steps,
         notes=notes,
         repo_root=root,
+        dirty_overlap_exclude_prefixes=(".odylith/runtime/",) if first_install and bootstrap_runtime_prestaged else (),
     )
 
 
@@ -722,7 +567,7 @@ def plan_reinstall_lifecycle(
 ) -> LifecyclePlan:
     root = _repo_root(repo_root, require_agents=False)
     steps: list[LifecycleStep] = []
-    if _legacy_layout_present(repo_root=root):
+    if legacy_layout_present(repo_root=root):
         steps.append(
             _lifecycle_step(
                 "Migrate any legacy repo roots into the Odylith layout before reinstalling the managed runtime.",
@@ -793,6 +638,7 @@ def plan_upgrade_lifecycle(
     *,
     repo_root: str | Path,
     version: str = "",
+    release_repo: str = AUTHORITATIVE_RELEASE_REPO,
     source_repo: str | Path | None = None,
     write_pin: bool = False,
 ) -> LifecyclePlan:
@@ -801,8 +647,91 @@ def plan_upgrade_lifecycle(
     source_repo_token = str(source_repo or "").strip()
     requested_version = str(version or "").strip()
     follow_latest = repo_role != PRODUCT_REPO_ROLE and not requested_version and not source_repo_token
+    state = load_install_state(repo_root=root)
+    current_version = _observed_active_version(repo_root=root, state=state)
+    pin = load_version_pin(repo_root=root, fallback_version=current_version or __version__)
+    pinned_version = pin.odylith_version if pin else ""
+    last_known_good = str(state.get("last_known_good_version") or "").strip()
+    resolved_release: ReleaseInfo | None = None
+    release_manifest: dict[str, object] = {}
+    target_version = requested_version or (pinned_version if not follow_latest else "")
+    target_tag = f"v{target_version}" if target_version else ""
+    release_url = ""
+    published_at = ""
+    release_repo_token = str(release_repo or AUTHORITATIVE_RELEASE_REPO).strip() or AUTHORITATIVE_RELEASE_REPO
+    if not source_repo_token:
+        request_token = requested_version or ("latest" if follow_latest else (pinned_version or "latest"))
+        if follow_latest or requested_version:
+            resolved_release = fetch_release(repo_root=root, repo=release_repo_token, version=request_token)
+            release_manifest = _fetch_release_manifest_if_available(
+                repo_root=root,
+                repo=release_repo_token,
+                release=resolved_release,
+            )
+            target_version = str(getattr(resolved_release, "version", "") or "").strip()
+            target_tag = str(getattr(resolved_release, "tag", "") or "").strip() or (f"v{target_version}" if target_version else "")
+            release_url = str(getattr(resolved_release, "html_url", "") or "").strip()
+            published_at = str(getattr(resolved_release, "published_at", "") or "").strip()
+    runtime_root = current_runtime_root(repo_root=root)
+    migration_plan = migration_runtime.plan_release_migrations(
+        repo_root=root,
+        repo_role=repo_role,
+        previous_version=current_version,
+        target_version=target_version,
+        runtime_root=runtime_root,
+        release_manifest=release_manifest,
+        source_repo=bool(source_repo_token),
+        state=state,
+        pinned_version=pinned_version,
+    )
+    relation = _upgrade_relation(current_version=current_version, target_version=target_version)
+    noop = bool(
+        not source_repo_token
+        and target_version
+        and relation == "already_current"
+        and pinned_version == target_version
+        and (not last_known_good or last_known_good == target_version)
+        and migration_plan.no_op
+    )
+    rollback_target = _upgrade_rollback_target(state, active_version=current_version)
+    metadata: dict[str, object] = {
+        "release_repo": release_repo_token,
+        "target_version": target_version,
+        "target_tag": target_tag,
+        "release_url": release_url,
+        "published_at": published_at,
+        "active_version": current_version,
+        "pinned_version": pinned_version,
+        "last_known_good_version": last_known_good,
+        "target_relation": relation,
+        "operation": "blocked" if migration_plan.blocked else "no-op" if noop else "mutating",
+        "verification_policy": "sigstore identity, OIDC issuer, provenance, SBOM, archive safety, and sha256 digest checks",
+        "asset_digests": _release_manifest_digests(release_manifest),
+        "rollback_target": rollback_target,
+        "rollback_command": "./.odylith/bin/odylith rollback --repo-root . --previous" if rollback_target else "",
+        "rollback_scope": "runtime activation and repo-local launchers; use git to revert repo-owned generated surfaces or guidance changes",
+        **_migration_plan_metadata(migration_plan),
+    }
     steps: list[LifecycleStep] = []
-    if _legacy_layout_present(repo_root=root):
+    if noop:
+        return _lifecycle_plan(
+            command="upgrade",
+            headline="Already at the resolved verified release; no upgrade mutation is planned.",
+            steps=(
+                _lifecycle_step(
+                    "No upgrade mutation is planned because pinned, active, and last-known-good already match the resolved target.",
+                    paths=(),
+                    detail=f"Resolved target: {target_tag or target_version}.",
+                ),
+            ),
+            notes=(
+                "Dry-run is idempotent after a completed upgrade.",
+                "Run `./.odylith/bin/odylith version --repo-root .` to inspect local installed versions.",
+            ),
+            repo_root=root,
+            metadata=metadata,
+        )
+    if legacy_layout_present(repo_root=root):
         steps.append(
             _lifecycle_step(
                 "Migrate any legacy repo roots into the Odylith layout before changing the active runtime.",
@@ -856,28 +785,13 @@ def plan_upgrade_lifecycle(
                     ".odylith/runtime/versions/",
                 ),
                 detail=(
-                    f"Target release: {requested_version}."
-                    if requested_version
-                    else "Target release: latest verified release."
-                    if follow_latest
-                    else "Target release: tracked repo pin."
+                    f"Target release: {target_tag or target_version}. "
+                    f"Relation to active pin: {relation}. "
+                    f"Release URL: {release_url or 'not resolved in this lane'}."
                 ),
             )
         )
-        steps.append(
-            _lifecycle_step(
-                "Apply the v0.1.10 to v0.1.11 visible-intervention value-engine migration and remove stale signal-ranker artifacts.",
-                "runtime_state",
-                "repo_pin",
-                paths=(
-                    ".odylith/state/migrations/v0.1.11-visible-intervention-value-engine.v1.json",
-                    "odylith/runtime/source/intervention-value-adjudication-corpus.v1.json",
-                    "odylith/runtime/source/intervention-signal-ranker-corpus.v1.json",
-                    "odylith/runtime/source/intervention-signal-ranker-calibration.v1.json",
-                ),
-                detail="v0.1.11 cuts over to deterministic_utility_v1; no signal-ranker compatibility shim is kept.",
-            )
-        )
+        steps.extend(_migration_lifecycle_steps(migration_plan))
         if write_pin or follow_latest:
             steps.append(
                 _lifecycle_step(
@@ -906,6 +820,7 @@ def plan_upgrade_lifecycle(
         steps=steps,
         notes=notes,
         repo_root=root,
+        metadata=metadata,
     )
 
 
@@ -1054,6 +969,105 @@ def _release_summary_fields(release: object | None) -> dict[str, object]:
     }
 
 
+def _fetch_release_manifest_if_available(
+    *,
+    repo_root: Path,
+    repo: str,
+    release: object,
+) -> dict[str, object]:
+    """Fetch a release manifest when the release object carries real assets."""
+    try:
+        return fetch_release_manifest(repo_root=repo_root, repo=repo, release=release)
+    except AttributeError:
+        return {}
+
+
+def _release_manifest_digests(manifest: Mapping[str, object], *, limit: int = 12) -> dict[str, str]:
+    assets = manifest.get("assets")
+    if not isinstance(assets, Mapping):
+        return {}
+    digests: dict[str, str] = {}
+    for name in sorted(str(key).strip() for key in assets if str(key).strip()):
+        details = assets.get(name)
+        if not isinstance(details, Mapping):
+            continue
+        sha256 = str(details.get("sha256") or "").strip()
+        if not sha256:
+            continue
+        digests[name] = sha256
+        if len(digests) >= limit:
+            break
+    return digests
+
+
+def _upgrade_relation(*, current_version: str, target_version: str) -> str:
+    if not current_version:
+        return "install_missing_or_unknown"
+    if current_version == target_version:
+        return "already_current"
+    if _is_downgrade(candidate=target_version, baseline=current_version):
+        return "older_than_active"
+    return "newer_than_active"
+
+
+def _upgrade_rollback_target(state: Mapping[str, object], *, active_version: str) -> str:
+    _active, rollback = _retained_version_pair(state=state, active_version=active_version)
+    return rollback
+
+
+def _runtime_trust_warnings_from_verification(verification: Mapping[str, object]) -> tuple[str, ...]:
+    try:
+        warning_count = int(str(verification.get("sigstore_warning_count") or "0").strip())
+    except ValueError:
+        warning_count = 0
+    if warning_count <= 0:
+        return ()
+    raw_summaries = verification.get("sigstore_warning_summaries")
+    summaries = (
+        [
+            str(item).strip()
+            for item in raw_summaries
+            if str(item).strip()
+        ]
+        if isinstance(raw_summaries, Sequence) and not isinstance(raw_summaries, (str, bytes, bytearray))
+        else []
+    )
+    degraded = bool(verification.get("sigstore_verification_degraded"))
+    detail = f" Details: {'; '.join(summaries)}." if summaries else ""
+    return (
+        "Sigstore emitted expected non-fatal trust-root warning stream(s) "
+        f"(severity=notice; verification_degraded={'yes' if degraded else 'no'}), but artifact identity, issuer, "
+        f"provenance, SBOM, and sha256 verification completed successfully.{detail}",
+    )
+
+
+def _doctor_lock_compaction_clause(removed_files: int) -> str:
+    if removed_files <= 0:
+        return ""
+    return f" Compacted {removed_files} stale zero-byte lock placeholder(s)."
+
+
+def _doctor_component_register_repair_clause(result: ComponentRegisterDriftRepair) -> str:
+    if not result.changed:
+        return ""
+    component_count = len(result.repaired_components)
+    spec_count = len(result.repaired_specs)
+    clause = f" Repaired 0.1.11 Registry component metadata for {component_count} component(s)."
+    if spec_count:
+        clause += f" Added missing Feature History to {spec_count} component spec(s)."
+    return clause
+
+
+def _doctor_intervention_noise_repair_clause(result: ConsumerInterventionNoiseRepair) -> str:
+    if not result.changed:
+        return ""
+    stream_count = len(result.repaired_streams)
+    return (
+        f" Removed {result.removed_events} stale 0.1.11 Claude intervention event(s) "
+        f"from {stream_count} Compass stream(s)."
+    )
+
+
 _repo_root_guidance_source = bootstrap_assets.repo_root_guidance_source
 _repo_root_claude_source = bootstrap_assets.repo_root_claude_source
 _ensure_repo_root_guidance_files = bootstrap_assets.ensure_repo_root_guidance_files
@@ -1071,7 +1085,6 @@ _customer_component_registry_source = bootstrap_assets.customer_component_regist
 _customer_diagram_catalog_source = bootstrap_assets.customer_diagram_catalog_source
 _refresh_consumer_managed_guidance = bootstrap_assets.refresh_consumer_managed_guidance
 _sync_consumer_casebook_bug_index = bootstrap_assets.sync_consumer_casebook_bug_index
-_value_engine_migration_payload = bootstrap_assets.value_engine_migration_payload
 _ensure_customer_bootstrap = bootstrap_assets.ensure_customer_bootstrap
 _sync_managed_agents_guidelines = bootstrap_assets.sync_managed_agents_guidelines
 _sync_managed_scoped_guidance = bootstrap_assets.sync_managed_scoped_guidance
@@ -1094,6 +1107,15 @@ def _runtime_python(runtime_root: Path | None) -> Path | None:
         return None
     candidate = runtime_root / "bin" / "python"
     return candidate if candidate.is_file() else None
+
+
+def _bundled_product_root_for_runtime(runtime_root: Path | None) -> Path:
+    if runtime_root is not None:
+        for site_packages_root in managed_runtime_site_packages_roots(runtime_root):
+            candidate = site_packages_root / "odylith" / "bundle" / "assets" / "odylith"
+            if candidate.is_dir():
+                return candidate
+    return bundled_product_root()
 
 
 def _is_source_local_version(version: str) -> bool:
@@ -1770,137 +1792,6 @@ def _ensure_managed_context_engine_pack(
     return dict(staged.verification)
 
 
-def migrate_legacy_install(*, repo_root: str | Path) -> MigrationSummary:
-    root = _repo_root(repo_root, require_agents=False)
-    old_product_root = root / "odyssey"
-    old_state_root = root / ".odyssey"
-    new_product_root = root / "odylith"
-    new_state_root = root / ".odylith"
-
-    if _legacy_operation_in_progress(repo_root=root):
-        raise RuntimeError("legacy install operation appears to be in progress; clear install locks before migrating")
-
-    if not old_product_root.exists() and not old_state_root.exists():
-        return MigrationSummary(
-            repo_root=root,
-            odylith_root=new_product_root,
-            state_root=new_state_root,
-            launcher_path=new_state_root / "bin" / "odylith",
-            consumer_profile_path=consumer_profile_path(repo_root=root),
-            moved_paths=(),
-            removed_paths=(),
-            stale_reference_audit=None,
-            already_migrated=True,
-        )
-
-    moved_paths: list[str] = []
-    removed_paths: list[str] = []
-    if old_product_root.exists():
-        if new_product_root.exists():
-            _merge_legacy_tree(
-                source_root=old_product_root,
-                target_root=new_product_root,
-                source_label="odyssey",
-                target_label="odylith",
-                moved_paths=moved_paths,
-            )
-            old_product_root.rmdir()
-            moved_paths.append("odyssey/ -> odylith/")
-        else:
-            old_product_root.rename(new_product_root)
-            moved_paths.append("odyssey/ -> odylith/")
-    if old_state_root.exists():
-        _absorb_legacy_state_root(old_state_root=old_state_root, new_state_root=new_state_root, moved_paths=moved_paths)
-
-    new_state_root.mkdir(parents=True, exist_ok=True)
-    for old_name, new_name in (("odyssey", "odylith"), ("odyssey-bootstrap", "odylith-bootstrap")):
-        legacy_launcher = new_state_root / "bin" / old_name
-        if legacy_launcher.exists():
-            legacy_launcher.rename(new_state_root / "bin" / new_name)
-            moved_paths.append(f".odyssey/bin/{old_name} -> .odylith/bin/{new_name}")
-
-    purge_candidates = [
-        new_state_root / "cache" / "odyssey-context-engine",
-        new_state_root / "locks" / "odyssey-context-engine",
-        new_state_root / "runtime" / "odyssey-memory",
-        new_state_root / "runtime" / "odyssey-benchmarks",
-        new_state_root / "runtime" / "odyssey-compiler",
-        new_state_root / "runtime" / "release-upgrade-spotlight.v1.json",
-    ]
-    purge_candidates.extend((new_state_root / "runtime").glob("odyssey-context-engine*"))
-    purge_candidates.extend((new_state_root / "runtime").glob("odyssey-vespa-sync*.json"))
-    for candidate in purge_candidates:
-        if not candidate.exists() and not candidate.is_symlink():
-            continue
-        removed_paths.append(str(candidate.relative_to(root)))
-        if candidate.is_dir() and not candidate.is_symlink():
-            shutil.rmtree(candidate)
-        else:
-            candidate.unlink()
-
-    for path in (
-        new_state_root / "install.json",
-        new_state_root / "consumer-profile.json",
-        new_product_root / "runtime" / "source" / "product-version.v1.json",
-    ):
-        _rewrite_json_file(path)
-    _rewrite_jsonl_file(new_state_root / "install-ledger.v1.jsonl")
-    _rewrite_legacy_text_tree(new_product_root)
-    _rewrite_legacy_gitignore_entries(repo_root=root)
-    _ensure_odylith_gitignore_entry(repo_root=root)
-    normalize_legacy_backlog_index(repo_root=root)
-    stale_reference_audit = audit_legacy_odyssey_references(repo_root=root)
-
-    repo_role = product_repo_role(repo_root=root)
-    runtime_root = current_runtime_root(repo_root=root)
-    fallback_python = _runtime_python(runtime_root) or Path(sys.executable)
-    launcher_path = ensure_launcher(
-        repo_root=root,
-        fallback_python=fallback_python,
-        allow_host_python_fallback=True,
-    )
-    written_profile = write_consumer_profile(repo_root=root)
-    state = load_install_state(repo_root=root)
-    if state:
-        state["consumer_profile_path"] = str(written_profile)
-        state["launcher_path"] = str(launcher_path)
-        write_install_state(repo_root=root, payload=state)
-    pin = load_version_pin(repo_root=root)
-    if pin is not None:
-        write_version_pin(
-            repo_root=root,
-            version=pin.odylith_version,
-            repo_schema_version=pin.repo_schema_version,
-            migration_required=False,
-        )
-    _ensure_repo_root_guidance_files(repo_root=root)
-    _update_root_guidance_files(
-        repo_root=root,
-        install_active=install_integration_enabled(state),
-        repo_role=repo_role,
-    )
-    append_install_ledger(
-        repo_root=root,
-        payload={
-            "operation": "migrate-legacy-install",
-            "status": "ready",
-            "active_version": current_runtime_version(repo_root=root),
-            "launcher_path": str(launcher_path),
-            "removed_paths": removed_paths,
-        },
-    )
-    return MigrationSummary(
-        repo_root=root,
-        odylith_root=new_product_root,
-        state_root=new_state_root,
-        launcher_path=launcher_path,
-        consumer_profile_path=written_profile,
-        moved_paths=tuple(moved_paths),
-        removed_paths=tuple(removed_paths),
-        stale_reference_audit=stale_reference_audit,
-    )
-
-
 def install_bundle(
     *,
     repo_root: str | Path,
@@ -1910,12 +1801,19 @@ def install_bundle(
 ) -> InstallSummary:
     del bundle_root
     root = _repo_root(repo_root, require_agents=False)
-    migration = _migrate_legacy_install_if_needed(repo_root=root)
+    initial_state = load_install_state(repo_root=root)
+    initial_version = _observed_active_version(repo_root=root, state=initial_state)
+    migration = _apply_repo_state_migrations_before_runtime(
+        repo_root=root,
+        repo_role=product_repo_role(repo_root=root),
+        previous_version=initial_version,
+        target_version=str(version or initial_version or __version__).strip() or __version__,
+    )
     with install_lock(repo_root=root):
         created_guidance_files = _ensure_repo_root_guidance_files(repo_root=root)
         repo_guidance_created = bool(created_guidance_files)
         git_repo_present = _git_repo_present(repo_root=root)
-        gitignore_updated = _ensure_odylith_gitignore_entry(repo_root=root, git_repo_present=git_repo_present)
+        gitignore_updated = ensure_odylith_gitignore_entry(repo_root=root, git_repo_present=git_repo_present)
         previous_state = load_install_state(repo_root=root)
         pin_before = load_version_pin(repo_root=root, fallback_version=None)
         integration_enabled = install_integration_enabled(previous_state)
@@ -2037,13 +1935,19 @@ def install_bundle(
             repo_role=repo_role,
             include_brand=False,
             version=active_version,
-            product_root=bundled_product_root(),
+            product_root=_bundled_product_root_for_runtime(runtime_root),
         )
-        value_engine_migration = _value_engine_migration_payload(
+        migration_plan = migration_runtime.plan_release_migrations(
             repo_root=root,
             repo_role=repo_role,
             previous_version=pin_before.odylith_version if pin_before is not None else "",
             target_version=active_version,
+            runtime_root=runtime_root,
+            state=load_install_state(repo_root=root),
+            pinned_version=pinned_version,
+        )
+        migration_plan_payload, migration_results, value_engine_migration = _apply_release_migration_plan(
+            plan=migration_plan,
             runtime_root=runtime_root,
         )
         append_install_ledger(
@@ -2053,6 +1957,8 @@ def install_bundle(
                 "status": "ready",
                 "active_version": active_version,
                 "pinned_version": str(load_version_pin(repo_root=root, fallback_version=active_version).odylith_version),
+                "migration_plan": migration_plan_payload,
+                "migration_results": migration_results,
                 "value_engine_migration": value_engine_migration,
             },
         )
@@ -2092,10 +1998,17 @@ def upgrade_install(
     write_pin: bool = False,
 ) -> UpgradeSummary:
     root = _repo_root(repo_root)
-    migration = _migrate_legacy_install_if_needed(repo_root=root)
-    _ensure_odylith_gitignore_entry(repo_root=root)
     requested_version = str(version or "").strip()
     repo_role = product_repo_role(repo_root=root)
+    initial_state = load_install_state(repo_root=root)
+    initial_version = _observed_active_version(repo_root=root, state=initial_state)
+    migration = _apply_repo_state_migrations_before_runtime(
+        repo_root=root,
+        repo_role=repo_role,
+        previous_version=initial_version,
+        target_version=requested_version or initial_version or __version__,
+    )
+    ensure_odylith_gitignore_entry(repo_root=root)
     auto_follow_latest = repo_role != PRODUCT_REPO_ROLE and not requested_version and not source_repo
     effective_write_pin = bool(write_pin or auto_follow_latest)
     with install_lock(repo_root=root):
@@ -2115,7 +2028,8 @@ def upgrade_install(
                 state=previous_state,
                 active_version=current_version,
             ),
-            product_root=bundled_product_root(),
+            product_root=_bundled_product_root_for_runtime(current_runtime_root(repo_root=root)),
+            activate_host_settings=False,
         )
 
         if source_repo:
@@ -2201,8 +2115,25 @@ def upgrade_install(
             raise ValueError("explicit target differs from the repo pin; use --write-pin to adopt a new pinned version")
 
         resolved_release = fetch_release(repo_root=root, repo=release_repo, version=request_token)
+        release_manifest = _fetch_release_manifest_if_available(
+            repo_root=root,
+            repo=release_repo,
+            release=resolved_release,
+        )
         install_version = resolved_release.version if request_token == "latest" else request_token
         if current_version and resolved_release.version == current_version and not _is_source_local_version(current_version):
+            migration_plan = migration_runtime.plan_release_migrations(
+                repo_root=root,
+                repo_role=repo_role,
+                previous_version=current_version,
+                target_version=current_version,
+                runtime_root=current_runtime_root(repo_root=root),
+                release_manifest=release_manifest,
+                state=previous_state,
+                pinned_version=pin.odylith_version if pin else current_version,
+            )
+            if migration_plan.blocked_reason:
+                raise ValueError(migration_plan.blocked_reason)
             current_runtime = current_runtime_root(repo_root=root)
             current_python = _runtime_python(current_runtime)
             current_verification = runtime_verification_evidence(current_runtime) if current_runtime is not None else {}
@@ -2255,14 +2186,11 @@ def upgrade_install(
                 repo_role=repo_role,
                 include_brand=False,
                 version=current_version,
-                product_root=bundled_product_root(),
+                product_root=_bundled_product_root_for_runtime(current_runtime),
             )
             _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
-            value_engine_migration = _value_engine_migration_payload(
-                repo_root=root,
-                repo_role=repo_role,
-                previous_version=current_version,
-                target_version=current_version,
+            migration_plan_payload, migration_results, value_engine_migration = _apply_release_migration_plan(
+                plan=migration_plan,
                 runtime_root=current_runtime,
             )
             append_install_ledger(
@@ -2275,6 +2203,8 @@ def upgrade_install(
                     "pinned_version": pin.odylith_version if pin else current_version,
                     "previous_version": current_version,
                     "verification": current_verification,
+                    "migration_plan": migration_plan_payload,
+                    "migration_results": migration_results,
                     "value_engine_migration": value_engine_migration,
                 },
             )
@@ -2291,16 +2221,30 @@ def upgrade_install(
                 verification=current_verification,
                 retention_warnings=retention_warnings,
                 migration=migration,
+                migration_plan=migration_plan_payload,
+                migration_results=tuple(migration_results),
             )
 
         previous_runtime = current_runtime_root(repo_root=root)
         staged = install_release_runtime(repo_root=root, repo=release_repo, version=install_version, activate=False)
         manifest = dict(staged.manifest)
         repo_schema_version = int(manifest.get("repo_schema_version") or DEFAULT_REPO_SCHEMA_VERSION)
-        migration_required = bool(manifest.get("migration_required"))
-        if migration_required:
+        migration_plan = migration_runtime.plan_release_migrations(
+            repo_root=root,
+            repo_role=repo_role,
+            previous_version=current_version,
+            target_version=staged.version,
+            runtime_root=staged.root,
+            runtime_verification=staged.verification,
+            release_manifest=manifest,
+            state=previous_state,
+            pinned_version=pin.odylith_version if pin else "",
+        )
+        if migration_plan.blocked_reason:
+            raise ValueError(migration_plan.blocked_reason)
+        if bool(manifest.get("migration_required")) and not migration_plan.satisfies_manifest_requirement():
             raise ValueError(
-                f"release {staged.version} is marked as migration_required and cannot be activated through the normal upgrade path"
+                f"release {staged.version} is marked as migration_required but no registered migration plan satisfies it"
             )
         if pin is not None and repo_schema_version != pin.repo_schema_version:
             raise ValueError(
@@ -2386,14 +2330,11 @@ def upgrade_install(
             repo_role=repo_role,
             include_brand=False,
             version=staged.version,
-            product_root=bundled_product_root(),
+            product_root=_bundled_product_root_for_runtime(staged.root),
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
-        value_engine_migration = _value_engine_migration_payload(
-            repo_root=root,
-            repo_role=repo_role,
-            previous_version=current_version,
-            target_version=staged.version,
+        migration_plan_payload, migration_results, value_engine_migration = _apply_release_migration_plan(
+            plan=migration_plan,
             runtime_root=staged.root,
         )
         append_install_ledger(
@@ -2406,6 +2347,8 @@ def upgrade_install(
                 "pinned_version": pin.odylith_version if pin else staged.version,
                 "previous_version": current_version,
                 "verification": staged.verification,
+                "migration_plan": migration_plan_payload,
+                "migration_results": migration_results,
                 "value_engine_migration": value_engine_migration,
             },
         )
@@ -2433,6 +2376,8 @@ def upgrade_install(
             verification=dict(staged.verification),
             retention_warnings=retention_warnings,
             migration=migration,
+            migration_plan=migration_plan_payload,
+            migration_results=tuple(migration_results),
         )
 
 
@@ -2443,14 +2388,21 @@ def reinstall_install(
     version: str = "",
 ) -> UpgradeSummary:
     root = _repo_root(repo_root, require_agents=False)
-    migration = _migrate_legacy_install_if_needed(repo_root=root)
     repo_role = product_repo_role(repo_root=root)
+    initial_state = load_install_state(repo_root=root)
+    initial_version = _observed_active_version(repo_root=root, state=initial_state)
+    migration = _apply_repo_state_migrations_before_runtime(
+        repo_root=root,
+        repo_role=repo_role,
+        previous_version=initial_version,
+        target_version=str(version or initial_version or __version__).strip() or __version__,
+    )
     if repo_role == PRODUCT_REPO_ROLE:
         raise ValueError(
             "`odylith reinstall` is only supported for consumer repos; use `odylith upgrade` or `odylith doctor --repo-root . --repair` in the Odylith product repo"
         )
     _ensure_repo_root_guidance_files(repo_root=root)
-    _ensure_odylith_gitignore_entry(repo_root=root)
+    ensure_odylith_gitignore_entry(repo_root=root)
     request_token = str(version or "").strip() or "latest"
     resolved_release = fetch_release(repo_root=root, repo=release_repo, version=request_token)
     target_version = resolved_release.version if request_token == "latest" else request_token
@@ -2478,9 +2430,22 @@ def reinstall_install(
     )
     manifest = dict(staged.manifest)
     repo_schema_version = int(manifest.get("repo_schema_version") or DEFAULT_REPO_SCHEMA_VERSION)
-    if bool(manifest.get("migration_required")):
+    migration_plan = migration_runtime.plan_release_migrations(
+        repo_root=root,
+        repo_role=repo_role,
+        previous_version=previous_version,
+        target_version=staged.version,
+        runtime_root=staged.root,
+        runtime_verification=staged.verification,
+        release_manifest=manifest,
+        state=state_before,
+        pinned_version=pin_before.odylith_version if pin_before is not None else "",
+    )
+    if migration_plan.blocked_reason:
+        raise ValueError(migration_plan.blocked_reason)
+    if bool(manifest.get("migration_required")) and not migration_plan.satisfies_manifest_requirement():
         raise ValueError(
-            f"release {staged.version} is marked as migration_required and cannot be activated through reinstall"
+            f"release {staged.version} is marked as migration_required but no registered migration plan satisfies it"
         )
     write_version_pin(
         repo_root=root,
@@ -2502,6 +2467,10 @@ def reinstall_install(
     verification = runtime_verification_evidence(runtime_root) if runtime_root is not None else {}
     pinned_version = pin.odylith_version if pin is not None else active_version
     pin_changed = pin_before is None or pin_before.odylith_version != pinned_version
+    migration_plan_payload, migration_results, _value_engine_migration = _apply_release_migration_plan(
+        plan=migration_plan,
+        runtime_root=runtime_root,
+    )
     return UpgradeSummary(
         active_version=active_version,
         launcher_path=root / ".odylith" / "bin" / "odylith",
@@ -2515,6 +2484,8 @@ def reinstall_install(
         repaired=True,
         **_release_summary_fields(resolved_release),
         migration=migration,
+        migration_plan=migration_plan_payload,
+        migration_results=tuple(migration_results),
     )
 
 
@@ -2586,7 +2557,7 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
             repo_role=repo_role,
             include_brand=False,
             version=target_version,
-            product_root=bundled_product_root(),
+            product_root=_bundled_product_root_for_runtime(target_root),
         )
         pin = load_version_pin(repo_root=root, fallback_version=target_version)
         diverged = bool(pin and target_version != pin.odylith_version)
@@ -2627,28 +2598,61 @@ def rollback_install(*, repo_root: str | Path) -> RollbackSummary:
         )
 
 
-def uninstall_bundle(*, repo_root: str | Path) -> None:
+def _deactivate_host_project_integrations(*, repo_root: Path) -> None:
+    claude_cli_capabilities.deactivate_claude_project_settings(repo_root=repo_root)
+    codex_cli_capabilities.deactivate_codex_project_hooks(repo_root=repo_root)
+
+
+def _remove_uninstall_state_root(state_root: Path) -> None:
+    for attempt in range(4):
+        try:
+            remove_path(state_root)
+            return
+        except OSError:
+            if not state_root.exists() and not state_root.is_symlink():
+                return
+            if attempt == 3:
+                raise
+            time.sleep(0.05)
+
+
+def uninstall_bundle(*, repo_root: str | Path) -> UninstallSummary:
     root = _repo_root(repo_root)
-    with install_lock(repo_root=root):
-        state = load_install_state(repo_root=root)
+    repo_role = product_repo_role(repo_root=root)
+    if repo_role == PRODUCT_REPO_ROLE:
+        raise ValueError("refusing to uninstall the Odylith product repo's own odylith/ source tree")
+    state_root = root / ".odylith"
+    state_root_is_link = state_root.is_symlink()
+    lock_context = contextlib.nullcontext() if state_root_is_link else install_lock(repo_root=root)
+    with lock_context:
+        state = {} if state_root_is_link else load_install_state(repo_root=root)
+        _deactivate_host_project_integrations(repo_root=root)
         _update_root_guidance_files(
             repo_root=root,
             install_active=False,
-            repo_role=product_repo_role(repo_root=root),
+            repo_role=repo_role,
         )
-        if state:
+        if state and not state_root_is_link:
             updated_state = dict(state)
             updated_state["detached"] = True
             updated_state["integration_enabled"] = False
             write_install_state(repo_root=root, payload=updated_state)
-        append_install_ledger(
-            repo_root=root,
-            payload={
-                "operation": "uninstall",
-                "status": "detached",
-                "active_version": _observed_active_version(repo_root=root, state=state),
-            },
-        )
+        removed_paths: list[str] = []
+        if state_root.exists() or state_root.is_symlink():
+            removed_paths.append(".odylith/")
+        if not state_root_is_link:
+            append_install_ledger(
+                repo_root=root,
+                payload={
+                    "operation": "uninstall",
+                    "status": "uninstalled",
+                    "active_version": _observed_active_version(repo_root=root, state=state),
+                    "removed_paths": removed_paths,
+                },
+            )
+        if state_root.exists() or state_root.is_symlink():
+            _remove_uninstall_state_root(state_root)
+    return UninstallSummary(repo_root=root, removed_paths=tuple(removed_paths))
 
 
 def set_agents_integration(*, repo_root: str | Path, enabled: bool) -> tuple[bool, str]:
@@ -2775,6 +2779,7 @@ def version_status(*, repo_root: str | Path) -> VersionStatus:
         runtime_source_detail=runtime_status.detail,
         runtime_trust_degraded=runtime_status.trust_degraded,
         runtime_trust_reasons=runtime_status.trust_reasons,
+        runtime_trust_warnings=_runtime_trust_warnings_from_verification(verification),
     )
 
 
@@ -2837,12 +2842,14 @@ def doctor_bundle(
     healthy = runtime_healthy and has_customer_tree and has_consumer_profile and has_version_pin and has_expected_guidance_state and bool(state)
 
     if repair:
+        lock_compaction_removed = compact_stale_zero_byte_locks(repo_root=root).removed_files
+        lock_clause = _doctor_lock_compaction_clause(lock_compaction_removed)
         _ensure_customer_bootstrap(
             repo_root=root,
             version=_preferred_bootstrap_version(repo_root=root, state=state, active_version=active_version),
             repo_role=repo_role,
         )
-        _ensure_odylith_gitignore_entry(repo_root=root)
+        ensure_odylith_gitignore_entry(repo_root=root)
         written_profile = write_consumer_profile(repo_root=root)
         _update_root_guidance_files(repo_root=root, install_active=integration_enabled, repo_role=repo_role)
         runtime_verification: dict[str, object] = runtime_verification_evidence(runtime_root) if runtime_root is not None else {}
@@ -2934,9 +2941,23 @@ def doctor_bundle(
             repo_role=repo_role,
             include_brand=False,
             version=repaired_active_version,
-            product_root=bundled_product_root(),
+            product_root=_bundled_product_root_for_runtime(runtime_root),
         )
         _sync_consumer_casebook_bug_index(repo_root=root, repo_role=repo_role)
+        component_register_repair = repair_component_register_registry_drift(
+            repo_root=root,
+            consumer_repo=repo_role != PRODUCT_REPO_ROLE,
+        )
+        component_register_repair_clause = _doctor_component_register_repair_clause(
+            component_register_repair
+        )
+        intervention_noise_repair = repair_stale_consumer_intervention_noise(
+            repo_root=root,
+            consumer_repo=repo_role != PRODUCT_REPO_ROLE,
+        )
+        intervention_noise_repair_clause = _doctor_intervention_noise_repair_clause(
+            intervention_noise_repair
+        )
         repaired_status = version_status(repo_root=root)
         reset_clause = ""
         if reset_local_state:
@@ -2948,13 +2969,13 @@ def doctor_bundle(
         if repaired_status.detached and repaired_status.diverged_from_pin:
             return (
                 True,
-                f"Odylith repair completed for {root}{reset_clause}. Active version is still a detached local override and diverges from the repo pin.",
+                f"Odylith repair completed for {root}{reset_clause}. Active version is still a detached local override and diverges from the repo pin.{component_register_repair_clause}{intervention_noise_repair_clause}{lock_clause}",
             )
         if repaired_status.detached:
-            return True, f"Odylith repair completed for {root}{reset_clause}. Active version remains a detached local override."
+            return True, f"Odylith repair completed for {root}{reset_clause}. Active version remains a detached local override.{component_register_repair_clause}{intervention_noise_repair_clause}{lock_clause}"
         if repaired_status.diverged_from_pin:
-            return True, f"Odylith repair completed for {root}{reset_clause}. Active version still diverges from the repo pin."
-        return True, f"Odylith repair completed for {root}{reset_clause}."
+            return True, f"Odylith repair completed for {root}{reset_clause}. Active version still diverges from the repo pin.{component_register_repair_clause}{intervention_noise_repair_clause}{lock_clause}"
+        return True, f"Odylith repair completed for {root}{reset_clause}.{component_register_repair_clause}{intervention_noise_repair_clause}{lock_clause}"
 
     if (
         trust_only_runtime_issue

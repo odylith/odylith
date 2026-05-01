@@ -25,9 +25,22 @@ from odylith.runtime.analysis_engine import incremental_import_graph
 from odylith.runtime.analysis_engine import repo_analysis
 
 
-# ---------------------------------------------------------------------------
-# Main analysis
-# ---------------------------------------------------------------------------
+_APP_READY_TEACHING = (
+    "Mental model: Registry names ownership, Radar tracks delivery, Atlas explains shape, "
+    "and Casebook captures bugs; Odylith proposes them only from app-source evidence."
+)
+_CHEATSHEET_HINT = "For more examples, open `odylith/index.html` and use the Cheatsheet."
+_SCENARIO_TEACHING = {
+    "empty": "Odylith did not find app-source evidence yet, so it will not invent records. Open `odylith/index.html` and start with the Cheatsheet, or name the first path or feature you want governed.",
+    "metadata-only": "Manifests identify the stack, but they are not an ownership boundary; name a path or feature when you are ready.",
+    "docs-only": "Docs are useful context, but Odylith will not turn documentation alone into governance records.",
+    "managed-only": "Odylith-managed files belong to Odylith, not your app, so they are ignored as boundary evidence.",
+    "tests-only": "Tests prove behavior, but they are not the application boundary; Odylith needs app source before suggesting records.",
+    "infra-only": "Infra and CI describe deployment mechanics, not app ownership; Odylith needs app source before suggesting records.",
+    "thin-app": "Thin source exists, so Odylith will not invent a boundary; name the path or feature you want to govern first.",
+    "already-governed": "Existing governance already covers the detected source; use a path-specific prompt to extend it instead of duplicating records.",
+}
+
 
 def analyze_repo(repo_root: Path) -> ShowResult:
     """Orchestrate all analysis phases."""
@@ -40,62 +53,82 @@ def analyze_repo(repo_root: Path) -> ShowResult:
         else:
             print("Scanning your repo for the first time. This takes a moment...", file=sys.stderr, flush=True)
 
-    # Phase 1: Identity
     progress("Reading project manifests...")
     result.identity = repo_analysis.read_project_identity(repo_root)
 
-    # Phase 1b: Existing governance
     result.already_governed = repo_analysis.load_existing_governance(repo_root)
     existing_comp_ids = repo_analysis.load_existing_component_ids(repo_root)
     existing_diagram_slugs = repo_analysis.load_existing_diagram_slugs(repo_root)
     existing_bug_titles = repo_analysis.load_existing_bug_titles(repo_root)
+    if existing_comp_ids:
+        result.already_governed["components"] = True
 
-    # Phase 2: Import graph + component discovery
     artifacts, edges, scan_ctx = incremental_import_graph.build_import_graph(
         repo_root, result.identity.languages,
     )
     result.scan_context = scan_ctx
     result.total_modules = len(artifacts)
+    result.app_modules = len(scan_ctx.app_files)
+    result.support_modules = len(scan_ctx.support_files)
+    result.source_summary = repo_analysis.summarize_source_inventory(repo_root, scan_ctx)
+    app_paths = set(scan_ctx.app_files)
+    app_artifacts = [artifact for artifact in artifacts if artifact.path in app_paths]
+    app_edges = [
+        edge for edge in edges
+        if edge.source_path in app_paths and edge.target_path in app_paths
+    ]
 
-    if artifacts:
-        all_components = component_discovery.discover_components_from_imports(repo_root, artifacts, edges)
+    if result.app_modules >= 3:
+        all_components = _discover_app_components(repo_root, result.identity, app_artifacts, app_edges)
     else:
-        all_components = repo_analysis.discover_components_fallback(repo_root, result.identity)
+        all_components = []
 
-    # Deduplicate against existing registry
     result.components = [c for c in all_components if c.component_id not in existing_comp_ids]
-
-    # Match discovered components against existing registered boundaries by path
     _annotate_registry_matches(repo_root, result.components, existing_comp_ids)
 
-    # Phase 3: Delivery intelligence posture
     progress("Classifying governance posture...")
     result.component_postures = _classify_component_postures(repo_root, result.components)
 
-    # Phase 4: Workstreams — grounded in import graph insights
     result.workstreams = _suggest_grounded_workstreams(
         repo_root, result.identity, result.components,
-        result.component_postures, result.already_governed, edges,
+        result.component_postures, result.already_governed, app_edges,
     )
 
-    # Phase 5: Grounded diagrams — use the surviving components but ALL edges for evidence
-    all_diagrams = _suggest_grounded_diagrams(result.components, result.identity, repo_root, edges, all_components)
+    all_diagrams = _suggest_grounded_diagrams(result.components, result.identity, repo_root, app_edges, all_components)
     result.diagrams = [d for d in all_diagrams if d.slug not in existing_diagram_slugs]
 
-    # Phase 6: Issues
     all_issues = repo_analysis.detect_issues(repo_root, result.components, scan_ctx)
     result.issues = [
         i for i in all_issues
         if not any(existing in i.title.lower() or i.title.lower() in existing for existing in existing_bug_titles)
     ]
+    result.scenario = _select_show_scenario(result)
 
     progress("Done.")
     return result
 
 
-# ---------------------------------------------------------------------------
-# Delivery intelligence integration
-# ---------------------------------------------------------------------------
+def _discover_app_components(
+    repo_root: Path,
+    identity: Any,
+    app_artifacts: list[Any],
+    app_edges: list[Any],
+) -> list[ComponentSuggestion]:
+    """Create candidates only from confident application-source evidence."""
+    workspace_components = repo_analysis.discover_workspace_app_components(repo_root, identity, app_artifacts)
+    if workspace_components:
+        return workspace_components
+    components = component_discovery.discover_components_from_imports(repo_root, app_artifacts, app_edges)
+    if components and not _has_wrapper_component_label(components):
+        return components
+    fallback = repo_analysis.build_app_boundary_suggestion(repo_root, identity, app_artifacts)
+    return [fallback] if fallback else []
+
+
+def _has_wrapper_component_label(components: list[ComponentSuggestion]) -> bool:
+    wrappers = {"src", "lib", "pkg", "packages", "apps", "app", "cmd", "main"}
+    return any(component.label.strip().lower() in wrappers for component in components)
+
 
 def _suggest_grounded_workstreams(
     repo_root: Path,
@@ -106,10 +139,11 @@ def _suggest_grounded_workstreams(
     edges: list[Any],
 ) -> list[WorkstreamSuggestion]:
     """Suggest workstreams grounded in actual import-graph findings."""
+    if not components:
+        return []
     workstreams: list[WorkstreamSuggestion] = []
-    repo_name = identity.name or repo_root.name
+    repo_name = repo_analysis.display_repo_name(repo_root, identity)
 
-    # 1. High-blast-radius components with no governance
     risky = [c for c in components if c.component_id in postures
              and postures[c.component_id].blast_radius in ("cross-surface", "contract-level")]
     if risky and not governed.get("components"):
@@ -122,7 +156,6 @@ def _suggest_grounded_workstreams(
             ),
         ))
 
-    # 2. Tightly coupled component pairs (from cross-edges)
     cross: Counter[tuple[str, str]] = Counter()
     comp_paths = {c.path for c in components}
     for edge in edges:
@@ -141,7 +174,6 @@ def _suggest_grounded_workstreams(
                 description=f"{count} import edges cross this boundary. Documenting the contract prevents breaking changes.",
             ))
 
-    # 3. Volatile edge components (high fan-out, low fan-in)
     volatile = [c for c in components if c.n_outbound > c.n_inbound * 3 and c.n_outbound > 10]
     if volatile:
         v = volatile[0]
@@ -150,7 +182,6 @@ def _suggest_grounded_workstreams(
             description=f"{v.label} depends on {v.n_outbound} modules but only {v.n_inbound} depend on it. High fan-out makes it fragile to upstream changes.",
         ))
 
-    # Fallback if nothing graph-specific found
     if not workstreams:
         workstreams = repo_analysis.suggest_workstreams(
             repo_root, identity, components, governed,
@@ -172,19 +203,21 @@ def _classify_component_postures(
     postures: dict[str, ComponentPosture] = {}
     for comp in components:
         try:
-            # Collect file paths for change vector
             comp_dir = repo_root / comp.path
             file_paths: list[str] = []
             if comp_dir.is_dir():
                 for f in comp_dir.rglob("*"):
-                    if f.is_file() and f.suffix in {".py", ".ts", ".js", ".go", ".rs"}:
+                    if (
+                        f.is_file()
+                        and repo_analysis.source_file_role(f, repo_root=repo_root)
+                        == repo_analysis.SOURCE_CATEGORY_APP
+                    ):
                         file_paths.append(f.relative_to(repo_root).as_posix())
                         if len(file_paths) >= 50:
                             break
 
             change_vector = die._change_vector_from_paths(file_paths)
 
-            # Map import centrality to blast radius
             if comp.n_inbound > 10:
                 blast_class, blast_severity = "cross-surface", 58
             elif comp.n_inbound > 5:
@@ -223,10 +256,6 @@ def _classify_component_postures(
     return postures
 
 
-# ---------------------------------------------------------------------------
-# Grounded diagram suggestions
-# ---------------------------------------------------------------------------
-
 def _annotate_registry_matches(
     repo_root: Path,
     components: list[ComponentSuggestion],
@@ -240,7 +269,6 @@ def _annotate_registry_matches(
         data = json.loads(registry_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return
-    # Build path prefix lookup from existing components
     existing_prefixes: dict[str, str] = {}
     for entry in data.get("components", []):
         if not isinstance(entry, dict):
@@ -249,9 +277,6 @@ def _annotate_registry_matches(
         for prefix in entry.get("path_prefixes", []):
             existing_prefixes[str(prefix).strip()] = comp_id
 
-    # Note: we can't modify frozen dataclasses, so we filter out components
-    # whose path already falls under an existing registered boundary
-    # (This prevents suggesting a sub-component when the parent is already tracked)
     to_remove: set[int] = set()
     for idx, comp in enumerate(components):
         for prefix, existing_id in existing_prefixes.items():
@@ -276,7 +301,6 @@ def _suggest_grounded_diagrams(
     if not components:
         return diagrams
 
-    # Use all_components for edge counting (includes pre-filter components)
     lookup_components = all_components if all_components else components
     cross_edges: Counter[tuple[str, str]] = Counter()
     for edge in edges:
@@ -286,7 +310,6 @@ def _suggest_grounded_diagrams(
             pair = tuple(sorted([src_comp, tgt_comp]))
             cross_edges[pair] += 1
 
-    # Highest-centrality component boundary map
     primary = components[0]
     diagrams.append(DiagramSuggestion(
         slug=f"{primary.component_id}-boundary-map",
@@ -294,7 +317,6 @@ def _suggest_grounded_diagrams(
         description=f"Show what {primary.label} owns, what depends on it ({primary.n_inbound} inbound imports), and where its contract ends",
     ))
 
-    # Cross-component dependency diagram from real edges
     if cross_edges:
         top_pair = cross_edges.most_common(1)[0]
         (comp_a, comp_b), edge_count = top_pair
@@ -306,7 +328,6 @@ def _suggest_grounded_diagrams(
             description=f"{edge_count} import edges connect these two boundaries — diagramming them makes the coupling visible",
         ))
 
-    # Full interaction map if 3+ components
     if len(components) >= 3:
         labels = [c.label for c in components[:4]]
         label_text = ", ".join(labels[:-1]) + " and " + labels[-1]
@@ -328,10 +349,6 @@ def _path_to_component(file_path: str, components: list[ComponentSuggestion]) ->
     return ""
 
 
-# ---------------------------------------------------------------------------
-# Output formatting
-# ---------------------------------------------------------------------------
-
 def _backlog_detail_payload(ws: WorkstreamSuggestion) -> dict[str, str]:
     return {
         "problem": ws.description,
@@ -346,45 +363,30 @@ def _backlog_detail_payload(ws: WorkstreamSuggestion) -> dict[str, str]:
 
 
 def format_text(result: ShowResult) -> str:
-    """Render as clean, scannable Odylith output. Every line earns its place."""
+    """Render the trust-first `odylith show` action report."""
     lines: list[str] = []
-    identity = result.identity
-    governed_count = sum(1 for v in result.already_governed.values() if v)
+    scenario = result.scenario or _select_show_scenario(result)
 
-    # --- Opening: one line, identity + scale ---
-    parts = []
-    stack = " + ".join((identity.frameworks[:2] + identity.languages[:2])[:3])
-    if stack:
-        parts.append(stack)
-    if result.total_modules:
-        parts.append(f"{result.total_modules} modules")
-    if identity.monorepo:
-        parts.append("monorepo")
-    opening = ", ".join(parts) + "." if parts else ""
-    if governed_count == 4:
-        lines.append(
-            f"Odylith read this repo: {opening} Radar, Registry, Atlas, and Casebook are already present."
-        )
-    elif governed_count > 0:
-        lines.append(f"Odylith read this repo: {opening}")
-    else:
-        desc = f" {identity.description}" if identity.description else ""
-        lines.append(f"Odylith read this repo: {opening}{desc}")
+    lines.append(_scenario_status_line(result, scenario))
+    teaching = _scenario_teaching_line(scenario)
+    if teaching:
+        lines.append(teaching)
+    cheatsheet_hint = _scenario_cheatsheet_hint(scenario)
+    if cheatsheet_hint:
+        lines.append(cheatsheet_hint)
     summary = _creation_summary(result)
     if summary:
         lines.append(f"It found {summary} it can create from this scan. Nothing changed yet.")
-        lines.append("Say any prompt below verbatim, or use your own words.")
     best_first_move = _best_first_move(result)
     if best_first_move:
         lines.append("")
         lines.extend(best_first_move)
-    lines.append("")
+    elif not _has_candidates(result):
+        lines.append(_prompt_line(_custom_slice_prompt(result)))
+    if _has_candidates(result):
+        lines.append("")
 
-    has_any = False
-
-    # --- Components ---
     if result.components:
-        has_any = True
         n = len(result.components)
         lines.append(f"### Registry candidates - {n} logical component{'s' if n != 1 else ''}")
         lines.append("")
@@ -404,9 +406,7 @@ def format_text(result: ShowResult) -> str:
             lines.append(_prompt_line(f"Define the {comp.label} Registry component."))
         lines.append("")
 
-    # --- Workstreams ---
     if result.workstreams:
-        has_any = True
         lines.append(
             f"### Radar candidates - {len(result.workstreams)} "
             f"workstream{'s' if len(result.workstreams) != 1 else ''}"
@@ -418,20 +418,16 @@ def format_text(result: ShowResult) -> str:
             lines.append(_prompt_line(f"Open a Radar workstream for {ws.title}."))
         lines.append("")
 
-    # --- Diagrams ---
     if result.diagrams:
-        has_any = True
         lines.append("### Atlas candidates")
         lines.append("")
         for d in result.diagrams:
             lines.append(f"- **{d.title}**")
             lines.append(f"  Why: {d.description}")
-            lines.append(_prompt_line(f"Create the {d.title} Atlas diagram."))
+            lines.append(_prompt_line(_atlas_prompt(d)))
         lines.append("")
 
-    # --- Issues ---
     if result.issues:
-        has_any = True
         lines.append(f"### Issues - {len(result.issues)} worth tracking")
         lines.append("")
         for issue in result.issues:
@@ -445,21 +441,130 @@ def format_text(result: ShowResult) -> str:
             )
         lines.append("")
 
-    # --- Footer ---
-    if has_any:
-        lines.append("### How to create things")
-        lines.append("")
-        lines.extend(_teaching_prompts(result))
-        lines.append("")
-        lines.append("---")
-        lines.append("No files changed. I only create Odylith records when you ask in plain English.")
-    else:
-        if governed_count == 4:
-            lines.append("Your repo is well-governed. Nothing new to suggest.")
-        else:
-            lines.append("Nothing to suggest yet. Run `odylith show` again after adding source files.")
+    lines.append("No files changed.")
 
     return "\n".join(lines)
+
+
+def _has_candidates(result: ShowResult) -> bool:
+    return bool(result.components or result.workstreams or result.diagrams or result.issues)
+
+
+def _select_show_scenario(result: ShowResult) -> str:
+    app_modules = _effective_app_modules(result)
+    if app_modules >= 3 and _has_candidates(result):
+        return "app-ready"
+    if app_modules >= 3 and any(result.already_governed.values()):
+        return "already-governed"
+    if app_modules >= 3:
+        return "app-ready"
+    if app_modules:
+        return "thin-app"
+    summary = result.source_summary
+    if summary.support_modules or summary.test_modules:
+        return "tests-only"
+    non_app = bool(summary.support_modules or summary.test_modules)
+    if summary.infra_files and not (
+        non_app or summary.managed_files or summary.docs_files or summary.metadata_files
+    ):
+        return "infra-only"
+    if summary.managed_files and not (
+        non_app or summary.infra_files or summary.docs_files or summary.metadata_files
+    ):
+        return "managed-only"
+    if summary.docs_files and not (
+        non_app or summary.infra_files or summary.managed_files or summary.metadata_files
+    ):
+        return "docs-only"
+    if summary.metadata_files:
+        return "metadata-only"
+    return "empty"
+
+
+def _scenario_status_line(result: ShowResult, scenario: str) -> str:
+    stack = " + ".join((result.identity.frameworks[:2] + result.identity.languages[:2])[:3])
+    app_phrase = _count_phrase(_effective_app_modules(result), "app source file", "app source files")
+    if scenario == "already-governed":
+        covered = _covered_governance_phrase(result.already_governed)
+        return f"Odylith read this repo: {app_phrase} found; existing {covered} already covers this scan."
+    if scenario == "app-ready":
+        stack_prefix = f"{stack}, " if stack else ""
+        return f"Odylith read this repo: {stack_prefix}{app_phrase} found."
+    if scenario == "thin-app":
+        return (
+            f"Odylith read this repo: {app_phrase} found, but not enough stable structure "
+            "to infer a governance boundary yet."
+        )
+    if scenario == "tests-only":
+        return "Odylith read this repo: tests/support source was found, but no application source was found."
+    if scenario == "infra-only":
+        return "Odylith read this repo: only infra/CI project assets were found; no application source was found."
+    if scenario == "managed-only":
+        return "Odylith read this repo: only Odylith-managed install/governance files were found; no application source was found."
+    if scenario == "docs-only":
+        return "Odylith read this repo: documentation was found, but no application source was found."
+    if scenario == "metadata-only":
+        prefix = f"{stack} metadata" if stack else "project metadata"
+        return f"Odylith read this repo: {prefix} is present, but no application source was found."
+    return "Odylith read this repo: no application source was found."
+
+
+def _scenario_teaching_line(scenario: str) -> str:
+    if scenario == "app-ready":
+        return _APP_READY_TEACHING
+    return _SCENARIO_TEACHING.get(scenario, "")
+
+
+def _scenario_cheatsheet_hint(scenario: str) -> str:
+    if scenario == "empty":
+        return ""
+    return _CHEATSHEET_HINT
+
+
+def _effective_app_modules(result: ShowResult) -> int:
+    if result.app_modules:
+        return result.app_modules
+    if not _has_candidates(result):
+        return 0
+    component_modules = sum(max(component.n_modules, 0) for component in result.components)
+    return component_modules or result.total_modules
+
+
+def _covered_governance_phrase(governed: dict[str, bool]) -> str:
+    names = [
+        label
+        for key, label in (
+            ("components", "Registry"),
+            ("workstreams", "Radar"),
+            ("diagrams", "Atlas"),
+            ("bugs", "Casebook"),
+            ("registry", "Registry"),
+            ("backlog", "Radar"),
+            ("atlas", "Atlas"),
+            ("casebook", "Casebook"),
+        )
+        if governed.get(key)
+    ]
+    unique = list(dict.fromkeys(names))
+    return _natural_join(unique) if unique else "governance"
+
+
+def _custom_slice_prompt(result: ShowResult) -> str:
+    if (result.scenario or _select_show_scenario(result)) == "already-governed":
+        return "Define an Odylith plan around <path or feature> and connect it to existing Registry, Radar, and Atlas truth."
+    return "Define an Odylith plan around <path or feature> and connect it to Registry, Radar, and Atlas."
+
+
+def _next_prompt(result: ShowResult) -> str:
+    if result.components:
+        return f"Define the {result.components[0].label} Registry component."
+    if result.diagrams:
+        return _atlas_prompt(result.diagrams[0])
+    if result.workstreams:
+        return f"Open a Radar workstream for {result.workstreams[0].title}."
+    if result.issues:
+        return f"Capture a Casebook bug for {result.issues[0].title}. Evidence: <paste failing command and error>."
+    return _custom_slice_prompt(result)
 
 
 def _creation_summary(result: ShowResult) -> str:
@@ -489,7 +594,7 @@ def _best_first_move(result: ShowResult) -> list[str]:
         diagram = result.diagrams[0]
         lines = [f"Best first move: **{diagram.title}**."]
         lines.append(f"Why: {diagram.description}")
-        lines.append(_prompt_line(f"Create the {diagram.title} Atlas diagram."))
+        lines.append(_prompt_line(_atlas_prompt(diagram)))
         return lines
     if result.workstreams:
         workstream = result.workstreams[0]
@@ -508,6 +613,10 @@ def _best_first_move(result: ShowResult) -> list[str]:
         )
         return lines
     return []
+
+
+def _atlas_prompt(diagram: DiagramSuggestion) -> str:
+    return f"Create the {diagram.title} Atlas diagram."
 
 
 def _count_phrase(count: int, singular: str, plural: str) -> str:
@@ -551,37 +660,6 @@ def _import_count(count: int, direction: str) -> str:
     return f"{count} {direction} {noun}"
 
 
-def _teaching_prompts(result: ShowResult) -> list[str]:
-    prompts: list[str] = []
-    if result.components:
-        first = result.components[0]
-        prompt = f"Define the {first.label} Registry component."
-        prompts.append(f"- One component: `{_inline_code(prompt)}`")
-        if len(result.components) > 1:
-            prompts.append("- All components: `Define all Registry candidates from this Odylith show output.`")
-    if result.workstreams:
-        first = result.workstreams[0]
-        prompt = f"Open a Radar workstream for {first.title}."
-        prompts.append(f"- One workstream: `{_inline_code(prompt)}`")
-    if result.diagrams:
-        first = result.diagrams[0]
-        prompt = f"Create the {first.title} Atlas diagram."
-        prompts.append(f"- One diagram: `{_inline_code(prompt)}`")
-        if len(result.diagrams) > 1:
-            prompts.append("- All diagrams: `Create all Atlas candidates from this Odylith show output.`")
-    if result.issues:
-        first = result.issues[0]
-        prompts.append(
-            "- One bug: "
-            f"`{_inline_code(f'Capture a Casebook bug for {first.title}. Evidence: <paste failing command and error>.')}`"
-        )
-    prompts.append("- Everything here: `Apply all suggestions from this Odylith show output.`")
-    prompts.append(
-        "- A custom slice: `Define an Odylith plan around <path or feature> and connect it to Registry, Radar, and Atlas.`"
-    )
-    return prompts
-
-
 def _short_metric(comp: ComponentSuggestion, posture: ComponentPosture | None) -> str:
     """One short right-aligned metric string for a component."""
     parts: list[str] = []
@@ -590,7 +668,6 @@ def _short_metric(comp: ComponentSuggestion, posture: ComponentPosture | None) -
     elif comp.n_inbound > 0:
         parts.append(f"{comp.n_inbound} dependents")
 
-    # Architecture role
     total = comp.n_inbound + comp.n_outbound
     if total > 0:
         instability = comp.n_outbound / total
@@ -611,6 +688,7 @@ def _short_metric(comp: ComponentSuggestion, posture: ComponentPosture | None) -
 
 def format_json(result: ShowResult) -> str:
     """Structured JSON for agent consumption."""
+    scenario = result.scenario or _select_show_scenario(result)
     payload: dict[str, Any] = {
         "identity": {
             "name": result.identity.name,
@@ -619,7 +697,14 @@ def format_json(result: ShowResult) -> str:
             "frameworks": result.identity.frameworks,
             "monorepo": result.identity.monorepo,
         },
+        "scenario": scenario,
+        "teaching": _scenario_teaching_line(scenario),
+        "cheatsheet_hint": _scenario_cheatsheet_hint(scenario),
+        "next_prompt": _next_prompt(result),
         "total_modules": result.total_modules,
+        "app_modules": result.app_modules,
+        "support_modules": result.support_modules,
+        "source_summary": dict(vars(result.source_summary)),
         "already_governed": result.already_governed,
         "components": [
             {
@@ -629,6 +714,7 @@ def format_json(result: ShowResult) -> str:
                 "description": c.description,
                 "member_paths": list(c.member_paths),
                 "evidence": list(c.evidence),
+                "confidence": c.confidence,
                 "n_modules": c.n_modules,
                 "n_inbound": c.n_inbound,
                 "n_outbound": c.n_outbound,
@@ -641,16 +727,21 @@ def format_json(result: ShowResult) -> str:
             }
             for c in result.components
         ],
-        "workstreams": [{"title": w.title, "description": w.description} for w in result.workstreams],
-        "diagrams": [{"slug": d.slug, "title": d.title, "description": d.description} for d in result.diagrams],
-        "issues": [{"title": i.title, "detail": i.detail, "severity": i.severity} for i in result.issues],
+        "workstreams": [
+            {"title": w.title, "description": w.description, "confidence": w.confidence}
+            for w in result.workstreams
+        ],
+        "diagrams": [
+            {"slug": d.slug, "title": d.title, "description": d.description, "confidence": d.confidence}
+            for d in result.diagrams
+        ],
+        "issues": [
+            {"title": i.title, "detail": i.detail, "severity": i.severity, "confidence": i.confidence}
+            for i in result.issues
+        ],
     }
     return json.dumps(payload, indent=2, sort_keys=False)
 
-
-# ---------------------------------------------------------------------------
-# CLI entrypoint
-# ---------------------------------------------------------------------------
 
 def main(argv: Sequence[str] | None = None) -> int:
     import argparse

@@ -1,12 +1,13 @@
 # Odylith
 
-This directory is the Odylith product repo's own `odylith/` tree. Installed
-repos get a smaller consumer-owned `odylith/` tree, while the managed runtime
-itself lives under `.odylith/`.
+This directory is the repo-local Odylith guidance and surface tree. In the
+product repo it also carries source governance; installed repos receive the
+consumer-owned subset, while the managed runtime itself lives under
+`.odylith/`.
 
-This tree also carries maintainer-only release guidance and skills that do not
-ship into consumer repos. Those live under `odylith/maintainer/`. Shared
-consumer-safe guidance lives under `odylith/agents-guidelines/` and
+In the product repo, maintainer-only release guidance and skills live under
+`odylith/maintainer/`. That subtree is excluded from consumer bundle assets.
+Shared consumer-safe guidance lives under `odylith/agents-guidelines/` and
 `odylith/skills/`.
 
 Odylith runs on its own managed runtime under `.odylith/`, but keep these
@@ -90,6 +91,13 @@ Once concrete nouns exist, use:
 
 ```bash
 ./.odylith/bin/odylith query --repo-root . "<text>"
+```
+
+To list Odylith's host-agnostic capabilities, engines, surfaces, and adapters,
+use:
+
+```bash
+./.odylith/bin/odylith capabilities --repo-root .
 ```
 
 For the common governance authoring fast paths, use:
@@ -226,8 +234,9 @@ Silence is better than filler.
   Shared Odylith operating guidance.
 - `skills/`
   Shared Odylith specialist skills intended to stay consumer-safe.
-- `maintainer/`
-  Maintainer-only release guidance and skills for the Odylith product repo.
+- product-repo-only `maintainer/` subtree
+  Maintainer-only release guidance and skills for Odylith release work. This
+  subtree is excluded from consumer bundles.
 - `FAQ.md`, `INSTALL.md`, `OPERATING_MODEL.md`, `PRODUCT_COMPONENTS.md`
   Product-level reference docs for this tree.
 - `SECURITY_POSTURE.md`
@@ -268,12 +277,15 @@ local runtime, run:
 ./.odylith/bin/odylith on --repo-root .
 ```
 
-If you want to remove the runtime integration but keep this `odylith/` context
-tree in place, run:
+If you want to uninstall Odylith from this repo, run:
 
 ```bash
 ./.odylith/bin/odylith uninstall --repo-root .
 ```
+
+That preserves the local `odylith/` governed source truth, detaches repo-root
+guidance, and removes `.odylith/` local runtime state. Do not replace it with
+raw deletion.
 
 Compass keeps today plus the previous 15 days active in
 `odylith/compass/runtime/history/`. Older days are deleted when they age out of

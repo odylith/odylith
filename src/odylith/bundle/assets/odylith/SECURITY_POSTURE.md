@@ -1,5 +1,5 @@
 # Security Posture
-Last updated: 2026-04-27
+Last updated: 2026-05-01
 
 ## Purpose
 Odylith treats runtime trust, release provenance, and process lifetime as
@@ -8,8 +8,8 @@ runtime drift more aggressively, fails closed on insecure consumer-lane
 release overrides, and keeps its local long-lived Python helpers on a tighter
 leash.
 
-This posture is authored for the published `v0.1.11` release line, published
-on 2026-04-27.
+This posture is authored for the published `v0.1.12` release line, published
+on 2026-05-01.
 
 ## Threat Model
 Odylith actively hardens against:

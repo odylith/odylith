@@ -1620,6 +1620,7 @@ def _cached_projection_rows(
 def clear_runtime_process_caches(*, repo_root: Path | None = None) -> None:
     """Clear process-local Odylith caches used by warm/cold benchmark lanes."""
 
+    runtime_read_session.clear_active_runtime_read_session(repo_root=repo_root)
     if repo_root is None:
         _PROCESS_PROJECTED_INPUTS_CACHE.clear()
         _PROCESS_PROJECTION_INPUT_FINGERPRINT_CACHE.clear()

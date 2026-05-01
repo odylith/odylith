@@ -7,6 +7,7 @@ under `components/<id>/`.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import re
 from dataclasses import dataclass
@@ -76,8 +77,8 @@ def _build_registry_entry(
         "component_id": component_id,
         "name": label,
         "kind": kind,
-        "category": "detected",
-        "qualification": "detected",
+        "category": "governance_engine",
+        "qualification": "candidate",
         "aliases": [],
         "path_prefixes": [path] if path else [],
         "workstreams": [],
@@ -93,8 +94,9 @@ def _build_registry_entry(
             "path prefixes seed evidence and can be tightened as the contract becomes clearer."
         ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
-        "sources": ["detected"],
+        "sources": ["manifest"],
         "subcomponents": [],
+        "product_layer": "cli_bootstrap",
     }
 
 
@@ -110,6 +112,7 @@ def _build_spec_template(
         if path
         else "It is initially anchored by maintainer review."
     )
+    history_date = dt.date.today().isoformat()
     return f"""# {label}
 
 ## Overview
@@ -123,6 +126,10 @@ def _build_spec_template(
 - **Evidence anchor**: `{path}`
 - **Kind**: {kind}
 - **Status**: active
+
+## Feature History
+
+- {history_date}: Registered `{component_id}` through `odylith component register`.
 
 ## Contract
 
@@ -238,7 +245,21 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     mode = "dry-run" if args.dry_run else "registered"
     if args.as_json:
-        print(json.dumps({"mode": mode, **result.as_dict()}, indent=2))
+        print(
+            json.dumps(
+                {
+                    "mode": mode,
+                    **result.as_dict(),
+                    "dashboard": ""
+                    if args.dry_run
+                    else owned_surface_refresh.dashboard_handoff(
+                        surface="registry",
+                        component=result.component_id,
+                    ),
+                },
+                indent=2,
+            )
+        )
     else:
         print(f"odylith component register {mode}")
         print(f"  component_id: {result.component_id}")
@@ -246,4 +267,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"  path: {result.path}")
         print(f"  registry: {result.registry_path}")
         print(f"  spec: {result.spec_path}")
+        owned_surface_refresh.print_dashboard_handoff(
+            surface="registry",
+            component=result.component_id,
+            dry_run=bool(args.dry_run),
+        )
     return 0

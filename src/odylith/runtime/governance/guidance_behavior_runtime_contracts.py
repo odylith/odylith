@@ -13,10 +13,14 @@ RUNTIME_LAYER_CONTRACTS: tuple[dict[str, Any], ...] = (
         "layer": "context_engine",
         "purpose": "Context packets attach the compact guidance-behavior summary without running full validation on the hot path.",
         "source_tokens": {
-            "src/odylith/runtime/context_engine/tooling_context_packet_builder.py": (
+            "src/odylith/runtime/context_engine/tooling_context_packet_preflight.py": (
                 "guidance_behavior_runtime.summary_for_packet",
                 "guidance_behavior_summary",
                 "recommended_commands",
+            ),
+            "src/odylith/runtime/context_engine/tooling_context_packet_builder.py": (
+                "packet_preflight.build_packet_preflight",
+                "packet_preflight.enrich_packet_payload",
             ),
             "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py": (
                 "guidance_behavior_status",

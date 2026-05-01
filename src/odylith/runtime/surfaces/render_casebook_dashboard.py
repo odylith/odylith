@@ -7,7 +7,6 @@ searchable/filterable local view.
 
 from __future__ import annotations
 
-import argparse
 import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -21,6 +20,7 @@ from odylith.runtime.surfaces import dashboard_time
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import generated_surface_refresh_guards
+from odylith.runtime.surfaces import render_casebook_dashboard_cli
 from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces import source_bundle_mirror
 from odylith.runtime.common import stable_generated_utc
@@ -29,22 +29,6 @@ from odylith.runtime.context_engine import odylith_context_engine_store
 
 _CASEBOOK_DETAIL_SHARD_SIZE = 32
 _CASEBOOK_REFRESH_GUARD_KEY = "casebook-dashboard-render"
-
-
-def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        prog="odylith sync",
-        description="Render odylith/casebook/casebook.html from the bug knowledge base.",
-    )
-    parser.add_argument("--repo-root", default=".")
-    parser.add_argument("--output", default="odylith/casebook/casebook.html")
-    parser.add_argument(
-        "--runtime-mode",
-        choices=("auto", "standalone", "daemon"),
-        default="auto",
-        help="Use the local runtime projection store when available for bug rows.",
-    )
-    return parser.parse_args(argv)
 
 
 def _refresh_guard_watched_paths() -> tuple[str, ...]:
@@ -854,6 +838,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       margin-bottom: 8px;
       cursor: pointer;
       color: inherit;
+      white-space: normal;
+      overflow-wrap: anywhere;
       transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
     }}
     .bug-row:hover {{
@@ -874,9 +860,11 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       margin-bottom: 7px;
     }}
     .bug-row-head > *:first-child {{
+      flex: 1 1 auto;
       min-width: 0;
     }}
     .bug-row-date {{
+      flex: 0 0 auto;
       white-space: nowrap;
     }}
 .bug-row-meta,
@@ -1081,7 +1069,13 @@ def _render_html(*, payload: dict[str, Any]) -> str:
     .detail-links {{
       align-items: flex-start;
     }}
-
+    .bug-row-meta .list-chip,
+    .detail-meta .meta-chip {{
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.2;
+    }}
     .bug-row-meta::-webkit-scrollbar,
     .detail-meta::-webkit-scrollbar,
     .detail-links::-webkit-scrollbar,
@@ -1304,6 +1298,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       "Detected By",
       "Timeline",
     ];
+    const EXTERNAL_ISSUE_FIELDS = ["GitHub Issue(s)", "External Issue(s)", "Vendor Issue(s)", "Upstream Issue(s)"];
     const HUMAN_IMPACT_FIELDS = [
       "Impact",
       "Blast Radius",
@@ -1543,7 +1538,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .join("");
       return rows ? `<div class="narrative-list">${{rows}}</div>` : "";
     }}
-
     function renderLabeledNarratives(items) {{
       if (!Array.isArray(items) || !items.length) return "";
       const rows = items
@@ -1562,18 +1556,16 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         .join("");
       return rows ? `<div class="narrative-list">${{rows}}</div>` : "";
     }}
-
-    function actionChipHtml(label, href, tooltip = "") {{
+    function actionChipHtml(label, href, tooltip = "", targetMode = "_top") {{
       const text = String(label || "").trim();
-      const target = String(href || "").trim();
-      if (!text || !target) return "";
+      const destination = String(href || "").trim();
+      if (!text || !destination) return "";
+      const linkTarget = String(targetMode || "").trim() === "_blank" ? "_blank" : "_top";
+      const rel = linkTarget === "_blank" ? "noopener noreferrer" : "noreferrer";
       const note = String(tooltip || "").trim();
-      const tooltipAttrs = note
-        ? ` data-tooltip="${{escapeHtml(note)}}" aria-label="${{escapeHtml(note)}}"`
-        : "";
-      return `<a class="action-chip" href="${{escapeHtml(target)}}" target="_top" rel="noreferrer"${{tooltipAttrs}}>${{escapeHtml(text)}}</a>`;
+      const tooltipAttrs = note ? ` data-tooltip="${{escapeHtml(note)}}" aria-label="${{escapeHtml(note)}}"` : "";
+      return `<a class="action-chip" href="${{escapeHtml(destination)}}" target="${{linkTarget}}" rel="${{rel}}"${{tooltipAttrs}}>${{escapeHtml(text)}}</a>`;
     }}
-
     function renderActionChips(items) {{
       if (!Array.isArray(items) || !items.length) return "";
       const seen = new Set();
@@ -1585,16 +1577,32 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         const key = `${{label}}::${{href}}`;
         if (seen.has(key)) continue;
         seen.add(key);
-        chips.push(actionChipHtml(label, href, item && item.tooltip));
+        chips.push(actionChipHtml(label, href, item && item.tooltip, item && item.target));
       }}
       return chips.join("");
     }}
-
     function renderActionChipGroup(items) {{
       const chips = renderActionChips(items);
       return chips ? `<div class="link-group">${{chips}}</div>` : "";
     }}
-
+    function externalIssueLinks(detail) {{
+      const fields = detail && detail.fields && typeof detail.fields === "object" ? detail.fields : {{}};
+      const issuePattern = /\\[([^\\]]+)\\]\\((https?:\\/\\/[^)\\s]+)\\)|\\b([A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+)#(\\d+)\\b|https:\\/\\/github\\.com\\/([A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+)\\/issues\\/(\\d+)/g;
+      const actions = [];
+      for (const fieldName of EXTERNAL_ISSUE_FIELDS) {{ for (const match of String(fields[fieldName] || "").trim().matchAll(issuePattern)) {{
+        const rawLabel = String(match[1] || (match[3] ? `${{match[3]}}#${{match[4]}}` : `${{match[5]}}#${{match[6]}}`) || "").trim();
+        const href = String(match[2] || (match[3] ? `https://github.com/${{match[3]}}/issues/${{match[4]}}` : match[0]) || "").trim();
+        if (!rawLabel || !href) continue;
+        const issueKind = /^GitHub Issue\\(s\\)$/i.test(fieldName) || /^https:\\/\\/github\\.com\\//i.test(href) ? "GitHub issue" : fieldName.replace(/\\(s\\)/g, "").replace(/Issue$/i, "issue").trim();
+        actions.push({{ label: `${{issueKind}}: ${{rawLabel}}`, href, target: "_blank", tooltip: `Open ${{issueKind.toLowerCase()}} in a new browser tab` }});
+      }} }}
+      return actions;
+    }}
+    function renderExternalIssueSignal(items) {{
+      const chips = renderActionChipGroup(items);
+      if (!chips) return "";
+      return `<div class="narrative-list"><div class="narrative-row"><p class="signal-label narrative-label">${{items.length === 1 ? "Tracked issue" : "Tracked issues"}}</p><div class="detail-copy">${{chips}}</div></div></div>`;
+    }}
     function renderLinkRow(label, items) {{
       const chips = renderActionChipGroup(items);
       if (!chips) return "";
@@ -1605,7 +1613,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         </div>
       `;
     }}
-
     function dedupeByField(items) {{
       if (!Array.isArray(items)) return [];
       const seen = new Set();
@@ -1621,7 +1628,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       }}
       return rows;
     }}
-
     function renderPathLinkList(items) {{
       if (!Array.isArray(items) || !items.length) return "";
       const rows = items
@@ -1762,7 +1768,6 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         </div>
       `;
     }}
-
     function matchesSearch(row, term) {{
       if (!term) return true;
       const canonicalBugId = canonicalizeBugIdToken(term);
@@ -1776,21 +1781,17 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       if (!normalizedNeedle) return false;
       return normalizeSearchToken(searchText).includes(normalizedNeedle);
     }}
-
     function matchesFilters(row, state) {{
       if (state.severity && String(row.severity_token || "") !== state.severity) return false;
       if (state.status && String(row.status_token || "") !== state.status) return false;
       return true;
     }}
-
     function compareText(left, right) {{
       return String(left || "").localeCompare(String(right || ""), undefined, {{ numeric: true, sensitivity: "base" }});
     }}
-
     function compareDateDesc(left, right) {{
       return compareText(right && right.date, left && left.date);
     }}
-
     function compareDateAsc(left, right) {{
       return compareText(left && left.date, right && right.date);
     }}
@@ -2034,9 +2035,8 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       if (totalFields) {{
         chips.push(`<span class="meta-chip ${{requiredMissingFields.length ? "warn-chip" : ""}}">Intel ${{capturedCount}}/${{totalFields}}</span>`);
       }}
-      const sourceLink = detail.source_href
-        ? actionChipHtml("Source markdown", detail.source_href)
-        : `<span class="meta-chip muted">Source markdown missing</span>`;
+      const externalIssueActions = externalIssueLinks(detail);
+      const sourceLink = detail.source_href ? actionChipHtml("Source markdown", detail.source_href) : `<span class="meta-chip muted">Source markdown missing</span>`;
       const summaryText = String(detail.summary || detailFieldValue("Description") || detailFieldValue("Impact") || "").trim();
       const summary = summaryText ? `<p class="detail-summary">${{escapeHtml(summaryText)}}</p>` : "";
       const summaryFacts = [...detailCoreRows(detail), ...detailSupportingRows(detail)]
@@ -2136,7 +2136,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
           </div>
         `
         : "";
-      const humanSignalBody = renderFocusedFieldRows(HUMAN_SIGNAL_FIELDS);
+      const humanSignalBody = [renderExternalIssueSignal(externalIssueActions), renderFocusedFieldRows(HUMAN_SIGNAL_FIELDS)].filter(Boolean).join("");
       const humanImpactBody = [renderFocusedFieldRows(HUMAN_IMPACT_FIELDS), componentNarrative].filter(Boolean).join("");
       const humanResponseBody = renderFocusedFieldRows(HUMAN_RESPONSE_FIELDS);
       const humanCards = [
@@ -2208,7 +2208,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
         renderLimitedActionRow("Atlas diagrams", atlasLinks, 4, "Atlas diagram links"),
       ].filter(Boolean).join("");
       const consumedFieldKeys = new Set(
-        [...HUMAN_SIGNAL_FIELDS, ...HUMAN_IMPACT_FIELDS, ...HUMAN_RESPONSE_FIELDS, "Description", "Agent Guardrails", "Preflight Checks"]
+        [...HUMAN_SIGNAL_FIELDS, ...EXTERNAL_ISSUE_FIELDS, ...HUMAN_IMPACT_FIELDS, ...HUMAN_RESPONSE_FIELDS, "Description", "Agent Guardrails", "Preflight Checks"]
           .map((fieldName) => String(fieldName || "").trim().toLowerCase())
           .filter(Boolean)
       );
@@ -2287,7 +2287,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
       detailPane.innerHTML = `
         <section class="detail-head">
           <div class="detail-headline">
-            <h1 class="detail-title">${{escapeHtml(detail.title || detail.bug_key || "Bug detail")}}</h1>
+            <h2 class="detail-title">${{escapeHtml(detail.title || detail.bug_key || "Bug detail")}}</h2>
           </div>
           ${{summaryFacts ? `<div class="summary-facts" role="list">${{summaryFacts}}</div>` : ""}}
           ${{summary}}
@@ -2433,7 +2433,7 @@ def _render_html(*, payload: dict[str, Any]) -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = _parse_args(argv)
+    args = render_casebook_dashboard_cli.parse_args(argv)
     repo_root = Path(str(args.repo_root)).resolve()
     output_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=str(args.output))
     validation = casebook_source_validation.validate_casebook_sources(repo_root=repo_root)

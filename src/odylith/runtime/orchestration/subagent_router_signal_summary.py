@@ -9,13 +9,18 @@ from typing import Sequence
 
 from odylith.runtime.common.consumer_profile import load_consumer_profile
 from odylith.runtime.common import host_runtime as host_runtime_contract
+from odylith.runtime.common.value_coercion import dedupe_strings as _dedupe_strings
+from odylith.runtime.common.value_coercion import int_value as _int_value
+from odylith.runtime.common.value_coercion import normalize_string as _normalize_string
+from odylith.runtime.common.value_coercion import normalize_token as _normalize_token
 from odylith.runtime.context_engine import packet_quality_codec
 from odylith.runtime.orchestration import subagent_router
 from odylith.runtime.orchestration import subagent_router_context_support
 from odylith.runtime.orchestration import subagent_router_execution_engine_runtime
+from odylith.runtime.orchestration import subagent_signal_normalization
 
 _context_signal_root = subagent_router_context_support._context_signal_root
-_mapping_value = subagent_router_context_support._mapping_value
+_mapping_value = subagent_signal_normalization.mapping_value
 _validation_bundle_from_context = subagent_router_context_support._validation_bundle_from_context
 _governance_obligations_from_context = subagent_router_context_support._governance_obligations_from_context
 _surface_refs_from_context = subagent_router_context_support._surface_refs_from_context
@@ -24,16 +29,12 @@ _preferred_router_profile_from_execution_profile = (
     subagent_router_context_support._preferred_router_profile_from_execution_profile
 )
 _context_signal_score = subagent_router_context_support._context_signal_score
-_context_lookup = subagent_router_context_support._context_lookup
-_normalize_token = subagent_router_context_support._normalize_token
+_context_lookup = subagent_signal_normalization.context_lookup
 _context_signal_bool = subagent_router_context_support._context_signal_bool
-_normalize_list = subagent_router_context_support._normalize_list
-_count_or_list_len = subagent_router_context_support._count_or_list_len
-_normalize_string = subagent_router_context_support._normalize_string
-_dedupe_strings = subagent_router_context_support._dedupe_strings
-_int_value = subagent_router_context_support._int_value
+_normalize_list = subagent_signal_normalization.normalize_list
+_count_or_list_len = subagent_signal_normalization.count_or_list_len
 _clamp_score = subagent_router_context_support._clamp_score
-_normalized_rate = subagent_router_context_support._normalized_rate
+_normalized_rate = subagent_signal_normalization.normalized_rate
 _latency_pressure_signal = subagent_router_context_support._latency_pressure_signal
 _scaled_numeric_signal = subagent_router_context_support._scaled_numeric_signal
 _context_signal_level = subagent_router_context_support._context_signal_level
@@ -97,7 +98,7 @@ def request_with_consumer_write_policy(
     policy = dict(profile.get("odylith_write_policy", {})) if isinstance(profile.get("odylith_write_policy"), Mapping) else {}
     if not policy:
         return request
-    merged_context = subagent_router_context_support._normalize_context_signals(request.context_signals)
+    merged_context = subagent_signal_normalization.normalize_context_signals(request.context_signals)
     if merged_context.get("odylith_write_policy") == policy:
         return request
     merged_context["odylith_write_policy"] = policy
@@ -108,7 +109,7 @@ def request_with_consumer_write_policy(
 
 def _context_signal_summary(request: subagent_router.RouteRequest) -> dict[str, Any]:
     """Flatten structured runtime handoff signals into router-friendly scoring fields."""
-    context_signals = subagent_router_context_support._normalize_context_signals(request.context_signals)
+    context_signals = subagent_signal_normalization.normalize_context_signals(request.context_signals)
     root = _context_signal_root(context_signals)
     context_packet = _mapping_value(context_signals, "context_packet")
     if not isinstance(context_packet, Mapping):

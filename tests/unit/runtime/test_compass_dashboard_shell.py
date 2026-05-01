@@ -223,7 +223,9 @@ def test_workstream_and_registry_links_stay_cross_surface_and_without_footer_act
     assert "const progressKnown = progressRatio !== null;" in workstreams_js
     assert 'const progressLabel = String(plan && plan.display_progress_label ? plan.display_progress_label : "").trim();' in workstreams_js
     assert 'const progressCellLabel = progressKnown ? `${progressPct}%` : (progressLabel || "n/a");' in workstreams_js
-    assert "All current workstreams are already represented in Programs or Release Targets." in workstreams_js
+    assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
+    assert "No additional current workstreams. Program and release lanes already cover the active work." in workstreams_js
+    assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
     assert "No active workstreams in this scope." in workstreams_js
     assert "`Open radar for ${token}`" in waves_js
     assert 'href="${escapeHtml(radarWorkstreamHref(token))}"' in waves_js

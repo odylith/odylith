@@ -369,7 +369,7 @@ def _build_entry(
     if link_target is None:
         errors.append(f"invalid link column for `{idea_id}`")
         return None
-    idea_path = Path(link_target).resolve()
+    idea_path = backlog_render_support._resolve_path(repo_root=repo_root, value=link_target)
     if not idea_path.is_file():
         errors.append(f"idea markdown missing for `{idea_id}`: {idea_path}")
         return None

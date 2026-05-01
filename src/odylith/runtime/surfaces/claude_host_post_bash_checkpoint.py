@@ -3,8 +3,9 @@
 Claude's direct Write/Edit/MultiEdit tools already route through
 ``claude post-edit-checkpoint``. This companion hook covers Bash calls that
 write files through shell commands, inline scripts, or apply-patch style
-payloads so Claude gets the same visible Observation/Proposal checkpoint
-coverage as Codex.
+payloads so governed surface refresh still happens. Successful checkpoint
+refreshes stay silent because Claude Code renders hook output inline with the
+transcript.
 """
 
 from __future__ import annotations
@@ -15,12 +16,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.intervention_engine import host_surface_runtime
-from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
 from odylith.runtime.surfaces import claude_host_shared
 from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 from odylith.runtime.surfaces import codex_host_shared
-from odylith.runtime.surfaces import host_intervention_support
 
 
 def command_from_payload(payload: dict[str, Any]) -> str:
@@ -54,22 +52,6 @@ def inferred_command_paths(*, project_dir: Path | str, command: str) -> list[str
     )
 
 
-def _post_bash_bundle(
-    *,
-    project_dir: Path,
-    command: str,
-    session_id: str = "",
-) -> dict[str, Any]:
-    changed_paths = inferred_command_paths(project_dir=project_dir, command=command)
-    if not changed_paths:
-        return {}
-    return host_surface_runtime.compose_host_conversation_bundle(
-        repo_root=project_dir,
-        host_family="claude",
-        turn_phase="post_bash_checkpoint",
-        session_id=session_id,
-        changed_paths=changed_paths,
-    )
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith claude post-bash-checkpoint",
@@ -95,54 +77,11 @@ def main(argv: list[str] | None = None) -> int:
         timeout=20,
     )
 
-    session_id = claude_host_shared.hook_session_id(payload)
     changed = command_scoped_governed_paths(project_dir=repo_root, command=command)
     governance_message = refresh_governance(project_dir=repo_root, paths=changed)
-    bundle = _post_bash_bundle(
-        project_dir=repo_root,
-        command=command,
-        session_id=session_id,
-    )
-    decision = (
-        host_surface_runtime.visible_intervention_decision(
-            repo_root=repo_root,
-            bundle=bundle,
-            host_family="claude",
-            turn_phase="post_bash_checkpoint",
-            session_id=session_id,
-            include_proposal=True,
-            include_closeout=False,
-            developer_include_closeout=True,
-        )
-        if bundle
-        else None
-    )
-    developer_context = decision.developer_context if decision is not None else ""
-    live_intervention = decision.visible_markdown if decision is not None else ""
-    replay = host_intervention_support.preferred_live_replay_markdown(
-        repo_root=repo_root,
-        host_family="claude",
-        session_id=session_id,
-    )
-    developer_context = host_intervention_support.join_sections(replay, developer_context) if replay else developer_context
-    live_intervention = replay or live_intervention
-    if bundle and decision is not None and developer_context:
-        host_surface_runtime.append_visible_intervention_events(
-            repo_root=repo_root,
-            bundle=bundle,
-            decision=decision,
-            render_surface="claude_post_tool_use",
-        )
-    payload_out = host_surface_runtime.claude_post_tool_payload(
-        developer_context=developer_context,
-        system_message=host_surface_runtime.compose_checkpoint_system_message(
-            live_intervention=live_intervention,
-            governance_status=host_intervention_support.join_sections((governance_message or {}).get("systemMessage")),
-        ),
-        include_assist_in_visible_fallback=False,
-    )
-    if payload_out:
-        sys.stdout.write(json.dumps(payload_out))
+    governance_status = str((governance_message or {}).get("systemMessage", "")).strip()
+    if governance_status and any(token in governance_status.lower() for token in ("failed", "skipped")):
+        sys.stdout.write(json.dumps({"systemMessage": governance_status}))
     return 0
 
 

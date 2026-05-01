@@ -91,7 +91,11 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "literal commands" not in block
     assert "Keep normal commentary task-first and human." in block
     assert "reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels" in block
-    assert "At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat" in block
+    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in block
+    assert "host prompt-submit runtime is stricter about silence" in block
+    assert "normal non-passthrough prompts do not get an Assist line by default" in block
+    assert "Do not add Assist just because Odylith ran" in block
+    assert "supplies one shared prompt-visible Assist line" not in block
     assert "Prefer `**Odylith Assist:**` when Markdown formatting is available" in block
     assert "Lead with the user win" in block
     assert "link updated governance IDs inline when they were actually changed" in block
@@ -123,16 +127,15 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
     assert "Odylith grounding:" not in block
     assert "Odylith didn't return immediately" not in block
     assert "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`." not in block
-    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in block
+    assert "direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "`odylith codex intervention-status` or `odylith claude" in block
-    assert "low-latency delivery ledger for Teaser, Ambient Highlight, Observation," in block
+    assert "low-latency delivery record for Teaser, Ambient Highlight, Observation," in block
     assert "Proposal, and Assist readiness; hook payload generation alone is not enough" in block
-    assert "Only call a session or worktree fully end to end after `intervention-status` reports `Activation: ready` and `chat_visible_proof=proven_this_session`" in block
-    assert "`ledger_visible_with_pending_confirmation`, and `chat_confirmed_with_pending_confirmation` as partial proof" in block
+    assert "reports `Activation: ready` and a chat-visibility line confirmed in this" in block
+    assert "Treat recorded-only and waiting-for-chat states as partial proof" in block
     assert "Explicit feedback that Odylith ambient highlights, interventions, Assist," in block
     assert "ordinary low-signal short" in block
-    assert "Stop is the fallback closeout and live-beat recovery lane" in block
-    assert "unseen Ambient Highlight" in block
+    assert "Claude Stop is memory/logging only" in block
 
 
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
@@ -144,7 +147,8 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "pinned dogfood is the default proof posture and detached `source-local` is the explicit dev posture" in block
     assert "Keep the default operating lane shared across Codex and Claude Code" in block
     assert "rerender only the owned surface" in block
-    assert "surface the earned Observation/Proposal beat visibly at the hook moment" in block
+    assert "direct-edit and Bash PostToolUse hooks stay silent on success" in block
+    assert "Claude Stop is memory/logging only" in block
 
 
 def test_managed_block_matches_repo_root_product_scope_truth() -> None:

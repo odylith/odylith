@@ -29,6 +29,7 @@ from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import dashboard_surface_bundle
 from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import backlog_render_support
+from odylith.runtime.surfaces import backlog_traceability_paths
 from odylith.runtime.surfaces import backlog_detail_pages
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
 from odylith.runtime.surfaces import generated_surface_refresh_guards
@@ -56,8 +57,8 @@ _DATE_TOKEN_RE = backlog_render_support._DATE_TOKEN_RE
 _PLAN_UPDATED_RE = backlog_render_support._PLAN_UPDATED_RE
 _PLAN_CREATED_RE = backlog_render_support._PLAN_CREATED_RE
 _PLAN_FILENAME_DATE_RE = backlog_render_support._PLAN_FILENAME_DATE_RE
-_TRACEABILITY_SECTION_NAME = render_backlog_ui_html_runtime._TRACEABILITY_SECTION_NAME
-_TRACEABILITY_BUCKETS = render_backlog_ui_html_runtime._TRACEABILITY_BUCKETS
+_TRACEABILITY_SECTION_NAME = backlog_traceability_paths.TRACEABILITY_SECTION_NAME
+_TRACEABILITY_BUCKETS = backlog_traceability_paths.TRACEABILITY_BUCKETS
 _SCRIPT_DIR = "scr" + "ipts"
 _TESTS_DIR = "te" + "sts"
 _IDEA_ID_RE = backlog_render_support._IDEA_ID_RE
@@ -148,7 +149,7 @@ def _extract_sections_with_body(path: Path) -> list[tuple[str, list[str]]]:
 
 
 def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
-    return backlog_rich_text._normalize_inline_repo_token(repo_root=repo_root, token=token)
+    return backlog_rich_text.normalize_inline_repo_token(repo_root=repo_root, token=token)
 
 
 def _rewrite_section_text(*, repo_root: Path, text: str) -> str:
@@ -160,11 +161,11 @@ def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
 
 
 def _extract_traceability_path_tokens(text: str) -> list[str]:
-    return render_backlog_ui_html_runtime._extract_traceability_path_tokens(text)
+    return backlog_traceability_paths.extract_path_tokens(text)
 
 
 def _normalize_traceability_path(*, repo_root: Path, token: str) -> str:
-    return render_backlog_ui_html_runtime._normalize_traceability_path(
+    return backlog_traceability_paths.normalize_path(
         repo_root=repo_root,
         token=token,
     )
@@ -175,7 +176,7 @@ def _collect_plan_traceability_paths(
     repo_root: Path,
     sections: list[tuple[str, list[str]]],
 ) -> dict[str, list[str]]:
-    return render_backlog_ui_html_runtime._collect_plan_traceability_paths(
+    return backlog_traceability_paths.collect_plan_paths(
         repo_root=repo_root,
         sections=sections,
     )

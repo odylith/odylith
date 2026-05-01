@@ -1,4 +1,4 @@
-"""Claude wrapper for assistant-rendered Odylith visible fallback."""
+"""Claude wrapper for assistant-rendered Odylith visible recovery."""
 
 from __future__ import annotations
 

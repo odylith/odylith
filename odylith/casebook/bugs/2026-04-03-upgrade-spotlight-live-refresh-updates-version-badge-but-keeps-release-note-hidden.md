@@ -1,6 +1,6 @@
 - Bug ID: CB-051
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-03
 
@@ -52,7 +52,9 @@
   `#shellUpgradeSpotlight` remained hidden. A focused local payload check in
   detached `source-local` also confirmed `build_release_spotlight(...)`
   returned a non-empty payload with `show: True`, current `recorded_utc`, and a
-  future `expires_utc`.
+  future `expires_utc`. Closeout proof on 2026-04-28 re-ran the focused
+  auto-refresh browser regression and added a prior-dismissal edge case; both
+  tests passed with the current shell contract.
 
 - Prevention: Treat version-label refresh and release-spotlight visibility as
   one upgrade invariant, not two loosely related UI effects. Any browser path
@@ -113,18 +115,21 @@
   `tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
   before changing upgrade refresh behavior.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added:
+  `tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_open_shell_auto_reloads_after_dashboard_refresh_and_updates_version_label`
+  and
+  `tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_open_shell_auto_reload_reopens_new_upgrade_spotlight_after_prior_dismissal`.
 
 - Monitoring Updates: Keep the focused browser upgrade auto-refresh path in the
   detached maintainer validation lane until the spotlight and version badge are
   proven together again.
 
-- Residual Risk: The direct upgrade and reopen flows can still look healthy
-  while this one live refresh transition stays broken, so release polish can
-  appear done before the real browser contract is actually safe.
+- Residual Risk: Low for this bug after the focused browser proof. Broader
+  steady-state shell freshness remains owned by `B-025`, not by this
+  auto-refresh spotlight closure.
 
 - Related Incidents/Bugs:
-  [2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md](/Users/freedom/code/odylith/odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md)
+  [2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md](/Users/freedom/code/odylith/odylith/technical-plans/done/2026-04/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md)
   [2026-04-01-product-repo-tooling-shell-hides-runtime-version-badge.md](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-01-product-repo-tooling-shell-hides-runtime-version-badge.md)
 
 - Version/Build: `v0.1.7` release-prep pass in detached `source-local` on
@@ -145,4 +150,4 @@
 - Runbook References: `odylith/MAINTAINER_RELEASE_RUNBOOK.md`,
   `odylith/registry/source/components/release/CURRENT_SPEC.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: `2026/freedom/v0.1.12` closeout for `B-030`.

@@ -15,6 +15,7 @@ from typing import Mapping
 from typing import Sequence
 
 from odylith.runtime.analysis_engine import import_graph
+from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import ImportArtifact
 from odylith.runtime.analysis_engine.types import ImportEdge
 from odylith.runtime.analysis_engine.types import ScanContext
@@ -23,7 +24,7 @@ from odylith.runtime.context_engine import odylith_context_cache
 
 
 _CACHE_VERSION = "v1"
-_PARSER_VERSION = "v1"
+_PARSER_VERSION = "v2"
 _CACHE_DIR = Path(".odylith/runtime/latency-cache/show-import-graph")
 _CACHE_PATH = _CACHE_DIR / "manifest.v1.json"
 
@@ -140,13 +141,17 @@ def _parse_source_file(
     go_module_prefix: str,
 ) -> dict[str, Any]:
     rel_path = entry.relative_to(repo_root).as_posix()
-    is_test = any(pattern in entry.name.lower() for pattern in import_graph._TEST_PATTERNS)  # noqa: SLF001
+    source_role = repo_analysis.source_file_role(entry, repo_root=repo_root)
     try:
         source = entry.read_text(encoding="utf-8", errors="replace")
     except OSError:
         source = ""
     todos: list[tuple[str, str]] = []
-    if source and not any(token in rel_path.lower() for token in import_graph._SKIP_PATH_TOKENS):  # noqa: SLF001
+    if (
+        source
+        and source_role == repo_analysis.SOURCE_CATEGORY_APP
+        and not any(token in rel_path.lower() for token in import_graph._SKIP_PATH_TOKENS)  # noqa: SLF001
+    ):
         for line in source.splitlines():
             match = import_graph._TODO_RE.search(line)  # noqa: SLF001
             if match is None:
@@ -169,7 +174,8 @@ def _parse_source_file(
     return {
         "path": rel_path,
         "language": import_graph._lang_for_ext(entry.suffix),  # noqa: SLF001
-        "is_test": bool(is_test),
+        "source_role": source_role,
+        "is_test": source_role == repo_analysis.SOURCE_CATEGORY_TEST,
         "todos": [[path, text] for path, text in todos[:10]],
         "artifact": _artifact_payload(artifact),
         "edges": [_edge_payload(edge) for edge in file_edges],
@@ -208,10 +214,16 @@ def _materialize_rows(rows: Sequence[Mapping[str, Any]]) -> tuple[list[ImportArt
         scan_ctx.file_count += 1
         language = str(row.get("language", "")).strip() or "unknown"
         scan_ctx.language_counts[language] = scan_ctx.language_counts.get(language, 0) + 1
-        if bool(row.get("is_test")):
+        source_role = str(row.get("source_role", "")).strip()
+        if source_role == repo_analysis.SOURCE_CATEGORY_APP:
+            scan_ctx.app_files.add(path)
+        elif source_role == repo_analysis.SOURCE_CATEGORY_TEST:
             scan_ctx.test_files.add(path)
+            scan_ctx.support_files.add(path)
+        elif source_role == repo_analysis.SOURCE_CATEGORY_SUPPORT:
+            scan_ctx.support_files.add(path)
         for todo in row.get("todos", []):
-            if isinstance(todo, list) and len(todo) == 2:
+            if source_role == repo_analysis.SOURCE_CATEGORY_APP and isinstance(todo, list) and len(todo) == 2:
                 scan_ctx.todos.append((str(todo[0]).strip(), str(todo[1]).strip()))
         artifact_payload = dict(row.get("artifact", {})) if isinstance(row.get("artifact"), Mapping) else {}
         if artifact_payload:

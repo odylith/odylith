@@ -23,6 +23,12 @@ _LIVE_BLOCK_LABELS: tuple[str, ...] = (
     "Odylith History:",
     "Odylith Risks:",
 )
+_PROMPT_VISIBLE_ASSIST_MARKDOWN = (
+    "**Odylith Assist:** visibility feedback noted; this line is deliberately shown in chat."
+)
+_PROMPT_VISIBLE_ASSIST_PLAIN = (
+    "Odylith Assist: visibility feedback noted; this line is deliberately shown in chat."
+)
 
 
 def _alignment_mapping(alignment: Mapping[str, Any], key: str) -> Mapping[str, Any]:
@@ -38,6 +44,12 @@ def _alignment_list(alignment: Mapping[str, Any], key: str) -> list[Any]:
 def join_sections(*values: Any) -> str:
     """Join unique normalized chat sections with one blank line between them."""
     return visibility_contract.join_blocks(*values)
+
+
+def contains_assist(value: object) -> bool:
+    """Return whether a rendered chat block already carries an Odylith Assist line."""
+
+    return "odylith assist:" in str(value or "").casefold()
 
 
 def suppress_prompt_live_narration(*, prompt: Any = "", assistant_summary: Any = "") -> bool:
@@ -100,7 +112,12 @@ def looks_like_teaser_live_text(value: str) -> bool:
     return "Odylith" in body
 
 
-def merge_replay_with_closeout(*, replay: str, closeout_text: str) -> str:
+def merge_replay_with_closeout(
+    *,
+    replay: str,
+    closeout_text: str,
+    supplemental_inside_live_with_assist: bool = False,
+) -> str:
     """Combine replayed live blocks with a closeout without duplicating assists."""
     visible_replay = str(replay or "").strip()
     closeout = str(closeout_text or "").strip()
@@ -108,7 +125,75 @@ def merge_replay_with_closeout(*, replay: str, closeout_text: str) -> str:
         return visibility_contract.compose_visible_markdown(closeout)
     if not closeout or "Odylith Assist:" in visible_replay or "**Odylith Assist:**" in visible_replay:
         return visibility_contract.compose_visible_markdown(visible_replay)
-    return visibility_contract.compose_visible_markdown(visible_replay, closeout)
+    return visibility_contract.compose_visible_markdown(
+        visible_replay,
+        closeout,
+        supplemental_inside_live_with_assist=supplemental_inside_live_with_assist,
+    )
+
+
+def prompt_visible_assist_text(bundle: Mapping[str, Any] | object) -> tuple[str, str]:
+    """Return the prompt-submit Assist text, preferring a bundle-owned closeout."""
+
+    existing_markdown = conversation_surface.render_closeout_text(bundle, markdown=True)
+    existing_plain = conversation_surface.render_closeout_text(bundle, markdown=False)
+    if not existing_markdown and not prompt_visibility_feedback_requested(bundle):
+        return "", ""
+    return (
+        existing_markdown or _PROMPT_VISIBLE_ASSIST_MARKDOWN,
+        existing_plain or _PROMPT_VISIBLE_ASSIST_PLAIN,
+    )
+
+
+def prompt_visibility_feedback_requested(bundle: Mapping[str, Any] | object) -> bool:
+    """Return whether the prompt explicitly reports missing Odylith visibility."""
+
+    observation = _alignment_mapping(bundle, "observation") if isinstance(bundle, Mapping) else {}
+    return conversation_closeout.visibility_feedback_requested(
+        prompt=observation.get("prompt_excerpt"),
+        assistant_summary=observation.get("assistant_summary", ""),
+    )
+
+
+def ensure_prompt_visible_assist_bundle(bundle: Mapping[str, Any] | object) -> dict[str, Any]:
+    """Add a prompt-submit Assist only for explicit visibility feedback.
+
+    Prompt hooks may be the only visible Odylith lane in a host session, but
+    normal successful work should not pick up a generic visibility recovery
+    line. The default text stays owned here so Codex, Claude, and the manual
+    visible-intervention recovery do not drift when feedback is explicit.
+    """
+
+    updated = dict(bundle) if isinstance(bundle, Mapping) else {}
+    if conversation_surface.render_closeout_text(updated, markdown=True):
+        return updated
+    if not prompt_visibility_feedback_requested(updated):
+        return updated
+    markdown_text, plain_text = prompt_visible_assist_text(updated)
+    updated["closeout_bundle"] = {
+        "eligible": True,
+        "style": "prompt_visible_feedback",
+        "label": "Odylith Assist:",
+        "preferred_markdown_label": "**Odylith Assist:**",
+        "text": markdown_text,
+        "plain_text": plain_text,
+        "markdown_text": markdown_text,
+        "proof": markdown_text.removeprefix("**Odylith Assist:** ").rstrip("."),
+    }
+    return updated
+
+
+def compose_prompt_visible_markdown(*, visible_markdown: str, bundle: Mapping[str, Any] | object) -> str:
+    """Append prompt-submit Assist to visible Markdown, or return Assist alone."""
+
+    visible = visibility_contract.normalize_block_string(visible_markdown)
+    if contains_assist(visible):
+        return visibility_contract.compose_visible_markdown(visible)
+    assisted_bundle = ensure_prompt_visible_assist_bundle(bundle)
+    assist_markdown = conversation_surface.render_closeout_text(assisted_bundle, markdown=True)
+    if not assist_markdown:
+        return visibility_contract.compose_visible_markdown(visible)
+    return visibility_contract.compose_visible_markdown(visible, assist_markdown)
 
 
 def build_prompt_conversation_bundle(
@@ -151,6 +236,7 @@ def build_prompt_conversation_bundle(
         tribunal_summary=_alignment_mapping(alignment, "tribunal_summary"),
         visibility_summary=_alignment_mapping(alignment, "visibility_summary"),
         delivery_snapshot=_alignment_mapping(alignment, "delivery_snapshot"),
+        alignment_proof=_alignment_mapping(alignment, "alignment_proof"),
     )
     return conversation_surface.build_conversation_bundle(
         repo_root=root,
@@ -172,23 +258,17 @@ def render_prompt_system_message(
         return ""
     root = Path(repo_root).expanduser().resolve()
     normalized_host = visibility_contract.normalize_token(host_family)
-    bundle = build_prompt_conversation_bundle(
-        repo_root=root,
-        host_family=normalized_host,
-        prompt=prompt,
-        session_id=session_id,
-        bundle_override=conversation_bundle_override,
-        intervention_bundle_override=intervention_bundle_override,
-    )
-    include_closeout = conversation_closeout.visibility_feedback_requested(prompt=prompt)
-    if include_closeout and not conversation_surface.render_closeout_text(bundle, markdown=True):
-        bundle = host_surface_runtime.compose_host_conversation_bundle(
+    bundle = ensure_prompt_visible_assist_bundle(
+        build_prompt_conversation_bundle(
             repo_root=root,
             host_family=normalized_host,
-            turn_phase="prompt_submit",
+            prompt=prompt,
             session_id=session_id,
-            prompt_excerpt=prompt,
+            bundle_override=conversation_bundle_override,
+            intervention_bundle_override=intervention_bundle_override,
         )
+    )
+    include_closeout = True
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=root,
         bundle=bundle,
@@ -203,21 +283,22 @@ def render_prompt_system_message(
         repo_root=root,
         host_family=normalized_host,
         session_id=session_id,
-        include_assist=include_closeout,
+        include_assist=True,
     )
     if replay:
-        closeout_text = (
-            conversation_surface.render_closeout_text(bundle, markdown=True)
-            if include_closeout
-            else ""
+        closeout_text = conversation_surface.render_closeout_text(bundle, markdown=True)
+        return merge_replay_with_closeout(
+            replay=replay,
+            closeout_text=closeout_text,
+            supplemental_inside_live_with_assist=True,
         )
-        return merge_replay_with_closeout(replay=replay, closeout_text=closeout_text)
-    return decision.visible_markdown or conversation_surface.render_live_text(
+    visible = decision.visible_markdown or conversation_surface.render_live_text(
         bundle,
         markdown=False,
         include_proposal=False,
         prefer_ambient_over_teaser=True,
     )
+    return compose_prompt_visible_markdown(visible_markdown=visible, bundle=bundle)
 
 
 def render_prompt_bundle_text(

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 
-from odylith.runtime.evaluation import odylith_benchmark_runner as runner
+from odylith.runtime.evaluation import odylith_benchmark_tree_identity as tree_identity_runtime
 
 
 def test_snapshot_overlay_paths_exclude_mutable_runtime_state() -> None:
@@ -25,7 +25,7 @@ def test_snapshot_overlay_paths_exclude_mutable_runtime_state() -> None:
         }
     ]
 
-    assert runner._report_snapshot_overlay_paths(scenario_reports) == [  # noqa: SLF001
+    assert tree_identity_runtime.report_snapshot_overlay_paths(scenario_reports) == [
         "README.md",
         "docs/benchmarks/README.md",
     ]
@@ -45,7 +45,7 @@ def test_tree_identity_stays_current_when_ignored_runtime_reports_change(tmp_pat
     report_path = repo_root / ".odylith" / "runtime" / "odylith-benchmarks" / "latest.v1.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps({"report_id": "old"}), encoding="utf-8")
-    snapshot_paths = runner._report_snapshot_overlay_paths(  # noqa: SLF001
+    snapshot_paths = tree_identity_runtime.report_snapshot_overlay_paths(
         [
             {
                 "results": [
@@ -61,7 +61,7 @@ def test_tree_identity_stays_current_when_ignored_runtime_reports_change(tmp_pat
             }
         ]
     )
-    report = runner.benchmark_tree_identity(
+    report = tree_identity_runtime.benchmark_tree_identity(
         repo_root=repo_root,
         selection={},
         snapshot_paths=snapshot_paths,
@@ -70,4 +70,4 @@ def test_tree_identity_stays_current_when_ignored_runtime_reports_change(tmp_pat
 
     report_path.write_text(json.dumps({"report_id": "new"}), encoding="utf-8")
 
-    assert runner.benchmark_report_matches_current_tree(repo_root=repo_root, report=report)
+    assert tree_identity_runtime.benchmark_report_matches_current_tree(repo_root=repo_root, report=report)

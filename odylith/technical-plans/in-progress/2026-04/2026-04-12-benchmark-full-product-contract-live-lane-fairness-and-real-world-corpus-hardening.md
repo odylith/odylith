@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-04-12
 
-Updated: 2026-04-12
+Updated: 2026-04-28
 
 Backlog: B-093
 
@@ -52,6 +52,7 @@ Related Bugs:
 - [CB-106](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-benchmark-live-preflight-evidence-is-only-injected-for-odylith-on-without-a-declared-comparison-contract.md)
 - [CB-107](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-12-benchmark-live-observed-path-scoring-credits-odylith-prompt-surfaces-but-not-equivalent-raw-prompt-anchors.md)
 - [CB-113](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-15-benchmark-sharded-proof-can-lose-final-shard-artifacts-and-authoritative-active-.md)
+- [CB-126](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md)
 
 ## Learnings
 - [x] A benchmark can be technically isolated and still tell the wrong story if
@@ -81,6 +82,10 @@ Related Bugs:
       from the validated full-corpus report selected for `0.1.11`.
 - [x] Support release-safe full-corpus proof by merging shard history reports
       back into one canonical report when operational shard splits are used.
+- [x] Move benchmark tree identity and current-tree publication matching out
+      of the red-zone runner into `odylith_benchmark_tree_identity.py`, with
+      runner, shard merge, publication, compare, and tests using that focused
+      owner directly.
 
 ## Should-Ship
 - [x] Add cross-layer tests that packet, live runner, report summaries, docs,
@@ -120,9 +125,11 @@ Related Bugs:
 - [ ] [optimization-evaluation-corpus.v1.json](/Users/freedom/code/odylith/odylith/runtime/source/optimization-evaluation-corpus.v1.json)
 - [ ] [odylith_benchmark_live_execution.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py)
 - [ ] [odylith_benchmark_live_prompt.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py)
-- [ ] [odylith_benchmark_runner.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_runner.py)
-- [ ] [odylith_benchmark_publication.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_publication.py)
-- [ ] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/benchmark/CURRENT_SPEC.md)
+- [x] [odylith_benchmark_runner.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_runner.py)
+- [x] [odylith_benchmark_tree_identity.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_tree_identity.py)
+- [x] [odylith_benchmark_shard_merge.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_shard_merge.py)
+- [x] [odylith_benchmark_publication.py](/Users/freedom/code/odylith/src/odylith/runtime/evaluation/odylith_benchmark_publication.py)
+- [x] [CURRENT_SPEC.md](/Users/freedom/code/odylith/odylith/registry/source/components/benchmark/CURRENT_SPEC.md)
 - [ ] [FAMILIES_AND_EVALS.md](/Users/freedom/code/odylith/docs/benchmarks/FAMILIES_AND_EVALS.md)
 - [ ] [METRICS_AND_PRIORITIES.md](/Users/freedom/code/odylith/docs/benchmarks/METRICS_AND_PRIORITIES.md)
 - [ ] [README.md](/Users/freedom/code/odylith/README.md)
@@ -137,6 +144,8 @@ Related Bugs:
 ## Validation
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_live_execution.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_corpus.py`
 - [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_publication.py tests/unit/runtime/test_odylith_benchmark_shard_merge.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_odylith_benchmark_tree_identity.py tests/unit/runtime/test_odylith_benchmark_publication.py tests/unit/runtime/test_benchmark_compare.py tests/unit/runtime/test_odylith_benchmark_shard_merge.py tests/unit/runtime/test_odylith_benchmark_runner.py tests/unit/runtime/test_odylith_benchmark_corpus.py tests/unit/runtime/test_odylith_benchmark_prompt_payloads.py`
+- [x] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_hygiene.py::test_runtime_hotfile_inventory_stays_explicit_and_non_expanding`
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/unit/runtime/test_odylith_benchmark_execution_governance.py tests/unit/runtime/test_execution_governance.py tests/unit/runtime/test_odylith_runtime_surface_summary.py`
 - [ ] `PYTHONPATH=src python3 -m pytest -q tests/integration/runtime/test_surface_browser_smoke.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
 - [x] `PYTHONPATH=src python3 -m odylith.cli benchmark --repo-root . --profile diagnostic`

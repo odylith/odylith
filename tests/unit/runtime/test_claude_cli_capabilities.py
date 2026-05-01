@@ -237,7 +237,10 @@ def test_render_effective_claude_project_settings_is_byte_stable_and_idempotent(
     allow = payload["permissions"]["allow"]
     assert "Bash(./.odylith/bin/odylith claude:*)" in allow
     assert "Bash(./.odylith/bin/odylith codex:*)" in allow
-    assert len(allow) == 15
+    assert "Bash(./.odylith/bin/odylith show:*)" in allow
+    assert "Bash(./.odylith/bin/odylith capabilities:*)" in allow
+    assert "Bash(./.odylith/bin/odylith --help:*)" in allow
+    assert len(allow) == 18
 
 
 def test_inspect_claude_cli_capabilities_rejects_missing_bash_checkpoint_for_live_proof(

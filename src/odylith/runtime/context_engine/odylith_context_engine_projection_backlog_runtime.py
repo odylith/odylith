@@ -483,12 +483,16 @@ def load_bug_rows(
             finally:
                 connection.close()
 
-        return _cached_projection_rows(
+        runtime_rows = _cached_projection_rows(
             repo_root=root,
             cache_name="bug_rows",
             loader=_load_runtime_rows,
             scope="default",
         )
+        source_rows = context_engine_store._load_bug_projection(repo_root=root)
+        if not runtime_rows and source_rows:
+            return source_rows
+        return runtime_rows
     return context_engine_store._load_bug_projection(repo_root=root)
 
 def load_bug_snapshot(

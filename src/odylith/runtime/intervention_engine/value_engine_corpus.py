@@ -48,6 +48,25 @@ _ALLOWED_VISIBILITY_EXPECTATIONS = frozenset(
         "assistant_visible_fallback",
     }
 )
+_USER_VISIBLE_TEXT_KEYS = ("markdown_text", "plain_text")
+_USER_VISIBLE_PROPOSITION_KEYS = ("claim_text",)
+_USER_VISIBLE_INTERNAL_PATTERNS = (
+    ("recursive Odylith display instruction", re.compile(r"\bshow the next odylith\b", re.IGNORECASE)),
+    ("internal session-state instruction", re.compile(r"\btreat the session\b", re.IGNORECASE)),
+    ("internal chat-proof state", re.compile(r"\bchat-proved\b", re.IGNORECASE)),
+    ("host hook vocabulary", re.compile(r"\bhook\b", re.IGNORECASE)),
+    ("host payload vocabulary", re.compile(r"\bpayload\b", re.IGNORECASE)),
+    ("delivery ledger vocabulary", re.compile(r"\bledger\b", re.IGNORECASE)),
+    ("visibility broker vocabulary", re.compile(r"\bbroker\b", re.IGNORECASE)),
+    ("fallback implementation vocabulary", re.compile(r"\bfallback\b", re.IGNORECASE)),
+    ("internal chat-visibility proof vocabulary", re.compile(r"\b(?:chat-visible|visible) proof\b", re.IGNORECASE)),
+    ("raw host systemMessage vocabulary", re.compile(r"\bsystemMessage\b", re.IGNORECASE)),
+    ("raw host additionalContext vocabulary", re.compile(r"\badditionalContext\b", re.IGNORECASE)),
+    ("product-theater visibility copy", re.compile(r"\b(?:Odylith moment|ready to speak|brand promise|visible lane)\b", re.IGNORECASE)),
+    ("internal transcript proof vocabulary", re.compile(r"\b(?:transcript confirmation|proven visible|visible markdown|visibility decision)\b", re.IGNORECASE)),
+    ("product-repo memory claim", re.compile(r"\bCasebook already remembers\b", re.IGNORECASE)),
+    ("repo-specific governance id", re.compile(r"\b(?:B|CB|D)-\d+\b")),
+)
 _DUPLICATE_TOKEN_RE = re.compile(r"[a-z0-9][a-z0-9_:\.-]{1,80}")
 _DUPLICATE_TOKEN_STOPWORDS = frozenset(
     {
@@ -109,6 +128,31 @@ def load_adjudication_corpus(*, repo_root: Path | str | None = None) -> dict[str
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _validate_user_visible_option_copy(*, case_id: str, option: Mapping[str, Any]) -> None:
+    label = _normalize_token(option.get("proposed_label") or option.get("label"))
+    if label not in VISIBLE_LABELS:
+        return
+    rows: list[tuple[str, str]] = [
+        (key, _normalize_string(option.get(key)))
+        for key in _USER_VISIBLE_TEXT_KEYS
+        if _normalize_string(option.get(key))
+    ]
+    proposition = _mapping(option.get("proposition"))
+    rows.extend(
+        (f"proposition.{key}", _normalize_string(proposition.get(key)))
+        for key in _USER_VISIBLE_PROPOSITION_KEYS
+        if _normalize_string(proposition.get(key))
+    )
+    for key, text in rows:
+        for label_text, pattern in _USER_VISIBLE_INTERNAL_PATTERNS:
+            if pattern.search(text):
+                option_id = _normalize_string(option.get("option_id")) or "<unknown>"
+                raise ValueError(
+                    f"intervention value corpus case {case_id} option {option_id} "
+                    f"has user-visible {key} with {label_text}"
+                )
+
+
 def validate_adjudication_corpus(corpus: Mapping[str, Any]) -> None:
     cases = _sequence(corpus.get("cases"))
     if not cases:
@@ -162,6 +206,7 @@ def validate_adjudication_corpus(corpus: Mapping[str, Any]) -> None:
                 raise ValueError(f"intervention value corpus case {case_id} has an option without proposition provenance")
             if not isinstance(option.get("value_features"), Mapping):
                 raise ValueError(f"intervention value corpus case {case_id} has an option without value_features")
+            _validate_user_visible_option_copy(case_id=case_id, option=option)
         proposition_ids = {option.proposition.proposition_id for option in options}
         expected = set(_string_list(case.get("expected_selected_propositions")))
         suppressed = set(_string_list(case.get("must_suppress_propositions")))

@@ -558,7 +558,8 @@ def test_shell_tab_matrix_keeps_single_visible_pane_in_compact_viewport(compact_
         _wait_for_shell_tab(page, tab)
         assert page.locator(tab_selector).get_attribute("aria-selected") == "true"
         _assert_single_visible_pane(page, frame_selector)
-        page.frame_locator(frame_selector).locator("h1", has_text=heading_text).wait_for(timeout=15000)
+        heading_selector = ".hero-title" if tab == "casebook" else "h1"
+        page.frame_locator(frame_selector).locator(heading_selector, has_text=heading_text).wait_for(timeout=15000)
         src = str(page.locator(frame_selector).get_attribute("src") or "")
         assert route_fragment in src
 
@@ -989,7 +990,7 @@ def test_casebook_search_filters_and_empty_state(browser_context) -> None:  # no
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     filter_geometry = casebook.locator(".filters-bar").evaluate(
         """node => {
             const bar = node.getBoundingClientRect();
@@ -1061,7 +1062,7 @@ def test_casebook_first_bug_rows_load_details_without_dead_shards(browser_contex
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
 
     sample_rows = casebook.locator("button.bug-row").evaluate_all(
         """nodes => nodes.slice(0, 6).map((node) => ({
@@ -1191,7 +1192,7 @@ def test_casebook_proof_control_panel_stays_pinned_to_the_selected_bug_lane(tmp_
                 assert response is not None and response.ok
 
                 casebook = page.frame_locator("#frame-casebook")
-                casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+                casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
                 _wait_for_shell_query_param(page, tab="casebook", key="bug", value="CB-999")
                 casebook.locator("#detailPane .detail-title", has_text="Proof control primary").wait_for(timeout=15000)
                 casebook.locator("#detailPane .section-heading", has_text="Proof Control Panel").wait_for(timeout=15000)
@@ -2486,7 +2487,7 @@ def test_compass_unavailable_brief_hides_copy_button_and_stays_compact(
                 }
                 digest_text = compass.locator("#digest-list").inner_text()
                 assert "Brief unavailable right now" in digest_text
-                assert "Next retry" in digest_text
+                assert "Will retry after" in digest_text
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
@@ -3066,7 +3067,7 @@ def test_casebook_detail_stacks_cleanly_in_compact_viewport(compact_browser_cont
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
 
     first_bug = casebook.locator("button.bug-row").first
     bug_route = str(first_bug.get_attribute("data-bug") or "").strip()
@@ -3417,6 +3418,88 @@ def test_compass_timeline_mixed_local_batch_falls_back_to_transaction_headline(t
                 timeline_text = compass.locator("#timeline").inner_text()
                 assert "Advanced shared infra and env-manifest wiring in the latest audit." not in timeline_text
                 assert "Reworked Compass's inline audit narrative." not in timeline_text
+
+                _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+            finally:
+                context.close()
+
+
+def test_compass_timeline_hides_internal_sync_transactions_and_collapsed_meta(tmp_path) -> None:  # noqa: ANN001
+    fixture_root = tmp_path / "fixture"
+    shutil.copytree(_REPO_ROOT / "odylith", fixture_root / "odylith")
+
+    runtime_json_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.json"
+    runtime_js_path = fixture_root / "odylith" / "compass" / "runtime" / "current.v1.js"
+    payload = json.loads(runtime_json_path.read_text(encoding="utf-8"))
+
+    event = dict((payload.get("timeline_events") or [])[0])
+    event["id"] = "atlas-create:event"
+    event["kind"] = "implementation"
+    event["summary"] = "D-001 created and rendered."
+    event["ts_iso"] = "2026-04-30T08:39:00-07:00"
+    event["author"] = "assistant"
+    event["files"] = ["odylith/atlas/source/dentoai-isb-boundary-and-ownership.mmd"]
+    event["workstreams"] = []
+
+    visible_tx = dict((payload.get("timeline_transactions") or [])[0])
+    visible_tx["id"] = "txn:global:auto-global-0003:0003"
+    visible_tx["transaction_id"] = "txn:global:auto-global-0003:0003"
+    visible_tx["session_id"] = ""
+    visible_tx["headline"] = "D-001 created and rendered."
+    visible_tx["start_ts_iso"] = "2026-04-30T08:39:00-07:00"
+    visible_tx["end_ts_iso"] = "2026-04-30T08:39:00-07:00"
+    visible_tx["event_count"] = 17
+    visible_tx["files_count"] = 15
+    visible_tx["workstreams"] = []
+    visible_tx["files"] = list(event["files"])
+    visible_tx["events"] = [event]
+
+    internal_tx = dict(visible_tx)
+    internal_tx["id"] = "txn:global:auto-global-0002:0002"
+    internal_tx["transaction_id"] = "txn:global:auto-global-0002:0002"
+    internal_tx["headline"] = "Closed the active slice and synced the governance surfaces in the latest audit."
+    internal_tx["start_ts_iso"] = "2026-04-30T08:31:00-07:00"
+    internal_tx["end_ts_iso"] = "2026-04-30T08:31:00-07:00"
+
+    payload["generated_utc"] = "2026-04-30T15:40:00Z"
+    payload["now_local_iso"] = "2026-04-30T08:40:00-07:00"
+    payload["timeline_events"] = [event]
+    payload["timeline_transactions"] = [visible_tx, internal_tx]
+    payload["history"] = {
+        "retention_days": 15,
+        "dates": ["2026-04-30"],
+        "restored_dates": [],
+        "archive": {"compressed": True, "path": "archive", "count": 0, "dates": [], "newest_date": "", "oldest_date": ""},
+    }
+
+    runtime_json_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    runtime_js_path.write_text(
+        "window.__ODYLITH_COMPASS_RUNTIME__ = " + json.dumps(payload, separators=(",", ":")) + ";\n",
+        encoding="utf-8",
+    )
+
+    with _static_server(root=fixture_root) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 1440, "height": 1100})
+            try:
+                page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                response = page.goto(
+                    base_url + "/odylith/index.html?tab=compass&window=24h&date=live",
+                    wait_until="domcontentloaded",
+                )
+                assert response is not None and response.ok
+
+                compass = page.frame_locator("#frame-compass")
+                compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
+                compass.locator("#timeline .tx-headline", has_text="D-001 created and rendered.").wait_for(timeout=15000)
+                timeline_text = compass.locator("#timeline").inner_text()
+                assert "Closed the active slice and synced the governance surfaces" not in timeline_text
+
+                summary_text = compass.locator("#timeline .tx-card summary").first.inner_text()
+                assert "08:39" in summary_text
+                assert "17 events" not in summary_text
+                assert "15 files" not in summary_text
+                assert "txn:global" not in summary_text
 
                 _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
             finally:
@@ -3840,9 +3923,15 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
     source_truth_path = fixture_root / "odylith" / "compass" / "compass-source-truth.v1.json"
 
     traceability_payload = json.loads(traceability_path.read_text(encoding="utf-8"))
+    current_release = traceability_payload.get("current_release")
+    current_release = current_release if isinstance(current_release, dict) else {}
+    release_id = str(current_release.get("release_id") or "release-0-1-11").strip()
+    release_label = str(current_release.get("display_label") or current_release.get("version") or "0.1.11").strip()
+    release_version = str(current_release.get("version") or release_label).strip()
+    release_tag = str(current_release.get("tag") or f"v{release_version}").strip()
     traceability_payload["generated_utc"] = "2026-04-10T12:00:00Z"
     for release in traceability_payload.get("releases", []):
-        if str(release.get("release_id", "")).strip() != "release-0-1-11":
+        if str(release.get("release_id", "")).strip() != release_id:
             continue
         release["active_workstreams"] = ["B-068"]
         release["completed_workstreams"] = ["B-061", "B-062", "B-063", "B-067"]
@@ -3855,21 +3944,21 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
             row["status"] = "finished"
             row["active_release_id"] = ""
             row["active_release"] = {}
-            row["release_history_summary"] = "Removed from 0.1.11"
+            row["release_history_summary"] = f"Removed from {release_label}"
         if idea_id == "B-068":
             row["status"] = "implementation"
-            row["active_release_id"] = "release-0-1-11"
+            row["active_release_id"] = release_id
             row["active_release"] = {
-                "release_id": "release-0-1-11",
+                "release_id": release_id,
                 "status": "active",
-                "version": "0.1.11",
-                "tag": "v0.1.11",
-                "display_label": "0.1.11",
+                "version": release_version,
+                "tag": release_tag,
+                "display_label": release_label,
                 "aliases": ["current"],
                 "active_workstreams": ["B-068"],
                 "completed_workstreams": ["B-061", "B-062", "B-063", "B-067"],
             }
-            row["release_history_summary"] = "Active: 0.1.11 · Added to 0.1.11"
+            row["release_history_summary"] = f"Active: {release_label} · Added to {release_label}"
     traceability_path.write_text(json.dumps(traceability_payload, indent=2) + "\n", encoding="utf-8")
 
     assert render_compass_dashboard.main(
@@ -3892,8 +3981,8 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
     runtime_payload["release_summary"] = {
         "catalog": [
             {
-                "release_id": "release-0-1-11",
-                "display_label": "0.1.11",
+                "release_id": release_id,
+                "display_label": release_label,
                 "status": "active",
                 "aliases": ["current"],
                 "active_workstreams": ["B-067"],
@@ -3901,8 +3990,8 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
             }
         ],
         "current_release": {
-            "release_id": "release-0-1-11",
-            "display_label": "0.1.11",
+            "release_id": release_id,
+            "display_label": release_label,
             "status": "active",
             "aliases": ["current"],
             "active_workstreams": ["B-067"],
@@ -3917,13 +4006,13 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
             "title": "Context Engine Module Decomposition and Boundary Hardening",
             "status": "implementation",
             "release": {
-                "release_id": "release-0-1-11",
-                "display_label": "0.1.11",
+                "release_id": release_id,
+                "display_label": release_label,
                 "aliases": ["current"],
                 "active_workstreams": ["B-067"],
                 "completed_workstreams": ["B-061", "B-062", "B-063"],
             },
-            "release_history_summary": "Active: 0.1.11 · Added to 0.1.11",
+            "release_history_summary": f"Active: {release_label} · Added to {release_label}",
             "plan": {"progress_ratio": 0.0},
         }
     ]
@@ -3951,11 +4040,11 @@ def test_compass_reconciles_release_targets_from_live_traceability_when_runtime_
                 compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
                 compass.locator("#status-banner").wait_for(timeout=15000)
                 banner_text = compass.locator("#status-banner").inner_text().strip()
-                assert "Release truth for 0.1.11 now targets B-068" in banner_text
+                assert f"Release truth for {release_label} now targets B-068" in banner_text
                 assert "B-067" in banner_text
 
                 release_section = compass.locator("#release-groups details.execution-wave-section").filter(
-                    has=compass.locator(".execution-wave-section-title", has_text="0.1.11")
+                    has=compass.locator(".execution-wave-section-title", has_text=release_label)
                 ).first
                 release_section.wait_for(timeout=15000)
                 if release_section.get_attribute("open") is None:

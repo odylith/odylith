@@ -45,11 +45,6 @@ def test_post_bash_checkpoint_runs_start_for_edit_like_bash(monkeypatch, tmp_pat
         "refresh_governance",
         lambda **kwargs: None,
     )
-    monkeypatch.setattr(
-        claude_host_post_bash_checkpoint,
-        "_post_bash_bundle",
-        lambda **kwargs: {},
-    )
 
     exit_code = claude_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
 
@@ -73,7 +68,7 @@ def test_post_bash_checkpoint_skips_non_edit_like_bash(monkeypatch, tmp_path: Pa
     assert calls == []
 
 
-def test_post_bash_checkpoint_emits_visible_observation_and_proposal(
+def test_post_bash_checkpoint_stays_silent_on_success(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -98,71 +93,44 @@ def test_post_bash_checkpoint_emits_visible_observation_and_proposal(
         "refresh_governance",
         lambda **kwargs: None,
     )
+
+    exit_code = claude_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    assert capsys.readouterr().out == ""
+
+
+def test_post_bash_checkpoint_emits_compact_failure_only(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    _patch_stdin(
+        monkeypatch,
+        "apply_patch <<'PATCH'\n*** Begin Patch\n*** Update File: odylith/radar/source/item.md\n@@\n-old\n+new\n*** End Patch\nPATCH",
+        session_id="claude-bash-failure",
+    )
+    monkeypatch.setattr(
+        claude_host_post_bash_checkpoint.claude_host_shared,
+        "run_odylith",
+        lambda **kwargs: None,
+    )
     monkeypatch.setattr(
         claude_host_post_bash_checkpoint,
-        "_post_bash_bundle",
-        lambda **kwargs: {
-            "intervention_bundle": {
-                "candidate": {
-                    "stage": "card",
-                    "suppressed_reason": "",
-                    "markdown_text": "**Odylith Observation:** The Bash edit is governed now.",
-                    "plain_text": "Odylith Observation: The Bash edit is governed now.",
-                },
-                "proposal": {
-                    "eligible": True,
-                    "suppressed_reason": "",
-                    "markdown_text": 'Odylith Proposal: preserve the chat-visible UX contract.\n\nTo apply, say "apply this proposal".',
-                    "plain_text": "Odylith Proposal: preserve the chat-visible UX contract.",
-                },
-            },
-            "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
-            },
-        },
+        "command_scoped_governed_paths",
+        lambda **kwargs: ["odylith/radar/source/item.md"],
+    )
+    monkeypatch.setattr(
+        claude_host_post_bash_checkpoint,
+        "refresh_governance",
+        lambda **kwargs: {"systemMessage": "Odylith governance refresh failed after Bash edit: validate failure"},
     )
 
     exit_code = claude_host_post_bash_checkpoint.main(["--repo-root", str(tmp_path)])
 
     payload = json.loads(capsys.readouterr().out)
     assert exit_code == 0
-    assert "Odylith visible delivery fallback:" in payload["additionalContext"]
-    assert "**Odylith Observation:** The Bash edit is governed now." in payload["additionalContext"]
-    assert "Odylith Proposal:" in payload["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["additionalContext"]
-    assert "**Odylith Observation:** The Bash edit is governed now." in payload["systemMessage"]
-    assert "Odylith Proposal:" in payload["systemMessage"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["systemMessage"]
-
-
-def test_post_bash_bundle_uses_recent_prompt_excerpt_not_intervention_summary(
-    monkeypatch,
-    tmp_path: Path,
-) -> None:
-    claude_host_post_bash_checkpoint.codex_host_post_bash_checkpoint.intervention_surface_runtime.stream_state.append_intervention_event(
-        repo_root=tmp_path,
-        kind="capture_proposed",
-        summary="Odylith Proposal pending.",
-        session_id="claude-bash-memory",
-        host_family="claude",
-        intervention_key="iv-claude-bash",
-        turn_phase="post_bash_checkpoint",
-        prompt_excerpt="Keep the human prompt alive across Claude Bash checkpoints.",
-        display_markdown="**Odylith Proposal**",
-    )
-    monkeypatch.setattr(
-        claude_host_post_bash_checkpoint,
-        "inferred_command_paths",
-        lambda **kwargs: ["src/main.py"],
-    )
-
-    bundle = claude_host_post_bash_checkpoint._post_bash_bundle(
-        project_dir=tmp_path,
-        command="python -c \"open('src/main.py', 'w').write('x')\"",
-        session_id="claude-bash-memory",
-    )
-
-    assert bundle["observation"]["prompt_excerpt"] == (
-        "Keep the human prompt alive across Claude Bash checkpoints."
-    )
+    assert set(payload) == {"systemMessage"}
+    assert "validate failure" in payload["systemMessage"]
+    assert "Odylith Observation" not in payload["systemMessage"]
+    assert "Odylith Proposal" not in payload["systemMessage"]

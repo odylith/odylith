@@ -167,5 +167,247 @@ def test_repo_governance_docs_preserve_watcher_and_brief_contract_in_bundle_mirr
     )
 
     for live_path, mirror_path, expected_snippet in checks:
-        assert expected_snippet in live_path.read_text(encoding="utf-8")
-        assert expected_snippet in mirror_path.read_text(encoding="utf-8")
+        live_text = live_path.read_text(encoding="utf-8")
+        mirror_text = mirror_path.read_text(encoding="utf-8")
+        assert expected_snippet in live_text
+        assert expected_snippet in mirror_text
+        assert live_text == mirror_text
+
+
+def test_migration_observer_agent_guidance_stays_maintainer_only() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    forbidden_tokens = (
+        "migration-observer:<version>:<surface>:<fingerprint>",
+        "Any consumer-visible Odylith surface change must assess installed consumer",
+        "Any Odylith surface change must be assessed against already-installed",
+        "Every consumer-visible surface change must be assessed for already-installed",
+        "surface migration observer emits a missing migration-assessment",
+    )
+    consumer_safe_paths = (
+        repo_root / "AGENTS.md",
+        repo_root / "odylith" / "AGENTS.md",
+        repo_root / "odylith" / "agents-guidelines" / "DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        repo_root / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md",
+        repo_root / "odylith" / "skills" / "odylith-code-hygiene-guard" / "SKILL.md",
+        repo_root / "odylith" / "skills" / "odylith-sync" / "SKILL.md",
+        repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "UPGRADE_AND_RECOVERY.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-code-hygiene-guard"
+        / "SKILL.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-sync"
+        / "SKILL.md",
+    )
+
+    for path in consumer_safe_paths:
+        text = path.read_text(encoding="utf-8")
+        for token in forbidden_tokens:
+            assert token not in text, path
+
+    maintainer_agents = (repo_root / "odylith" / "maintainer" / "AGENTS.md").read_text(encoding="utf-8")
+    maintainer_skill = (
+        repo_root / "odylith" / "maintainer" / "skills" / "fail-closed-code-hygiene" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+
+    assert "maintainer release-gate" in maintainer_agents
+    assert "obligation only" in maintainer_agents
+    assert "migration-observer:<version>:<surface>:<fingerprint>" in maintainer_agents
+    assert "Keep that migration-observer rule maintainer-only" in maintainer_skill
+    assert "migration-observer:<version>:<surface>:<fingerprint>" in maintainer_skill
+
+
+def test_github_issue_pipeline_guidance_stays_maintainer_only() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    removed_paths = (
+        repo_root / "odylith" / "agents-guidelines" / "GITHUB_ISSUE_PIPELINE.md",
+        repo_root / "odylith" / "skills" / "odylith-github-issue-triage" / "SKILL.md",
+        repo_root / "odylith" / "skills" / "odylith-github-release-closeout" / "SKILL.md",
+        repo_root / ".agents" / "skills" / "odylith-github-issue-triage" / "SKILL.md",
+        repo_root / ".agents" / "skills" / "odylith-github-release-closeout" / "SKILL.md",
+        repo_root / ".claude" / "skills" / "odylith-github-issue-triage" / "SKILL.md",
+        repo_root / ".claude" / "skills" / "odylith-github-release-closeout" / "SKILL.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "GITHUB_ISSUE_PIPELINE.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-github-issue-triage"
+        / "SKILL.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-github-release-closeout"
+        / "SKILL.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "project-root"
+        / ".agents"
+        / "skills"
+        / "odylith-github-issue-triage"
+        / "SKILL.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "project-root"
+        / ".agents"
+        / "skills"
+        / "odylith-github-release-closeout"
+        / "SKILL.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "project-root"
+        / ".claude"
+        / "skills"
+        / "odylith-github-issue-triage"
+        / "SKILL.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "project-root"
+        / ".claude"
+        / "skills"
+        / "odylith-github-release-closeout"
+        / "SKILL.md",
+    )
+    for path in removed_paths:
+        assert not path.exists(), path
+
+    source_readme = (repo_root / "odylith" / "README.md").read_text(encoding="utf-8")
+    assert "product-repo-only `maintainer/` subtree" in source_readme
+    assert "That subtree is excluded from consumer bundle assets." in source_readme
+    assert "Those live under `odylith/maintainer/`" not in source_readme
+    assert "- `maintainer/`" not in source_readme
+
+    bundle_readme = (
+        repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "README.md"
+    ).read_text(encoding="utf-8")
+    assert "maintainer/" not in bundle_readme
+    assert "maintainer-only" not in bundle_readme
+    assert "product-repo-only" not in bundle_readme
+
+    consumer_guidance_paths = (
+        repo_root / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        repo_root / "odylith" / "agents-guidelines" / "PRODUCT_SURFACES_AND_RUNTIME.md",
+        repo_root / "odylith" / "agents-guidelines" / "SECURITY_AND_TRUST.md",
+        repo_root / "odylith" / "agents-guidelines" / "UPGRADE_AND_RECOVERY.md",
+        repo_root / "odylith" / "agents-guidelines" / "VALIDATION_AND_TESTING.md",
+        repo_root / "odylith" / "skills" / "odylith-guidance-behavior" / "SKILL.md",
+        repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
+        repo_root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "CODING_STANDARDS.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "PRODUCT_SURFACES_AND_RUNTIME.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "SECURITY_AND_TRUST.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "UPGRADE_AND_RECOVERY.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "agents-guidelines"
+        / "VALIDATION_AND_TESTING.md",
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-guidance-behavior"
+        / "SKILL.md",
+    )
+    forbidden_consumer_fragments = (
+        "odylith/maintainer/",
+        "../maintainer",
+        "maintainer/AGENTS.md",
+        "maintainer/agents-guidelines",
+        "maintainer-only release guidance",
+        "explicit maintainer-only override",
+        "product-repo-only IDs",
+    )
+    for path in consumer_guidance_paths:
+        text = path.read_text(encoding="utf-8")
+        for fragment in forbidden_consumer_fragments:
+            assert fragment not in text, path
+
+    maintainer_guideline = (repo_root / "odylith" / "maintainer" / "agents-guidelines" / "GITHUB_ISSUE_PIPELINE.md")
+    maintainer_triage = repo_root / "odylith" / "maintainer" / "skills" / "odylith-github-issue-triage" / "SKILL.md"
+    maintainer_closeout = (
+        repo_root / "odylith" / "maintainer" / "skills" / "odylith-github-release-closeout" / "SKILL.md"
+    )
+
+    assert "Do not mirror this guideline into consumer-safe" in maintainer_guideline.read_text(encoding="utf-8")
+    assert "maintainer-only skill" in maintainer_triage.read_text(encoding="utf-8")
+    assert "maintainer-only skill" in maintainer_closeout.read_text(encoding="utf-8")

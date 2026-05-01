@@ -44,7 +44,7 @@ def test_observation_voice_uses_fact_detail_and_action_rationale() -> None:
         target_kind="workstream",
         target_id="B-096",
         title="Visible Intervention Hardening",
-        rationale="This turn resolves to B-096; keep the next proof or edit on that governed Radar lane.",
+        rationale="Local Radar candidate: B-096. Update it only if it still owns this work.",
     )
 
     _headline, markdown_text, plain_text, teaser_text = voice.render_observation(
@@ -55,7 +55,7 @@ def test_observation_voice_uses_fact_detail_and_action_rationale() -> None:
     )
 
     assert markdown_text.startswith("**Odylith Observation:** B-096 is the live Radar lane")
-    assert "keep the next proof or edit on that governed Radar lane" in markdown_text
+    assert "Update it only if it still owns this work" in markdown_text
     assert plain_text.startswith("Odylith Observation: B-096 is the live Radar lane")
     assert teaser_text.startswith("Odylith Observation:")
     assert "Odylith is tracking this signal" not in teaser_text
@@ -67,8 +67,8 @@ def test_observation_voice_uses_fact_detail_and_action_rationale() -> None:
 def test_ambient_voice_uses_supported_fact_content_instead_of_kind_template() -> None:
     fact = GovernanceFact(
         kind="history",
-        headline="Casebook already remembers CB-122.",
-        detail="The prior recurrence was Odylith being counted as active before users could see it.",
+        headline="Casebook has a matching visibility failure.",
+        detail="A prior recurrence counted Odylith as active before users could see it.",
         refs=[{"kind": "bug", "id": "CB-122", "label": "CB-122", "path": ""}],
         priority=90,
     )
@@ -85,7 +85,7 @@ def test_ambient_voice_uses_supported_fact_content_instead_of_kind_template() ->
     )
 
     assert label_kind == "history"
-    assert markdown_text.startswith("**Odylith History:** Casebook already remembers CB-122.")
+    assert markdown_text.startswith("**Odylith History:** Casebook has a matching visibility failure.")
     assert "before users could see it" in markdown_text
     _assert_not_mechanical(markdown_text)
 
@@ -111,7 +111,7 @@ def test_proposal_voice_keeps_shell_fixed_but_derives_body_from_fact_and_actions
             target_kind="component",
             target_id="governance-intervention-engine",
             title="Governance Intervention Engine",
-            rationale="This turn resolves to `governance-intervention-engine`; keep the boundary change inside that Registry dossier.",
+            rationale="Local Registry candidate: `governance-intervention-engine`. Update it only if it owns this boundary.",
         ),
     ]
 
@@ -123,7 +123,7 @@ def test_proposal_voice_keeps_shell_fixed_but_derives_body_from_fact_and_actions
 
     assert markdown_text.startswith("-----\nOdylith Proposal: Atlas already carries D-038")
     assert "This would touch Atlas and Registry." in markdown_text
-    assert "- Atlas: refresh D-038 for review." in markdown_text
+    assert "- Atlas: review D-038." in markdown_text
     assert "refresh that diagram instead of creating another one." in markdown_text
     assert "- Registry: update governance-intervention-engine." in markdown_text
     assert "Some actions still need manual review because Odylith cannot apply them safely yet." in markdown_text

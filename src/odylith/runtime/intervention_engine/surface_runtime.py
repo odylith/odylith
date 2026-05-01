@@ -160,6 +160,7 @@ def observation_envelope(
     tribunal_summary: Mapping[str, Any] | None = None,
     visibility_summary: Mapping[str, Any] | None = None,
     delivery_snapshot: Mapping[str, Any] | None = None,
+    alignment_proof: Mapping[str, Any] | None = None,
     active_target_refs: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     refs: list[dict[str, str]] = []
@@ -193,6 +194,7 @@ def observation_envelope(
         "tribunal_summary": _mapping(tribunal_summary),
         "visibility_summary": _mapping(visibility_summary),
         "delivery_snapshot": _mapping(delivery_snapshot),
+        "alignment_proof": _mapping(alignment_proof),
         "active_target_refs": refs,
     }
 

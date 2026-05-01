@@ -10,6 +10,7 @@ from typing import Any
 from typing import Mapping
 
 from odylith.runtime.intervention_engine import conversation_surface
+from odylith.runtime.intervention_engine import fact_producer_runtime
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.surfaces import codex_host_shared
 from odylith.runtime.surfaces import host_intervention_support
@@ -80,6 +81,45 @@ def render_codex_prompt_system_message(
     )
 
 
+def _passthrough_route_lock_context(kind: str) -> str:
+    if kind == "show":
+        return (
+            "Odylith Codex show-me first-match route lock: this prompt asks for "
+            "the advisory `odylith show` repo-capability demo. You must not write "
+            "a hand-authored demonstration summary, describe install posture, list "
+            "dirty paths, mention impact packets, summarize module counts, discuss "
+            "tmp clone noise, explain spawn policy, ask what the operator wants, or "
+            "run `start`, `doctor`, `version`, `intervention-status`, "
+            "`visible-intervention`, host compatibility checks, or launcher-state "
+            "diagnostics unless explicitly asked. Use the `odylith-show-me` skill "
+            "if it is available. Otherwise run the first command that works from "
+            "the repo root and capture stdout only: "
+            "`./.odylith/bin/odylith show --repo-root .`; "
+            "`odylith show --repo-root .`. Return that stdout directly. If neither "
+            "command can run, report only the shortest actionable Odylith show blocker."
+        )
+    if kind == "help":
+        return (
+            "Odylith Codex help first-match route lock: this prompt asks for CLI "
+            "help stdout, not a host capability summary, install diagnosis, runtime "
+            "diagnosis, intervention proof, launcher explanation, or follow-up "
+            "question. Run the first command that works from the repo root and "
+            "capture stdout only: `./.odylith/bin/odylith --help`; `odylith --help`. "
+            "Return that stdout directly."
+        )
+    if kind == "capabilities":
+        return (
+            "Odylith Codex capability-inventory route lock: this prompt asks for "
+            "Odylith's product-owned capabilities, engines, and architecture map. "
+            "Do not infer the taxonomy from `odylith --help`, `odylith show`, Codex "
+            "tools, skills, local files, or generic host capability prose. Run the "
+            "first command that works from the repo root and capture stdout only: "
+            "`./.odylith/bin/odylith capabilities --repo-root .`; "
+            "`odylith capabilities --repo-root .`. Return that stdout directly."
+        )
+    return ""
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="odylith codex prompt-context",
@@ -90,6 +130,19 @@ def main(argv: list[str] | None = None) -> int:
     payload = codex_host_shared.load_payload()
     prompt = str(payload.get("prompt", "")).strip()
     session_id = codex_host_shared.hook_session_id(payload)
+    route_context = _passthrough_route_lock_context(
+        fact_producer_runtime.passthrough_prompt_kind(prompt)
+    )
+    if route_context:
+        sys.stdout.write(
+            json.dumps(
+                host_surface_runtime.codex_prompt_payload(
+                    additional_context=route_context,
+                    include_assist_in_visible_fallback=False,
+                )
+            )
+        )
+        return 0
     host_intervention_support.confirm_last_assistant_message(
         repo_root=args.repo_root,
         host_family="codex",
@@ -104,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
         prompt=prompt,
         session_id=session_id,
     )
+    bundle = host_intervention_support.ensure_prompt_visible_assist_bundle(bundle)
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=args.repo_root,
         bundle=bundle,
@@ -111,8 +165,8 @@ def main(argv: list[str] | None = None) -> int:
         turn_phase="prompt_submit",
         session_id=session_id,
         include_proposal=False,
-        include_closeout=False,
-        developer_include_closeout=False,
+        include_closeout=True,
+        developer_include_closeout=True,
     )
     replay = host_intervention_support.preferred_live_replay_markdown(
         repo_root=args.repo_root,

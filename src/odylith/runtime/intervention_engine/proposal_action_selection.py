@@ -231,6 +231,8 @@ def proposal_actions(
     actions: list[CaptureAction] = []
     if not bool(signal_profile.get("proposal_signal")):
         return actions
+    if any(_normalize_token(row.kind) == "write_blocker" for row in facts):
+        return actions
     prompt_surface = (
         _normalize_string(signal_profile.get("prompt_surface"))
         or fact_producer_runtime.joined_prompt_surface(observation)
@@ -272,8 +274,7 @@ def proposal_actions(
                 target_id=matched_workstream_id,
                 title=title,
                 rationale=(
-                    f"This turn resolves to {matched_workstream_id}; keep the next proof or edit "
-                    "on that governed Radar lane."
+                    f"Local Radar candidate: {matched_workstream_id}. Update it only if it still owns this work."
                 ),
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",
@@ -304,8 +305,7 @@ def proposal_actions(
                 target_id=matched_component_id,
                 title=title,
                 rationale=(
-                    f"This turn resolves to `{matched_component_id}`; keep the boundary change "
-                    "inside that Registry dossier."
+                    f"Local Registry candidate: `{matched_component_id}`. Update it only if it owns this boundary."
                 ),
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",
@@ -340,7 +340,7 @@ def proposal_actions(
                 target_kind="diagram",
                 target_id=_normalize_string(matched_diagram.get("id")),
                 title=_normalize_string(matched_diagram.get("label")) or title,
-                rationale="Atlas already has a related diagram, so refresh that diagram instead of creating another one.",
+                rationale="Atlas has a local related diagram. Review it before creating another one.",
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",
                 payload={"diagram_id": _normalize_string(matched_diagram.get("id"))},
@@ -374,8 +374,7 @@ def proposal_actions(
                 target_id=matched_bug_id,
                 title=lookup.get("bug_rows", {}).get(matched_bug_id, {}).get("title", title),
                 rationale=(
-                    f"This turn repeats {matched_bug_id}; reopen or extend that Casebook record "
-                    "with the new evidence."
+                    f"Local Casebook candidate: {matched_bug_id}. Add evidence only if this is the same failure."
                 ),
                 apply_supported=False,
                 cli_command="odylith governance capture-apply",

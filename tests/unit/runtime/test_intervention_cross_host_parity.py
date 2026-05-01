@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from odylith import cli
+from odylith.runtime.intervention_engine import stream_state
 from odylith.runtime.surfaces import claude_host_post_edit_checkpoint
 from odylith.runtime.surfaces import claude_host_post_bash_checkpoint
 from odylith.runtime.surfaces import claude_host_prompt_context
@@ -48,8 +49,8 @@ def _shared_checkpoint_bundle() -> dict[str, object]:
             },
         },
         "closeout_bundle": {
-            "markdown_text": "**Odylith Assist:** kept this grounded.",
-            "plain_text": "Odylith Assist: kept this grounded.",
+            "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+            "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
         },
     }
 
@@ -60,8 +61,8 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
         "candidate": {
             "stage": "teaser",
             "teaser_text": (
-                "Odylith Observation: This turn is already framing a governed proposal. "
-                "Capture the exact governed change while the request is still current."
+                "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
             ),
         }
     }
@@ -78,6 +79,38 @@ def test_cross_host_prompt_teaser_rendering_stays_consistent() -> None:
     assert codex_text == claude_text
 
 
+def test_cross_host_prompt_submit_system_message_stays_quiet_without_feedback() -> None:
+    prompt = "Make the intervention visibility path reliable."
+    bundle = {
+        "observation": {
+            "host_family": "codex",
+            "turn_phase": "prompt_submit",
+            "session_id": "prompt-assist-parity",
+            "prompt_excerpt": prompt,
+        },
+        "intervention_bundle": {
+            "candidate": {"stage": "none", "suppressed_reason": "not_selected"},
+            "proposal": {"eligible": False, "suppressed_reason": "not_selected"},
+        },
+    }
+
+    codex_text = codex_host_prompt_context.render_codex_prompt_system_message(
+        prompt=prompt,
+        session_id="prompt-assist-parity",
+        conversation_bundle_override=bundle,
+    )
+    claude_text = claude_host_prompt_teaser.render_prompt_teaser(
+        prompt=prompt,
+        session_id="prompt-assist-parity",
+        conversation_bundle_override=bundle,
+    )
+
+    assert codex_text == claude_text
+    assert codex_text == ""
+    assert codex_host_prompt_context.render_codex_prompt_system_message(prompt="Odylith, help.") == ""
+    assert claude_host_prompt_teaser.render_prompt_teaser(prompt="Odylith, help.") == ""
+
+
 def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     monkeypatch,
     tmp_path: Path,
@@ -87,8 +120,8 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
         "candidate": {
             "stage": "teaser",
             "teaser_text": (
-                "Odylith Observation: This turn is already framing a governed proposal. "
-                "Capture the exact governed change while the request is still current."
+                "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
             ),
         }
     }
@@ -137,13 +170,18 @@ def test_cross_host_prompt_cli_payload_stays_consistent_for_same_teaser(
     assert cli.main(["claude", "prompt-teaser", "--repo-root", str(tmp_path)]) == 0
     claude_visible_text = capsys.readouterr().out
 
-    assert codex_payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
+    assert codex_payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery recovery:")
     assert claude_visible_text in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert codex_payload["systemMessage"] == claude_visible_text
+    assert "**Odylith Assist:**" not in claude_visible_text
     assert not claude_visible_text.lstrip().startswith("{")
+    codex_events = stream_state.load_recent_intervention_events(
+        repo_root=tmp_path,
+    )
+    assert not any(row.get("kind") == "assist_closeout" for row in codex_events)
 
 
-def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
+def test_cross_host_checkpoint_cli_dispatch_stays_silent_for_successful_checkpoints(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -180,7 +218,7 @@ def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
     )
 
     assert cli.main(["codex", "post-bash-checkpoint", "--repo-root", str(tmp_path)]) == 0
-    codex_payload = json.loads(capsys.readouterr().out)
+    assert capsys.readouterr().out == ""
 
     monkeypatch.setattr(
         "sys.stdin",
@@ -198,17 +236,9 @@ def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
         "run_odylith",
         lambda **kwargs: None,
     )
-    monkeypatch.setattr(
-        claude_host_post_edit_checkpoint,
-        "_post_edit_bundle",
-        lambda **kwargs: bundle,
-    )
 
     assert cli.main(["claude", "post-edit-checkpoint", "--repo-root", str(tmp_path)]) == 0
-    claude_payload = json.loads(capsys.readouterr().out)
-
-    assert codex_payload["hookSpecificOutput"]["additionalContext"] == claude_payload["additionalContext"]
-    assert codex_payload["systemMessage"] == claude_payload["systemMessage"]
+    assert capsys.readouterr().out == ""
 
     monkeypatch.setattr(
         "sys.stdin",
@@ -234,17 +264,9 @@ def test_cross_host_checkpoint_cli_dispatch_stays_consistent_for_same_bundle(
         "command_scoped_governed_paths",
         lambda **kwargs: [],
     )
-    monkeypatch.setattr(
-        claude_host_post_bash_checkpoint,
-        "_post_bash_bundle",
-        lambda **kwargs: bundle,
-    )
 
     assert cli.main(["claude", "post-bash-checkpoint", "--repo-root", str(tmp_path)]) == 0
-    claude_bash_payload = json.loads(capsys.readouterr().out)
-
-    assert codex_payload["hookSpecificOutput"]["additionalContext"] == claude_bash_payload["additionalContext"]
-    assert codex_payload["systemMessage"] == claude_bash_payload["systemMessage"]
+    assert capsys.readouterr().out == ""
 
 
 def test_cross_host_stop_rendering_stays_consistent_for_same_bundle(tmp_path: Path) -> None:
@@ -259,8 +281,8 @@ def test_cross_host_stop_rendering_stays_consistent_for_same_bundle(tmp_path: Pa
             "proposal": {"eligible": False, "suppressed_reason": ""},
         },
         "closeout_bundle": {
-            "markdown_text": "**Odylith Assist:** kept this grounded.",
-            "plain_text": "Odylith Assist: kept this grounded.",
+            "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+            "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
         },
     }
 

@@ -39,6 +39,7 @@ class WorkstreamSuggestion:
 
     title: str
     description: str
+    confidence: str = "medium"
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,7 @@ class ComponentSuggestion:
     n_outbound: int = 0
     member_paths: tuple[str, ...] = ()
     evidence: tuple[str, ...] = ()
+    confidence: str = "medium"
 
 
 @dataclass(frozen=True)
@@ -63,6 +65,7 @@ class DiagramSuggestion:
     slug: str
     title: str
     description: str
+    confidence: str = "medium"
 
 
 @dataclass(frozen=True)
@@ -72,6 +75,7 @@ class IssueSuggestion:
     title: str
     detail: str
     severity: str = "medium"
+    confidence: str = "medium"
 
 
 @dataclass(frozen=True)
@@ -122,8 +126,27 @@ class ScanContext:
     """Side-channel data collected during single-pass file scanning."""
     todos: list[tuple[str, str]] = field(default_factory=list)
     test_files: set[str] = field(default_factory=set)
+    app_files: set[str] = field(default_factory=set)
+    support_files: set[str] = field(default_factory=set)
     file_count: int = 0
     language_counts: dict[str, int] = field(default_factory=dict)
+
+
+@dataclass
+class SourceSummary:
+    """Trust-first source inventory for `odylith show` scenario selection."""
+
+    total_files: int = 0
+    app_modules: int = 0
+    support_modules: int = 0
+    test_modules: int = 0
+    infra_files: int = 0
+    managed_files: int = 0
+    generated_files: int = 0
+    root_noise_files: int = 0
+    docs_files: int = 0
+    metadata_files: int = 0
+    other_files: int = 0
 
 
 @dataclass
@@ -138,4 +161,8 @@ class ShowResult:
     issues: list[IssueSuggestion] = field(default_factory=list)
     already_governed: dict[str, bool] = field(default_factory=dict)
     scan_context: ScanContext = field(default_factory=ScanContext)
+    source_summary: SourceSummary = field(default_factory=SourceSummary)
+    scenario: str = ""
+    app_modules: int = 0
+    support_modules: int = 0
     total_modules: int = 0

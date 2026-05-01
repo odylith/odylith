@@ -6,8 +6,11 @@ requested_version="${1:-}"
 resolved_version="${requested_version:-${VERSION:-$(current_source_version)}}"
 require_version "$resolved_version"
 
-git restore -- odylith/compass/runtime >/dev/null 2>&1 || true
-git clean -fd -- odylith/compass/runtime >/dev/null 2>&1 || true
+# CI may repair the repo-local launcher before this target runs. That repair is
+# allowed to rewrite generated local guidance and runtime snapshots, but release
+# candidate proof must evaluate the checked-out source tree, not repair residue.
+git restore -- AGENTS.md CLAUDE.md .agents .claude .codex odylith/compass/runtime >/dev/null 2>&1 || true
+git clean -fd -- .agents .claude .codex odylith/compass/runtime >/dev/null 2>&1 || true
 require_clean_worktree
 
 candidate_root="$(mktemp -d "${TMPDIR:-/tmp}/odylith-release-candidate.XXXXXX")"
@@ -16,6 +19,11 @@ mkdir -p "$dist_dir"
 trap 'rm -rf "$candidate_root"' EXIT
 
 run_release_proof_steps "$resolved_version" "$dist_dir"
-odylith_cli benchmark compare --repo-root . --baseline last-shipped
+benchmark_override_mode="$(release_benchmark_override_mode "$resolved_version")"
+if [[ "$benchmark_override_mode" == "skip_proof_and_compare" ]]; then
+  echo "benchmark compare skipped for v${resolved_version}: tracked maintainer override marks benchmark proof advisory for this exact release"
+else
+  odylith_cli benchmark compare --repo-root . --baseline last-shipped
+fi
 
 echo "release candidate proof ready for v${resolved_version}"

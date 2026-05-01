@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.install.fs import atomic_write_text
+from odylith.runtime.common import host_project_settings
 
 
 _CODEX_VERSION_RE = re.compile(r"\bcodex-cli\s+(?P<version>\S+)")
@@ -29,6 +30,7 @@ _AGENTS_MAX_THREADS = 6
 _AGENTS_MAX_DEPTH = 1
 _CODEX_CHECKPOINT_MATCHER_TOKENS: tuple[str, ...] = ("Bash",)
 _CODEX_HOST_LAUNCHER_INVOCATION = "python3 ./.agents/bin/odylith-host-launcher.py"
+_ODYLITH_HOOK_COMMAND_TOKENS: tuple[str, ...] = ("odylith-host-launcher.py",)
 
 
 @dataclass(frozen=True)
@@ -436,13 +438,26 @@ def write_effective_codex_project_config(
     repo_root: Path | str,
     capabilities: CodexCliCapabilitySnapshot | None = None,
 ) -> Path:
-    """Write the effective Codex project config into the repo-local `.codex` tree."""
+    """Write Odylith Codex config only when no user config would be replaced."""
     resolved_root = _resolve_repo_root(repo_root)
     target_path = resolved_root / ".codex" / "config.toml"
+    if target_path.parent.is_symlink():
+        return target_path
     target_path.parent.mkdir(parents=True, exist_ok=True)
+    rendered = render_effective_codex_project_config(repo_root=resolved_root, capabilities=capabilities)
+    if target_path.is_symlink():
+        return target_path
+    if target_path.exists():
+        try:
+            existing_text = target_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            return target_path
+        if existing_text.strip() and existing_text != rendered:
+            return target_path
+        host_project_settings.write_preimage_backup_once(target_path)
     atomic_write_text(
         target_path,
-        render_effective_codex_project_config(repo_root=resolved_root, capabilities=capabilities),
+        rendered,
         encoding="utf-8",
     )
     return target_path
@@ -451,10 +466,28 @@ def write_effective_codex_project_config(
 def write_effective_codex_hooks(*, repo_root: Path | str) -> Path:
     resolved_root = _resolve_repo_root(repo_root)
     target_path = resolved_root / ".codex" / "hooks.json"
+    if target_path.parent.is_symlink():
+        return target_path
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    atomic_write_text(
-        target_path,
-        render_effective_codex_hooks(repo_root=resolved_root),
-        encoding="utf-8",
-    )
+    existing = host_project_settings.load_json_object_for_update(target_path)
+    if existing is None:
+        return target_path
+    odylith_payload = json.loads(render_effective_codex_hooks(repo_root=resolved_root))
+    merged = host_project_settings.merge_hook_map(existing, odylith_payload)
+    if isinstance(merged, dict):
+        host_project_settings.atomic_write_json_object(target_path, merged)
+    return target_path
+
+
+def deactivate_codex_project_hooks(*, repo_root: Path | str) -> Path:
+    resolved_root = _resolve_repo_root(repo_root)
+    target_path = resolved_root / ".codex" / "hooks.json"
+    if target_path.parent.is_symlink():
+        return target_path
+    existing = host_project_settings.load_json_object_for_update(target_path)
+    if existing is None:
+        return target_path
+    scrubbed, changed = host_project_settings.remove_hook_commands(existing, _ODYLITH_HOOK_COMMAND_TOKENS)
+    if changed and isinstance(scrubbed, dict):
+        host_project_settings.atomic_write_json_object(target_path, scrubbed)
     return target_path

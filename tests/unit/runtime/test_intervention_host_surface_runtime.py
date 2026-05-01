@@ -124,7 +124,10 @@ def test_host_conversation_bundle_uses_live_ambient_payload_for_post_tool_render
         host_family="codex",
         turn_phase="post_bash_checkpoint",
         session_id="host-ambient-1",
-        prompt_excerpt="Keep the governance record visible.",
+        prompt_excerpt=(
+            "Capture a Casebook bug for TODO in file. "
+            "Evidence: <paste failing command and error>"
+        ),
     )
 
     rendered = host_surface_runtime.render_visible_live_intervention(
@@ -141,9 +144,9 @@ def test_host_conversation_bundle_uses_live_ambient_payload_for_post_tool_render
         render_surface="codex_post_tool_use",
     )
 
-    assert bundle["live_ambient_signals"]["selected_signal"] == "insight"
-    assert rendered.startswith("---\n\n**Odylith Insight:**")
-    assert "ambient_signal" in events
+    assert bundle["live_ambient_signals"]["selected_signal"] == ""
+    assert rendered.startswith("---\n\nOdylith Observation: Casebook needs real failure evidence")
+    assert events == ["intervention_teaser"]
 
 
 def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal_complaint(
@@ -163,21 +166,35 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
     memory = dict(observation["memory_summary"])
     tribunal = dict(observation["tribunal_summary"])
     visibility = dict(observation["visibility_summary"])
+    proof = dict(observation["alignment_proof"])
+    proof_lanes = {
+        row["lane_id"]: row
+        for row in proof["lanes"]
+        if isinstance(row, dict)
+    }
 
     assert context_packet["packet_state"] == "visibility_recovery"
-    assert context_packet["workstreams"] == ["B-096"]
-    assert "governance-intervention-engine" in context_packet["components"]
-    assert "odylith-context-engine" in context_packet["components"]
-    assert "execution-engine" in context_packet["components"]
-    assert "odylith-memory-backend" in context_packet["components"]
-    assert "tribunal" in context_packet["components"]
+    assert context_packet["workstreams"] == []
+    assert context_packet["bugs"] == []
+    assert context_packet["diagrams"] == []
+    assert context_packet["components"] == ["governance-intervention-engine"]
     assert execution["execution_engine_canonical_component_id"] == "execution-engine"
     assert execution["execution_engine_next_move"] == "recover.current_blocker"
     assert execution["execution_engine_host_family"] == "codex"
     assert memory["visibility_complaint"] is True
     assert visibility["chat_visible_proof"] == "unproven_this_session"
     assert tribunal["source"] == "intervention_alignment_context"
-    assert tribunal["case_queue"][0]["id"] == "CB-122"
+    assert tribunal["case_queue"] == []
+    assert proof["status"] == "ready"
+    assert proof["missing_required_lanes"] == []
+    assert proof_lanes["context_engine"]["status"] == "covered"
+    assert proof_lanes["execution_engine"]["status"] == "covered"
+    assert proof_lanes["tribunal"]["status"] == "covered"
+    assert proof_lanes["intervention_engine"]["status"] == "covered"
+    assert proof_lanes["governance"]["status"] == "covered"
+    assert proof_lanes["delivery"]["status"] == "covered"
+    assert proof_lanes["memory_substrate"]["status"] == "covered"
+    assert proof_lanes["subagent_orchestration"]["status"] == "policy_deferred"
 
     decision = host_surface_runtime.visible_intervention_decision(
         repo_root=tmp_path,
@@ -189,29 +206,31 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
         include_closeout=False,
     )
 
-    assert decision.visible_markdown.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert decision.visible_markdown.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True
 
 
 def test_codex_post_tool_payload_uses_additional_context_and_system_message() -> None:
     payload = host_surface_runtime.codex_post_tool_payload(
-        developer_context="**Odylith Observation:** The signal is real.\n\n**Odylith Assist:** kept this grounded.",
+        developer_context="**Odylith Observation:** The signal is real.\n\n**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
         system_message="Odylith governance refresh completed.",
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "PostToolUse"
-    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "<odylith-visible-markdown>" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith developer continuity:" not in payload["hookSpecificOutput"]["additionalContext"]
     assert "**Odylith Observation:** The signal is real." not in payload["hookSpecificOutput"]["additionalContext"]
-    assert "**Odylith Assist:** kept this grounded." not in payload["hookSpecificOutput"]["additionalContext"]
+    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"] == "Odylith governance refresh completed."
 
 
 def test_visible_delivery_fallback_strips_extra_odylith_continuity_when_system_message_is_live_only() -> None:
     payload = host_surface_runtime.codex_post_tool_payload(
-        developer_context="**Odylith Observation:** The signal is real.\n\n**Odylith Assist:** kept this grounded.",
+        developer_context="**Odylith Observation:** The signal is real.\n\n**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
         system_message="**Odylith Observation:** The signal is real.",
     )
 
@@ -219,11 +238,11 @@ def test_visible_delivery_fallback_strips_extra_odylith_continuity_when_system_m
 
     assert "<odylith-visible-markdown>" in additional_context
     assert "---\n\n**Odylith Observation:** The signal is real.\n\n---" in additional_context
-    assert "**Odylith Assist:** kept this grounded." not in additional_context
+    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." not in additional_context
     assert "Odylith developer continuity:" not in additional_context
     assert payload["systemMessage"] == "---\n\n**Odylith Observation:** The signal is real.\n\n---"
     assert payload["systemMessage"] != (
-        "---\n\n**Odylith Observation:** The signal is real.\n\n---\n\n**Odylith Assist:** kept this grounded."
+        "---\n\n**Odylith Observation:** The signal is real.\n\n---\n\n**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
     )
 
 
@@ -246,22 +265,22 @@ def test_codex_prompt_payload_uses_prompt_context_and_visible_teaser() -> None:
     payload = host_surface_runtime.codex_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
         system_message=(
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"] == (
         "---\n\n"
-        "Odylith Observation: This turn is already framing a governed proposal. "
-        "Capture the exact governed change while the request is still current."
+        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         "\n\n---"
     )
     assert "Odylith Assist:" not in payload["hookSpecificOutput"]["additionalContext"]
@@ -273,7 +292,7 @@ def test_claude_post_tool_payload_uses_additional_context_and_system_message() -
         system_message="Odylith governance refresh completed.",
     )
 
-    assert "Odylith visible delivery fallback:" in payload["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["additionalContext"]
     assert "Odylith developer continuity:" not in payload["additionalContext"]
     assert "**Odylith Observation:** The signal is real." not in payload["additionalContext"]
     assert payload["systemMessage"] == "Odylith governance refresh completed."
@@ -283,17 +302,17 @@ def test_claude_prompt_payload_keeps_prompt_context_discreet() -> None:
     payload = host_surface_runtime.claude_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
         system_message=(
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
     )
 
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert "Odylith visible delivery fallback:" in payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith anchor B-096" in payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Assist:" not in payload["hookSpecificOutput"]["additionalContext"]
     assert "systemMessage" not in payload
@@ -303,16 +322,15 @@ def test_stop_payload_is_empty_without_message() -> None:
     assert host_surface_runtime.stop_payload(system_message="") == {}
 
 
-def test_stop_payload_can_force_one_visible_delivery_continuation() -> None:
+def test_stop_payload_never_blocks_for_visible_delivery_continuation() -> None:
     payload = host_surface_runtime.stop_payload(
-        system_message="**Odylith Assist:** kept this grounded.",
+        system_message="**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
         block_for_visible_delivery=True,
     )
 
-    assert payload["systemMessage"] == "**Odylith Assist:** kept this grounded."
-    assert payload["decision"] == "block"
-    assert "**Odylith Assist:** kept this grounded." in payload["reason"]
-    assert "code fence" in payload["reason"]
+    assert payload["systemMessage"] == "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
+    assert "decision" not in payload
+    assert "reason" not in payload
 def test_normalized_session_id_falls_back_when_host_payload_is_missing() -> None:
     token = host_surface_runtime.normalized_session_id("", host_family="codex")
     assert token
@@ -336,8 +354,8 @@ def test_render_visible_live_intervention_excludes_closeout_text() -> None:
                 },
             },
             "closeout_bundle": {
-                "markdown_text": "**Odylith Assist:** kept this grounded.",
-                "plain_text": "Odylith Assist: kept this grounded.",
+                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
             },
         },
         markdown=True,
@@ -355,12 +373,12 @@ def test_codex_prompt_visible_text_comes_from_system_message_not_hidden_context(
     payload = host_surface_runtime.codex_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
         system_message=(
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
     )
 
@@ -372,8 +390,8 @@ def test_codex_prompt_visible_text_comes_from_system_message_not_hidden_context(
 
     assert visible == (
         "---\n\n"
-        "Odylith Observation: This turn is already framing a governed proposal. "
-        "Capture the exact governed change while the request is still current."
+        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         "\n\n---"
     )
     assert "Odylith anchor B-096" not in visible
@@ -383,12 +401,12 @@ def test_claude_prompt_visible_text_comes_from_teaser_stdout_not_hidden_context(
     payload = host_surface_runtime.claude_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
         system_message=(
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
     )
 
@@ -397,14 +415,14 @@ def test_claude_prompt_visible_text_comes_from_teaser_stdout_not_hidden_context(
         host_family="claude",
         turn_phase="prompt_submit",
         plain_stdout=(
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
     )
 
     assert visible == (
-        "Odylith Observation: This turn is already framing a governed proposal. "
-        "Capture the exact governed change while the request is still current."
+        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
     )
     assert "systemMessage" not in payload
     assert "Odylith anchor B-096" not in visible
@@ -414,7 +432,7 @@ def test_checkpoint_visible_text_includes_observation_and_proposal_but_keeps_ass
     developer_context = (
         "**Odylith Observation:** The signal is real.\n\n"
         "-----\nOdylith Proposal: Keep this grounded.\n-----\n\n"
-        "**Odylith Assist:** kept this grounded."
+        "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
     )
     system_message = "**Odylith Observation:** The signal is real.\n\n-----\nOdylith Proposal: Keep this grounded.\n-----"
     codex_payload = host_surface_runtime.codex_post_tool_payload(
@@ -441,7 +459,7 @@ def test_checkpoint_visible_text_includes_observation_and_proposal_but_keeps_ass
     assert "**Odylith Observation:** The signal is real." in codex_visible
     assert "Odylith Proposal:" in codex_visible
     assert "Odylith Assist:" not in codex_visible
-    assert "Odylith visible delivery fallback:" in codex_payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith visible delivery recovery:" in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Assist:" not in codex_payload["hookSpecificOutput"]["additionalContext"]
     assert "Odylith Assist:" not in claude_payload["additionalContext"]
 
@@ -462,23 +480,23 @@ def test_visible_fallback_keeps_non_odylith_context_while_stripping_live_tail() 
     payload = host_surface_runtime.codex_prompt_payload(
         additional_context=(
             "Odylith anchor B-096: primary target src/main.py.\n\n"
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
         system_message=(
-            "Odylith Observation: This turn is already framing a governed proposal. "
-            "Capture the exact governed change while the request is still current."
+            "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
         ),
     )
 
     additional_context = payload["hookSpecificOutput"]["additionalContext"]
 
-    assert "Odylith visible delivery fallback:" in additional_context
+    assert "Odylith visible delivery recovery:" in additional_context
     assert "Odylith anchor B-096: primary target src/main.py." in additional_context
     assert "Odylith developer continuity:" in additional_context
     assert additional_context.count(
-        "Odylith Observation: This turn is already framing a governed proposal. "
-        "Capture the exact governed change while the request is still current."
+        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+                    "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
     ) == 1
 
 
@@ -486,7 +504,7 @@ def test_stop_visible_text_can_include_assist_closeout() -> None:
     payload = host_surface_runtime.stop_payload(
         system_message=(
             "**Odylith Observation:** The signal is real.\n\n"
-            "**Odylith Assist:** kept this grounded."
+            "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
         )
     )
 
@@ -497,7 +515,7 @@ def test_stop_visible_text_can_include_assist_closeout() -> None:
     )
 
     assert "**Odylith Observation:** The signal is real." in visible
-    assert "**Odylith Assist:** kept this grounded." in visible
+    assert "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract." in visible
 
 
 def test_ambient_signal_is_visible_when_it_wins_the_live_slot() -> None:

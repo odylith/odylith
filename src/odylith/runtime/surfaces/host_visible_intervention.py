@@ -11,25 +11,14 @@ from odylith.runtime.intervention_engine import conversation_closeout
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import stream_state
-from odylith.runtime.intervention_engine import visibility_contract
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.surfaces import host_intervention_support
 
 _PROMPT_SUBMIT_PHASES = {"prompt_submit", "userpromptsubmit"}
-_PROMPT_VISIBLE_ASSIST_MARKDOWN = (
-    "**Odylith Assist:** kept Odylith visible in this chat so the brand promise is something the user can see."
-)
-_PROMPT_VISIBLE_ASSIST_PLAIN = (
-    "Odylith Assist: kept Odylith visible in this chat so the brand promise is something the user can see."
-)
 
 
 def _normalize_text(value: object) -> str:
     return " ".join(str(value or "").split()).strip()
-
-
-def _contains_assist(value: object) -> bool:
-    return "odylith assist:" in str(value or "").casefold()
 
 
 def _confirm_rendered_chat(
@@ -46,34 +35,6 @@ def _confirm_rendered_chat(
         last_assistant_message=rendered,
         render_surface=f"{_normalize_text(host_family).lower() or 'host'}_visible_intervention",
     )
-
-
-def _prompt_visible_assist_text(bundle: object) -> tuple[str, str]:
-    existing_markdown = conversation_surface.render_closeout_text(bundle, markdown=True)
-    existing_plain = conversation_surface.render_closeout_text(bundle, markdown=False)
-    return (
-        existing_markdown or _PROMPT_VISIBLE_ASSIST_MARKDOWN,
-        existing_plain or _PROMPT_VISIBLE_ASSIST_PLAIN,
-    )
-
-
-def _bundle_with_prompt_visible_assist(bundle: object, *, markdown_text: str, plain_text: str) -> dict[str, object]:
-    if isinstance(bundle, dict):
-        updated: dict[str, object] = dict(bundle)
-    else:
-        updated = {}
-    if not conversation_surface.render_closeout_text(updated, markdown=True):
-        updated["closeout_bundle"] = {
-            "eligible": True,
-            "style": "prompt_visible_fallback",
-            "label": "Odylith Assist:",
-            "preferred_markdown_label": "**Odylith Assist:**",
-            "text": markdown_text,
-            "plain_text": plain_text,
-            "markdown_text": markdown_text,
-            "proof": markdown_text.removeprefix("**Odylith Assist:** ").rstrip("."),
-        }
-    return updated
 
 
 def render_visible_intervention(
@@ -93,6 +54,10 @@ def render_visible_intervention(
     """Render the exact Markdown an assistant should show when hooks are hidden."""
 
     normalized_phase = " ".join(str(phase or "").split()).strip().lower() or "stop_summary"
+    visibility_feedback = conversation_closeout.visibility_feedback_requested(
+        prompt=prompt,
+        assistant_summary=summary,
+    )
     if (
         normalized_phase
         in {"prompt_submit", "userpromptsubmit", "post_bash_checkpoint", "stop_summary"}
@@ -100,6 +65,7 @@ def render_visible_intervention(
             prompt=prompt,
             assistant_summary=summary,
         )
+        and not visibility_feedback
         and not changed_paths
         and include_closeout is None
     ):
@@ -107,12 +73,10 @@ def render_visible_intervention(
     proposal = normalized_phase not in {"prompt_submit", "userpromptsubmit", "stop_summary"}
     if include_proposal is not None:
         proposal = bool(include_proposal)
-    visibility_feedback = conversation_closeout.visibility_feedback_requested(
-        prompt=prompt,
-        assistant_summary=summary,
-    )
-    closeout = normalized_phase == "stop_summary" or (
-        visibility_feedback and normalized_phase in {"prompt_submit", "userpromptsubmit"}
+    closeout = (
+        normalized_phase == "stop_summary"
+        or normalized_phase in _PROMPT_SUBMIT_PHASES
+        or visibility_feedback
     )
     if include_closeout is not None:
         closeout = bool(include_closeout)
@@ -142,6 +106,8 @@ def render_visible_intervention(
         assistant_summary=summary,
         changed_paths=changed_paths,
     )
+    if normalized_phase in _PROMPT_SUBMIT_PHASES and closeout:
+        bundle = host_intervention_support.ensure_prompt_visible_assist_bundle(bundle)
     visible_override = ""
     if replay and closeout:
         visible_override = host_intervention_support.merge_replay_with_closeout(
@@ -171,14 +137,15 @@ def render_visible_intervention(
         visible_markdown_override=visible_override,
     )
     rendered = decision.visible_markdown
-    if rendered and normalized_phase in _PROMPT_SUBMIT_PHASES and not _contains_assist(rendered):
-        assist_markdown, assist_plain = _prompt_visible_assist_text(bundle)
-        bundle = _bundle_with_prompt_visible_assist(
-            bundle,
-            markdown_text=assist_markdown,
-            plain_text=assist_plain,
+    if (
+        closeout
+        and normalized_phase in _PROMPT_SUBMIT_PHASES
+        and not host_intervention_support.contains_assist(rendered)
+    ):
+        rendered = host_intervention_support.compose_prompt_visible_markdown(
+            visible_markdown=rendered,
+            bundle=bundle,
         )
-        rendered = visibility_contract.compose_visible_markdown(rendered, assist_markdown)
         decision = host_surface_runtime.visible_intervention_decision(
             repo_root=repo_root,
             bundle=bundle,

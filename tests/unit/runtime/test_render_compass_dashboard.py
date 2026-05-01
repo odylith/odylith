@@ -484,7 +484,9 @@ def test_render_compass_dashboard_emits_release_summary_and_workstream_release_u
     assert "Release: ${escapeHtml(selected.releaseLabel)}" not in workstreams_js
     assert "Release ${item.releaseLabel}" not in workstreams_js
     assert "<strong>Release history:</strong>" in workstreams_js
-    assert "All current workstreams are already represented in Programs or Release Targets." in workstreams_js
+    assert "No active workstreams yet. Create or open one from Radar, then Compass will summarize it here." in workstreams_js
+    assert "No additional current workstreams. Program and release lanes already cover the active work." in workstreams_js
+    assert "All current workstreams are already represented in Programs or Release Targets." not in workstreams_js
     assert "No active workstreams in this scope." in workstreams_js
     assert "const rows = scopedRows;" not in workstreams_js
 

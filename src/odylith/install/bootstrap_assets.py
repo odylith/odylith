@@ -13,7 +13,6 @@ from typing import Any, Mapping
 from odylith.install.agents import GUIDANCE_FILENAMES, update_guidance_file
 from odylith.install.fs import atomic_write_text
 from odylith.install.state import DEFAULT_REPO_SCHEMA_VERSION, version_pin_path, write_version_pin
-from odylith.install.value_engine_migration import migrate_visible_intervention_value_engine
 from odylith.runtime.common import claude_cli_capabilities
 from odylith.runtime.common import codex_cli_capabilities
 from odylith.runtime.common.guidance_paths import existing_top_level_guidance_paths
@@ -22,6 +21,16 @@ from odylith.runtime.governance import sync_casebook_bug_index
 
 PRODUCT_REPO_ROLE = "product_repo"
 CONSUMER_REPO_ROLE = "consumer_repo"
+_GENERATED_HOST_CONFIG_RELATIVE_PATHS = {
+    Path(".claude") / "settings.json",
+    Path(".codex") / "config.toml",
+    Path(".codex") / "hooks.json",
+}
+_RETIRED_PROJECT_ROOT_SKILL_SHIMS = frozenset(
+    {
+        "odylith-subagent-router",
+    }
+)
 
 
 def repo_root_guidance_source() -> str:
@@ -53,6 +62,7 @@ def repo_root_claude_source() -> str:
             "- Keep this file, the `.claude/` tree, and the scoped `odylith/**/CLAUDE.md` companions aligned with the same Odylith contract.",
             "- First-match help route: if the user says `Odylith, help`, use the CLI help surface and print stdout only. Do not run install, status, intervention, or launcher diagnostics first.",
             "- First-match demo route: if the user says `Odylith, show me what you can do` or asks what Odylith can do for this repo, use the advisory `odylith show` demo. Do not run install, status, intervention, or launcher diagnostics first.",
+            "- Capability inventory route: if the user asks to list Odylith capabilities, engines, product architecture, or the capability map, run `odylith capabilities` and print stdout only. Do not infer the taxonomy from `odylith --help`, `odylith show`, Claude Code capability prose, or any host-model surface.",
             "- Claude Code is a first-class Odylith delegation host. Codex emits routed `spawn_agent` payloads subject to active host policy; Claude Code executes the same bounded delegation contract through Task-tool subagents and the checked-in `.claude/` project assets.",
             "",
         ]
@@ -141,13 +151,14 @@ def customer_bootstrap_guidance() -> str:
             "- Keep normal commentary task-first and human. Weave Odylith-grounded facts into ordinary updates when they change the next move, and reserve explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels for rare high-signal moments. Pick the strongest one or stay quiet.",
             "- A plain `Odylith, help` request is the CLI help fast path. Use the first available `odylith --help` command and print stdout only.",
             "- A plain `Odylith, show me what you can do` request is the advisory `odylith show` repo-capability demo. It is not a request to prove intervention UX, diagnose install posture, run `start`, run `doctor`, or explain missing launcher state. Use the first available show command and print stdout only.",
+            "- A request to list Odylith capabilities, engines, product architecture, or the capability map is the product-owned inventory path. Use `odylith capabilities` and print stdout only. Do not infer the taxonomy from `odylith --help`, `odylith show`, Claude Code, Codex, or any other host model capability surface.",
             "- Treat live teaser, `**Odylith Observation**`, and `Odylith Proposal` as the\n  intervention-engine fast path. Treat `Odylith Assist:` as the chatter-owned\n  closeout. Do not collapse those two layers into one ad hoc narration path.",
-            "- For Codex and Claude checkpoint hooks, keep the full Observation,\n  Proposal, and Assist bundle in hidden developer context for continuity, but\n  surface the earned Observation/Proposal beat visibly at the hook moment when\n  the host renders hook output. If the host keeps hook output hidden, render\n  the assistant-visible fallback Markdown in chat instead of claiming the\n  engine is active. Stop is the fallback closeout and live-beat recovery lane,\n  not the primary intervention moment; unseen Ambient Highlight,\n  Observation, or Proposal beats may replay there before Assist.",
-            "- Hook `systemMessage` or `additionalContext` generation is not proof of\n  chat-visible UX. The user-visible contract is satisfied only by rendered\n  chat text or by a host channel that is proven visible in the active session.\n  When in doubt, run `odylith codex visible-intervention` or `odylith claude\n  visible-intervention` and show that Markdown directly.",
-            "- Before claiming the intervention UX is active in a specific chat, run or\n  cite `odylith codex intervention-status` or `odylith claude\n  intervention-status` for that host/session. That status surface is the\n  low-latency delivery ledger for Teaser, Ambient Highlight, Observation,\n  Proposal, and Assist readiness; hook payload generation alone is not enough.",
-            "- Only call a session or worktree fully end to end after `intervention-status` reports `Activation: ready` and `chat_visible_proof=proven_this_session`. Treat `ledger_visible_unconfirmed`, `pending_confirmation`, `ledger_visible_with_pending_confirmation`, and `chat_confirmed_with_pending_confirmation` as partial proof, not completion, and treat `degraded` or `unproven_this_session` as not active yet.",
+            "- For Codex checkpoint hooks, keep the full Observation, Proposal, and Assist\n  bundle in hidden developer context for continuity, and surface the earned\n  Observation/Proposal note when the host renders hook output. Claude is\n  stricter because Claude Code renders hook output inline with the transcript:\n  direct-edit and Bash PostToolUse hooks stay silent on success and emit only\n  compact failure/skipped-refresh status; Claude Stop is memory/logging only,\n  not a fallback closeout or live-note recovery lane.",
+            "- Hook `systemMessage` or `additionalContext` generation is not proof of\n  chat-visible UX. The user-visible contract is satisfied only by rendered\n  chat text or by a host channel that is verified visible in the active session.\n  When in doubt, run `odylith codex visible-intervention` or `odylith claude\n  visible-intervention` and show that Markdown directly.",
+            "- Before claiming the intervention UX is active in a specific chat, run or\n  cite `odylith codex intervention-status` or `odylith claude\n  intervention-status` for that host/session. That status surface is the\n  low-latency delivery record for Teaser, Ambient Highlight, Observation,\n  Proposal, and Assist readiness; hook payload generation alone is not enough.",
+            "- Only call a session or worktree fully end to end after `intervention-status`\n  reports `Activation: ready` and a chat-visibility line confirmed in this\n  session. Treat recorded-only and waiting-for-chat states as partial proof, not\n  completion, and treat degraded or not-confirmed states as not active yet.",
             "- Existing Codex and Claude sessions may not hot-reload changed hooks,\n  guidance, or source-local runtime code. After changing intervention\n  visibility behavior, prove it in a newly started or explicitly reloaded\n  session, or render `visible-intervention` output directly in the existing\n  chat instead of claiming other open sessions are active.",
-            "- At closeout, or when a visible-intervention fallback renders a prompt-submit or visibility-proof beat, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance IDs inline when they were actually changed, and when no governed file moved, name the affected governance-contract IDs from bounded request or packet truth without calling them updated. Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes, or a concrete chat-visibility complaint. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real; when it appears, it must render before `Odylith Assist:` so Assist remains the final closeout line.",
+            "- At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note, you may add at most one short `Odylith Assist:` line if it helps the user understand what Odylith materially contributed. The host prompt-submit runtime is stricter about silence: normal non-passthrough prompts do not get an Assist line by default; they stay quiet unless a live Observation/Proposal is selected or explicit visibility feedback earns one shared recovery line. Do not add Assist just because Odylith ran, a CLI succeeded, or no stronger note matured; `Odylith, help` and `Odylith, show me what you can do` stay stdout-clean and suppress narration. Prefer `**Odylith Assist:**` when Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link updated governance IDs inline when they were actually changed, and when no governed file moved, name the affected governance-contract IDs from bounded request or packet truth without calling them updated. Frame the edge against `odylith_off` or the broader unguided path when the evidence supports it. Keep it crisp, authentic, clear, simple, insightful, erudite in thought, soulful, friendly, free-flowing, human, and factual. Ground the line in concrete observed counts, measured deltas, or validation outcomes, or a concrete chat-visibility complaint. Humor is fine only when the evidence makes it genuinely funny. Silence is better than filler. At most one supplemental closeout line may appear, chosen from `Odylith Risks:`, `Odylith Insight:`, or `Odylith History:` when the signal is real; when it appears, it must render before `Odylith Assist:` so Assist remains the final closeout line.",
             "- Explicit feedback that Odylith ambient highlights, interventions, Assist,\n  Observations, Proposals, hooks, or chat output are not visible is a real\n  closeout signal. A short `Odylith Assist:` may acknowledge that visibility\n  continuity without claiming artifact updates; ordinary low-signal short\n  turns should still stay silent.",
             "- For live blocker lanes, never say `fixed`, `cleared`, or `resolved` without qualification unless the hosted proof moved past the prior failing phase. Force three checks first: same fingerprint as the last falsification or not, hosted frontier advanced or not, and whether the claim is code-only, preview-only, or live.",
             "- For substantive tasks, follow this workflow check in order: read the nearest `AGENTS.md`; run the repo-local `odylith start`/`odylith context` step; identify the active workstream, component, or packet; then move into repo scan, tests, and edits.",
@@ -157,7 +168,8 @@ def customer_bootstrap_guidance() -> str:
             "- Queued backlog items, case queues, and shell or Compass queue previews are not implicit implementation instructions. Unless the user explicitly asks to work a queued item, do not pick it up automatically just because it appears in Radar, Compass, the shell, or another Odylith queue surface.",
             "- Search existing workstream, plan, bug, component, diagram, and recent session/Compass context first; for consumer Odylith-fix requests, cite that evidence and hand it off to the platform maintainer instead of extending or creating Odylith truth locally.",
             "- If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation; if the issue is Odylith itself in a consumer repo, produce a maintainer-ready feedback packet instead.",
-            "- Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, plan, bug, spec, component, and diagram upkeep. Treat `.agents/skills/` and `odylith/skills/` as specialist overlays for advanced packet control, orchestration, or high-risk lanes rather than as the default path.",
+            "- Default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` for routine backlog, technical-plan, bug, spec, component, and diagram upkeep. Use the actual CLI family: `odylith backlog ...`, `odylith governance ...` and `odylith validate plan-* ...` for technical-plan checks, `odylith bug ...`, `odylith component ...`, `odylith registry ...`, `odylith atlas ...`, and `odylith compass ...`. `odylith plan --help` is a read-only command guide, not a technical-plan writer; do not invent `odylith plan create/edit` flows. Technical plans live under `odylith/technical-plans/in-progress/`, `odylith/technical-plans/done/`, and `odylith/technical-plans/parked/`; do not probe `odylith/technical-plans/source/`. Treat `.agents/skills/` and `odylith/skills/` as specialist overlays for advanced packet control, orchestration, or high-risk lanes rather than as the default path.",
+            "- For `odylith ... --help` discovery, run the single authoritative help command first and do not run parallel exploratory filesystem probes whose failure can cancel the visible help call. If the guessed command is invalid, fall back to `odylith --help` and then the nearest listed subcommand.",
             "- When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`, go straight to that CLI and keep any `.agents/skills` lookup, missing-shim, or fallback-path details implicit unless they change the next user-visible action.",
             "- `odylith backlog create` is fail-closed and must receive grounded Problem, Customer, Opportunity, Product View, and Success Metrics text; never create or accept a title-only, placeholder, or boilerplate Radar workstream.",
             "- For quick visibility after a narrow truth change, rerender only the owned surface: `odylith radar refresh`, `odylith registry refresh`, `odylith casebook refresh`, `odylith atlas refresh`, or `odylith compass refresh`. Use `odylith compass deep-refresh` when you also want brief settlement. Keep `odylith sync` as the broader governance and correctness lane.",
@@ -174,6 +186,7 @@ def customer_bootstrap_guidance() -> str:
             "- `./.odylith/bin/odylith component register --help`",
             "- `./.odylith/bin/odylith atlas scaffold --help`",
             "- `./.odylith/bin/odylith compass log --help`",
+            "- Technical-plan maintenance: `./.odylith/bin/odylith governance --help` and `./.odylith/bin/odylith validate --help`; `./.odylith/bin/odylith plan --help` is a read-only command guide.",
             "- `./.odylith/bin/odylith radar refresh --repo-root .`",
             "- `./.odylith/bin/odylith registry refresh --repo-root .`",
             "- `./.odylith/bin/odylith casebook refresh --repo-root .`",
@@ -197,7 +210,7 @@ def customer_bootstrap_guidance() -> str:
             "- Install, upgrade, and recovery: `agents-guidelines/UPGRADE_AND_RECOVERY.md`",
             "",
             "## Specialist Skills",
-            "- `odylith/skills/` is a specialist reference layer. Routine backlog, plan, bug, spec, component, and diagram upkeep should stay on `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` first.",
+            "- `odylith/skills/` is a specialist reference layer. Routine backlog, technical-plan, bug, spec, component, and diagram upkeep should stay on `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help` first. `odylith plan --help` is a read-only guide; use `odylith governance ...` and `odylith validate plan-* ...` for technical-plan maintenance and validation.",
             "- `skills/delivery-governance-surface-ops/`",
             "- `skills/odylith-context-engine-operations/`",
             "- `skills/odylith-guidance-behavior/`",
@@ -237,6 +250,7 @@ def customer_bootstrap_claude_source() -> str:
             "- Use the shared Claude project assets under `../.claude/`, including the auto-memory bridge, project commands, rules, hooks, and subagents, but do not skip the repo-local `odylith` launcher or the governed workflow contract.",
             "- First-match help route: if the user says `Odylith, help`, use the CLI help surface and print stdout only. Do not run install, status, intervention, or launcher diagnostics first.",
             "- First-match demo route: if the user says `Odylith, show me what you can do` or asks what Odylith can do for this repo, use the advisory `odylith show` demo. Do not run install, status, intervention, or launcher diagnostics first.",
+            "- Capability inventory route: if the user asks to list Odylith capabilities, engines, product architecture, or the capability map, run `odylith capabilities` and print stdout only. Do not infer the taxonomy from `odylith --help`, `odylith show`, Claude Code capability prose, or any host-model surface.",
             "- Claude Code is a first-class Odylith delegation host for this tree. Use the same routed grounding and validation contract as Codex, but execute delegated leaves through Task-tool subagents and the shared `.claude/` project assets.",
             "",
         ]
@@ -340,8 +354,8 @@ def customer_shell_index_placeholder_source(*, repo_root: Path) -> str:
       <h1>The local shell is getting ready.</h1>
       <p class="lede">
         Odylith already created the repo-owned <code>odylith/</code> workspace for this {repo_label}. If the full shell
-        has not rendered yet, rerun <code>./.odylith/bin/odylith sync --repo-root . --force --impact-mode full</code>
-        from the repo root.
+        has not rendered yet, inspect the overlap summary, then rerun
+        <code>./.odylith/bin/odylith sync --repo-root . --proceed-with-overlap</code> from the repo root.
       </p>
       <section class="card">
         <p><strong>Local shell entrypoint</strong></p>
@@ -429,48 +443,31 @@ def refresh_consumer_managed_guidance(
     include_brand: bool,
     version: str = "",
     product_root: Path | None = None,
+    activate_host_settings: bool = True,
 ) -> None:
     if str(repo_role).strip() == PRODUCT_REPO_ROLE:
         return
+    source_product_root = _managed_product_root(product_root)
+    source_project_root = _managed_project_root_assets_root(source_product_root)
     atomic_write_text(repo_root / "odylith" / "AGENTS.md", customer_bootstrap_guidance(), encoding="utf-8")
     atomic_write_text(repo_root / "odylith" / "CLAUDE.md", customer_bootstrap_claude_source(), encoding="utf-8")
-    sync_managed_project_root_assets(repo_root=repo_root)
-    sync_managed_scoped_guidance(repo_root=repo_root)
-    sync_managed_agents_guidelines(repo_root=repo_root)
-    sync_managed_skills(repo_root=repo_root)
-    sync_managed_release_notes(repo_root=repo_root, version=version, product_root=product_root)
+    sync_managed_project_root_assets(
+        repo_root=repo_root,
+        source_root=source_project_root,
+        activate_host_settings=activate_host_settings,
+    )
+    sync_managed_scoped_guidance(repo_root=repo_root, product_root=source_product_root)
+    sync_managed_agents_guidelines(repo_root=repo_root, product_root=source_product_root)
+    sync_managed_skills(repo_root=repo_root, product_root=source_product_root)
+    sync_managed_release_notes(repo_root=repo_root, version=version, product_root=source_product_root)
     if include_brand:
-        sync_managed_surface_brand(repo_root=repo_root)
+        sync_managed_surface_brand(repo_root=repo_root, product_root=source_product_root)
 
 
 def sync_consumer_casebook_bug_index(*, repo_root: Path, repo_role: str) -> None:
     if str(repo_role).strip() == PRODUCT_REPO_ROLE:
         return
     sync_casebook_bug_index.sync_casebook_bug_index(repo_root=repo_root, migrate_bug_ids=True)
-
-
-def value_engine_migration_payload(
-    *,
-    repo_root: Path,
-    repo_role: str,
-    previous_version: str,
-    target_version: str,
-    runtime_root: Path | None,
-) -> dict[str, object]:
-    if str(repo_role).strip() == PRODUCT_REPO_ROLE:
-        return {
-            "migration_id": "v0.1.11-visible-intervention-value-engine",
-            "applied": False,
-            "previous_version": str(previous_version or "").strip(),
-            "target_version": str(target_version or "").strip(),
-            "skipped_reason": "product_repo_source_truth",
-        }
-    return migrate_visible_intervention_value_engine(
-        repo_root=repo_root,
-        previous_version=previous_version,
-        target_version=target_version,
-        runtime_root=runtime_root,
-    ).as_dict()
 
 
 def ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str = CONSUMER_REPO_ROLE) -> None:
@@ -502,6 +499,7 @@ def ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str =
         repo_role=repo_role,
         include_brand=True,
         version=version,
+        activate_host_settings=False,
     )
     shell_source_path = repo_root / "odylith" / "runtime" / "source" / "tooling_shell.v1.json"
     if not shell_source_path.exists():
@@ -529,23 +527,67 @@ def ensure_customer_bootstrap(*, repo_root: Path, version: str, repo_role: str =
         write_version_pin(repo_root=repo_root, version=version, repo_schema_version=DEFAULT_REPO_SCHEMA_VERSION)
 
 
-def sync_managed_agents_guidelines(*, repo_root: Path) -> None:
-    source_root = bundled_product_root() / "agents-guidelines"
+def _managed_product_root(product_root: Path | None = None) -> Path:
+    candidate = Path(product_root).expanduser() if product_root is not None else bundled_product_root()
+    return candidate if candidate.is_dir() else bundled_product_root()
+
+
+def _managed_project_root_assets_root(product_root: Path | None = None) -> Path:
+    if product_root is not None:
+        candidate = Path(product_root).expanduser().parent / "project-root"
+        if candidate.is_dir():
+            return candidate
+    return bundled_project_root_assets_root()
+
+
+def _path_has_repo_local_symlink(*, repo_root: Path, path: Path) -> bool:
+    root = Path(repo_root).resolve()
+    candidate = Path(path)
+    try:
+        relative_path = candidate.relative_to(root)
+    except ValueError:
+        return True
+    current = root
+    for part in relative_path.parts:
+        current = current / part
+        if current.is_symlink():
+            return True
+    return False
+
+
+def _copy_managed_asset(*, source_path: Path, repo_root: Path, target_path: Path) -> None:
+    root = Path(repo_root).resolve()
+    destination = Path(target_path)
+    if _path_has_repo_local_symlink(repo_root=root, path=destination.parent):
+        return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if _path_has_repo_local_symlink(repo_root=root, path=destination):
+        return
+    shutil.copy2(source_path, destination)
+
+
+def sync_managed_agents_guidelines(*, repo_root: Path, product_root: Path | None = None) -> None:
+    source_root = _managed_product_root(product_root) / "agents-guidelines"
     if not source_root.is_dir():
         return
-    target_root = repo_root / "odylith" / "agents-guidelines"
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith" / "agents-guidelines"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name == ".DS_Store":
             continue
         target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_path)
 
 
-def sync_managed_scoped_guidance(*, repo_root: Path) -> None:
-    source_root = bundled_product_root()
-    target_root = repo_root / "odylith"
+def sync_managed_scoped_guidance(*, repo_root: Path, product_root: Path | None = None) -> None:
+    source_root = _managed_product_root(product_root)
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name not in GUIDANCE_FILENAMES:
@@ -554,13 +596,14 @@ def sync_managed_scoped_guidance(*, repo_root: Path) -> None:
         if len(relative_path.parts) == 1:
             continue
         target_path = target_root / relative_path
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_path)
 
 
 def prune_removed_project_root_skill_shims(*, source_root: Path, target_root: Path) -> None:
     source_skills_root = source_root / ".agents" / "skills"
     target_skills_root = target_root / ".agents" / "skills"
+    if _path_has_repo_local_symlink(repo_root=target_root, path=target_skills_root):
+        return
     if not target_skills_root.exists():
         return
     expected_files = (
@@ -577,33 +620,45 @@ def prune_removed_project_root_skill_shims(*, source_root: Path, target_root: Pa
             continue
         if candidate.is_file():
             relative = candidate.relative_to(target_skills_root).as_posix()
-            if relative not in expected_files:
+            skill_name = Path(relative).parts[0] if Path(relative).parts else ""
+            if relative not in expected_files and skill_name in _RETIRED_PROJECT_ROOT_SKILL_SHIMS:
                 candidate.unlink()
         elif candidate.is_dir():
-            with contextlib.suppress(OSError):
-                candidate.rmdir()
+            relative_dir = candidate.relative_to(target_skills_root)
+            skill_name = relative_dir.parts[0] if relative_dir.parts else ""
+            if skill_name in _RETIRED_PROJECT_ROOT_SKILL_SHIMS:
+                with contextlib.suppress(OSError):
+                    candidate.rmdir()
 
 
-def sync_managed_project_root_assets(*, repo_root: Path) -> None:
-    source_root = bundled_project_root_assets_root()
+def sync_managed_project_root_assets(
+    *,
+    repo_root: Path,
+    source_root: Path | None = None,
+    activate_host_settings: bool = True,
+) -> None:
+    source_root = Path(source_root).expanduser() if source_root is not None else bundled_project_root_assets_root()
     if not source_root.is_dir():
         return
     target_root = Path(repo_root).resolve()
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name == ".DS_Store":
             continue
-        target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        relative_path = source_path.relative_to(source_root)
+        if relative_path in _GENERATED_HOST_CONFIG_RELATIVE_PATHS:
+            continue
+        target_path = target_root / relative_path
+        _copy_managed_asset(source_path=source_path, repo_root=target_root, target_path=target_path)
     prune_removed_project_root_skill_shims(source_root=source_root, target_root=target_root)
-    write_effective_codex_project_config(repo_root=target_root)
-    write_effective_claude_project_settings(repo_root=target_root)
+    if activate_host_settings:
+        write_effective_codex_project_config(repo_root=target_root)
+        write_effective_claude_project_settings(repo_root=target_root)
 
 
 def write_effective_codex_project_config(*, repo_root: Path) -> None:
     target_root = Path(repo_root).resolve()
     codex_root = target_root / ".codex"
-    if not codex_root.is_dir():
+    if not codex_root.is_dir() or _path_has_repo_local_symlink(repo_root=target_root, path=codex_root):
         return
     codex_cli_capabilities.write_effective_codex_project_config(repo_root=target_root)
     codex_cli_capabilities.write_effective_codex_hooks(repo_root=target_root)
@@ -612,42 +667,49 @@ def write_effective_codex_project_config(*, repo_root: Path) -> None:
 def write_effective_claude_project_settings(*, repo_root: Path) -> None:
     target_root = Path(repo_root).resolve()
     claude_root = target_root / ".claude"
-    if not claude_root.is_dir():
+    if not claude_root.is_dir() or _path_has_repo_local_symlink(repo_root=target_root, path=claude_root):
         return
     claude_cli_capabilities.write_effective_claude_project_settings(repo_root=target_root)
 
 
-def sync_managed_skills(*, repo_root: Path) -> None:
-    source_root = bundled_product_root() / "skills"
+def sync_managed_skills(*, repo_root: Path, product_root: Path | None = None) -> None:
+    source_root = _managed_product_root(product_root) / "skills"
     if not source_root.is_dir():
         return
-    target_root = repo_root / "odylith" / "skills"
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith" / "skills"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name == ".DS_Store":
             continue
         target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_path)
 
 
-def sync_managed_surface_brand(*, repo_root: Path) -> None:
-    source_root = bundled_product_root() / "surfaces" / "brand"
+def sync_managed_surface_brand(*, repo_root: Path, product_root: Path | None = None) -> None:
+    source_root = _managed_product_root(product_root) / "surfaces" / "brand"
     if not source_root.is_dir():
         return
-    target_root = repo_root / "odylith" / "surfaces" / "brand"
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith" / "surfaces" / "brand"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for source_path in source_root.rglob("*"):
         if not source_path.is_file() or source_path.name == ".DS_Store":
             continue
         target_path = target_root / source_path.relative_to(source_root)
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, target_path)
+        _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_path)
 
 
 def sync_managed_release_notes(*, repo_root: Path, version: str = "", product_root: Path | None = None) -> None:
     source_root = (product_root or bundled_product_root()) / "runtime" / "source" / "release-notes"
-    target_root = repo_root / "odylith" / "runtime" / "source" / "release-notes"
+    root = Path(repo_root).resolve()
+    target_root = root / "odylith" / "runtime" / "source" / "release-notes"
+    if _path_has_repo_local_symlink(repo_root=root, path=target_root):
+        return
     target_root.mkdir(parents=True, exist_ok=True)
     for candidate in target_root.iterdir():
         if candidate.is_symlink() or candidate.is_file():
@@ -662,4 +724,4 @@ def sync_managed_release_notes(*, repo_root: Path, version: str = "", product_ro
     source_path = source_root / f"v{normalized_version}.md"
     if not source_path.is_file() or source_path.name == ".DS_Store":
         return
-    shutil.copy2(source_path, target_root / source_path.name)
+    _copy_managed_asset(source_path=source_path, repo_root=root, target_path=target_root / source_path.name)

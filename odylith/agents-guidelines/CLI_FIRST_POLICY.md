@@ -62,6 +62,14 @@
 - If the CLI reports `selector did not match` or similar, do not hand-edit the underlying file as a workaround. Re-check the selector, read the subcommand help, and either use the correct selector or surface the blocker to the operator.
 - If the CLI is missing a subcommand for an operation the agent believes should be governed, treat that as a maintainer-feedback packet rather than a license to hand-edit.
 - If a CLI exists but the agent has already hand-edited the file, re-run the matching CLI command to re-assert governed truth and make the edit idempotent. Record the CLI miss in Casebook as a learning.
+- If a released Odylith CLI emitted invalid governed truth, do not reframe the
+  workaround as a justified manual override. For the known 0.1.11 component
+  register drift where `component_registry.v1.json` contains
+  `category: detected` or `qualification: detected`, the supported path is
+  upgrade to 0.1.12 or later and run
+  `./.odylith/bin/odylith doctor --repo-root . --repair`; before that fixed
+  release exists, capture maintainer-ready evidence instead of instructing a
+  consumer repo to edit Registry JSON.
 
 ## Host Coverage
 - Codex and Claude Code both execute under this policy.

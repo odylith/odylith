@@ -25,7 +25,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from odylith.install.fs import atomic_write_text
+from odylith.runtime.common import host_project_settings
 
 
 _CLAUDE_VERSION_RE = re.compile(r"(?P<version>\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.\-]+)?)")
@@ -42,6 +42,15 @@ _FUTURE_VERSION_POLICY = "capability_based_no_max_pin"
 _DEFAULT_CLAUDE_BIN = "claude"
 _CLAUDE_POST_EDIT_MATCHER_TOKENS: tuple[str, ...] = ("Write", "Edit", "MultiEdit")
 _CLAUDE_POST_BASH_MATCHER_TOKENS: tuple[str, ...] = ("Bash",)
+_ODYLITH_HOOK_COMMAND_TOKENS: tuple[str, ...] = (
+    "odylith-host-launcher.py",
+    "show-me-prompt-guard.py",
+)
+_ODYLITH_PERMISSION_TOKENS: tuple[str, ...] = (
+    "./.odylith/bin/odylith",
+    "odylith claude:",
+    "odylith codex:",
+)
 
 
 @dataclass(frozen=True)
@@ -371,6 +380,9 @@ _BAKED_HOOK_DEFAULT_PERMISSIONS_ALLOWLIST: tuple[str, ...] = (
     "Bash(./.odylith/bin/odylith start:*)",
     "Bash(./.odylith/bin/odylith context:*)",
     "Bash(./.odylith/bin/odylith query:*)",
+    "Bash(./.odylith/bin/odylith show:*)",
+    "Bash(./.odylith/bin/odylith capabilities:*)",
+    "Bash(./.odylith/bin/odylith --help:*)",
     "Bash(./.odylith/bin/odylith version:*)",
     "Bash(./.odylith/bin/odylith doctor:*)",
     "Bash(./.odylith/bin/odylith sync:*)",
@@ -536,18 +548,115 @@ def render_effective_claude_project_settings(
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
+def _is_odylith_statusline(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    command = str(value.get("command") or "")
+    return "odylith" in command or ".claude/statusline.sh" in command
+
+
+def merge_effective_claude_project_settings(
+    existing: dict[str, Any],
+    odylith_payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Merge Odylith hooks without removing user Claude settings."""
+    merged = dict(existing)
+    if "$schema" not in merged and "$schema" in odylith_payload:
+        merged["$schema"] = odylith_payload["$schema"]
+
+    merged_hooks = host_project_settings.merge_hook_map(
+        merged.get("hooks"),
+        odylith_payload.get("hooks") if isinstance(odylith_payload.get("hooks"), dict) else {},
+    )
+    if isinstance(merged_hooks, dict):
+        merged["hooks"] = merged_hooks
+
+    odylith_permissions = odylith_payload.get("permissions")
+    permissions = merged.get("permissions")
+    if permissions is None:
+        permissions = {}
+    if isinstance(permissions, dict) and isinstance(odylith_permissions, dict):
+        merged_permissions = dict(permissions)
+        merged_permissions["allow"] = host_project_settings.merge_unique_strings(
+            merged_permissions.get("allow"),
+            odylith_permissions.get("allow") if isinstance(odylith_permissions.get("allow"), list) else [],
+        )
+        merged["permissions"] = merged_permissions
+
+    if "statusLine" not in merged or _is_odylith_statusline(merged.get("statusLine")):
+        merged["statusLine"] = odylith_payload.get("statusLine")
+    return merged
+
+
 def write_effective_claude_project_settings(
     *,
     repo_root: Path | str,
     capabilities: ClaudeCliCapabilitySnapshot | None = None,
 ) -> Path:
-    """Write the deterministic effective `.claude/settings.json` to disk."""
+    """Merge Odylith's effective `.claude/settings.json` contract to disk."""
     resolved_root = _resolve_repo_root(repo_root)
     target_path = _project_settings_path(resolved_root)
+    if target_path.parent.is_symlink():
+        return target_path
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    atomic_write_text(
-        target_path,
-        render_effective_claude_project_settings(repo_root=resolved_root, capabilities=capabilities),
-        encoding="utf-8",
+    existing = host_project_settings.load_json_object_for_update(target_path)
+    if existing is None:
+        return target_path
+    odylith_payload = json.loads(
+        render_effective_claude_project_settings(repo_root=resolved_root, capabilities=capabilities)
     )
+    merged = merge_effective_claude_project_settings(existing, odylith_payload)
+    host_project_settings.atomic_write_json_object(target_path, merged)
+    return target_path
+
+
+def _filtered_permissions(value: object) -> tuple[object, bool]:
+    if not isinstance(value, list):
+        return value, False
+    filtered = [
+        entry
+        for entry in value
+        if not any(token in str(entry or "") for token in _ODYLITH_PERMISSION_TOKENS)
+    ]
+    return filtered, len(filtered) != len(value)
+
+
+def deactivate_claude_project_settings(*, repo_root: Path | str) -> Path:
+    resolved_root = _resolve_repo_root(repo_root)
+    target_path = _project_settings_path(resolved_root)
+    if target_path.parent.is_symlink():
+        return target_path
+    existing = host_project_settings.load_json_object_for_update(target_path)
+    if existing is None:
+        return target_path
+
+    updated = dict(existing)
+    changed = False
+    hooks, hooks_changed = host_project_settings.remove_hook_commands(
+        updated.get("hooks"),
+        _ODYLITH_HOOK_COMMAND_TOKENS,
+    )
+    if hooks_changed:
+        changed = True
+        if isinstance(hooks, dict) and hooks:
+            updated["hooks"] = hooks
+        else:
+            updated.pop("hooks", None)
+
+    status_line = updated.get("statusLine")
+    if _is_odylith_statusline(status_line):
+        updated.pop("statusLine", None)
+        changed = True
+
+    permissions = updated.get("permissions")
+    if isinstance(permissions, dict):
+        permissions_updated = dict(permissions)
+        allow, allow_changed = _filtered_permissions(permissions_updated.get("allow"))
+        if allow_changed:
+            permissions_updated["allow"] = allow
+            updated["permissions"] = permissions_updated
+            changed = True
+
+    if changed:
+        host_project_settings.atomic_write_json_object(target_path, updated)
     return target_path

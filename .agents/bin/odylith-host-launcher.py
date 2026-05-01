@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa
 """Dispatch Odylith host hooks through a usable launcher, even in fresh worktrees.
 
 Hook commands live in tracked project assets, but the repo-local Odylith launcher
@@ -20,6 +21,8 @@ from typing import Sequence
 
 _LAUNCHER_RELATIVE = Path(".odylith") / "bin" / "odylith"
 _BOOTSTRAP_RELATIVE = Path(".odylith") / "bin" / "odylith-bootstrap"
+_GUIDANCE_FILES = ("AGENTS.md", "CLAUDE.md")
+_ODYLITH_SCOPE_MARKER = "<!-- odylith-scope:start -->"
 
 
 def _resolve_repo_root(argv: Sequence[str], *, cwd: Path) -> Path:
@@ -36,6 +39,28 @@ def _resolve_repo_root(argv: Sequence[str], *, cwd: Path) -> Path:
 
 def _launcher_candidates(repo_root: Path) -> tuple[Path, Path]:
     return repo_root / _LAUNCHER_RELATIVE, repo_root / _BOOTSTRAP_RELATIVE
+
+
+def _managed_guidance_present(repo_root: Path) -> bool:
+    for name in _GUIDANCE_FILES:
+        path = repo_root / name
+        if not path.is_file():
+            continue
+        try:
+            if _ODYLITH_SCOPE_MARKER in path.read_text(encoding="utf-8"):
+                return True
+        except (OSError, UnicodeDecodeError):
+            continue
+    return False
+
+
+def _repo_is_uninstalled(repo_root: Path) -> bool:
+    local_launcher, local_bootstrap = _launcher_candidates(repo_root)
+    if local_launcher.is_file() or local_bootstrap.is_file():
+        return False
+    if (repo_root / ".odylith" / "install.json").is_file():
+        return False
+    return not _managed_guidance_present(repo_root)
 
 
 def _git_worktree_roots(repo_root: Path) -> list[Path]:
@@ -127,6 +152,8 @@ def run(
     if target is None:
         peer = local_bootstrap if local_bootstrap.is_file() else find_launcher(repo_root)
         if peer is None:
+            if _repo_is_uninstalled(repo_root):
+                return 0
             print(
                 f"Odylith host launcher could not find a usable launcher for {repo_root}.",
                 file=sys.stderr,

@@ -129,7 +129,7 @@ def _assert_shell_target_from_href(page, href: str) -> None:  # noqa: ANN001
         _assert_casebook_selection(page, bug_route)
         return
     _wait_for_shell_tab(page, "casebook")
-    page.frame_locator("#frame-casebook").locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    page.frame_locator("#frame-casebook").locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
 
 
 def _casebook_agent_link_blocks(casebook) -> list[dict[str, object]]:  # noqa: ANN001
@@ -455,7 +455,7 @@ def test_casebook_direct_bug_routes_and_reload_keep_selection_truthful(browser_c
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     sample_rows = casebook.locator("button.bug-row").evaluate_all(
         """nodes => nodes.slice(0, 4).map((node) => ({
           bug: String(node.getAttribute("data-bug") || "").trim(),
@@ -494,7 +494,7 @@ def test_casebook_agent_band_links_stay_distinct_and_non_repetitive(browser_cont
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     sample_routes = casebook.locator("button.bug-row").evaluate_all(
         """nodes => nodes.slice(0, 10).map((node) => ({
           bug: String(node.getAttribute("data-bug") || "").trim(),

@@ -8,12 +8,12 @@ path is inside one of the governed Odylith source-of-truth subtrees
 (``odylith/radar/source/``, ``odylith/technical-plans/``,
 ``odylith/casebook/bugs/``, ``odylith/registry/source/``,
 ``odylith/atlas/source/``), it runs ``odylith sync --impact-mode
-selective <path>`` to keep the derived dashboards aligned and emits a
-``systemMessage`` payload describing the result.
+selective <path>`` to keep the derived dashboards aligned.
 
 The hook never blocks the edit. It always exits 0; on failure it emits
 a fail-soft ``systemMessage`` describing the exit code so the operator
-can recover manually if needed.
+can recover manually if needed. Successful refreshes are silent because
+Claude Code renders hook output inline with the transcript.
 """
 
 from __future__ import annotations
@@ -22,14 +22,9 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any
-from typing import Mapping
 
-from odylith.runtime.intervention_engine import host_surface_runtime
-from odylith.runtime.intervention_engine import surface_runtime as intervention_surface_runtime
 from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
 from odylith.runtime.surfaces import claude_host_shared
-from odylith.runtime.surfaces import host_intervention_support
 
 
 # Kept as module-level aliases for tests and call-sites that imported these
@@ -65,7 +60,7 @@ def should_refresh(path_token: str) -> bool:
 
 
 def refresh_governance(*, project_dir: Path | str, path_token: str) -> dict[str, str]:
-    """Run ``odylith sync --impact-mode selective <path>`` and return the systemMessage."""
+    """Run ``odylith sync --impact-mode selective <path>`` and return visible failure state."""
     project = Path(project_dir).expanduser().resolve()
     completed = claude_host_shared.run_odylith(
         project_dir=project,
@@ -87,7 +82,7 @@ def refresh_governance(*, project_dir: Path | str, path_token: str) -> dict[str,
             )
         }
     if completed.returncode == 0:
-        return {"systemMessage": f"Odylith governance refresh completed after editing {path_token}."}
+        return {}
     detail = "\n".join(
         line.strip()
         for line in (completed.stderr or completed.stdout or "").splitlines()[-8:]
@@ -96,26 +91,6 @@ def refresh_governance(*, project_dir: Path | str, path_token: str) -> dict[str,
     if not detail:
         detail = f"exit code {completed.returncode}"
     return {"systemMessage": f"Odylith governance refresh failed after editing {path_token}: {detail}"}
-
-
-def _post_edit_bundle(
-    *,
-    project_dir: Path,
-    path_token: str,
-    session_id: str = "",
-    bundle_override: Mapping[str, Any] | None = None,
-) -> dict[str, Any]:
-    if isinstance(bundle_override, Mapping):
-        return dict(bundle_override)
-    if not _normalize_string(path_token):
-        return {}
-    return host_surface_runtime.compose_host_conversation_bundle(
-        repo_root=project_dir,
-        host_family="claude",
-        turn_phase="post_edit_checkpoint",
-        session_id=session_id,
-        changed_paths=[path_token],
-    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -134,55 +109,10 @@ def main(argv: list[str] | None = None) -> int:
     raw = args.payload if args.payload else None
     payload = claude_host_shared.load_payload(raw)
     path_token = edited_path(payload=payload, project_dir=repo_root)
-    session_id = claude_host_shared.hook_session_id(payload)
     governance_result = refresh_governance(project_dir=repo_root, path_token=path_token) if should_refresh(path_token) else {}
-    bundle = _post_edit_bundle(
-        project_dir=repo_root,
-        path_token=path_token,
-        session_id=session_id,
-    )
-    decision = (
-        host_surface_runtime.visible_intervention_decision(
-            repo_root=repo_root,
-            bundle=bundle,
-            host_family="claude",
-            turn_phase="post_edit_checkpoint",
-            session_id=session_id,
-            include_proposal=True,
-            include_closeout=False,
-            developer_include_closeout=True,
-        )
-        if bundle
-        else None
-    )
     governance_status = _normalize_string(governance_result.get("systemMessage"))
-    developer_context = decision.developer_context if decision is not None else ""
-    developer_context = host_intervention_support.join_sections(governance_status, developer_context)
-    live_intervention = decision.visible_markdown if decision is not None else ""
-    replay = host_intervention_support.preferred_live_replay_markdown(
-        repo_root=repo_root,
-        host_family="claude",
-        session_id=session_id,
-    )
-    developer_context = host_intervention_support.join_sections(replay, developer_context) if replay else developer_context
-    live_intervention = replay or live_intervention
-    if bundle and decision is not None and developer_context:
-        host_surface_runtime.append_visible_intervention_events(
-            repo_root=repo_root,
-            bundle=bundle,
-            decision=decision,
-            render_surface="claude_post_tool_use",
-        )
-    payload_out = host_surface_runtime.claude_post_tool_payload(
-        developer_context=developer_context,
-        system_message=host_surface_runtime.compose_checkpoint_system_message(
-            live_intervention=live_intervention,
-            governance_status=governance_status,
-        ),
-        include_assist_in_visible_fallback=False,
-    )
-    if payload_out:
-        sys.stdout.write(json.dumps(payload_out))
+    if governance_status:
+        sys.stdout.write(json.dumps({"systemMessage": governance_status}))
     return 0
 
 

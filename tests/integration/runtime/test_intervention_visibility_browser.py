@@ -134,11 +134,11 @@ def test_intervention_status_text_is_browser_visible_for_unproven_and_chat_confi
         wait_until="domcontentloaded",
     )
 
-    page.locator("#unproven", has_text="Chat-visible proof: pending_confirmation").wait_for(timeout=15000)
-    page.locator("#unproven", has_text="still require exact chat confirmation").wait_for(timeout=15000)
-    page.locator("#proven", has_text="Chat-visible proof: proven_this_session").wait_for(timeout=15000)
+    page.locator("#unproven", has_text="Chat visibility: waiting for chat confirmation").wait_for(timeout=15000)
+    page.locator("#unproven", has_text="still need to appear in assistant text").wait_for(timeout=15000)
+    page.locator("#proven", has_text="Chat visibility: confirmed in this session").wait_for(timeout=15000)
     page.locator("#proven", has_text="assistant_chat_transcript").wait_for(timeout=15000)
-    page.locator("#proven", has_text="Chat transcript confirmations recorded on this probe: 1").wait_for(
+    page.locator("#proven", has_text="Chat confirmations recorded on this probe: 1").wait_for(
         timeout=15000
     )
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
@@ -192,12 +192,12 @@ def test_intervention_status_browser_distinguishes_ledger_visible_session_with_p
         wait_until="domcontentloaded",
     )
 
-    page.locator("#pending", has_text="Chat-visible proof: ledger_visible_with_pending_confirmation").wait_for(
+    page.locator("#pending", has_text="Chat visibility: recorded with pending chat confirmation").wait_for(
         timeout=15000
     )
-    page.locator("#pending", has_text="pending chat-confirmation event(s)").wait_for(timeout=15000)
+    page.locator("#pending", has_text="waiting-for-chat event(s)").wait_for(timeout=15000)
     page.locator("#pending", has_text="assistant_fallback_ready").wait_for(timeout=15000)
-    page.locator("#pending", has_text="Ledger: 2 recent event(s), 1 ledger-visible event(s), 0 chat-confirmed event(s), 1 pending").wait_for(
+    page.locator("#pending", has_text="Visibility ledger: 2 recent event(s), 1 recorded-visible event(s), 0 confirmed-in-chat event(s), 1 waiting").wait_for(
         timeout=15000
     )
     page.locator("#pending", has_text="Next assistant-visible replay:").wait_for(timeout=15000)
@@ -290,11 +290,13 @@ def test_visible_intervention_fallback_markdown_is_transcript_visible_in_compact
     message = page.locator("#assistant-message")
     message.wait_for(timeout=15000)
     message.locator("text=Odylith Observation").wait_for(timeout=15000)
-    message.locator("text=visible Odylith moment").wait_for(timeout=15000)
+    message.locator("text=Odylith note").wait_for(timeout=15000)
     rendered_text = message.inner_text().strip()
     assert rendered_text.startswith("---\n\n**Odylith Observation:**")
     assert not rendered_text.lstrip().startswith("{")
-    assert "user can see what changed and what happens next" in rendered_text
+    assert "no Odylith note has reached this chat yet" in rendered_text
+    assert "Show the next Odylith" not in rendered_text
+    assert "chat-proved" not in rendered_text
     assert "hook" not in rendered_text
     assert "payload" not in rendered_text
     assert "ledger" not in rendered_text

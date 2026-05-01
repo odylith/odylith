@@ -46,7 +46,7 @@
 - If Odylith is not installed yet and no repo-local bootstrap launcher exists, rerun the hosted installer from the repo root instead of cloning a second Odylith checkout:
   `curl -fsSL https://odylith.ai/install.sh | bash`
 - Use `./.odylith/bin/odylith off --repo-root .` and `./.odylith/bin/odylith on --repo-root .` to toggle Odylith guidance for coding agents without removing the runtime. `off` restores default coding-agent behavior for the repo; `on` restores Odylith as the default first path.
-- Use `./.odylith/bin/odylith uninstall --repo-root .` to detach runtime integration while preserving both `odylith/` and `.odylith/`.
+- Use `./.odylith/bin/odylith uninstall --repo-root .` to preserve the local `odylith/` governed source truth, remove `.odylith/` runtime state, detach repo-root guidance, and leave host configuration directories alone.
 
 ## Repo Integration Contract
 
@@ -119,11 +119,30 @@
   stages the managed runtime side-by-side, health-checks it, and atomically
   switches `.odylith/runtime/current`.
 - `odylith upgrade` reports explicitly whether it moved to a new version, was already current, or only advanced the repo pin, and it prints the release link plus short highlights when that metadata is available.
+- `odylith version --check-upgrade` performs a remote advisory check for the
+  latest release and writes a cache under
+  `.odylith/state/upgrade-check.v1.json`. The default retry interval is seven
+  days so routine version checks do not repeatedly ping the network.
+- Plain `odylith version` does not make a remote request; it only shows a
+  cached upgrade advisory if one already exists. Use `--force-upgrade-check`
+  to bypass the cache and `--upgrade-check-offline` to read cache only.
+- Enterprise and offline environments can set `ODYLITH_UPGRADE_CHECK=off` to
+  disable remote advisory checks, `ODYLITH_UPGRADE_CHECK_URL` to point at an
+  approved mirror, `ODYLITH_UPGRADE_CHECK_INTERVAL_HOURS` to tune cadence, and
+  `ODYLITH_UPGRADE_CHECK_TIMEOUT_SECONDS` to keep proxy-filtered checks short.
+  Remote advisory failure is non-fatal; `odylith upgrade` remains the signed
+  asset verification path.
 - Successful consumer upgrade or reinstall refreshes the local shell through the narrow dashboard-refresh path so the browser surface stays current without a full governance sync.
 - A previously staged version directory is reused only when its local runtime
   verification marker still matches the newly verified release evidence;
   drifted or partially trusted directories are discarded and restaged.
-- Normal upgrades must not rewrite tracked repo truth under `odylith/`; the only allowed consumer-tree refresh is `odylith/agents-guidelines/`.
+- When post-upgrade dashboard refresh changes generated Odylith surfaces,
+  upgrade writes `odylith/upgrade-generated-changes.v1.json` as a compact
+  tracked review manifest with surface categories, byte counts, SHA-256 hashes,
+  and a content fingerprint.
+- Runtime activation must not rewrite consumer source truth under `odylith/`.
+  Post-upgrade shell refresh may update generated Odylith surfaces, and that
+  generated churn must be summarized by the tracked generated-change manifest.
 - Migration-marked releases are blocked from the normal upgrade path.
 - `odylith rollback --previous` only targets previously verified local versions and may temporarily diverge from the repo pin.
 - `odylith version` and `odylith doctor` must report the active version and
@@ -139,8 +158,11 @@
 - Poisoned-local-state repair path: `./.odylith/bin/odylith doctor --repo-root . --repair --reset-local-state`
 - Temporary agent-off switch: `./.odylith/bin/odylith off --repo-root .`
 - Re-enable switch: `./.odylith/bin/odylith on --repo-root .`
-- Uninstall preserves customer-owned `odylith/` truth, preserved local
-  `.odylith/` state, and only removes the Odylith block from supported root
-  guidance files such as `AGENTS.md` and `CLAUDE.md`.
-- Do not delete customer-owned Odylith truth, context, or local operational history to "clean" an install.
+- Uninstall preserves the consumer repo's `odylith/` governed source truth,
+  removes repo-local `.odylith/` runtime state, and removes the Odylith block
+  from supported root guidance files such as `AGENTS.md` and `CLAUDE.md`. It
+  leaves host configuration directories such as `.claude/`, `.codex/`, and
+  `.agents/` in place.
+- Do not delete `.claude/`, `.codex/`, or `.agents/` as part of Odylith
+  uninstall; those paths may contain non-Odylith user or enterprise config.
 - Do not ask users to clone Odylith for installation.

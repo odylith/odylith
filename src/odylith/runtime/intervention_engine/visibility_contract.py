@@ -136,7 +136,7 @@ def _split_visible_lines(value: Any) -> tuple[list[str], list[str]]:
                 body = normalize_block_string("\n".join(active))
                 if body:
                     for paragraph in _visible_paragraphs(body):
-                        if _visible_line_label(paragraph):
+                        if _visible_line_label(paragraph) in {"assist", "supplemental"}:
                             outside_rows.append(paragraph)
                         else:
                             live_bodies.append(paragraph)
@@ -154,7 +154,7 @@ def _split_visible_lines(value: Any) -> tuple[list[str], list[str]]:
     if tail:
         if in_live_block:
             for paragraph in _visible_paragraphs(tail):
-                if _visible_line_label(paragraph):
+                if _visible_line_label(paragraph) in {"assist", "supplemental"}:
                     outside_rows.append(paragraph)
                 else:
                     live_bodies.append(paragraph)
@@ -193,7 +193,10 @@ def _visible_line_label(value: Any) -> str:
     return ""
 
 
-def compose_visible_markdown(*values: Any) -> str:
+def compose_visible_markdown(
+    *values: Any,
+    supplemental_inside_live_with_assist: bool = False,
+) -> str:
     """Compose a clean visible intervention with one live fence and Assist last."""
     live_rows: list[str] = []
     other_rows: list[str] = []
@@ -227,10 +230,18 @@ def compose_visible_markdown(*values: Any) -> str:
             if row and row not in sections:
                 sections.append(row)
         return join_blocks(*sections)
-    live = join_blocks(*live_rows)
+    if supplemental_inside_live_with_assist:
+        live = join_blocks(*supplemental_rows, *live_rows)
+    else:
+        live = join_blocks(*live_rows)
     if live:
         sections.append(wrap_live_boundary(live))
-    for rows in (other_rows, supplemental_rows, assist_rows):
+    ordered_rows = (
+        (other_rows, assist_rows)
+        if supplemental_inside_live_with_assist
+        else (other_rows, supplemental_rows, assist_rows)
+    )
+    for rows in ordered_rows:
         for row in rows:
             if row and row not in sections:
                 sections.append(row)

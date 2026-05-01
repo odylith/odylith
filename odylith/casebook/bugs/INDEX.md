@@ -1,13 +1,21 @@
 # Bug Index
 
-Last updated (UTC): 2026-04-27
+Last updated (UTC): 2026-05-01
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-126 | 2026-04-25 | Benchmark tree identity fix regrows oversized runner hotfile failure | P2 | benchmark | Open | [2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md](2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md) |
-| CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Resolved | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
+| CB-145 | 2026-04-30 | Uninstall requests can be routed to raw deletion that odylith blocks itself | P1 | install | Fixed Pending Release | [2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md](2026-04-30-uninstall-requests-can-be-routed-to-raw-deletion-that-odylith-blocks-itself.md) |
+| CB-143 | 2026-04-30 | Uninstall leaves broken odylith tree behind | P1 | migration-runtime | Fixed Pending Release | [2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md](2026-04-30-uninstall-leaves-broken-odylith-tree-behind.md) |
+| CB-140 | 2026-04-30 | Show output suggests standalone atlas prompt that scaffold rejects | P1 | odylith | Fixed Pending Release | [2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md](2026-04-30-show-output-suggests-standalone-atlas-prompt-that-scaffold-rejects.md) |
+| CB-144 | 2026-04-30 | Intervention visibility fallback leaks internal instructions into claude chat | P1 | governance-intervention-engine | Fixed Pending Release | [2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md](2026-04-30-intervention-visibility-fallback-leaks-internal-instructions-into-claude-chat.md) |
+| CB-146 | 2026-04-30 | Hosted installer misroutes stale uninstall residue and under explains enterprise | P1 | release | Fixed Pending Release | [2026-04-30-hosted-installer-misroutes-stale-uninstall-residue-and-under-explains-enterprise.md](2026-04-30-hosted-installer-misroutes-stale-uninstall-residue-and-under-explains-enterprise.md) |
+| CB-142 | 2026-04-30 | Generated python host assets break consumer ruff lint | P1 | migration-runtime | Fixed Pending Release | [2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md](2026-04-30-generated-python-host-assets-break-consumer-ruff-lint.md) |
+| CB-139 | 2026-04-30 | First install sync overlap gate leaves first run shell incomplete | P1 | odylith | Fixed Pending Release | [2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md](2026-04-30-first-install-sync-overlap-gate-leaves-first-run-shell-incomplete.md) |
+| CB-141 | 2026-04-30 | Component register writes registry entries rejected by validator | P1 | registry | Fixed Pending Release | [2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md](2026-04-30-component-register-writes-registry-entries-rejected-by-validator.md) |
+| CB-138 | 2026-04-29 | Casebook list clips long consumer bug cards | P2 | casebook | Fixed Pending Release | [2026-04-29-casebook-list-clips-long-consumer-bug-cards.md](2026-04-29-casebook-list-clips-long-consumer-bug-cards.md) |
+| CB-121 | 2026-04-16 | Intervention hook payloads can be generated but never reach chat visible ux | P1 | governance-intervention-engine | Fixed Pending Release | [2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md](2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md) |
 | CB-120 | 2026-04-16 | Dashboard shell diagnostic cockpit leaked into product render | P1 | dashboard | Resolved | [2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md](2026-04-16-dashboard-shell-diagnostic-cockpit-leaked-into-product-render.md) |
 | CB-119 | 2026-04-16 | Benchmark live proof conflates support paths write targets and read only sandbox | P1 | benchmark | Open | [2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md](2026-04-16-benchmark-live-proof-conflates-support-paths-write-targets-and-read-only-sandbox.md) |
 | CB-114 | 2026-04-15 | Bug capture can publish placeholder tbd records before the maintainer has enough | P0 | `src/odylith/runtime/governance/bug_authoring.py`,
@@ -96,31 +104,9 @@ Last updated (UTC): 2026-04-27
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   benchmark progress finalization, benchmark cleanup/interruption handling,
   pinned-dogfood release proof, maintainer benchmark override contract. | Open | [2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md](2026-04-08-pinned-dogfood-proof-benchmark-can-wedge-mid-corpus-and-block-release-proof.md) |
-| CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
-  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
-  presentation and next-action routing. | Open | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
-| CB-055 | 2026-04-06 | Repair and reinstall do not converge after partial runtime failure | P0 | `src/odylith/install/runtime.py`,
-  `src/odylith/install/manager.py`, runtime replacement helpers, repair
-  lifecycle, reinstall flow. | Open | [2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md](2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md) |
-| CB-054 | 2026-04-06 | Macos runtime metadata files break managed runtime trust validation | P0 | `src/odylith/install/runtime_integrity.py`,
-  `src/odylith/install/runtime.py`, managed runtime trust policy, feature-pack
-  preflight. | Open | [2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md](2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md) |
-| CB-060 | 2026-04-06 | Lifecycle plans print full dirty overlap by default | P2 | `src/odylith/cli.py`,
-  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, lifecycle-plan
-  printers. | Open | [2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md](2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md) |
-| CB-058 | 2026-04-06 | Legacy radar index is not normalized before sync validation | P0 | `src/odylith/runtime/governance/validate_backlog_contract.py`,
-  `src/odylith/runtime/governance/backlog_authoring.py`,
-  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, Radar source
-  upgrade bridge. | Open | [2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md](2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md) |
-| CB-057 | 2026-04-06 | Legacy migration omits stale odyssey reference audit | P1 | `src/odylith/install/manager.py`, migration summary and
-  reporting, tracked-text audit policy. | Open | [2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md](2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md) |
 | CB-052 | 2026-04-04 | Registry live forensics miss source owned bundle mirror component activity | P1 | `src/odylith/runtime/governance/component_registry_intelligence.py`,
   Registry forensic coverage, `tribunal`, `remediator`, source-owned bundled
   runtime docs, Registry detail rendering. | Open | [2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md](2026-04-04-registry-live-forensics-miss-source-owned-bundle-mirror-component-activity.md) |
-| CB-051 | 2026-04-03 | Upgrade spotlight live refresh updates version badge but keeps release note hidden | P1 | `src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js`,
-  `src/odylith/runtime/surfaces/shell_onboarding.py`, upgrade spotlight
-  dismissal/reopen contract, shell live-refresh browser path,
-  `tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`. | Open | [2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md](2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md) |
 | CB-049 | 2026-04-03 | Benchmark repair style live cases penalize validator backed no op completion | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`, live
@@ -196,7 +182,18 @@ Last updated (UTC): 2026-04-27
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-137 | 2026-04-29 | Install still surfaces raw trusted root key warning during verification | P1 | release | Closed | [2026-04-29-install-still-surfaces-raw-trusted-root-key-warning-during-verification.md](2026-04-29-install-still-surfaces-raw-trusted-root-key-warning-during-verification.md) |
+| CB-136 | 2026-04-29 | Install overwrites claude settings before verified runtime activation | P0 | migration-runtime | Closed | [2026-04-29-install-overwrites-claude-settings-before-verified-runtime-activation.md](2026-04-29-install-overwrites-claude-settings-before-verified-runtime-activation.md) |
+| CB-134 | 2026-04-27 | Upgrade reviewability still needs generated change manifest and lock compaction | P2 | odylith | Closed | [2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md](2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md) |
+| CB-133 | 2026-04-27 | Upgrade lifecycle output is not an auditable transaction | P1 | release | Closed | [2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md](2026-04-27-upgrade-lifecycle-output-is-not-an-auditable-transaction.md) |
+| CB-132 | 2026-04-27 | Starter guide first run layout buries the primary action | P1 | dashboard | Closed | [2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md](2026-04-27-starter-guide-first-run-layout-buries-the-primary-action.md) |
+| CB-131 | 2026-04-27 | Starter guide can reopen closed on same path reinstall | P1 | dashboard | Closed | [2026-04-27-starter-guide-can-reopen-closed-on-same-path-reinstall.md](2026-04-27-starter-guide-can-reopen-closed-on-same-path-reinstall.md) |
+| CB-135 | 2026-04-27 | Scattered migration logic makes upgrade state non authoritative | P0 | migration-runtime | Closed | [2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md](2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md) |
+| CB-128 | 2026-04-27 | Odylith show can treat managed install assets as repo source | P2 | odylith | Closed | [2026-04-27-odylith-show-can-treat-managed-install-assets-as-repo-source.md](2026-04-27-odylith-show-can-treat-managed-install-assets-as-repo-source.md) |
+| CB-130 | 2026-04-27 | Codex show me prompt can answer with hand written odylith demonstration summary | P2 | odylith-chatter | Closed | [2026-04-27-codex-show-me-prompt-can-answer-with-hand-written-odylith-demonstration-summary.md](2026-04-27-codex-show-me-prompt-can-answer-with-hand-written-odylith-demonstration-summary.md) |
+| CB-129 | 2026-04-27 | Claude show me prompt can answer as generic claude code instead of odylith show | P2 | odylith-chatter | Closed | [2026-04-27-claude-show-me-prompt-can-answer-as-generic-claude-code-instead-of-odylith-show.md](2026-04-27-claude-show-me-prompt-can-answer-as-generic-claude-code-instead-of-odylith-show.md) |
 | CB-127 | 2026-04-25 | Cli help stdout can trigger out of context odylith observation | P1 | governance-intervention-engine | Closed | [2026-04-25-cli-help-stdout-can-trigger-out-of-context-odylith-observation.md](2026-04-25-cli-help-stdout-can-trigger-out-of-context-odylith-observation.md) |
+| CB-126 | 2026-04-25 | Benchmark tree identity fix regrows oversized runner hotfile failure | P2 | benchmark | Closed | [2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md](2026-04-25-benchmark-tree-identity-fix-regrows-oversized-runner-hotfile-failure.md) |
 | CB-125 | 2026-04-25 | Benchmark proof identity includes mutable ignored runtime aliases | P1 | benchmark | Closed | [2026-04-25-benchmark-proof-identity-includes-mutable-ignored-runtime-aliases.md](2026-04-25-benchmark-proof-identity-includes-mutable-ignored-runtime-aliases.md) |
 | CB-124 | 2026-04-24 | Benchmark disposable worktrees resolve validators against a non benchmark ready | P1 | benchmark | Closed | [2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md](2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md) |
 | CB-122 | 2026-04-17 | Intervention hooks report ready while chat sees zero visible odylith beats | P0 | governance-intervention-engine | Closed | [2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md](2026-04-17-intervention-hooks-report-ready-while-chat-sees-zero-visible-odylith-beats.md) |
@@ -409,18 +406,40 @@ Last updated (UTC): 2026-04-27
 | CB-064 | 2026-04-07 | Hosted installer upgrades runtime without advancing repo pin | P1 | hosted installer publication flow,
   `src/odylith/cli.py`, install manager pin-alignment semantics in
   `src/odylith/install/manager.py`, and public install and upgrade guidance. | Closed | [2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md](2026-04-07-hosted-installer-upgrades-runtime-without-advancing-repo-pin.md) |
+| CB-059 | 2026-04-06 | Sync failure summary repeats verbose output and stale next action | P1 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, sync error
+  presentation and next-action routing. | Closed | [2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md](2026-04-06-sync-failure-summary-repeats-verbose-output-and-stale-next-action.md) |
 | CB-061 | 2026-04-06 | Successful trust bootstrap still prints scary non fatal warnings | P1 | `src/odylith/install/release_assets.py`,
   `src/odylith/cli.py`, install and repair success messaging, release-note copy. | Closed | [2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md](2026-04-06-successful-trust-bootstrap-still-prints-scary-non-fatal-warnings.md) |
+| CB-055 | 2026-04-06 | Repair and reinstall do not converge after partial runtime failure | P0 | `src/odylith/install/runtime.py`,
+  `src/odylith/install/manager.py`, runtime replacement helpers, repair
+  lifecycle, reinstall flow. | Closed | [2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md](2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md) |
 | CB-062 | 2026-04-06 | Radar topology deep links fall through to stale filtered selection and browser proof misses disclosure gated routes | P0 | `src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py`,
   bundled Radar `backlog-app.v1.js` mirrors, Radar explicit-selection routing,
   and the Playwright browser proof lane in
   `tests/integration/runtime/test_surface_browser_deep.py`,
   `tests/integration/runtime/test_surface_browser_smoke.py`, and
   `tests/integration/runtime/test_surface_browser_ux_audit.py`. | Closed | [2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md](2026-04-06-radar-topology-deep-links-fall-through-to-stale-filtered-selection-and-browser-proof-misses-disclosure-gated-routes.md) |
+| CB-054 | 2026-04-06 | Macos runtime metadata files break managed runtime trust validation | P0 | `src/odylith/install/runtime_integrity.py`,
+  `src/odylith/install/runtime.py`, managed runtime trust policy, feature-pack
+  preflight. | Closed | [2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md](2026-04-06-macos-runtime-metadata-files-break-managed-runtime-trust-validation.md) |
+| CB-060 | 2026-04-06 | Lifecycle plans print full dirty overlap by default | P2 | `src/odylith/cli.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, lifecycle-plan
+  printers. | Closed | [2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md](2026-04-06-lifecycle-plans-print-full-dirty-overlap-by-default.md) |
+| CB-058 | 2026-04-06 | Legacy radar index is not normalized before sync validation | P0 | `src/odylith/runtime/governance/validate_backlog_contract.py`,
+  `src/odylith/runtime/governance/backlog_authoring.py`,
+  `src/odylith/runtime/governance/sync_workstream_artifacts.py`, Radar source
+  upgrade bridge. | Closed | [2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md](2026-04-06-legacy-radar-index-is-not-normalized-before-sync-validation.md) |
+| CB-057 | 2026-04-06 | Legacy migration omits stale odyssey reference audit | P1 | `src/odylith/install/manager.py`, migration summary and
+  reporting, tracked-text audit policy. | Closed | [2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md](2026-04-06-legacy-migration-omits-stale-odyssey-reference-audit.md) |
 | CB-056 | 2026-04-06 | Doctor and version disagree on wrapped runtime trust degradation | P1 | `src/odylith/install/manager.py`,
   `src/odylith/cli.py`, runtime-source derivation, self-host posture
   validation. | Closed | [2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md](2026-04-06-doctor-and-version-disagree-on-wrapped-runtime-trust-degradation.md) |
 | CB-053 | 2026-04-05 | Memory substrate stale runtime reuse and projection scope thrash | P0 | `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`, `src/odylith/runtime/context_engine/odylith_context_engine_projection_compiler_runtime.py`, `src/odylith/runtime/context_engine/odylith_context_engine.py`, `src/odylith/runtime/memory/odylith_memory_backend.py`, `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, memory freshness contracts, benchmark warm-cache preparation, local LanceDB and Tantivy runtime posture. | Closed | [2026-04-05-memory-substrate-stale-runtime-reuse-and-projection-scope-thrash.md](2026-04-05-memory-substrate-stale-runtime-reuse-and-projection-scope-thrash.md) |
+| CB-051 | 2026-04-03 | Upgrade spotlight live refresh updates version badge but keeps release note hidden | P1 | `src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js`,
+  `src/odylith/runtime/surfaces/shell_onboarding.py`, upgrade spotlight
+  dismissal/reopen contract, shell live-refresh browser path,
+  `tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`. | Closed | [2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md](2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md) |
 | CB-050 | 2026-04-03 | Compass explicit refresh fans into slow live scoped narration and leaves old deterministic brief visible on interrupt | P1 | `src/odylith/runtime/governance/sync_workstream_artifacts.py`,
   `src/odylith/runtime/surfaces/compass_runtime_payload_runtime.py`,
   `src/odylith/runtime/surfaces/compass_standup_brief_narrator.py`,

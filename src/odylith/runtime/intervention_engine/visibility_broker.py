@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
+import re
 import time
 from typing import Any
 from typing import Mapping
@@ -27,6 +28,52 @@ ASSISTANT_RENDER_REQUIRED_STATUS = visibility_contract.ASSISTANT_RENDER_REQUIRED
 ASSISTANT_RENDER_REQUIRED_CHANNEL = visibility_contract.ASSISTANT_RENDER_REQUIRED_CHANNEL
 LIVE_BOUNDARY_REQUIRED_KINDS = visibility_contract.LIVE_BOUNDARY_REQUIRED_KINDS
 _ASSIST_COMMON_MISSPELLING = "as" "sit"
+_VISIBILITY_FAILURE_FALLBACK_MARKER = "no Odylith note has reached this chat yet"
+_HOST_LABELS = {
+    "claude": "Claude",
+    "codex": "Codex",
+}
+_VISIBLE_COPY_BLOCKERS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    (
+        "recursive display instruction",
+        re.compile(r"\bshow the next odylith observation\b", re.IGNORECASE),
+    ),
+    (
+        "self-referential missing-moment copy",
+        re.compile(
+            r"\b(?:no visible odylith moment|not shown the odylith moment|"
+            r"this chat has not shown)",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "hook-internal delivery instruction",
+        re.compile(
+            r"\b(?:before ending, render|do not mention hook internals|"
+            r"stop hook error|stop says|systemmessage|additionalcontext|posttooluse)\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "internal visibility proof vocabulary",
+        re.compile(
+            r"\b(?:transcript confirmation|proven visible|visible markdown|"
+            r"visibility decision|chat-visible proof|ledger-visible|"
+            r"pending confirmation)\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "product-theater visibility copy",
+        re.compile(r"\b(?:brand promise|ready to speak|visible lane)\b", re.IGNORECASE),
+    ),
+    (
+        "repo-memory claim without local proof",
+        re.compile(r"\b(?:casebook already remembers|tribunal already has)\b", re.IGNORECASE),
+    ),
+)
+_GOVERNANCE_ID_RE = re.compile(r"\b(?:B|CB|D)-\d+\b")
+_SOURCE_TRUTH_SUFFIXES = frozenset({".md", ".json", ".jsonl"})
 
 
 @dataclass(frozen=True)
@@ -194,7 +241,7 @@ def _operator_reports_visibility_failure(*, prompt: str, summary: str) -> bool:
 
 
 def reports_visibility_failure(*, prompt: str = "", summary: str = "") -> bool:
-    """Return whether an operator complaint requires hard chat-visible fallback."""
+    """Return whether an operator complaint requires hard chat-visible recovery."""
 
     return _operator_reports_visibility_failure(prompt=prompt, summary=summary)
 
@@ -204,11 +251,71 @@ def _wrap_live_text(value: str) -> str:
 
 
 def _visibility_failure_observation(*, host_family: str) -> str:
-    del host_family
+    host_label = _HOST_LABELS.get(_normalize_token(host_family), "This assistant")
     return _wrap_live_text(
-        "**Odylith Observation:** This chat still has no visible Odylith moment. "
-        "Show the next Odylith Observation here so the user can see what changed and what happens next."
+        f"**Odylith Observation:** {host_label} has Odylith activity, but "
+        f"{_VISIBILITY_FAILURE_FALLBACK_MARKER}."
     )
+
+
+def _source_truth_roots_for_id(repo_root: Path, token: str) -> tuple[Path, ...]:
+    if token.startswith("CB-"):
+        return (repo_root / "odylith" / "casebook" / "bugs",)
+    if token.startswith("D-"):
+        return (
+            repo_root / "odylith" / "atlas" / "source",
+            repo_root / "odylith" / "atlas" / "source" / "catalog",
+        )
+    return (
+        repo_root / "odylith" / "radar" / "source",
+        repo_root / "odylith" / "technical-plans",
+    )
+
+
+def _governance_id_exists(repo_root: Path, token: str) -> bool:
+    normalized = _normalize_string(token)
+    if not normalized:
+        return False
+    for root in _source_truth_roots_for_id(repo_root, normalized):
+        if not root.exists():
+            continue
+        for path in root.rglob("*"):
+            if not path.is_file():
+                continue
+            if normalized in path.name:
+                return True
+            if path.suffix not in _SOURCE_TRUTH_SUFFIXES:
+                continue
+            try:
+                if normalized in path.read_text(encoding="utf-8"):
+                    return True
+            except (OSError, UnicodeDecodeError):
+                continue
+    return False
+
+
+def visible_text_quality_issues(*, repo_root: Path | str, visible_text: str) -> list[str]:
+    """Return user-visible copy problems that must suppress hook output."""
+
+    text = _normalize_block_string(visible_text)
+    if not text:
+        return []
+    issues = [
+        reason
+        for reason, pattern in _VISIBLE_COPY_BLOCKERS
+        if pattern.search(text)
+    ]
+    root = Path(repo_root).expanduser().resolve()
+    missing_ids = sorted(
+        {
+            token
+            for token in _GOVERNANCE_ID_RE.findall(text)
+            if not _governance_id_exists(root, token)
+        }
+    )
+    if missing_ids:
+        issues.append(f"unresolved local governance id: {', '.join(missing_ids)}")
+    return issues
 
 
 def _render_visible(
@@ -329,6 +436,13 @@ def build_visible_intervention_decision(
         developer_context = _parts(visible, developer_context)
     if visible and not developer_context:
         developer_context = visible
+    visible_quality_issues = visible_text_quality_issues(
+        repo_root=root,
+        visible_text=visible,
+    )
+    if visible_quality_issues:
+        visible = ""
+        developer_context = ""
     channel = _normalize_token(delivery_channel)
     status = _normalize_token(delivery_status)
     if not channel or not status:
@@ -342,7 +456,13 @@ def build_visible_intervention_decision(
         )
         channel = channel or default_channel
         status = status or default_status
-    no_output_reason = "" if visible or developer_context else "no_visible_intervention_earned"
+    no_output_reason = (
+        ""
+        if visible or developer_context
+        else "visible_text_quality_blocked: " + "; ".join(visible_quality_issues)
+        if visible_quality_issues
+        else "no_visible_intervention_earned"
+    )
     proof_required = bool(visible) and not _delivery_is_visible(channel=channel, status=status)
     observation_fingerprints = {
         "bundle": _hash_payload(bundle),
@@ -400,7 +520,7 @@ def append_decision_events(
     )
     if decision.visible_markdown and (
         not events
-        or "This chat still has no visible Odylith moment" in decision.visible_markdown
+        or _VISIBILITY_FAILURE_FALLBACK_MARKER in decision.visible_markdown
     ):
         observation = _mapping(bundle.get("observation"))
         stream_state.append_intervention_event(
@@ -615,4 +735,5 @@ __all__ = [
     "build_visible_intervention_decision",
     "confirm_assistant_chat_delivery",
     "reports_visibility_failure",
+    "visible_text_quality_issues",
 ]

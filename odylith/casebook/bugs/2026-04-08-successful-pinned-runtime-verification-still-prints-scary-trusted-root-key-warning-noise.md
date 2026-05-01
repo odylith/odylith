@@ -102,7 +102,9 @@
 - Regression Tests Added: `tests/unit/install/test_release_assets.py` now
   proves both the wrapped `unsupported ... key type: 7` warning suppression
   path and the preservation of unexpected verifier warnings alongside the same
-  benign wrapped warning.
+  benign wrapped warning. The 2026-04-28 `B-056` closeout also pins the calm
+  success-notice details and the `version` posture warning output so future
+  releases cannot regress back to scary-but-successful trust noise.
 
 - Monitoring Updates: Watch `dogfood-activate`, consumer rehearsal, and GA gate
   logs for any reappearance of wrapped trust-root warnings such as
@@ -129,4 +131,5 @@
 - Runbook References: `odylith/MAINTAINER_RELEASE_RUNBOOK.md`,
   `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending local branch integration.
+- Fix Commit/PR: Reconciled under `B-056` on `2026/freedom/v0.1.12`; closeout
+  commit records the final Radar state and regression-proof alignment.

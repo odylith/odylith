@@ -485,11 +485,11 @@
 
 .welcome-explainer-strip {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   margin-top: 0;
-  padding: 22px;
+  padding: 18px;
   border: 1px solid rgba(209, 220, 235, 0.98);
-  border-radius: 28px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 14px 28px rgba(31, 56, 94, 0.06);
 }
@@ -508,20 +508,18 @@
 
 .welcome-explainer-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
 }
 
 .welcome-explainer-card {
   display: grid;
-  gap: 8px;
-  min-height: 118px;
-  padding: 18px;
+  gap: 6px;
+  min-height: 92px;
+  padding: 14px;
   border: 1px solid rgba(212, 224, 242, 0.98);
-  border-radius: 22px;
-  background:
-    radial-gradient(circle at 12% 10%, rgba(46, 101, 191, 0.06), transparent 26%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 250, 255, 0.92));
+  border-radius: 16px;
+  background: rgba(248, 251, 255, 0.92);
 }
 
 @media (min-width: 981px) {
@@ -703,6 +701,7 @@
   min-width: 0;
   align-content: start;
   margin: 0;
+  padding-right: 104px;
 }
 
 .upgrade-spotlight-meta-row {
@@ -812,26 +811,38 @@
   top: 18px;
   right: 18px;
   z-index: 2;
-  width: 42px;
-  height: 42px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 88px;
+  height: 38px;
+  border: 1px solid rgba(165, 196, 235, 0.9);
   border-radius: 999px;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.92);
+  padding: 0 14px 0 12px;
+  background: #eef7ff;
   color: #143e7a;
-  display: grid;
-  place-items: center;
   font: inherit;
-  font-size: 26px;
+  font-size: 13px;
   font-weight: 800;
   line-height: 1;
+  letter-spacing: 0;
   cursor: pointer;
-  box-shadow: 0 14px 28px rgba(10, 24, 45, 0.14);
+  box-shadow: 0 14px 28px rgba(10, 24, 45, 0.18);
+}
+
+.upgrade-spotlight-dismiss::before {
+  content: "\00d7";
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 .upgrade-spotlight-dismiss:hover,
 .upgrade-spotlight-dismiss:focus-visible {
-  background: #ffffff;
+  border-color: rgba(128, 171, 224, 0.98);
+  background: #ddecff;
   color: #0f3467;
   transform: scale(1.02);
 }
@@ -858,18 +869,15 @@
   inset: 18px 18px auto calc(18px + var(--brief-handle-width) + 12px);
   z-index: 4;
   display: grid;
-  gap: 24px;
+  gap: 18px;
   width: auto;
   max-width: calc(100% - (var(--brief-handle-width) + 48px));
   max-height: calc(100% - 36px);
   overflow: auto;
-  padding: 24px;
+  padding: 22px;
   border: 1px solid #d3e0f2;
-  border-radius: 34px;
-  background:
-    radial-gradient(circle at 14% 12%, rgba(41, 102, 194, 0.12), transparent 30%),
-    radial-gradient(circle at 86% 16%, rgba(120, 169, 255, 0.14), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(239, 246, 255, 0.98));
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 249, 254, 0.98));
   box-shadow:
     0 26px 64px rgba(23, 48, 86, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.92);
@@ -882,25 +890,39 @@
   top: 16px;
   right: 16px;
   z-index: 2;
-  display: inline-grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(199, 214, 233, 0.96);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 84px;
+  height: 36px;
+  padding: 0 13px 0 11px;
+  border: 1px solid rgba(105, 151, 204, 0.82);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.88);
-  color: #4c6783;
+  background: #edf6ff;
+  color: #1e527e;
   font: inherit;
-  font-size: 22px;
+  font-size: 13px;
+  font-weight: 800;
   line-height: 1;
+  letter-spacing: 0;
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(31, 56, 94, 0.08);
+  box-shadow: 0 10px 22px rgba(31, 86, 148, 0.14);
+}
+
+.welcome-shell-dismiss::before {
+  content: "\00d7";
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 .welcome-shell-dismiss:hover,
 .welcome-shell-dismiss:focus-visible {
-  background: rgba(255, 255, 255, 0.98);
-  color: #25476f;
+  border-color: rgba(93, 143, 199, 0.96);
+  background: #deefff;
+  color: #133f68;
 }
 
 .welcome-shell-dismiss:focus-visible {
@@ -928,6 +950,10 @@
 }
 
 .welcome-launchpad-shell,
+.welcome-guide-shell,
+.welcome-guide-header,
+.welcome-guide-grid,
+.welcome-notice-stack,
 .welcome-launchpad-main,
 .welcome-launchpad-footer,
 .welcome-launchpad-column,
@@ -941,6 +967,35 @@
 .welcome-launchpad-shell {
   gap: 20px;
   padding-right: 40px;
+}
+
+.welcome-guide-shell {
+  gap: 16px;
+  padding-right: 38px;
+}
+
+.welcome-guide-header {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 360px);
+  gap: 18px;
+  align-items: end;
+}
+
+.welcome-guide-grid {
+  grid-template-columns: minmax(0, 1.18fr) minmax(280px, 0.82fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.welcome-guide-outcome {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(200, 216, 236, 0.96);
+  border-radius: 16px;
+  background: rgba(248, 251, 255, 0.92);
+  color: #284a70;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 700;
 }
 
 .welcome-launchpad-hero {
@@ -1019,18 +1074,18 @@
 }
 
 .welcome-title {
-  font-size: clamp(44px, 5.6vw, 76px);
-  line-height: 0.92;
-  letter-spacing: -0.05em;
-  max-width: 10.5ch;
+  font-size: 38px;
+  line-height: 1.06;
+  letter-spacing: 0;
+  max-width: none;
   color: #17345b;
 }
 
 .welcome-subhead {
-  max-width: 34ch;
+  max-width: 72ch;
   color: #4b6582;
   font-size: 16px;
-  line-height: 1.65;
+  line-height: 1.55;
 }
 
 .welcome-state-head {
@@ -1055,7 +1110,7 @@
   background: rgba(255, 255, 255, 0.82);
   color: #546c86;
   font-size: 14px;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .welcome-action-row {
@@ -1066,22 +1121,20 @@
 
 .welcome-prompt-card,
 .welcome-card {
-  padding: 22px;
+  padding: 18px;
   border: 1px solid rgba(209, 220, 235, 0.98);
-  border-radius: 28px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 14px 28px rgba(31, 56, 94, 0.06);
 }
 
 .welcome-prompt-card {
   position: relative;
-  gap: 20px;
-  padding: 24px;
+  gap: 18px;
+  padding: 20px;
   border: 1px solid rgba(205, 217, 232, 0.98);
-  border-radius: 32px;
-  background:
-    radial-gradient(circle at 12% 10%, rgba(46, 101, 191, 0.08), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.98));
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 251, 255, 0.98));
   color: #17324d;
   box-shadow:
     0 16px 34px rgba(31, 56, 94, 0.09),
@@ -1104,6 +1157,13 @@
   gap: 8px;
 }
 
+.welcome-card-title {
+  margin: 0;
+  color: #17345b;
+  font-size: 22px;
+  line-height: 1.18;
+}
+
 .welcome-prompt-intro,
 .welcome-process-copy {
   margin: 0;
@@ -1115,22 +1175,23 @@
 .welcome-process-card {
   display: grid;
   gap: 12px;
+  align-content: start;
 }
 
 .welcome-step-list-process {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
 }
 
 .welcome-step-process {
-  min-height: 112px;
-  padding: 16px;
+  min-height: 0;
+  padding: 0;
   border: 1px solid rgba(212, 224, 242, 0.98);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.78);
+  border-radius: 14px;
+  background: rgba(248, 251, 255, 0.92);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
-  grid-template-columns: 1fr;
-  gap: 12px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
 }
 
 .welcome-step-process .welcome-step-index {
@@ -1151,12 +1212,10 @@
 }
 
 .welcome-prompt-block {
-  padding: 20px 22px;
+  padding: 16px 18px;
   border: 1px solid rgba(28, 61, 105, 0.14);
-  border-radius: 26px;
-  background:
-    radial-gradient(circle at 12% 12%, rgba(90, 136, 255, 0.2), transparent 28%),
-    linear-gradient(180deg, #163659 0%, #10233f 100%);
+  border-radius: 18px;
+  background: #122f52;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     0 18px 32px rgba(16, 35, 63, 0.2);
@@ -1166,7 +1225,7 @@
   color: #f5f9ff;
   max-width: none;
   font-size: 16px;
-  line-height: 1.65;
+  line-height: 1.55;
 }
 
 .welcome-refresh-note {
@@ -1259,17 +1318,17 @@
 }
 
 .welcome-step.welcome-step-process {
-  display: flex;
-  min-height: 104px;
-  flex-direction: column;
+  display: grid;
+  min-height: 0;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  text-align: center;
+  justify-content: start;
+  gap: 10px;
+  text-align: left;
 }
 
 .welcome-step.welcome-step-process .welcome-step-copy {
-  max-width: 15ch;
+  max-width: none;
   padding-top: 0;
 }
 
@@ -1404,12 +1463,13 @@
 
 @media (max-width: 1240px) {
   .welcome-launchpad-hero,
-  .welcome-launchpad-grid {
+  .welcome-launchpad-grid,
+  .welcome-guide-grid {
     grid-template-columns: 1fr;
   }
 
   .welcome-step-list-process {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .welcome-step-process:last-child {
@@ -1425,7 +1485,7 @@
 
   .upgrade-spotlight {
     grid-template-columns: minmax(0, 1fr);
-    padding: 20px;
+    padding: 58px 20px 20px;
   }
 
   .upgrade-spotlight-title {
@@ -1450,11 +1510,21 @@
   }
 
   .welcome-launchpad-shell {
-    padding-right: 0;
+    padding-right: 96px;
+  }
+
+  .welcome-guide-shell {
+    padding-right: 96px;
+  }
+
+  .welcome-guide-header {
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .welcome-launchpad-hero,
   .welcome-launchpad-grid,
+  .welcome-guide-grid,
   .welcome-support-grid,
   .welcome-grid,
   .welcome-step-list-process,
@@ -1474,7 +1544,7 @@
   }
 
   .welcome-title {
-    max-width: 11.4ch;
+    max-width: none;
   }
 }
 
@@ -1483,19 +1553,25 @@
     inset: 8px 8px auto calc(8px + var(--brief-handle-width) + 8px);
     max-width: calc(100% - (var(--brief-handle-width) + 24px));
     max-height: calc(100% - 16px);
-    padding: 12px;
+    padding: 54px 12px 12px;
     border-radius: 24px;
   }
 
   .welcome-shell-dismiss {
-    top: 8px;
-    right: 8px;
-    width: 32px;
-    height: 32px;
+    top: 10px;
+    right: 10px;
+    min-width: 78px;
+    height: 34px;
+    padding: 0 11px 0 10px;
   }
 
   .welcome-launchpad-shell {
+    padding-right: 0;
     gap: 12px;
+  }
+
+  .welcome-guide-shell {
+    padding-right: 0;
   }
 
   .welcome-launchpad-hero,
@@ -1517,9 +1593,9 @@
 
   .welcome-title {
     max-width: 13ch;
-    font-size: clamp(30px, 10vw, 40px);
+    font-size: 30px;
     line-height: 0.98;
-    letter-spacing: -0.035em;
+    letter-spacing: 0;
   }
 
   .welcome-subhead {
@@ -1565,6 +1641,11 @@
     display: inline-flex;
     justify-content: center;
     width: 100%;
+  }
+
+  .welcome-guide-outcome {
+    padding: 12px;
+    font-size: 13px;
   }
 
   .welcome-step {
@@ -2963,7 +3044,7 @@ html, body {
       </div>
 
       <div class="toolbar-meta">
-        <p class="toolbar-version">v0.1.11</p>
+        <p class="toolbar-version">source-local</p>
 
         <div class="toolbar-actions">
         </div>
@@ -3033,7 +3114,7 @@ html, body {
     </section>
   </main>
 
-  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=84e031980495"></script>
-  <script src="tooling-app.v1.js?v=84e031980495"></script>
+  <script id="toolingDashboardData" src="tooling-payload.v1.js?v=9233941c2221"></script>
+  <script src="tooling-app.v1.js?v=9233941c2221"></script>
 </body>
 </html>

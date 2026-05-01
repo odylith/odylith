@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import os
 import subprocess
 import tarfile
 import zipfile
@@ -64,7 +65,7 @@ def _run_verify_sigstore_identity(
     *,
     tmp_path: Path,
     install_script_text: str,
-    stderr_text: str,
+    stderr_text: str = "",
     stdout_text: str = "",
     exit_code: int = 0,
 ) -> subprocess.CompletedProcess[str]:
@@ -74,7 +75,7 @@ def _run_verify_sigstore_identity(
     bundle_path = tmp_path / "asset.txt.sigstore.json"
     shell_block = _extract_shell_block(
         install_script_text,
-        "sigstore_stderr_is_benign() {",
+        "sigstore_normalize_line() {",
         'release_version="${ODYLITH_VERSION:-latest}"',
     )
     asset_path.write_text("payload\n", encoding="utf-8")
@@ -124,6 +125,153 @@ def _run_verify_sigstore_identity(
     )
 
 
+def _run_generated_install_decision(
+    *,
+    tmp_path: Path,
+    install_script_text: str,
+    repo_root: Path,
+    fake_pin_version: str = "",
+    fake_active_version: str = "",
+    fake_last_known_good_version: str = "",
+) -> subprocess.CompletedProcess[str]:
+    helper = tmp_path / "install_decision.sh"
+    command_log = tmp_path / "command.log"
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    fake_python = version_root / "bin" / "python"
+    fake_python.parent.mkdir(parents=True, exist_ok=True)
+    fake_python.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                'if [[ "${1:-}" == */read_install_versions.py ]]; then',
+                '  printf "%s\\t%s\\t%s\\n" "${ODYLITH_FAKE_PIN_VERSION:-}" "${ODYLITH_FAKE_ACTIVE_VERSION:-}" "${ODYLITH_FAKE_LAST_KNOWN_GOOD_VERSION:-}"',
+                "  exit 0",
+                "fi",
+                f'printf "%s\\n" "$*" >> "{command_log}"',
+                "exit 0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+    decision_block = _extract_shell_block(
+        install_script_text,
+        'pin_path="$repo_root/odylith/runtime/source/product-version.v1.json"',
+        'say "done   Install finished."',
+    )
+    helper.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/odylith-install-decision.XXXXXX")"',
+                'trap \'rm -rf "$tmpdir"\' EXIT',
+                f'repo_root="{repo_root}"',
+                'state_root="$repo_root/.odylith"',
+                'release_version="1.2.3"',
+                'version_root="$state_root/runtime/versions/$release_version"',
+                "say() { :; }",
+                decision_block,
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    helper.chmod(0o755)
+    return subprocess.run(
+        ["bash", str(helper)],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={
+            **os.environ,
+            "ODYLITH_FAKE_PIN_VERSION": fake_pin_version,
+            "ODYLITH_FAKE_ACTIVE_VERSION": fake_active_version,
+            "ODYLITH_FAKE_LAST_KNOWN_GOOD_VERSION": fake_last_known_good_version,
+        },
+    )
+
+
+def _run_fetch_asset(
+    *,
+    tmp_path: Path,
+    install_script_text: str,
+    url: str,
+    allow_insecure_localhost: bool = False,
+    fake_curl_exit: int = 0,
+    fake_curl_stderr: str = "",
+    extra_env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    helper = tmp_path / "fetch_asset.sh"
+    destination = tmp_path / "asset.bin"
+    command_log = tmp_path / "curl.args"
+    fake_bin = tmp_path / "fake-bin"
+    fake_bin.mkdir(exist_ok=True)
+    fake_curl = fake_bin / "curl"
+    fake_curl.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                f'printf "%s\\n" "$*" > "{command_log}"',
+                'destination=""',
+                'while (($#)); do',
+                '  case "$1" in',
+                '    -o)',
+                '      destination="$2"',
+                "      shift 2",
+                "      ;;",
+                "    *) shift ;;",
+                "  esac",
+                "done",
+                'if [[ "${FAKE_CURL_EXIT:-0}" != "0" ]]; then',
+                '  printf "%s" "${FAKE_CURL_STDERR:-}" >&2',
+                '  exit "${FAKE_CURL_EXIT}"',
+                "fi",
+                'printf "payload" > "$destination"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    fake_curl.chmod(0o755)
+    fetch_block = _extract_shell_block(
+        install_script_text,
+        "allow_local_http_asset() {",
+        'tmpdir="$(mktemp -d)"',
+    )
+    helper.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                'tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/odylith-fetch.XXXXXX")"',
+                'trap \'rm -rf "$tmpdir"\' EXIT',
+                f'local_release_allow_insecure="{"1" if allow_insecure_localhost else "0"}"',
+                fetch_block,
+                f'fetch_asset "{url}" "{destination}"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    helper.chmod(0o755)
+    env = {
+        **(extra_env or {}),
+        "FAKE_CURL_EXIT": str(fake_curl_exit),
+        "FAKE_CURL_STDERR": fake_curl_stderr,
+        "PATH": f"{fake_bin}:{os.environ.get('PATH', '')}",
+    }
+    return subprocess.run(
+        ["bash", str(helper)],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
 def test_generated_install_script_verifies_signed_release_assets_before_activation(tmp_path: Path) -> None:
     module = _load_module()
     output_path = tmp_path / "install.sh"
@@ -148,43 +296,74 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "Intel macOS and Windows are not supported in this release." in text
     assert "say() {" in text
     assert "step() {" in text
+    assert "printf '  %-6s %s\\n' \"$label\" \"$message\"" in text
+    assert "progress_supported() {" in text
+    assert "progress_start() {" in text
+    assert "progress_done() {" in text
+    assert "progress_clear() {" in text
+    assert '[[ "${ODYLITH_INSTALL_PROGRESS:-1}" != "0" && -t 1 ]]' in text
+    assert "printf '\\r  %-6s %s [%s] %ss'" in text
     assert "banner() {" in text
+    assert 'if [[ "${ODYLITH_INSTALL_BANNER:-1}" == "0" ]]; then' in text
+    assert "printf 'Odylith\\n'" in text
     assert "require_command() {" in text
     assert "detect_repo_root() {" in text
     assert 'local candidate git_candidate="" start_dir' in text
     assert "describe_repo_root_choice() {" in text
     assert "platform_display_name() {" in text
     assert "allow_local_http_asset() {" in text
+    assert "release_url_scheme() {" in text
+    assert "proxy_env_summary() {" in text
+    assert "emit_fetch_failure() {" in text
     assert "fetch_asset() {" in text
+    assert 'local_release_allow_insecure="${ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST:-0}"' in text
     assert "http://127.0.0.1/*|http://127.0.0.1:*/*|http://localhost/*|http://localhost:*/*|http://[::1]/*|http://[::1]:*/*" in text
     assert "--proto '=https' --tlsv1.2 --retry 3" in text
+    assert "Odylith refused insecure localhost release assets." in text
+    assert "Detected proxy/TLS environment" in text
+    assert "Check VPN, proxy, firewall, TLS inspection, and certificate settings." in text
     assert " ██████╗ ██████╗ ██╗   ██╗██╗     ██╗████████╗██╗  ██╗" in text
     assert "██╔═══██╗██╔══██╗╚██╗ ██╔╝██║     ██║╚══██╔══╝██║  ██║" in text
     assert " ╚═════╝ ╚═════╝    ╚═╝   ╚══════╝╚═╝   ╚═╝   ╚═╝  ╚═╝" in text
     assert "repo_root_reason='guidance'" in text
     assert "repo_root_reason='git'" in text
     assert "repo_root_reason='folder'" in text
-    assert "No root AGENTS.md, CLAUDE.md, or .claude/CLAUDE.md was found above this directory. Odylith will create the root guidance entrypoints at the detected Git root and sync the managed Claude and Codex project assets there." in text
-    assert "No enclosing AGENTS.md, CLAUDE.md, .claude/CLAUDE.md, or .git was found. Odylith will treat the current folder as the repo root and create root AGENTS.md, root CLAUDE.md, and managed project-root Claude and Codex assets here." in text
-    assert "Git-aware features stay limited until this folder is backed by Git." in text
-    assert "working-tree intelligence, background autospawn, and git-fsmonitor watcher help stay reduced for now." in text
-    assert 'say "Odylith is getting this repo ready."' in text
-    assert 'say "Working in repo: $repo_root."' in text
-    assert 'say "No setup questions. Odylith will pick the right managed assets for this machine."' in text
-    assert 'say "Your repo\'s own Python toolchain stays untouched."' in text
-    assert "sigstore_stderr_is_benign() {" in text
+    assert "setup  Adding Odylith guidance to this Git repo." in text
+    assert "setup  Adding Odylith guidance to this folder." in text
+    assert "Git-aware help turns on after this folder has a .git directory." in text
+    assert 'say "Preparing this repo."' in text
+    assert 'say "repo   $repo_root"' in text
+    assert 'say "host   $platform_name."' in text
+    assert 'say "safe   Your repo\'s own toolchain stays untouched."' in text
+    assert "sigstore_normalize_line() {" in text
+    assert "sigstore_log_is_benign() {" in text
+    assert "sigstore_log_is_continuation() {" in text
+    assert "emit_sigstore_log() {" in text
     assert "verify_sigstore_identity() {" in text
-    assert "grep -Eiq 'unsupported([[:space:]]+[^[:space:]]+:[0-9]+)?[[:space:]]+key type:[[:space:]]*7'" in text
+    assert (
+        "grep -Eiq '(WARNING[[:space:]]+)?(Failed to load a trusted root key:[[:space:]]*)?"
+        "unsupported([[:space:]]+[^[:space:]]+:[0-9]+)?[[:space:]]+key type:[[:space:]]*7'"
+        in text
+    )
     assert "grep -Eiq 'tuf.*offline|offline.*tuf'" in text
+    assert '>"$stdout_path" 2>"$stderr_path"' in text
+    assert 'cat "$stdout_path"' not in text
+    assert 'cat "$stderr_path"' not in text
     assert 'stripped="${line#"${line%%[![:space:]]*}"}"' in text
+    assert 'line="$(sigstore_normalize_line "$line")"' in text
+    assert 'sigstore_log_is_continuation "$folded" "$line" "$stripped"' in text
     assert 'folded="$folded $stripped"' in text
-    assert 'step "Fetching the secure bootstrap runtime"' in text
-    assert 'step "Verifying signed release evidence"' in text
-    assert 'step "Activating Odylith"' in text
-    assert 'say "Finishing the full Odylith setup inside the managed runtime."' in text
-    assert 'say "First install may take a minute. Later upgrades reuse unchanged runtime layers so routine updates stay lean."' in text
-    assert 'say "Odylith is live."' in text
-    assert 'say \'Quick posture check: ./.odylith/bin/odylith version --repo-root "$repo_root"\'' in text
+    assert 'progress_start "fetch" "Downloading Odylith."' in text
+    assert 'progress_done "fetch" "Download complete."' in text
+    assert 'progress_start "check" "Checking the release."' in text
+    assert 'progress_done "check" "Release verified."' in text
+    assert 'progress_start "setup" "Installing local runtime."' in text
+    assert 'progress_done "setup" "Local runtime ready."' in text
+    assert 'say "setup  Writing repo files and launchers."' in text
+    assert 'migration_state_dir="$repo_root/.odylith/state/migrations"' in text
+    assert 'rm -rf "$migration_state_dir"' in text
+    assert 'ODYLITH_INSTALL_COMPACT=1 ODYLITH_BOOTSTRAP_RUNTIME_PRESTAGED=1 "$version_root/bin/python" -m odylith.cli install' in text
+    assert 'say "done   Install finished."' in text
     assert "runtime-members.txt" in text
     assert "managed runtime bundle contains unexpected member path" in text
     assert "managed runtime bundle contains unsafe member path" in text
@@ -217,11 +396,14 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "version_root=\"$state_root/runtime/versions/$release_version\"" in text
     assert 'pin_path="$repo_root/odylith/runtime/source/product-version.v1.json"' in text
     assert 'install_state_path="$repo_root/.odylith/install.json"' in text
-    assert 'if [[ -f "$pin_path" || -f "$install_state_path" ]]; then' in text
+    assert 'customer_tree_path="$repo_root/odylith/AGENTS.md"' in text
+    assert 'if [[ -f "$pin_path" && -f "$install_state_path" && -f "$customer_tree_path" ]]; then' in text
     assert (
         '"$version_root/bin/python" -m odylith.cli upgrade --repo-root "$repo_root" --to "$release_version" --write-pin'
         in text
     )
+    assert 'say "resume Completing local install."' in text
+    assert 'rm -f "$install_state_path" "$state_root/runtime/current"' in text
     assert '"$version_root/bin/python" -m odylith.cli install --repo-root "$repo_root" --version "$release_version"' in text
     assert 'ln -sfn "$version_root" "$state_root/runtime/current"' not in text
     assert "--align-pin" not in text
@@ -238,6 +420,213 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert text.index("unset VIRTUAL_ENV") < text.index("bootstrap_python=\"$bootstrap_runtime/bin/python\"")
     assert text.index("detect_repo_root") < text.index("fetch_asset \"$release_base_url/$runtime_asset_name\"")
     assert "AGENTS.md not found" not in text
+
+
+def test_generated_install_script_requires_explicit_flag_for_localhost_http_assets(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_fetch_asset(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        url="http://127.0.0.1:8123/release-manifest.json",
+    )
+
+    assert completed.returncode == 2
+    assert "refused insecure localhost release assets" in completed.stderr
+    assert "ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST=1" in completed.stderr
+    assert not (tmp_path / "curl.args").exists()
+
+
+def test_generated_install_script_allows_flagged_localhost_http_assets(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_fetch_asset(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        url="http://localhost:8123/release-manifest.json",
+        allow_insecure_localhost=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    curl_args = (tmp_path / "curl.args").read_text(encoding="utf-8")
+    assert "--proto" not in curl_args
+    assert (tmp_path / "asset.bin").read_text(encoding="utf-8") == "payload"
+
+
+def test_generated_install_script_rejects_non_local_http_assets(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_fetch_asset(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        url="http://example.invalid/release-manifest.json",
+        allow_insecure_localhost=True,
+    )
+
+    assert completed.returncode == 2
+    assert "refused non-HTTPS release assets" in completed.stderr
+    assert "localhost HTTP" in completed.stderr
+    assert not (tmp_path / "curl.args").exists()
+
+
+def test_generated_install_script_fetch_failure_prints_enterprise_network_hints(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_fetch_asset(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        url="https://github.com/odylith/odylith/releases/download/v1.2.3/release-manifest.json",
+        fake_curl_exit=56,
+        fake_curl_stderr="curl: (56) proxy reset connection\n",
+        extra_env={"HTTPS_PROXY": "http://proxy.local:8080", "SSL_CERT_FILE": "/tmp/company.pem"},
+    )
+
+    assert completed.returncode == 2
+    assert "could not download a release asset" in completed.stderr
+    assert "proxy reset connection" in completed.stderr
+    assert "Detected proxy/TLS environment: HTTPS_PROXY, SSL_CERT_FILE" in completed.stderr
+    assert "Check VPN, proxy, firewall, TLS inspection, and certificate settings." in completed.stderr
+    assert not (tmp_path / "asset.bin").exists()
+
+
+def test_generated_install_script_repairs_stale_uninstall_residue_without_upgrade_dump(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    repo_root = tmp_path / "stale-uninstall"
+    install_state = repo_root / ".odylith" / "install.json"
+    install_state.parent.mkdir(parents=True)
+    install_state.write_text('{"active_version":"1.2.2"}\n', encoding="utf-8")
+    old_runtime = repo_root / ".odylith" / "runtime" / "versions" / "1.2.2"
+    old_runtime.mkdir(parents=True)
+    current = repo_root / ".odylith" / "runtime" / "current"
+    current.symlink_to(old_runtime)
+    migration_state_dir = repo_root / ".odylith" / "state" / "migrations"
+    migration_state_dir.mkdir(parents=True)
+    stale_ledger = migration_state_dir / "v0.1.11-visible-intervention-value-engine.v1.json"
+    stale_ledger.write_text('{"migration_id":"v0.1.11-visible-intervention-value-engine"}\n', encoding="utf-8")
+
+    completed = _run_generated_install_decision(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        repo_root=repo_root,
+    )
+
+    command_log = (tmp_path / "command.log").read_text(encoding="utf-8")
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert "-m odylith.cli install --repo-root" in command_log
+    assert "-m odylith.cli upgrade --repo-root" not in command_log
+    assert not install_state.exists()
+    assert not current.exists()
+    assert not migration_state_dir.exists()
+
+
+def test_generated_install_script_upgrades_only_complete_existing_install(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    repo_root = tmp_path / "complete-install"
+    install_state = repo_root / ".odylith" / "install.json"
+    install_state.parent.mkdir(parents=True)
+    install_state.write_text('{"active_version":"1.2.2"}\n', encoding="utf-8")
+    pin_path = repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json"
+    pin_path.parent.mkdir(parents=True)
+    pin_path.write_text('{"odylith_version":"1.2.2"}\n', encoding="utf-8")
+    (repo_root / "odylith" / "AGENTS.md").write_text("# Odylith\n", encoding="utf-8")
+
+    completed = _run_generated_install_decision(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        repo_root=repo_root,
+    )
+
+    command_log = (tmp_path / "command.log").read_text(encoding="utf-8")
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert "-m odylith.cli upgrade --repo-root" in command_log
+    assert "-m odylith.cli install --repo-root" not in command_log
+    assert install_state.exists()
+
+
+def test_generated_install_script_repairs_complete_already_current_install_without_upgrade_dump(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    repo_root = tmp_path / "already-current"
+    install_state = repo_root / ".odylith" / "install.json"
+    install_state.parent.mkdir(parents=True)
+    install_state.write_text('{"active_version":"1.2.3","last_known_good_version":"1.2.3"}\n', encoding="utf-8")
+    pin_path = repo_root / "odylith" / "runtime" / "source" / "product-version.v1.json"
+    pin_path.parent.mkdir(parents=True)
+    pin_path.write_text('{"odylith_version":"1.2.3"}\n', encoding="utf-8")
+    (repo_root / "odylith" / "AGENTS.md").write_text("# Odylith\n", encoding="utf-8")
+
+    completed = _run_generated_install_decision(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        repo_root=repo_root,
+        fake_pin_version="1.2.3",
+        fake_active_version="1.2.3",
+        fake_last_known_good_version="1.2.3",
+    )
+
+    command_log = (tmp_path / "command.log").read_text(encoding="utf-8")
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert "-m odylith.cli install --repo-root" in command_log
+    assert "-m odylith.cli upgrade --repo-root" not in command_log
+    assert install_state.exists()
 
 
 def test_generated_install_script_detect_repo_root_is_strict_mode_safe_from_nested_agents_path(tmp_path: Path) -> None:
@@ -351,6 +740,215 @@ def test_generated_install_script_verify_sigstore_identity_suppresses_wrapped_tr
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
     assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_rich_trusted_root_warning(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text=(
+            "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+            "         key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_unindented_trusted_root_continuation(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text="Failed to load a trusted root key: unsupported trust.py:177\nkey type: 7\n",
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_ansi_trusted_root_warning(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text=(
+            "\x1b[33mWARNING\x1b[0m  Failed to load a trusted root key: unsupported \x1b[2mtrust.py:177\x1b[0m\n"
+            "         \x1b[2mkey type: 7\x1b[0m\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_stdout_trusted_root_warning(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stdout_text=(
+            "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+            "         key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_preserves_success_stdout(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stdout_text="OK: asset verified\n",
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == "OK: asset verified\n"
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_warning_with_success_stdout(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stdout_text="OK: asset verified\n",
+        stderr_text=(
+            "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+            "         key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == "OK: asset verified\n"
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_suppresses_split_warning_label(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        stderr_text=(
+            "WARNING\n"
+            "Failed to load a trusted root key: unsupported trust.py:177\n"
+            "key type: 7\n"
+        ),
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert completed.stdout == ""
+    assert completed.stderr == ""
+
+
+def test_generated_install_script_verify_sigstore_identity_filters_benign_warning_on_failure(
+    tmp_path: Path,
+) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    completed = _run_verify_sigstore_identity(
+        tmp_path=tmp_path,
+        install_script_text=output_path.read_text(encoding="utf-8"),
+        exit_code=2,
+        stderr_text=(
+            "WARNING  Failed to load a trusted root key: unsupported trust.py:177\n"
+            "         key type: 7\n"
+            "error: certificate identity mismatch\n"
+        ),
+    )
+
+    assert completed.returncode == 2
+    assert completed.stdout == ""
+    assert "certificate identity mismatch" in completed.stderr
+    assert "trusted root key" not in completed.stderr
+    assert "trust.py:177" not in completed.stderr
+    assert "key type: 7" not in completed.stderr
 
 
 def test_generated_install_script_verify_sigstore_identity_preserves_unexpected_warning(tmp_path: Path) -> None:
@@ -640,20 +1238,78 @@ def test_release_preflight_uses_isolated_temp_dist_dir() -> None:
     assert 'scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"' in shared
 
 
+def test_local_release_assets_target_builds_maintainer_installable_assets() -> None:
+    text = (REPO_ROOT / "bin" / "local-release-assets").read_text(encoding="utf-8")
+    makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
+    help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
+
+    assert "local-release-assets:" in makefile
+    assert './bin/local-release-assets "$(VERSION)" "$(DIST)"' in makefile
+    assert 'requested_version="${1:-${VERSION:-$(current_source_version)}}"' in text
+    assert 'dist_dir="${TMPDIR:-/tmp}/odylith-local-release-${requested_version}"' in text
+    assert 'rm -rf "$dist_dir"' in text
+    assert '"$odylith_python" -m hatch build --target wheel "$dist_dir"' in text
+    assert 'scripts/release/publish_release_assets.py \\' in text
+    assert '--tag "v${requested_version}"' in text
+    assert '--dist-dir "$dist_dir"' in text
+    assert "--allow-local" in text
+    assert "ODYLITH_RELEASE_BASE_URL=http://127.0.0.1:8123" in text
+    assert 'ODYLITH_RELEASE_MAINTAINER_ROOT="${odylith_repo_root}"' in text
+    assert "make local-release-assets" in help_text
+
+
 def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> None:
     text = (REPO_ROOT / "bin" / "release-candidate").read_text(encoding="utf-8")
     makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
     help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
 
     assert 'resolved_version="${requested_version:-${VERSION:-$(current_source_version)}}"' in text
+    assert "candidate proof must evaluate the checked-out source tree" in text
+    assert "git restore -- AGENTS.md CLAUDE.md .agents .claude .codex odylith/compass/runtime" in text
+    assert "git clean -fd -- .agents .claude .codex odylith/compass/runtime" in text
     assert 'require_clean_worktree' in text
     assert 'run_release_proof_steps "$resolved_version" "$dist_dir"' in text
+    assert 'benchmark_override_mode="$(release_benchmark_override_mode "$resolved_version")"' in text
+    assert "skip_proof_and_compare" in text
+    assert "tracked maintainer override marks benchmark proof advisory for this exact release" in text
     assert 'benchmark compare --repo-root . --baseline last-shipped' in text
     assert 'release_version_session.py' not in text
     assert 'release_worktree.py' not in text
     assert 'release-candidate:' in makefile
     assert './bin/release-candidate "$(VERSION)"' in makefile
     assert "make release-candidate" in help_text
+
+
+def test_release_candidate_benchmark_override_is_version_scoped() -> None:
+    helper = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")
+    overrides = json.loads(
+        (REPO_ROOT / "odylith" / "runtime" / "source" / "release-maintainer-overrides.v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    bundled_overrides = json.loads(
+        (
+            REPO_ROOT
+            / "src"
+            / "odylith"
+            / "bundle"
+            / "assets"
+            / "odylith"
+            / "runtime"
+            / "source"
+            / "release-maintainer-overrides.v1.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert "release_benchmark_override_mode() {" in helper
+    assert "release-maintainer-overrides.v1.json" in helper
+    assert "benchmark_proof_overrides" in helper
+    rows = {row["version"]: row for row in overrides["benchmark_proof_overrides"]}
+    bundled_rows = {row["version"]: row for row in bundled_overrides["benchmark_proof_overrides"]}
+    assert rows["0.1.12"]["mode"] == "skip_proof_and_compare"
+    assert rows["0.1.12"]["owner"] == "freedom-research"
+    assert "CB-116" in rows["0.1.12"]["reason"]
+    assert bundled_rows["0.1.12"] == rows["0.1.12"]
 
 
 def test_lane_show_wraps_lane_status() -> None:

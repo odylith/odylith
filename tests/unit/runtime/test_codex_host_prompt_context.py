@@ -33,6 +33,12 @@ def test_render_codex_prompt_context_returns_empty_without_anchor() -> None:
     assert codex_host_prompt_context.render_codex_prompt_context(prompt="Explain the change.") == ""
 
 
+def test_render_codex_prompt_context_returns_empty_for_show_me_fast_path() -> None:
+    assert codex_host_prompt_context.render_codex_prompt_context(
+        prompt="odylith, show me what you can do"
+    ) == ""
+
+
 def test_render_codex_prompt_context_can_surface_a_teaser_without_anchor() -> None:
     rendered = codex_host_prompt_context.render_codex_prompt_context(
         prompt="Design a conversation observation engine with governed proposal flow.",
@@ -62,7 +68,9 @@ def test_codex_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pat
     )
     observation = dict(bundle["observation"])
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
     assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"
     assert observation["memory_summary"]["visibility_complaint"] is True
@@ -89,7 +97,9 @@ def test_codex_prompt_system_message_replays_pending_chat_block(tmp_path: Path) 
         session_id="codex-prompt-replay",
     )
 
-    assert rendered == "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---"
+    assert rendered == (
+        "---\n\n**Odylith Observation:** Prompt must carry this pending block.\n\n---"
+    )
 
 
 def test_codex_prompt_system_message_suppresses_help_fast_path_replay(tmp_path: Path) -> None:
@@ -178,10 +188,55 @@ def test_main_writes_user_prompt_hook_json(monkeypatch, tmp_path: Path, capsys) 
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
     assert "src/odylith/cli.py" in payload["hookSpecificOutput"]["additionalContext"]
+    assert payload.get("systemMessage", "") == ""
+
+
+def test_main_emits_show_me_route_lock_without_running_prompt_observation(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    def _unexpected_bundle(**_: object) -> dict[str, object]:
+        raise AssertionError("show-me route lock should bypass prompt observation")
+
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(
+            json.dumps(
+                {
+                    "prompt": "odylith, show me what you can do",
+                    "session_id": "codex-show-main",
+                }
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        codex_host_prompt_context.conversation_surface,
+        "build_conversation_bundle",
+        _unexpected_bundle,
+    )
+
+    exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    assert "Odylith Codex show-me first-match route lock" in additional_context
+    assert "must not write a hand-authored demonstration summary" in additional_context
+    assert "install posture" in additional_context
+    assert "dirty paths" in additional_context
+    assert "impact packets" in additional_context
+    assert "module counts" in additional_context
+    assert "tmp clone noise" in additional_context
+    assert "spawn policy" in additional_context
+    assert "`./.odylith/bin/odylith show --repo-root .`" in additional_context
+    assert "`odylith show --repo-root .`" in additional_context
+    assert "Return that stdout directly" in additional_context
     assert "systemMessage" not in payload
 
 
-def test_main_prints_nothing_for_help_fast_path_even_with_pending_replay(
+def test_main_emits_help_route_lock_without_pending_replay(
     monkeypatch,
     tmp_path: Path,
     capsys,
@@ -206,7 +261,38 @@ def test_main_prints_nothing_for_help_fast_path_even_with_pending_replay(
     exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
 
     assert exit_code == 0
-    assert capsys.readouterr().out == ""
+    payload = json.loads(capsys.readouterr().out)
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith Codex help first-match route lock" in additional_context
+    assert "host capability summary" in additional_context
+    assert "`./.odylith/bin/odylith --help`" in additional_context
+    assert "`odylith --help`" in additional_context
+    assert "stale replay" not in additional_context
+    assert "systemMessage" not in payload
+
+
+def test_main_emits_capability_inventory_route_lock_without_host_taxonomy(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    monkeypatch.setattr(
+        "sys.stdin",
+        io.StringIO(json.dumps({"prompt": "List all the Odylith capabilities and engines"})),
+    )
+
+    exit_code = codex_host_prompt_context.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    additional_context = payload["hookSpecificOutput"]["additionalContext"]
+    assert "Odylith Codex capability-inventory route lock" in additional_context
+    assert "product-owned capabilities, engines, and architecture map" in additional_context
+    assert "Do not infer the taxonomy from `odylith --help`, `odylith show`" in additional_context
+    assert "`./.odylith/bin/odylith capabilities --repo-root .`" in additional_context
+    assert "`odylith capabilities --repo-root .`" in additional_context
+    assert "Return that stdout directly" in additional_context
+    assert "systemMessage" not in payload
 
 
 def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -222,8 +308,8 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
                 "candidate": {
                     "stage": "teaser",
                     "teaser_text": (
-                        "Odylith Observation: This turn is already framing a governed proposal. "
-                        "Why it matters: Capture the exact governed change while the request is still current."
+                        "Odylith Observation: Casebook needs real failure evidence before it writes. "
+            "Why it matters: The prompt still contains a placeholder; ask for the actual command output or frame the item as Radar debt."
                     ),
                 }
             }
@@ -235,10 +321,10 @@ def test_main_surfaces_visible_teaser_in_system_message(monkeypatch, tmp_path: P
     assert exit_code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
-    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery fallback:")
+    assert payload["hookSpecificOutput"]["additionalContext"].startswith("Odylith visible delivery recovery:")
     assert "Odylith Observation:" in payload["hookSpecificOutput"]["additionalContext"]
     assert payload["systemMessage"].startswith(f"{surface_runtime.LIVE_BOUNDARY}\n\nOdylith Observation:")
-    assert payload["systemMessage"].endswith(f"\n{surface_runtime.LIVE_BOUNDARY}")
+    assert "**Odylith Assist:**" not in payload["systemMessage"]
 
 
 def test_main_records_prompt_events_on_stable_thread_id_not_turn_id(
@@ -265,7 +351,7 @@ def test_main_records_prompt_events_on_stable_thread_id_not_turn_id(
             "intervention_bundle": {
                 "candidate": {
                     "stage": "teaser",
-                    "teaser_text": "Odylith Observation: Keep the visible Odylith moment on the stable chat id.",
+                    "teaser_text": "Odylith Observation: Keep the Odylith note on the stable chat id.",
                 }
             }
         },

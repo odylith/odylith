@@ -283,6 +283,7 @@ def _select_radar_row_with_link(
 ) -> tuple[str, str, str]:  # noqa: ANN001
     """Return the first Radar workstream whose detail pane renders a deep link."""
     row_buttons = radar.locator("button[data-idea-id]")
+    row_buttons.first.wait_for(timeout=15000)
     count = row_buttons.count()
     for index in range(count):
         button = row_buttons.nth(index)
@@ -363,6 +364,7 @@ def _select_radar_workstream_with_detail_selector(
     """Select the first Radar workstream whose detail pane renders a selector."""
     radar = page.frame_locator("#frame-radar")
     row_buttons = radar.locator("button[data-idea-id]")
+    row_buttons.first.wait_for(timeout=15000)
     count = row_buttons.count()
     for index in range(count):
         button = row_buttons.nth(index)
@@ -604,7 +606,7 @@ def _collect_sample_tokens(page, base_url: str) -> dict[str, str]:  # noqa: ANN0
     response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
     assert response is not None and response.ok
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     bug_route = str(casebook.locator("button.bug-row").first.get_attribute("data-bug") or "").strip()
     assert bug_route, "expected casebook bug route"
 
@@ -707,7 +709,7 @@ def _atlas_workstream_options(atlas) -> list[str]:  # noqa: ANN001
 def _assert_casebook_selection(page, bug_route: str) -> None:  # noqa: ANN001
     assert page.locator("#tab-casebook").get_attribute("aria-selected") == "true"
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     casebook.locator(f'button.bug-row.active[data-bug="{bug_route}"]').wait_for(timeout=15000)
     casebook.locator("#detailPane .detail-title").wait_for(timeout=15000)
 

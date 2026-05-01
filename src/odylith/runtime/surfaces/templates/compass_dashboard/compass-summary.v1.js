@@ -265,10 +265,14 @@
       const diagnostics = brief && brief.diagnostics && typeof brief.diagnostics === "object" ? brief.diagnostics : {};
       const title = String(diagnostics.title || "").trim() || "Standup brief unavailable";
       const message = String(diagnostics.message || "").trim() || "No standup brief is available for this view.";
+      const reason = String(diagnostics.reason || "").trim().toLowerCase();
       const retryUtc = String(diagnostics.next_retry_utc || "").trim();
-      const retryCopy = retryUtc ? `Next retry ${compactTimestamp(retryUtc)}.` : "";
+      const retryCopy = retryUtc ? `Will retry after ${compactTimestamp(retryUtc)}.` : "";
+      const toneClass = reason === "provider_unavailable" || reason === "transport_error" || reason === "provider_deferred"
+        ? "brief-status-card--info"
+        : "brief-status-card--warn";
       return `
-        <div class="brief-status-card brief-status-card--warn brief-status-card--compact" role="status" aria-live="polite">
+        <div class="brief-status-card ${toneClass} brief-status-card--compact" role="status" aria-live="polite">
           <div class="brief-status-title">${escapeHtml(title)}</div>
           <div class="brief-status-copy">${escapeHtml(message)}</div>
           ${retryCopy ? `<div class="brief-status-meta">${escapeHtml(retryCopy)}</div>` : ""}

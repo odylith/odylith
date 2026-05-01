@@ -86,13 +86,29 @@ def test_value_engine_migration_skips_pre_v011_targets(tmp_path: Path) -> None:
     assert not (repo_root / VALUE_CORPUS_RELATIVE_PATH).exists()
 
 
-def test_value_engine_migration_runs_for_unrecorded_v011_install(tmp_path: Path) -> None:
+def test_value_engine_migration_skips_current_v011_without_legacy_artifacts(tmp_path: Path) -> None:
     repo_root = tmp_path / "consumer"
     repo_root.mkdir()
 
     result = migrate_visible_intervention_value_engine(
         repo_root=repo_root,
         previous_version="0.1.11",
+        target_version="0.1.11",
+    )
+
+    assert result.applied is False
+    assert result.skipped_reason == "target_not_in_v0_1_11_migration_window"
+    assert not (repo_root / result.ledger_path).is_file()
+    assert not (repo_root / VALUE_CORPUS_RELATIVE_PATH).exists()
+
+
+def test_value_engine_migration_runs_for_unrecorded_v010_to_v011_install(tmp_path: Path) -> None:
+    repo_root = tmp_path / "consumer"
+    repo_root.mkdir()
+
+    result = migrate_visible_intervention_value_engine(
+        repo_root=repo_root,
+        previous_version="0.1.10",
         target_version="0.1.11",
     )
 

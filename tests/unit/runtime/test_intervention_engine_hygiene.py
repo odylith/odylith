@@ -21,15 +21,22 @@ def test_intervention_and_host_surfaces_use_shared_normalization_and_join_helper
             assert "normalize_string_list as _normalize_string_list" in text
             assert "def _normalize_string_list(" not in text
 
-    claude_checkpoint_paths = (
-        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_post_bash_checkpoint.py",
-        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_post_edit_checkpoint.py",
+    codex_checkpoint_paths = (
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "codex_host_post_bash_checkpoint.py",
     )
-    for path in claude_checkpoint_paths:
+    for path in codex_checkpoint_paths:
         text = path.read_text(encoding="utf-8")
         assert "host_intervention_support.join_sections(" in text, f"shared join helper missing in {path.relative_to(ROOT)}"
         assert "def _parts(" not in text, f"duplicate section-join helper resurfaced in {path.relative_to(ROOT)}"
+
+    silent_checkpoint_paths = (
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_post_bash_checkpoint.py",
+        ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_post_edit_checkpoint.py",
+    )
+    for path in silent_checkpoint_paths:
+        text = path.read_text(encoding="utf-8")
+        assert "def _parts(" not in text, f"duplicate section-join helper resurfaced in {path.relative_to(ROOT)}"
+        assert "host_intervention_support.join_sections(" not in text, f"silent checkpoint should not assemble live sections in {path.relative_to(ROOT)}"
 
     prompt_stop_paths = (
         ROOT / "src" / "odylith" / "runtime" / "surfaces" / "claude_host_prompt_context.py",

@@ -1,6 +1,6 @@
 - Bug ID: CB-060
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-06
 
@@ -69,10 +69,16 @@
 - Preflight Checks: Inspect both CLI lifecycle-plan printers so install and
   sync stay aligned.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added: `tests/unit/test_lifecycle_dirty_overlap.py` covers
+  compact dirty-overlap defaults for install, reinstall, and upgrade lifecycle
+  plans; verbose full listing for all three lifecycle commands; and area
+  grouping for runtime state, generated surfaces, repo truth, managed guidance,
+  and other paths. `tests/unit/runtime/test_sync_cli_compat.py` covers the sync
+  plan printer and large-overlap gate.
 
 - Monitoring Updates: Watch for verbose dirty-overlap complaints after the
-  compact default ships.
+  compact default ships; operators should see counts and representative paths
+  by default, not full generated-path dumps.
 
 - Residual Risk: Operators may still need the full listing for rare debugging,
   so verbose mode must remain available.
@@ -95,4 +101,5 @@
 
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: 0.1.12 branch closeout; final commit recorded after this
+  governed chunk lands.

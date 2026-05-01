@@ -9,20 +9,17 @@ import re
 from typing import Any, Iterable, Mapping, Sequence
 
 from odylith.runtime.common import repo_path_resolver
+from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.common.consumer_profile import canonical_truth_token
 from odylith.runtime.governance import execution_wave_contract
 from odylith.runtime.governance import release_planning_view_model
+from odylith.runtime.surfaces import backlog_traceability_paths
 from odylith.runtime.surfaces import generated_surface_cleanup
-from odylith.runtime.common import stable_generated_utc
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
 _IDEA_ID_RE = re.compile(r"^B-\d{3,}$")
 _DIAGRAM_ID_RE = re.compile(r"^D-\d{3,}$")
-_TRACE_SECTIONS: tuple[str, ...] = ("Runbooks", "Developer Docs", "Code References")
-_MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)\)")
-_INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
-_CHECKBOX_RE = re.compile(r"^\[(?:x|X| )\]\s*")
 _DEFAULT_WARNING_SEVERITIES = {"warning", "error"}
 _WARNING_AUDIENCES = {"operator", "maintainer"}
 _WARNING_SURFACE_VISIBILITY = {"default", "diagnostics"}
@@ -123,34 +120,10 @@ def _extract_sections(path: Path) -> dict[str, list[str]]:
 def _collect_plan_traceability(*, plan_path: Path, repo_root: Path) -> dict[str, list[str]]:
     if not plan_path.is_file():
         return {}
-    sections = _extract_sections(plan_path)
-    trace_lines = sections.get("Traceability", [])
-    grouped: dict[str, list[str]] = {name: [] for name in _TRACE_SECTIONS}
-    bucket: str | None = None
-    for raw in trace_lines:
-        stripped = raw.strip()
-        if stripped.startswith("### "):
-            name = stripped[4:].strip()
-            bucket = name if name in grouped else None
-            continue
-        if bucket is None or not stripped:
-            continue
-        if not stripped.lstrip().startswith("- "):
-            continue
-        body = _CHECKBOX_RE.sub("", stripped.lstrip()[2:].strip()).strip()
-        candidates: list[str] = []
-        candidates.extend(m.group(1).strip() for m in _MARKDOWN_LINK_RE.finditer(body) if m.group(1).strip())
-        candidates.extend(m.group(1).strip() for m in _INLINE_CODE_RE.finditer(body) if m.group(1).strip())
-        for candidate in candidates:
-            normalized = _normalize_path_token(repo_root=repo_root, token=candidate)
-            if normalized:
-                grouped[bucket].append(normalized)
-    collapsed: dict[str, list[str]] = {}
-    for bucket_name, values in grouped.items():
-        deduped = sorted(set(values))
-        if deduped:
-            collapsed[bucket_name] = deduped
-    return collapsed
+    return backlog_traceability_paths.collect_plan_paths(
+        repo_root=repo_root,
+        sections=list(_extract_sections(plan_path).items()),
+    )
 
 
 def _load_catalog(

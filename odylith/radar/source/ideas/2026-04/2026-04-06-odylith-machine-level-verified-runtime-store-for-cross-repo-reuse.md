@@ -153,6 +153,25 @@ many repos.
 - whether store garbage collection should be purely automatic or also expose a
   maintenance command later
 
+## v0.1.12 Migration Contract Prep
+- v0.1.12 deliberately does not ship `attach`, global store paths,
+  `odylith repos list`, shared runtime materialization, hardlink/reflink reuse,
+  or any user-facing shared-store behavior. Those names and paths remain
+  unpromised until this workstream is implemented directly.
+- The release only locks future-readable evidence on repo-local installs:
+  runtime version, platform slug, runtime bundle digest, wheel digest,
+  release-manifest/provenance/SBOM digests, feature-pack asset name, platform,
+  installed paths, feature-pack digest, hot-file trust receipt, tree trust
+  receipt, active runtime root, and activation history.
+- Future migration should derive a content identity from trusted repo-local
+  evidence, seed or download an immutable content-addressed machine entry,
+  smoke-test a repo-local materialization, atomically switch
+  `.odylith/runtime/current`, and keep the previous repo-local runtime as
+  rollback.
+- Do not seed one mutable global runtime from a repo tree and let repos write
+  into it. Shared store entries must be immutable; any mutable overlay or repair
+  path must break sharing before write.
+
 ## Outcome
 - Queued as `B-057` for future implementation.
 - This slice keeps repo-local trust semantics while targeting cross-repo disk

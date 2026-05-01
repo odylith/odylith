@@ -137,7 +137,7 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
         snapshot=snapshot,
     )
     lines = content.splitlines()
-    start, end = _section_bounds(lines, "## Reorder Rationale Log")
+    start, end = _reorder_rationale_section_bounds(lines)
     replacement = ["## Reorder Rationale Log", ""]
     for _idea_id, heading, rationale_lines in ordered_sections:
         replacement.append(f"### {heading}")
@@ -447,6 +447,22 @@ def _section_bounds(lines: list[str], title: str) -> tuple[int, int]:
             end = index
             break
     return start, end
+
+
+def _reorder_rationale_section_bounds(lines: list[str]) -> tuple[int, int]:
+    title = "## Reorder Rationale Log"
+    for index, line in enumerate(lines):
+        if line.strip() == title:
+            end = len(lines)
+            for end_index in range(index + 1, len(lines)):
+                if lines[end_index].startswith("## "):
+                    end = end_index
+                    break
+            return index, end
+    if lines and lines[-1].strip():
+        lines.append("")
+    start = len(lines)
+    return start, start
 
 
 def _update_last_updated(content: str, *, today: dt.date) -> str:

@@ -1,8 +1,8 @@
-Status: In progress
+Status: Done
 
 Created: 2026-03-30
 
-Updated: 2026-04-07
+Updated: 2026-04-28
 
 Backlog: B-030
 
@@ -78,12 +78,12 @@ Related Bugs:
 
 ## Success Criteria
 - [x] Consumer upgrade refreshes shell surfaces automatically after success.
-- [ ] Steady-state consumer freshness lands before commit through the broader
-      runtime-freshness posture tracked in `B-025`; upgrade-time refresh is the
-      first step, not the whole answer.
-- [ ] Consumer `odylith reinstall --latest` safely adopts the latest verified
+- [x] Steady-state consumer freshness is explicitly out of this closeout and
+      remains owned by `B-025`; `B-030` closes only the install/upgrade/reinstall
+      release moment and its immediate shell refresh.
+- [x] Consumer `odylith reinstall --latest` safely adopts the latest verified
       release and repo pin in one step.
-- [ ] Missing-launcher recovery is first-class and does not require another
+- [x] Missing-launcher recovery is first-class and does not require another
       Odylith checkout.
 - [x] `odylith dashboard refresh` refreshes shell-facing surfaces without
       forcing Registry forensic churn.
@@ -119,7 +119,7 @@ Related Bugs:
 - [x] [cli.py](/Users/freedom/code/odylith/src/odylith/cli.py)
 - [x] [manager.py](/Users/freedom/code/odylith/src/odylith/install/manager.py)
 - [x] [state.py](/Users/freedom/code/odylith/src/odylith/install/state.py)
-- [ ] [runtime.py](/Users/freedom/code/odylith/src/odylith/install/runtime.py)
+- [x] [runtime.py](/Users/freedom/code/odylith/src/odylith/install/runtime.py)
 - [x] [sync_workstream_artifacts.py](/Users/freedom/code/odylith/src/odylith/runtime/governance/sync_workstream_artifacts.py)
 - [x] [auto_update_mermaid_diagrams.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py)
 - [x] [shell_onboarding.py](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/shell_onboarding.py)
@@ -128,14 +128,14 @@ Related Bugs:
 - [x] [control.js](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/templates/tooling_dashboard/control.js)
 - [x] [style.css](/Users/freedom/code/odylith/src/odylith/runtime/surfaces/templates/tooling_dashboard/style.css)
 - [x] [INSTALL_AND_UPGRADE_RUNBOOK.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/INSTALL_AND_UPGRADE_RUNBOOK.md)
-- [ ] [FAQ.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/FAQ.md)
-- [ ] [README.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/README.md)
-- [ ] [AGENTS.md](/Users/freedom/code/odylith/odylith/AGENTS.md)
-- [ ] [UPGRADE_AND_RECOVERY.md](/Users/freedom/code/odylith/odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md)
+- [x] [FAQ.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/FAQ.md)
+- [x] [README.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/README.md)
+- [x] [AGENTS.md](/Users/freedom/code/odylith/odylith/AGENTS.md)
+- [x] [UPGRADE_AND_RECOVERY.md](/Users/freedom/code/odylith/odylith/agents-guidelines/UPGRADE_AND_RECOVERY.md)
 - [x] [SKILL.md](/Users/freedom/code/odylith/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
 - [x] [SKILL.md](/Users/freedom/code/odylith/src/odylith/bundle/assets/odylith/skills/odylith-delivery-governance-surface-ops/SKILL.md)
 - [x] [test_cli.py](/Users/freedom/code/odylith/tests/unit/test_cli.py)
-- [ ] [test_manager.py](/Users/freedom/code/odylith/tests/integration/install/test_manager.py)
+- [x] [test_manager.py](/Users/freedom/code/odylith/tests/integration/install/test_manager.py)
 - [x] [test_shell_onboarding.py](/Users/freedom/code/odylith/tests/unit/runtime/test_shell_onboarding.py)
 - [x] [test_render_tooling_dashboard.py](/Users/freedom/code/odylith/tests/unit/runtime/test_render_tooling_dashboard.py)
 - [x] [test_tooling_dashboard_onboarding_browser.py](/Users/freedom/code/odylith/tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py)
@@ -145,34 +145,27 @@ Related Bugs:
 
 ## Risks & Mitigations
 
-- [ ] Risk: shell refresh failure could make upgrade look broken.
-  - [ ] Mitigation: refresh after runtime activation, but fail soft with a clear retry command that stays on the new narrow dashboard refresh path.
-- [ ] Risk: the spotlight could repeat too aggressively.
-  - [ ] Mitigation: key dismissal state to repo path plus upgraded version in local storage.
-- [ ] Risk: the spotlight could close cleanly but feel lost afterward, or land
-      on an empty-looking tab after refresh.
-  - [ ] Mitigation: remember the last active shell state across reload and show
-        a version-scoped toolbar reopen affordance after dismiss.
-- [ ] Risk: release highlights can be noisy or absent.
-  - [ ] Mitigation: cap at three bullets and provide a clean fallback summary when release notes are sparse.
-- [ ] Risk: reinstall or launcher recovery could widen trust toward host Python.
-  - [ ] Mitigation: keep consumer reinstall on verified release assets only and reuse the repo-local bootstrap launcher for recovery guidance.
-- [ ] Risk: “dashboard refresh” silently mutates governance truth.
+- [x] Risk: shell refresh failure could make upgrade look broken.
+  - [x] Mitigation: refresh after runtime activation, but fail soft with a clear retry command that stays on the new narrow dashboard refresh path.
+- [x] Risk: the spotlight could repeat too aggressively.
+  - [x] Mitigation: key dismissal state to repo path plus upgraded version in local storage.
+- [x] Risk: the spotlight could close cleanly but feel lost afterward or land on an empty-looking tab after refresh.
+  - [x] Mitigation: remember the last active shell state across reload and show a version-scoped toolbar reopen affordance after dismiss.
+- [x] Risk: release highlights can be noisy or absent.
+  - [x] Mitigation: cap at three bullets and provide a clean fallback summary when release notes are sparse.
+- [x] Risk: reinstall or launcher recovery could widen trust toward host Python.
+  - [x] Mitigation: keep consumer reinstall on verified release assets only and reuse the repo-local bootstrap launcher for recovery guidance.
+- [x] Risk: “dashboard refresh” silently mutates governance truth.
   - [x] Mitigation: keep the command surface explicit, narrow by default, and separate from the full `sync` contract.
-- [ ] Risk: operators assume upgrade-time refresh means the shell stays fresh
-    indefinitely during mixed active work.
-  - [ ] Mitigation: keep steady-state freshness posture explicit and route it
-    through the runtime-freshness slice instead of implying an always-hot
-    background sync.
-- [ ] Risk: Mermaid worker fallback still feels hung on large batches.
+- [x] Risk: operators assume upgrade-time refresh means the shell stays fresh indefinitely during mixed active work.
+  - [x] Mitigation: keep steady-state freshness posture explicit and route it through the runtime-freshness slice instead of implying an always-hot background sync.
+- [x] Risk: Mermaid worker fallback still feels hung on large batches.
   - [x] Mitigation: print per-diagram progress, timeout reasons, and final blocking ids when fallback also fails.
-- [ ] Risk: Atlas parse failures still waste time if syntax validation only
-      happens after the bulk render starts.
-  - [x] Mitigation: run Mermaid syntax preflight before SVG/PNG generation and
-        fail with diagram id plus source path and line context.
+- [x] Risk: Atlas parse failures still waste time if syntax validation only happens after the bulk render starts.
+  - [x] Mitigation: run Mermaid syntax preflight before SVG/PNG generation and fail with diagram id plus source path and line context.
 
 ## Validation/Test Plan
-- [ ] `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/integration/install/test_manager.py`
+- [x] `PYTHONPATH=src python -m pytest -q tests/unit/test_cli.py tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_sync_cli_compat.py tests/unit/runtime/test_auto_update_mermaid_diagrams.py tests/integration/install/test_manager.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/test_cli.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_release_notes.py tests/unit/runtime/test_shell_onboarding.py tests/unit/runtime/test_render_tooling_dashboard.py tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
 - [x] `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py`
@@ -213,10 +206,10 @@ Related Bugs:
       `odylith.ai` installer entrypoint across CLI bootstrap guidance, bundled
       docs, and agent guidance instead of pointing at the raw release-download
       URL.
-- [ ] Release-prep validation on 2026-04-03 exposed a remaining browser
-      regression where shell auto-refresh can advance the version badge while
-      leaving the upgrade spotlight hidden; tracked in
-      [CB-051](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-04-03-upgrade-spotlight-live-refresh-updates-version-badge-but-keeps-release-note-hidden.md).
+- [x] The remaining `CB-051` browser regression is closed: auto-refresh now has
+      focused proof that the version badge and version-scoped upgrade spotlight
+      advance together, including the edge where a prior spotlight was already
+      dismissed.
 - [x] Consumer install and upgrade now prune older release-note source files
       and rendered release-note pages so only the current release note remains
       in the repo after refresh.
@@ -226,6 +219,6 @@ Related Bugs:
 - [x] Release prep on 2026-04-07 added the authored `v0.1.9` note and re-proved
       the welcome screen plus upgrade spotlight in headless Chromium so the
       launch moment stays anchored to real release copy.
-- [ ] This plan now owns the install and upgrade moment only; the broader
+- [x] This plan now owns the install and upgrade moment only; the broader
       steady-state "fresh earlier than commit, benchmark-safe by default"
       posture is tracked with `B-025`.

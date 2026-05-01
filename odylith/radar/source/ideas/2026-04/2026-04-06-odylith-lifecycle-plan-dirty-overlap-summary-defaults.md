@@ -1,5 +1,5 @@
 ---
-status: queued
+status: finished
 idea_id: B-055
 title: Lifecycle Plan Dirty Overlap Summary Defaults
 date: 2026-04-06
@@ -14,7 +14,7 @@ ordering_score: 100
 ordering_rationale: The dirty-overlap dump is not the main functional blocker, but it makes migration and release output much harder to read exactly when operators are already trying to understand a failure.
 confidence: high
 founder_override: no
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-04/2026-04-28-lifecycle-plan-dirty-overlap-summary-defaults.md
 execution_model: standard
 workstream_type: child
 workstream_parent: B-048
@@ -100,4 +100,8 @@ not print the whole working tree back at them.
   paths
 
 ## Outcome
-- Bound to `B-055` under `B-048`.
+- Closed for 0.1.12 after compact dirty-overlap output was proven across
+  install, reinstall, upgrade, and sync plan printers, with explicit verbose
+  expansion still available and area counts distinguishing runtime state,
+  generated surfaces, repo truth, managed guidance, and other paths.
+- Bound to `B-055` under `B-048`; closes `CB-060`.

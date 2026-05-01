@@ -61,11 +61,27 @@ _URL_TIMEOUT_SECONDS = 30
 _DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _DOWNLOAD_RETRY_ATTEMPTS = 3
 _DOWNLOAD_RETRYABLE_HTTP_CODES = {408, 429, 500, 502, 503, 504}
+_NETWORK_ENV_NAMES = (
+    "HTTPS_PROXY",
+    "https_proxy",
+    "HTTP_PROXY",
+    "http_proxy",
+    "NO_PROXY",
+    "no_proxy",
+    "SSL_CERT_FILE",
+    "CURL_CA_BUNDLE",
+    "REQUESTS_CA_BUNDLE",
+)
 _BENIGN_SIGSTORE_WARNING_PATTERNS = (
-    re.compile(r"unsupported(?:\s+\S+:\d+)?\s+key type:\s*7", re.IGNORECASE),
+    re.compile(
+        r"(?:warning\s+)?(?:failed to load a trusted root key:\s*)?"
+        r"unsupported(?:\s+\S+:\d+)?\s+key type:\s*7",
+        re.IGNORECASE,
+    ),
     re.compile(r"\btuf\b.*\boffline\b", re.IGNORECASE),
     re.compile(r"\boffline\b.*\btuf\b", re.IGNORECASE),
 )
+_ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
 
 @dataclass(frozen=True)
@@ -96,6 +112,9 @@ class ReleaseInfo:
 @dataclass(frozen=True)
 class SigstoreVerificationResult:
     warnings_suppressed: bool = False
+    warning_count: int = 0
+    warning_summaries: tuple[str, ...] = ()
+    verification_degraded: bool = False
 
 
 @dataclass(frozen=True)
@@ -181,14 +200,38 @@ def _is_maintainer_release_lane(repo_root: str | Path) -> bool:
     return _is_product_repo(maintainer_root)
 
 
+def _network_env_names() -> tuple[str, ...]:
+    return tuple(name for name in _NETWORK_ENV_NAMES if str(os.environ.get(name) or "").strip())
+
+
+def _release_network_hint(url: str) -> str:
+    parsed = urlparse(str(url or ""))
+    hostname = str(parsed.hostname or "").strip()
+    hint = (
+        "Check VPN, proxy, firewall, TLS inspection, and certificate settings. "
+        "Python honors HTTPS_PROXY, HTTP_PROXY, NO_PROXY, SSL_CERT_FILE, "
+        "REQUESTS_CA_BUNDLE, and system trust settings."
+    )
+    env_names = _network_env_names()
+    if env_names:
+        hint += f" Detected proxy/TLS environment: {', '.join(env_names)}."
+    if parsed.scheme == "http" and hostname in {"127.0.0.1", "localhost", "::1"}:
+        hint += " For local release testing, keep the local HTTP server running and set ODYLITH_RELEASE_ALLOW_INSECURE_LOCALHOST=1."
+    return hint
+
+
 def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") -> ReleaseInfo:
     local_release_base_url = str(os.environ.get(_LOCAL_RELEASE_BASE_URL_ENV) or "").strip().rstrip("/")
     if local_release_base_url:
         if not _is_maintainer_release_lane(repo_root):
             raise ValueError("ODYLITH_RELEASE_BASE_URL is only supported in the Odylith product repo maintainer lane")
         manifest_url = f"{local_release_base_url}/release-manifest.json"
-        with urllib.request.urlopen(manifest_url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - explicit local maintainer preflight override
-            manifest = json.loads(response.read().decode("utf-8"))
+        try:
+            with urllib.request.urlopen(manifest_url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - explicit local maintainer preflight override
+                manifest_bytes = response.read()
+        except Exception as exc:
+            raise ValueError(f"failed to fetch local release manifest: {exc}. {_release_network_hint(manifest_url)}") from exc
+        manifest = json.loads(manifest_bytes.decode("utf-8"))
         if not isinstance(manifest, dict):
             raise ValueError("local release manifest must be a JSON object")
         tag = str(manifest.get("tag") or "").strip()
@@ -234,8 +277,12 @@ def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") 
 
     api_path = "latest" if version == "latest" else f"tags/v{version}"
     url = f"https://api.github.com/repos/{repo}/releases/{api_path}"
-    with _urlopen_release_url(url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted GitHub API endpoint
-        payload = json.loads(response.read().decode("utf-8"))
+    try:
+        with _urlopen_release_url(url, timeout=_URL_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted GitHub API endpoint
+            payload_bytes = response.read()
+    except Exception as exc:
+        raise ValueError(f"failed to fetch release metadata: {exc}. {_release_network_hint(url)}") from exc
+    payload = json.loads(payload_bytes.decode("utf-8"))
     tag = str(payload.get("tag_name") or "").strip()
     match = _TAG_RE.match(tag)
     if not match:
@@ -258,6 +305,25 @@ def fetch_release(*, repo_root: str | Path, repo: str, version: str = "latest") 
         published_at=str(payload.get("published_at") or "").strip(),
         highlights=_release_highlights(body=body),
     )
+
+
+def fetch_release_manifest(*, repo_root: str | Path, repo: str, release: ReleaseInfo) -> dict[str, Any]:
+    """Fetch the release manifest without staging assets, for auditable dry-run plans."""
+    try:
+        manifest_asset = release.assets["release-manifest.json"]
+    except KeyError as exc:
+        raise ValueError(f"release manifest asset missing for {release.tag}") from exc
+    _validate_release_asset_url(repo_root=repo_root, url=manifest_asset.download_url)
+    try:
+        with _urlopen_release_url(manifest_asset.download_url, timeout=_URL_TIMEOUT_SECONDS) as response:
+            payload_bytes = response.read()
+    except Exception as exc:
+        raise ValueError(f"failed to fetch release manifest: {exc}. {_release_network_hint(manifest_asset.download_url)}") from exc
+    payload = json.loads(payload_bytes.decode("utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("release manifest must be a JSON object")
+    _validate_manifest(manifest=payload, release=release, repo=repo)
+    return payload
 
 
 def download_verified_release(*, repo_root: str | Path, repo: str, version: str = "latest") -> VerifiedRelease:
@@ -345,8 +411,6 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
             )
         )
     )
-    _emit_sigstore_success_notice(verification_results, context="release")
-
     wheel_sha256 = _sha256_file(wheel_path)
     expected_wheel_sha = str(manifest["assets"][wheel_asset.name]["sha256"]).strip()
     if wheel_sha256 != expected_wheel_sha:
@@ -383,6 +447,10 @@ def download_verified_release(*, repo_root: str | Path, repo: str, version: str 
         "runtime_bundle_sha256": runtime_bundle_sha256,
         "sbom_sha256": _sha256_file(sbom_path),
         "signer_identity": expected_signer_identity(repo=repo),
+        "sigstore_warning_count": _sigstore_warning_count(verification_results),
+        "sigstore_warning_status": _sigstore_warning_status(verification_results),
+        "sigstore_warning_summaries": _sigstore_warning_summaries(verification_results),
+        "sigstore_verification_degraded": _sigstore_verification_degraded(verification_results),
         "wheel_sha256": wheel_sha256,
     }
     return VerifiedRelease(
@@ -475,8 +543,6 @@ def download_verified_feature_pack(
             verify_sigstore_asset(repo_root=repo_root, asset_path=feature_pack_path, bundle_path=feature_pack_bundle_path, repo=repo)
         )
     )
-    _emit_sigstore_success_notice(verification_results, context="feature-pack")
-
     feature_pack_sha256 = _sha256_file(feature_pack_path)
     expected_feature_pack_sha = str(manifest["assets"][feature_pack_asset.name]["sha256"]).strip()
     if feature_pack_sha256 != expected_feature_pack_sha:
@@ -502,6 +568,10 @@ def download_verified_feature_pack(
         "runtime_bundle_platform": runtime_platform.slug,
         "sbom_sha256": _sha256_file(sbom_path),
         "signer_identity": expected_signer_identity(repo=repo),
+        "sigstore_warning_count": _sigstore_warning_count(verification_results),
+        "sigstore_warning_status": _sigstore_warning_status(verification_results),
+        "sigstore_warning_summaries": _sigstore_warning_summaries(verification_results),
+        "sigstore_verification_degraded": _sigstore_verification_degraded(verification_results),
     }
     return VerifiedFeaturePack(
         asset_name=feature_pack_asset.name,
@@ -546,36 +616,74 @@ def verify_sigstore_asset(*, repo_root: str | Path, asset_path: Path, bundle_pat
         text=True,
         env=scrubbed_python_env(),
     )
+    stderr_non_benign, stderr_warning_lines = _split_sigstore_log_lines(completed.stderr)
+    stdout_non_benign, stdout_warning_lines = _split_sigstore_log_lines(completed.stdout)
+    warning_lines = [*stderr_warning_lines, *stdout_warning_lines]
     if completed.returncode != 0:
-        stderr = completed.stderr.strip()
-        stdout = completed.stdout.strip()
-        details = stderr or stdout or "sigstore verification failed"
+        details = "\n".join([*stderr_non_benign, *stdout_non_benign]).strip() or "sigstore verification failed"
         raise ValueError(f"failed to verify {asset_path.name}: {details}")
-    stderr = completed.stderr.strip()
-    if not stderr:
+    if not stderr_non_benign and not warning_lines:
         return SigstoreVerificationResult(warnings_suppressed=False)
-    stderr_lines = _fold_sigstore_warning_lines(stderr)
-    if all(_is_benign_sigstore_warning(line) for line in stderr_lines):
-        return SigstoreVerificationResult(warnings_suppressed=True)
-    print(stderr, file=sys.stderr)
-    return SigstoreVerificationResult(warnings_suppressed=False)
+    if warning_lines and not stderr_non_benign:
+        return SigstoreVerificationResult(
+            warnings_suppressed=True,
+            warning_count=len(warning_lines),
+            warning_summaries=tuple(_sigstore_warning_summary(line) for line in warning_lines),
+            verification_degraded=False,
+        )
+    if stderr_non_benign:
+        print("\n".join(stderr_non_benign), file=sys.stderr)
+    return SigstoreVerificationResult(
+        warnings_suppressed=False,
+        warning_count=len(warning_lines),
+        warning_summaries=tuple(_sigstore_warning_summary(line) for line in warning_lines),
+        verification_degraded=False,
+    )
+
+
+def _split_sigstore_log_lines(text: str) -> tuple[list[str], list[str]]:
+    non_benign: list[str] = []
+    benign: list[str] = []
+    for line in _fold_sigstore_warning_lines(text):
+        if _is_benign_sigstore_warning(line):
+            benign.append(line)
+        else:
+            non_benign.append(line)
+    return non_benign, benign
 
 
 def _fold_sigstore_warning_lines(stderr: str) -> list[str]:
     folded: list[str] = []
     for raw_line in str(stderr or "").splitlines():
-        stripped = raw_line.strip()
+        line = _strip_sigstore_control_sequences(raw_line)
+        stripped = line.strip()
         if not stripped:
             continue
-        if folded and raw_line[:1].isspace():
+        if folded and _is_sigstore_warning_continuation(previous=folded[-1], raw_line=line, stripped=stripped):
             folded[-1] = f"{folded[-1]} {stripped}"
             continue
         folded.append(stripped)
     return folded
 
 
+def _strip_sigstore_control_sequences(text: str) -> str:
+    return _ANSI_ESCAPE_RE.sub("", str(text or "")).replace("\r", "")
+
+
+def _is_sigstore_warning_continuation(*, previous: str, raw_line: str, stripped: str) -> bool:
+    if raw_line[:1].isspace():
+        return True
+    previous_normalized = re.sub(r"\s+", " ", str(previous or "").strip()).lower()
+    stripped_normalized = re.sub(r"\s+", " ", str(stripped or "").strip()).lower()
+    if previous_normalized in {"warning", "warning:"}:
+        return stripped_normalized.startswith("failed to load a trusted root key")
+    if "failed to load a trusted root key" not in previous_normalized:
+        return False
+    return stripped_normalized.startswith(("key type:", "unsupported ", "trust.py:"))
+
+
 def _is_benign_sigstore_warning(line: str) -> bool:
-    normalized = re.sub(r"\s+", " ", str(line or "").strip())
+    normalized = re.sub(r"\s+", " ", _strip_sigstore_control_sequences(str(line or "")).strip())
     return any(pattern.search(normalized) is not None for pattern in _BENIGN_SIGSTORE_WARNING_PATTERNS)
 
 
@@ -585,13 +693,38 @@ def _normalize_sigstore_result(result: SigstoreVerificationResult | None) -> Sig
     return SigstoreVerificationResult(warnings_suppressed=False)
 
 
-def _emit_sigstore_success_notice(results: list[SigstoreVerificationResult], *, context: str) -> None:
-    suppressed_count = sum(1 for result in results if result.warnings_suppressed)
-    if suppressed_count <= 0:
-        return
-    print(
-        f"Sigstore verification succeeded for the {context} assets; suppressed {suppressed_count} expected non-fatal warning stream(s)."
-    )
+def _sigstore_warning_summary(line: str) -> str:
+    normalized = re.sub(r"\s+", " ", _strip_sigstore_control_sequences(str(line or "")).strip())
+    if re.search(r"unsupported(?:\s+\S+:\d+)?\s+key type:\s*7", normalized, re.IGNORECASE):
+        return (
+            "unsupported trusted root key type 7 "
+            "(severity=notice; verification_degraded=false; root key path/fingerprint unavailable from sigstore output)"
+        )
+    if re.search(r"\btuf\b.*\boffline\b|\boffline\b.*\btuf\b", normalized, re.IGNORECASE):
+        return "TUF offline-mode notice (severity=notice; verification_degraded=false)"
+    return normalized
+
+
+def _sigstore_warning_count(results: list[SigstoreVerificationResult]) -> int:
+    return sum(result.warning_count or (1 if result.warnings_suppressed else 0) for result in results)
+
+
+def _sigstore_warning_summaries(results: list[SigstoreVerificationResult]) -> list[str]:
+    summaries: list[str] = []
+    for result in results:
+        for summary in result.warning_summaries:
+            token = str(summary).strip()
+            if token and token not in summaries:
+                summaries.append(token)
+    return summaries
+
+
+def _sigstore_warning_status(results: list[SigstoreVerificationResult]) -> str:
+    return "suppressed_non_fatal" if any(result.warnings_suppressed for result in results) else "none"
+
+
+def _sigstore_verification_degraded(results: list[SigstoreVerificationResult]) -> bool:
+    return any(result.verification_degraded for result in results)
 
 
 def download_asset(*, repo_root: str | Path, asset: ReleaseAsset, destination: Path) -> Path:
@@ -612,9 +745,9 @@ def download_asset(*, repo_root: str | Path, asset: ReleaseAsset, destination: P
         except Exception as exc:
             last_error = exc
             if attempt >= _DOWNLOAD_RETRY_ATTEMPTS or not _is_retryable_download_error(exc):
-                raise ValueError(f"failed to download {asset.name}: {exc}") from exc
+                raise ValueError(f"failed to download {asset.name}: {exc}. {_release_network_hint(asset.download_url)}") from exc
             time.sleep(float(attempt))
-    raise ValueError(f"failed to download {asset.name}: {last_error}")
+    raise ValueError(f"failed to download {asset.name}: {last_error}. {_release_network_hint(asset.download_url)}")
 
 
 def _validate_release_asset_url(*, repo_root: str | Path, url: str) -> None:

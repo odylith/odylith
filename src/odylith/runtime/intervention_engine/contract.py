@@ -67,6 +67,7 @@ class ObservationEnvelope:
     tribunal_summary: dict[str, Any] = field(default_factory=dict)
     visibility_summary: dict[str, Any] = field(default_factory=dict)
     delivery_snapshot: dict[str, Any] = field(default_factory=dict)
+    alignment_proof: dict[str, Any] = field(default_factory=dict)
     active_target_refs: list[dict[str, str]] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
@@ -85,6 +86,7 @@ class ObservationEnvelope:
             "tribunal_summary": dict(self.tribunal_summary),
             "visibility_summary": dict(self.visibility_summary),
             "delivery_snapshot": dict(self.delivery_snapshot),
+            "alignment_proof": dict(self.alignment_proof),
             "active_target_refs": _copy_dict_rows(self.active_target_refs),
         }
 
@@ -106,6 +108,7 @@ class ObservationEnvelope:
             tribunal_summary=_normalize_mapping(payload.get("tribunal_summary")),
             visibility_summary=_normalize_mapping(payload.get("visibility_summary")),
             delivery_snapshot=_normalize_mapping(payload.get("delivery_snapshot")),
+            alignment_proof=_normalize_mapping(payload.get("alignment_proof")),
             active_target_refs=_normalize_ref_list(payload.get("active_target_refs")),
         )
 

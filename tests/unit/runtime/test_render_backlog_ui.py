@@ -182,6 +182,65 @@ def test_render_plan_html_normalizes_legacy_meta_row_paths(tmp_path: Path) -> No
     assert "<code>odylith sync --check-only --check-clean --runtime-mode standalone --repo-root .</code>" in html
 
 
+def test_render_plan_html_traceability_cards_are_repo_bounded_and_stateful(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    plan_path = repo_root / "odylith" / "technical-plans" / "in-progress" / "2026-04-28-traceability.md"
+    plan_path.parent.mkdir(parents=True)
+    existing_doc = repo_root / "docs" / "runbooks" / "repair.md"
+    existing_doc.parent.mkdir(parents=True)
+    existing_doc.write_text("# Repair\n", encoding="utf-8")
+    source_file = repo_root / "src" / "odylith" / "runtime" / "example.py"
+    source_file.parent.mkdir(parents=True)
+    source_file.write_text("VALUE = 1\n", encoding="utf-8")
+    outside_file = tmp_path.parent / "outside-traceability.md"
+    outside_file.write_text("# Outside\n", encoding="utf-8")
+    plan_path.write_text(
+        "\n".join(
+            (
+                "# Traceability Plan",
+                "",
+                "Status: In progress",
+                "Created: 2026-04-28",
+                "Updated: 2026-04-28",
+                "",
+                "## Traceability",
+                "### runbooks:",
+                "- [Repair](docs/runbooks/repair.md#operator-flow)",
+                "- `../outside-traceability.md`",
+                f"- `{outside_file}`",
+                "### Code references",
+                f"- `{source_file}:1`",
+                "- `src/odylith/runtime/missing.py`",
+                "",
+                "## Goal",
+                "Keep plan traceability visible without linking outside the repo.",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    html = render_backlog_ui._render_plan_html(
+        repo_root=repo_root,
+        index_output_path=repo_root / "odylith" / "radar" / "radar.html",
+        entry={
+            "idea_id": "B-998",
+            "title": "Traceability Plan",
+            "promoted_to_plan_file": "odylith/technical-plans/in-progress/2026-04-28-traceability.md",
+        },
+    )
+
+    assert "No plan traceability section captured." not in html
+    assert "docs/runbooks/repair.md#operator-flow" not in html
+    assert "docs/runbooks/repair.md" in html
+    assert "src/odylith/runtime/example.py:1" not in html
+    assert "src/odylith/runtime/example.py" in html
+    assert "src/odylith/runtime/missing.py" in html
+    assert "trace-link-missing" in html
+    assert "outside-traceability.md" not in html
+    assert "Keep plan traceability visible without linking outside the repo." in html
+
+
 def test_render_idea_spec_html_uses_rich_text_for_decision_basis_and_implemented_summary(tmp_path: Path) -> None:
     repo_root = tmp_path
     idea_path = repo_root / "odylith" / "radar" / "source" / "ideas" / "2026-04" / "2026-04-08-example.md"

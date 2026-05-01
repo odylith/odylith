@@ -102,7 +102,7 @@ def test_visible_intervention_renders_stop_assist(monkeypatch, tmp_path) -> None
         host_family="claude",
         phase="stop_summary",
         session_id="unit-visible-stop",
-        summary="Implemented the visible fallback.",
+        summary="Implemented the visible recovery.",
     )
 
     assert "**Odylith Observation:**" in rendered
@@ -122,7 +122,7 @@ def test_stop_visible_intervention_recovers_assist_from_summary_validation(tmp_p
     assert "closing with 1 focused check" in rendered
 
 
-def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_path) -> None:
+def test_visible_intervention_generic_failure_has_observation_without_fake_assist(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,
         host_family="codex",
@@ -130,12 +130,32 @@ def test_visible_intervention_operator_visibility_failure_is_never_silent(tmp_pa
         prompt="I do not think it is working",
     )
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert rendered.count("---") == 2
-    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    assert "user can see what changed and what happens next" in rendered
+    assert "**Odylith Assist:**" not in rendered
+    assert "Show the next Odylith" not in rendered
+    assert "chat-proved" not in rendered
     assert "Odylith is tracking this signal" not in rendered
     _assert_user_facing_visible_voice(rendered)
+
+
+def test_visible_intervention_prompt_submit_stays_quiet_for_normal_prompt(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="Make this intervention path less brittle.",
+    )
+
+    assert rendered == ""
+    assert host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="prompt_submit",
+        prompt="Odylith, help.",
+    ) == ""
 
 
 def test_visible_intervention_prompt_submit_appends_assist_when_visible_markdown_renders(
@@ -169,10 +189,12 @@ def test_visible_intervention_visibility_feedback_adds_assist_after_live_block(t
         prompt="I still do not see any Odylith ambient highlights, interventions, or Assist in chat.",
     )
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
     assert rendered.count("---") == 2
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
-    assert "kept Odylith visible in this chat" in rendered
+    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
     assert "Odylith is tracking this signal" not in rendered
     assert "**Odylith Insight:**" not in rendered
     assert "**Odylith Risks:**" not in rendered
@@ -243,7 +265,7 @@ def test_visible_intervention_replays_pending_chat_block_before_generic_failure(
 
     assert rendered.startswith("---\n\n**Odylith Observation:** Replay this exact earned block in chat.\n\n---")
     assert "\n\n**Odylith Assist:**" in rendered
-    assert "kept Odylith visible in this chat" in rendered
+    assert "visibility feedback noted; this line is deliberately shown in chat" in rendered
     assert "This is a visibility failure" not in rendered
     _assert_user_facing_visible_voice(rendered)
 
@@ -256,8 +278,11 @@ def test_visible_intervention_detects_only_assist_visibility_feedback(tmp_path) 
         prompt="Dude, I am still not sure about Odylith interventions being visible; only " + "As" "sit" + " works",
     )
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
-    assert "user can see what changed and what happens next" in rendered
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
+    assert "Show the next Odylith" not in rendered
+    assert "chat-proved" not in rendered
     assert "**Odylith Assist:**" in rendered
     assert "Odylith is tracking this signal" not in rendered
     _assert_user_facing_visible_voice(rendered)
@@ -277,8 +302,10 @@ def test_visible_intervention_can_record_manual_visible_fallback(tmp_path) -> No
         repo_root=tmp_path,
         session_id="visible-session",
     )
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
-    assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Codex has Odylith activity, but no Odylith note has reached this chat yet."
+    )
+    assert "**Odylith Assist:**" not in rendered
     assert events[-1]["delivery_status"] == "manual_visible"
     assert events[-1]["delivery_channel"] == "manual_visible_command"
     assert events[-1]["host_family"] == "codex"
@@ -292,7 +319,7 @@ def test_chat_confirmation_can_promote_manual_visible_fallback_once(tmp_path) ->
     stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
-        summary="Manual visible fallback.",
+        summary="Manual visible recovery.",
         session_id="manual-confirm",
         host_family="codex",
         intervention_key="manual-visible-key",
@@ -329,7 +356,7 @@ def test_chat_confirmation_infers_host_family_for_legacy_manual_visible_rows(tmp
     stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
-        summary="Legacy manual visible fallback.",
+        summary="Legacy manual visible recovery.",
         session_id="legacy-manual-confirm",
         intervention_key="legacy-manual-key",
         turn_phase="post_bash_checkpoint",
@@ -352,7 +379,7 @@ def test_chat_confirmation_infers_host_family_for_legacy_manual_visible_rows(tmp
 
 
 def test_chat_confirmation_preserves_value_decision_metadata(tmp_path) -> None:
-    visible = "---\n\n**Odylith Observation:** Preserve exact chat-visible proof.\n\n---"
+    visible = "---\n\n**Odylith Observation:** Preserve exact chat visibility.\n\n---"
     stream_state.append_intervention_event(
         repo_root=tmp_path,
         kind="intervention_card",
@@ -393,8 +420,11 @@ def test_visible_intervention_replaces_generic_teaser_for_visibility_failure(tmp
         prompt="Dude, I still do not see any Odylith Observation, Proposal, Ambient, or Assist in chat.",
     )
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** This chat still has no visible Odylith moment")
-    assert "user can see what changed and what happens next" in rendered
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Claude has Odylith activity, but no Odylith note has reached this chat yet."
+    )
+    assert "Show the next Odylith" not in rendered
+    assert "chat-proved" not in rendered
     assert rendered.count("---") == 2
     assert rendered.rsplit("\n", maxsplit=1)[-1].startswith("**Odylith Assist:**")
     assert "One more corroborating signal" not in rendered
@@ -419,8 +449,11 @@ def test_visible_intervention_status_review_surfaces_current_visibility_truth_no
         ),
     )
 
-    assert rendered.startswith("---\n\n**Odylith Observation:** Odylith is on, but this chat still has no visible Odylith moment.")
-    assert "what Odylith is doing" in rendered
+    assert rendered.startswith(
+        "---\n\n**Odylith Observation:** Odylith is active, but no Odylith note has reached this chat yet."
+    )
+    assert "normal assistant text" in rendered
+    assert "Show the next Odylith" not in rendered
     assert "Radar already has B-096" not in rendered
     _assert_user_facing_visible_voice(rendered)
 
@@ -468,7 +501,7 @@ def test_claude_visible_intervention_cli_dispatches_plain_markdown(monkeypatch, 
             "--phase",
             "stop_summary",
             "--summary",
-            "Implemented the visible fallback.",
+            "Implemented the visible recovery.",
         ]
     )
 

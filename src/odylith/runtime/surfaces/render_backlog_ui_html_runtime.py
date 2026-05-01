@@ -1,101 +1,12 @@
-"""HTML and rich-text helpers extracted from the backlog renderer."""
+"""HTML template renderer for the generated Radar backlog shell."""
 
 from __future__ import annotations
 
-import html
 import json
-from pathlib import Path
-import re
-from typing import Any, Mapping
 
-from odylith.runtime.governance import workstream_inference
-from odylith.runtime.surfaces import backlog_rich_text
 from odylith.runtime.surfaces import dashboard_ui_primitives
 from odylith.runtime.surfaces import dashboard_ui_runtime_primitives
 from odylith.runtime.surfaces import execution_wave_ui_runtime_primitives
-
-_TRACEABILITY_SECTION_NAME = "Traceability"
-_TRACEABILITY_BUCKETS: tuple[str, ...] = (
-    "Runbooks",
-    "Developer Docs",
-    "Code References",
-)
-_TRACEABILITY_PATH_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)\s]+)\)")
-_TRACEABILITY_PATH_CODE_RE = re.compile(r"`([^`\n]+)`")
-_TRACEABILITY_CHECKBOX_PREFIX_RE = re.compile(r"^\[(?:x|X| )\]\s*")
-
-
-def _normalize_inline_repo_token(*, repo_root: Path, token: str) -> str:
-    normalized = workstream_inference.normalize_repo_token(str(token or "").strip(), repo_root=repo_root)
-    collapsed = str(normalized or "").strip().strip(".,;:")
-    if not collapsed or " " in collapsed or "<" in collapsed or ">" in collapsed:
-        return ""
-    if collapsed.startswith("http://") or collapsed.startswith("https://"):
-        return ""
-    return collapsed
-
-
-def _render_section_body(*, repo_root: Path, lines: list[str]) -> str:
-    return backlog_rich_text.render_section_body(repo_root=repo_root, lines=lines)
-
-
-def _extract_traceability_path_tokens(text: str) -> list[str]:
-    tokens: list[str] = []
-    for match in _TRACEABILITY_PATH_LINK_RE.finditer(text):
-        token = str(match.group(1)).strip()
-        if token:
-            tokens.append(token)
-    for match in _TRACEABILITY_PATH_CODE_RE.finditer(text):
-        token = str(match.group(1)).strip()
-        if token:
-            tokens.append(token)
-    return tokens
-
-
-def _normalize_traceability_path(*, repo_root: Path, token: str) -> str:
-    return _normalize_inline_repo_token(repo_root=repo_root, token=token)
-
-
-def _collect_plan_traceability_paths(
-    *,
-    repo_root: Path,
-    sections: list[tuple[str, list[str]]],
-) -> dict[str, list[str]]:
-    raw_traceability_lines: list[str] = []
-    for title, lines in sections:
-        if title.strip().lower() == _TRACEABILITY_SECTION_NAME.lower():
-            raw_traceability_lines = lines
-            break
-    if not raw_traceability_lines:
-        return {}
-
-    bucket: str | None = None
-    grouped: dict[str, list[str]] = {label: [] for label in _TRACEABILITY_BUCKETS}
-    for line in raw_traceability_lines:
-        stripped = line.strip()
-        if stripped.startswith("### "):
-            candidate = stripped[4:].strip()
-            bucket = candidate if candidate in grouped else None
-            continue
-        if bucket is None:
-            continue
-        if not stripped:
-            continue
-        if not stripped.lstrip().startswith("- "):
-            continue
-        body = stripped.lstrip()[2:].strip()
-        body = _TRACEABILITY_CHECKBOX_PREFIX_RE.sub("", body).strip()
-        for token in _extract_traceability_path_tokens(body):
-            normalized = _normalize_traceability_path(repo_root=repo_root, token=token)
-            if normalized:
-                grouped[bucket].append(normalized)
-
-    collapsed: dict[str, list[str]] = {}
-    for label, values in grouped.items():
-        deduped = sorted(set(values))
-        if deduped:
-            collapsed[label] = deduped
-    return collapsed
 
 
 def _render_html(*, payload: dict[str, object]) -> str:

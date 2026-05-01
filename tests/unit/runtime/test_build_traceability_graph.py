@@ -650,3 +650,71 @@ def test_build_traceability_graph_preserves_explicit_consumer_truth_root_paths(t
     row = next(item for item in payload["workstreams"] if item["idea_id"] == "B-321")
     assert row["plan_traceability"]["developer_docs"] == ["consumer-registry/source/components/compass/CURRENT_SPEC.md"]
     assert row["plan_traceability"]["runbooks"] == ["consumer-runbooks/platform/odylith-context-engine-operations.md"]
+
+
+def test_build_traceability_graph_uses_repo_bounded_plan_traceability_parser(tmp_path: Path) -> None:
+    (tmp_path / "consumer_repo.yaml").write_text("repo: consumer\n", encoding="utf-8")
+    ideas_dir = tmp_path / "odylith" / "radar" / "source" / "ideas" / "2026-03"
+    ideas_dir.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "radar").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "technical-plans" / "in-progress").mkdir(parents=True, exist_ok=True)
+
+    idea_path = ideas_dir / "2026-03-01-b-322.md"
+    idea_path.write_text(_idea_text(idea_id="B-322", title="Trace Parser"), encoding="utf-8")
+
+    (tmp_path / "docs" / "runbooks").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "docs" / "runbooks" / "repair.md").write_text("# Repair\n", encoding="utf-8")
+    (tmp_path / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    (tmp_path / "src").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "src" / "app.py").write_text("print('ok')\n", encoding="utf-8")
+    absolute_inside = tmp_path / "src" / "app.py"
+    absolute_outside = tmp_path.parent / f"{tmp_path.name}-outside.md"
+
+    plan_path = tmp_path / "odylith" / "technical-plans" / "in-progress" / "2026-03-01-b-322.md"
+    plan_path.write_text(
+        (
+            "Status: In progress\n\n"
+            "Created: 2026-03-01\n\n"
+            "Updated: 2026-03-01\n\n"
+            "Goal: test\n\n"
+            "Assumptions: test\n\n"
+            "Constraints: test\n\n"
+            "Reversibility: test\n\n"
+            "Boundary Conditions: test\n\n"
+            "## Traceability:\n\n"
+            "### runbooks:\n\n"
+            "* [Repair](<docs/runbooks/repair.md#operator-flow>)\n"
+            "* [Outside](../outside.md)\n\n"
+            "### developer docs:\n\n"
+            "* [Guide](docs/../docs/guide.md?draft=true)\n"
+            f"* `{absolute_outside}`\n\n"
+            "### code references:\n\n"
+            f"* `{absolute_inside}:42:7`\n"
+            "* `<bad>`\n"
+        ),
+        encoding="utf-8",
+    )
+
+    (tmp_path / "odylith" / "atlas" / "source" / "catalog").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json").write_text(
+        json.dumps({"version": "1.0", "diagrams": []}) + "\n",
+        encoding="utf-8",
+    )
+
+    rc = graph_builder.main(["--repo-root", str(tmp_path), "--output", "odylith/radar/traceability-graph.v1.json"])
+    assert rc == 0
+
+    payload = json.loads((tmp_path / "odylith" / "radar" / "traceability-graph.v1.json").read_text(encoding="utf-8"))
+    row = next(item for item in payload["workstreams"] if item["idea_id"] == "B-322")
+    assert row["plan_traceability"] == {
+        "runbooks": ["docs/runbooks/repair.md"],
+        "developer_docs": ["docs/guide.md"],
+        "code_references": ["src/app.py"],
+    }
+    artifact_files = {
+        node["file"]
+        for node in payload["nodes"]
+        if node.get("type") == "artifact"
+    }
+    assert artifact_files == {"docs/runbooks/repair.md", "docs/guide.md", "src/app.py"}
+    assert all("outside" not in value and "<bad>" not in value for value in artifact_files)

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.install import manager
+from odylith.install.gitignore_rules import ensure_odylith_gitignore_entry
 
 
 def test_manager_bootstrap_assets_live_in_support_owner() -> None:
@@ -16,7 +17,7 @@ def test_manager_bootstrap_assets_live_in_support_owner() -> None:
 
 
 def test_ensure_odylith_gitignore_entry_writes_all_local_state_rules(tmp_path: Path) -> None:
-    updated = manager._ensure_odylith_gitignore_entry(repo_root=tmp_path)  # noqa: SLF001
+    updated = ensure_odylith_gitignore_entry(repo_root=tmp_path)
 
     assert updated is True
     text = (tmp_path / ".gitignore").read_text(encoding="utf-8")
@@ -28,7 +29,7 @@ def test_ensure_odylith_gitignore_entry_backfills_refresh_state_rule(tmp_path: P
     path = tmp_path / ".gitignore"
     path.write_text("/.odylith/\n", encoding="utf-8")
 
-    updated = manager._ensure_odylith_gitignore_entry(repo_root=tmp_path)  # noqa: SLF001
+    updated = ensure_odylith_gitignore_entry(repo_root=tmp_path)
 
     assert updated is True
     lines = path.read_text(encoding="utf-8").splitlines()
@@ -45,7 +46,7 @@ def test_ensure_odylith_gitignore_entry_is_noop_when_rules_already_present(tmp_p
         encoding="utf-8",
     )
 
-    updated = manager._ensure_odylith_gitignore_entry(repo_root=tmp_path)  # noqa: SLF001
+    updated = ensure_odylith_gitignore_entry(repo_root=tmp_path)
 
     assert updated is False
     assert path.read_text(encoding="utf-8") == (
@@ -59,7 +60,7 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "never say `fixed`, `cleared`, or `resolved` without qualification" in guidance
     assert "same fingerprint as the last falsification or not" in guidance
     assert "`odylith codex intervention-status` or `odylith claude" in guidance
-    assert "low-latency delivery ledger for Teaser, Ambient Highlight, Observation," in guidance
+    assert "low-latency delivery record for Teaser, Ambient Highlight, Observation," in guidance
     assert "Assist readiness; hook payload generation alone is not enough" in guidance
-    assert "Only call a session or worktree fully end to end after `intervention-status` reports `Activation: ready` and `chat_visible_proof=proven_this_session`" in guidance
-    assert "`ledger_visible_with_pending_confirmation`, and `chat_confirmed_with_pending_confirmation` as partial proof" in guidance
+    assert "reports `Activation: ready` and a chat-visibility line confirmed in this" in guidance
+    assert "Treat recorded-only and waiting-for-chat states as partial proof" in guidance

@@ -513,6 +513,8 @@
       margin-bottom: 8px;
       cursor: pointer;
       color: inherit;
+      white-space: normal;
+      overflow-wrap: anywhere;
       transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
     }
     .bug-row:hover {
@@ -533,9 +535,11 @@
       margin-bottom: 7px;
     }
     .bug-row-head > *:first-child {
+      flex: 1 1 auto;
       min-width: 0;
     }
     .bug-row-date {
+      flex: 0 0 auto;
       white-space: nowrap;
     }
 .bug-row-meta,
@@ -762,7 +766,13 @@
     .detail-links {
       align-items: flex-start;
     }
-
+    .bug-row-meta .list-chip,
+    .detail-meta .meta-chip {
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.2;
+    }
     .bug-row-meta::-webkit-scrollbar,
     .detail-meta::-webkit-scrollbar,
     .detail-links::-webkit-scrollbar,
@@ -1029,7 +1039,7 @@
   }
 })();
 </script>
-  <script id="casebookData" src="casebook-payload.v1.js?v=29cebd3442a0"></script>
-  <script src="casebook-app.v1.js?v=29cebd3442a0"></script>
+  <script id="casebookData" src="casebook-payload.v1.js?v=a1da31bcbbe6"></script>
+  <script src="casebook-app.v1.js?v=a1da31bcbbe6"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 - Bug ID: CB-054
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-04-06
 
@@ -35,7 +35,7 @@
   AppleDouble `._*` during manifest generation, integrity verification, and
   target-version residue cleanup. Keep other unexpected entries fatal.
 
-- Verification: Unit tests should prove `.DS_Store` and `._*` do not fail
+- Verification: Focused unit tests prove `.DS_Store` and `._*` do not fail
   trust validation while arbitrary unexpected files still do.
 
 - Prevention: Trust policy needs an explicit platform-noise allowlist instead
@@ -80,13 +80,19 @@
 - Preflight Checks: Inspect runtime tree enumeration, trust-manifest writes,
   and feature-pack preflight before widening the entry filter.
 
-- Regression Tests Added: Pending.
+- Regression Tests Added: `tests/unit/install/test_runtime_metadata_policy.py`
+  proves trust-manifest generation and integrity verification ignore only
+  `.DS_Store` and AppleDouble files while preserving failure for an unexpected
+  runtime dotfile. Existing `tests/unit/install/test_runtime.py` coverage also
+  proves runtime health and feature-pack installation scrub macOS metadata
+  before trust validation.
 
 - Monitoring Updates: Watch macOS repair and feature-pack failures for trust
   drift now attributable only to non-allowlisted entries.
 
-- Residual Risk: Other OS-specific metadata could still need explicit policy
-  later.
+- Residual Risk: Low. Other OS-specific metadata could still need explicit
+  policy later, but the current fix intentionally rejects all non-allowlisted
+  entries.
 
 - Related Incidents/Bugs:
   [CB-003](/Users/freedom/code/odylith/odylith/casebook/bugs/2026-03-28-first-install-and-same-version-upgrade-mutate-live-runtime-before-fail-closed-proof.md),
@@ -108,4 +114,5 @@
 - Runbook References: `odylith/INSTALL_AND_UPGRADE_RUNBOOK.md`,
   `odylith/SECURITY_POSTURE.md`
 
-- Fix Commit/PR: Pending.
+- Fix Commit/PR: Reconciled under `B-049` on `2026/freedom/v0.1.12`; closeout
+  commit records the final Radar/Casebook state and focused regression proof.

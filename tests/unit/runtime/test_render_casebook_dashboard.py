@@ -50,6 +50,8 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
                     "Workaround": "Ignore the repeated lower sections.",
                     "Rollback/Forward Fix": "Forward fix only.",
                     "Verification": "Render the surface and inspect the selected bug in a browser.",
+                    "GitHub Issue(s)": "[odylith/odylith#21](https://github.com/odylith/odylith/issues/21)",
+                    "External Issue(s)": "[Linear ODY-21](https://linear.app/odylith/issue/ODY-21)",
                     "Agent Guardrails": "Do not repeat the same field content in the top brief and the lower learnings band.",
                     "Preflight Checks": "Inspect the selected bug detail in the rendered shell before shipping.",
                 },
@@ -122,12 +124,18 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));" in html
     assert "padding: 10px 12px;" in html
     assert "Odylith Agent Learnings" in app_js
+    assert '<h2 class="detail-title">${escapeHtml(detail.title || detail.bug_key || "Bug detail")}</h2>' in app_js
+    assert '<h1 class="detail-title">' not in app_js
     assert "Human Readout" not in app_js
     assert "Nearby Change Guidance" not in app_js
     assert "Inspect Next" not in app_js
     assert ".component-subtitle, .ref-meta {" in html
     assert "font-size: var(--surface-identifier-font-size, 14px);" in html
     assert "font-weight: var(--surface-identifier-font-weight, 500);" in html
+    assert "white-space: normal;" in html
+    assert ".bug-row-meta .list-chip," in html
+    assert ".detail-meta .meta-chip {" in html
+    assert "overflow-wrap: anywhere;" in html
     assert ".bug-row-kicker {" in html
     assert ".bug-row-kicker, .detail-kicker {" not in html
     assert "text-transform: uppercase;" in html
@@ -135,10 +143,25 @@ def test_render_casebook_dashboard_splits_brief_from_agent_learnings(tmp_path: P
     assert "padding: var(--surface-deep-link-button-padding, 4px 12px);" in html
     assert "font-size: var(--surface-deep-link-button-font-size, 11px);" in html
     assert "font-weight: var(--surface-deep-link-button-font-weight, 700);" in html
+    assert 'target="${linkTarget}" rel="${rel}"' in app_js
+    assert "function externalIssueLinks(detail)" in app_js
+    assert "function renderExternalIssueSignal(items)" in app_js
+    assert '"GitHub Issue(s)"' in app_js
+    assert '"External Issue(s)"' in app_js
+    assert 'label: `${issueKind}: ${rawLabel}`' in app_js
+    assert 'target: "_blank"' in app_js
+    assert "Open ${issueKind.toLowerCase()} in a new browser tab" in app_js
+    assert "Tracked issue" in app_js
+    assert "[renderExternalIssueSignal(externalIssueActions), renderFocusedFieldRows(HUMAN_SIGNAL_FIELDS)]" in app_js
+    assert '${externalIssueActions.length ? renderActionChipGroup(externalIssueActions) : ""}' not in app_js
     assert 'data-summary-field="${escapeHtml(label)}"' in app_js
     assert '<div class="summary-facts" role="list">${summaryFacts}</div>' in app_js
     assert '["Bug ID", row.bug_id || "-"]' in app_js
     assert '${detail.bug_id ? `<p class="detail-kicker">${escapeHtml(detail.bug_id)}</p>` : ""}' not in app_js
+    assert app_js.index("const humanSignalBody = [renderExternalIssueSignal(externalIssueActions)") < app_js.index(
+        'renderBriefCard("Signal", "How the bug showed up.", humanSignalBody)'
+    )
+    assert "...EXTERNAL_ISSUE_FIELDS," in app_js
     assert app_js.index('<div class="summary-facts" role="list">${summaryFacts}</div>') < app_js.index("${summary}")
     assert "function normalizeSearchToken(value)" in app_js
     assert "function canonicalizeBugIdToken(value)" in app_js

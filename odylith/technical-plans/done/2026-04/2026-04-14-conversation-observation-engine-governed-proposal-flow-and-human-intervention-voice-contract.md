@@ -2,7 +2,7 @@ Status: Done
 
 Created: 2026-04-14
 
-Updated: 2026-04-26
+Updated: 2026-04-28
 
 Backlog: B-096
 
@@ -151,6 +151,33 @@ Related Bugs:
   `B-107` host visibility and ruler canonicalization,
   `B-108` adjudication corpus and advisory benchmark,
   `B-109` release proof.
+
+## v0.1.12 Follow-Up Hardening
+- 2026-04-28: Eliminated the prompt-visible Assist slop class left after the
+  v0.1.11 visibility work. The default prompt Assist line now has one shared
+  owner in `src/odylith/runtime/surfaces/host_intervention_support.py`, and
+  Codex prompt context, Claude prompt context, Claude prompt teaser, and manual
+  visible-intervention fallback all consume that owner instead of carrying
+  host-local defaults. Normal non-passthrough prompt submit now renders the
+  same `**Odylith Assist:**` line across Codex and Claude when no stronger
+  prompt beat is earned; help/show route locks still suppress narration and
+  preserve stdout-only behavior.
+- Proof: focused host/intervention suite `147 passed`; hygiene/source-bundle/
+  install-agent suite `74 passed`; install manager and bundle integration
+  `85 passed`; headless intervention/onboarding browser matrix `28 passed`;
+  `odylith validate guidance-behavior --repo-root .` and
+  `odylith validate discipline --repo-root .` passed.
+- 2026-04-28: Added an explicit engine-alignment proof object to the host
+  intervention hot path. `alignment_proof` now travels inside the normalized
+  `ObservationEnvelope` and is preserved by both Codex/Claude prompt and
+  checkpoint bundle builders. The proof names required visibility-recovery
+  lanes, covered lanes, missing required lanes, policy-deferred subagent
+  orchestration, and local-summary-only constraints, so the UX cannot claim
+  cross-engine alignment from hidden or formatter-only inference.
+- Proof: focused alignment/host regression suite `47 passed` covering direct
+  proof construction, malformed/missing lane degradation, optional quiet lanes,
+  full zero-visible-signal complaint alignment, and shared prompt-bundle proof
+  preservation.
 
 ## Learnings
 - [ ] Odylith interventions are only compelling if the markdown block changes

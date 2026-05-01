@@ -63,6 +63,10 @@ _SURFACE_TARGET_MAP: dict[str, tuple[str, ...]] = {
         "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-style-execution-waves.v1.css",
     ),
     "radar": (
+        "src/odylith/runtime/surfaces/backlog_detail_pages.py",
+        "src/odylith/runtime/surfaces/backlog_render_support.py",
+        "src/odylith/runtime/surfaces/backlog_rich_text.py",
+        "src/odylith/runtime/surfaces/backlog_traceability_paths.py",
         "src/odylith/runtime/surfaces/render_backlog_ui.py",
         "src/odylith/runtime/surfaces/render_backlog_ui_payload_runtime.py",
         "src/odylith/runtime/surfaces/render_backlog_ui_html_runtime.py",

@@ -45,6 +45,16 @@ _RADAR_REDIRECT_ABORT_RE = re.compile(
 )
 
 
+def _current_release_label() -> str:
+    payload = json.loads((_REPO_ROOT / "odylith" / "radar" / "traceability-graph.v1.json").read_text(encoding="utf-8"))
+    current = payload.get("current_release")
+    if isinstance(current, dict):
+        label = str(current.get("display_label") or current.get("version") or "").strip()
+        if label:
+            return label
+    return "current"
+
+
 def test_browser_thread_preserves_skip_outcomes() -> None:
     with pytest.raises(pytest.skip.Exception):
         _run_in_browser_thread(lambda: pytest.skip("Playwright Chromium is not installed"))
@@ -137,6 +147,32 @@ def _first_backlog_document_workstream_id(view: str) -> str:
     return str(match.group(1))
 
 
+def _load_backlog_document_shard(path: Path) -> dict[str, object]:
+    text = path.read_text(encoding="utf-8")
+    payload = text.split(" || {}, ", 1)[1].rsplit(");", 1)[0]
+    loaded = json.loads(payload)
+    assert isinstance(loaded, dict)
+    return loaded
+
+
+def _first_traceable_plan_workstream_id() -> str:
+    for path in sorted((_REPO_ROOT / "odylith" / "radar").glob("backlog-document-shard-*.v1.js")):
+        for key, raw_document in _load_backlog_document_shard(path).items():
+            html = (
+                str(raw_document.get("html", ""))
+                if isinstance(raw_document, dict)
+                else str(raw_document or "")
+            )
+            if (
+                key.startswith("plan:")
+                and 'class="trace-groups"' in html
+                and 'class="trace-link"' in html
+                and 'class="trace-link trace-link-missing"' in html
+            ):
+                return key.split(":", 1)[1]
+    raise AssertionError("expected at least one Radar plan document with existing and missing traceability cards")
+
+
 def _wait_for_radar_standalone_document(page, *, workstream_id: str, view: str, timeout: int = 15000) -> None:  # noqa: ANN001
     _wait_for_shell_query_param(page, tab="radar", key="workstream", value=workstream_id, timeout=timeout)
     _wait_for_shell_query_param(page, tab="radar", key="view", value=view, timeout=timeout)
@@ -192,7 +228,7 @@ def test_surface_entrypoints_redirect_into_shell_and_load_requested_surface(brow
     surfaces = (
         ("/odylith/radar/radar.html", "radar", "#frame-radar", "h1", "Backlog Workstream Radar"),
         ("/odylith/registry/registry.html", "registry", "#frame-registry", "h1", "Component Registry"),
-        ("/odylith/casebook/casebook.html", "casebook", "#frame-casebook", "h1", "Casebook"),
+        ("/odylith/casebook/casebook.html", "casebook", "#frame-casebook", ".hero-title", "Casebook"),
         ("/odylith/atlas/atlas.html", "atlas", "#frame-atlas", "h1", "Atlas"),
         ("/odylith/compass/compass.html", "compass", "#frame-compass", "h1", "Executive Compass"),
     )
@@ -219,7 +255,7 @@ def test_tooling_shell_routes_into_all_child_surfaces(browser_context) -> None: 
     tab_expectations = (
         ("#tab-radar", "#frame-radar", "h1", "Backlog Workstream Radar"),
         ("#tab-registry", "#frame-registry", "h1", "Component Registry"),
-        ("#tab-casebook", "#frame-casebook", "h1", "Casebook"),
+        ("#tab-casebook", "#frame-casebook", ".hero-title", "Casebook"),
         ("#tab-atlas", "#frame-atlas", "h1", "Atlas"),
         ("#tab-compass", "#frame-compass", "h1", "Executive Compass"),
     )
@@ -305,6 +341,7 @@ def test_compass_desktop_layout_keeps_main_and_right_rail_separated(browser_cont
 
 def test_compass_and_radar_target_release_cards_show_labeled_release_version(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
+    current_release_label = _current_release_label()
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
     response = page.goto(base_url + "/odylith/index.html?tab=compass&window=48h&date=live", wait_until="domcontentloaded")
     assert response is not None and response.ok
@@ -322,13 +359,13 @@ def test_compass_and_radar_target_release_cards_show_labeled_release_version(bro
     compass_release_label = compass.locator(".stat.stat-release-only .kpi-label").first.inner_text().strip()
     compass_release = compass.locator(".stat.stat-release-only .kpi-value").first.inner_text().strip()
     assert compass_release_label == "TARGET RELEASE"
-    assert compass_release == "0.1.11"
+    assert compass_release == current_release_label
     assert compass.locator(".stat .kpi-label", has_text="NEXT RELEASE").count() == 0
     assert compass.locator("#release-groups .execution-wave-section").count() >= 2
     release_targets_text = compass.locator("#release-groups").inner_text().strip()
     assert "Target Release" in release_targets_text
-    assert "0.1.12" in release_targets_text
-    assert "Next release target across active workstreams." in release_targets_text
+    assert current_release_label in release_targets_text
+    assert "release target across active workstreams." in release_targets_text
 
     page.locator("#tab-radar").click()
     radar = page.frame_locator("#frame-radar")
@@ -336,7 +373,7 @@ def test_compass_and_radar_target_release_cards_show_labeled_release_version(bro
     radar_release_label = radar.locator(".stats .stat.stat-release-only .label").first.inner_text().strip()
     radar_release = radar.locator(".stats .stat.stat-release-only .value").first.inner_text().strip()
     assert radar_release_label == "TARGET RELEASE"
-    assert radar_release == "0.1.11"
+    assert radar_release == current_release_label
 
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
@@ -617,14 +654,14 @@ def test_shell_cross_tab_hops_keep_compass_global_runtime_fresh(browser_context)
     compass.locator("h1", has_text="Executive Compass").wait_for(timeout=15000)
     _assert_compass_live_state(compass, window_token="24h")
 
-    for tab_selector, frame_selector, heading_text in (
-        ("#tab-registry", "#frame-registry", "Component Registry"),
-        ("#tab-casebook", "#frame-casebook", "Casebook"),
-        ("#tab-atlas", "#frame-atlas", "Atlas"),
-        ("#tab-radar", "#frame-radar", "Backlog Workstream Radar"),
+    for tab_selector, frame_selector, heading_selector, heading_text in (
+        ("#tab-registry", "#frame-registry", "h1", "Component Registry"),
+        ("#tab-casebook", "#frame-casebook", ".hero-title", "Casebook"),
+        ("#tab-atlas", "#frame-atlas", "h1", "Atlas"),
+        ("#tab-radar", "#frame-radar", "h1", "Backlog Workstream Radar"),
     ):
         page.locator(tab_selector).click()
-        page.frame_locator(frame_selector).locator("h1", has_text=heading_text).wait_for(timeout=15000)
+        page.frame_locator(frame_selector).locator(heading_selector, has_text=heading_text).wait_for(timeout=15000)
 
     page.locator("#tab-compass").click()
     _wait_for_shell_tab(page, "compass")
@@ -777,7 +814,7 @@ def test_casebook_selection_and_shell_history_stay_routable(browser_context) -> 
 
     assert page.locator("#tab-casebook").get_attribute("aria-selected") == "true"
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
 
     first_bug = casebook.locator("button.bug-row").first
     first_bug.wait_for(timeout=15000)
@@ -831,7 +868,7 @@ def test_casebook_counts_match_bug_index_after_shell_navigation(browser_context)
     page.locator("#tab-casebook").click()
     _wait_for_shell_tab(page, "casebook")
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     _assert_casebook_counts(
         casebook,
         expected_open_total=expected_open_total,
@@ -851,7 +888,7 @@ def test_casebook_entrypoint_counts_match_bug_index_after_reload(browser_context
     page.wait_for_url(re.compile(r".*/odylith/index\.html\?tab=casebook([&#].*|$)"), timeout=15000)
 
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     _assert_casebook_counts(
         casebook,
         expected_open_total=expected_open_total,
@@ -897,6 +934,64 @@ def test_radar_plan_entrypoint_redirects_into_shell_standalone_plan_view(browser
 
     _discard_external_mermaid_cdn_failures(failed_requests)
     _discard_radar_redirect_abort_failures(failed_requests)
+    _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+
+
+def test_radar_plan_traceability_cards_stay_bounded_on_mobile_and_desktop(browser_context) -> None:  # noqa: ANN001
+    base_url, context = browser_context
+    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+    workstream_id = _first_traceable_plan_workstream_id()
+    page.set_viewport_size({"width": 390, "height": 844})
+
+    response = page.goto(
+        base_url + f"/odylith/index.html?tab=radar&workstream={quote(workstream_id, safe='')}&view=plan",
+        wait_until="domcontentloaded",
+    )
+    assert response is not None and response.ok
+
+    def _assert_traceability_cards_fit() -> None:
+        radar = page.frame_locator("#frame-radar")
+        radar.locator(".trace-groups").wait_for(timeout=15000)
+        assert radar.locator(".trace-group").count() >= 1
+        assert radar.locator(".trace-link").count() >= 2
+        assert radar.locator(".trace-link-missing").count() >= 1
+        trace_paths = [text.strip() for text in radar.locator(".trace-path").all_inner_texts()]
+        assert trace_paths
+        assert not [text for text in trace_paths if ".." in text or text.startswith(("http://", "https://"))]
+        style_rows = radar.locator(".trace-path").evaluate_all(
+            """nodes => nodes.map((node) => {
+              const style = window.getComputedStyle(node);
+              return {
+                overflow: style.overflow,
+                textOverflow: style.textOverflow,
+                whiteSpace: style.whiteSpace
+              };
+            })"""
+        )
+        assert style_rows
+        assert all(row["overflow"] == "hidden" for row in style_rows)
+        assert all(row["textOverflow"] == "ellipsis" for row in style_rows)
+        assert all(row["whiteSpace"] == "nowrap" for row in style_rows)
+        overflow_rows = radar.locator(".trace-link").evaluate_all(
+            """nodes => nodes
+              .map((node) => {
+                const parent = node.closest(".trace-group").getBoundingClientRect();
+                const box = node.getBoundingClientRect();
+                return {left: box.left, right: box.right, parentLeft: parent.left, parentRight: parent.right};
+              })
+              .filter((row) => row.left < row.parentLeft - 1 || row.right > row.parentRight + 1)"""
+        )
+        assert overflow_rows == []
+
+    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="plan")
+    _assert_traceability_cards_fit()
+
+    page.set_viewport_size({"width": 1440, "height": 920})
+    page.reload(wait_until="domcontentloaded")
+    _wait_for_radar_standalone_document(page, workstream_id=workstream_id, view="plan")
+    _assert_traceability_cards_fit()
+
+    _discard_external_mermaid_cdn_failures(failed_requests)
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 
@@ -1155,7 +1250,7 @@ def test_invalid_surface_routes_fall_back_to_valid_detail_selection(browser_cont
     response = page.goto(base_url + f"/odylith/index.html?tab=casebook&bug={invalid_bug}", wait_until="domcontentloaded")
     assert response is not None and response.ok
     casebook = page.frame_locator("#frame-casebook")
-    casebook.locator("h1", has_text="Casebook").wait_for(timeout=15000)
+    casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
     casebook_active = casebook.locator("button.bug-row.active")
     casebook_active.wait_for(timeout=15000)
     casebook_active_bug = str(casebook_active.first.get_attribute("data-bug") or "").strip()

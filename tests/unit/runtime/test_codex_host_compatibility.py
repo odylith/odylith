@@ -165,7 +165,7 @@ def test_inspect_codex_compatibility_accepts_bash_only_checkpoint_matcher(
     assert report.supports_stop_summary_hook is True
     assert report.overall_posture == "baseline_safe_assistant_visible_ready"
     assert "PostToolUse post-bash-checkpoint hook wired for Bash: yes" in rendered
-    assert "assistant-render fallback" in rendered
+    assert "Assistant-render recovery" in rendered
     assert "may not hot-reload changed hooks" in rendered
 
 

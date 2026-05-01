@@ -43,6 +43,10 @@ from odylith.runtime.orchestration import subagent_router_host_policy
 from odylith.runtime.orchestration import subagent_router_profile_support
 from odylith.runtime.orchestration import subagent_router_runtime_policy
 from odylith.runtime.orchestration import subagent_tuning_surface
+from odylith.runtime.orchestration.subagent_signal_normalization import mapping_value as _mapping_value
+from odylith.runtime.orchestration.subagent_signal_normalization import normalize_context_signals as _normalize_context_signals
+from odylith.runtime.orchestration.subagent_signal_normalization import normalize_list as _normalize_list
+from odylith.runtime.orchestration.subagent_signal_normalization import normalized_rate as _normalized_rate
 
 
 _SCORE_MIN = 0
@@ -712,10 +716,6 @@ def _normalize_multiline_string(value: Any) -> str:
     return "\n".join(line.rstrip() for line in text.split("\n")).strip()
 
 
-def _normalize_list(value: Any) -> list[str]:
-    return subagent_router_context_support._normalize_list(value)
-
-
 def _assessment_host_runtime(assessment: TaskAssessment) -> str:
     summary = dict(assessment.context_signal_summary or {})
     return host_runtime_contract.resolve_host_runtime(
@@ -740,18 +740,6 @@ def _assessment_host_capabilities(assessment: TaskAssessment) -> dict[str, Any]:
 
 def _delegation_style_for_assessment(assessment: TaskAssessment) -> str:
     return str(_assessment_host_capabilities(assessment).get("delegation_style", "")).strip() or "none"
-
-
-def _count_or_list_len(payload: Mapping[str, Any], *, list_key: str, count_key: str) -> int:
-    return subagent_router_context_support._count_or_list_len(
-        payload,
-        list_key=list_key,
-        count_key=count_key,
-    )
-
-
-def _normalize_context_signals(value: Any) -> dict[str, Any]:
-    return subagent_router_context_support._normalize_context_signals(value)
 
 
 def _embedded_governance_signal(context_packet: Mapping[str, Any]) -> dict[str, Any]:
@@ -817,16 +805,8 @@ def _extract_context_signals_payload(payload: Mapping[str, Any]) -> dict[str, An
     return _normalize_context_signals(payload.get("routing_handoff", {}))
 
 
-def _mapping_value(payload: Mapping[str, Any], key: str) -> Any:
-    return subagent_router_context_support._mapping_value(payload, key)
-
-
 def _context_signal_root(context_signals: Mapping[str, Any]) -> Mapping[str, Any]:
     return subagent_router_context_support._context_signal_root(context_signals)
-
-
-def _context_lookup(payload: Mapping[str, Any], *path: str) -> Any:
-    return subagent_router_context_support._context_lookup(payload, *path)
 
 
 def _selected_counts_mapping(value: Any) -> dict[str, int]:
@@ -858,10 +838,6 @@ def _context_signal_score(value: Any) -> int:
     return subagent_router_context_support._context_signal_score(value)
 
 
-def _dedupe_strings(values: Sequence[str]) -> list[str]:
-    return subagent_router_context_support._dedupe_strings(values)
-
-
 def _sanitize_user_facing_text(value: Any) -> str:
     return subagent_router_profile_support.sanitize_user_facing_text(value)
 
@@ -880,10 +856,6 @@ def _context_signal_level(score: int) -> str:
 
 def _scaled_numeric_signal(value: Any) -> int:
     return subagent_router_context_support._scaled_numeric_signal(value)
-
-
-def _normalized_rate(value: Any) -> float:
-    return subagent_router_context_support._normalized_rate(value)
 
 
 def _latency_pressure_signal(value: Any) -> int:

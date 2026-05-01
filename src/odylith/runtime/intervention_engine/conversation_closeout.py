@@ -96,7 +96,7 @@ def visibility_feedback_phrase(*, request: Any, assistant_summary: str = "") -> 
     lowered = text.casefold()
     if not any(phrase in lowered for phrase in _VISIBILITY_COMPLAINT_PHRASES):
         return "", ""
-    phrase = "kept Odylith visible in this chat so the brand promise is something the user can see"
+    phrase = "visibility feedback noted; this line is deliberately shown in chat"
     return phrase, phrase
 
 

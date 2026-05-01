@@ -80,6 +80,15 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 - Keep maintainer and dogfood progress updates task-first. Do not narrate
   startup, routing, packet-selection, or degraded-attempt history unless a
   literal command, a live blocker, or a runtime-lane distinction matters.
+- In maintainer mode, any product surface change that can affect
+  already-installed consumer repos must be assessed through the migration
+  observer before release closeout. This is a maintainer release-gate
+  obligation only: do not add it to consumer-safe `odylith/agents-guidelines/`,
+  shared `odylith/skills/`, or bundled install assets. Run
+  `odylith release migration-gate --repo-root . --target-version <version>`
+  and complete the exact emitted
+  `migration-observer:<version>:<surface>:<fingerprint>` Radar marker in
+  maintainer governance before claiming release readiness.
 - Keep Odylith ambient by default during work. If a routing or governance fact
   materially changes the next move, weave it into the update first and reserve
   explicit `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` labels
@@ -142,9 +151,15 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   not collapse into self-referential proposal summaries.
 - At closeout, or when a visible-intervention fallback renders a prompt-submit
   or visibility-proof beat, you may add at most one short `Odylith Assist:`
-  line if it helps summarize what Odylith materially contributed. Prefer
-  `**Odylith Assist:**` when Markdown formatting is available; otherwise use
-  `Odylith Assist:`. Lead with the user win, link updated governance IDs inline
+  line if it helps summarize what Odylith materially contributed. The host
+  prompt-submit runtime is stricter about silence: normal non-passthrough
+  prompts do not get an Assist line by default; they stay quiet unless a live
+  Observation/Proposal is selected or explicit visibility feedback earns one
+  shared recovery line. Do not add Assist just because Odylith ran, a CLI
+  succeeded, or no stronger beat matured; `Odylith, help` and `Odylith, show
+  me what you can do` stay stdout-clean. Prefer `**Odylith Assist:**` when
+  Markdown formatting is available; otherwise use `Odylith Assist:`. Lead with the user win, link
+  updated governance IDs inline
   when they were actually changed, and when no governed file moved, name the
   affected governance-contract IDs from bounded request or packet truth without
   calling them updated. Frame the edge against `odylith_off` or the broader
@@ -177,10 +192,26 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
 ## Routing
 - Shared anti-slop and decomposition policy: `../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md`
 - Maintainer coding standards: `agents-guidelines/CODING_STANDARDS.md`
+- GitHub issue intake and release closeout: `agents-guidelines/GITHUB_ISSUE_PIPELINE.md`
 - Release benchmark publishing: `agents-guidelines/RELEASE_BENCHMARKS.md`
 - Canonical release order: `../MAINTAINER_RELEASE_RUNBOOK.md`
 
 ## Skills
 - `../skills/odylith-code-hygiene-guard/`
+- `skills/odylith-github-issue-triage/`
+- `skills/odylith-github-release-closeout/`
 - `skills/fail-closed-code-hygiene/`
 - `skills/release-benchmark-publishing/`
+
+## GitHub Issue Handling
+- Public issue handling must run through fetch, classify, governance-link,
+  draft-GitHub-update, and apply-only-with-approval.
+- Start with
+  `odylith github issue triage <issue-url-or-number> --repo odylith/odylith --json`.
+- Use `--apply-governance` only after the Casebook match and fixed-in-release
+  fields are correct.
+- Use `--apply-github` only after the maintainer accepts the exact labels,
+  comment body, and close decision.
+- During release closeout, run
+  `odylith github issue release-closeout --release current --json`; do not
+  close public issues before the release is publicly available.

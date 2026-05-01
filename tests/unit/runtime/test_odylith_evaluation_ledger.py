@@ -6,6 +6,7 @@ from pathlib import Path
 from odylith.runtime.evaluation import odylith_evaluation_ledger as ledger
 from odylith.runtime.context_engine import odylith_context_engine_store as store
 from odylith.runtime.orchestration import subagent_orchestrator as orchestrator
+from odylith.runtime.orchestration import subagent_orchestrator_local_gates as local_gates
 from odylith.runtime.orchestration import subagent_router as router
 
 
@@ -786,7 +787,14 @@ def test_orchestrator_keeps_read_only_narrowing_slice_local() -> None:
         },
     )
 
-    reasons, notes = orchestrator._should_keep_local(request, assessment)  # noqa: SLF001
+    reasons, notes = local_gates.should_keep_local(
+        request,
+        assessment,
+        architecture_policy={},
+        path_groups=[],
+        decomposable_coordination_gates=frozenset(),
+        trivial_local_prompt=False,
+    )
 
     assert "odylith-local-narrowing" in reasons
     assert "odylith-read-only-local-narrowing" in reasons
@@ -867,8 +875,16 @@ def test_coordination_heavy_write_requires_route_ready_runtime_before_decomposit
         }
     )
 
-    assert orchestrator._can_decompose_coordination_heavy_write(request, blocked_assessment) is False  # noqa: SLF001
-    assert orchestrator._can_decompose_coordination_heavy_write(request, ready_assessment) is True  # noqa: SLF001
+    path_groups = [[path] for path in request.candidate_paths]
+
+    assert (
+        local_gates.can_decompose_coordination_heavy_write(request, blocked_assessment, path_groups=path_groups)
+        is False
+    )
+    assert (
+        local_gates.can_decompose_coordination_heavy_write(request, ready_assessment, path_groups=path_groups)
+        is True
+    )
 
 
 def test_odylith_consumer_paths_do_not_collapse_into_governance_followups() -> None:

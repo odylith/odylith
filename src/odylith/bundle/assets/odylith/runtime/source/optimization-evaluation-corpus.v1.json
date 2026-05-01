@@ -13,7 +13,7 @@
       "rules": [
         "Keep mid-task narration task-first and weave Odylith facts into normal updates by default.",
         "Use explicit Odylith Insight, Odylith History, or Odylith Risks labels only when the point is strong enough to earn the interruption.",
-        "At closeout, explicit visibility feedback, or when visible-intervention renders a prompt-submit visible fallback, at most one short Odylith Assist line may appear, plus at most one optional supplemental line before it.",
+        "At closeout, explicit visibility feedback, or when visible-intervention renders a prompt-submit visible recovery, at most one short Odylith Assist line may appear, plus at most one optional supplemental line before it.",
         "Prefer the bold Markdown label when formatting is available; otherwise use plain Odylith Assist.",
         "Lead with the user win, not Odylith mechanics, link updated governance IDs inline only when they actually changed, and name affected governance-contract IDs from bounded request or packet truth when no governed file moved.",
         "When the evidence supports it, frame the edge against odylith_off or the broader unguided path.",
